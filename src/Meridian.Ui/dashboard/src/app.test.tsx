@@ -459,7 +459,7 @@ describe("App", () => {
     expect(screen.getAllByText("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Open Trading workspace" })).toHaveAttribute(
       "href",
-      "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     );
 
     await user.keyboard("{Escape}");
@@ -596,10 +596,10 @@ describe("App", () => {
     }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
     expect(screen.getByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
-    })).toHaveAttribute("href", "/data/providers");
+    })).toHaveAttribute("href", "/data/providers?symbol=MSFT");
     expect(screen.getByRole("link", {
       name: "Trading: Replay audit. Replay evidence is stale for the active paper session. Open readiness."
-    })).toHaveAttribute("href", "/trading/readiness");
+    })).toHaveAttribute("href", "/trading/readiness?symbol=MSFT");
   });
 
   it("keeps a stored operating symbol available in the shell and command palette", async () => {

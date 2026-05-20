@@ -162,7 +162,11 @@ public static class SecurityMasterEndpoints
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateSecurityMaster")
-        .Produces<SecurityDetailDto>(StatusCodes.Status201Created);
+        .Produces<SecurityDetailDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Amends the terms (economic definition) of an existing security with optimistic concurrency control.
@@ -181,7 +185,11 @@ public static class SecurityMasterEndpoints
             return Results.Json(detail, jsonOptions);
         })
         .WithName("AmendSecurityMaster")
-        .Produces<SecurityDetailDto>(StatusCodes.Status200OK);
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Marks a security as inactive (soft delete). The security record remains in the database for audit purposes.
@@ -200,7 +208,11 @@ public static class SecurityMasterEndpoints
             return Results.NoContent();
         })
         .WithName("DeactivateSecurityMaster")
-        .Produces(StatusCodes.Status204NoContent);
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Adds or updates an external identifier (alias) for a security, supporting multi-provider symbol mapping.
@@ -219,7 +231,11 @@ public static class SecurityMasterEndpoints
             return Results.Json(alias, jsonOptions);
         })
         .WithName("UpsertSecurityMasterAlias")
-        .Produces<SecurityAliasDto>(StatusCodes.Status200OK);
+        .Produces<SecurityAliasDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Retrieves trading parameters for a security at the current time: lot size, tick size, and status.
@@ -276,6 +292,7 @@ public static class SecurityMasterEndpoints
         group.MapPatch(UiApiRoutes.SecurityMasterPreferredEquityTerms, async (
             Guid securityId,
             AmendPreferredEquityTermsRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
@@ -295,7 +312,11 @@ public static class SecurityMasterEndpoints
         .WithName("AmendSecurityMasterPreferredEquityTerms")
         .Accepts<AmendPreferredEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Retrieves the current convertible-equity term definition for a security when its classification includes conversion terms.
@@ -333,16 +354,6 @@ public static class SecurityMasterEndpoints
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
-            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
-            {
-                return Results.Unauthorized();
-            }
-
-            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {
@@ -358,7 +369,11 @@ public static class SecurityMasterEndpoints
         .WithName("AmendSecurityMasterConvertibleEquityTerms")
         .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
         /// Retrieves all corporate action events for a security, sorted by ex-date (dividend, split, merger, etc.).
@@ -396,16 +411,6 @@ public static class SecurityMasterEndpoints
             [FromServices] ISecurityMasterEventStore eventStore,
             CancellationToken ct) =>
         {
-            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             if (dto.SecurityId != securityId)
             {
                 return Results.BadRequest("Corporate action SecurityId must match route parameter");
@@ -419,7 +424,9 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
@@ -436,6 +443,7 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterConflictResolve, async (
             Guid conflictId,
             ResolveConflictRequest request,
+            HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
@@ -451,11 +459,16 @@ public static class SecurityMasterEndpoints
         .WithName("ResolveSecurityMasterConflict")
         .Produces<SecurityMasterConflict>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         // POST /api/security-master/import
         group.MapPost(UiApiRoutes.SecurityMasterImport, async (
             SecurityMasterImportRequest request,
+            HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterImportService importService,
             CancellationToken ct) =>
         {
@@ -467,7 +480,11 @@ public static class SecurityMasterEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("ImportSecurityMaster")
-        .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK);
+        .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         // GET /api/security-master/ingest/status
         group.MapGet(UiApiRoutes.SecurityMasterIngestStatus, async (
@@ -522,16 +539,6 @@ public static class SecurityMasterEndpoints
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
-            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
-            {
-                return Results.Unauthorized();
-            }
-
-            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var actor = ResolveActor(context);
             var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
             return Results.Json(updated, jsonOptions);
@@ -539,14 +546,16 @@ public static class SecurityMasterEndpoints
         .WithName("PatchSecurityMasterOperatorOverrides")
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
         group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
             Guid securityId,
             AmendPreferredEquityTermsRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
@@ -560,8 +569,27 @@ public static class SecurityMasterEndpoints
         })
         .WithName("PatchSecurityPreferredTerms")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
     }
+
+    private static ValueTask<object?> RequireModifySecurityMasterPermission(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        if (HasModifySecurityMasterPermission(context.HttpContext))
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
+    }
+
+    private static bool HasModifySecurityMasterPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
 
     private static string ResolveActor(HttpContext context)
     {

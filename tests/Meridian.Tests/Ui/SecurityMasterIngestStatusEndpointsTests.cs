@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Endpoints;
@@ -109,6 +110,11 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterService>());
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            await next();
+        });
         app.MapSecurityMasterEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Execution.Models;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -118,7 +119,7 @@ public sealed class TradierExecutionReconciliationTests
         PortfolioRegistry registry,
         IReadOnlyList<string>? providerPriority = null)
     {
-        var options = Options.Create(new PositionSyncOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new PositionSyncOptions
         {
             DivergenceTolerance = 0m,
             ProviderPriority = providerPriority ?? []

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Monitoring;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -164,6 +165,166 @@ public sealed class WorkstationEndpointsTests
 
         using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
         strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-research-001");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldUseSharedWorkflowService()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        var startResponse = await client.PostAsJsonAsync(
+            "/api/workstation/operations/continuity",
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-05",
+                SecurityMasterSnapshotId: Guid.NewGuid(),
+                BrokerSource: "custodian",
+                Actor: "ops-user",
+                Rationale: "Open monthly close lane"),
+            ServerJsonOptions);
+
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var startJson = await JsonDocument.ParseAsync(await startResponse.Content.ReadAsStreamAsync());
+        var workflow = startJson.RootElement.GetProperty("workflow");
+        var workflowId = workflow.GetProperty("workflowId").GetGuid();
+        workflow.GetProperty("status").GetString().Should().Be(nameof(OperationsWorkflowStatusDto.CollectingBrokerData));
+        workflow.GetProperty("version").GetInt64().Should().Be(1);
+        workflow.GetProperty("timeline").GetArrayLength().Should().Be(1);
+
+        using var detail = await ReadJsonAsync(client, $"/api/workstation/operations/continuity/{workflowId}");
+        detail.RootElement.GetProperty("workflowId").GetGuid().Should().Be(workflowId);
+        detail.RootElement.GetProperty("fundAccountId").GetGuid().Should().Be(fundAccountId);
+
+        using var timeline = await ReadJsonAsync(client, $"/api/workstation/operations/continuity/{workflowId}/timeline");
+        timeline.RootElement.GetArrayLength().Should().Be(1);
+        timeline.RootElement[0].GetProperty("eventType").GetString().Should().Be("workflow-started");
+
+        using var summaries = await ReadJsonAsync(client, $"/api/workstation/operations/continuity?fundAccountId={fundAccountId}");
+        summaries.RootElement.GetArrayLength().Should().Be(1);
+        summaries.RootElement[0].GetProperty("workflowId").GetGuid().Should().Be(workflowId);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldUseTrustedActorInsteadOfRequestActor()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var startResponse = await client.PostAsJsonAsync(
+            "/api/workstation/operations/continuity",
+            new OperationsStartWorkflowRequestDto(
+                Guid.NewGuid(),
+                "2026-05",
+                SecurityMasterSnapshotId: Guid.NewGuid(),
+                BrokerSource: "custodian",
+                Actor: "spoofed-user",
+                Rationale: "Open monthly close lane"),
+            ServerJsonOptions);
+
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var startJson = await JsonDocument.ParseAsync(await startResponse.Content.ReadAsStreamAsync());
+        var workflowId = startJson.RootElement.GetProperty("workflow").GetProperty("workflowId").GetGuid();
+
+        using var timeline = await ReadJsonAsync(client, $"/api/workstation/operations/continuity/{workflowId}/timeline");
+        timeline.RootElement[0].GetProperty("actor").GetString().Should().Be("ops-user");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityStartRoute_ShouldRequireMutationPermission()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/operations/continuity",
+            new OperationsStartWorkflowRequestDto(
+                Guid.NewGuid(),
+                "2026-05",
+                SecurityMasterSnapshotId: Guid.NewGuid(),
+                BrokerSource: "custodian",
+                Actor: "spoofed-user",
+                Rationale: "Open monthly close lane"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityImportRoute_ShouldRequireMutationPermission()
+    {
+        await using var privilegedApp = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var privilegedClient = privilegedApp.GetTestClient();
+
+        var startResponse = await privilegedClient.PostAsJsonAsync(
+            "/api/workstation/operations/continuity",
+            new OperationsStartWorkflowRequestDto(
+                Guid.NewGuid(),
+                "2026-05",
+                SecurityMasterSnapshotId: Guid.NewGuid(),
+                BrokerSource: "custodian",
+                Actor: "ops-user",
+                Rationale: "Open monthly close lane"),
+            ServerJsonOptions);
+        using var startJson = await JsonDocument.ParseAsync(await startResponse.Content.ReadAsStreamAsync());
+        var workflow = startJson.RootElement.GetProperty("workflow");
+        var workflowId = workflow.GetProperty("workflowId").GetGuid();
+        var expectedVersion = workflow.GetProperty("version").GetInt64();
+
+        await using var restrictedApp = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
+        var restrictedClient = restrictedApp.GetTestClient();
+
+        var response = await restrictedClient.PostAsJsonAsync(
+            $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(
+                expectedVersion,
+                "spoofed-user",
+                "Import broker statement"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldAdvanceToClosed()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(validated.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+        var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
+            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "reviewer", "Submit evidence", "report-pack-1"));
+        var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
+            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "reviewer", "Approve close", "report-pack-1"));
+        var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
+            new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user", "Close period", "report-pack-1"));
+
+        closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
+        closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
     }
 
     [Fact]
@@ -4099,6 +4260,14 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<WorkstationWorkflowSummaryService>();
     }
 
+    private static void RegisterOperationsContinuityServices(IServiceCollection services)
+    {
+        services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+        services.AddSingleton<IOperationsContinuityRepository, InMemoryOperationsContinuityRepository>();
+        services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
+        services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
+    }
+
     private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
     {
         services.AddSingleton<BacktestToLivePromoter>();
@@ -4575,6 +4744,17 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var stream = await response.Content.ReadAsStreamAsync();
         return await JsonDocument.ParseAsync(stream);
+    }
+
+    private static async Task<OperationsTransitionResultDto> PostTransitionAsync(HttpClient client, string path, object payload)
+    {
+        var response = await client.PostAsJsonAsync(path, payload, ServerJsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue(result.ErrorMessage);
+        result.Workflow.Should().NotBeNull();
+        return result;
     }
 
     private static async Task<T> ReadAsync<T>(HttpResponseMessage response)

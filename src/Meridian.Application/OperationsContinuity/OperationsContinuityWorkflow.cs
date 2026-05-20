@@ -1,373 +1,879 @@
-using System;
-using System.Collections.Generic;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Application.OperationsContinuity;
 
+/// <summary>
+/// Aggregate root for the fund-account and period operations continuity workflow.
+/// Overall status is derived by <see cref="IOperationsStatusDerivationService"/>.
+/// </summary>
 public sealed class OperationsContinuityWorkflow
 {
-    private readonly List<OperationsContinuityAuditEntry> _auditTrail = new();
+    public Guid WorkflowId { get; init; }
+    public Guid FundAccountId { get; init; }
+    public string PeriodId { get; init; } = string.Empty;
+    public Guid? SecurityMasterSnapshotId { get; init; }
+    public string BrokerSource { get; init; } = "unspecified";
+    public DateTimeOffset CreatedAtUtc { get; init; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public long Version { get; set; }
 
-    public OperationsContinuityWorkflow(
+    public OperationsBrokerIntakeStateDto BrokerIntakeState { get; set; } = OperationsBrokerIntakeStateDto.Pending;
+    public OperationsSecurityMasterStateDto SecurityMasterState { get; set; } = OperationsSecurityMasterStateDto.Pending;
+    public OperationsLedgerPostingStateDto LedgerPostingState { get; set; } = OperationsLedgerPostingStateDto.Pending;
+    public OperationsReconciliationStateDto ReconciliationState { get; set; } = OperationsReconciliationStateDto.Pending;
+    public OperationsApprovalStateDto ApprovalState { get; set; } = OperationsApprovalStateDto.Pending;
+    public bool IsClosed { get; set; }
+    public OperationsLedgerPreviewDto? LedgerPreview { get; set; }
+    public OperationsReportPackReadinessDto ReportPackReadiness { get; set; } =
+        new(false, null, "Report pack evidence has not been linked.", []);
+    public List<OperationsBreakCaseDto> BreakCases { get; set; } = [];
+    public List<OperationsApprovalDto> Approvals { get; set; } = [];
+
+    public OperationsGateState BrokerIngestGate { get; set; } =
+        OperationsGateState.Create(OperationsGateKeyDto.BrokerIngest);
+    public OperationsGateState SecurityMasterGate { get; set; } =
+        OperationsGateState.Create(OperationsGateKeyDto.SecurityMaster);
+    public OperationsGateState LedgerPostingGate { get; set; } =
+        OperationsGateState.Create(OperationsGateKeyDto.LedgerPosting);
+    public OperationsGateState ReconciliationGate { get; set; } =
+        OperationsGateState.Create(OperationsGateKeyDto.Reconciliation);
+    public OperationsGateState ApprovalGate { get; set; } =
+        OperationsGateState.Create(OperationsGateKeyDto.Approval);
+
+    public IReadOnlyList<OperationsGateState> Gates =>
+    [
+        BrokerIngestGate,
+        SecurityMasterGate,
+        LedgerPostingGate,
+        ReconciliationGate,
+        ApprovalGate
+    ];
+
+    public static OperationsContinuityWorkflow Start(
         Guid workflowId,
         Guid fundAccountId,
         string periodId,
-        Guid securityMasterSnapshotId,
-        string brokerSource,
-        DateTimeOffset createdAtUtc,
-        long version)
+        Guid? securityMasterSnapshotId,
+        string? brokerSource,
+        DateTimeOffset now)
     {
-        WorkflowId = workflowId;
-        FundAccountId = fundAccountId;
-        PeriodId = RequireNonEmpty(periodId, nameof(periodId));
-        SecurityMasterSnapshotId = securityMasterSnapshotId;
-        BrokerSource = RequireNonEmpty(brokerSource, nameof(brokerSource));
-        CreatedAtUtc = EnsureUtc(createdAtUtc, nameof(createdAtUtc));
-        UpdatedAtUtc = CreatedAtUtc;
-        Version = version;
+        ArgumentOutOfRangeException.ThrowIfEqual(workflowId, Guid.Empty);
+        ArgumentOutOfRangeException.ThrowIfEqual(fundAccountId, Guid.Empty);
+        ArgumentException.ThrowIfNullOrWhiteSpace(periodId);
 
-        BrokerIngestGate = ContinuityGate.Pending;
-        SecurityMasterGate = ContinuityGate.Pending;
-        LedgerPostingGate = ContinuityGate.Pending;
-        ReconciliationGate = ContinuityGate.Pending;
-        ApprovalGate = ContinuityGate.Pending;
+        return new OperationsContinuityWorkflow
+        {
+            WorkflowId = workflowId,
+            FundAccountId = fundAccountId,
+            PeriodId = periodId.Trim(),
+            SecurityMasterSnapshotId = securityMasterSnapshotId,
+            BrokerSource = string.IsNullOrWhiteSpace(brokerSource) ? "unspecified" : brokerSource.Trim(),
+            CreatedAtUtc = EnsureUtc(now),
+            UpdatedAtUtc = EnsureUtc(now),
+            BrokerIngestGate = OperationsGateState.Create(OperationsGateKeyDto.BrokerIngest)
+                .WithStatus(
+                    OperationsGateStatusDto.InProgress,
+                    nextActions:
+                    [
+                        new OperationsNextActionDto(
+                            "BROKER_IMPORT_REQUIRED",
+                            "Import broker, custodian, or bank activity",
+                            "/workstation/accounting",
+                            OperationsGateKeyDto.BrokerIngest)
+                    ])
+        };
     }
 
-    public Guid WorkflowId { get; }
-    public Guid FundAccountId { get; }
-    public string PeriodId { get; }
-    public Guid SecurityMasterSnapshotId { get; }
-    public string BrokerSource { get; }
-    public DateTimeOffset CreatedAtUtc { get; }
-    public DateTimeOffset UpdatedAtUtc { get; private set; }
-    public long Version { get; private set; }
-
-    public ContinuityGate BrokerIngestGate { get; private set; }
-    public ContinuityGate SecurityMasterGate { get; private set; }
-    public ContinuityGate LedgerPostingGate { get; private set; }
-    public ContinuityGate ReconciliationGate { get; private set; }
-    public ContinuityGate ApprovalGate { get; private set; }
-
-    public BrokerSubState BrokerState { get; private set; }
-    public SecuritySubState SecurityState { get; private set; }
-    public LedgerSubState LedgerState { get; private set; }
-    public ReconciliationSubState ReconciliationState { get; private set; }
-    public ApprovalSubState ApprovalState { get; private set; }
-
-    public bool CloseSucceeded { get; private set; }
-    public int CriticalBreakCountOpen { get; private set; }
-
-    public IReadOnlyList<OperationsContinuityAuditEntry> AuditTrail => _auditTrail;
-
-    public ContinuityOverallStatus DeriveOverallStatus()
+    public void MarkBrokerImported(DateTimeOffset now, IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
     {
-        if (IsBlocked())
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        if (BrokerIntakeState != OperationsBrokerIntakeStateDto.Pending)
         {
-            return ContinuityOverallStatus.Blocked;
+            throw new InvalidOperationException($"Broker import cannot run when intake state is '{BrokerIntakeState}'.");
         }
 
-        if (CloseSucceeded)
+        if (BrokerIngestGate.Status != OperationsGateStatusDto.InProgress)
         {
-            return ContinuityOverallStatus.Closed;
+            throw new InvalidOperationException($"Broker import cannot run when gate status is '{BrokerIngestGate.Status}'.");
         }
 
-        if (AllGatesPassed() && ApprovalState == ApprovalSubState.Approved)
-        {
-            return ContinuityOverallStatus.ReadyForClose;
-        }
-
-        // Reconciliation-primary override for review-required workflows.
-        if (ReconciliationGate == ContinuityGate.ReviewRequired || ReconciliationState == ReconciliationSubState.ReviewRequired)
-        {
-            return ContinuityOverallStatus.ReviewRequired;
-        }
-
-        if (IsAnyReviewRequired())
-        {
-            return ContinuityOverallStatus.ReviewRequired;
-        }
-
-        return HighestActiveStage();
+        BrokerIntakeState = OperationsBrokerIntakeStateDto.Imported;
+        BrokerIngestGate = BrokerIngestGate.WithStatus(
+            OperationsGateStatusDto.InProgress,
+            blockers: [],
+            nextActions:
+            [
+                new OperationsNextActionDto(
+                    "BROKER_NORMALIZATION_REQUIRED",
+                    "Normalize imported activity before Security Master resolution",
+                    "/workstation/accounting",
+                    OperationsGateKeyDto.BrokerIngest)
+            ],
+            completedAtUtc: null,
+            completedBy: null);
     }
 
-    public void TransitionBroker(
-        BrokerSubState newState,
-        ContinuityGate gate,
-        OperationsContinuityAuditEntry auditEntry)
+    public OperationsWorkflowBlockerDto? GetBrokerImportTransitionBlocker()
     {
-        BrokerState = newState;
-        BrokerIngestGate = gate;
-        AppendAuditAndBump(auditEntry);
+        if (BrokerIntakeState != OperationsBrokerIntakeStateDto.Pending)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "BROKER_IMPORT_ALREADY_RECORDED",
+                $"Broker import has already been recorded with intake state '{BrokerIntakeState}'.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Error",
+                []);
+        }
+
+        if (BrokerIngestGate.Status != OperationsGateStatusDto.InProgress)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "BROKER_IMPORT_GATE_NOT_READY",
+                $"Broker import is not allowed while the broker ingest gate is '{BrokerIngestGate.Status}'.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Error",
+                []);
+        }
+
+        return null;
     }
 
-    public void TransitionSecurity(
-        SecuritySubState newState,
-        ContinuityGate gate,
-        OperationsContinuityAuditEntry auditEntry)
+    public OperationsWorkflowBlockerDto? GetSecurityMasterResolveTransitionBlocker()
     {
-        SecurityState = newState;
-        SecurityMasterGate = gate;
-        AppendAuditAndBump(auditEntry);
+        if (BrokerIntakeState is OperationsBrokerIntakeStateDto.Pending)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "BROKER_INTAKE_REQUIRED",
+                "Broker, custodian, or bank activity must be imported before Security Master resolution.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Error",
+                []);
+        }
+
+        return null;
     }
 
-    public void TransitionLedger(
-        LedgerSubState newState,
-        ContinuityGate gate,
-        OperationsContinuityAuditEntry auditEntry)
+    public void ResolveSecurityMasterMappings(
+        OperationsSecurityMasterResolveRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
     {
-        if (!IsSecurityResolved())
-        {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.LedgerPostBeforeSecurityResolution,
-                "Cannot transition ledger state before the security master stage is resolved.");
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
 
-        LedgerState = newState;
-        LedgerPostingGate = gate;
-        AppendAuditAndBump(auditEntry);
+        BrokerIntakeState = request.UnresolvedInstrumentCount == 0 && request.OverrideRequestCount == 0
+            ? OperationsBrokerIntakeStateDto.Complete
+            : OperationsBrokerIntakeStateDto.Normalized;
+        BrokerIngestGate = BrokerIngestGate.WithStatus(
+            request.UnresolvedInstrumentCount == 0 ? OperationsGateStatusDto.Passed : OperationsGateStatusDto.ReviewRequired,
+            completedAtUtc: request.UnresolvedInstrumentCount == 0 ? now : null,
+            completedBy: request.UnresolvedInstrumentCount == 0 ? request.Actor : null);
+
+        var blockers = BuildSecurityMasterBlockers(request, evidenceLinks);
+        var status = blockers.Any(static blocker => string.Equals(blocker.Severity, "Critical", StringComparison.OrdinalIgnoreCase))
+            ? OperationsGateStatusDto.Blocked
+            : blockers.Count > 0
+                ? OperationsGateStatusDto.ReviewRequired
+                : OperationsGateStatusDto.Passed;
+
+        SecurityMasterState = status switch
+        {
+            OperationsGateStatusDto.Passed => OperationsSecurityMasterStateDto.Complete,
+            OperationsGateStatusDto.ReviewRequired when request.OverrideRequestCount > 0 => OperationsSecurityMasterStateDto.OverridesRequested,
+            OperationsGateStatusDto.ReviewRequired => OperationsSecurityMasterStateDto.ResolvedAllInstruments,
+            _ => OperationsSecurityMasterStateDto.Pending
+        };
+        SecurityMasterGate = SecurityMasterGate.WithStatus(
+            status,
+            blockers,
+            NextActionsForGate(OperationsGateKeyDto.SecurityMaster, status),
+            completedAtUtc: status == OperationsGateStatusDto.Passed ? now : null,
+            completedBy: status == OperationsGateStatusDto.Passed ? request.Actor : null);
     }
 
-    public void TransitionReconciliation(
-        ReconciliationSubState newState,
-        ContinuityGate gate,
-        int criticalBreakCountOpen,
-        OperationsContinuityAuditEntry auditEntry)
+    public OperationsWorkflowBlockerDto? GetBuildLedgerDraftTransitionBlocker()
     {
-        if (criticalBreakCountOpen < 0)
+        if (SecurityMasterGate.Status != OperationsGateStatusDto.Passed &&
+            SecurityMasterState != OperationsSecurityMasterStateDto.OverridesApproved)
         {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.InvalidCriticalBreakCount,
-                "Critical break count cannot be negative.");
+            return new OperationsWorkflowBlockerDto(
+                "SECURITY_MASTER_RESOLUTION_REQUIRED",
+                "Ledger draft cannot be built before Security Master resolution or approved override.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                []);
         }
 
-        ReconciliationState = newState;
-        ReconciliationGate = gate;
-        CriticalBreakCountOpen = criticalBreakCountOpen;
-        AppendAuditAndBump(auditEntry);
+        return null;
     }
 
-    public void TransitionApproval(
-        ApprovalSubState newState,
-        ContinuityGate gate,
-        string? approvedByOperator,
-        string? rationale,
-        string? evidenceReference,
-        OperationsContinuityAuditEntry auditEntry)
+    public void BuildLedgerDraft(
+        OperationsLedgerDraftRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
     {
-        if (newState == ApprovalSubState.Approved &&
-            (string.IsNullOrWhiteSpace(approvedByOperator) || string.IsNullOrWhiteSpace(rationale) || string.IsNullOrWhiteSpace(evidenceReference)))
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (string.IsNullOrWhiteSpace(request.PreviewId))
         {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.ApprovalRequiresOperatorRationaleEvidence,
-                "Approval requires operator, rationale, and evidence reference.");
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_PREVIEW_ID_REQUIRED",
+                "Ledger draft preview id is required.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Error",
+                evidenceLinks));
         }
 
-        ApprovalState = newState;
-        ApprovalGate = gate;
-        AppendAuditAndBump(auditEntry);
+        if (!request.HasSecurityMasterProvenance)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+                "Ledger draft requires Security Master provenance.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (!request.HasIdempotencyKey)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_IDEMPOTENCY_KEY_MISSING",
+                "Ledger draft requires an idempotency key before posting can be considered.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (!request.IsBalanced)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_DRAFT_IMBALANCED",
+                "Ledger draft preview is not balanced.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        LedgerPostingState = OperationsLedgerPostingStateDto.Drafted;
+        LedgerPreview = new OperationsLedgerPreviewDto(
+            request.PreviewId.Trim(),
+            blockers.Count == 0 ? "Drafted" : "ReviewRequired",
+            request.LedgerBatchId,
+            now,
+            evidenceLinks);
+        LedgerPostingGate = LedgerPostingGate.WithStatus(
+            blockers.Count == 0 ? OperationsGateStatusDto.InProgress : OperationsGateStatusDto.Blocked,
+            blockers,
+            NextActionsForGate(OperationsGateKeyDto.LedgerPosting, blockers.Count == 0 ? OperationsGateStatusDto.InProgress : OperationsGateStatusDto.Blocked));
     }
 
-    public void MarkClosed(OperationsContinuityAuditEntry auditEntry)
+    public OperationsWorkflowBlockerDto? GetValidateLedgerDraftTransitionBlocker()
     {
-        if (CriticalBreakCountOpen > 0)
+        if (LedgerPostingState != OperationsLedgerPostingStateDto.Drafted || LedgerPreview is null)
         {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.CloseBlockedByCriticalBreaks,
-                "Cannot close workflow while critical reconciliation breaks are open.");
+            return new OperationsWorkflowBlockerDto(
+                "LEDGER_DRAFT_REQUIRED",
+                "Ledger validation requires a generated ledger draft preview.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Error",
+                []);
         }
 
-        if (DeriveOverallStatus() != ContinuityOverallStatus.ReadyForClose)
-        {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.CloseRequiresReadyForCloseStatus,
-                "Workflow must be ReadyForClose before closure.");
-        }
-
-        CloseSucceeded = true;
-        AppendAuditAndBump(auditEntry);
+        return null;
     }
 
-    private void AppendAuditAndBump(OperationsContinuityAuditEntry auditEntry)
+    public void ValidateLedgerDraft(
+        OperationsLedgerValidationRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
     {
-        if (auditEntry is null)
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (!request.IsBalanced)
         {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.AuditAppendRequired,
-                "State transitions require a non-null audit entry.");
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_DRAFT_IMBALANCED",
+                "Balanced journal validation failed.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
         }
 
-        if (auditEntry.ChangedAtUtc.Offset != TimeSpan.Zero)
+        if (!request.PeriodOpen)
         {
-            throw OperationsContinuityWorkflowException.WithCode(
-                OperationsContinuityWorkflowErrorCode.AuditTimestampMustBeUtc,
-                "Audit entry timestamp must be UTC.");
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_PERIOD_CLOSED",
+                "Ledger draft cannot be validated for normal posting into a closed or hard-closed period.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
         }
 
-        _auditTrail.Add(auditEntry);
-        UpdatedAtUtc = DateTimeOffset.UtcNow;
+        if (request.HasDuplicatePostingCandidate)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_DUPLICATE_POSTING_CANDIDATE",
+                "Duplicate posting candidate detected for this source activity or generated accounting event.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        var status = blockers.Count == 0 ? OperationsGateStatusDto.Passed : OperationsGateStatusDto.Blocked;
+        LedgerPostingState = blockers.Count == 0 ? OperationsLedgerPostingStateDto.Validated : OperationsLedgerPostingStateDto.Drafted;
+        LedgerPostingGate = LedgerPostingGate.WithStatus(
+            status,
+            blockers,
+            NextActionsForGate(OperationsGateKeyDto.LedgerPosting, status),
+            completedAtUtc: status == OperationsGateStatusDto.Passed ? now : null,
+            completedBy: status == OperationsGateStatusDto.Passed ? request.Actor : null);
+    }
+
+    public OperationsWorkflowBlockerDto? GetRunReconciliationTransitionBlocker()
+    {
+        if (LedgerPostingGate.Status != OperationsGateStatusDto.Passed)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "LEDGER_VALIDATION_REQUIRED",
+                "Reconciliation requires a validated ledger draft posture.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                []);
+        }
+
+        return null;
+    }
+
+    public void RunReconciliation(
+        OperationsReconciliationRunRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        BreakCases = request.BreakCases?.ToList() ?? [];
+        var openCriticalBreaks = BreakCases.Count(static item =>
+            !IsClosedBreakStatus(item.Status) &&
+            string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
+        var openNonCriticalBreaks = BreakCases.Count(static item =>
+            !IsClosedBreakStatus(item.Status) &&
+            !string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
+        ApplyReconciliationPosture(openCriticalBreaks, openNonCriticalBreaks, evidenceLinks, now, request.Actor);
+    }
+
+    public OperationsWorkflowBlockerDto? ResolveBreakCase(
+        string breakId,
+        OperationsResolveBreakCaseRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        var index = BreakCases.FindIndex(item => string.Equals(item.BreakId, breakId, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_NOT_FOUND",
+                $"Reconciliation break '{breakId}' was not found.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Rationale))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_RATIONALE_REQUIRED",
+                "Resolving a reconciliation break requires operator rationale.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
+        var existing = BreakCases[index];
+        BreakCases[index] = existing with
+        {
+            Status = string.IsNullOrWhiteSpace(request.ResolutionStatus) ? "Resolved" : request.ResolutionStatus.Trim(),
+            Owner = request.Actor,
+            EvidenceLinks = existing.EvidenceLinks.Concat(evidenceLinks).ToArray()
+        };
+
+        var openCriticalBreaks = BreakCases.Count(static item =>
+            !IsClosedBreakStatus(item.Status) &&
+            string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
+        var openNonCriticalBreaks = BreakCases.Count(static item =>
+            !IsClosedBreakStatus(item.Status) &&
+            !string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
+        ApplyReconciliationPosture(openCriticalBreaks, openNonCriticalBreaks, evidenceLinks, now, request.Actor);
+        return null;
+    }
+
+    public OperationsWorkflowBlockerDto? GetSubmitForApprovalTransitionBlocker()
+    {
+        if (ReconciliationGate.Status == OperationsGateStatusDto.Blocked ||
+            BreakCases.Any(static item => !IsClosedBreakStatus(item.Status) &&
+                string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase)))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+                "Workflow cannot be submitted for approval while critical reconciliation breaks remain open.",
+                OperationsGateKeyDto.Reconciliation,
+                "Critical",
+                []);
+        }
+
+        if (ReportPackReadiness.IsReady is false)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "REPORT_PACK_NOT_READY",
+                "Workflow approval requires a linked ready report pack.",
+                OperationsGateKeyDto.Approval,
+                "Error",
+                ReportPackReadiness.EvidenceLinks);
+        }
+
+        return null;
+    }
+
+    public void SubmitForApproval(
+        OperationsSubmitApprovalRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        ApprovalState = OperationsApprovalStateDto.Submitted;
+        ApprovalGate = ApprovalGate.WithStatus(
+            OperationsGateStatusDto.InProgress,
+            blockers: [],
+            nextActions:
+            [
+                new OperationsNextActionDto(
+                    "APPROVAL_DECISION_REQUIRED",
+                    "Reviewer decision is required before close.",
+                    "/workstation/accounting",
+                    OperationsGateKeyDto.Approval)
+            ]);
+        Approvals.Add(new OperationsApprovalDto(
+            Guid.NewGuid().ToString("N"),
+            OperationsApprovalStateDto.Submitted,
+            request.Actor,
+            request.Reviewer,
+            request.Rationale,
+            now,
+            null,
+            evidenceLinks));
+    }
+
+    public OperationsWorkflowBlockerDto? GetApproveTransitionBlocker(OperationsApprovalDecisionRequestDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (ApprovalState != OperationsApprovalStateDto.Submitted && ApprovalState != OperationsApprovalStateDto.ReviewerAssigned)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "APPROVAL_SUBMISSION_REQUIRED",
+                "Workflow must be submitted for approval before it can be approved.",
+                OperationsGateKeyDto.Approval,
+                "Error",
+                []);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Actor) ||
+            string.IsNullOrWhiteSpace(request.Reviewer) ||
+            string.IsNullOrWhiteSpace(request.Rationale) ||
+            string.IsNullOrWhiteSpace(request.ReportPackId))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "APPROVAL_METADATA_REQUIRED",
+                "Approval requires operator, reviewer, rationale, and linked evidence packet metadata.",
+                OperationsGateKeyDto.Approval,
+                "Error",
+                []);
+        }
+
+        return null;
+    }
+
+    public void Approve(
+        OperationsApprovalDecisionRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        ApprovalState = OperationsApprovalStateDto.Approved;
+        ApprovalGate = ApprovalGate.WithStatus(
+            OperationsGateStatusDto.Passed,
+            blockers: [],
+            nextActions:
+            [
+                new OperationsNextActionDto(
+                    "CLOSE_WORKFLOW",
+                    "Close the approved accounting workflow.",
+                    "/workstation/accounting",
+                    OperationsGateKeyDto.Approval)
+            ],
+            completedAtUtc: now,
+            completedBy: request.Reviewer);
+        Approvals.Add(new OperationsApprovalDto(
+            Guid.NewGuid().ToString("N"),
+            OperationsApprovalStateDto.Approved,
+            request.Actor,
+            request.Reviewer,
+            request.Rationale,
+            null,
+            now,
+            evidenceLinks));
+    }
+
+    public OperationsWorkflowBlockerDto? GetCloseTransitionBlocker(OperationsCloseWorkflowRequestDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (Gates.Any(static gate => gate.Status != OperationsGateStatusDto.Passed))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "OPERATIONS_GATES_NOT_PASSED",
+                "All required operations gates must be passed before close.",
+                null,
+                "Critical",
+                []);
+        }
+
+        if (ApprovalState != OperationsApprovalStateDto.Approved)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "APPROVAL_REQUIRED",
+                "Workflow close requires an approved approval decision.",
+                OperationsGateKeyDto.Approval,
+                "Critical",
+                []);
+        }
+
+        if (BreakCases.Any(static item => !IsClosedBreakStatus(item.Status) &&
+            string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase)))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+                "Workflow cannot close with open critical reconciliation breaks.",
+                OperationsGateKeyDto.Reconciliation,
+                "Critical",
+                []);
+        }
+
+        if (!ReportPackReadiness.IsReady || string.IsNullOrWhiteSpace(request.ReportPackId))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "REPORT_PACK_REQUIRED",
+                "Close requires a linked ready report pack.",
+                OperationsGateKeyDto.Approval,
+                "Critical",
+                ReportPackReadiness.EvidenceLinks);
+        }
+
+        return null;
+    }
+
+    public void MarkClosed(DateTimeOffset now)
+    {
+        EnsureUtc(now);
+        IsClosed = true;
+    }
+
+    public void ReplaceGate(OperationsGateState gate)
+    {
+        ArgumentNullException.ThrowIfNull(gate);
+        switch (gate.GateKey)
+        {
+            case OperationsGateKeyDto.BrokerIngest:
+                BrokerIngestGate = gate;
+                break;
+            case OperationsGateKeyDto.SecurityMaster:
+                SecurityMasterGate = gate;
+                break;
+            case OperationsGateKeyDto.LedgerPosting:
+                LedgerPostingGate = gate;
+                break;
+            case OperationsGateKeyDto.Reconciliation:
+                ReconciliationGate = gate;
+                break;
+            case OperationsGateKeyDto.Approval:
+                ApprovalGate = gate;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(gate), gate.GateKey, "Unsupported operations continuity gate.");
+        }
+    }
+
+    public void SetApprovalState(OperationsApprovalStateDto approvalState, DateTimeOffset now)
+    {
+        ApprovalState = approvalState;
+        Touch(now);
+    }
+
+    public void Touch(DateTimeOffset now)
+    {
+        UpdatedAtUtc = EnsureUtc(now);
         Version++;
     }
 
-    private bool IsBlocked() =>
-        BrokerIngestGate == ContinuityGate.Blocked ||
-        SecurityMasterGate == ContinuityGate.Blocked ||
-        LedgerPostingGate == ContinuityGate.Blocked ||
-        ReconciliationGate == ContinuityGate.Blocked ||
-        ApprovalGate == ContinuityGate.Blocked;
-
-    private bool IsAnyReviewRequired() =>
-        BrokerIngestGate == ContinuityGate.ReviewRequired ||
-        SecurityMasterGate == ContinuityGate.ReviewRequired ||
-        LedgerPostingGate == ContinuityGate.ReviewRequired ||
-        ApprovalGate == ContinuityGate.ReviewRequired;
-
-    private bool IsSecurityResolved() =>
-        SecurityMasterGate == ContinuityGate.Passed &&
-        (SecurityState == SecuritySubState.Resolved || SecurityState == SecuritySubState.Completed);
-
-    private bool AllGatesPassed() =>
-        BrokerIngestGate == ContinuityGate.Passed &&
-        SecurityMasterGate == ContinuityGate.Passed &&
-        LedgerPostingGate == ContinuityGate.Passed &&
-        ReconciliationGate == ContinuityGate.Passed &&
-        ApprovalGate == ContinuityGate.Passed;
-
-    private ContinuityOverallStatus HighestActiveStage()
+    public void ApplyGatePosture(OperationsGatePostureRequestDto request, IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks, DateTimeOffset now)
     {
-        if (ApprovalState is ApprovalSubState.Pending or ApprovalSubState.InReview)
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        var brokerBlockers = new List<OperationsWorkflowBlockerDto>();
+        if (request.ProviderAccountLinked == false)
         {
-            return ContinuityOverallStatus.Approval;
+            brokerBlockers.Add(new OperationsWorkflowBlockerDto(
+                "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+                "Provider account link is not verified for this fund account.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Critical",
+                evidenceLinks));
         }
 
-        if (ReconciliationState is ReconciliationSubState.Pending or ReconciliationSubState.Reconciling)
+        if (request.ProviderSyncStale == true)
         {
-            return ContinuityOverallStatus.Reconciliation;
+            brokerBlockers.Add(new OperationsWorkflowBlockerDto(
+                "BROKER_SYNC_STALE",
+                "Provider sync is stale for this fund account.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Critical",
+                evidenceLinks));
         }
 
-        if (LedgerState is LedgerSubState.Pending or LedgerSubState.Posting)
+        if (brokerBlockers.Count > 0)
         {
-            return ContinuityOverallStatus.LedgerPosting;
+            BrokerIngestGate = BrokerIngestGate.WithStatus(
+                OperationsGateStatusDto.Blocked,
+                brokerBlockers,
+                NextActionsForGate(OperationsGateKeyDto.BrokerIngest, OperationsGateStatusDto.Blocked));
         }
 
-        if (SecurityState is SecuritySubState.Pending or SecuritySubState.Validating)
+        if (request.SecurityCoverageIssueCount.HasValue || request.SecurityAccountingIssueCount.HasValue)
         {
-            return ContinuityOverallStatus.SecurityMaster;
+            var securityBlockers = new List<OperationsWorkflowBlockerDto>();
+            if (request.SecurityCoverageIssueCount.GetValueOrDefault() > 0)
+            {
+                securityBlockers.Add(new OperationsWorkflowBlockerDto(
+                    "SM_RECON_SECURITY_UNRESOLVED",
+                    $"{request.SecurityCoverageIssueCount.Value} Security Master coverage issue(s) remain open.",
+                    OperationsGateKeyDto.SecurityMaster,
+                    "Critical",
+                    evidenceLinks));
+            }
+
+            if (request.SecurityAccountingIssueCount.GetValueOrDefault() > 0)
+            {
+                securityBlockers.Add(new OperationsWorkflowBlockerDto(
+                    "SM_ACCOUNTING_TERMS_INCOMPLETE",
+                    $"{request.SecurityAccountingIssueCount.Value} Security Master accounting issue(s) remain open.",
+                    OperationsGateKeyDto.SecurityMaster,
+                    "Critical",
+                    evidenceLinks));
+            }
+
+            if (securityBlockers.Count > 0)
+            {
+                SecurityMasterGate = SecurityMasterGate.WithStatus(
+                    OperationsGateStatusDto.Blocked,
+                    securityBlockers,
+                    NextActionsForGate(OperationsGateKeyDto.SecurityMaster, OperationsGateStatusDto.Blocked));
+            }
         }
 
-        return ContinuityOverallStatus.BrokerIngest;
+        if (request.LedgerPreviewAvailable == true)
+        {
+            LedgerPostingState = request.LedgerPostingValidated == true
+                ? OperationsLedgerPostingStateDto.Validated
+                : OperationsLedgerPostingStateDto.Drafted;
+            var ledgerStatus = request.LedgerPostingValidated == true
+                ? OperationsGateStatusDto.Passed
+                : request.LedgerDraftBalanced == false
+                    ? OperationsGateStatusDto.Blocked
+                    : OperationsGateStatusDto.InProgress;
+            var ledgerBlockers = request.LedgerDraftBalanced == false
+                ?
+                [
+                    new OperationsWorkflowBlockerDto(
+                        "LEDGER_DRAFT_IMBALANCED",
+                        "Ledger posture reports an imbalanced draft.",
+                        OperationsGateKeyDto.LedgerPosting,
+                        "Critical",
+                        evidenceLinks)
+                ]
+                : Array.Empty<OperationsWorkflowBlockerDto>();
+            LedgerPostingGate = LedgerPostingGate.WithStatus(
+                ledgerStatus,
+                ledgerBlockers,
+                NextActionsForGate(OperationsGateKeyDto.LedgerPosting, ledgerStatus),
+                completedAtUtc: ledgerStatus == OperationsGateStatusDto.Passed ? now : null,
+                completedBy: ledgerStatus == OperationsGateStatusDto.Passed ? request.Actor : null);
+        }
+
+        if (request.OpenCriticalBreakCount.HasValue || request.OpenNonCriticalBreakCount.HasValue)
+        {
+            ApplyReconciliationPosture(
+                request.OpenCriticalBreakCount.GetValueOrDefault(),
+                request.OpenNonCriticalBreakCount.GetValueOrDefault(),
+                evidenceLinks,
+                now,
+                request.Actor);
+        }
+
+        if (request.ReportPackReady.HasValue || !string.IsNullOrWhiteSpace(request.ReportPackId))
+        {
+            ReportPackReadiness = new OperationsReportPackReadinessDto(
+                request.ReportPackReady == true,
+                request.ReportPackId,
+                request.ReportPackReady == true ? null : "Report pack is not ready for approval or close.",
+                evidenceLinks);
+        }
     }
 
-    private static string RequireNonEmpty(string value, string parameterName)
+    private void ApplyReconciliationPosture(
+        int openCriticalBreaks,
+        int openNonCriticalBreaks,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now,
+        string actor)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (openCriticalBreaks > 0)
         {
-            throw new ArgumentException("Value is required.", parameterName);
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+                $"{openCriticalBreaks} critical reconciliation break(s) remain open.",
+                OperationsGateKeyDto.Reconciliation,
+                "Critical",
+                evidenceLinks));
         }
 
-        return value.Trim();
+        var status = openCriticalBreaks > 0
+            ? OperationsGateStatusDto.Blocked
+            : openNonCriticalBreaks > 0
+                ? OperationsGateStatusDto.ReviewRequired
+                : OperationsGateStatusDto.Passed;
+        ReconciliationState = status switch
+        {
+            OperationsGateStatusDto.Passed => OperationsReconciliationStateDto.Complete,
+            OperationsGateStatusDto.ReviewRequired => OperationsReconciliationStateDto.InReview,
+            OperationsGateStatusDto.Blocked => OperationsReconciliationStateDto.ExceptionsOpen,
+            _ => OperationsReconciliationStateDto.Pending
+        };
+        ReconciliationGate = ReconciliationGate.WithStatus(
+            status,
+            blockers,
+            NextActionsForGate(OperationsGateKeyDto.Reconciliation, status),
+            completedAtUtc: status == OperationsGateStatusDto.Passed ? now : null,
+            completedBy: status == OperationsGateStatusDto.Passed ? actor : null);
     }
 
-    private static DateTimeOffset EnsureUtc(DateTimeOffset value, string parameterName)
+    private static List<OperationsWorkflowBlockerDto> BuildSecurityMasterBlockers(
+        OperationsSecurityMasterResolveRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (request.UnresolvedInstrumentCount > 0)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_INSTRUMENT_UNRESOLVED",
+                $"{request.UnresolvedInstrumentCount} instrument(s) are unresolved in Security Master.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (request.OverrideRequestCount > 0 && !request.OverridesApproved)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_OVERRIDE_APPROVAL_REQUIRED",
+                $"{request.OverrideRequestCount} Security Master override request(s) require approval.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Error",
+                evidenceLinks));
+        }
+
+        if (request.MissingAccountingTermCount > 0)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_ACCOUNTING_TERMS_INCOMPLETE",
+                $"{request.MissingAccountingTermCount} instrument(s) are missing accounting terms.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                evidenceLinks));
+        }
+
+        return blockers;
+    }
+
+    private static IReadOnlyList<OperationsNextActionDto> NextActionsForGate(OperationsGateKeyDto gate, OperationsGateStatusDto status) =>
+        status switch
+        {
+            OperationsGateStatusDto.Passed => [],
+            OperationsGateStatusDto.Blocked => [new OperationsNextActionDto($"RESOLVE_{gate.ToString().ToUpperInvariant()}_BLOCKERS", $"Resolve {gate} blockers", "/workstation/accounting", gate)],
+            OperationsGateStatusDto.ReviewRequired => [new OperationsNextActionDto($"REVIEW_{gate.ToString().ToUpperInvariant()}", $"Review {gate} exceptions", "/workstation/accounting", gate)],
+            _ => [new OperationsNextActionDto($"CONTINUE_{gate.ToString().ToUpperInvariant()}", $"Continue {gate}", "/workstation/accounting", gate)]
+        };
+
+    private static bool IsClosedBreakStatus(string? status) =>
+        string.Equals(status, "Resolved", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "Dismissed", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "Matched", StringComparison.OrdinalIgnoreCase);
+
+    private static DateTimeOffset EnsureUtc(DateTimeOffset value)
     {
         if (value.Offset != TimeSpan.Zero)
         {
-            throw new ArgumentException("Timestamp must be UTC.", parameterName);
+            throw new ArgumentException("Operations continuity timestamps must be UTC.", nameof(value));
         }
 
         return value;
     }
 }
 
-public sealed record OperationsContinuityAuditEntry(
-    string Transition,
-    string Actor,
-    string Rationale,
-    string EvidenceReference,
-    DateTimeOffset ChangedAtUtc);
-
-public sealed class OperationsContinuityWorkflowException : Exception
+public sealed record OperationsGateState(
+    OperationsGateKeyDto GateKey,
+    OperationsGateStatusDto Status,
+    IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    DateTimeOffset? CompletedAtUtc,
+    string? CompletedBy)
 {
-    public OperationsContinuityWorkflowException(OperationsContinuityWorkflowErrorCode code, string message)
-        : base(message)
-    {
-        Code = code;
-    }
+    public static OperationsGateState Create(OperationsGateKeyDto gateKey) =>
+        new(gateKey, OperationsGateStatusDto.NotStarted, [], [], null, null);
 
-    public OperationsContinuityWorkflowErrorCode Code { get; }
-
-    public static OperationsContinuityWorkflowException WithCode(OperationsContinuityWorkflowErrorCode code, string message) =>
-        new(code, message);
-}
-
-public enum OperationsContinuityWorkflowErrorCode
-{
-    LedgerPostBeforeSecurityResolution = 1,
-    CloseBlockedByCriticalBreaks = 2,
-    ApprovalRequiresOperatorRationaleEvidence = 3,
-    AuditAppendRequired = 4,
-    AuditTimestampMustBeUtc = 5,
-    InvalidCriticalBreakCount = 6,
-    CloseRequiresReadyForCloseStatus = 7
-}
-
-public enum ContinuityGate
-{
-    Pending = 0,
-    Passed = 1,
-    ReviewRequired = 2,
-    Blocked = 3
-}
-
-public enum ContinuityOverallStatus
-{
-    BrokerIngest = 0,
-    SecurityMaster = 1,
-    LedgerPosting = 2,
-    Reconciliation = 3,
-    Approval = 4,
-    ReviewRequired = 5,
-    ReadyForClose = 6,
-    Closed = 7,
-    Blocked = 8
-}
-
-public enum BrokerSubState
-{
-    Pending = 0,
-    Ingesting = 1,
-    Completed = 2,
-    Failed = 3
-}
-
-public enum SecuritySubState
-{
-    Pending = 0,
-    Validating = 1,
-    Resolved = 2,
-    Completed = 3,
-    Failed = 4
-}
-
-public enum LedgerSubState
-{
-    Pending = 0,
-    Posting = 1,
-    Posted = 2,
-    Failed = 3
-}
-
-public enum ReconciliationSubState
-{
-    Pending = 0,
-    Reconciling = 1,
-    ReviewRequired = 2,
-    Cleared = 3,
-    Failed = 4
-}
-
-public enum ApprovalSubState
-{
-    Pending = 0,
-    InReview = 1,
-    Approved = 2,
-    Rejected = 3
+    public OperationsGateState WithStatus(
+        OperationsGateStatusDto status,
+        IReadOnlyList<OperationsWorkflowBlockerDto>? blockers = null,
+        IReadOnlyList<OperationsNextActionDto>? nextActions = null,
+        DateTimeOffset? completedAtUtc = null,
+        string? completedBy = null) =>
+        this with
+        {
+            Status = status,
+            Blockers = blockers ?? Blockers,
+            NextActions = nextActions ?? NextActions,
+            CompletedAtUtc = completedAtUtc,
+            CompletedBy = completedBy
+        };
 }

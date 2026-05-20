@@ -2949,10 +2949,10 @@ function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQu
       return new Set(["symbol", "runId", "provider", "window"]);
     case "trading":
     case "portfolio":
-      return new Set(["symbol", "fundAccountId", "runId", "window"]);
+      return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "accounting":
     case "reporting":
-      return new Set(["symbol", "fundAccountId", "runId", "window"]);
+      return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "settings":
       return new Set(["fundAccountId", "provider"]);
   }

@@ -25,9 +25,9 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Navigation preserves operating scope: Subject: AAPL / Provider: alpaca")).toHaveTextContent(
       "Subject: AAPL / Provider: alpaca"
     );
-    expect(screen.getByLabelText("Open Trading workspace, Review, preserving Subject: AAPL")).toHaveAttribute(
+    expect(screen.getByLabelText("Open Trading workspace, Review, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
       "href",
-      "/trading?symbol=AAPL"
+      "/trading?symbol=AAPL&provider=alpaca"
     );
     expect(screen.getByLabelText("Live quotes, current page, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
       "href",

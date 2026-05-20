@@ -373,9 +373,9 @@ public sealed class TradingOperatorReadinessServiceTests
         var auditTrail = new ExecutionAuditTrailService(
             new ExecutionAuditTrailOptions(Path.Combine(artifacts.RootPath, "audit-trail")),
             NullLogger<ExecutionAuditTrailService>.Instance);
-        var store = new FilePaperSessionStore(
+        var store = new JsonlFilePaperSessionStore(
             Path.Combine(artifacts.RootPath, "paper-sessions"),
-            NullLogger<FilePaperSessionStore>.Instance);
+            NullLogger<JsonlFilePaperSessionStore>.Instance);
         var firstPersistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             store,

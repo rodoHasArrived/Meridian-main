@@ -117,7 +117,10 @@ public static class FundAccountEndpoints
             return Results.Json(accounts, jsonOptions);
         })
         .WithName("GetFundAccountsByOwnershipTraversal")
-        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .AddEndpointFilter(RequireFundAccountAccess);
 
         group.MapPatch("/{accountId:guid}/custodian-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
@@ -585,29 +588,20 @@ public static class FundAccountEndpoints
 
     private static ValueTask<object?> RequireFundAccountAccess(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
-        if (!TryGetCurrentRole(context.HttpContext, out var role))
+        if (!EndpointAuthorization.TryGetPermissions(context.HttpContext, out _))
         {
             return ValueTask.FromResult<object?>(Results.Unauthorized());
         }
 
-        if (role is UserRole.Admin or UserRole.Developer or UserRole.Accounting)
+        if (EndpointAuthorization.HasAnyPermission(
+                context.HttpContext,
+                UserPermission.AdminMaintenance,
+                UserPermission.ManageDirectLending))
         {
             return next(context);
         }
 
         return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
-    }
-
-    private static bool TryGetCurrentRole(HttpContext context, out UserRole role)
-    {
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var item) && item is UserRole currentRole)
-        {
-            role = currentRole;
-            return true;
-        }
-
-        role = default;
-        return false;
     }
 
     private static IResult ServiceUnavailable() =>
@@ -617,15 +611,14 @@ public static class FundAccountEndpoints
         Results.Problem("Brokerage sync service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasBrokerageSyncAccess(HttpContext context)
-        => TryGetCurrentPermissions(context, out var permissions)
-           && permissions.HasFlag(UserPermission.ViewTrades);
+        => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);
 
     private static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
         Guid accountId,
         HttpContext context,
         bool requireWriteAccess = false)
     {
-        if (!TryGetCurrentPermissions(context, out var permissions)
+        if (!EndpointAuthorization.TryGetPermissions(context, out var permissions)
             || !permissions.HasFlag(UserPermission.ViewTrades))
         {
             return false;
@@ -646,18 +639,6 @@ public static class FundAccountEndpoints
 
         var account = await queryService.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
         return account is not null;
-    }
-
-    private static bool TryGetCurrentPermissions(HttpContext context, out UserPermission permissions)
-    {
-        permissions = UserPermission.None;
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission currentPermissions)
-        {
-            permissions = currentPermissions;
-            return true;
-        }
-
-        return false;
     }
 
     private static async Task<WorkstationBrokerageSyncRunRequestDto?> ReadBrokerageSyncRequestAsync(

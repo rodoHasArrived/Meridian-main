@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Options;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Options;
@@ -54,6 +55,11 @@ public sealed class OptionReferenceEndpointsRoundtripTests
         builder.Services.AddSingleton<IOptionChainImportService>(optionService);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            await next();
+        });
         var json = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         app.MapOptionReferenceEndpoints(json);
         app.MapOptionChainEndpoints(json);

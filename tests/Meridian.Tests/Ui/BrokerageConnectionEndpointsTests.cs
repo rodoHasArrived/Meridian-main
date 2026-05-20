@@ -72,7 +72,7 @@ public sealed class BrokerageConnectionEndpointsTests
     }
 
     [Fact]
-    public async Task PostAlpacaConnect_AllowsTradeDeskRolePermissions()
+    public async Task PostAlpacaConnect_WithTradeDeskRolePermissions_ReturnsForbidden()
     {
         using var env = AlpacaEnvScope.Clear();
         await using var app = await CreateAppAsync(services =>
@@ -86,10 +86,7 @@ public sealed class BrokerageConnectionEndpointsTests
             "/api/brokerage-connections/alpaca/connect",
             JsonContent(new { keyId = "trade-desk-key", secretKey = "trade-desk-secret", environment = "paper" }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var status = await ReadAsync<BrokerageConnectionStatusDto>(response);
-        status.State.Should().Be(BrokerageConnectionStateDto.Connected);
-        status.ExternalAccountId.Should().Be("PA-TRADEDESK");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

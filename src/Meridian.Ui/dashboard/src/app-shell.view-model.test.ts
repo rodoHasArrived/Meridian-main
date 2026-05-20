@@ -235,11 +235,11 @@ describe("app shell view model", () => {
       ["Window", "2026-05-01 to 2026-05-15"]
     ]);
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["trading-readiness", "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["trading-cockpit", "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["portfolio-exposure", "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"]
+      ["trading-readiness", "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["trading-cockpit", "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["portfolio-exposure", "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     ]);
   });
 
@@ -332,19 +332,19 @@ describe("app shell view model", () => {
       route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.operatorFocusCommandItems.find((item) => item.label === "Replay audit")).toMatchObject({
-      route: "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      route: "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(state.workflowContinuity.decisionBrief).toMatchObject({
       actionHref: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Trading cockpit")).toMatchObject({
-      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Quote evidence")).toMatchObject({
       route: "/data/quotes?symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Evidence packet")).toMatchObject({
-      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(state.workflowContinuity.evidenceTimelineItems[0]).toMatchObject({
       route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"

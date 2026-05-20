@@ -302,7 +302,7 @@ describe("command palette view model", () => {
     expect(model.operatingContextLabel)
       .toBe("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
     expect(model.items.find((item) => item.id === "trading")).toMatchObject({
-      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(model.items.find((item) => item.id === "data")).toMatchObject({
       route: "/data?symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
@@ -312,10 +312,10 @@ describe("command palette view model", () => {
       description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15."
     });
     expect(model.items.find((item) => item.id === "preset:preset-1")).toMatchObject({
-      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(model.items.find((item) => item.id === "workflow:evidence-review:open-evidence")).toMatchObject({
-      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
   });
 

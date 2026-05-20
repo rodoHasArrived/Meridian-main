@@ -133,7 +133,7 @@ public sealed class TradingOperatorReadinessService
 
     private static void ValidateRequiredReadinessFields(TradingOperatorReadinessDto readiness)
     {
-        if (string.IsNullOrWhiteSpace(readiness.OverallStatus))
+        if (!Enum.IsDefined(readiness.OverallStatus))
         {
             throw new InvalidOperationException("Trading readiness projection is missing OverallStatus.");
         }
@@ -155,7 +155,7 @@ public sealed class TradingOperatorReadinessService
 
         foreach (var gate in readiness.AcceptanceGates)
         {
-            if (string.IsNullOrWhiteSpace(gate.GateKey) || string.IsNullOrWhiteSpace(gate.Status))
+            if (string.IsNullOrWhiteSpace(gate.GateId) || !Enum.IsDefined(gate.Status))
             {
                 throw new InvalidOperationException("Trading readiness projection contains an incomplete acceptance gate.");
             }
@@ -1667,7 +1667,7 @@ public sealed class TradingOperatorReadinessService
             : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
         var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
         var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var status = ResolveOverallStatus(gates);
+        var status = EvaluateOverallPosture(gates);
 
         return new EvidenceCompletenessSummaryDto(
             Status: status,

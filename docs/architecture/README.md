@@ -47,7 +47,7 @@ This directory contains documentation about the system's design, architectural d
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
-| [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, and accounting architecture notes |
+| [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, Security Master expected accounting, and accounting architecture notes |
 | [Strategy Builder Integration](strategy-builder-integration.md) | Browser Strategy Builder contracts, JSONL draft storage, QuantScript proof execution, and prototype boundary |
 | [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |

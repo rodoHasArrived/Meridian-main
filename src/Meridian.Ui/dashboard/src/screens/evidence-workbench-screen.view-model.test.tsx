@@ -379,9 +379,9 @@ describe("Evidence Workbench view model", () => {
 
     expect(vm.sourceWorkflowHref).toBe("/strategy?runId=run-1&symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15");
     expect(vm.openSubjectHref(subject))
-      .toBe("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&from=2026-05-01&to=2026-05-15");
+      .toBe("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15");
     expect(vm.packetActions[0]).toMatchObject({
-      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&from=2026-05-01&to=2026-05-15"
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
   });
 
@@ -941,7 +941,7 @@ describe("EvidenceWorkbenchScreen", () => {
     );
     expect(screen.getByRole("link", { name: /open evidence packet for momentum strategy run/i })).toHaveAttribute(
       "href",
-      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&from=2026-05-01&to=2026-05-15"
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     );
   });
 

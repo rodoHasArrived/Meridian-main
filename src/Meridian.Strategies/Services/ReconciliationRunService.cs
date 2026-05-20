@@ -16,6 +16,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     private readonly IInternalCashReconciliationSourceAdapter _internalCashAdapter;
     private readonly IExternalStatementReconciliationSourceAdapter _externalStatementAdapter;
     private readonly ISecurityValidationGateService? _securityValidationGate;
+    private readonly ISecurityMasterAccountingEventService? _securityMasterAccountingEventService;
+    private readonly ISecurityMasterAccountingEventSourceAdapter? _securityMasterAccountingEventSourceAdapter;
 
     public ReconciliationRunService(
         StrategyRunReadService runReadService,
@@ -26,7 +28,9 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter = null,
         IInternalCashReconciliationSourceAdapter? internalCashAdapter = null,
         IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null,
-        ISecurityValidationGateService? securityValidationGate = null)
+        ISecurityValidationGateService? securityValidationGate = null,
+        ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null,
+        ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _projectionService = projectionService ?? throw new ArgumentNullException(nameof(projectionService));
@@ -36,6 +40,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         _internalCashAdapter = internalCashAdapter ?? new BankInternalCashReconciliationSourceAdapter(bankTransactionSource);
         _externalStatementAdapter = externalStatementAdapter ?? new ExternalStatementReconciliationSourceAdapter(new NullExternalStatementSource());
         _securityValidationGate = securityValidationGate;
+        _securityMasterAccountingEventService = securityMasterAccountingEventService;
+        _securityMasterAccountingEventSourceAdapter = securityMasterAccountingEventSourceAdapter;
     }
 
     public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
@@ -112,6 +118,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         // in the portfolio and ledger read models (populated by PortfolioReadService /
         // LedgerReadService when ISecurityReferenceLookup is wired into those services).
         var securityClassifications = BuildSecurityClassifications(runDetail);
+        var securityMasterAccountingResult = await GenerateSecurityMasterAccountingEventsAsync(runDetail, request, ct)
+            .ConfigureAwait(false);
 
         var summary = new ReconciliationRunSummary(
             Guid.NewGuid().ToString("N"),
@@ -128,11 +136,19 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             securityCoverageIssues.Count,
             securityCoverageIssues.Count > 0,
             bankTransactions.Length,
-            bankBreakCount);
+            bankBreakCount,
+            securityMasterAccountingResult?.ExpectedEvents.Count ?? 0,
+            securityMasterAccountingResult?.JournalPreviews.Count ?? 0,
+            securityMasterAccountingResult?.Issues.Count ?? 0,
+            securityMasterAccountingResult?.Issues.Count > 0);
 
         var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues,
             bankTransactions.Length > 0 ? bankTransactions : null,
-            securityClassifications.Count > 0 ? securityClassifications : null);
+            securityClassifications.Count > 0 ? securityClassifications : null,
+            securityMasterAccountingResult?.ExpectedEvents.Count > 0 ? securityMasterAccountingResult.ExpectedEvents : null,
+            securityMasterAccountingResult?.AccrualCalculations.Count > 0 ? securityMasterAccountingResult.AccrualCalculations : null,
+            securityMasterAccountingResult?.JournalPreviews.Count > 0 ? securityMasterAccountingResult.JournalPreviews : null,
+            securityMasterAccountingResult?.Issues.Count > 0 ? securityMasterAccountingResult.Issues : null);
         await _repository.SaveAsync(detail, ct).ConfigureAwait(false);
         return detail;
     }
@@ -323,6 +339,28 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             SecurityValidationSeverityDto.Info => ReconciliationBreakSeverity.Info,
             _ => ReconciliationBreakSeverity.Medium
         };
+
+    private async Task<SecurityMasterAccountingEventResult?> GenerateSecurityMasterAccountingEventsAsync(
+        StrategyRunDetail detail,
+        ReconciliationRunRequest request,
+        CancellationToken ct)
+    {
+        if (_securityMasterAccountingEventService is null || _securityMasterAccountingEventSourceAdapter is null)
+        {
+            return null;
+        }
+
+        var accountingRequest = await _securityMasterAccountingEventSourceAdapter
+            .BuildRequestAsync(detail, request, ct)
+            .ConfigureAwait(false);
+        if (accountingRequest is null)
+        {
+            return null;
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return _securityMasterAccountingEventService.Generate(accountingRequest);
+    }
 
     /// <summary>
     /// Builds a symbol-keyed authoritative Security Master map from security references that were

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -21,7 +22,11 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
     };
     private readonly JsonSerializerOptions _auditJsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        }
     };
 
     public JsonReconciliationCaseStore(string dataRoot)

@@ -1,6 +1,7 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Backtesting;
 using Meridian.Application.FundStructure;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -103,6 +104,21 @@ public static class WorkstationServiceCollectionExtensions
             return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+        services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileOperationsContinuityRepository>>();
+            return new FileOperationsContinuityRepository(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                logger);
+        });
+        services.TryAddSingleton<IOperationsWorkflowAuditStore>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileOperationsWorkflowAuditStore>>();
+            return new FileOperationsWorkflowAuditStore(ResolveWorkstationDataDirectory(sp), logger);
+        });
+        services.TryAddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -110,6 +126,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
         services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
+        services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
+        services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter, NullSecurityMasterAccountingEventSourceAdapter>();
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();

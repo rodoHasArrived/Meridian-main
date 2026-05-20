@@ -144,13 +144,5 @@ public static class ProviderCredentialEndpoints
     }
 
     private static bool HasManageCredentialsPermission(HttpContext context)
-    {
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) &&
-            value is UserPermission current)
-        {
-            return (current & UserPermission.ManageCredentials) == UserPermission.ManageCredentials;
-        }
-
-        return false;
-    }
+        => EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials);
 }

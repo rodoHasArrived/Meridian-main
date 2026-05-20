@@ -166,6 +166,74 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithSecurityMasterAccountingEventAdapter_ShouldAttachExpectedEventsToReconciliationDetail()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-accounting"));
+
+        var securityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var accountingRequest = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-accounting",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 2, 1),
+            Securities:
+            [
+                new SecurityMasterAccountingSecurity(
+                    securityId,
+                    "BOND1",
+                    "Bond",
+                    "USD",
+                    new SecurityFixedIncomeTerms(
+                        CouponRate: 0.06m,
+                        CouponType: "Fixed",
+                        DayCountConvention: "ACT/365",
+                        PaymentFrequencyPerYear: 2,
+                        NextCouponDate: new DateOnly(2026, 1, 31),
+                        AccrualStartDate: new DateOnly(2026, 1, 1)),
+                    new SecurityAccountingRule("AvailableForSale", "GAAP"))
+            ],
+            Positions:
+            [
+                new SecurityMasterAccountingPosition(
+                    "BOND1",
+                    securityId,
+                    "acct-1",
+                    100_000m)
+            ],
+            ActualActivity:
+            [
+                new SecurityActualCashActivity(
+                    SourceName: "custodian",
+                    ExternalTransactionId: "coupon-row-1",
+                    AccountId: "acct-1",
+                    SecurityId: securityId,
+                    Symbol: "BOND1",
+                    CashAmount: 3_000m,
+                    PrincipalAmount: 0m,
+                    IncomeAmount: 3_000m,
+                    PayDate: new DateOnly(2026, 1, 31),
+                    Classification: "Income")
+            ]);
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(accountingRequest));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-accounting"));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.ExpectedAccountingEventCount.Should().Be(2);
+        detail.Summary.ExpectedJournalPreviewCount.Should().Be(2);
+        detail.Summary.HasSecurityMasterAccountingIssues.Should().BeFalse();
+        detail.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        detail.ExpectedJournalPreviews.Should().OnlyContain(preview => preview.IsBalanced);
+    }
+
+    [Fact]
     public async Task RunAsync_WithClassificationEdgeCases_ShouldPreservePrimaryIdentifierAndSubtypeValues()
     {
         var store = new StrategyRunStore();
@@ -330,7 +398,9 @@ public sealed class ReconciliationRunServiceTests
         IReconciliationRunRepository repository,
         ISecurityReferenceLookup? securityReferenceLookup,
         IBankTransactionSource? bankTransactionSource,
-        ISecurityValidationGateService? securityValidationGate = null)
+        ISecurityValidationGateService? securityValidationGate = null,
+        ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null,
+        ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null)
     {
         IStrategyRepository strategyRepository = store;
         var portfolioReadService = securityReferenceLookup is null
@@ -345,7 +415,27 @@ public sealed class ReconciliationRunServiceTests
             new ReconciliationProjectionService(),
             repository,
             bankTransactionSource,
-            securityValidationGate: securityValidationGate);
+            securityValidationGate: securityValidationGate,
+            securityMasterAccountingEventService: securityMasterAccountingEventService,
+            securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter);
+    }
+
+    private sealed class StaticSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
+    {
+        private readonly SecurityMasterAccountingEventRequest _request;
+
+        public StaticSecurityMasterAccountingEventSourceAdapter(SecurityMasterAccountingEventRequest request)
+        {
+            _request = request;
+        }
+
+        public Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
+            StrategyRunDetail detail,
+            ReconciliationRunRequest request,
+            CancellationToken ct = default)
+        {
+            return Task.FromResult<SecurityMasterAccountingEventRequest?>(_request);
+        }
     }
 
     private sealed class SymbolSecurityValidationGate(string blockedSymbol) : ISecurityValidationGateService

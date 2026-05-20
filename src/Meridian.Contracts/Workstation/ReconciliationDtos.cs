@@ -94,7 +94,11 @@ public sealed record ReconciliationRunSummary(
     int SecurityIssueCount = 0,
     bool HasSecurityCoverageIssues = false,
     int BankTransactionCount = 0,
-    int BankBreakCount = 0);
+    int BankBreakCount = 0,
+    int ExpectedAccountingEventCount = 0,
+    int ExpectedJournalPreviewCount = 0,
+    int SecurityMasterAccountingIssueCount = 0,
+    bool HasSecurityMasterAccountingIssues = false);
 
 /// <summary>
 /// Successful comparison row emitted by the reconciliation engine.
@@ -140,6 +144,106 @@ public sealed record ReconciliationSecurityCoverageIssueDto(
     string? EvidenceLink = null);
 
 /// <summary>
+/// Security Master accounting event type generated from instrument terms and schedules.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ExpectedAccountingEventKindDto>))]
+public enum ExpectedAccountingEventKindDto : byte
+{
+    AccrueInterestIncome = 0,
+    ReceiveCashInterest = 1,
+    RecognizePrincipalPaydown = 2
+}
+
+/// <summary>
+/// Deterministic input snapshot used to generate an expected accounting event.
+/// </summary>
+public sealed record AccrualInputSnapshotDto(
+    Guid SecurityId,
+    string Symbol,
+    string AccountId,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    decimal ParAmount,
+    decimal? CouponRate,
+    string? CouponType,
+    string? DayCountConvention,
+    int? PaymentFrequencyPerYear,
+    decimal? PriorFactor,
+    decimal? CurrentFactor,
+    string SourceHash);
+
+/// <summary>
+/// Result of a Security Master accrual calculation.
+/// </summary>
+public sealed record AccrualCalculationResultDto(
+    string EventId,
+    Guid SecurityId,
+    string Symbol,
+    string AccountId,
+    DateOnly AccrualStartDate,
+    DateOnly AccrualEndDate,
+    int AccrualDays,
+    decimal DayCountFraction,
+    decimal AccruedAmount,
+    string Currency,
+    AccrualInputSnapshotDto InputSnapshot);
+
+/// <summary>
+/// Expected accounting event generated from Security Master accounting rules.
+/// </summary>
+public sealed record ExpectedAccountingEventDto(
+    string EventId,
+    ExpectedAccountingEventKindDto EventKind,
+    Guid SecurityId,
+    string Symbol,
+    string AccountId,
+    DateOnly EventDate,
+    decimal ExpectedAmount,
+    decimal PrincipalAmount,
+    decimal IncomeAmount,
+    string Currency,
+    string IdempotencyKey,
+    string Provenance,
+    AccrualInputSnapshotDto InputSnapshot);
+
+/// <summary>
+/// Preview line for a balanced journal candidate generated from an expected event.
+/// </summary>
+public sealed record ExpectedJournalPreviewLineDto(
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    decimal Debit,
+    decimal Credit);
+
+/// <summary>
+/// Balanced journal preview candidate. Posting remains a separate approval-gated workflow.
+/// </summary>
+public sealed record ExpectedJournalPreviewDto(
+    string JournalPreviewId,
+    string ExpectedEventId,
+    string Description,
+    DateOnly EventDate,
+    bool IsBalanced,
+    bool RequiresOperatorApproval,
+    string IdempotencyKey,
+    IReadOnlyList<ExpectedJournalPreviewLineDto> Lines);
+
+/// <summary>
+/// Structured posture or reconciliation issue from Security Master-driven accounting.
+/// </summary>
+public sealed record SecurityMasterAccountingIssueDto(
+    string Code,
+    string Source,
+    string Symbol,
+    string? AccountId,
+    string Reason,
+    ReconciliationBreakSeverity Severity,
+    string? EvidenceLink = null,
+    decimal? ExpectedAmount = null,
+    decimal? ActualAmount = null);
+
+/// <summary>
 /// Full detail payload for a single reconciliation run.
 /// </summary>
 public sealed record ReconciliationRunDetail(
@@ -153,7 +257,11 @@ public sealed record ReconciliationRunDetail(
     /// symbol resolved at reconciliation time from the shared workstation instrument layer.
     /// Suitable for governance and audit reporting.
     /// </summary>
-    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
+    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null,
+    IReadOnlyList<ExpectedAccountingEventDto>? ExpectedAccountingEvents = null,
+    IReadOnlyList<AccrualCalculationResultDto>? AccrualCalculations = null,
+    IReadOnlyList<ExpectedJournalPreviewDto>? ExpectedJournalPreviews = null,
+    IReadOnlyList<SecurityMasterAccountingIssueDto>? SecurityMasterAccountingIssues = null);
 
 /// <summary>
 /// Operator queue state for a reconciliation break.

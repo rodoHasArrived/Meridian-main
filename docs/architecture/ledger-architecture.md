@@ -100,6 +100,68 @@ All entries are balanced (`Σ debits = Σ credits`) and validated by the F# laye
 
 ---
 
+## Security Master-driven expected accounting
+
+Security Master is also an accounting rule source for reconciliation and close-readiness checks,
+not just an identity lookup. The first production slice lives in
+`SecurityMasterAccountingEventService` and generates deterministic expected accounting events from
+Security Master terms, accounting rules, positions, optional factor schedules, and optional actual
+cash activity.
+
+The current supported event set is intentionally narrow:
+
+| Security Master input | Expected event | Journal preview |
+|-----------------------|----------------|-----------------|
+| Fixed coupon terms plus par position | `AccrueInterestIncome` | Dr Accrued Interest Receivable / Cr Coupon Income |
+| Fixed coupon pay date in period | `ReceiveCashInterest` | Dr Cash / Cr Accrued Interest Receivable |
+| Factor reduction for amortizing securities | `RecognizePrincipalPaydown` | Dr Cash / Cr Securities |
+
+Generated events include an `AccrualInputSnapshotDto` and deterministic idempotency key so the same
+security, account, period, event type, and source snapshot produce the same event identity. The
+service emits `ExpectedJournalPreviewDto` records only; posting remains a separate
+operator-approved workflow. Previews are balanced before they are exposed to reconciliation
+consumers.
+
+Factor paydowns are calculated at par. A factor reduction from `1.00` to `0.97` on `100,000` par
+generates a `3,000` principal expectation regardless of carrying or sale price. The reconciliation
+issue set flags missing schedules, missing coupon/day-count/payment terms, missing accounting
+classification, missing actual cash, amount mismatches, and principal/income classification
+mismatches.
+
+`ReconciliationRunService` integrates the accounting-event result through an optional
+`ISecurityMasterAccountingEventSourceAdapter`. Existing runs continue to reconcile portfolio,
+ledger, bank, and statement inputs when no adapter is available. When an adapter supplies Security
+Master accounting inputs, the run detail carries expected accounting events, accrual calculations,
+balanced journal previews, and structured Security Master accounting issues alongside the existing
+matches, breaks, coverage issues, and classification map.
+
+## Operations continuity workflow
+
+`OperationsContinuityWorkflow` is the shared application aggregate for the account-period
+operations lane. It is scoped to a fund account, accounting period, optional Security Master
+snapshot, and broker/custodian/bank source. The workflow models broker intake, Security Master,
+ledger posting, reconciliation, and approval as explicit gates. UI clients consume the derived
+status from `IOperationsStatusDerivationService`; they must not infer close readiness from local
+component state.
+
+The first implementation slice provides:
+
+| Component | Responsibility |
+|-----------|----------------|
+| `OperationsContinuityWorkflowService` | Command-driven start and broker-import transitions, optimistic version checks, DTO projection |
+| `IOperationsContinuityRepository` | Workflow snapshot persistence; the workstation host registers a file-backed implementation under the workstation data root |
+| `IOperationsWorkflowAuditStore` | Append-only audit timeline with previous/current SHA-256 hash chaining |
+| `OperationsStatusDerivationService` | Deterministic server-side overall status derivation from gate/sub-state posture |
+| `Meridian.Contracts.Workstation` operations DTOs | Shared browser/WPF read and command contracts |
+
+Every implemented transition writes an audit record before the workflow snapshot is saved. Audit
+records include actor, rationale, correlation id, evidence references, previous hash, and current
+hash. Broker import is intentionally kept separate from normalization and posting; later slices
+will connect Security Master coverage, ledger draft validation, reconciliation run posture,
+approval, and close commands to the same aggregate.
+
+---
+
 ## F# validation and reconciliation layer (Meridian.FSharp.Ledger)
 
 ### JournalValidation
@@ -166,8 +228,13 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `GET /api/workstation/runs/{runId}/continuity` | Shared run-centered continuity drill-in that bundles portfolio, ledger, cash-flow, reconciliation, and lineage context |
 | `GET /api/workstation/runs/{runId}/ledger/trial-balance` | Trial balance lines, optionally filtered by `?accountType=Asset` |
 | `GET /api/workstation/runs/{runId}/ledger/journal` | Journal entries, optionally filtered by `?from=…&to=…` |
+| `GET /api/workstation/operations/continuity` | Fund-account/period operations workflow summaries, optionally filtered by `fundAccountId`, `periodId`, and derived `status` |
+| `POST /api/workstation/operations/continuity` | Starts an operations continuity workflow and writes the first audit event |
+| `GET /api/workstation/operations/continuity/{workflowId}` | Workflow detail with gates, timeline, blockers, evidence links, and next actions |
+| `GET /api/workstation/operations/continuity/{workflowId}/timeline` | Append-only audit timeline for explainability |
+| `POST /api/workstation/operations/continuity/{workflowId}/broker/import` | Records broker/custodian/bank import progress with expected-version enforcement |
 
-All three endpoints are implemented in `WorkstationEndpoints.cs` and map to route constants in `UiApiRoutes`.
+These endpoints are implemented in `WorkstationEndpoints.cs` and map to route constants in `UiApiRoutes`.
 
 ---
 

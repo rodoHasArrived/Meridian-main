@@ -249,7 +249,7 @@ public sealed class IBBrokerageGatewayTests
             OnCancelOrder = (c, orderId) =>
             {
                 c.RaiseOrderStatus(new IBOrderStatusUpdate(
-                    orderId, "Cancelled", 0m, 1m, 0d, 0d, 0L, 1, null, DateTimeOffset.UtcNow));
+                    orderId, "Cancelled", 0m, 1m, 0d, 0d, 0L, 1, null, null, DateTimeOffset.UtcNow));
             }
         };
 
@@ -299,7 +299,7 @@ public sealed class IBBrokerageGatewayTests
         }, cts.Token);
 
         client.RaiseExecution(new IBExecutionUpdate(
-            5001, "SPY", "BOT", 10m, 511.25d, 10m, 511.25d, "0001", "DU123456", "SMART", 42L, DateTimeOffset.UtcNow));
+            5001, "SPY", "BOT", 10m, 511.25d, 10m, 511.25d, "0001", "DU123456", "SMART", 42L, null, DateTimeOffset.UtcNow));
 
         var report = await ReadUntilAsync(sut.StreamExecutionReportsAsync(cts.Token), r => r.ReportType == ExecutionReportType.Fill, cts.Token);
 
@@ -334,7 +334,6 @@ public sealed class IBBrokerageGatewayTests
         positions[0].Symbol.Should().Be("IEF");
         positions[0].AssetClass.Should().Be("bond");
         positions[0].AccruedInterest.Should().Be(12.50m);
-        positions[0].SnapshotAt.Should().NotBeNull();
     }
 
     [Fact]

@@ -167,8 +167,8 @@ describe("mega menu view model", () => {
 
     expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca / Window: 2026-05-01 to 2026-05-15");
     expect(tradingReadiness).toMatchObject({
-      route: "/trading/readiness?symbol=AAPL&from=2026-05-01&to=2026-05-15",
-      ariaLabel: "Open Readiness, Trading workspace, preserving Subject: AAPL / Window: 2026-05-01 to 2026-05-15"
+      route: "/trading/readiness?symbol=AAPL&provider=alpaca&from=2026-05-01&to=2026-05-15",
+      ariaLabel: "Open Readiness, Trading workspace, preserving Subject: AAPL / Provider: alpaca / Window: 2026-05-01 to 2026-05-15"
     });
     expect(dataQuotes).toMatchObject({
       route: "/data/quotes?symbol=AAPL&provider=alpaca&from=2026-05-01&to=2026-05-15",

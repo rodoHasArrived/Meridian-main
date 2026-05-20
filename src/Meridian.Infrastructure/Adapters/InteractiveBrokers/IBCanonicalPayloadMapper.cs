@@ -1,4 +1,5 @@
 using Meridian.Execution.Sdk;
+using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
@@ -43,13 +44,13 @@ internal static class IBCanonicalPayloadMapper
             ["FOK"] = TimeInForce.FillOrKill
         };
 
-    private static readonly IReadOnlyDictionary<string, OrderSide> SideMap =
-        new Dictionary<string, OrderSide>(StringComparer.OrdinalIgnoreCase)
+    private static readonly IReadOnlyDictionary<string, ExecutionOrderSide> SideMap =
+        new Dictionary<string, ExecutionOrderSide>(StringComparer.OrdinalIgnoreCase)
         {
-            ["BUY"] = OrderSide.Buy,
-            ["BOT"] = OrderSide.Buy,
-            ["SELL"] = OrderSide.Sell,
-            ["SLD"] = OrderSide.Sell
+            ["BUY"] = ExecutionOrderSide.Buy,
+            ["BOT"] = ExecutionOrderSide.Buy,
+            ["SELL"] = ExecutionOrderSide.Sell,
+            ["SLD"] = ExecutionOrderSide.Sell
         };
 
     private static readonly IReadOnlyDictionary<string, string> AssetTypeMap =
@@ -68,8 +69,8 @@ internal static class IBCanonicalPayloadMapper
     public static string MapAssetClass(string? securityType, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(AssetTypeMap, securityType, "asset_type", "equity", metadata);
 
-    public static OrderSide ParseSide(string? action, IReadOnlyDictionary<string, string>? metadata = null)
-        => TryMap(SideMap, action, "side", OrderSide.Buy, metadata);
+    public static ExecutionOrderSide ParseSide(string? action, IReadOnlyDictionary<string, string>? metadata = null)
+        => TryMap(SideMap, action, "side", ExecutionOrderSide.Buy, metadata);
 
     public static OrderType ParseOrderType(string? orderType, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(OrderTypeMap, orderType, "order_type", OrderType.Market, metadata);

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.AspNetCore.Builder;
@@ -137,6 +138,16 @@ public static class LedgerEndpoints
             CloseLedgerPeriodRequest request,
             HttpContext context) =>
         {
+            if (!HasLedgerClosePermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -145,8 +156,9 @@ public static class LedgerEndpoints
 
             try
             {
+                var trustedRequest = request with { ClosedBy = actor };
                 var result = await service
-                    .ClosePeriodAsync(periodId, request, context.RequestAborted)
+                    .ClosePeriodAsync(periodId, trustedRequest, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -158,6 +170,8 @@ public static class LedgerEndpoints
         .WithName("CloseLedgerPeriod")
         .Produces<LedgerPeriodCloseResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -168,6 +182,15 @@ public static class LedgerEndpoints
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static bool HasLedgerClosePermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending);
+
+    private static bool TryResolveActor(HttpContext context, out string actor)
+        => EndpointAuthorization.TryResolveActor(context, out actor);
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch

@@ -113,8 +113,8 @@ describe("workspace nav view model", () => {
 
     expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca");
     expect(trading).toMatchObject({
-      route: "/trading?symbol=AAPL",
-      ariaLabel: "Open Trading workspace, Review, preserving Subject: AAPL"
+      route: "/trading?symbol=AAPL&provider=alpaca",
+      ariaLabel: "Open Trading workspace, Review, preserving Subject: AAPL / Provider: alpaca"
     });
     expect(data).toMatchObject({
       route: "/data?symbol=AAPL&provider=alpaca",

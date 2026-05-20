@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.DependencyInjection;
+using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.Templates;
 
@@ -58,8 +60,9 @@ public interface ITemplateBrokerStreamingClient : IAsyncDisposable
 
 public sealed class TemplateBrokerNoopStreamingClient : ITemplateBrokerStreamingClient
 {
-    public async IAsyncEnumerable<TemplateBrokerStreamMessage> StreamAsync(CancellationToken ct = default)
+    public async IAsyncEnumerable<TemplateBrokerStreamMessage> StreamAsync([EnumeratorCancellation] CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         await Task.CompletedTask;
         yield break;
     }
@@ -73,7 +76,7 @@ public sealed class TemplateBrokerMapper
     {
         Symbol = payload.Symbol,
         Quantity = payload.Quantity,
-        Side = payload.Side == TemplateBrokerOrderSide.Buy ? OrderSide.Buy : OrderSide.Sell,
+        Side = payload.Side == TemplateBrokerOrderSide.Buy ? ExecutionOrderSide.Buy : ExecutionOrderSide.Sell,
         Type = OrderType.Market,
         TimeInForce = TimeInForce.Day,
         ClientOrderId = payload.ClientReference,
@@ -85,7 +88,7 @@ public sealed class TemplateBrokerMapper
         GatewayOrderId = payload.BrokerOrderId,
         ClientOrderId = payload.ClientReference,
         Symbol = payload.Symbol,
-        Side = payload.Side == TemplateBrokerOrderSide.Buy ? OrderSide.Buy : OrderSide.Sell,
+        Side = payload.Side == TemplateBrokerOrderSide.Buy ? ExecutionOrderSide.Buy : ExecutionOrderSide.Sell,
         OrderStatus = payload.Status switch
         {
             TemplateBrokerOrderStatus.New => OrderStatus.Accepted,
@@ -94,11 +97,17 @@ public sealed class TemplateBrokerMapper
             TemplateBrokerOrderStatus.Cancelled => OrderStatus.Cancelled,
             _ => OrderStatus.Rejected,
         },
-        ReportType = payload.Status == TemplateBrokerOrderStatus.Cancelled
-            ? ExecutionReportType.Cancelled
-            : ExecutionReportType.New,
-        LastQuantity = payload.LastFillQuantity,
-        LastPrice = payload.LastFillPrice,
+        ReportType = payload.Status switch
+        {
+            TemplateBrokerOrderStatus.Partial => ExecutionReportType.PartialFill,
+            TemplateBrokerOrderStatus.Filled => ExecutionReportType.Fill,
+            TemplateBrokerOrderStatus.Cancelled => ExecutionReportType.Cancelled,
+            TemplateBrokerOrderStatus.Rejected => ExecutionReportType.Rejected,
+            _ => ExecutionReportType.New,
+        },
+        OrderQuantity = payload.LastFillQuantity,
+        FilledQuantity = payload.LastFillQuantity,
+        FillPrice = payload.LastFillPrice == 0m ? null : payload.LastFillPrice,
         Timestamp = payload.BrokerTimestamp,
     };
 }
@@ -112,7 +121,7 @@ public sealed class TemplateBrokerHealthReporter
 
         var details = $"LatencyMs={payload.LatencyMs}; Degradation={payload.DegradationLevel}";
         return payload.DegradationLevel == TemplateBrokerDegradation.Critical
-            ? BrokerHealthStatus.Degraded(details)
+            ? new BrokerHealthStatus { IsHealthy = false, IsConnected = true, Message = details }
             : BrokerHealthStatus.Healthy(details);
     }
 }
@@ -120,7 +129,16 @@ public sealed class TemplateBrokerHealthReporter
 public sealed class TemplateBrokerOrderExtensions
 {
     public Task<ExecutionReport> PlaceOrderAsync(OrderRequest order, CancellationToken ct = default) =>
-        Task.FromResult(new ExecutionReport { OrderId = order.ClientOrderId ?? "template" });
+        Task.FromResult(new ExecutionReport
+        {
+            OrderId = order.ClientOrderId ?? "template",
+            ClientOrderId = order.ClientOrderId,
+            ReportType = ExecutionReportType.New,
+            Symbol = order.Symbol,
+            Side = order.Side,
+            OrderStatus = OrderStatus.Accepted,
+            OrderQuantity = order.Quantity,
+        });
 
     public Task<IReadOnlyList<ExecutionReport>> PollOrderStatusAsync(CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<ExecutionReport>>(Array.Empty<ExecutionReport>());

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Options;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Options;
 using Microsoft.AspNetCore.Builder;
@@ -17,15 +18,24 @@ public static class OptionChainEndpoints
 
         group.MapPost(UiApiRoutes.ReferenceDataOptionChainImport, async (
             OptionChainSnapshot snapshot,
+            HttpContext context,
             [FromServices] IOptionChainImportService importService,
             CancellationToken ct) =>
         {
+            if (!HasModifySecurityMasterPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var imported = await importService.ImportSnapshotAsync(snapshot, ct).ConfigureAwait(false);
             return Results.Json(imported, jsonOptions);
         })
         .WithName("ImportOptionChainSnapshot")
         .Accepts<OptionChainSnapshot>("application/json")
-        .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK);
+        .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.ReferenceDataOptionChainSnapshot, async (
             [FromQuery] string underlyingSymbol,
@@ -40,4 +50,7 @@ public static class OptionChainEndpoints
         .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }
+
+    private static bool HasModifySecurityMasterPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
 }

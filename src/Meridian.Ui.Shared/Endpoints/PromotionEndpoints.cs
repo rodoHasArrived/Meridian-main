@@ -39,12 +39,12 @@ public static class PromotionEndpoints
 
         group.MapPost("/approve", async (PromotionApprovalRequest request, HttpContext context) =>
         {
+            if (!HasPromotionPermission(context))
+                return Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-
-            if (!HasPromotionPermission(context))
-                return Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden);
 
             var normalizedRequest = request with { ApprovedBy = ResolveActor(context) };
 
@@ -63,12 +63,12 @@ public static class PromotionEndpoints
 
         group.MapPost("/reject", async (PromotionRejectionRequest request, HttpContext context) =>
         {
+            if (!HasPromotionPermission(context))
+                return Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-
-            if (!HasPromotionPermission(context))
-                return Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden);
 
             var normalizedRequest = request with { RejectedBy = ResolveActor(context) };
 
@@ -97,21 +97,14 @@ public static class PromotionEndpoints
 
     private static string? ResolveActor(HttpContext context)
     {
-        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorValues))
+        if (EndpointAuthorization.TryResolveActor(context, out var actor))
         {
-            var actor = actorValues.ToString().Trim();
-            if (!string.IsNullOrWhiteSpace(actor))
-            {
-                return actor;
-            }
+            return actor;
         }
 
         return null;
     }
 
     private static bool HasPromotionPermission(HttpContext context)
-    {
-        var permissions = context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] as UserPermission?;
-        return permissions is not null && (permissions.Value & UserPermission.ManageStrategies) == UserPermission.ManageStrategies;
-    }
+        => EndpointAuthorization.HasPermission(context, UserPermission.ManageStrategies);
 }

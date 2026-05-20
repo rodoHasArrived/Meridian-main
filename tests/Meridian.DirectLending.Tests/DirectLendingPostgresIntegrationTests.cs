@@ -109,6 +109,51 @@ public sealed class DirectLendingPostgresIntegrationTests
     }
 
     [DirectLendingDatabaseFact]
+    public async Task AppendOperationsWorkflowAuditAsync_ShouldSerializeConcurrentAppendsPerWorkflow()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var workflowId = $"{WorkflowIdPrefix}{Guid.NewGuid():N}";
+        var fundAccountId = Guid.NewGuid();
+        var periodId = "2026-Q2";
+        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requests = new[]
+        {
+            BuildAuditAppendRequest(workflowId, fundAccountId, periodId, eventType: "state_transition", fromState: "draft", toState: "ready"),
+            BuildAuditAppendRequest(workflowId, fundAccountId, periodId, eventType: "gate_change", gate: "readiness", fromGateStatus: "pending", toGateStatus: "blocked"),
+            BuildAuditAppendRequest(workflowId, fundAccountId, periodId, eventType: "approval_action", fromState: "ready", toState: "approved"),
+            BuildAuditAppendRequest(workflowId, fundAccountId, periodId, eventType: "break_opened", gate: "reconciliation", fromGateStatus: "ready", toGateStatus: "review")
+        };
+
+        var appendTasks = requests
+            .Select(request => Task.Run(async () =>
+            {
+                await start.Task.ConfigureAwait(false);
+                return await db.Store.AppendOperationsWorkflowAuditAsync(request).ConfigureAwait(false);
+            }))
+            .ToArray();
+
+        start.SetResult();
+        await Task.WhenAll(appendTasks);
+
+        var stream = await db.Store.GetOperationsWorkflowAuditAsync(workflowId);
+
+        stream.Should().HaveCount(requests.Length);
+        stream.Count(static entry => entry.PreviousHash is null).Should().Be(1);
+        stream.Select(static entry => entry.Hash).Should().OnlyHaveUniqueItems();
+        stream.Should().OnlyContain(static entry => IsValidSha256HexHash(entry.Hash));
+
+        for (var index = 1; index < stream.Count; index++)
+        {
+            stream[index].PreviousHash.Should().Be(stream[index - 1].Hash);
+        }
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task AppendOperationsWorkflowAuditAsync_ShouldRejectUnsupportedEventType()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
