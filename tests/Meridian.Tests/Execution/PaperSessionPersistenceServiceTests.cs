@@ -630,6 +630,57 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
         var detail = svc2.GetSession(summary.SessionId);
         detail!.OrderHistory.Should().ContainSingle(o => o.OrderId == "O-1");
     }
+
+    [Fact]
+    public async Task SessionContinuity_CreateRestartVerifyClose_PreservesScopeAndHistoryAcrossFlow()
+    {
+        var store = BuildStore();
+        var orderUpdatedAt = DateTimeOffset.UtcNow;
+
+        var svc1 = Build(store);
+        var created = await svc1.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-wave2-session-continuity",
+            StrategyName: "Wave2 Session Continuity",
+            InitialCash: 75_000m,
+            Symbols: ["AAPL", "MSFT"]));
+        await svc1.RecordOrderUpdateAsync(created.SessionId, new OrderState
+        {
+            OrderId = "wave2-order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 10m,
+            Status = OrderStatus.Filled,
+            CreatedAt = orderUpdatedAt.AddSeconds(-1),
+            LastUpdatedAt = orderUpdatedAt
+        });
+        await svc1.RecordFillAsync(created.SessionId, BuildFill("AAPL", OrderSide.Buy, 10m, 200m));
+
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+        var restored = svc2.GetSession(created.SessionId);
+
+        restored.Should().NotBeNull();
+        restored!.Symbols.Should().Equal("AAPL", "MSFT");
+        restored.OrderHistory.Should().ContainSingle(order => order.OrderId == "wave2-order-1");
+        restored.FillHistory.Should().HaveCount(1);
+        restored.LedgerEntryCount.Should().BeGreaterThan(0);
+
+        var verification = await svc2.VerifyReplayAsync(created.SessionId);
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeTrue();
+        verification.ComparedOrderCount.Should().Be(1);
+        verification.ComparedFillCount.Should().Be(1);
+        verification.ComparedLedgerEntryCount.Should().BeGreaterThan(0);
+
+        var closed = await svc2.CloseSessionAsync(created.SessionId);
+        closed.Should().BeTrue();
+
+        var svc3 = Build(store);
+        await svc3.InitialiseAsync();
+        svc3.GetSessions().Should().ContainSingle(session => session.SessionId == created.SessionId && !session.IsActive);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -792,6 +843,118 @@ public sealed class PaperSessionReplayTests : IDisposable
         replay.RealisedPnl.Should().Be(liveDetail.Portfolio.RealisedPnl);
     }
 
+
+    [Fact]
+    public async Task TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence()
+    {
+        var store = BuildStore();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "tradestation-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(store, auditTrail);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("tradestation-order-flow", "TradeStation slice", 100_000m, ["AAPL"]));
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            FilledQuantity = 0m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-30),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-30)
+        });
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            FilledQuantity = 6m,
+            Status = OrderStatus.PartiallyFilled,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-20),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-20)
+        });
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 6m, 150m));
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            FilledQuantity = 6m,
+            Status = OrderStatus.Cancelled,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-10),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-10)
+        });
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeTrue();
+        verification.ComparedOrderCount.Should().BeGreaterThan(0);
+        verification.ComparedFillCount.Should().Be(1);
+        verification.MismatchReasons.Should().BeEmpty();
+        verification.ReplayPortfolio.Positions.Should().ContainSingle(p => p.Symbol == "AAPL" && p.Quantity == 6m);
+    }
+
+    [Fact]
+    public async Task TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic()
+    {
+        var store = BuildStore();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "tradestation-out-of-order-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(store, auditTrail);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("tradestation-out-of-order", null, 100_000m, ["AAPL"]));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 4m, 200m));
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-oo-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 4m,
+            FilledQuantity = 4m,
+            Status = OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-5),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-5)
+        });
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-oo-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 4m,
+            FilledQuantity = 0m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-25),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-25)
+        });
+
+        var first = await service.VerifyReplayAsync(summary.SessionId);
+        var second = await service.VerifyReplayAsync(summary.SessionId);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.IsConsistent.Should().BeTrue();
+        second!.IsConsistent.Should().BeTrue();
+        second.ComparedFillCount.Should().Be(first.ComparedFillCount);
+        second.ComparedOrderCount.Should().Be(first.ComparedOrderCount);
+        second.ReplayPortfolio.Cash.Should().Be(first.ReplayPortfolio.Cash);
+        second.ReplayPortfolio.Positions.Should().BeEquivalentTo(first.ReplayPortfolio.Positions);
+    }
     [Fact]
     public async Task VerifyReplayAsync_WithStore_ReturnsConsistentVerification()
     {
@@ -910,6 +1073,32 @@ public sealed class PaperSessionReplayTests : IDisposable
 
         verification.Should().BeNull();
     }
+
+    [Fact]
+    public async Task VerifyReplayAsync_WhenLedgerJournalContainsCorruptEntries_ReportsDegradedButKeepsSuccessfulEntries()
+    {
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "corrupt-ledger-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(new CorruptLedgerReplayStore(), auditTrail);
+        await service.InitialiseAsync();
+
+        var verification = await service.VerifyReplayAsync("PAPER-CORRUPT-001");
+
+        verification.Should().NotBeNull();
+        verification!.ReplayPortfolio.Positions.Should().ContainSingle(position => position.Symbol == "AAPL");
+        verification.CorruptLedgerEntryCount.Should().Be(1);
+        verification.CorruptLedgerEntryIds.Should().Contain("22222222-2222-2222-2222-222222222222");
+        verification.IsConsistent.Should().BeFalse();
+        verification.MismatchReasons.Should().Contain(reason =>
+            reason.Contains("skipped 1 corrupt entry", StringComparison.OrdinalIgnoreCase));
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Outcome.Should().Be("AttentionRequired");
+        auditEntry.Metadata!["corruptLedgerEntryCount"].Should().Be("1");
+        auditEntry.Metadata["corruptLedgerEntryIds"].Should().Contain("22222222-2222-2222-2222-222222222222");
+    }
 }
 
 
@@ -943,6 +1132,107 @@ internal sealed class ThrowingLedgerSaveStore : IPaperSessionStore
         string sessionId,
         CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+}
+
+internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
+{
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default) => Task.CompletedTask;
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default) => Task.CompletedTask;
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList<PersistedJournalEntryDto> entries, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveSessionClosedAtAsync(string sessionId, DateTimeOffset? closedAtUtc, CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>(
+            [new PersistedSessionRecord("PAPER-CORRUPT-001", "strat-corrupt", "Corrupt", 100_000m, DateTimeOffset.UtcNow.AddMinutes(-30), null, true, ["AAPL"])]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>(
+            [
+                new()
+                {
+                    OrderId = "fill-1",
+                    ReportType = ExecutionReportType.Fill,
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    OrderStatus = OrderStatus.Filled,
+                    OrderQuantity = 10m,
+                    FilledQuantity = 10m,
+                    FillPrice = 100m,
+                    Timestamp = DateTimeOffset.UtcNow.AddMinutes(-20)
+                }
+            ]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var journalOkId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var corruptJournalId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+        PersistedJournalEntryDto BuildEntry(
+            Guid journalId,
+            string description,
+            DateTimeOffset timestamp,
+            IReadOnlyList<PersistedLedgerLineDto> lines)
+            => new(
+                JournalEntryId: journalId,
+                Timestamp: timestamp,
+                Description: description,
+                Lines: lines,
+                ActivityType: "Trade",
+                Symbol: "AAPL",
+                SecurityId: null,
+                OrderId: null,
+                LedgerView: "Trading",
+                StrategyId: "strat-corrupt");
+
+        PersistedLedgerLineDto BuildLine(
+            Guid entryId,
+            Guid journalId,
+            DateTimeOffset timestamp,
+            string accountName,
+            decimal debit,
+            decimal credit,
+            string description)
+            => new(
+                EntryId: entryId,
+                JournalEntryId: journalId,
+                Timestamp: timestamp,
+                Account: new PersistedLedgerAccountDto(accountName, "Asset", "AAPL", null),
+                Debit: debit,
+                Credit: credit,
+                Description: description);
+
+        var validEntry = BuildEntry(
+            journalOkId,
+            "buy entry",
+            now.AddMinutes(-19),
+            [
+                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"), journalOkId, now.AddMinutes(-19), "Cash", 0m, 1000m, "credit cash"),
+                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"), journalOkId, now.AddMinutes(-19), "Position", 1000m, 0m, "debit pos")
+            ]);
+
+        // Intentionally corrupt: line references a different JournalEntryId than parent.
+        var corruptEntry = BuildEntry(
+            corruptJournalId,
+            "corrupt entry",
+            now.AddMinutes(-18),
+            [
+                BuildLine(
+                    Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1"),
+                    Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    now.AddMinutes(-18),
+                    "Cash",
+                    100m,
+                    0m,
+                    "bad")
+            ]);
+
+        return Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([validEntry, corruptEntry]);
+    }
 }
 internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
 {

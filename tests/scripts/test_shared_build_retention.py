@@ -185,6 +185,92 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertFalse(old_run.exists(), result.stdout)
             self.assertTrue(newest.exists(), result.stdout)
 
+    def test_build_retention_skips_junction_artifact_root(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir) / "repo"
+            external_root = Path(temp_dir) / "external-bin"
+            (repo_root / "artifacts").mkdir(parents=True)
+            stale_external = self._create_artifact(external_root, "old-run", age_days=30)
+            junction_path = repo_root / "artifacts" / "bin"
+            junction = subprocess.run(
+                ["cmd", "/c", "mklink", "/J", str(junction_path), str(external_root)],
+                capture_output=True,
+                text=True,
+            )
+            if junction.returncode != 0:
+                self.skipTest(f"Directory junctions are not available: {junction.stderr or junction.stdout}")
+
+            command = [
+                powershell,
+                "-NoProfile",
+            ]
+            if Path(powershell).name.lower().startswith("powershell"):
+                command.extend(["-ExecutionPolicy", "Bypass"])
+            command.extend(
+                [
+                    "-Command",
+                    (
+                        "$ErrorActionPreference = 'Stop'; "
+                        f". '{SCRIPT_PATH}'; "
+                        f"Invoke-MeridianBuildArtifactRetention -RepoRoot '{repo_root}' "
+                        "-MaxAgeDays 14 -RetainLatest 1 -MaxRootSizeMB 1"
+                    ),
+                ]
+            )
+
+            result = subprocess.run(command, capture_output=True, text=True)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(stale_external.exists(), result.stdout)
+            self.assertIn("reparse point", result.stdout + result.stderr)
+
+    def test_build_retention_skips_junction_artifact_parent(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir) / "repo"
+            external_artifacts = Path(temp_dir) / "external-artifacts"
+            repo_root.mkdir(parents=True)
+            stale_external = self._create_artifact(external_artifacts, "bin/old-run", age_days=30)
+            junction_path = repo_root / "artifacts"
+            junction = subprocess.run(
+                ["cmd", "/c", "mklink", "/J", str(junction_path), str(external_artifacts)],
+                capture_output=True,
+                text=True,
+            )
+            if junction.returncode != 0:
+                self.skipTest(f"Directory junctions are not available: {junction.stderr or junction.stdout}")
+
+            command = [
+                powershell,
+                "-NoProfile",
+            ]
+            if Path(powershell).name.lower().startswith("powershell"):
+                command.extend(["-ExecutionPolicy", "Bypass"])
+            command.extend(
+                [
+                    "-Command",
+                    (
+                        "$ErrorActionPreference = 'Stop'; "
+                        f". '{SCRIPT_PATH}'; "
+                        f"Invoke-MeridianBuildArtifactRetention -RepoRoot '{repo_root}' "
+                        "-MaxAgeDays 14 -RetainLatest 1 -MaxRootSizeMB 1"
+                    ),
+                ]
+            )
+
+            result = subprocess.run(command, capture_output=True, text=True)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(stale_external.exists(), result.stdout)
+            self.assertIn("reparse point", result.stdout + result.stderr)
+
     def _run_workflow_retention(
         self,
         output_root: Path,

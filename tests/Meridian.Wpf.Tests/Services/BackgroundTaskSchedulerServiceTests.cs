@@ -78,6 +78,43 @@ public sealed class BackgroundTaskSchedulerServiceTests
         svc.TaskCount.Should().Be(0);
     }
 
+    [Fact]
+    public async Task StopAsync_SessionClose_WaitsForRunningTaskLoopToObserveCancellation()
+    {
+        var svc = Svc;
+        await svc.StopAsync();
+        await svc.StartAsync();
+
+        var actionStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var actionCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        svc.ScheduleTask(new ScheduledTask
+        {
+            Id = "shutdown-await-" + Guid.NewGuid(),
+            Name = "Shutdown await probe",
+            Interval = TimeSpan.FromMilliseconds(1),
+            Action = async ct =>
+            {
+                actionStarted.TrySetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    actionCompleted.TrySetResult();
+                }
+            }
+        });
+
+        await actionStarted.Task.WaitAsync(timeout.Token);
+        await svc.StopAsync(timeout.Token);
+
+        actionCompleted.Task.IsCompletedSuccessfully.Should().BeTrue();
+        svc.TaskCount.Should().Be(0);
+    }
+
     // ── ScheduleTask ─────────────────────────────────────────────────
 
     [Fact]

@@ -19,6 +19,18 @@ class MemoryStorage implements StorageLike {
   }
 }
 
+class FailingStorage implements StorageLike {
+  getItem(): string | null {
+    return null;
+  }
+  setItem(): void {
+    throw new Error("quota");
+  }
+  removeItem(): void {
+    return undefined;
+  }
+}
+
 function buildAlert(overrides: Partial<PriceAlert> = {}): PriceAlert {
   return {
     id: "alert-fixture",
@@ -95,11 +107,15 @@ describe("PriceAlertsScreen", () => {
 
     const condition = screen.getByLabelText("Condition");
     const priceField = screen.getByLabelText("Price field");
+    const note = screen.getByLabelText("Note (optional)");
 
     expect(condition).toHaveAttribute("aria-describedby", "price-alert-condition-help");
     expect(priceField).toHaveAttribute("aria-describedby", "price-alert-field-help");
+    expect(note).toHaveAttribute("aria-describedby", "price-alert-note-help");
+    expect(note).toHaveAttribute("maxlength", "120");
     expect(screen.getByText("Fires whenever price is at or above the threshold.")).toBeInTheDocument();
     expect(screen.getByText("Field: last trade price.")).toBeInTheDocument();
+    expect(screen.getByText("Optional operator context, up to 120 characters.")).toBeInTheDocument();
 
     fireEvent.change(condition, { target: { value: "crosses-up" } });
     fireEvent.change(priceField, { target: { value: "mid" } });
@@ -259,6 +275,18 @@ describe("PriceAlertsScreen", () => {
       .toHaveTextContent("Alert set: BRK/B last ≥ 300");
     expect(screen.getByRole("link", { name: "Open live quotes for BRK/B after creating price alert" }))
       .toHaveAttribute("href", "/data/quotes?symbol=BRK%2FB");
+  });
+
+  it("warns when alert changes cannot be persisted", () => {
+    const fetchSnapshot = vi.fn().mockImplementation(() => new Promise<never>(() => {}));
+    renderScreen(new FailingStorage(), ["/data/alerts"], fetchSnapshot);
+
+    fireEvent.change(screen.getByLabelText("Symbol"), { target: { value: "AAPL" } });
+    fireEvent.change(screen.getByLabelText("Threshold"), { target: { value: "200" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create price alert" }));
+
+    expect(screen.getByText("Price alert storage failed. Alerts may not survive a browser reload."))
+      .toHaveAttribute("id", "price-alert-storage-warning");
   });
 
   it("shows the notification CTA when permission is default", () => {

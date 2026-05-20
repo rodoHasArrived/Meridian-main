@@ -10,6 +10,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -24,6 +25,7 @@ public static class SymbolEndpoints
     public static void MapSymbolEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Symbols");
+        var logger = app.Logger;
 
         // GET /api/symbols — all configured symbols as SymbolRecord[]
         group.MapGet(UiApiRoutes.Symbols, (ConfigStore store, QuoteCollector? quoteCollector) =>
@@ -90,7 +92,8 @@ public static class SymbolEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to discover archived symbols: {ex.Message}");
+                logger.LogError(ex, "Failed to discover archived symbols");
+                return Results.Problem("Failed to discover archived symbols.");
             }
         })
         .WithName("GetArchivedSymbols")

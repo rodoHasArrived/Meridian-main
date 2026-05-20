@@ -32,6 +32,8 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
   const [editingSymbol, setEditingSymbol] = useState<Symbol | null>(null);
   const [formData, setFormData] = useState<Partial<Symbol>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const dialogTitleId = "symbol-universe-dialog-title";
+  const dialogDescriptionId = "symbol-universe-dialog-description";
 
   const handleOpenNew = () => {
     setEditingSymbol(null);
@@ -153,10 +155,10 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
+        <DialogContent aria-labelledby={dialogTitleId} aria-describedby={dialogDescriptionId}>
           <DialogHeader>
-            <DialogTitle>{editingSymbol ? "Edit Symbol" : "Add Symbol"}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle id={dialogTitleId}>{editingSymbol ? "Edit Symbol" : "Add Symbol"}</DialogTitle>
+            <DialogDescription id={dialogDescriptionId}>
               Configure a symbol for market data collection and trading.
             </DialogDescription>
           </DialogHeader>

@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "Meridian.sln",
+    "projects": [
+      "src\\Meridian\\Meridian.csproj"
+    ]
+  }
+}

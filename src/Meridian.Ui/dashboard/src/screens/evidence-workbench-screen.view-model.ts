@@ -5,8 +5,19 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import type { ApiRequestOptions } from "@/lib/api";
-import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  type AppShellOperatingScopeState
+} from "@/app-shell.view-model";
+import {
+  evidenceWorkbenchPath,
+  normalizeLocalWorkstationRoute,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath
+} from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceEdge,
@@ -176,6 +187,11 @@ export interface EvidenceWorkbenchCommandState {
   disabledReason: string | null;
 }
 
+export interface EvidenceWorkbenchErrorState {
+  summary: string;
+  details: string[];
+}
+
 export interface EvidenceExportResultViewModel {
   title: string;
   manifestPath: string;
@@ -191,7 +207,7 @@ export interface EvidenceWorkbenchViewModel {
   title: string;
   subtitle: string;
   loading: boolean;
-  error: string | null;
+  error: EvidenceWorkbenchErrorState | null;
   showSubjectPicker: boolean;
   hasSelection: boolean;
   hasPacket: boolean;
@@ -259,12 +275,13 @@ export function useEvidenceWorkbenchViewModel(
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
   const [exportResult, setExportResult] = useState<EvidencePacketExportResponse | null>(null);
   const [validateBusy, setValidateBusy] = useState(false);
   const [validationResult, setValidationResult] = useState<EvidenceCompleteness | null>(null);
   const [reloadRevision, setReloadRevision] = useState(0);
+  const operatingScope = useMemo(() => buildOperatingScopeFromSearch(search), [search]);
   const requestRevisionRef = useRef(0);
   const validateCommandRevisionRef = useRef(0);
   const exportCommandRevisionRef = useRef(0);
@@ -307,7 +324,7 @@ export function useEvidenceWorkbenchViewModel(
         }
       } catch (loadError) {
         if (requestRevisionRef.current === revision && !isAbortError(loadError)) {
-          setError(loadError instanceof Error ? loadError.message : "Evidence workbench failed to load.");
+          setError(buildEvidenceWorkbenchError(loadError, "Evidence workbench failed to load."));
         }
       } finally {
         if (loadAbortRef.current === controller) {
@@ -352,7 +369,7 @@ export function useEvidenceWorkbenchViewModel(
       }
     } catch (exportError) {
       if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision && !isAbortError(exportError)) {
-        setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
+        setError(buildEvidenceWorkbenchError(exportError, "Evidence manifest export failed."));
       }
     } finally {
       if (exportAbortRef.current === controller) {
@@ -385,7 +402,7 @@ export function useEvidenceWorkbenchViewModel(
       }
     } catch (validateError) {
       if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision && !isAbortError(validateError)) {
-        setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
+        setError(buildEvidenceWorkbenchError(validateError, "Evidence validation failed."));
       }
     } finally {
       if (validateAbortRef.current === controller) {
@@ -408,6 +425,7 @@ export function useEvidenceWorkbenchViewModel(
   return buildEvidenceWorkbenchViewModel({
     selectedSubjectKind,
     selectedSubjectId,
+    operatingScope,
     loading,
     error,
     subjects,
@@ -425,8 +443,9 @@ export function useEvidenceWorkbenchViewModel(
 export function buildEvidenceWorkbenchViewModel(input: {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  operatingScope?: AppShellOperatingScopeState | null;
   loading: boolean;
-  error: string | null;
+  error: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
   exportBusy: boolean;
@@ -437,10 +456,11 @@ export function buildEvidenceWorkbenchViewModel(input: {
   exportManifest: () => Promise<void>;
   validatePacket: () => Promise<void>;
 }): EvidenceWorkbenchViewModel {
+  const operatingScope = input.operatingScope ?? buildOperatingScopeFromSearch("");
   const completeness = input.validationResult ?? input.packet?.completeness ?? null;
   const hasSelection = Boolean(input.selectedSubjectKind && input.selectedSubjectId);
   const subject = input.packet?.subject ?? null;
-  const sourceWorkflowHref = resolveSourceWorkflowHref(subject);
+  const sourceWorkflowHref = resolveSourceWorkflowHref(subject, operatingScope);
   const subjectLabel = subject?.label ?? "selected evidence subject";
   const reloadCommand = buildReloadCommand(
     input.loading,
@@ -463,6 +483,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subject,
     selectedSubjectKind: input.selectedSubjectKind,
     selectedSubjectId: input.selectedSubjectId,
+    operatingScope,
     exportBusy: input.exportBusy,
     validateBusy: input.validateBusy
   });
@@ -492,7 +513,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subjectEmptyTitle: "No evidence subjects returned",
     subjectEmptyDetail: "Readiness, reconciliation, report-pack, and provider evidence will appear here after the workstation APIs publish packet subjects.",
     subjectEmptyActionLabel: "Open readiness console",
-    subjectEmptyActionHref: "/trading/readiness",
+    subjectEmptyActionHref: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     subjectEmptyActionAriaLabel: "Open readiness console to review upstream evidence sources",
     subjects: input.subjects,
     packet: input.packet,
@@ -520,11 +541,15 @@ export function buildEvidenceWorkbenchViewModel(input: {
     validateBusy: input.validateBusy,
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
-      evidenceWorkbenchPath(subject.subjectKind, subject.subjectId),
+      appendOperatingScopeToRoute(evidenceWorkbenchPath(subject.subjectKind, subject.subjectId), operatingScope),
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
   };
+}
+
+function buildEvidenceWorkbenchError(error: unknown, fallback: string): EvidenceWorkbenchErrorState {
+  return describeApiError(error, fallback);
 }
 
 function isAbortError(error: unknown): boolean {
@@ -735,6 +760,7 @@ export function buildEvidencePacketActions(input: {
   subject: EvidenceSubject | null;
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  operatingScope: AppShellOperatingScopeState;
   exportBusy: boolean;
   validateBusy: boolean;
 }): EvidencePacketActionViewModel[] {
@@ -743,8 +769,8 @@ export function buildEvidencePacketActions(input: {
     const subjectKind = input.subject?.subjectKind ?? input.selectedSubjectKind;
     const subjectId = input.subject?.subjectId ?? input.selectedSubjectId;
     const href = action.targetPageTag === "EvidenceWorkbench" && subjectKind && subjectId
-      ? evidenceWorkbenchPath(subjectKind, subjectId)
-      : workflowTargetPath(action.targetPageTag, input.subject?.workspace);
+      ? appendOperatingScopeToRoute(evidenceWorkbenchPath(subjectKind, subjectId), input.operatingScope)
+      : appendOperatingScopeToRoute(workflowTargetPath(action.targetPageTag, input.subject?.workspace), input.operatingScope);
     const subjectLabel = input.subject?.label ?? "selected evidence subject";
     const command = buildActionCommand(control, subjectLabel, input.exportBusy, input.validateBusy, Boolean(subjectKind && subjectId));
 
@@ -1000,13 +1026,16 @@ function slugifyId(value: string) {
     .replace(/^-+|-+$/g, "") || "group";
 }
 
-function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {
+function resolveSourceWorkflowHref(
+  subject: EvidenceSubject | null,
+  operatingScope: AppShellOperatingScopeState
+) {
   const directRoute = normalizeLocalWorkstationRoute(subject?.route);
   if (directRoute) {
-    return directRoute;
+    return appendOperatingScopeToRoute(directRoute, operatingScope);
   }
 
-  return subject ? workflowTargetPath(subject.pageTag, subject.workspace) : null;
+  return subject ? appendOperatingScopeToRoute(workflowTargetPath(subject.pageTag, subject.workspace), operatingScope) : null;
 }
 
 function formatDate(value: string) {

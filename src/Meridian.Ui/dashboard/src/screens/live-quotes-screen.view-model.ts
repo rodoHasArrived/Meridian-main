@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { workflowTargetPath } from "@/lib/workspace";
 import type {
   OrderBookLevelDto,
@@ -7,6 +8,7 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   QuotesResponse,
+  SessionStatsDto,
   TradeDataResponse,
   TradesResponse
 } from "@/types";
@@ -28,6 +30,7 @@ export interface QuickTicketForm {
 export interface QuickTicketState extends QuickTicketForm {
   phase: QuickTicketPhase;
   message: string | null;
+  details: string[];
   orderId: string | null;
   validationVisible?: boolean;
   acknowledged: boolean;
@@ -38,6 +41,7 @@ export interface QuickTicketStatusViewModel {
   role: "status" | "alert";
   tone: "default" | "success" | "danger";
   message: string;
+  details: string[];
   showSuccessIcon: boolean;
   showErrorIcon: boolean;
   actions: QuickTicketStatusActionViewModel[];
@@ -183,17 +187,48 @@ export interface LiveQuotesBboPanelViewModel {
 
 export interface LiveQuotesDepthLevelViewModel {
   id: string;
+  side: "bid" | "ask";
+  sideLabel: string;
   level: number;
   price: number;
   priceLabel: string;
   sizeLabel: string;
   barWidth: string;
   seedLabel: string;
+  selectLabel: string;
+  detailPanelId: string;
+  expanded: boolean;
+  tone: "positive" | "negative";
 }
 
 export interface LiveQuotesDepthLadderViewModel {
   bids: LiveQuotesDepthLevelViewModel[];
   asks: LiveQuotesDepthLevelViewModel[];
+  selectedLevelId: string | null;
+  selectedDetail: LiveQuotesDepthLevelDetailViewModel | null;
+  selectLevel: (id: string) => void;
+  detailPanelId: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  tableLabel: string;
+  caption: string;
+}
+
+export interface LiveQuotesDepthLevelDetailField {
+  label: string;
+  value: string;
+}
+
+export interface LiveQuotesDepthLevelDetailViewModel {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning";
+  ariaLabel: string;
+  fields: LiveQuotesDepthLevelDetailField[];
 }
 
 export interface LiveQuotesTradeRowViewModel {
@@ -225,6 +260,25 @@ export interface LiveQuotesTradeDetailViewModel {
   statusBadgeVariant: "outline" | "success" | "warning";
   ariaLabel: string;
   fields: LiveQuotesTradeDetailField[];
+}
+
+export interface LiveQuotesSessionStatCellViewModel {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface LiveQuotesSessionStatsViewModel {
+  id: string;
+  ariaLabel: string;
+  descriptionId: string;
+  description: string;
+  periodLabel: string;
+  dateLabel: string;
+  changeLabel: string;
+  changeAriaLabel: string;
+  changeTone: "positive" | "negative" | "default";
+  stats: LiveQuotesSessionStatCellViewModel[];
 }
 
 export interface LiveQuotesPriceChartViewModel {
@@ -280,6 +334,7 @@ export interface LiveQuotesMarketDataViewModel {
   quoteMetrics: LiveQuotesMetricRowViewModel[];
   depthLadder: LiveQuotesDepthLadderViewModel;
   priceChart: LiveQuotesPriceChartViewModel;
+  sessionStats: LiveQuotesSessionStatsViewModel | null;
   tradesTableLabel: string;
   tradesTableCaption: string;
   tradesDetailPanelId: string;
@@ -335,6 +390,7 @@ export const initialQuickTicketState: QuickTicketState = {
   limitPrice: "",
   phase: "idle",
   message: null,
+  details: [],
   orderId: null,
   validationVisible: false,
   acknowledged: false
@@ -352,6 +408,7 @@ export function useLiveQuotesScreenViewModel(
   const [trades, setTrades] = useState<LiveQuotesLoadState<TradesResponse>>({ data: null, error: null });
   const [orderbook, setOrderbook] = useState<LiveQuotesLoadState<OrderBookResponse>>({ data: null, error: null });
   const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
+  const [selectedDepthLevelId, setSelectedDepthLevelId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const requestIdRef = useRef(0);
   const inFlightSymbolRef = useRef<string | null>(null);
@@ -438,6 +495,7 @@ export function useLiveQuotesScreenViewModel(
     resetMarketState();
     quickTrade.resetTicket();
     setSelectedTradeId(null);
+    setSelectedDepthLevelId(null);
   }, [activeSymbol, quickTrade, resetMarketState, route.routeSymbol]);
 
   const setSymbolInput = useCallback((value: string) => {
@@ -459,8 +517,10 @@ export function useLiveQuotesScreenViewModel(
     refreshing,
     selectedTradeId,
     selectTrade: setSelectedTradeId,
+    selectedDepthLevelId,
+    selectDepthLevel: setSelectedDepthLevelId,
     tradeTableLimit: LIVE_QUOTES_TRADE_TABLE_LIMIT
-  }), [activeSymbol, orderbook, quote, refreshing, selectedTradeId, trades]);
+  }), [activeSymbol, orderbook, quote, refreshing, selectedDepthLevelId, selectedTradeId, trades]);
 
   const submitLookup = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -474,6 +534,7 @@ export function useLiveQuotesScreenViewModel(
     resetMarketState();
     setActiveSymbol(next);
     quickTrade.resetTicket();
+    setSelectedDepthLevelId(null);
     route.setRouteSymbol(next);
   }, [lookup.normalizedSymbol, quickTrade, resetMarketState, route]);
 
@@ -582,6 +643,8 @@ export function buildLiveQuotesMarketViewModel({
   refreshing,
   selectedTradeId = null,
   selectTrade = () => {},
+  selectedDepthLevelId = null,
+  selectDepthLevel = () => {},
   tradeTableLimit
 }: {
   activeSymbol: string | null;
@@ -591,6 +654,8 @@ export function buildLiveQuotesMarketViewModel({
   refreshing: boolean;
   selectedTradeId?: string | null;
   selectTrade?: (id: string) => void;
+  selectedDepthLevelId?: string | null;
+  selectDepthLevel?: (id: string) => void;
   tradeTableLimit: number;
 }): LiveQuotesMarketDataViewModel {
   const quoteRow = quote.data?.quote ?? null;
@@ -614,6 +679,18 @@ export function buildLiveQuotesMarketViewModel({
     ...(orderbook.data?.bids.map((level) => level.size) ?? []),
     ...(orderbook.data?.asks.map((level) => level.size) ?? [])
   );
+  const depthDetailPanelId = "live-quotes-depth-level-detail";
+  const baseBidLevels = (orderbook.data?.bids ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Sell", depthDetailPanelId));
+  const baseAskLevels = (orderbook.data?.asks ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Buy", depthDetailPanelId));
+  const allDepthLevels = [...baseBidLevels, ...baseAskLevels];
+  const stableSelectedDepthLevelId = allDepthLevels.some((level) => level.id === selectedDepthLevelId)
+    ? selectedDepthLevelId
+    : allDepthLevels[0]?.id ?? null;
+  const selectedDepthLevel = allDepthLevels.find((level) => level.id === stableSelectedDepthLevelId) ?? null;
+  const markDepthLevelSelection = (level: LiveQuotesDepthLevelViewModel): LiveQuotesDepthLevelViewModel => ({
+    ...level,
+    expanded: level.id === stableSelectedDepthLevelId
+  });
 
   return {
     activeSymbol,
@@ -629,10 +706,21 @@ export function buildLiveQuotesMarketViewModel({
     bboPanels: buildBboPanels(symbol, quoteRow),
     quoteMetrics: buildQuoteMetrics(quoteRow),
     depthLadder: {
-      bids: (orderbook.data?.bids ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Sell")),
-      asks: (orderbook.data?.asks ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Buy"))
+      bids: baseBidLevels.map(markDepthLevelSelection),
+      asks: baseAskLevels.map(markDepthLevelSelection),
+      selectedLevelId: stableSelectedDepthLevelId,
+      selectedDetail: selectedDepthLevel ? buildDepthLevelDetail(selectedDepthLevel, orderbook.data) : null,
+      selectLevel: selectDepthLevel,
+      detailPanelId: depthDetailPanelId,
+      detailEmptyTitle: "No depth level selected",
+      detailEmptyText: allDepthLevels.length > 0
+        ? "Select a bid or ask level to inspect depth evidence."
+        : `No depth levels are available for ${symbol}.`,
+      tableLabel: `${symbol} order book depth ladder`,
+      caption: `Select a ${symbol} bid or ask level to seed the ticket and inspect venue, sequence, and depth evidence.`
     },
     priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
+    sessionStats: buildLiveQuotesSessionStatsViewModel(symbol, quoteRow?.session ?? null),
     tradesTableLabel: `Recent ${symbol} trade prints`,
     tradesTableCaption: `Select a ${symbol} trade print to inspect sequence, stream, and venue evidence.`,
     tradesDetailPanelId: tradeDetailPanelId,
@@ -703,6 +791,7 @@ export function useQuickTradeTicket(
       limitPrice: priceLabel,
       phase: "seeded",
       message: buildQuickTicketSeededMessage(symbolLabel, side, priceLabel),
+      details: [],
       orderId: null,
       validationVisible: false,
       acknowledged: false
@@ -715,6 +804,7 @@ export function useQuickTradeTicket(
       [field]: value,
       phase: resetQuickTicketFeedbackPhase(current.phase),
       message: shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message,
+      details: shouldClearQuickTicketFeedbackMessage(current.phase) ? [] : current.details,
       validationVisible: true,
       acknowledged: false
     }));
@@ -725,7 +815,8 @@ export function useQuickTradeTicket(
       ...current,
       acknowledged: value,
       phase: value ? "idle" : resetQuickTicketFeedbackPhase(current.phase),
-      message: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message
+      message: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message,
+      details: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? [] : current.details
     }));
   }, []);
 
@@ -742,6 +833,7 @@ export function useQuickTradeTicket(
         ...current,
         phase: "error",
         message: validation,
+        details: [],
         orderId: null,
         validationVisible: true
       }));
@@ -753,6 +845,7 @@ export function useQuickTradeTicket(
         ...current,
         phase: "error",
         message: "Review and acknowledge the ticket before submitting.",
+        details: [],
         orderId: null,
         validationVisible: false
       }));
@@ -768,7 +861,7 @@ export function useQuickTradeTicket(
       }
     };
 
-    setTicket((current) => ({ ...current, phase: "submitting", message: null, orderId: null }));
+    setTicket((current) => ({ ...current, phase: "submitting", message: null, details: [], orderId: null }));
     try {
       const result = await api.submitOrder(request);
       if (result.success) {
@@ -776,6 +869,7 @@ export function useQuickTradeTicket(
           ...current,
           phase: "submitted",
           message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
+          details: [],
           orderId: result.orderId,
           validationVisible: false,
           acknowledged: false
@@ -785,16 +879,19 @@ export function useQuickTradeTicket(
           ...current,
           phase: "error",
           message: result.reason ?? "Order rejected.",
+          details: [],
           orderId: null,
           validationVisible: false,
           acknowledged: false
         }));
       }
     } catch (error) {
+      const display = describeApiError(error, "Order submission failed.");
       applyCurrentSubmission((current) => ({
         ...current,
         phase: "error",
-        message: error instanceof Error && error.message ? error.message : "Order submission failed.",
+        message: display.summary,
+        details: display.details,
         orderId: null,
         validationVisible: false,
         acknowledged: false
@@ -1144,21 +1241,103 @@ function buildQuoteMetrics(quoteRow: QuotesResponse["quote"] | null): LiveQuotes
   ];
 }
 
+export function buildLiveQuotesSessionStatsViewModel(
+  symbol: string,
+  session: SessionStatsDto | null | undefined
+): LiveQuotesSessionStatsViewModel | null {
+  if (!session) {
+    return null;
+  }
+
+  const changeTone: LiveQuotesSessionStatsViewModel["changeTone"] = session.change > 0
+    ? "positive"
+    : session.change < 0
+      ? "negative"
+      : "default";
+  const changeLabel = `${formatChange(session.change)} (${formatChangePct(session.changePercent)})`;
+  const volumeLabel = formatVolume(session.volume);
+
+  return {
+    id: "live-quotes-session-stats",
+    ariaLabel: `${symbol} session statistics`,
+    descriptionId: "live-quotes-session-stats-description",
+    description: `Session ${session.sessionDate} quote evidence from ${formatMarketTimestamp(session.firstTradeAt)} to ${formatMarketTimestamp(session.lastTradeAt)}.`,
+    periodLabel: "Today",
+    dateLabel: `Session ${session.sessionDate}`,
+    changeLabel,
+    changeAriaLabel: `Day change ${changeLabel}`,
+    changeTone,
+    stats: [
+      { id: "open", label: "Open", value: formatMarketPrice(session.open) },
+      { id: "high", label: "High", value: formatMarketPrice(session.high) },
+      { id: "low", label: "Low", value: formatMarketPrice(session.low) },
+      { id: "vwap", label: "VWAP", value: formatMarketPrice(session.vwap) },
+      { id: "volume", label: "Volume", value: volumeLabel }
+    ]
+  };
+}
+
 function buildDepthLevel(
   level: OrderBookLevelDto,
   maxSize: number,
   symbol: string,
-  seedSide: "Buy" | "Sell"
+  seedSide: "Buy" | "Sell",
+  detailPanelId: string
 ): LiveQuotesDepthLevelViewModel {
   const priceLabel = formatMarketPrice(level.price);
+  const side = level.side.toLowerCase() === "ask" ? "ask" : "bid";
+  const sideLabel = side === "ask" ? "Ask" : "Bid";
   return {
     id: `${level.side.toLowerCase()}-${level.level}`,
+    side,
+    sideLabel,
     level: level.level,
     price: level.price,
     priceLabel,
     sizeLabel: formatMarketSize(level.size),
     barWidth: `${(level.size / maxSize) * 100}%`,
-    seedLabel: `${seedSide} ${symbol} at ${priceLabel}`
+    seedLabel: `${seedSide} ${symbol} at ${priceLabel}`,
+    selectLabel: `Inspect ${symbol} ${sideLabel.toLowerCase()} level ${level.level} at ${priceLabel}; ${seedSide} ${symbol} at ${priceLabel}`,
+    detailPanelId,
+    expanded: false,
+    tone: side === "bid" ? "positive" : "negative"
+  };
+}
+
+function buildDepthLevelDetail(
+  level: LiveQuotesDepthLevelViewModel,
+  orderbook: OrderBookResponse | null
+): LiveQuotesDepthLevelDetailViewModel {
+  const venueLabel = orderbook?.venue ?? "Unreported";
+  const streamLabel = orderbook?.streamId ?? "Unreported";
+  const sequenceLabel = orderbook ? formatMarketSize(orderbook.sequenceNumber) : LIVE_QUOTES_EMPTY_VALUE;
+  const timestampLabel = formatMarketTimestamp(orderbook?.timestamp ?? null);
+  const marketStateLabel = orderbook?.marketState ?? "Unreported";
+  const imbalanceLabel = orderbook?.imbalance === null || orderbook?.imbalance === undefined
+    ? LIVE_QUOTES_EMPTY_VALUE
+    : formatChange(orderbook.imbalance);
+  const midLabel = formatMarketPrice(orderbook?.midPrice);
+
+  return {
+    id: level.id,
+    eyebrow: "Selected depth level",
+    title: `${level.sideLabel} level ${level.level} @ ${level.priceLabel}`,
+    subtitle: `${venueLabel} · ${marketStateLabel}`,
+    description: `${level.sizeLabel} shares are visible at ${level.priceLabel}. Selecting this level seeds a ${level.side === "bid" ? "sell" : "buy"} limit ticket.`,
+    statusLabel: level.sideLabel,
+    statusBadgeVariant: level.side === "bid" ? "success" : "warning",
+    ariaLabel: `${level.sideLabel} level ${level.level} detail`,
+    fields: [
+      { label: "Price", value: level.priceLabel },
+      { label: "Size", value: level.sizeLabel },
+      { label: "Level", value: String(level.level) },
+      { label: "Venue", value: venueLabel },
+      { label: "Sequence", value: sequenceLabel },
+      { label: "Stream", value: streamLabel },
+      { label: "Mid", value: midLabel },
+      { label: "Imbalance", value: imbalanceLabel },
+      { label: "Timestamp", value: timestampLabel }
+    ]
   };
 }
 
@@ -1461,6 +1640,7 @@ function buildQuickTicketStatus(
       role: "status",
       tone: "success",
       message: ticket.message,
+      details: [],
       showSuccessIcon: true,
       showErrorIcon: false,
       actions: [buildQuickTicketReadinessAction("accepted", activeSymbol, ticket.orderId)]
@@ -1473,6 +1653,7 @@ function buildQuickTicketStatus(
       role: "alert",
       tone: "danger",
       message: ticket.message,
+      details: ticket.details,
       showSuccessIcon: false,
       showErrorIcon: true,
       actions: isQuickTicketSubmissionFailure(ticket, surfaceValidation)
@@ -1487,6 +1668,7 @@ function buildQuickTicketStatus(
       role: "alert",
       tone: "danger",
       message: validation,
+      details: [],
       showSuccessIcon: false,
       showErrorIcon: true,
       actions: []
@@ -1499,6 +1681,7 @@ function buildQuickTicketStatus(
       role: "status",
       tone: "success",
       message: ticket.message,
+      details: [],
       showSuccessIcon: true,
       showErrorIcon: false,
       actions: []
@@ -1510,6 +1693,7 @@ function buildQuickTicketStatus(
     role: "status",
     tone: "default",
     message: buildQuickTicketGuidance(ticket, validation),
+    details: [],
     showSuccessIcon: false,
     showErrorIcon: false,
     actions: []

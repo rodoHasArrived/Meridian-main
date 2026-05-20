@@ -2,7 +2,7 @@
 # Build, Run, Format, Watch & Publish
 # =============================================================================
 
-.PHONY: build build-quick run run-backfill run-selftest \
+.PHONY: build build-quick build-web-workstation run run-backfill run-selftest \
         lint format format-check \
         watch watch-build \
         install-hooks setup-dev \
@@ -15,8 +15,10 @@ build: ## Build the project (Release)
 	@echo "$(BLUE)Building with observability...$(NC)"
 	@BUILD_VERBOSITY=$(BUILD_VERBOSITY) $(BUILDCTL) build --project $(PROJECT) --configuration Release
 
-build-quick: ## Fast incremental build (Debug, no analyzers)
-	@python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
+build-quick: build-web-workstation ## Fast incremental build for the active browser workstation lane
+
+build-web-workstation: ## Fast isolated browser workstation host build (Debug, no apphost)
+	@python3 build/python/cli/buildctl.py build --project Meridian.WebWorkstation.slnf --configuration Debug --verbosity quiet --isolation-key web-workstation-dev --property UseAppHost=false
 
 run: setup-config ## Run the collector
 	@echo "$(BLUE)Running collector...$(NC)"

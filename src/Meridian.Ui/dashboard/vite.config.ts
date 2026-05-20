@@ -139,8 +139,10 @@ function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerRespon
 }
 
 const apiBaseUrl = resolveMeridianApiBaseUrl();
+const appRoot = path.resolve(__dirname);
 
 export default defineConfig({
+  root: appRoot,
   base: "/workstation/",
   plugins: [react()],
   server: {
@@ -167,9 +169,11 @@ export default defineConfig({
     poolOptions: {
       forks: {
         minForks: 1,
-        maxForks: 2
+        maxForks: 2,
+        execArgv: ["--max-old-space-size=4096"]
       }
     },
-    testTimeout: 15000
+    testTimeout: 15000,
+    teardownTimeout: 5000
   }
 });

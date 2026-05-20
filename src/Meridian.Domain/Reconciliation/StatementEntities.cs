@@ -30,10 +30,20 @@ public sealed record ReconciliationCase(
     decimal Confidence,
     string Rationale,
     DateTimeOffset CreatedAtUtc,
-    IReadOnlyList<ReconciliationCaseHistoryEntry> History);
+    IReadOnlyList<ReconciliationCaseHistoryEntry> History)
+{
+    public string Owner { get; init; } = "unassigned";
+    public DateTimeOffset? DueAtUtc { get; init; }
+    public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;
+    public string LastUpdatedBy { get; init; } = "system";
+}
 
 public sealed record ReconciliationCaseHistoryEntry(
     DateTimeOffset TimestampUtc,
     string FromStatus,
     string ToStatus,
-    string Note);
+    string Note)
+{
+    public string Actor { get; init; } = "system";
+    public string? EvidenceId { get; init; }
+}

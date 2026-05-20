@@ -3,12 +3,17 @@ import { createElement, StrictMode, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import * as api from "@/lib/api";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -23,6 +28,10 @@ vi.mock("@/lib/api", () => ({
   getDataWorkspace: vi.fn(),
   getGovernanceWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
+  getProviderConnections: vi.fn(),
+  getProviderRoutingBindings: vi.fn(),
+  getProviderRoutingConnections: vi.fn(),
+  getProviderRoutingTrustSnapshots: vi.fn(),
   hasDevelopmentFixtureUsage: vi.fn(() => false),
   getPortfolioWorkspace: vi.fn(),
   getReportingWorkspace: vi.fn(),
@@ -48,6 +57,10 @@ const requests: Record<string, Deferred<unknown>[]> = {
   governance: [],
   overview: [],
   portfolio: [],
+  providerConnections: [],
+  providerRoutingBindings: [],
+  providerRoutingConnections: [],
+  providerRoutingTrustSnapshots: [],
   reporting: [],
   research: [],
   session: [],
@@ -72,6 +85,10 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getGovernanceWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("governance"));
     vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("reporting"));
     vi.mocked(api.getAlpacaConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("brokerageConnection"));
+    vi.mocked(api.getProviderConnections).mockImplementation(() => track<ProviderConnectionRow[]>("providerConnections"));
+    vi.mocked(api.getProviderRoutingConnections).mockImplementation(() => track<ProviderRoutingConnection[]>("providerRoutingConnections"));
+    vi.mocked(api.getProviderRoutingBindings).mockImplementation(() => track<ProviderRoutingBinding[]>("providerRoutingBindings"));
+    vi.mocked(api.getProviderRoutingTrustSnapshots).mockImplementation(() => track<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots"));
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
@@ -142,6 +159,43 @@ describe("useWorkstationData", () => {
     expect(result.current.session).toBeNull();
   });
 
+  it("surfaces an expired session as a session recovery state", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      rejectRequest("session", 0, createApiErrorFromResponseBody(
+        "/api/workstation/session",
+        401,
+        JSON.stringify({
+          title: "Unauthorized",
+          detail: "The workstation session token expired."
+        })
+      ));
+      resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<ResearchWorkspaceResponse>("research", 0, { marker: "research" } as unknown as ResearchWorkspaceResponse);
+      resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", 0, { marker: "data" } as unknown as DataOperationsWorkspaceResponse);
+      resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, { generatedAt: "2026-01-01T00:00:00Z", presets: [] });
+      await flushAsync();
+    });
+
+    expect(result.current.error).toBe("Session expired or Meridian sign-in is required.");
+    expect(result.current.session).toBeNull();
+    expect(result.current.overview).toEqual({ marker: "overview" });
+  });
+
   it("keeps the active StrictMode refresh live after the dev remount cycle", async () => {
     const { result } = renderHook(() => useWorkstationData(), { wrapper: StrictModeWrapper });
 
@@ -202,6 +256,136 @@ describe("useWorkstationData", () => {
       isPinned: true,
       lastUsedAt: "2026-01-03T00:00:00Z"
     });
+  });
+
+  it("refreshes provider-routing evidence without reloading every workspace", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let routingRefresh!: Promise<void>;
+    act(() => {
+      routingRefresh = result.current.refreshProviderRouting();
+    });
+    await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2));
+
+    expect(api.getSession).toHaveBeenCalledTimes(1);
+    expect(result.current.providerRoutingRefreshing).toBe(true);
+
+    await act(async () => {
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 1, [
+        {
+          connectionId: "provider-alpaca-paper",
+          providerFamilyId: "alpaca",
+          displayName: "Alpaca paper",
+          connectionType: "DataVendor",
+          connectionMode: "ReadOnly",
+          enabled: true,
+          credentialReference: "vault:alpaca/paper",
+          institutionId: null,
+          externalAccountId: null,
+          scope: null,
+          tags: ["streaming"],
+          description: null,
+          productionReady: false
+        }
+      ]);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 1, [
+        {
+          bindingId: "provider-alpaca-paper-RealtimeMarketData",
+          capability: "RealtimeMarketData",
+          connectionId: "provider-alpaca-paper",
+          target: null,
+          priority: 100,
+          enabled: true,
+          failoverConnectionIds: [],
+          safetyModeOverride: null,
+          notes: null
+        }
+      ]);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 1, [
+        {
+          connectionId: "provider-alpaca-paper",
+          providerFamilyId: "alpaca",
+          score: 82,
+          isHealthy: true,
+          healthStatus: "Healthy",
+          isProductionReady: false,
+          isCertificationFresh: false,
+          signals: []
+        }
+      ]);
+      await routingRefresh;
+    });
+
+    expect(result.current.providerRoutingConnections?.[0].connectionId).toBe("provider-alpaca-paper");
+    expect(result.current.providerRoutingBindings).toHaveLength(1);
+    expect(result.current.providerRoutingTrustSnapshots?.[0].score).toBe(82);
+    expect(result.current.providerRoutingRefreshing).toBe(false);
+    expect(result.current.workspaceErrors.settings).toBeUndefined();
+  });
+
+  it("keeps stale provider-routing evidence when a later routing refresh fails", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let successfulRefresh!: Promise<void>;
+    act(() => {
+      successfulRefresh = result.current.refreshProviderRouting();
+    });
+    await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 1, [
+        {
+          connectionId: "provider-polygon",
+          providerFamilyId: "polygon",
+          displayName: "Polygon.io",
+          connectionType: "DataVendor",
+          connectionMode: "ReadOnly",
+          enabled: true,
+          credentialReference: "vault:polygon/default",
+          institutionId: null,
+          externalAccountId: null,
+          scope: null,
+          tags: ["backfill"],
+          description: null,
+          productionReady: true
+        }
+      ]);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 1, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 1, []);
+      await successfulRefresh;
+    });
+
+    let failedRefresh!: Promise<void>;
+    act(() => {
+      failedRefresh = result.current.refreshProviderRouting();
+    });
+    await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      rejectRequest("providerConnections", 2, new Error("Provider connections timed out."));
+      rejectRequest("providerRoutingConnections", 2, new Error("Routing connections timed out."));
+      rejectRequest("providerRoutingBindings", 2, new Error("Routing bindings timed out."));
+      rejectRequest("providerRoutingTrustSnapshots", 2, new Error("Trust snapshots timed out."));
+      await failedRefresh;
+    });
+
+    expect(result.current.providerRoutingConnections?.[0].connectionId).toBe("provider-polygon");
+    expect(result.current.workspaceErrors.settings).toContain("Routing connections timed out.");
+    expect(result.current.providerRoutingRefreshing).toBe(false);
   });
 
   it("does not let an older trading-only refresh overwrite a newer full refresh", async () => {
@@ -295,6 +479,10 @@ describe("useWorkstationData", () => {
       resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
       resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
       rejectRequest("brokeragePortfolio", 0, new Error("Brokerage household sync failed."));
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
@@ -342,6 +530,77 @@ describe("useWorkstationData", () => {
 
     expect(result.current.trading).toEqual({ marker: "recovered trading" });
     expect(result.current.workspaceErrors.trading).toBeUndefined();
+    expect(result.current.error).toBeNull();
+  });
+
+  it("surfaces portfolio-only refresh failures without discarding stale portfolio data", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let portfolioRefresh!: Promise<void>;
+    act(() => {
+      portfolioRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
+      rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      await portfolioRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "initial portfolio" });
+    expect(result.current.brokeragePortfolio).toEqual({ marker: "initial brokerage" });
+    expect(result.current.workspaceErrors.portfolio).toBe(
+      "Portfolio refresh failed.; Brokerage portfolio refresh failed."
+    );
+    expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
+  });
+
+  it("clears the portfolio-only refresh failure after a later portfolio refresh succeeds", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let failedRefresh!: Promise<void>;
+    act(() => {
+      failedRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
+      rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      await failedRefresh;
+    });
+
+    let recoveryRefresh!: Promise<void>;
+    act(() => {
+      recoveryRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 2, { marker: "recovered portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 2, { marker: "recovered brokerage" } as unknown as BrokerageHouseholdPortfolio);
+      await recoveryRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "recovered portfolio" });
+    expect(result.current.brokeragePortfolio).toEqual({ marker: "recovered brokerage" });
+    expect(result.current.workspaceErrors.portfolio).toBeUndefined();
     expect(result.current.error).toBeNull();
   });
 });
@@ -395,6 +654,10 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<GovernanceWorkspaceResponse>("governance", defaultIndex, { marker: `${marker} accounting` } as unknown as GovernanceWorkspaceResponse);
   resolveRequest<GovernanceWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as GovernanceWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
+  resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
+  resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", defaultIndex, []);
+  resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", defaultIndex, []);
   resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
   resolveRequest<WorkflowLibrary>("workflowLibrary", defaultIndex, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
   resolveRequest<WorkflowPresetLibrary>("workflowPresets", defaultIndex, {

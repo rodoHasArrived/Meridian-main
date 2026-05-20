@@ -427,7 +427,8 @@ public sealed class EdgarIngestOrchestratorTests
             SecurityIdentifierKind identifierKind,
             string identifierValue,
             string? provider,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            DateTimeOffset? asOfUtc = null)
             => Task.FromResult(
                 _byIdentifier.TryGetValue(Key(identifierKind, identifierValue, provider), out var detail)
                     ? detail

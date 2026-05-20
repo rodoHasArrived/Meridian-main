@@ -67,6 +67,46 @@ function Get-MeridianDirectorySizeBytes {
     return [int64]$sum
 }
 
+function Test-MeridianPathIsReparsePoint {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+    if ($null -eq $item) {
+        return $false
+    }
+
+    return (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)
+}
+
+function Test-MeridianPathHasReparsePointAncestor {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [string]$StopAt = ''
+    )
+
+    $current = [System.IO.Path]::GetFullPath($Path)
+    $stopAtFullPath = if ([string]::IsNullOrWhiteSpace($StopAt)) { '' } else { [System.IO.Path]::GetFullPath($StopAt) }
+
+    while (-not [string]::IsNullOrWhiteSpace($current)) {
+        if (-not [string]::IsNullOrWhiteSpace($stopAtFullPath) -and [string]::Equals($current, $stopAtFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $false
+        }
+
+        if ((Test-Path -LiteralPath $current) -and (Test-MeridianPathIsReparsePoint -Path $current)) {
+            return $true
+        }
+
+        $parent = [System.IO.Directory]::GetParent($current)
+        if ($null -eq $parent) {
+            return $false
+        }
+
+        $current = $parent.FullName
+    }
+
+    return $false
+}
+
 function Test-MeridianWorkflowRunArtifactDirectory {
     param([Parameter(Mandatory = $true)][string]$Name)
 
@@ -101,6 +141,11 @@ function Invoke-MeridianBuildArtifactRetention {
             continue
         }
 
+        if (Test-MeridianPathHasReparsePointAncestor -Path $artifactRoot -StopAt $RepoRoot) {
+            Write-Warning "Skipping build artifact retention root because it crosses a reparse point: $artifactRoot"
+            continue
+        }
+
         $resolvedRoot = [System.IO.Path]::GetFullPath($artifactRoot)
         $resolvedRootWithSeparator = $resolvedRoot
         if (-not $resolvedRootWithSeparator.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
@@ -118,6 +163,11 @@ function Invoke-MeridianBuildArtifactRetention {
         $candidateEntries = New-Object System.Collections.Generic.List[object]
         foreach ($directory in $artifactDirectories) {
             $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
+            if (Test-MeridianPathHasReparsePointAncestor -Path $candidatePath -StopAt $resolvedRoot) {
+                Write-Warning "Skipping build artifact retention candidate because it crosses a reparse point: $candidatePath"
+                continue
+            }
+
             if (-not $candidatePath.StartsWith($resolvedRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
                 Write-Warning "Skipping build artifact retention candidate outside expected root: $candidatePath"
                 continue
@@ -182,6 +232,11 @@ function Invoke-MeridianBuildArtifactRetention {
             }
 
             try {
+                if (Test-MeridianPathHasReparsePointAncestor -Path $entry.Path -StopAt $resolvedRoot) {
+                    Write-Warning "Skipping build artifact retention delete because candidate crosses a reparse point: $($entry.Path)"
+                    continue
+                }
+
                 Remove-Item -LiteralPath $entry.Path -Recurse -Force -ErrorAction Stop
                 $deletedCount++
                 $freedBytes += [int64]$entry.Bytes
@@ -237,6 +292,11 @@ function Invoke-MeridianWorkflowArtifactRetention {
         return
     }
 
+    if (Test-MeridianPathHasReparsePointAncestor -Path $OutputRoot) {
+        Write-Warning "Skipping workflow artifact retention root because it crosses a reparse point: $OutputRoot"
+        return
+    }
+
     $resolvedRoot = [System.IO.Path]::GetFullPath($OutputRoot)
     if ($script:MeridianWorkflowArtifactRetentionRoots.ContainsKey($resolvedRoot)) {
         return
@@ -272,6 +332,11 @@ function Invoke-MeridianWorkflowArtifactRetention {
 
     foreach ($directory in $runDirectories) {
         $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
+        if (Test-MeridianPathHasReparsePointAncestor -Path $candidatePath -StopAt $resolvedRoot) {
+            Write-Warning "Skipping workflow artifact retention candidate because it crosses a reparse point: $candidatePath"
+            continue
+        }
+
         if (-not $candidatePath.StartsWith($resolvedRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
             Write-Warning "Skipping workflow artifact retention candidate outside expected root: $candidatePath"
             continue
@@ -284,6 +349,11 @@ function Invoke-MeridianWorkflowArtifactRetention {
         }
 
         try {
+            if (Test-MeridianPathHasReparsePointAncestor -Path $candidatePath -StopAt $resolvedRoot) {
+                Write-Warning "Skipping workflow artifact retention delete because candidate crosses a reparse point: $candidatePath"
+                continue
+            }
+
             $candidateBytes = Get-MeridianDirectorySizeBytes -Path $candidatePath
             Remove-Item -LiteralPath $candidatePath -Recurse -Force -ErrorAction Stop
             $deletedCount++

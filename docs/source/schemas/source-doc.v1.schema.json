@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "source-doc.v1.schema.json",
+  "type": "object",
+  "required": ["name", "status", "health", "priority", "evidence_posture", "completion_term"],
+  "properties": {
+    "name": {"type": "string"},
+    "status": {"$ref": "shared-enums.v1.schema.json#/$defs/status"},
+    "health": {"$ref": "shared-enums.v1.schema.json#/$defs/health"},
+    "priority": {"$ref": "shared-enums.v1.schema.json#/$defs/priority"},
+    "evidence_posture": {"$ref": "shared-enums.v1.schema.json#/$defs/evidence_posture"},
+    "completion_term": {"$ref": "shared-enums.v1.schema.json#/$defs/completion_term"}
+  },
+  "additionalProperties": true
+}

@@ -60,6 +60,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     private CancellationTokenSource _hostCts = new();
     private Task? _drainLoop;
     private IDisposable? _optionsChangeSubscription;
+    private int _stopStarted;
 
     public CoveredCallBacktestService(
         Func<BacktestRequest, BacktestEngine> engineFactory,
@@ -100,6 +101,11 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        if (Interlocked.Exchange(ref _stopStarted, 1) != 0)
+        {
+            return;
+        }
+
         _channel.Writer.TryComplete();
         _hostCts.Cancel();
 

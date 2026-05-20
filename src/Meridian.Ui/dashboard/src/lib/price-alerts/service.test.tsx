@@ -17,6 +17,18 @@ class MemoryStorage implements StorageLike {
   }
 }
 
+class FailingStorage implements StorageLike {
+  getItem(): string | null {
+    return null;
+  }
+  setItem(): void {
+    throw new Error("quota");
+  }
+  removeItem(): void {
+    return undefined;
+  }
+}
+
 function snapshot(quotes: Partial<QuotesSnapshotResponse["quotes"][number]>[]): QuotesSnapshotResponse {
   return {
     timestamp: new Date().toISOString(),
@@ -65,6 +77,29 @@ describe("usePriceAlertsService", () => {
     expect(result.current.enabledCount).toBe(1);
     const persisted = JSON.parse(storage.getItem("meridian.priceAlerts.v1")!);
     expect(persisted.alerts).toHaveLength(1);
+  });
+
+  it("keeps the alert in memory and exposes a warning when persistence fails", () => {
+    const { result } = renderHook(() =>
+      usePriceAlertsService({
+        storage: new FailingStorage(),
+        fetchSnapshot: vi.fn().mockResolvedValue(snapshot([]))
+      })
+    );
+
+    act(() => {
+      result.current.createAlert({
+        symbol: "aapl",
+        condition: "above",
+        field: "last",
+        threshold: 200
+      });
+    });
+
+    expect(result.current.state.alerts).toHaveLength(1);
+    expect(result.current.persistenceErrorMessage).toBe(
+      "Price alert storage failed. Alerts may not survive a browser reload."
+    );
   });
 
   it("triggers and disables the alert when the snapshot crosses the threshold", async () => {

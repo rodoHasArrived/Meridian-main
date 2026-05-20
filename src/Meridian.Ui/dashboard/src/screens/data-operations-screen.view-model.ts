@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -26,6 +28,7 @@ export type BackfillPhase = "idle" | "previewing" | "running";
 export interface BackfillTriggerState {
   validationError: string | null;
   feedbackText: string | null;
+  feedbackDetails: string[];
   feedbackTone: "warning" | "danger" | null;
   canPreview: boolean;
   canRun: boolean;
@@ -114,6 +117,10 @@ export interface BackfillTriggerServices {
   getProgress: () => Promise<BackfillProgressResponse>;
 }
 
+export interface ProviderSetupLifecycleServices {
+  onConfigured?: () => Promise<void> | void;
+}
+
 export interface DataOperationsEmptyState {
   title: string;
   description: string;
@@ -147,6 +154,14 @@ export interface DataOperationsBackfillSectionState extends DataOperationsSectio
   description: string;
 }
 
+export interface DataOperationsExportSectionState extends DataOperationsSectionState<DataOperationsExportRow> {
+  tableLabel: string;
+  description: string;
+  selectedRowId: string | null;
+  selectedDetail: DataOperationsExportDetailState | null;
+  detailEmptyState: DataOperationsEmptyState | null;
+}
+
 export interface DataOperationsProviderSectionState extends DataOperationsSectionState<DataOperationsProviderRow> {
   tableLabel: string;
   description: string;
@@ -161,6 +176,7 @@ export interface DataOperationsProviderRow {
   rowId: string;
   detailPanelId: string;
   status: DataOperationsProviderRecord["status"];
+  rowClassName: DataOperationsStatusRowClassName;
   capability: string;
   latencyText: string;
   trustScoreText: string;
@@ -193,6 +209,7 @@ export interface DataOperationsBackfillRow {
   scope: string;
   provider: string;
   status: DataOperationsBackfillRecord["status"];
+  rowClassName: DataOperationsStatusRowClassName;
   progress: string;
   updatedAt: string;
   selected: boolean;
@@ -229,24 +246,43 @@ export interface DataOperationsProviderDetailState {
 
 export interface DataOperationsExportRow {
   exportId: string;
+  rowId: string;
+  detailPanelId: string;
   profile: string;
   target: string;
   status: DataOperationsExportRecord["status"];
   statusLabel: string;
   statusVariant: "success" | "warning" | "paper";
   statusTone: "success" | "warning" | "paper";
+  rowClassName: DataOperationsStatusRowClassName;
   rows: string;
   updatedAt: string;
   summaryText: string;
   detailFields: DataOperationsDetailField[];
   actionText: string;
+  selected: boolean;
+  expanded: boolean;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailDescription: string;
+}
+
+export interface DataOperationsExportDetailState {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: DataOperationsExportRecord["status"];
+  statusVariant: "success" | "warning" | "paper";
+  fields: DataOperationsDetailField[];
+  actionText: string;
 }
 
 export interface DataOperationsPresentationState {
   providerSection: DataOperationsProviderSectionState;
   backfillSection: DataOperationsBackfillSectionState;
-  exportSection: DataOperationsSectionState<DataOperationsExportRow>;
+  exportSection: DataOperationsExportSectionState;
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
   routeFocusCard: DataOperationsRouteFocusCardState;
@@ -277,6 +313,13 @@ export interface DataOperationsLoadingState {
   chips: DataOperationsLoadingChipState[];
   actions: DataOperationsLoadingActionState[];
 }
+
+export type DataOperationsStatusRowClassName =
+  | "bg-background/50"
+  | "bg-success/5"
+  | "bg-warning/5"
+  | "bg-danger/5"
+  | "bg-paper/5";
 
 // --- Provider setup types ---
 
@@ -321,6 +364,7 @@ export interface ProviderSetupDialogState {
     title: string;
     ariaLabel: string;
   };
+  successMetadata: ProviderSetupSuccessMetadataState;
   successActions: ProviderSetupNextActionState[];
 }
 
@@ -337,6 +381,13 @@ export interface ProviderSetupNextActionState {
   href: string;
   ariaLabel: string;
   variant: "default" | "outline";
+}
+
+export interface ProviderSetupSuccessMetadataState {
+  rows: DataOperationsDetailField[];
+  warnings: string[];
+  metadataAriaLabel: string;
+  warningsAriaLabel: string;
 }
 
 export interface ProviderSetupKindOptionState {
@@ -499,30 +550,51 @@ const defaultBackfillServices: BackfillTriggerServices = {
   run: (request) => workstationApi.triggerBackfill(request),
   getProgress: () => workstationApi.getBackfillProgress()
 };
+const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
 
 const defaultBackfillForm: BackfillFormState = {
-  provider: "yahoo",
+  provider: "",
   symbols: "",
   from: "",
   to: ""
 };
 
+const NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
+  "Configure a provider before previewing a backfill.";
+
+const SELECT_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
+  "Select a configured provider before previewing a backfill.";
+
+const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
+  "alpaca": "alpaca",
+  "composite": "composite",
+  "composite fallback": "composite",
+  "polygon": "polygon",
+  "polygon.io": "polygon",
+  "stooq": "stooq",
+  "yahoo": "yahoo",
+  "yahoo finance": "yahoo"
+};
+
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
 export const DATA_BACKFILL_ROUTE_FOCUS_CARD_ID = "data-backfill-route-focus";
+export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 
 export function useDataOperationsViewModel(
   data: DataOperationsWorkspaceResponse | null,
   pathname: string,
-  services: BackfillTriggerServices = defaultBackfillServices
+  services: BackfillTriggerServices = defaultBackfillServices,
+  providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
+  const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillTriggerResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
   const backfillCommandRevisionRef = useRef(0);
@@ -532,8 +604,12 @@ export function useDataOperationsViewModel(
   const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
-  const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
+  const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
   const providerSetupCommandRevisionRef = useRef(0);
+  const configuredBackfillProviders = useMemo(
+    () => data?.providers ?? [],
+    [data?.providers]
+  );
 
   const nextBackfillCommandRevision = useCallback(() => {
     const revision = backfillCommandRevisionRef.current + 1;
@@ -570,9 +646,19 @@ export function useDataOperationsViewModel(
     () => resolveSelectedBackfill(data?.backfills ?? [], selectedBackfillId),
     [data, selectedBackfillId]
   );
+  const selectedExport = useMemo(
+    () => resolveSelectedExport(data?.exports ?? [], selectedExportId),
+    [data, selectedExportId]
+  );
   const presentation = useMemo(
-    () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream, selectedProviderRowId),
-    [data, selectedBackfill?.jobId, selectedProviderRowId, workstream]
+    () => buildDataOperationsPresentationState(
+      data,
+      selectedBackfill?.jobId ?? null,
+      workstream,
+      selectedProviderRowId,
+      selectedExport?.exportId ?? null
+    ),
+    [data, selectedBackfill?.jobId, selectedExport?.exportId, selectedProviderRowId, workstream]
   );
   const loadingState = useMemo(
     () => buildDataOperationsLoadingState(workstream),
@@ -580,8 +666,16 @@ export function useDataOperationsViewModel(
   );
 
   const triggerState = useMemo(
-    () => buildBackfillTriggerState({ form, busy, phase, error, preview, result }),
-    [busy, error, form, phase, preview, result]
+    () => buildBackfillTriggerState({
+      form,
+      busy,
+      phase,
+      error,
+      preview,
+      result,
+      configuredProviders: configuredBackfillProviders
+    }),
+    [busy, configuredBackfillProviders, error, form, phase, preview, result]
   );
   const previewResultCard = useMemo(
     () => preview ? buildBackfillResultCardState(preview, "preview") : null,
@@ -602,6 +696,23 @@ export function useDataOperationsViewModel(
     setPhase("idle");
   }, [nextBackfillCommandRevision]);
 
+  useEffect(() => {
+    setForm((current) => {
+      const options = buildBackfillProviderOptions(current.provider, configuredBackfillProviders);
+      if (options.length === 0) {
+        return current.provider.length > 0 ? { ...current, provider: "" } : current;
+      }
+
+      const currentProvider = normalizeBackfillProviderValue(current.provider);
+      const matchingOption = options.find((option) => option.value === currentProvider);
+      if (matchingOption) {
+        return current.provider === matchingOption.value ? current : { ...current, provider: matchingOption.value };
+      }
+
+      return { ...current, provider: options[0].value };
+    });
+  }, [configuredBackfillProviders]);
+
   const closeBackfillDialog = useCallback(() => {
     if (busy) {
       return;
@@ -618,9 +729,9 @@ export function useDataOperationsViewModel(
   }, []);
 
   const previewBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
-      setError(validationError);
+      setError(buildDataOperationsErrorState(validationError));
       return;
     }
 
@@ -641,24 +752,24 @@ export function useDataOperationsViewModel(
         return;
       }
       setPreview(null);
-      setError(err instanceof Error ? err.message : "Backfill preview failed.");
+      setError(buildDataOperationsErrorState(err, "Backfill preview failed."));
     } finally {
       if (isCurrentBackfillCommand(commandRevision)) {
         setBusy(false);
         setPhase("idle");
       }
     }
-  }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, services]);
+  }, [configuredBackfillProviders, form, isCurrentBackfillCommand, nextBackfillCommandRevision, services]);
 
   const runBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
-      setError(validationError);
+      setError(buildDataOperationsErrorState(validationError));
       return;
     }
 
     if (!preview) {
-      setError("Preview the request before running the backfill.");
+      setError(buildDataOperationsErrorState("Preview the request before running the backfill."));
       return;
     }
 
@@ -678,14 +789,14 @@ export function useDataOperationsViewModel(
       if (!isCurrentBackfillCommand(commandRevision)) {
         return;
       }
-      setError(err instanceof Error ? err.message : "Backfill run failed.");
+      setError(buildDataOperationsErrorState(err, "Backfill run failed."));
     } finally {
       if (isCurrentBackfillCommand(commandRevision)) {
         setBusy(false);
         setPhase("idle");
       }
     }
-  }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
+  }, [configuredBackfillProviders, form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
 
   const openProviderSetup = useCallback(() => {
     nextProviderSetupCommandRevision();
@@ -741,7 +852,7 @@ export function useDataOperationsViewModel(
   const submitProviderSetup = useCallback(async () => {
     const validationError = validateProviderSetupForm(providerForm);
     if (validationError) {
-      setProviderSetupError(validationError);
+      setProviderSetupError(buildDataOperationsErrorState(validationError));
       return;
     }
 
@@ -766,23 +877,29 @@ export function useDataOperationsViewModel(
       }
       setProviderSetupResult(response);
       setProviderPhase(response.success ? "success" : "error");
+      if (response.success && providerSetupLifecycle.onConfigured) {
+        try {
+          void Promise.resolve(providerSetupLifecycle.onConfigured()).catch(() => undefined);
+        } catch {
+          // Provider setup remains successful even if a follow-up refresh cannot start.
+        }
+      }
     } catch (err) {
       if (!isCurrentProviderSetupCommand(commandRevision)) {
         return;
       }
-      const message = err instanceof Error ? err.message : "Provider setup failed.";
-      setProviderSetupError(message);
+      setProviderSetupError(buildDataOperationsErrorState(err, "Provider setup failed."));
       setProviderPhase("error");
     } finally {
       if (isCurrentProviderSetupCommand(commandRevision)) {
         setProviderForm(clearProviderSetupCredentials);
       }
     }
-  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm]);
+  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm, providerSetupLifecycle]);
 
   const providerSetupDialogState = useMemo(
-    () => buildProviderSetupDialogState(providerPhase, providerForm),
-    [providerPhase, providerForm]
+    () => buildProviderSetupDialogState(providerPhase, providerForm, providerSetupResult),
+    [providerPhase, providerForm, providerSetupResult]
   );
 
   return {
@@ -796,6 +913,10 @@ export function useDataOperationsViewModel(
     selectedBackfillId,
     selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
     selectBackfill: setSelectedBackfillId,
+    selectedExport,
+    selectedExportId,
+    selectedExportRowId: selectedExport ? buildExportRowId(selectedExport.exportId) : null,
+    selectExport: setSelectedExportId,
     ...presentation,
     dialogOpen,
     openBackfillDialog,
@@ -858,14 +979,14 @@ export function buildDataOperationsLoadingState(
       {
         id: "settings",
         label: "Check provider setup",
-        href: "/settings#alpaca-provider-setup",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
         variant: "default"
       },
       {
         id: "quotes",
         label: "Open live quotes",
-        href: "/data/quotes",
+        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         ariaLabel: "Open live quotes while Data workspace loads",
         variant: "outline"
       }
@@ -877,7 +998,8 @@ export function buildDataOperationsPresentationState(
   data: DataOperationsWorkspaceResponse | null,
   selectedBackfillId: string | null,
   workstream: "overview" | "backfills" = "overview",
-  selectedProviderId: string | null = null
+  selectedProviderId: string | null = null,
+  selectedExportId: string | null = null
 ): DataOperationsPresentationState {
   const providers = data?.providers ?? [];
   const backfills = data?.backfills ?? [];
@@ -893,7 +1015,7 @@ export function buildDataOperationsPresentationState(
   return {
     providerSection: buildProviderSection(providers, selectedProviderId),
     backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
-    exportSection: buildExportSection(exports),
+    exportSection: buildExportSection(exports, selectedExportId),
     selectedBackfillDetail,
     backfillDetailEmptyState,
     routeFocusCard: buildRouteFocusCardState({
@@ -955,7 +1077,7 @@ export function buildRouteFocusCardState({
     ],
     action: {
       label: "Open Security Master",
-      href: "/accounting/security-master",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
       ariaLabel: "Open Security Master in Accounting"
     }
   };
@@ -1008,6 +1130,7 @@ export function buildProviderRow(
     rowId,
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     status: provider.status,
+    rowClassName: providerRowClassName(statusTone),
     capability: provider.capability,
     latencyText,
     trustScoreText,
@@ -1103,6 +1226,7 @@ export function buildBackfillSection(
         scope: backfill.scope,
         provider: backfill.provider,
         status: backfill.status,
+        rowClassName: backfillRowClassName(backfill.status),
         progress: backfill.progress,
         updatedAt: backfill.updatedAt,
         selected,
@@ -1156,13 +1280,19 @@ export function buildSelectedBackfillDetail(
 }
 
 export function buildExportSection(
-  exports: DataOperationsExportRecord[]
-): DataOperationsSectionState<DataOperationsExportRow> {
+  exports: DataOperationsExportRecord[],
+  selectedExportId: string | null = null
+): DataOperationsExportSectionState {
+  const selectedExport = resolveSelectedExport(exports, selectedExportId);
+  const selectedRowId = selectedExport ? buildExportRowId(selectedExport.exportId) : null;
+
   return {
     rows: exports.map((item) => {
       const statusVariant = exportStatusVariant(item.status);
       const actionText = exportActionText(item.status);
       const summaryText = `${item.target} · ${item.rows} · ${item.updatedAt}`;
+      const rowId = buildExportRowId(item.exportId);
+      const selected = rowId === selectedRowId;
       const detailFields = [
         { id: "export-id", label: "Export ID", value: item.exportId },
         { id: "target", label: "Target", value: item.target },
@@ -1172,31 +1302,81 @@ export function buildExportSection(
 
       return {
         exportId: item.exportId,
+        rowId,
+        detailPanelId: DATA_EXPORT_DETAIL_PANEL_ID,
         profile: item.profile,
         target: item.target,
         status: item.status,
         statusLabel: item.status,
         statusVariant,
         statusTone: statusVariant,
+        rowClassName: exportRowClassName(item.status),
         rows: item.rows,
         updatedAt: item.updatedAt,
         summaryText,
         detailFields,
         actionText,
+        selected,
+        expanded: selected,
         ariaLabel: [
-          `${item.profile} export ${item.status}`,
+          `${selected ? "Selected" : "Inspect"} export ${item.exportId}: ${item.profile} ${item.status}`,
           `Target ${item.target}`,
           `Rows ${item.rows}`,
           `Updated ${item.updatedAt}`,
           `Next action ${actionText}`
-        ].join(". ")
+        ].join(". "),
+        selectAriaLabel: `Inspect export ${item.exportId}`,
+        detailDescription: selected
+          ? "This export detail panel is expanded."
+          : "Select this export row to update the export detail panel."
       };
     }),
     hasRows: exports.length > 0,
     emptyState: {
       title: "No exports available",
       description: "Generated packages and reporting outputs will appear here with target, row count, and readiness status."
-    }
+    },
+    tableLabel: "Recent exports",
+    description: "Latest package and reporting outputs tied to data operations evidence",
+    selectedRowId,
+    selectedDetail: buildSelectedExportDetail(exports, selectedExport?.exportId ?? null),
+    detailEmptyState: exports.length === 0
+      ? {
+          title: "No export selected",
+          description: "Generated packages and governed export evidence will appear here after a report or package job runs."
+        }
+      : null
+  };
+}
+
+export function buildSelectedExportDetail(
+  exports: DataOperationsExportRecord[],
+  selectedExportId: string | null
+): DataOperationsExportDetailState | null {
+  const selected = resolveSelectedExport(exports, selectedExportId);
+
+  if (!selected) {
+    return null;
+  }
+
+  const actionText = exportActionText(selected.status);
+  const description = `${selected.profile} export targets ${selected.target} with ${selected.rows} rows. ${actionText}`;
+
+  return {
+    id: DATA_EXPORT_DETAIL_PANEL_ID,
+    title: selected.profile,
+    subtitle: `${selected.exportId} · ${selected.target}`,
+    description,
+    ariaLabel: `Export detail for ${selected.exportId}: ${selected.profile} ${selected.status}. ${actionText}`,
+    statusLabel: selected.status,
+    statusVariant: exportStatusVariant(selected.status),
+    fields: [
+      { id: "export-id", label: "Export ID", value: selected.exportId },
+      { id: "target", label: "Target", value: selected.target },
+      { id: "rows", label: "Rows", value: selected.rows },
+      { id: "updated", label: "Updated", value: selected.updatedAt }
+    ],
+    actionText
   };
 }
 
@@ -1210,6 +1390,42 @@ function exportStatusVariant(status: DataOperationsExportRecord["status"]): Data
   }
 
   return "warning";
+}
+
+function providerRowClassName(statusTone: DataOperationsProviderRow["statusTone"]): DataOperationsStatusRowClassName {
+  if (statusTone === "success") {
+    return "bg-success/5";
+  }
+
+  if (statusTone === "danger") {
+    return "bg-danger/5";
+  }
+
+  return "bg-warning/5";
+}
+
+function backfillRowClassName(status: DataOperationsBackfillRecord["status"]): DataOperationsStatusRowClassName {
+  if (status === "Running") {
+    return "bg-paper/5";
+  }
+
+  if (status === "Review") {
+    return "bg-warning/5";
+  }
+
+  return "bg-background/50";
+}
+
+function exportRowClassName(status: DataOperationsExportRecord["status"]): DataOperationsStatusRowClassName {
+  if (status === "Ready") {
+    return "bg-success/5";
+  }
+
+  if (status === "Running") {
+    return "bg-paper/5";
+  }
+
+  return "bg-warning/5";
 }
 
 function exportActionText(status: DataOperationsExportRecord["status"]): string {
@@ -1240,25 +1456,37 @@ export function resolveSelectedBackfill(
   return backfills.find((job) => job.jobId === selectedBackfillId) ?? backfills[0] ?? null;
 }
 
+export function resolveSelectedExport(
+  exports: DataOperationsExportRecord[],
+  selectedExportId: string | null
+): DataOperationsExportRecord | null {
+  return exports.find((item) => (
+    item.exportId === selectedExportId || buildExportRowId(item.exportId) === selectedExportId
+  )) ?? exports[0] ?? null;
+}
+
 export function buildBackfillTriggerState({
   form,
   busy,
   phase,
   error,
   preview,
-  result
+  result,
+  configuredProviders = []
 }: {
   form: BackfillFormState;
   busy: boolean;
   phase: BackfillPhase;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
+  configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillTriggerState {
-  const validationError = validateBackfillForm(form);
-  const feedbackText = error;
+  const validationError = validateBackfillForm(form, configuredProviders);
+  const feedbackText = error?.summary ?? null;
+  const feedbackDetails = error?.details ?? [];
   const feedbackTone = error
-    ? error === validationError
+    ? feedbackText === validationError
       ? "warning"
       : "danger"
     : null;
@@ -1266,6 +1494,7 @@ export function buildBackfillTriggerState({
   return {
     validationError,
     feedbackText,
+    feedbackDetails,
     feedbackTone,
     canPreview: !busy && validationError === null,
     canRun: !busy && preview !== null && validationError === null,
@@ -1285,7 +1514,7 @@ export function buildBackfillTriggerState({
           : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
-    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result })
+    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders })
   };
 }
 
@@ -1296,20 +1525,25 @@ export function buildBackfillDialogState({
   validationError,
   preview,
   error = null,
-  result = null
+  result = null,
+  configuredProviders = []
 }: {
   form: BackfillFormState;
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
   preview: BackfillTriggerResult | null;
-  error?: string | null;
+  error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
+  configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillDialogState {
   const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
   const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
   const fieldDisabledReason = busy
     ? "Backfill request is running; wait for the current request to finish before editing."
+    : providerOptions.length === 0
+      ? NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE
     : null;
 
   return {
@@ -1318,17 +1552,17 @@ export function buildBackfillDialogState({
     formLabel: "Backfill request form",
     closeButtonLabel: "Close backfill dialog",
     closeButtonDisabledReason: busy ? "Backfill request is running; wait for the current request to finish before closing." : null,
-    summaryItems: buildBackfillDialogSummaryItems(form),
+    summaryItems: buildBackfillDialogSummaryItems(form, configuredProviders),
     providerField: {
       id: "backfill-provider",
       label: "Provider",
       ariaLabel: "Backfill provider",
       placeholder: "Select a provider",
-      disabled: busy,
+      disabled: busy || providerOptions.length === 0,
       disabledReason: fieldDisabledReason
     },
-    providerOptions: buildBackfillProviderOptions(form.provider),
-    selectedProviderDetail: buildBackfillProviderDetail(form.provider),
+    providerOptions,
+    selectedProviderDetail: buildBackfillProviderDetail(form.provider, configuredProviders),
     symbolsField: {
       id: "backfill-symbols",
       label: "Symbols",
@@ -1384,13 +1618,19 @@ export function buildBackfillDialogState({
   };
 }
 
-export function buildBackfillDialogSummaryItems(form: BackfillFormState): BackfillDialogSummaryItemState[] {
-  const provider = resolveBackfillProviderLabel(form.provider);
+export function buildBackfillDialogSummaryItems(
+  form: BackfillFormState,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): BackfillDialogSummaryItemState[] {
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const provider = providerOptions.length > 0
+    ? resolveBackfillProviderLabel(form.provider, configuredProviders)
+    : "None configured";
   const symbols = parseSymbols(form.symbols);
   const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
 
   return [
-    { id: "provider", label: "Provider", value: provider, tone: "default" },
+    { id: "provider", label: "Provider", value: provider, tone: providerOptions.length > 0 ? "default" : "warning" },
     {
       id: "symbols",
       label: "Symbols",
@@ -1401,36 +1641,65 @@ export function buildBackfillDialogSummaryItems(form: BackfillFormState): Backfi
   ];
 }
 
-export function buildBackfillProviderOptions(selectedProvider: string): BackfillProviderOptionState[] {
-  const selected = selectedProvider.trim().toLowerCase();
-  const hasSelectedOption = BACKFILL_PROVIDER_OPTIONS.some((option) => option.value === selected);
-  const options = BACKFILL_PROVIDER_OPTIONS;
+export function buildBackfillProviderOptions(
+  selectedProvider: string,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): BackfillProviderOptionState[] {
+  const options = new Map<string, BackfillProviderOptionState>();
 
-  if (!selected || hasSelectedOption) {
-    return options;
+  for (const provider of configuredProviders) {
+    const value = normalizeBackfillProviderValue(provider.provider);
+    if (!value || options.has(value)) {
+      continue;
+    }
+
+    const knownProvider = BACKFILL_PROVIDER_OPTIONS.find((option) => option.value === value);
+    const label = provider.provider.trim() || knownProvider?.label || value;
+    const capability = provider.capability.trim() || "historical backfill";
+    options.set(value, {
+      value,
+      label,
+      description: `${label} is configured for ${capability}; current status is ${provider.status.toLowerCase()}.`,
+      badge: "Configured"
+    });
   }
 
-  return [
-    ...options,
-    {
-      value: selected,
-      label: selectedProvider.trim(),
-      description: "Custom provider id. Meridian will submit it exactly as selected.",
-      badge: "Custom"
-    }
-  ];
+  const selected = normalizeBackfillProviderValue(selectedProvider);
+  const result = Array.from(options.values());
+  if (!selected || options.has(selected)) {
+    return result;
+  }
+
+  return result;
 }
 
-export function buildBackfillProviderDetail(provider: string): string {
-  const selected = provider.trim().toLowerCase();
-  const option = BACKFILL_PROVIDER_OPTIONS.find((item) => item.value === selected);
-  return option?.description ?? "Custom provider id. Use this only when the host is configured for that provider.";
+export function buildBackfillProviderDetail(
+  provider: string,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): string {
+  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  if (options.length === 0) {
+    return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
+  }
+
+  const selected = normalizeBackfillProviderValue(provider);
+  const option = options.find((item) => item.value === selected) ?? options[0];
+  return option.description;
 }
 
-function resolveBackfillProviderLabel(provider: string): string {
+function resolveBackfillProviderLabel(
+  provider: string,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): string {
   const trimmed = provider.trim();
-  const option = BACKFILL_PROVIDER_OPTIONS.find((item) => item.value === trimmed.toLowerCase());
+  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  const option = options.find((item) => item.value === normalizeBackfillProviderValue(trimmed));
   return option?.label ?? (trimmed.length > 0 ? trimmed : "Default provider");
+}
+
+function normalizeBackfillProviderValue(provider: string): string {
+  const normalized = provider.trim().toLowerCase();
+  return BACKFILL_PROVIDER_ALIASES[normalized] ?? normalized;
 }
 
 export function resolveBackfillPreviewDisabledReason({
@@ -1495,7 +1764,7 @@ export function buildBackfillFormStatusLabel({
   phase: BackfillPhase;
   validationError: string | null;
   preview: BackfillTriggerResult | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   result: BackfillTriggerResult | null;
 }): string {
   if (phase === "previewing") {
@@ -1511,7 +1780,7 @@ export function buildBackfillFormStatusLabel({
   }
 
   if (error) {
-    return error;
+    return error.summary;
   }
 
   if (result?.success) {
@@ -1542,7 +1811,7 @@ function resolveBackfillFormStatusTone({
 }: {
   phase: BackfillPhase;
   validationError: string | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
 }): BackfillDialogState["formStatusTone"] {
@@ -1612,7 +1881,19 @@ export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRe
   };
 }
 
-export function validateBackfillForm(form: BackfillFormState): string | null {
+export function validateBackfillForm(
+  form: BackfillFormState,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): string | null {
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  if (providerOptions.length === 0) {
+    return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
+  }
+
+  if (!providerOptions.some((provider) => provider.value === normalizeBackfillProviderValue(form.provider))) {
+    return SELECT_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
+  }
+
   if (parseSymbols(form.symbols).length === 0) {
     return "Enter at least one symbol before previewing a backfill.";
   }
@@ -1736,6 +2017,10 @@ function buildBackfillRowId(jobId: string): string {
   return `backfill-row-${toDomId(jobId)}`;
 }
 
+function buildExportRowId(exportId: string): string {
+  return `export-row-${toDomId(exportId)}`;
+}
+
 function buildProviderRowId(provider: string): string {
   return `provider-row-${toDomId(provider)}`;
 }
@@ -1785,7 +2070,7 @@ function buildBackfillStatusAnnouncement({
   result
 }: {
   phase: BackfillPhase;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
 }): string {
@@ -1798,7 +2083,7 @@ function buildBackfillStatusAnnouncement({
   }
 
   if (error) {
-    return `Backfill request failed: ${error}`;
+    return `Backfill request failed: ${error.summary}`;
   }
 
   if (result) {
@@ -1854,7 +2139,8 @@ export function clearProviderSetupCredentials(form: ProviderSetupFormState): Pro
 
 export function buildProviderSetupDialogState(
   phase: ProviderSetupPhase,
-  form: ProviderSetupFormState
+  form: ProviderSetupFormState,
+  result: ProviderSetupResult | null = null
 ): ProviderSetupDialogState {
   const submitting = phase === "submitting";
   const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
@@ -1922,8 +2208,18 @@ export function buildProviderSetupDialogState(
       title: "Next validation",
       ariaLabel: "Provider setup next validation"
     },
+    successMetadata: buildProviderSetupSuccessMetadata(result),
     successActions: buildProviderSetupSuccessActions(form)
   };
+}
+
+function buildDataOperationsErrorState(error: unknown, fallback?: string): ApiErrorDisplay {
+  if (typeof error === "string") {
+    const summary = error.trim() || (fallback ?? "Request failed.");
+    return { summary, details: [] };
+  }
+
+  return describeApiError(error, fallback ?? "Request failed.");
 }
 
 function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationError: string | null): string {
@@ -1932,6 +2228,45 @@ function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationErro
   if (phase === "error") return "Provider setup encountered an error.";
   if (validationError) return validationError;
   return "Provider setup is ready to submit.";
+}
+
+export function buildProviderSetupSuccessMetadata(result: ProviderSetupResult | null): ProviderSetupSuccessMetadataState {
+  const rows: DataOperationsDetailField[] = [];
+  const bindingIds = normalizeProviderSetupStringArray(result?.bindingIds);
+  const warnings = normalizeProviderSetupStringArray(result?.warnings);
+  const connectionId = normalizeProviderSetupString(result?.connectionId) ?? normalizeProviderSetupString(result?.providerId);
+
+  if (connectionId) {
+    rows.push({ id: "connection-id", label: "Connection", value: connectionId });
+  }
+
+  if (bindingIds.length > 0) {
+    rows.push({ id: "binding-ids", label: "Bindings", value: bindingIds.join(", ") });
+  } else if (result?.success) {
+    rows.push({ id: "binding-ids", label: "Bindings", value: "No routing binding returned" });
+  }
+
+  const credentialState = normalizeProviderSetupString(result?.credentialState);
+  if (credentialState) {
+    rows.push({ id: "credential-state", label: "Credential", value: formatProviderSetupCredentialState(credentialState) });
+  }
+
+  const credentialSource = normalizeProviderSetupString(result?.credentialSource);
+  if (credentialSource) {
+    rows.push({ id: "credential-source", label: "Source", value: formatProviderSetupCredentialSource(credentialSource) });
+  }
+
+  const environment = normalizeProviderSetupString(result?.environment);
+  if (environment) {
+    rows.push({ id: "environment", label: "Environment", value: environment.toUpperCase() });
+  }
+
+  return {
+    rows,
+    warnings,
+    metadataAriaLabel: "Provider setup routing and credential posture",
+    warningsAriaLabel: "Provider setup warnings"
+  };
 }
 
 export function buildProviderSetupSummary(
@@ -1962,6 +2297,47 @@ export function buildProviderSetupSummary(
       ? `${providerLabel} can be configured without pasting a secret.`
       : null
   };
+}
+
+function normalizeProviderSetupString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function normalizeProviderSetupStringArray(values: readonly unknown[] | null | undefined): string[] {
+  return (values ?? [])
+    .map(normalizeProviderSetupString)
+    .filter((value): value is string => value !== null);
+}
+
+function formatProviderSetupCredentialState(value: string): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    case "NotVerified":
+      return "Not verified";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function formatProviderSetupCredentialSource(value: string): string {
+  switch (value) {
+    case "ExternalVaultReference":
+      return "External vault reference";
+    case "LocalEncryptedStore":
+      return "Local encrypted store";
+    case "NotRequired":
+      return "Not required";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function splitProviderSetupPascalCase(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .trim() || value;
 }
 
 function isValidEndpointUrl(value: string): boolean {
@@ -2010,7 +2386,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "live-quotes",
       label: "Validate live quotes",
-      href: "/data/quotes?symbol=AAPL",
+      href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }),
       ariaLabel: `Validate live quotes after configuring ${providerLabel}`,
       variant: "default"
     });
@@ -2020,7 +2396,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "backfill",
       label: "Preview a backfill",
-      href: "/data/backfills",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -2030,7 +2406,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "readiness",
       label: "Check Trading readiness",
-      href: "/trading/readiness",
+      href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
       ariaLabel: `Check Trading readiness after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -2040,7 +2416,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "security-master",
       label: "Review Security Master",
-      href: "/accounting/security-master",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
       ariaLabel: `Review Security Master coverage after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });

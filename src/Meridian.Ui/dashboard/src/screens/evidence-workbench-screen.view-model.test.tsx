@@ -2,6 +2,7 @@ import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-libr
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { ApiError } from "@/lib/api-errors";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -290,7 +291,7 @@ describe("Evidence Workbench view model", () => {
       selectedSubjectKind: null,
       selectedSubjectId: null,
       loading: false,
-      error: "Evidence API unavailable",
+      error: { summary: "Evidence API unavailable", details: [] },
       subjects: [],
       packet: null,
       exportBusy: false,
@@ -339,6 +340,49 @@ describe("Evidence Workbench view model", () => {
 
     expect(vm.sourceWorkflowHref).toBe("/reporting/report-packs");
     expect(vm.sourceWorkflowAriaLabel).toBe("Open source workflow for Momentum strategy run");
+  });
+
+  it("preserves operating scope in source-workflow, subject, and packet-action links", () => {
+    const vm = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "strategy-run",
+      selectedSubjectId: "run-1",
+      operatingScope: {
+        label: "Operating scope",
+        summary: "Subject: MSFT / Account: fund-1 / Run: run-1 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15",
+        subjectSymbol: "MSFT",
+        fundAccountId: "fund-1",
+        runId: "run-1",
+        provider: "Alpaca",
+        hasScope: true,
+        clearAriaLabel: "Clear operating scope",
+        items: [],
+        queryParams: [
+          { key: "symbol", value: "MSFT", scopeKey: "symbol" },
+          { key: "fundAccountId", value: "fund-1", scopeKey: "fundAccountId" },
+          { key: "runId", value: "run-1", scopeKey: "runId" },
+          { key: "provider", value: "Alpaca", scopeKey: "provider" },
+          { key: "from", value: "2026-05-01", scopeKey: "window" },
+          { key: "to", value: "2026-05-15", scopeKey: "window" }
+        ]
+      },
+      loading: false,
+      error: null,
+      subjects: [subject],
+      packet,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    expect(vm.sourceWorkflowHref).toBe("/strategy?runId=run-1&symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15");
+    expect(vm.openSubjectHref(subject))
+      .toBe("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15");
+    expect(vm.packetActions[0]).toMatchObject({
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
   });
 
   it("normalizes subject routes to canonical workstation paths before falling back to page tags", () => {
@@ -858,7 +902,12 @@ describe("EvidenceWorkbenchScreen", () => {
 
   it("lets operators retry a failed subject load without showing empty evidence copy", async () => {
     vi.mocked(getEvidenceSubjects)
-      .mockRejectedValueOnce(new Error("Evidence API unavailable"))
+      .mockRejectedValueOnce(new ApiError({
+        path: "/api/workstation/evidence/subjects",
+        status: 503,
+        detail: "Evidence API unavailable",
+        responseBody: "Evidence API unavailable"
+      }))
       .mockResolvedValueOnce([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
     const user = userEvent.setup();
@@ -866,6 +915,7 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Evidence API unavailable");
+    expect(screen.getByText("Endpoint returned 503 for /api/workstation/evidence/subjects.")).toBeInTheDocument();
     expect(screen.queryByText("No evidence subjects returned")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /retry loading evidence subjects/i }));
@@ -876,6 +926,54 @@ describe("EvidenceWorkbenchScreen", () => {
     );
     await waitFor(() => expect(getEvidenceSubjects).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
+  });
+
+  it("keeps operating scope in evidence workbench links rendered from the route", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15");
+
+    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open source workflow for momentum strategy run/i })).toHaveAttribute(
+      "href",
+      "/strategy?runId=run-1&symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    );
+    expect(screen.getByRole("link", { name: /open evidence packet for momentum strategy run/i })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    );
+  });
+
+  it("renders structured validation errors for failed manifest export", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    vi.mocked(exportEvidenceManifest).mockRejectedValue(
+      new ApiError({
+        path: "/api/workstation/evidence/strategy-run/run-1/export-manifest",
+        status: 422,
+        detail: "One or more validation errors occurred.",
+        validationIssues: [
+          {
+            field: "includeWarnings",
+            label: "includeWarnings",
+            messages: ["Manifest-only export must keep warnings enabled."]
+          }
+        ],
+        responseBody: "{\"detail\":\"One or more validation errors occurred.\"}"
+      })
+    );
+    const user = userEvent.setup();
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+
+    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("One or more validation errors occurred.");
+    expect(screen.getByText("Endpoint returned 422 for /api/workstation/evidence/strategy-run/run-1/export-manifest.")).toBeInTheDocument();
+    expect(screen.getByText("includeWarnings: Manifest-only export must keep warnings enabled.")).toBeInTheDocument();
   });
 });
 

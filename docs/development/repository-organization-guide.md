@@ -685,10 +685,9 @@ grep -rE "FIXME:|HACK:" src/ tests/
 
 The following CI workflows enforce organization rules:
 
-- **pr-checks.yml** — Build and test validation
-- **code-quality.yml** — Code style and analyzer rules
-- **documentation.yml** — Documentation validation
-- **validate-workflows.yml** — Workflow syntax validation
+- **ci.yml** — Restore, format, build, non-integration tests, and browser workstation validation
+- **windows-desktop-build.yml** — Windows WPF build, WPF tests, and desktop publish smoke
+- **maintenance.yml** — Workflow hygiene and workflow syntax validation
 
 ### Future Enforcement
 

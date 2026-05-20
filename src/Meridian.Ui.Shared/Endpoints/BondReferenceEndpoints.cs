@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.FixedIncome;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.FixedIncome;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -10,9 +11,15 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static class BondReferenceEndpoints
 {
+    private const int MaxIssuerNameLength = 200;
+    private const int MaxMaturityLadderRangeDays = 18_366; // 50 years, including leap days.
+
     public static void MapBondReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup(string.Empty).WithTags("BondReference");
+        group.AddEndpointFilter(EndpointAuthorization.RequireAny(
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster));
 
         group.MapGet(UiApiRoutes.ReferenceDataBondReference, async (
             Guid securityId,
@@ -24,6 +31,7 @@ public static class BondReferenceEndpoints
         })
         .WithName("GetBondReference")
         .Produces<BondReferenceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.ReferenceDataBondLifecycle, async (
@@ -36,6 +44,7 @@ public static class BondReferenceEndpoints
         })
         .WithName("GetBondLifecycle")
         .Produces<BondLifecycleDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.ReferenceDataBondAccrualConvention, async (
@@ -48,6 +57,7 @@ public static class BondReferenceEndpoints
         })
         .WithName("GetBondAccrualConvention")
         .Produces<BondAccrualConventionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.ReferenceDataBondIssuerLadder, async (
@@ -55,11 +65,24 @@ public static class BondReferenceEndpoints
             [FromServices] IBondReferenceService service,
             CancellationToken ct) =>
         {
-            var ladder = await service.GetIssuerLadderAsync(issuerName, ct).ConfigureAwait(false);
+            var normalizedIssuerName = issuerName?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedIssuerName))
+            {
+                return Results.BadRequest(new { error = "issuerName is required." });
+            }
+
+            if (normalizedIssuerName.Length > MaxIssuerNameLength)
+            {
+                return Results.BadRequest(new { error = $"issuerName must be {MaxIssuerNameLength} characters or fewer." });
+            }
+
+            var ladder = await service.GetIssuerLadderAsync(normalizedIssuerName, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
         .WithName("GetBondIssuerLadder")
-        .Produces<IReadOnlyList<BondReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<BondReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet(UiApiRoutes.ReferenceDataBondMaturityLadder, async (
             [FromQuery] DateOnly from,
@@ -67,10 +90,22 @@ public static class BondReferenceEndpoints
             [FromServices] IBondReferenceService service,
             CancellationToken ct) =>
         {
+            if (to < from)
+            {
+                return Results.BadRequest(new { error = "from must be before or equal to to." });
+            }
+
+            if (to.DayNumber - from.DayNumber > MaxMaturityLadderRangeDays)
+            {
+                return Results.BadRequest(new { error = "Maturity ladder range cannot exceed 50 years." });
+            }
+
             var ladder = await service.GetMaturityLadderAsync(from, to, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
         .WithName("GetBondMaturityLadder")
-        .Produces<IReadOnlyList<BondReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<BondReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden);
     }
 }

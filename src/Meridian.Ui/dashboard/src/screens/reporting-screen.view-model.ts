@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
+import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
@@ -11,6 +13,7 @@ export type ReportingDetailFieldTone = "default" | "success" | "warning" | "mute
 export type ReportingExportStatusTone = "default" | "success" | "danger";
 export type ReportingFieldClassName = "text-foreground" | "text-success" | "text-warning" | "text-muted-foreground";
 export type ReportingProfileKeyCommand = "next" | "previous" | "first" | "last";
+export type ReportingProfileActionSurface = "profile-detail" | "report-pack-task";
 export type ReportingExportStatusClassName =
   | "border-border/70 bg-secondary/25 text-muted-foreground"
   | "border-success/30 bg-success/10 text-success"
@@ -84,7 +87,7 @@ export interface ReportingExportStatusState {
 }
 
 export interface ReportingExportServices {
-  runExport: (profileId: string) => Promise<ExportAnalysisResult>;
+  runExport: (profileId: string, options?: ApiRequestOptions) => Promise<ExportAnalysisResult>;
 }
 
 export interface ReportingPackTargetRow {
@@ -221,7 +224,7 @@ export interface ReportingScreenViewModel {
 }
 
 const defaultReportingExportServices: ReportingExportServices = {
-  runExport: (profileId) => runAnalysisExport(profileId)
+  runExport: (profileId, options) => runAnalysisExport(profileId, options)
 };
 
 const REPORT_PACK_PROFILE_ACTIONS_ID = "report-pack-profile-actions";
@@ -232,27 +235,36 @@ const REPORT_PACK_PROFILE_KEYBOARD_HELP_ID = "report-pack-profile-keyboard-help"
 export function useReportingScreenViewModel(
   reporting: GovernanceReportingSummary | null,
   services: ReportingExportServices = defaultReportingExportServices,
-  pathname = "/reporting"
+  pathname: string = WORKSTATION_ROUTE_CATALOG.reporting
 ): ReportingScreenViewModel {
   const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined);
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
   const [exportStatus, setExportStatus] = useState<ReportingExportStatusState | null>(null);
   const exportCommandRevisionRef = useRef(0);
+  const exportAbortRef = useRef<AbortController | null>(null);
   const detailId = "reporting-profile-detail";
 
   useEffect(() => () => {
     exportCommandRevisionRef.current += 1;
+    exportAbortRef.current?.abort();
+    exportAbortRef.current = null;
   }, []);
 
-  const selectProfile = (id: string) => {
+  const cancelExportCommand = () => {
     exportCommandRevisionRef.current += 1;
+    exportAbortRef.current?.abort();
+    exportAbortRef.current = null;
+    setRunningProfileId(null);
+    setExportStatus(null);
+  };
+
+  const selectProfile = (id: string) => {
+    cancelExportCommand();
     setSelectedId((prev) => {
       const defaultProfileId = reporting ? defaultReportPackProfileId(reporting, pathname) : null;
       const activeId = prev === undefined ? defaultProfileId : prev;
       return activeId === id ? null : id;
     });
-    setRunningProfileId(null);
-    setExportStatus(null);
   };
 
   const selectAdjacentReportPackProfile = (direction: ReportingProfileKeyCommand) => {
@@ -260,34 +272,38 @@ export function useReportingScreenViewModel(
       return;
     }
 
-    exportCommandRevisionRef.current += 1;
+    cancelExportCommand();
     setSelectedId((prev) => {
       const defaultProfileId = defaultReportPackProfileId(reporting, pathname);
       const activeId = prev === undefined ? defaultProfileId : prev;
       return adjacentReportPackProfileId(reporting.profiles, activeId, direction);
     });
-    setRunningProfileId(null);
-    setExportStatus(null);
   };
 
   const runExportCommand = async (profileId: string, profileName: string) => {
     const commandRevision = exportCommandRevisionRef.current + 1;
     exportCommandRevisionRef.current = commandRevision;
+    exportAbortRef.current?.abort();
+    const controller = new AbortController();
+    exportAbortRef.current = controller;
     setRunningProfileId(profileId);
     setExportStatus(buildExportStatusStarting(profileName));
 
     try {
-      const result = await services.runExport(profileId);
+      const result = await services.runExport(profileId, { signal: controller.signal });
       if (exportCommandRevisionRef.current !== commandRevision) {
         return;
       }
       setExportStatus(buildExportStatusResult(profileId, profileName, result));
     } catch (error) {
-      if (exportCommandRevisionRef.current !== commandRevision) {
+      if (exportCommandRevisionRef.current !== commandRevision || isAbortError(error)) {
         return;
       }
       setExportStatus(buildExportStatusFailure(profileName, error));
     } finally {
+      if (exportAbortRef.current === controller) {
+        exportAbortRef.current = null;
+      }
       if (exportCommandRevisionRef.current === commandRevision) {
         setRunningProfileId(null);
       }
@@ -340,6 +356,12 @@ export function useReportingScreenViewModel(
   const effectiveSelectedId = selectedId === undefined ? defaultSelectedId : selectedId;
   const selectedProfileData: GovernanceReportingProfile | null =
     profiles.find((p) => p.id === effectiveSelectedId) ?? null;
+  const profileDetailActions = selectedProfileData
+    ? buildProfileActions(selectedProfileData, runningProfileId, "profile-detail")
+    : [];
+  const reportPackTaskActions = selectedProfileData
+    ? buildProfileActions(selectedProfileData, runningProfileId, "report-pack-task")
+    : [];
 
   const rows: ReportingProfileRow[] = profiles.map((p) => ({
     id: p.id,
@@ -381,7 +403,7 @@ export function useReportingScreenViewModel(
           )
         ],
         readinessSummary: buildProfileReadinessSummary(selectedProfileData),
-        actions: buildProfileActions(selectedProfileData, runningProfileId)
+        actions: profileDetailActions
       }
     : null;
 
@@ -402,7 +424,7 @@ export function useReportingScreenViewModel(
     rows,
     packTargets,
     selectedProfile: selectedProfileData,
-    selectedProfileActions: detail?.actions ?? [],
+    selectedProfileActions: reportPackTaskActions,
     pathname
   });
 
@@ -723,8 +745,8 @@ function buildWorkflowBackendLink({
 }
 
 function isReportPackRoute(pathname: string): boolean {
-  const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/reporting";
-  return normalized === "/reporting/report-packs";
+  const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || WORKSTATION_ROUTE_CATALOG.reporting;
+  return normalized === WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
 }
 
 function defaultReportPackProfileId(reporting: GovernanceReportingSummary, pathname: string): string | null {
@@ -771,10 +793,18 @@ function buildProfileReadinessSummary(profile: GovernanceReportingProfile): stri
 
 function buildProfileActions(
   profile: GovernanceReportingProfile,
-  runningProfileId: string | null
+  runningProfileId: string | null,
+  surface: ReportingProfileActionSurface = "profile-detail"
 ): ReportingProfileAction[] {
   const isRunningThisProfile = runningProfileId === profile.id;
   const runningReason = isRunningThisProfile ? `${profile.name} export is already running.` : null;
+  const evidenceDisabledReason = buildProfileExportEvidenceDisabledReason(profile);
+  const runDisabledReason = runningReason ?? evidenceDisabledReason;
+  const runStatusText = isRunningThisProfile
+    ? `${profile.name} export is running. Wait for the result before starting another export.`
+    : evidenceDisabledReason
+      ? evidenceDisabledReason
+      : "Runs the governed export through the backend mutation and reports generated artifacts here.";
 
   return [
     {
@@ -783,7 +813,7 @@ function buildProfileActions(
       href: exportPreviewEndpoint(profile.id),
       variant: "outline",
       ariaLabel: `Preview ${profile.name} export payload`,
-      describedById: `reporting-action-${profile.id}-preview-status`,
+      describedById: buildProfileActionDescriptionId(profile.id, "preview", surface),
       statusText: "Opens the current export payload preview in a new browser tab.",
       descriptionText: "Opens the current export payload preview in a new browser tab.",
       statusBadgeLabel: "GET",
@@ -801,27 +831,55 @@ function buildProfileActions(
       label: isRunningThisProfile ? "Running export…" : "Run export",
       href: EXPORT_API_ENDPOINTS.analysis,
       variant: "default",
-      ariaLabel: `Run ${profile.name} export analysis`,
-      describedById: `reporting-action-${profile.id}-run-status`,
-      statusText: isRunningThisProfile
-        ? `${profile.name} export is running. Wait for the result before starting another export.`
-        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
-      descriptionText: isRunningThisProfile
-        ? `${profile.name} export is running. Wait for the result before starting another export.`
-        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
-      statusBadgeLabel: isRunningThisProfile ? "Running" : "POST",
+      ariaLabel: evidenceDisabledReason
+        ? `Run ${profile.name} export analysis unavailable until required evidence is attached`
+        : `Run ${profile.name} export analysis`,
+      describedById: buildProfileActionDescriptionId(profile.id, "run", surface),
+      statusText: runStatusText,
+      descriptionText: runStatusText,
+      statusBadgeLabel: isRunningThisProfile ? "Running" : evidenceDisabledReason ? "Gated" : "POST",
       statusBadgeAriaLabel: isRunningThisProfile
         ? `${profile.name} export is running`
-        : `${profile.name} export analysis uses POST`,
-      statusBadgeVariant: isRunningThisProfile ? "warning" : "outline",
-      isDisabled: isRunningThisProfile,
-      disabledReason: runningReason,
+        : evidenceDisabledReason
+          ? `${profile.name} export analysis is gated by missing evidence`
+          : `${profile.name} export analysis uses POST`,
+      statusBadgeVariant: isRunningThisProfile || evidenceDisabledReason ? "warning" : "outline",
+      isDisabled: runDisabledReason !== null,
+      disabledReason: runDisabledReason,
       busyLabel: isRunningThisProfile ? "Running export…" : null,
       method: "POST",
       profileId: profile.id,
       isRunning: isRunningThisProfile
     }
   ];
+}
+
+function buildProfileActionDescriptionId(
+  profileId: string,
+  actionId: ReportingProfileAction["id"],
+  surface: ReportingProfileActionSurface
+): string {
+  return `reporting-action-${sanitizeDomId(profileId)}-${actionId}-${surface}-status`;
+}
+
+function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingProfile): string | null {
+  const missing: string[] = [];
+  if (!profile.loaderScript) {
+    missing.push("loader automation");
+  }
+
+  if (!profile.dataDictionary) {
+    missing.push("data dictionary");
+  }
+
+  if (missing.length === 0) {
+    return null;
+  }
+
+  const missingLabel = missing.length === 1
+    ? missing[0]
+    : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
+  return `${profile.name} export requires ${missingLabel} evidence before running a governed POST export. Preview remains available.`;
 }
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {
@@ -860,20 +918,25 @@ export function buildExportStatusResult(
 }
 
 export function buildExportStatusFailure(profileName: string, error: unknown): ReportingExportStatusState {
-  const message = error instanceof Error ? error.message : "Unknown export error.";
+  const fallback = `${profileName} export failed without backend detail.`;
+  const detail = describeApiError(error, fallback);
 
   return {
-    text: `${profileName} export failed. ${message}`,
+    text: `${profileName} export failed. ${detail.summary}`,
     tone: "danger",
     className: exportStatusToneClass("danger"),
     ariaLabel: "Reporting export status",
     fields: [
       buildReportingDetailField("Profile", profileName, "default"),
-      buildReportingDetailField("Failure", message, "warning")
+      buildReportingDetailField("Failure", detail.summary, "warning")
     ],
-    warnings: [],
+    warnings: detail.details,
     artifacts: []
   };
+}
+
+function isAbortError(error: unknown): boolean {
+  return (error instanceof DOMException || error instanceof Error) && error.name === "AbortError";
 }
 
 function buildExportResultFields(requestedProfileId: string, result: ExportAnalysisResult): ReportingDetailField[] {

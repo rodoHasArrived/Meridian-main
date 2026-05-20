@@ -122,7 +122,21 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
 
-        return new OperatorOverridesDto(securityId, next, updatedBy, updatedAt);
+        return new OperatorOverridesDto(securityId, next, updatedBy, updatedAt)
+        {
+            ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
+            ReasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? null : request.ReasonCode.Trim(),
+            AuditTrail =
+            [
+                new SecurityOverrideAuditEntryDto(
+                    EventType: "Patched",
+                    Actor: updatedBy,
+                    OccurredAt: updatedAt,
+                    ApprovalStatus: SecurityOverrideApprovalStatusDto.Pending,
+                    ReasonCode: string.IsNullOrWhiteSpace(request.ReasonCode) ? null : request.ReasonCode.Trim(),
+                    Comment: "Operator override values changed and require reviewer approval.")
+            ]
+        };
     }
 
     private async Task<Dictionary<string, string>> LoadValuesAsync(

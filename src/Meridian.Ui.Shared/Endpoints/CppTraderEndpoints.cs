@@ -1,6 +1,8 @@
 using Meridian.Contracts.Api;
+#if MERIDIAN_ENABLE_CPPTRADER
 using Meridian.Infrastructure.CppTrader.Diagnostics;
 using Meridian.Infrastructure.CppTrader.Execution;
+#endif
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +15,7 @@ public static class CppTraderEndpoints
     {
         var group = app.MapGroup("").WithTags("CppTrader");
 
+#if MERIDIAN_ENABLE_CPPTRADER
         group.MapGet(UiApiRoutes.CppTraderStatus, ([FromServices] ICppTraderStatusService statusService) =>
             Results.Json(statusService.GetStatus()))
             .WithName("GetCppTraderStatus")
@@ -36,5 +39,33 @@ public static class CppTraderEndpoints
         .WithName("GetCppTraderExecutionSnapshot")
         .Produces(200)
         .Produces(404);
+#else
+        group.MapGet(UiApiRoutes.CppTraderStatus, () => CppTraderUnavailable())
+            .WithName("GetCppTraderStatus")
+            .Produces(503);
+
+        group.MapGet(UiApiRoutes.CppTraderSessions, () => CppTraderUnavailable())
+            .WithName("GetCppTraderSessions")
+            .Produces(503);
+
+        group.MapGet(UiApiRoutes.CppTraderSymbols, () => CppTraderUnavailable())
+            .WithName("GetCppTraderSymbols")
+            .Produces(503);
+
+        group.MapGet(UiApiRoutes.CppTraderExecutionSnapshot, (string _) => CppTraderUnavailable())
+            .WithName("GetCppTraderExecutionSnapshot")
+            .Produces(503);
+#endif
     }
+
+#if !MERIDIAN_ENABLE_CPPTRADER
+    private static IResult CppTraderUnavailable()
+        => Results.Json(
+            new
+            {
+                available = false,
+                error = "CppTrader integration is not included in this host build. Build with EnableCppTraderIntegration=true to enable it."
+            },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+#endif
 }

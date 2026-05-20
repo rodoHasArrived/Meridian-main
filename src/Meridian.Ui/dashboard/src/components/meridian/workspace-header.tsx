@@ -17,8 +17,8 @@ import type { SessionInfo, WorkspaceSummary } from "@/types";
  * `aria-live="assertive"` so screen readers announce it immediately on mount.
  *
  * **Refresh:** provide `onRefresh` to enable the refresh button. Pass `refreshing`
- * while the data fetch is in flight — the button shows a spinner and sets `aria-busy`
- * on the `<header>` element.
+ * while the data fetch is in flight — the button exposes a view-model disabled reason,
+ * shows a spinner, and sets `aria-busy` on the `<header>` element.
  *
  * **Command palette:** `onOpenCommandPalette` is wired to the "Search / commands"
  * secondary button in the action row.
@@ -100,8 +100,12 @@ export function WorkspaceHeader({
                   title={viewModel.refreshAction.title}
                   aria-label={viewModel.refreshAction.ariaLabel}
                   disabled={viewModel.refreshAction.disabled}
+                  disabledReason={viewModel.refreshAction.disabledReason}
                 >
-                  <RefreshCcw className={`size-4 ${viewModel.refreshAction.disabled ? "animate-spin" : ""}`} />
+                  <RefreshCcw
+                    className={`size-4 ${viewModel.refreshAction.busy ? "animate-spin" : ""}`}
+                    aria-hidden="true"
+                  />
                 </Button>
               ) : null}
               <Button
@@ -111,6 +115,7 @@ export function WorkspaceHeader({
                 title={viewModel.commandAction.title}
                 aria-label={viewModel.commandAction.ariaLabel}
                 disabled={viewModel.commandAction.disabled}
+                disabledReason={viewModel.commandAction.disabledReason}
               >
                 {viewModel.commandAction.label}
               </Button>

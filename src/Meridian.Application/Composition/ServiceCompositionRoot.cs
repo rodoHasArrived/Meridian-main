@@ -35,6 +35,7 @@ public static class ServiceCompositionRoot
         new LedgerFeatureRegistration(),
         new CredentialFeatureRegistration(),
         new ProviderFeatureRegistration(),
+        new ProviderRoutingFeatureRegistration(),
         new SymbolManagementFeatureRegistration(),
         new BackfillFeatureRegistration(),
         new EtlFeatureRegistration(),
@@ -86,6 +87,9 @@ public static class ServiceCompositionRoot
         // Provider services — must come before dependent services (Symbol, Backfill)
         if (options.EnableProviderServices)
             services.RegisterFeature<ProviderFeatureRegistration>(options);
+
+        if (options.EnableProviderServices)
+            services.RegisterFeature<ProviderRoutingFeatureRegistration>(options);
 
         // Symbol management — depends on ProviderFactory/ProviderRegistry
         if (options.EnableSymbolManagement)
@@ -187,18 +191,18 @@ public static class ServiceCompositionRoot
 /// </summary>
 public sealed class PipelinePublisher : IMarketEventPublisher
 {
-    private readonly EventPipeline _pipeline;
+    private readonly IMarketEventPublisher _publisher;
     private readonly IEventMetrics _metrics;
 
-    public PipelinePublisher(EventPipeline pipeline, IEventMetrics? metrics = null)
+    public PipelinePublisher(IMarketEventPublisher publisher, IEventMetrics? metrics = null)
     {
-        _pipeline = pipeline;
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _metrics = metrics ?? new DefaultEventMetrics();
     }
 
     public bool TryPublish(in MarketEvent evt)
     {
-        var ok = _pipeline.TryPublish(evt);
+        var ok = _publisher.TryPublish(evt);
 
         // Integrity tracking lives here because EventPipeline is type-agnostic.
         if (evt.Type == MarketEventType.Integrity)

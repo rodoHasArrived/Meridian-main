@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildParameterPanelState,
   buildParameterRow,
+  buildQuantMetricRows,
   buildQuantParameters,
   buildQuantTradeLedgerState,
   buildQuantTradeRows,
@@ -323,7 +324,18 @@ describe("Quant Lab view model helpers", () => {
       title: "Run succeeded",
       statusBadgeLabel: "OK",
       runtimeSummary: "Compiled in 30 ms · executed in 12 ms · peak 16 KB",
-      metricsLabel: "Metrics · 1",
+      metricsLabel: "Metrics - 1",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: expect.stringMatching(/script run/i),
+      metricsEmptyText: "No metrics returned by this run.",
+      metricRows: [
+        {
+          id: "quant-metric-answer",
+          label: "answer",
+          value: "42",
+          ariaLabel: "answer: 42"
+        }
+      ],
       consoleLabel: "Console output",
       plotsDescription: "1 chart returned by this run.",
       hasResult: true,
@@ -375,6 +387,26 @@ describe("Quant Lab view model helpers", () => {
       title: "Run failed",
       description: "503 Quant Lab disabled"
     });
+  });
+
+  it("projects script metrics into stable dense-table rows", () => {
+    expect(buildQuantMetricRows([
+      { label: "answer", value: "42" },
+      { label: "  ", value: "  " }
+    ])).toEqual([
+      {
+        id: "quant-metric-answer",
+        label: "answer",
+        value: "42",
+        ariaLabel: "answer: 42"
+      },
+      {
+        id: "quant-metric-metric-2",
+        label: "Metric 2",
+        value: "Not reported",
+        ariaLabel: "Metric 2: Not reported"
+      }
+    ]);
   });
 
   it("projects Quant Lab trades into selectable rows and detail evidence", () => {

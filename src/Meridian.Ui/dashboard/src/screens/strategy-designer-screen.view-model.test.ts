@@ -1,21 +1,35 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
+  buildFieldCatalogSearchState,
   buildCanvasLegViewModels,
+  buildFormulaSuggestions,
   buildLegFromPalette,
   buildDesignerSummaryMetrics,
   buildParticipationViewModel,
   buildPayoffChartViewModel,
   buildPayoffSeries,
+  buildStrategyBuilderWorkbenchViewModel,
   buildSelectedLegDetailEmptyState,
   buildSelectedLegDetailViewModel,
   computeLegPayoff,
   computePortfolioPayoff,
+  filterStrategyBuilderFields,
   findBreakEvenPrices,
+  getStrategyBuilderFieldCatalog,
+  getStrategyBuilderTemplates,
+  getStateCellParams,
+  getTradeCellParams,
+  getConcurrentCellParams,
+  getUniverseBuilderCellParams,
   getStrategyDesignerPalette,
   getStrategyDesignerSampleLegs,
+  loadStrategyBuilderTemplate,
   reorderLegs,
   useStrategyDesignerViewModel,
+  validateStrategyBuilderDocument,
+  type StrategyBuilderCell,
   type StrategyLeg
 } from "@/screens/strategy-designer-screen.view-model";
 
@@ -53,6 +67,115 @@ const longStock: StrategyLeg = {
 };
 
 describe("strategy designer view-model", () => {
+  it("filters the Strategy Builder field catalog and preserves disabled AMX reasons", () => {
+    const fields = getStrategyBuilderFieldCatalog();
+    const filtered = filterStrategyBuilderFields("amx", fields);
+
+    expect(filtered.map((field) => field.fieldId)).toContain("AMX_PRIVATE_SCORE");
+    expect(filtered[0].isEnabled).toBe(false);
+    expect(filtered[0].disabledReason).toContain("No Meridian canonical source");
+  });
+
+  it("builds formula suggestions from enabled canonical fields only", () => {
+    const suggestions = buildFormulaSuggestions("mom", getStrategyBuilderFieldCatalog());
+
+    expect(suggestions.map((field) => field.fieldId)).toContain("MOMENTUM_63D");
+    expect(suggestions.some((field) => field.fieldId === "AMX_PRIVATE_SCORE")).toBe(false);
+  });
+
+  it("validates transition loops and disabled field references in the Strategy Builder document", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "amx-score",
+          label: "Prototype AMX score",
+          kind: "formula" as const,
+          purpose: "rank" as const,
+          source: "AMX_PRIVATE_SCORE > 0.8",
+          fieldRefs: ["AMX_PRIVATE_SCORE"]
+        }
+      ],
+      transitions: [
+        ...document.transitions,
+        { transitionId: "bad-loop", fromCellId: "proof-run", toCellId: "momentum-score", kind: "loop" as const, condition: "rebalance" }
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+
+    expect(messages.map((message) => message.code)).toEqual(
+      expect.arrayContaining(["DisabledField", "LoopGuardRequired", "LoopRationaleRequired"])
+    );
+  });
+
+  it("builds selected cell, trace, template, and backtest state in the workbench view-model", () => {
+    const document = loadStrategyBuilderTemplate("investment-grade-income");
+    const vm = buildStrategyBuilderWorkbenchViewModel({
+      document,
+      selectedCellId: "carry-rank",
+      fieldSearch: "duration"
+    });
+
+    expect(getStrategyBuilderTemplates().map((template) => template.templateId)).toContain("options-payoff");
+    expect(vm.selectedCellDetail?.title).toBe("Carry rank");
+    expect(vm.trace.find((step) => step.cellId === "carry-rank")?.isSelectedCell).toBe(true);
+    expect(vm.filteredFields.map((field) => field.fieldId)).toContain("DURATION");
+    expect(vm.fieldSearchState).toMatchObject({
+      inputId: "strategy-builder-field-catalog-search",
+      label: "Search field catalog",
+      ariaLabel: "Search Strategy Builder field catalog",
+      emptyState: null
+    });
+    expect(vm.fieldSearchState.resultCountText).toContain('match "duration"');
+    expect(vm.backtest.runCommand.disabled).toBe(false);
+    expect(vm.backtest.routeActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "templates",
+          href: STRATEGY_DESIGNER_API_ENDPOINTS.templates,
+          method: "GET",
+          isBrowserNavigable: true,
+          interactionLabel: "Open"
+        }),
+        expect.objectContaining({
+          id: "run-backtest",
+          href: STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest,
+          method: "POST",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
+      ])
+    );
+  });
+
+  it("derives field catalog search empty state copy from the view model", () => {
+    const state = buildFieldCatalogSearchState("missing", 0, getStrategyBuilderFieldCatalog().length);
+
+    expect(state.describedBy).toBe("strategy-builder-field-catalog-search-help strategy-builder-field-catalog-search-status");
+    expect(state.resultCountText).toContain('0 fields match "missing"');
+    expect(state.emptyState).toEqual({
+      title: "No matching fields",
+      description: 'No field catalog entries match "missing". Clear the filter to inspect mapped and disabled fields.',
+      ariaLabel: "Strategy Builder field catalog empty state"
+    });
+  });
+
+  it("marks backtest proof disabled when Strategy Builder validation is blocked", () => {
+    const document = {
+      ...loadStrategyBuilderTemplate("equity-momentum-breakout"),
+      datasetReference: ""
+    };
+
+    const vm = buildStrategyBuilderWorkbenchViewModel({ document });
+
+    expect(vm.backtest.statusLabel).toBe("Blocked");
+    expect(vm.backtest.runCommand.disabled).toBe(true);
+    expect(vm.backtest.runCommand.disabledReason).toContain("blocking issue");
+  });
+
   it("returns six palette entries with stable kinds", () => {
     const palette = getStrategyDesignerPalette();
     expect(palette).toHaveLength(6);
@@ -110,6 +233,39 @@ describe("strategy designer view-model", () => {
     expect(payoff.points).toEqual([]);
     expect(payoff.breakEvenPrices).toEqual([]);
     expect(payoff.caption).toContain("Add a leg");
+  });
+
+  it("derives spot-price field feedback from invalid commits", () => {
+    const { result } = renderHook(() => useStrategyDesignerViewModel(getStrategyDesignerSampleLegs()));
+
+    expect(result.current.spotPriceField).toMatchObject({
+      id: "strategy-designer-spot-price",
+      helperId: "strategy-designer-spot-price-help",
+      feedbackId: "strategy-designer-spot-price-feedback",
+      describedBy: "strategy-designer-spot-price-help",
+      invalid: false,
+      feedbackMessage: null
+    });
+
+    act(() => {
+      result.current.commitSpotPriceDraft("-3");
+    });
+
+    expect(result.current.spotPriceField.value).toBe("100");
+    expect(result.current.spotPriceField.invalid).toBe(true);
+    expect(result.current.spotPriceField.describedBy).toBe(
+      "strategy-designer-spot-price-help strategy-designer-spot-price-feedback"
+    );
+    expect(result.current.spotPriceField.feedbackMessage).toBe(
+      "Enter a non-negative spot price. Restored $100.00 for payoff sampling."
+    );
+
+    act(() => {
+      result.current.updateSpotPriceDraft("125");
+    });
+
+    expect(result.current.spotPriceField.invalid).toBe(false);
+    expect(result.current.spotPriceField.feedbackMessage).toBeNull();
   });
 
   it("locates break-even price near the long-call strike + premium", () => {
@@ -340,5 +496,303 @@ describe("strategy designer view-model", () => {
       label: "Clear canvas",
       confirmationPending: false
     });
+  });
+
+  it("validates state cell requires exitCondition and stateLabel parameters", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "monitoring-state",
+          label: "Monitoring state",
+          kind: "state" as const,
+          purpose: "state" as const,
+          source: "entry phase",
+          fieldRefs: [],
+          parameters: { stateLabel: "Monitoring" }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+    const codes = messages.map((m) => m.code);
+
+    expect(codes).toContain("StateCellExitRequired");
+    expect(codes).not.toContain("StateCellLabelRequired");
+  });
+
+  it("treats whitespace-only state parameters as missing", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "monitoring-state",
+          label: "Monitoring state",
+          kind: "state" as const,
+          purpose: "state" as const,
+          source: "entry phase",
+          fieldRefs: [],
+          parameters: { stateLabel: "   ", exitCondition: "   " }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const codes = validateStrategyBuilderDocument(invalid).map((m) => m.code);
+
+    expect(codes).toContain("StateCellExitRequired");
+    expect(codes).toContain("StateCellLabelRequired");
+  });
+
+  it("validates concurrent cell requires valid semantics", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "parallel-check",
+          label: "Parallel check",
+          kind: "concurrent" as const,
+          purpose: "concurrent" as const,
+          source: "parallel evaluation",
+          fieldRefs: [],
+          parameters: { branchIds: "cell-a,cell-b", semantics: "bad-value" }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+
+    expect(messages.map((m) => m.code)).toContain("ConcurrentCellSemanticsRequired");
+  });
+
+  it("validates concurrent cell branch IDs resolve to existing cells", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "parallel-check",
+          label: "Parallel check",
+          kind: "concurrent" as const,
+          purpose: "concurrent" as const,
+          source: "parallel evaluation",
+          fieldRefs: [],
+          parameters: { branchIds: "rank,missing-cell", semantics: "all-pass" }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const codes = validateStrategyBuilderDocument(invalid).map((m) => m.code);
+
+    expect(codes).toContain("ConcurrentCellBranchMissing");
+  });
+
+  it("passes validation for a fully populated universe-builder cell", () => {
+    const document = loadStrategyBuilderTemplate("structured-universe-strategy");
+    const messages = validateStrategyBuilderDocument(document);
+    const errors = messages.filter((m) => m.severity === "error");
+
+    expect(errors).toHaveLength(0);
+  });
+
+  it("validates universe-builder rule field references and size constraints", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "ub",
+          label: "Universe builder",
+          kind: "universe-builder" as const,
+          purpose: "universe" as const,
+          source: "build universe",
+          fieldRefs: ["PRICE"],
+          parameters: {
+            assetClass: "Equity",
+            includeRules: "UNKNOWN_FIELD > 10",
+            excludeRules: "VOLATILITY_20D > 0.2",
+            minSize: "101",
+            maxSize: "100"
+          }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const codes = validateStrategyBuilderDocument(invalid).map((m) => m.code);
+
+    expect(codes).toContain("UnknownField");
+    expect(codes).toContain("UniverseBuilderSizeRangeInvalid");
+  });
+
+  it("validates trade cell requires instrument, direction, and sizingMethod", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "trade-cell",
+          label: "Buy equities",
+          kind: "trade" as const,
+          purpose: "trade" as const,
+          source: "execute trade",
+          fieldRefs: [],
+          parameters: {}
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+    const codes = messages.map((m) => m.code);
+
+    expect(codes).toContain("TradeCellInstrumentRequired");
+    expect(codes).toContain("TradeCellDirectionRequired");
+    expect(codes).toContain("TradeCellSizingRequired");
+  });
+
+  it("requires numeric sizingValue for fixed trade sizing methods", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "trade-cell",
+          label: "Buy equities",
+          kind: "trade" as const,
+          purpose: "trade" as const,
+          source: "execute trade",
+          fieldRefs: [],
+          parameters: {
+            instrument: "equity",
+            direction: "buy",
+            sizingMethod: "FixedShares",
+            sizingValue: "not-a-number"
+          }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+    const codes = messages.map((m) => m.code);
+
+    expect(codes).toContain("TradeCellSizingValueRequired");
+    expect(codes).not.toContain("TradeCellInstrumentRequired");
+    expect(codes).not.toContain("TradeCellDirectionRequired");
+  });
+
+  it("typed parameter extractors return null for wrong kind or missing parameters", () => {
+    const formulaCell: StrategyBuilderCell = {
+      cellId: "c",
+      label: "C",
+      kind: "formula",
+      purpose: "rank",
+      source: "PRICE",
+      fieldRefs: []
+    };
+
+    expect(getStateCellParams(formulaCell)).toBeNull();
+    expect(getTradeCellParams(formulaCell)).toBeNull();
+    expect(getConcurrentCellParams(formulaCell)).toBeNull();
+    expect(getUniverseBuilderCellParams(formulaCell)).toBeNull();
+  });
+
+  it("typed extractors canonicalize concurrent and trade enums case-insensitively", () => {
+    const concurrentCell: StrategyBuilderCell = {
+      cellId: "concurrent",
+      label: "Concurrent",
+      kind: "concurrent",
+      purpose: "concurrent",
+      source: "parallel",
+      fieldRefs: [],
+      parameters: { branchIds: "a,b", semantics: "ALL-PASS" }
+    };
+    const tradeCell: StrategyBuilderCell = {
+      cellId: "trade",
+      label: "Trade",
+      kind: "trade",
+      purpose: "trade",
+      source: "trade",
+      fieldRefs: [],
+      parameters: { instrument: "equity", direction: "buy", sizingMethod: "equalweight" }
+    };
+
+    expect(getConcurrentCellParams(concurrentCell)?.semantics).toBe("all-pass");
+    expect(getTradeCellParams(tradeCell)?.instrument).toBe("Equity");
+    expect(getTradeCellParams(tradeCell)?.direction).toBe("Buy");
+    expect(getTradeCellParams(tradeCell)?.sizingMethod).toBe("EqualWeight");
+  });
+
+  it("getStateCellParams returns null when required keys are absent", () => {
+    const stateCell: StrategyBuilderCell = {
+      cellId: "s",
+      label: "S",
+      kind: "state",
+      purpose: "state",
+      source: "phase",
+      fieldRefs: [],
+      parameters: { stateLabel: "Watching" }
+    };
+
+    expect(getStateCellParams(stateCell)).toBeNull();
+  });
+
+  it("four new cell-kind templates appear in the template gallery", () => {
+    const templates = getStrategyBuilderTemplates();
+    const ids = templates.map((t) => t.templateId);
+
+    expect(ids).toContain("state-machine-strategy");
+    expect(ids).toContain("concurrent-branch-strategy");
+    expect(ids).toContain("structured-universe-strategy");
+    expect(ids).toContain("trade-intent-strategy");
+  });
+
+  it("buildStrategyBuilderWorkbenchViewModel surfaces typed trade parameters in inspector fields", () => {
+    const document = loadStrategyBuilderTemplate("trade-intent-strategy");
+    const tradeCell = document.cells.find((c) => c.kind === "trade");
+    const vm = buildStrategyBuilderWorkbenchViewModel({
+      document,
+      selectedCellId: tradeCell?.cellId
+    });
+
+    const fields = vm.selectedCellDetail?.fields ?? [];
+
+    expect(fields.some((f) => f.id === "instrument")).toBe(true);
+    expect(fields.some((f) => f.id === "direction")).toBe(true);
+    expect(fields.some((f) => f.id === "sizing-method")).toBe(true);
+  });
+
+  it("buildStrategyBuilderWorkbenchViewModel surfaces state cell parameters in inspector", () => {
+    const document = loadStrategyBuilderTemplate("state-machine-strategy");
+    const stateCell = document.cells.find((c) => c.kind === "state");
+    const vm = buildStrategyBuilderWorkbenchViewModel({
+      document,
+      selectedCellId: stateCell?.cellId
+    });
+
+    const fields = vm.selectedCellDetail?.fields ?? [];
+
+    expect(fields.some((f) => f.id === "state-label")).toBe(true);
+    expect(fields.some((f) => f.id === "exit-condition")).toBe(true);
+  });
+
+  it("cloneStrategyBuilderDocument deep-copies parameters so mutations do not leak", () => {
+    const document = loadStrategyBuilderTemplate("trade-intent-strategy");
+    const tradeCell = document.cells.find((c) => c.kind === "trade")!;
+    tradeCell.parameters!["instrument"] = "Future";
+    tradeCell.parameters!["sizingValue"] = "999";
+    expect(tradeCell.parameters?.["instrument"]).toBe("Future");
+    expect(tradeCell.parameters?.["sizingValue"]).toBe("999");
+
+    const original = loadStrategyBuilderTemplate("trade-intent-strategy");
+    expect(original.cells.find((c) => c.kind === "trade")?.parameters?.["instrument"]).toBe("Equity");
+    expect(original.cells.find((c) => c.kind === "trade")?.parameters?.["sizingValue"]).toBe("0.05");
   });
 });

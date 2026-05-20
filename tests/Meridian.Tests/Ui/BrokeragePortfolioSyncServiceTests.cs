@@ -99,6 +99,220 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task Scenario_BrokerageSyncSuccess_RecordsSharedAccountSyncHistoryWithEvidence()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-HISTORY",
+                    "History Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests",
+                    Institution: "alpaca",
+                    LedgerReference: "BROKERAGE-CASH"),
+                cts.Token);
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-HISTORY", "ops-review"),
+                cts.Token);
+            var history = await fundAccountService.GetSyncHistoryAsync(fundAccountId, "brokerage-sync", cts.Token);
+            var latest = await fundAccountService.GetLatestSyncHistoryAsync(fundAccountId, "brokerage-sync", cts.Token);
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            history.Should().ContainSingle();
+            latest.Should().NotBeNull();
+            latest!.Status.Should().Be(AccountSyncStatusDto.Succeeded);
+            latest.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
+            latest.ProviderId.Should().Be("alpaca");
+            latest.ExternalAccountId.Should().Be("PA-HISTORY");
+            latest.FailureKind.Should().Be(AccountSyncFailureKindDto.None);
+            latest.RawEvidencePath.Should().NotBeNullOrWhiteSpace();
+            latest.RawEvidencePath.Should().Contain(Path.Combine("raw", "alpaca", "PA-HISTORY"));
+            latest.ProjectionEvidencePath.Should().EndWith(Path.Combine("projections", fundAccountId.ToString("N"), "current.json"));
+            latest.FreshUntil.Should().BeAfter(latest.CompletedAt!.Value);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_BrokerageSyncCredentialFailure_RecordsStructuredFailureHistory()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing."),
+                new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing."),
+                includeSecurityLookup: false);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-CREDS",
+                    "Credential Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests",
+                    Institution: "alpaca",
+                    LedgerReference: "BROKERAGE-CASH"),
+                cts.Token);
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-CREDS", "ops-review"),
+                cts.Token);
+            var latest = await fundAccountService.GetLatestSyncHistoryAsync(fundAccountId, "brokerage-sync", cts.Token);
+            var readiness = await fundAccountService.GetReadinessAsync(fundAccountId, cts.Token);
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Failed);
+            latest.Should().NotBeNull();
+            latest!.Status.Should().Be(AccountSyncStatusDto.Failed);
+            latest.FailureKind.Should().Be(AccountSyncFailureKindDto.CredentialMissing);
+            latest.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Expired);
+            latest.FailureMessage.Should().Contain("Alpaca credentials are missing.");
+            readiness.Should().NotBeNull();
+            readiness!.Issues.Should().Contain(issue => issue.Code == "account.sync.failed");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_BrokerageSyncSecurityCoverageGap_RecordsReadinessIssue()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: false);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-SECM",
+                    "Security Coverage Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests",
+                    Institution: "alpaca",
+                    LedgerReference: "BROKERAGE-CASH"),
+                cts.Token);
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-SECM", "ops-review"),
+                cts.Token);
+            var latest = await fundAccountService.GetLatestSyncHistoryAsync(fundAccountId, "brokerage-sync", cts.Token);
+            var readiness = await fundAccountService.GetReadinessAsync(fundAccountId, cts.Token);
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Degraded);
+            latest.Should().NotBeNull();
+            latest!.Status.Should().Be(AccountSyncStatusDto.Degraded);
+            latest.SecurityMissingCount.Should().Be(1);
+            readiness.Should().NotBeNull();
+            readiness!.Issues.Should().Contain(issue =>
+                issue.Code == "account.security_master.coverage_missing"
+                && issue.ProviderId == "alpaca"
+                && issue.ExternalAccountId == "PA-SECM");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+
+    [Theory]
+    [InlineData("ibkr", "DU-7001")]
+    [InlineData("robinhood", "RH-9001")]
+    public async Task Scenario_BrokerageSyncDegradedSecurityCoverage_ProjectsProviderSpecificReadinessClaims(
+        string providerId,
+        string externalAccountId)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: false);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    $"BRK-{providerId.ToUpperInvariant()}",
+                    $"{providerId} Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests",
+                    Institution: providerId,
+                    LedgerReference: "BROKERAGE-CASH"),
+                cts.Token);
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto(providerId, externalAccountId, "ops-review"),
+                cts.Token);
+            var latest = await fundAccountService.GetLatestSyncHistoryAsync(fundAccountId, "brokerage-sync", cts.Token);
+            var readiness = await fundAccountService.GetReadinessAsync(fundAccountId, cts.Token);
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Degraded);
+            latest.Should().NotBeNull();
+            latest!.Status.Should().Be(AccountSyncStatusDto.Degraded);
+            latest.ProviderId.Should().Be(providerId);
+            latest.ExternalAccountId.Should().Be(externalAccountId);
+            latest.SecurityMissingCount.Should().BeGreaterThan(0);
+            readiness.Should().NotBeNull();
+            readiness!.Issues.Should().Contain(issue =>
+                issue.Code == "account.security_master.coverage_missing"
+                && issue.ProviderId == providerId
+                && issue.ExternalAccountId == externalAccountId);
+            readiness.Issues.Should().NotContain(issue => issue.Code == "account.sync.failed");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_LinkedFundAccount_BrokerageStatusUsesStatusDtoBeforeLegacyProjectionExists()
     {
         var root = CreateTempRoot();

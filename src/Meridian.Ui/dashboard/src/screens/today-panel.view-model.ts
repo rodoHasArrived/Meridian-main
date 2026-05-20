@@ -5,8 +5,10 @@ import type {
   TradingPosition,
   TradingWorkspaceResponse
 } from "@/types";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type TodayTone = "default" | "success" | "warning" | "danger";
+export type TodayBadgeVariant = "outline" | "success" | "warning" | "danger";
 
 export interface TodayMetric {
   id: string;
@@ -21,10 +23,12 @@ export interface TodayMoverRow {
   key: string;
   symbol: string;
   side: "Long" | "Short";
+  sideBadgeVariant: TodayBadgeVariant;
   quantity: string;
   markPrice: string;
   dayPnl: string;
   dayPnlTone: TodayTone;
+  rowClassName: string | undefined;
   ariaLabel: string;
 }
 
@@ -32,10 +36,14 @@ export interface TodayOrderRow {
   key: string;
   symbol: string;
   side: TradingOrder["side"];
+  sideBadgeVariant: TodayBadgeVariant;
   quantity: string;
   type: TradingOrder["type"];
   priceLabel: string;
   status: TradingOrder["status"];
+  statusBadgeVariant: TodayBadgeVariant;
+  statusAriaLabel: string;
+  rowClassName: string | undefined;
   submittedLabel: string;
   ariaLabel: string;
 }
@@ -44,9 +52,14 @@ export interface TodayFillRow {
   key: string;
   symbol: string;
   side: TradingFill["side"];
+  sideBadgeVariant: TodayBadgeVariant;
   quantity: string;
   price: string;
   venue: string;
+  statusLabel: "Filled";
+  statusBadgeVariant: TodayBadgeVariant;
+  statusAriaLabel: string;
+  rowClassName: string | undefined;
   timestampLabel: string;
   ariaLabel: string;
 }
@@ -75,50 +88,58 @@ export interface TodayPanelViewModel {
   moversEmptyMessage: string;
   hasMovers: boolean;
   moversMoreLabel: string | null;
+  moversTableLabel: string;
+  moversTableCaption: string;
   orders: TodayOrderRow[];
   ordersTotal: number;
   ordersEmptyMessage: string;
   hasOrders: boolean;
   ordersMoreLabel: string | null;
+  ordersTableLabel: string;
+  ordersTableCaption: string;
   fills: TodayFillRow[];
   fillsTotal: number;
   fillsEmptyMessage: string;
   hasFills: boolean;
   fillsMoreLabel: string | null;
+  fillsTableLabel: string;
+  fillsTableCaption: string;
+  quickActionsLabel: string;
+  quickActionsEyebrow: string;
   quickActions: TodayQuickAction[];
   brokerageLabel: string | null;
 }
 
 const PREVIEW_LIMIT = 5;
-const BROKERAGE_SETUP_HREF = "/settings#alpaca-provider-setup";
+const BROKERAGE_SETUP_HREF = WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
 
 const QUICK_ACTIONS: TodayQuickAction[] = [
   {
     id: "place-order",
     label: "Place order",
     description: "Open the trading cockpit to stage a paper or live order.",
-    href: "/trading",
+    href: WORKSTATION_ROUTE_CATALOG.trading,
     ariaLabel: "Open trading cockpit to place an order"
   },
   {
     id: "add-symbol",
     label: "Add symbol",
     description: "Subscribe a symbol to the live data pipeline.",
-    href: "/data/watchlist",
+    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
     ariaLabel: "Open the watchlist to add a symbol"
   },
   {
     id: "live-quote",
     label: "Look up quote",
     description: "Inspect live bid/ask, recent trades, and L2 depth.",
-    href: "/data/quotes",
+    href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
     ariaLabel: "Open live quotes lookup"
   },
   {
     id: "reconcile",
     label: "Reconcile",
     description: "Review accounting breaks and cash posture.",
-    href: "/accounting",
+    href: WORKSTATION_ROUTE_CATALOG.accounting,
     ariaLabel: "Open accounting reconciliation queue"
   }
 ];
@@ -144,16 +165,24 @@ export function buildTodayPanelViewModel(
       moversEmptyMessage: "No open positions to track today.",
       hasMovers: false,
       moversMoreLabel: null,
+      moversTableLabel: buildTableLabel("top mover", 0),
+      moversTableCaption: buildMoversTableCaption(0, 0),
       orders: [],
       ordersTotal: 0,
       ordersEmptyMessage: "No working orders.",
       hasOrders: false,
       ordersMoreLabel: null,
+      ordersTableLabel: buildTableLabel("open order", 0),
+      ordersTableCaption: buildOrdersTableCaption(0, 0),
       fills: [],
       fillsTotal: 0,
       fillsEmptyMessage: "No fills recorded today.",
       hasFills: false,
       fillsMoreLabel: null,
+      fillsTableLabel: buildTableLabel("recent fill", 0),
+      fillsTableCaption: buildFillsTableCaption(0, 0),
+      quickActionsLabel: "Today quick actions",
+      quickActionsEyebrow: "Quick actions",
       quickActions: QUICK_ACTIONS,
       brokerageLabel: null
     };
@@ -253,6 +282,8 @@ export function buildTodayPanelViewModel(
     moversMoreLabel: positions.length > movers.length
       ? `+${positions.length - movers.length} more in portfolio`
       : null,
+    moversTableLabel: buildTableLabel("top mover", movers.length),
+    moversTableCaption: buildMoversTableCaption(movers.length, positions.length),
     orders,
     ordersTotal: openOrders.length,
     ordersEmptyMessage: "No working orders.",
@@ -260,6 +291,8 @@ export function buildTodayPanelViewModel(
     ordersMoreLabel: openOrders.length > orders.length
       ? `+${openOrders.length - orders.length} more in trading cockpit`
       : null,
+    ordersTableLabel: buildTableLabel("open order", orders.length),
+    ordersTableCaption: buildOrdersTableCaption(orders.length, openOrders.length),
     fills: fillsRows,
     fillsTotal: fills.length,
     fillsEmptyMessage: "No fills recorded today.",
@@ -267,6 +300,10 @@ export function buildTodayPanelViewModel(
     fillsMoreLabel: fills.length > fillsRows.length
       ? `+${fills.length - fillsRows.length} more in trading cockpit`
       : null,
+    fillsTableLabel: buildTableLabel("recent fill", fillsRows.length),
+    fillsTableCaption: buildFillsTableCaption(fillsRows.length, fills.length),
+    quickActionsLabel: "Today quick actions",
+    quickActionsEyebrow: "Quick actions",
     quickActions: QUICK_ACTIONS,
     brokerageLabel
   };
@@ -322,10 +359,12 @@ function buildMovers(positions: TradingPosition[]): TodayMoverRow[] {
         key: pos.positionKey ?? pos.symbol,
         symbol: pos.symbol,
         side: pos.side,
+        sideBadgeVariant: positionSideBadgeVariant(pos.side),
         quantity: pos.quantity,
         markPrice: pos.markPrice,
         dayPnl: pos.dayPnl,
         dayPnlTone,
+        rowClassName: todayRowClassName(dayPnlTone),
         ariaLabel: `${pos.symbol} ${pos.side} ${pos.quantity} shares, mark ${pos.markPrice}, day P&L ${pos.dayPnl}`
       };
     });
@@ -334,14 +373,19 @@ function buildMovers(positions: TradingPosition[]): TodayMoverRow[] {
 function buildOrders(orders: TradingOrder[]): TodayOrderRow[] {
   return orders.slice(0, PREVIEW_LIMIT).map((order) => {
     const priceLabel = order.type === "Market" ? "Market" : order.limitPrice;
+    const statusBadgeVariant = orderStatusBadgeVariant(order.status);
     return {
       key: order.orderId,
       symbol: order.symbol,
       side: order.side,
+      sideBadgeVariant: tradeSideBadgeVariant(order.side),
       quantity: order.quantity,
       type: order.type,
       priceLabel,
       status: order.status,
+      statusBadgeVariant,
+      statusAriaLabel: `Order status ${order.status}`,
+      rowClassName: orderStatusRowClassName(order.status),
       submittedLabel: order.submittedAt,
       ariaLabel: `${order.side} ${order.quantity} ${order.symbol} ${order.type.toLowerCase()} at ${priceLabel}, ${order.status}, submitted ${order.submittedAt}`
     };
@@ -353,9 +397,14 @@ function buildFills(fills: TradingFill[]): TodayFillRow[] {
     key: fill.fillId,
     symbol: fill.symbol,
     side: fill.side,
+    sideBadgeVariant: tradeSideBadgeVariant(fill.side),
     quantity: fill.quantity,
     price: fill.price,
     venue: fill.venue,
+    statusLabel: "Filled",
+    statusBadgeVariant: "success",
+    statusAriaLabel: `Fill ${fill.fillId} completed`,
+    rowClassName: "bg-success/5",
     timestampLabel: fill.timestamp,
     ariaLabel: `${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
   }));
@@ -412,4 +461,64 @@ function formatSignedCurrency(value: number): string {
 
 function formatCountLabel(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function buildTableLabel(singular: string, visibleCount: number): string {
+  return formatCountLabel(visibleCount, singular, `${singular}s`);
+}
+
+function buildMoversTableCaption(visibleCount: number, totalCount: number): string {
+  return `${formatCountLabel(visibleCount, "top mover", "top movers")} shown from ${formatCountLabel(totalCount, "open position", "open positions")}. Columns show symbol, side, quantity, mark price, and day P&L sorted by absolute day P&L magnitude.`;
+}
+
+function buildOrdersTableCaption(visibleCount: number, totalCount: number): string {
+  return `${formatCountLabel(visibleCount, "open order", "open orders")} shown from ${formatCountLabel(totalCount, "working order", "working orders")}. Columns show symbol, side, quantity, order price, status, and submitted time.`;
+}
+
+function buildFillsTableCaption(visibleCount: number, totalCount: number): string {
+  return `${formatCountLabel(visibleCount, "recent fill", "recent fills")} shown from ${formatCountLabel(totalCount, "fill", "fills")} today. Columns show symbol, side, quantity, price, venue, and fill time.`;
+}
+
+function todayRowClassName(tone: TodayTone): string | undefined {
+  if (tone === "success") {
+    return "bg-success/5";
+  }
+
+  if (tone === "danger") {
+    return "bg-danger/5";
+  }
+
+  return undefined;
+}
+
+function positionSideBadgeVariant(side: TradingPosition["side"]): TodayBadgeVariant {
+  return side === "Long" ? "outline" : "warning";
+}
+
+function tradeSideBadgeVariant(side: TradingOrder["side"] | TradingFill["side"]): TodayBadgeVariant {
+  return side === "Buy" ? "success" : "warning";
+}
+
+function orderStatusBadgeVariant(status: TradingOrder["status"]): TodayBadgeVariant {
+  if (status === "Working") {
+    return "success";
+  }
+
+  if (status === "Partially Filled") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
+function orderStatusRowClassName(status: TradingOrder["status"]): string | undefined {
+  if (status === "Working") {
+    return "bg-success/5";
+  }
+
+  if (status === "Partially Filled") {
+    return "bg-warning/5";
+  }
+
+  return undefined;
 }

@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
 import {
   buildCalibrationSummaryViewState,
   buildCorporateActionsViewState,
@@ -309,7 +310,10 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     reviewedAt: "2026-01-02T00:05:00Z",
     resolvedBy: "ops.gov",
     resolvedAt: "2026-01-02T00:10:00Z",
-    resolutionNote: "Reviewed in governance panel."
+    resolutionNote: "Reviewed in governance panel.",
+    routingTarget: "FundTrialBalance",
+    routingDetail: "Open the accounting trial balance for evidence review.",
+    recommendedAction: "Review matched fee entries before closing."
   }
 ];
 
@@ -667,9 +671,16 @@ describe("governance-screen view model", () => {
         .mockReturnValueOnce(firstLoad)
         .mockResolvedValueOnce(retrySummary)
     };
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue: [],
+      cashFlow: null,
+      reporting: null
+    } as unknown as GovernanceWorkspaceResponse;
 
     const { result } = renderHook(() => useGovernanceReconciliationViewModel({
-      ...({ metrics: [], reconciliationQueue, breakQueue: [], cashFlow: null, reporting: null } as unknown as GovernanceWorkspaceResponse)
+      ...bootstrapData
     }, "reconciliation", services));
 
     await waitFor(() => expect(result.current.calibrationView.refreshCommand.disabled).toBe(true));
@@ -691,7 +702,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: trialBalanceLines,
       loading: false,
-      errorText: null
+      error: null
     });
 
     expect(state).toMatchObject({
@@ -741,7 +752,7 @@ describe("governance-screen view model", () => {
       rows: trialBalanceLines,
       selectedRowId: "Primary-Financing payable-Liability-acct-financing",
       loading: false,
-      errorText: null
+      error: null
     });
     expect(selectedFinancing.selectedDetail).toMatchObject({
       title: "Financing payable",
@@ -799,7 +810,7 @@ describe("governance-screen view model", () => {
         }
       ],
       loading: false,
-      errorText: null
+      error: null
     });
 
     expect(state.selectedBasis).toBe("Gaap");
@@ -836,7 +847,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: [],
       loading: true,
-      errorText: null
+      error: null
     })).toMatchObject({
       state: "loading",
       loadingText: "Loading trial balance for run-42.",
@@ -847,7 +858,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: [],
       loading: false,
-      errorText: null
+      error: null
     })).toMatchObject({
       state: "empty",
       emptyTitle: "No trial balance lines",
@@ -858,7 +869,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: trialBalanceLines,
       loading: false,
-      errorText: "Ledger unavailable."
+      error: "Ledger unavailable."
     })).toMatchObject({
       state: "error",
       errorText: "Ledger unavailable.",
@@ -952,6 +963,7 @@ describe("governance-screen view model", () => {
       selectedRowId: "ca-split-1",
       hasRows: true,
       errorText: null,
+      errorDetails: [],
       loadingText: null
     });
     expect(state.rows[1]).toMatchObject({
@@ -989,8 +1001,51 @@ describe("governance-screen view model", () => {
 
     expect(buildCorporateActionsViewState("sec-1", [], null, false, "Corporate API offline")).toMatchObject({
       errorText: "Corporate API offline",
+      errorDetails: [],
       statusAnnouncement: "Corporate actions error: Corporate API offline"
     });
+  });
+
+  it("preserves structured Governance api-errors in trial balance, calibration, and corporate actions views", () => {
+    const apiError = new MeridianApiError({
+      path: "/api/workstation/governance/trial-balance",
+      status: 422,
+      title: "Validation failed",
+      detail: "Fund account is required.",
+      validationIssues: [
+        {
+          field: "fundAccountId",
+          label: "Fund account",
+          messages: ["Select a fund account before loading governance evidence."]
+        }
+      ]
+    });
+
+    const displayError = describeApiError(apiError, "Trial balance failed to load.");
+
+    const trialBalanceState = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [],
+      loading: false,
+      error: displayError
+    });
+    expect(trialBalanceState).toMatchObject({
+      state: "error",
+      errorText: "Fund account is required."
+    });
+    expect(trialBalanceState.errorDetails).toEqual([
+      "Endpoint returned 422 for /api/workstation/governance/trial-balance.",
+      "Validation failed",
+      "Fund account: Select a fund account before loading governance evidence."
+    ]);
+
+    const calibrationState = buildCalibrationSummaryViewState(null, false, displayError);
+    expect(calibrationState.errorText).toBe("Fund account is required.");
+    expect(calibrationState.errorDetails).toEqual(trialBalanceState.errorDetails);
+
+    const corporateActionsState = buildCorporateActionsViewState("sec-1", [], null, false, displayError);
+    expect(corporateActionsState.errorText).toBe("Fund account is required.");
+    expect(corporateActionsState.errorDetails).toEqual(trialBalanceState.errorDetails);
   });
 
   it("derives cash-flow and factor schedule rows with selected detail state", () => {
@@ -1165,7 +1220,9 @@ describe("governance-screen view model", () => {
       disabled: false,
       disabledReason: null,
       busy: false,
-      busyLabel: null
+      busyLabel: null,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: null
     });
     expect(buildSecurityConflictRefreshCommand(true, null)).toMatchObject({
       label: "Refreshing...",
@@ -1178,6 +1235,38 @@ describe("governance-screen view model", () => {
       label: "Retry conflicts",
       ariaLabel: "Retry loading Security Master identifier conflicts"
     });
+    expect(buildSecurityConflictRefreshCommand(false, null, "conflict-1")).toMatchObject({
+      label: "Refresh conflicts",
+      ariaLabel: "Refresh disabled while identifier conflict conflict-1 is resolving",
+      disabled: true,
+      disabledReason: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.",
+      busy: false,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue."
+    });
+  });
+
+  it("preserves structured Security Master search errors with operator details", () => {
+    const failed = buildSecuritySearchState({
+      query: "AAPL",
+      searching: false,
+      results: [],
+      searchError: describeApiError(new MeridianApiError({
+        path: "/api/security-master/search",
+        status: 503,
+        title: "Provider unavailable",
+        detail: "Search feed is offline."
+      }), "Security search failed."),
+      identityLoading: false,
+      identityError: null
+    });
+
+    expect(failed.searchErrorText).toBe("Security search failed: Search feed is offline.");
+    expect(failed.searchErrorDetails).toEqual([
+      "Endpoint returned 503 for /api/security-master/search.",
+      "Provider unavailable"
+    ]);
+    expect(failed.statusAnnouncement).toBe("Security search failed: Search feed is offline.");
   });
 
   it("derives Security Master master-detail page summary from selected state", () => {
@@ -1222,7 +1311,11 @@ describe("governance-screen view model", () => {
     const retryConflicts = deferred<SecurityMasterConflict[]>();
     const services = createSecurityMasterServices({
       getConflicts: vi.fn()
-        .mockRejectedValueOnce(new Error("Conflict API offline"))
+        .mockRejectedValueOnce(new MeridianApiError({
+          path: "/api/workstation/security-master/conflicts",
+          status: 503,
+          detail: "Conflict API offline"
+        }))
         .mockReturnValueOnce(retryConflicts.promise)
     });
     const drillInServices = createSecurityMasterDrillInServices();
@@ -1230,6 +1323,9 @@ describe("governance-screen view model", () => {
     const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
 
     await waitFor(() => expect(result.current.conflictsErrorText).toBe("Conflict API offline"));
+    expect(result.current.conflictsErrorDetails).toEqual([
+      "Endpoint returned 503 for /api/workstation/security-master/conflicts."
+    ]);
     expect(result.current.conflictRefreshCommand).toMatchObject({
       label: "Retry conflicts",
       disabled: false
@@ -1348,6 +1444,11 @@ describe("governance-screen view model", () => {
     expect(rows[0]).toMatchObject({
       breakId: "run-42:cash",
       actionBusy: true,
+      varianceLabel: "+$500.00",
+      varianceTone: "success",
+      statusBadgeVariant: "danger",
+      ownerLabel: "Unassigned",
+      rowSelectAriaLabel: "Inspect reconciliation break run-42:cash",
       assignLabel: "Assigning...",
       canAssign: false,
       canResolve: false,
@@ -1363,6 +1464,7 @@ describe("governance-screen view model", () => {
 
     const state = buildReconciliationBreakQueueState({
       breakQueue,
+      selectedBreakId: "run-57:fees",
       loading: false,
       loadError: null,
       action: { breakId: "run-42:cash", command: "assign" },
@@ -1370,6 +1472,27 @@ describe("governance-screen view model", () => {
     });
 
     expect(state.hasBreaks).toBe(true);
+    expect(state.tableLabel).toBe("Reconciliation break queue");
+    expect(state.selectedBreakId).toBe("run-57:fees");
+    expect(state.selectedDetail).toMatchObject({
+      id: "reconciliation-break-detail-panel",
+      title: "Intraday Vol Carry - FeeMismatch",
+      statusLabel: "Resolved",
+      statusBadgeVariant: "success",
+      recommendedActionText: "Review matched fee entries before closing.",
+      routingActionLabel: "Open routing target",
+      routingActionHref: "/accounting",
+      routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Detected", value: "Jan 2, 00:00 UTC" },
+      { label: "Updated", value: "Jan 2, 00:00 UTC" }
+    ]));
+    expect(state.rows[1]).toMatchObject({
+      isSelected: true,
+      isExpanded: true,
+      detailPanelId: "reconciliation-break-detail-panel"
+    });
     expect(state.statusAnnouncement).toBe("Assigning reconciliation break run-42:cash.");
   });
 
@@ -1383,6 +1506,8 @@ describe("governance-screen view model", () => {
     });
 
     expect(empty.hasBreaks).toBe(false);
+    expect(empty.selectedDetail).toBeNull();
+    expect(empty.detailEmptyAriaLabel).toBe("No reconciliation break selected");
     expect(empty.emptyText).toBe("No reconciliation breaks in the current queue.");
     expect(empty.statusAnnouncement).toBe("No reconciliation breaks in the current queue.");
 

@@ -125,6 +125,19 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public void SubscribeMarketDepth_DuplicateSymbol_ReturnsExistingSubscription()
+    {
+        var cfg = new SymbolConfig("SPY", SubscribeDepth: true, DepthLevels: 5);
+
+        var firstId = _sut.SubscribeMarketDepth(cfg);
+        var secondId = _sut.SubscribeMarketDepth(cfg);
+
+        secondId.Should().Be(firstId);
+        _primaryClient.DepthSubscribeCallCount.Should().Be(1,
+            "the failover wrapper should not create duplicate upstream depth subscriptions for the same symbol");
+    }
+
+    [Fact]
     public void SubscribeTrades_DelegatesToActiveClient()
     {
         var cfg = new SymbolConfig("AAPL", SubscribeTrades: true);
@@ -133,6 +146,19 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
 
         id.Should().BeGreaterThan(0);
         _primaryClient.TradeSubscriptions.Should().ContainKey("AAPL");
+    }
+
+    [Fact]
+    public void SubscribeTrades_DuplicateSymbol_ReturnsExistingSubscription()
+    {
+        var cfg = new SymbolConfig("AAPL", SubscribeTrades: true);
+
+        var firstId = _sut.SubscribeTrades(cfg);
+        var secondId = _sut.SubscribeTrades(cfg);
+
+        secondId.Should().Be(firstId);
+        _primaryClient.TradeSubscribeCallCount.Should().Be(1,
+            "the failover wrapper should not create duplicate upstream trade subscriptions for the same symbol");
     }
 
     [Fact]
@@ -180,6 +206,8 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         public bool ShouldFailConnect { get; set; }
         public int ConnectCallCount { get; private set; }
         public int DisconnectCallCount { get; private set; }
+        public int DepthSubscribeCallCount { get; private set; }
+        public int TradeSubscribeCallCount { get; private set; }
         public Dictionary<string, int> DepthSubscriptions { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, int> TradeSubscriptions { get; } = new(StringComparer.OrdinalIgnoreCase);
         public List<int> UnsubscribedDepthIds { get; } = new();
@@ -214,6 +242,7 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
 
         public int SubscribeMarketDepth(SymbolConfig cfg)
         {
+            DepthSubscribeCallCount++;
             var id = _nextSubId++;
             DepthSubscriptions[cfg.Symbol] = id;
             return id;
@@ -226,6 +255,7 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
 
         public int SubscribeTrades(SymbolConfig cfg)
         {
+            TradeSubscribeCallCount++;
             var id = _nextSubId++;
             TradeSubscriptions[cfg.Symbol] = id;
             return id;

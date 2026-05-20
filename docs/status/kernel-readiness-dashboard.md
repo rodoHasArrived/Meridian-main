@@ -16,6 +16,7 @@
 
 ## Program Cadence and Operating Window
 
+- **Provider integration status board:** [`provider-integration-status.md`](./provider-integration-status.md) is the single per-broker phase/blocker/evidence timestamp surface; keep it synchronized with this dashboard and the provider validation matrix.
 - **Roadmap/readiness escalation feed:** use generated [`program-state-summary.md`](./program-state-summary.md) / [`program-state-summary.json`](./program-state-summary.json) for wave-level primary owner, backup owner, escalation SLA, and dependency-owner routing.
 
 - **Cadence:** weekly subsystem review (Mon), cross-subsystem interop review (Wed), operator-readiness review (Fri)

@@ -145,6 +145,41 @@ describe("mega menu view model", () => {
     });
   });
 
+  it("preserves operating scope in menu routes by workspace capability", () => {
+    const model = buildMegaMenuViewModel({
+      pathname: "/data/quotes",
+      search: "?symbol=aapl&provider=alpaca&from=2026-05-01&to=2026-05-15",
+      open: true,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+
+    const tradingReadiness = model.sections
+      .find((section) => section.key === "trading")
+      ?.links.find((link) => link.label === "Readiness");
+    const dataQuotes = model.sections
+      .find((section) => section.key === "data")
+      ?.links.find((link) => link.label === "Live quotes");
+    const settingsIntegrations = model.sections
+      .find((section) => section.key === "settings")
+      ?.links.find((link) => link.label === "Integrations");
+
+    expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca / Window: 2026-05-01 to 2026-05-15");
+    expect(tradingReadiness).toMatchObject({
+      route: "/trading/readiness?symbol=AAPL&provider=alpaca&from=2026-05-01&to=2026-05-15",
+      ariaLabel: "Open Readiness, Trading workspace, preserving Subject: AAPL / Provider: alpaca / Window: 2026-05-01 to 2026-05-15"
+    });
+    expect(dataQuotes).toMatchObject({
+      route: "/data/quotes?symbol=AAPL&provider=alpaca&from=2026-05-01&to=2026-05-15",
+      ariaLabel: "Live quotes, current route, Data workspace, preserving Subject: AAPL / Provider: alpaca / Window: 2026-05-01 to 2026-05-15"
+    });
+    expect(settingsIntegrations).toMatchObject({
+      route: "/settings/integrations?provider=alpaca",
+      ariaLabel: "Open Integrations, Settings workspace, preserving Provider: alpaca"
+    });
+  });
+
   it("resolves close and focus-loop keyboard commands", () => {
     expect(resolveMegaMenuKeyCommand({ key: "Escape", shiftKey: false, focusBoundary: "middle" })).toBe("close");
     expect(resolveMegaMenuKeyCommand({ key: "Tab", shiftKey: false, focusBoundary: "last" })).toBe("focus-first");

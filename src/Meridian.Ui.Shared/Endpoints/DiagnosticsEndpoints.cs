@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.Coordination;
+using Meridian.Application.Monitoring;
+using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
@@ -9,6 +11,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -92,7 +95,7 @@ public static class DiagnosticsEndpoints
 
             return Results.Json(new
             {
-                rootPath,
+                rootPath = SanitizeDiagnosticText(rootPath),
                 exists,
                 totalBytes,
                 fileCount,
@@ -117,7 +120,7 @@ public static class DiagnosticsEndpoints
             {
                 dataSource = config.DataSource.ToString(),
                 symbolCount = config.Symbols?.Length ?? 0,
-                dataRoot = config.DataRoot,
+                dataRoot = SanitizeDiagnosticText(config.DataRoot),
                 hasAlpacaConfig = config.Alpaca is not null,
                 hasStorageConfig = config.Storage is not null,
                 hasBackfillConfig = config.Backfill is not null,
@@ -126,7 +129,7 @@ public static class DiagnosticsEndpoints
                     enabled = config.Coordination.Enabled,
                     mode = config.Coordination.Mode.ToString(),
                     instanceId = config.Coordination.InstanceId,
-                    rootPath = config.Coordination.RootPath
+                    rootPath = SanitizeDiagnosticText(config.Coordination.RootPath)
                 } : null,
                 compress = config.Compress,
                 timestamp = DateTimeOffset.UtcNow
@@ -148,7 +151,7 @@ public static class DiagnosticsEndpoints
                 success = result.Success,
                 sizeBytes = result.SizeBytes,
                 filesIncluded = result.FilesIncluded,
-                path = result.ZipPath,
+                path = SanitizeDiagnosticText(result.ZipPath),
                 message = result.Message
             }, jsonOptions);
         })
@@ -157,9 +160,15 @@ public static class DiagnosticsEndpoints
         .Produces(503);
 
         // Diagnostics metrics
-        group.MapGet(UiApiRoutes.DiagnosticsMetrics, ([FromServices] ErrorTracker? errorTracker) =>
+        group.MapGet(UiApiRoutes.DiagnosticsMetrics, ([FromServices] IServiceProvider services) =>
         {
+            var errorTracker = services.GetService<ErrorTracker>();
+            var eventMetrics = services.GetService<IEventMetrics>();
+            var eventPipeline = services.GetService<EventPipeline>();
+            var hotPathPipeline = services.GetService<DualPathEventPipeline>();
             var stats = errorTracker?.GetStatistics();
+            var pipelineStats = eventPipeline?.GetStatistics();
+            var metricsSnapshot = (eventPipeline?.EventMetrics ?? eventMetrics)?.GetSnapshot();
             return Results.Json(new
             {
                 errors = stats != null ? new
@@ -167,9 +176,57 @@ public static class DiagnosticsEndpoints
                     total = stats.TotalErrors,
                     inWindow = stats.ErrorsInWindow,
                     byType = stats.ByExceptionType,
-                    byContext = stats.ByContext,
+                    byContext = SanitizeErrorCounts(stats.ByContext),
                     byHour = stats.ByHour,
-                    mostRecent = stats.MostRecentError
+                    mostRecent = SanitizeTrackedError(stats.MostRecentError)
+                } : null,
+                eventPipeline = pipelineStats != null ? new
+                {
+                    queueName = "market-data",
+                    currentQueueSize = pipelineStats.Value.CurrentQueueSize,
+                    peakQueueSize = pipelineStats.Value.PeakQueueSize,
+                    queueCapacity = pipelineStats.Value.QueueCapacity,
+                    queueUtilization = Math.Round(pipelineStats.Value.QueueUtilization, 2),
+                    published = pipelineStats.Value.PublishedCount,
+                    consumed = pipelineStats.Value.ConsumedCount,
+                    dropped = pipelineStats.Value.DroppedCount,
+                    recovered = pipelineStats.Value.RecoveredCount,
+                    rejected = pipelineStats.Value.RejectedCount,
+                    deduplicated = pipelineStats.Value.DeduplicatedCount,
+                    averageProcessingTimeUs = Math.Round(pipelineStats.Value.AverageProcessingTimeUs, 2),
+                    timeSinceLastFlushMs = Math.Round(pipelineStats.Value.TimeSinceLastFlush.TotalMilliseconds, 2),
+                    isWalEnabled = pipelineStats.Value.IsWalEnabled,
+                    isValidationEnabled = pipelineStats.Value.IsValidationEnabled,
+                    isDeduplicationEnabled = pipelineStats.Value.IsDeduplicationEnabled,
+                    highWaterMarkWarned = pipelineStats.Value.HighWaterMarkWarned,
+                    timestamp = pipelineStats.Value.Timestamp
+                } : null,
+                eventPipelineHotPath = hotPathPipeline != null ? new
+                {
+                    tradeBufferCount = hotPathPipeline.TradeBufferCount,
+                    quoteBufferCount = hotPathPipeline.QuoteBufferCount,
+                    hotTradePublished = hotPathPipeline.HotTradePublished,
+                    hotTradeConsumed = hotPathPipeline.HotTradeConsumed,
+                    hotTradeFallbacks = hotPathPipeline.HotTradeFallbacks,
+                    hotTradeDropped = hotPathPipeline.HotTradeDropped,
+                    hotQuotePublished = hotPathPipeline.HotQuotePublished,
+                    hotQuoteConsumed = hotPathPipeline.HotQuoteConsumed,
+                    hotQuoteFallbacks = hotPathPipeline.HotQuoteFallbacks,
+                    hotQuoteDropped = hotPathPipeline.HotQuoteDropped
+                } : null,
+                marketDataMetrics = metricsSnapshot.HasValue ? new
+                {
+                    published = metricsSnapshot.Value.Published,
+                    dropped = metricsSnapshot.Value.Dropped,
+                    dropRate = Math.Round(metricsSnapshot.Value.DropRate, 4),
+                    eventsPerSecond = Math.Round(metricsSnapshot.Value.EventsPerSecond, 2),
+                    trades = metricsSnapshot.Value.Trades,
+                    quotes = metricsSnapshot.Value.Quotes,
+                    depthUpdates = metricsSnapshot.Value.DepthUpdates,
+                    historicalBars = metricsSnapshot.Value.HistoricalBars,
+                    averageLatencyUs = Math.Round(metricsSnapshot.Value.AverageLatencyUs, 2),
+                    maxLatencyUs = Math.Round(metricsSnapshot.Value.MaxLatencyUs, 2),
+                    latencySampleCount = metricsSnapshot.Value.LatencySampleCount
                 } : null,
                 processMemoryBytes = GC.GetTotalMemory(false),
                 gcCollections = new { gen0 = GC.CollectionCount(0), gen1 = GC.CollectionCount(1), gen2 = GC.CollectionCount(2) },
@@ -230,7 +287,7 @@ public static class DiagnosticsEndpoints
             return Results.Json(new
             {
                 configLoaded = true,
-                dataRoot = config.DataRoot,
+                dataRoot = SanitizeDiagnosticText(config.DataRoot),
                 dataRootExists = Directory.Exists(config.DataRoot),
                 symbolCount = config.Symbols?.Length ?? 0,
                 dataSource = config.DataSource.ToString(),
@@ -248,7 +305,7 @@ public static class DiagnosticsEndpoints
             {
                 dataSource = config.DataSource.ToString(),
                 symbols = config.Symbols?.Select(s => s.Symbol).ToArray() ?? Array.Empty<string>(),
-                dataRoot = config.DataRoot,
+                dataRoot = SanitizeDiagnosticText(config.DataRoot),
                 compress = config.Compress,
                 storage = config.Storage != null ? new
                 {
@@ -358,7 +415,7 @@ public static class DiagnosticsEndpoints
                 {
                     dataSource = config.DataSource.ToString(),
                     symbolCount = config.Symbols?.Length ?? 0,
-                    dataRoot = config.DataRoot
+                    dataRoot = SanitizeDiagnosticText(config.DataRoot)
                 },
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
@@ -378,7 +435,7 @@ public static class DiagnosticsEndpoints
                 enabled = snapshot.Enabled,
                 mode = snapshot.Mode,
                 instanceId = snapshot.InstanceId,
-                rootPath = snapshot.RootPath,
+                rootPath = SanitizeDiagnosticText(snapshot.RootPath),
                 heldLeaseCount = snapshot.HeldLeaseCount,
                 symbolLeaseCount = snapshot.SymbolLeaseCount,
                 scheduleLeaseCount = snapshot.ScheduleLeaseCount,
@@ -389,9 +446,9 @@ public static class DiagnosticsEndpoints
                 renewalFailureCount = snapshot.RenewalFailureCount,
                 orphanedLeaseCount = snapshot.OrphanedLeaseCount,
                 corruptedLeaseCount = snapshot.CorruptedLeaseCount,
-                heldLeases = snapshot.HeldLeases,
-                orphanedResources = snapshot.OrphanedResources,
-                corruptedLeaseFiles = snapshot.CorruptedLeaseFiles,
+                heldLeases = SanitizeHeldLeases(snapshot.HeldLeases),
+                orphanedResources = SanitizeDiagnosticTextList(snapshot.OrphanedResources),
+                corruptedLeaseFiles = SanitizeDiagnosticTextList(snapshot.CorruptedLeaseFiles),
                 timestamp = snapshot.CapturedAtUtc
             }, jsonOptions);
         })
@@ -399,4 +456,50 @@ public static class DiagnosticsEndpoints
         .Produces(200)
         .Produces(503);
     }
+
+    private static Dictionary<string, int> SanitizeErrorCounts(Dictionary<string, int> counts)
+    {
+        return counts
+            .GroupBy(pair => RuntimeDiagnosticRedactor.SanitizeText(pair.Key), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Sum(pair => pair.Value), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static object? SanitizeTrackedError(TrackedError? error)
+    {
+        if (error is null)
+            return null;
+
+        return new
+        {
+            id = error.Id,
+            timestamp = error.Timestamp,
+            level = error.Level,
+            message = RuntimeDiagnosticRedactor.SanitizeText(error.Message),
+            exceptionType = error.ExceptionType,
+            stackTrace = RuntimeDiagnosticRedactor.SanitizeText(error.StackTrace),
+            context = RuntimeDiagnosticRedactor.SanitizeText(error.Context),
+            innerException = RuntimeDiagnosticRedactor.SanitizeText(error.InnerException)
+        };
+    }
+
+    private static IReadOnlyList<object> SanitizeHeldLeases(IReadOnlyList<LeaseRecord> leases)
+    {
+        return leases
+            .Select(lease => (object)new
+            {
+                resourceId = SanitizeDiagnosticText(lease.ResourceId),
+                instanceId = SanitizeDiagnosticText(lease.InstanceId),
+                lease.LeaseVersion,
+                acquiredAtUtc = lease.AcquiredAtUtc,
+                expiresAtUtc = lease.ExpiresAtUtc,
+                lastRenewedAtUtc = lease.LastRenewedAtUtc
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> SanitizeDiagnosticTextList(IReadOnlyList<string> values)
+        => values.Select(SanitizeDiagnosticText).ToArray();
+
+    private static string SanitizeDiagnosticText(string? value) =>
+        RuntimeDiagnosticRedactor.SanitizeText(value);
 }

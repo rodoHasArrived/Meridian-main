@@ -12,6 +12,8 @@ export interface StorageLike {
   removeItem(key: string): void;
 }
 
+export type PriceAlertStorageWriteStatus = "saved" | "unavailable" | "failed";
+
 function emptyState(): PriceAlertStorageState {
   return { version: 1, alerts: [], triggers: [] };
 }
@@ -54,15 +56,17 @@ export function loadPriceAlertState(storage?: StorageLike | null): PriceAlertSto
   }
 }
 
-export function savePriceAlertState(state: PriceAlertStorageState, storage?: StorageLike | null): void {
+export function savePriceAlertState(state: PriceAlertStorageState, storage?: StorageLike | null): PriceAlertStorageWriteStatus {
   const target = resolveStorage(storage);
   if (!target) {
-    return;
+    return "unavailable";
   }
   try {
     target.setItem(PRICE_ALERT_STORAGE_KEY, JSON.stringify(state));
+    return "saved";
   } catch {
-    // Quota exhausted or storage unavailable — drop silently; alerts will rehydrate empty next session.
+    // Quota exhausted or storage unavailable: keep in-memory state, but let callers warn the operator.
+    return "failed";
   }
 }
 

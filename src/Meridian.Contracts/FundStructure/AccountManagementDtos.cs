@@ -136,6 +136,319 @@ public sealed record AccountReconciliationResultDto(
     decimal? Variance,
     string Reason);
 
+/// <summary>Provider account-link posture for account-scoped sync and readiness.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountProviderLinkStatusDto>))]
+public enum AccountProviderLinkStatusDto
+{
+    NotLinked = 0,
+    Linked = 1,
+    Verified = 2,
+    Degraded = 3,
+    Revoked = 4,
+    Expired = 5,
+    Unauthorized = 6,
+    Unsupported = 7,
+    SyncPending = 8,
+    SyncFailed = 9
+}
+
+/// <summary>Outcome for one account-scoped sync attempt.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountSyncStatusDto>))]
+public enum AccountSyncStatusDto
+{
+    Pending = 0,
+    Succeeded = 1,
+    Degraded = 2,
+    Failed = 3,
+    Cancelled = 4
+}
+
+/// <summary>Structured failure class for account sync retries and readiness.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountSyncFailureKindDto>))]
+public enum AccountSyncFailureKindDto
+{
+    None = 0,
+    CredentialMissing = 1,
+    Unauthorized = 2,
+    ProviderUnavailable = 3,
+    RateLimited = 4,
+    Timeout = 5,
+    Cancelled = 6,
+    ValidationFailed = 7,
+    Unsupported = 8,
+    Duplicate = 9,
+    Unknown = 99
+}
+
+/// <summary>Operator severity for account readiness issues.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountReadinessSeverityDto>))]
+public enum AccountReadinessSeverityDto
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
+
+/// <summary>Durable history entry for one provider/account sync attempt.</summary>
+public sealed record AccountSyncHistoryEntryDto(
+    Guid SyncHistoryId,
+    Guid AccountId,
+    string Capability,
+    AccountSyncStatusDto Status,
+    AccountProviderLinkStatusDto ProviderLinkStatus,
+    string? ProviderId,
+    string? ExternalAccountId,
+    DateTimeOffset AttemptedAt,
+    DateTimeOffset? CompletedAt,
+    DateTimeOffset? FreshUntil,
+    AccountSyncFailureKindDto FailureKind,
+    string? FailureMessage,
+    string? CorrelationId,
+    string? RequestedBy,
+    string? RawEvidencePath,
+    string? ProjectionEvidencePath,
+    int SecurityMissingCount,
+    IReadOnlyList<string> Warnings);
+
+/// <summary>Request to append or upsert an account-scoped sync history entry.</summary>
+public sealed record RecordAccountSyncHistoryRequest(
+    Guid AccountId,
+    string Capability,
+    AccountSyncStatusDto Status,
+    AccountProviderLinkStatusDto ProviderLinkStatus = AccountProviderLinkStatusDto.Linked,
+    string? ProviderId = null,
+    string? ExternalAccountId = null,
+    DateTimeOffset? AttemptedAt = null,
+    DateTimeOffset? CompletedAt = null,
+    DateTimeOffset? FreshUntil = null,
+    AccountSyncFailureKindDto FailureKind = AccountSyncFailureKindDto.None,
+    string? FailureMessage = null,
+    string? CorrelationId = null,
+    string? RequestedBy = null,
+    string? RawEvidencePath = null,
+    string? ProjectionEvidencePath = null,
+    int SecurityMissingCount = 0,
+    IReadOnlyList<string>? Warnings = null);
+
+/// <summary>One account readiness issue derived from account metadata, sync history, and reconciliation state.</summary>
+public sealed record AccountReadinessIssueDto(
+    string Code,
+    AccountReadinessSeverityDto Severity,
+    string Title,
+    string Message,
+    Guid AccountId,
+    string? ProviderId = null,
+    string? ExternalAccountId = null,
+    string? Capability = null,
+    string? SuggestedAction = null,
+    string? EvidenceLink = null);
+
+/// <summary>Account-scoped production readiness snapshot for provider, ledger, sync, and reconciliation checks.</summary>
+public sealed record AccountReadinessSnapshotDto(
+    Guid AccountId,
+    DateTimeOffset EvaluatedAt,
+    AccountProviderLinkStatusDto ProviderLinkStatus,
+    AccountSyncStatusDto? LatestSyncStatus,
+    DateTimeOffset? LastSuccessfulSyncAt,
+    DateTimeOffset? FreshUntil,
+    bool IsReady,
+    IReadOnlyList<AccountReadinessIssueDto> Issues);
+
+/// <summary>Supported margin model classification for provider and account readiness.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<MarginModelTypeDto>))]
+public enum MarginModelTypeDto
+{
+    None = 0,
+    Cash = 1,
+    RegT = 2,
+    PortfolioMargin = 3,
+    House = 4,
+    Unsupported = 99
+}
+
+/// <summary>Provider-reported margin-call posture for a margin snapshot.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<MarginCallStatusDto>))]
+public enum MarginCallStatusDto
+{
+    None = 0,
+    Potential = 1,
+    Active = 2,
+    Satisfied = 3,
+    Waived = 4
+}
+
+/// <summary>Per-position margin requirement used to explain account-level margin state.</summary>
+public sealed record MarginRequirementDto(
+    string? SecurityId,
+    string? Symbol,
+    decimal Quantity,
+    decimal MarketValue,
+    decimal? InitialRequirement,
+    decimal? MaintenanceRequirement,
+    bool IsMarginable,
+    string? CollateralClass,
+    decimal? Haircut,
+    string? EvidencePath = null);
+
+/// <summary>Effective-dated provider/account margin snapshot.</summary>
+public sealed record MarginSnapshotDto(
+    Guid MarginSnapshotId,
+    Guid AccountId,
+    DateTimeOffset EffectiveAt,
+    DateTimeOffset RecordedAt,
+    string Currency,
+    MarginModelTypeDto MarginType,
+    MarginCallStatusDto MarginCallStatus,
+    decimal? InitialMargin,
+    decimal? MaintenanceMargin,
+    decimal? ExcessLiquidity,
+    decimal? BuyingPower,
+    decimal? SpecialMemorandumAccount,
+    decimal? LoanBalance,
+    decimal? DebitBalance,
+    decimal? CreditBalance,
+    decimal? CollateralValue,
+    decimal? MarginableSecuritiesValue,
+    decimal? NonMarginableSecuritiesValue,
+    decimal? MarginUtilization,
+    int MissingRequirementCount,
+    int MissingCollateralClassificationCount,
+    int ConcentrationLimitBreachCount,
+    bool IsLiveAccount,
+    bool ApprovedForLiveMargin,
+    IReadOnlyList<MarginRequirementDto> Requirements,
+    IReadOnlyList<string> Warnings,
+    string? ProviderId = null,
+    string? ExternalAccountId = null,
+    DateTimeOffset? FreshUntil = null,
+    string? AgreementEvidencePath = null,
+    string? SnapshotEvidencePath = null,
+    string? CorrelationId = null);
+
+/// <summary>Request to record or upsert a margin snapshot for an account.</summary>
+public sealed record RecordMarginSnapshotRequest(
+    Guid AccountId,
+    DateTimeOffset EffectiveAt,
+    string Currency,
+    MarginModelTypeDto MarginType,
+    MarginCallStatusDto MarginCallStatus = MarginCallStatusDto.None,
+    decimal? InitialMargin = null,
+    decimal? MaintenanceMargin = null,
+    decimal? ExcessLiquidity = null,
+    decimal? BuyingPower = null,
+    decimal? SpecialMemorandumAccount = null,
+    decimal? LoanBalance = null,
+    decimal? DebitBalance = null,
+    decimal? CreditBalance = null,
+    decimal? CollateralValue = null,
+    decimal? MarginableSecuritiesValue = null,
+    decimal? NonMarginableSecuritiesValue = null,
+    decimal? MarginUtilization = null,
+    int MissingRequirementCount = 0,
+    int MissingCollateralClassificationCount = 0,
+    int ConcentrationLimitBreachCount = 0,
+    bool IsLiveAccount = false,
+    bool ApprovedForLiveMargin = false,
+    IReadOnlyList<MarginRequirementDto>? Requirements = null,
+    IReadOnlyList<string>? Warnings = null,
+    string? ProviderId = null,
+    string? ExternalAccountId = null,
+    DateTimeOffset? RecordedAt = null,
+    DateTimeOffset? FreshUntil = null,
+    string? AgreementEvidencePath = null,
+    string? SnapshotEvidencePath = null,
+    string? CorrelationId = null);
+
+/// <summary>Collateral eligibility for account-level pledge and margin workflows.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<CollateralEligibilityDto>))]
+public enum CollateralEligibilityDto
+{
+    Unknown = 0,
+    Eligible = 1,
+    Ineligible = 2,
+    Restricted = 3,
+    PendingReview = 4
+}
+
+/// <summary>Account-level collateral or pledged asset position.</summary>
+public sealed record CollateralPositionDto(
+    Guid CollateralPositionId,
+    Guid AccountId,
+    string? SecurityId,
+    string? Symbol,
+    decimal Quantity,
+    decimal MarketValue,
+    string Currency,
+    bool IsPledged,
+    string? RestrictionType,
+    decimal? Haircut,
+    decimal? CollateralValue,
+    CollateralEligibilityDto Eligibility,
+    DateTimeOffset ValuationTimestamp,
+    string? LienReference = null,
+    string? SecuredObligationReference = null,
+    string? AgreementEvidencePath = null);
+
+/// <summary>Collateral agreement metadata linking pledged assets to legal evidence.</summary>
+public sealed record CollateralAgreementDto(
+    Guid CollateralAgreementId,
+    Guid AccountId,
+    string AgreementReference,
+    string Counterparty,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    string? SecuredObligationReference,
+    string? EvidencePath);
+
+/// <summary>Cash transfer status for cross-account movement matching.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<CashTransferStatusDto>))]
+public enum CashTransferStatusDto
+{
+    Pending = 0,
+    Settled = 1,
+    Failed = 2,
+    Cancelled = 3,
+    Reversed = 4
+}
+
+/// <summary>Provider or operator supplied cash transfer between accounts.</summary>
+public sealed record CashTransferDto(
+    Guid TransferId,
+    Guid? FromAccountId,
+    Guid? ToAccountId,
+    decimal Amount,
+    string Currency,
+    DateOnly TradeDate,
+    DateOnly? SettlementDate,
+    CashTransferStatusDto Status,
+    string? ProviderId,
+    string? ExternalTransferId,
+    string? TransferType,
+    string? EvidencePath);
+
+/// <summary>Duplicate/matching classification for transfer legs across accounts.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TransferMatchStatusDto>))]
+public enum TransferMatchStatusDto
+{
+    Unmatched = 0,
+    Matched = 1,
+    DuplicateCandidate = 2,
+    AmountMismatch = 3,
+    DateMismatch = 4,
+    ManualReview = 5
+}
+
+/// <summary>Transfer matching result that links account-side transfer legs.</summary>
+public sealed record TransferMatchDto(
+    Guid TransferMatchId,
+    Guid SourceTransferId,
+    Guid? MatchedTransferId,
+    TransferMatchStatusDto Status,
+    decimal? AmountVariance,
+    int? SettlementDateDeltaDays,
+    string? EvidencePath,
+    DateTimeOffset MatchedAt);
+
 /// <summary>Polymorphic envelope for account-type specific details.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(CustodianAccountDetailsEnvelopeDto), "custodian")]

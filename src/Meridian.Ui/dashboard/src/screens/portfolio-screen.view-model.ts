@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdAccount,
   BrokerageHouseholdPortfolio,
   BrokerageHouseholdPosition,
+  GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   MetricSnapshot,
   PortfolioWorkspaceResponse,
@@ -88,12 +89,21 @@ export interface PortfolioBrokerageAccountRow {
   label: string;
   kind: string;
   health: string;
+  healthBadgeVariant: "outline" | "success" | "warning" | "danger";
   equity: string;
   cash: string;
   buyingPower: string;
   syncedAt: string;
+  positionCount: string;
+  warningCount: string;
   hasWarning: boolean;
   warningText: string;
+  rowClassName: string;
+  isSelected: boolean;
+  expanded: boolean;
+  detailPanelId: string;
+  selectAriaLabel: string;
+  ariaLabel: string;
 }
 
 export interface PortfolioBrokeragePositionRow {
@@ -109,6 +119,7 @@ export interface PortfolioBrokeragePositionRow {
   pnlTone: "success" | "danger" | "default";
   assetClass: string;
   securityCoverage: string;
+  rowClassName: string;
   isSelected: boolean;
   detailPanelId: string;
   expanded: boolean;
@@ -155,11 +166,12 @@ export interface PortfolioBackendLink {
 }
 
 export interface PortfolioWorkflowTaskAction {
-  id: "provider-setup" | "trading-readiness" | "trading-cockpit";
+  id: "provider-setup" | "brokerage-sync" | "trading-readiness" | "trading-cockpit" | "evidence";
   label: string;
   href: string;
   ariaLabel: string;
   detail: string;
+  detailId: string;
   variant: "default" | "outline";
 }
 
@@ -172,6 +184,7 @@ export interface PortfolioWorkflowTaskPanel {
   statusTone: "default" | "success" | "warning" | "danger";
   chips: PortfolioHeaderChip[];
   statusRows: PortfolioDetailField[];
+  actionListLabel: string;
   actions: PortfolioWorkflowTaskAction[];
   backendLinks: PortfolioBackendLink[];
   selectedSummary: string;
@@ -215,6 +228,19 @@ export interface PortfolioBrokeragePositionDetail {
   fields: PortfolioDetailField[];
 }
 
+export interface PortfolioBrokerageAccountDetail {
+  id: string;
+  title: string;
+  subtitle: string;
+  ariaLabel: string;
+  statusTitle: string;
+  statusDetail: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  statusBadgeLabel: string;
+  statusBadgeVariant: "outline" | "success" | "warning" | "danger";
+  fields: PortfolioDetailField[];
+}
+
 export interface PortfolioRunEvidenceAction {
   label: string;
   href: string;
@@ -245,6 +271,10 @@ export interface PortfolioScreenViewModel {
   selectAdjacentBrokerageAccount: (direction: "next" | "previous" | "first" | "last") => void;
   hasBrokerageAccounts: boolean;
   brokerageAccountRows: PortfolioBrokerageAccountRow[];
+  brokerageAccountsTableLabel: string;
+  brokerageAccountDetailId: string;
+  selectedBrokerageAccount: PortfolioBrokerageAccountDetail;
+  brokerageAccountEmptyText: string;
   hasBrokeragePositions: boolean;
   brokeragePositionRows: PortfolioBrokeragePositionRow[];
   brokeragePositionDetailId: string;
@@ -291,7 +321,7 @@ export function buildPortfolioScreenViewModel({
   selectedRunId = null,
   selectedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
-  pathname = "/portfolio",
+  pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
   selectPosition = () => {},
   selectRun = () => {},
   selectBrokeragePosition = () => {},
@@ -430,6 +460,16 @@ export function buildPortfolioScreenViewModel({
   const brokeragePositionRows = brokeragePositions.map((position) =>
     toBrokeragePositionRow(position, brokerageAccounts, selectedBrokerageStableId)
   );
+  const brokerageAccountRows = brokerageAccounts.map((account) =>
+    toBrokerageAccountRow(account, selectedBrokerageKey)
+  );
+  const selectedBrokerageAccountRecord =
+    selectedBrokerageKey === "all"
+      ? null
+      : brokerageAccounts.find((account) => account.fundAccountId === selectedBrokerageKey) ?? null;
+  const selectedBrokerageAccount = selectedBrokerageAccountRecord
+    ? buildSelectedBrokerageAccountDetail(selectedBrokerageAccountRecord, providerLabel)
+    : buildAllBrokerageAccountsDetail(brokerageAccounts, brokeragePortfolio, providerLabel);
   const selectedBrokeragePositionRecord =
     brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokerageStableId) ?? null;
   const selectedBrokeragePosition = selectedBrokeragePositionRecord
@@ -444,7 +484,7 @@ export function buildPortfolioScreenViewModel({
   const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
 
   return {
-    metricsFromTrading: portfolio != null || trading !== null,
+    metricsFromTrading: portfolio == null && trading !== null,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
     positionSourceLabel: portfolio ? "Portfolio workspace" : trading ? "Trading workspace" : "Unavailable",
     fallbackStats,
@@ -464,7 +504,10 @@ export function buildPortfolioScreenViewModel({
       openPositionCount: positions.length,
       totalExposure,
       totalUnrealizedPnl,
-      cashVarianceLabel
+      cashFlow,
+      cashVarianceLabel,
+      selectedRunId: selectedRunRow?.id ?? null,
+      selectedRunName: selectedRunRow?.strategyName ?? null
     }),
     brokerageProviderLabel: providerLabel,
     brokeragePanelEyebrow: `${providerLabel} read-only`,
@@ -482,7 +525,13 @@ export function buildPortfolioScreenViewModel({
     selectBrokerageAccount,
     selectAdjacentBrokerageAccount,
     hasBrokerageAccounts: brokerageAccounts.length > 0,
-    brokerageAccountRows: brokerageAccounts.map(toBrokerageAccountRow),
+    brokerageAccountRows,
+    brokerageAccountsTableLabel: `${providerLabel} brokerage accounts`,
+    brokerageAccountDetailId: "portfolio-brokerage-account-detail",
+    selectedBrokerageAccount,
+    brokerageAccountEmptyText: brokeragePortfolio
+      ? `No ${providerLabel} brokerage accounts are available in the household snapshot.`
+      : `${providerLabel} portfolio sync has not produced account evidence yet.`,
     hasBrokeragePositions: brokeragePositions.length > 0,
     brokeragePositionRows,
     brokeragePositionDetailId: "portfolio-brokerage-position-detail",
@@ -595,7 +644,7 @@ function buildBrokerageSetupAction({
 
   return {
     label: "Open provider setup",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: `Open ${providerLabel} provider setup from Portfolio brokerage panel`,
     detail: connectionNeedsSetup
       ? `Verify ${providerLabel} credentials before accepting brokerage portfolio state.`
@@ -731,7 +780,7 @@ export function usePortfolioScreenViewModel({
   governance,
   brokerageConnection,
   brokeragePortfolio,
-  pathname = "/portfolio"
+  pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
@@ -856,19 +905,160 @@ function nextBrokerageAccountKey(
   return options[nextIndex].key;
 }
 
-function toBrokerageAccountRow(account: BrokerageHouseholdAccount): PortfolioBrokerageAccountRow {
+function toBrokerageAccountRow(
+  account: BrokerageHouseholdAccount,
+  selectedAccountKey: string
+): PortfolioBrokerageAccountRow {
+  const kind = accountKindLabel(account.accountKind);
+  const isSelected = account.fundAccountId === selectedAccountKey;
+  const warningCount = account.warnings.length;
   return {
     id: account.fundAccountId,
     label: account.displayName,
-    kind: accountKindLabel(account.accountKind),
+    kind,
     health: account.health,
+    healthBadgeVariant: brokerageAccountHealthBadgeVariant(account.health),
     equity: formatCurrency(account.equity),
     cash: formatCurrency(account.cash),
     buyingPower: formatCurrency(account.buyingPower),
     syncedAt: formatDateTime(account.syncedAt),
-    hasWarning: account.warnings.length > 0,
-    warningText: account.warnings.length > 0 ? account.warnings.join(" ") : "No account sync warnings."
+    positionCount: formatCountLabel(account.positionCount, "position"),
+    warningCount: formatCountLabel(warningCount, "warning"),
+    hasWarning: warningCount > 0,
+    warningText: warningCount > 0 ? account.warnings.join(" ") : "No account sync warnings.",
+    rowClassName: brokerageAccountRowClassName(account.health, warningCount),
+    isSelected,
+    expanded: isSelected,
+    detailPanelId: "portfolio-brokerage-account-detail",
+    selectAriaLabel: `Filter brokerage positions to ${kind} account`,
+    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatCurrency(account.equity)}, cash ${formatCurrency(account.cash)}, ${formatCountLabel(warningCount, "warning")}`
   };
+}
+
+function brokerageAccountHealthBadgeVariant(
+  health: string
+): "outline" | "success" | "warning" | "danger" {
+  const normalized = health.trim().toLowerCase();
+  if (normalized === "healthy") return "success";
+  if (normalized === "failed" || normalized === "error" || normalized === "critical") return "danger";
+  if (normalized === "unknown" || normalized === "") return "outline";
+  return "warning";
+}
+
+function brokerageAccountStatusTone(health: string): PortfolioBrokerageAccountDetail["statusTone"] {
+  const variant = brokerageAccountHealthBadgeVariant(health);
+  return variant === "outline" ? "default" : variant;
+}
+
+function brokerageAccountRowClassName(health: string, warningCount: number): string {
+  if (warningCount > 0) {
+    return "bg-warning/5";
+  }
+
+  const variant = brokerageAccountHealthBadgeVariant(health);
+  if (variant === "danger") {
+    return "bg-danger/5";
+  }
+
+  if (variant === "warning") {
+    return "bg-warning/5";
+  }
+
+  return "bg-background/50";
+}
+
+function buildSelectedBrokerageAccountDetail(
+  account: BrokerageHouseholdAccount,
+  providerLabel: string
+): PortfolioBrokerageAccountDetail {
+  const kind = accountKindLabel(account.accountKind);
+  const warningCount = account.warnings.length;
+  const statusTone: PortfolioBrokerageAccountDetail["statusTone"] = warningCount > 0
+    ? "warning"
+    : brokerageAccountStatusTone(account.health);
+  return {
+    id: account.fundAccountId,
+    title: kind,
+    subtitle: `${providerLabel} / ${account.displayName}`,
+    ariaLabel: `${kind} brokerage account detail`,
+    statusTitle: warningCount > 0 ? "Account sync warning" : "Account sync posture",
+    statusDetail: warningCount > 0
+      ? account.warnings.join(" ")
+      : `${kind} account is ${account.health.toLowerCase()} with ${formatCountLabel(account.positionCount, "position")} and ${formatCountLabel(account.cashTransactionCount, "cash transaction")} in the latest household snapshot.`,
+    statusTone,
+    statusBadgeLabel: warningCount > 0 ? "Review" : account.health,
+    statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
+    fields: [
+      { label: "Fund account", value: account.fundAccountId, tone: "muted" },
+      { label: "External account", value: account.externalAccountId, tone: "muted" },
+      { label: "Equity", value: formatCurrency(account.equity), tone: "default" },
+      { label: "Cash", value: formatCurrency(account.cash), tone: "default" },
+      { label: "Buying power", value: formatCurrency(account.buyingPower), tone: "default" },
+      { label: "Positions", value: formatCountLabel(account.positionCount, "position"), tone: "muted" },
+      { label: "Cash activity", value: formatCountLabel(account.cashTransactionCount, "cash transaction"), tone: "muted" },
+      { label: "Synced", value: formatDateTime(account.syncedAt), tone: "muted" }
+    ]
+  };
+}
+
+function buildAllBrokerageAccountsDetail(
+  accounts: BrokerageHouseholdAccount[],
+  portfolio: BrokerageHouseholdPortfolio | null | undefined,
+  providerLabel: string
+): PortfolioBrokerageAccountDetail {
+  const accountWarningCount = accounts.reduce((sum, account) => sum + account.warnings.length, 0);
+  const warningCount = accountWarningCount + (portfolio?.warnings.length ?? 0);
+  const hasAccounts = accounts.length > 0;
+  const statusTone: PortfolioBrokerageAccountDetail["statusTone"] = !hasAccounts
+    ? "danger"
+    : warningCount > 0
+      ? "warning"
+      : "success";
+  const latestSync = latestAccountSync(accounts);
+
+  return {
+    id: "all",
+    title: "All brokerage accounts",
+    subtitle: `${providerLabel} household account scope`,
+    ariaLabel: "All brokerage accounts detail",
+    statusTitle: hasAccounts ? "Household account scope" : "No account evidence",
+    statusDetail: hasAccounts
+      ? `Positions table is showing all ${providerLabel} brokerage accounts with ${formatCountLabel(warningCount, "warning")} in the latest household snapshot.`
+      : `${providerLabel} portfolio sync has not produced account evidence yet.`,
+    statusTone,
+    statusBadgeLabel: hasAccounts ? (warningCount > 0 ? "Review" : "Synced") : "Missing",
+    statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
+    fields: [
+      { label: "Accounts", value: formatCountLabel(accounts.length, "account"), tone: hasAccounts ? "default" : "warning" },
+      { label: "Equity", value: formatCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity")), tone: "default" },
+      { label: "Cash", value: formatCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash")), tone: "default" },
+      { label: "Buying power", value: formatCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower")), tone: "default" },
+      { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" },
+      { label: "Latest sync", value: latestSync, tone: latestSync === "—" ? "warning" : "muted" }
+    ]
+  };
+}
+
+function brokerageAccountStatusBadgeVariant(
+  tone: PortfolioBrokerageAccountDetail["statusTone"]
+): PortfolioBrokerageAccountDetail["statusBadgeVariant"] {
+  return tone === "default" ? "outline" : tone;
+}
+
+function sumAccountValue(
+  accounts: BrokerageHouseholdAccount[],
+  key: "equity" | "cash" | "buyingPower"
+): number {
+  return accounts.reduce((sum, account) => sum + account[key], 0);
+}
+
+function latestAccountSync(accounts: BrokerageHouseholdAccount[]): string {
+  const latest = accounts
+    .map((account) => new Date(account.syncedAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
+  return latest ? formatDateTime(latest.toISOString()) : "—";
 }
 
 function toBrokeragePositionRow(
@@ -894,6 +1084,7 @@ function toBrokeragePositionRow(
     pnlTone: pnlTone(pnl),
     assetClass: position.assetClass,
     securityCoverage: position.security ? "Covered" : "Missing",
+    rowClassName: position.security ? "bg-background/50" : "bg-warning/5",
     isSelected: id === selectedId,
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,
@@ -1085,7 +1276,10 @@ function buildWorkflowTaskPanel({
   openPositionCount,
   totalExposure,
   totalUnrealizedPnl,
-  cashVarianceLabel
+  cashFlow,
+  cashVarianceLabel,
+  selectedRunId,
+  selectedRunName
 }: {
   pathname: string;
   risk: PortfolioRiskState | null;
@@ -1093,9 +1287,27 @@ function buildWorkflowTaskPanel({
   openPositionCount: number;
   totalExposure: number;
   totalUnrealizedPnl: number;
+  cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
+  selectedRunId: string | null;
+  selectedRunName: string | null;
 }): PortfolioWorkflowTaskPanel | null {
-  if (normalizePathname(pathname) !== "/portfolio/brokerage-sync") {
+  const normalizedPathname = normalizePathname(pathname);
+  if (normalizedPathname === WORKSTATION_ROUTE_CATALOG.portfolio) {
+    return buildPortfolioReadinessTaskPanel({
+      risk,
+      brokerage,
+      openPositionCount,
+      totalExposure,
+      totalUnrealizedPnl,
+      cashFlow,
+      cashVarianceLabel,
+      selectedRunId,
+      selectedRunName
+    });
+  }
+
+  if (normalizedPathname !== WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync) {
     return null;
   }
 
@@ -1128,6 +1340,7 @@ function buildWorkflowTaskPanel({
     statusLabel,
     statusTone,
     selectedSummary,
+    actionListLabel: "Brokerage sync next actions",
     chips: [
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
@@ -1169,6 +1382,163 @@ function buildWorkflowTaskPanel({
   };
 }
 
+function buildPortfolioReadinessTaskPanel({
+  risk,
+  brokerage,
+  openPositionCount,
+  totalExposure,
+  totalUnrealizedPnl,
+  cashFlow,
+  cashVarianceLabel,
+  selectedRunId,
+  selectedRunName
+}: {
+  risk: PortfolioRiskState | null;
+  brokerage: PortfolioBrokerageStatus | null;
+  openPositionCount: number;
+  totalExposure: number;
+  totalUnrealizedPnl: number;
+  cashFlow: GovernanceCashFlowSummary | null;
+  cashVarianceLabel: string | null;
+  selectedRunId: string | null;
+  selectedRunName: string | null;
+}): PortfolioWorkflowTaskPanel {
+  const hasPosture = risk !== null || brokerage !== null || openPositionCount > 0;
+  const connected = brokerage?.connection === "Connected";
+  const feedsHealthy = brokerage?.orderIngress === "healthy" && brokerage?.fillFeed === "healthy";
+  const hasCashVariance = cashFlow !== null && cashFlow.netVariance !== 0;
+  const needsReview = !connected || !feedsHealthy || hasCashVariance || !hasPosture;
+  const statusTone: PortfolioWorkflowTaskPanel["statusTone"] = !hasPosture
+    ? "danger"
+    : needsReview
+      ? "warning"
+      : "success";
+  const statusLabel = !hasPosture
+    ? "Portfolio unavailable"
+    : needsReview
+      ? "Review blockers"
+      : "Ready for review";
+  const providerLabel = brokerage
+    ? `${brokerage.provider} / ${brokerage.environment}`
+    : "Provider unavailable";
+  const accountLabel = brokerage?.account ?? "Account unavailable";
+  const selectedSummary = !hasPosture
+    ? "Portfolio posture is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
+    : `${providerLabel} account ${accountLabel} is the current portfolio source. Review brokerage sync, trading readiness, cash variance, and linked run evidence before accepting holdings.`;
+
+  return {
+    regionLabel: "Portfolio readiness handoff",
+    eyebrow: "Portfolio readiness",
+    title: "Portfolio acceptance handoff",
+    description: "Review brokerage sync, paper readiness, cash variance, and linked run evidence before accepting portfolio state.",
+    statusLabel,
+    statusTone,
+    selectedSummary,
+    actionListLabel: "Portfolio readiness next actions",
+    chips: [
+      { label: "Provider", value: providerLabel },
+      { label: "Account", value: accountLabel },
+      { label: "Positions", value: String(openPositionCount) },
+      { label: "Exposure", value: openPositionCount > 0 ? formatCurrency(totalExposure) : "—" },
+      {
+        label: "Unrealized P&L",
+        value: openPositionCount > 0
+          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+          : "—"
+      }
+    ],
+    statusRows: [
+      { label: "Connection", value: brokerage?.connection ?? "Unavailable", tone: connected ? "success" : "warning" },
+      { label: "Order ingress", value: brokerage?.orderIngress ?? "Unavailable", tone: brokerage?.orderIngress === "healthy" ? "success" : "warning" },
+      { label: "Fill feed", value: brokerage?.fillFeed ?? "Unavailable", tone: brokerage?.fillFeed === "healthy" ? "success" : "warning" },
+      { label: "Risk state", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
+      { label: "Buying power", value: risk?.buyingPowerUsed ?? "—", tone: "muted" },
+      { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: hasCashVariance ? "warning" : "success" },
+      {
+        label: "Guardrails",
+        value: risk?.activeGuardrails.length ? risk.activeGuardrails.join(" · ") : "No active guardrails",
+        tone: risk?.activeGuardrails.length ? "warning" : "success"
+      }
+    ],
+    actions: buildPortfolioReadinessActions({
+      hasPosture,
+      connected,
+      feedsHealthy,
+      selectedRunId,
+      selectedRunName
+    }),
+    backendLinks: [
+      buildPortfolioBackendLink("workstation-portfolio", "Portfolio workspace", WORKSTATION_API_ENDPOINTS.portfolio),
+      buildPortfolioBackendLink("workstation-trading", "Trading workspace", WORKSTATION_API_ENDPOINTS.trading),
+      buildPortfolioBackendLink("trading-readiness", "Trading readiness", WORKSTATION_API_ENDPOINTS.tradingReadiness),
+      buildPortfolioBackendLink("portfolio-exposure", "Portfolio exposure", PORTFOLIO_API_ENDPOINTS.exposure)
+    ]
+  };
+}
+
+function buildPortfolioReadinessActions({
+  hasPosture,
+  connected,
+  feedsHealthy,
+  selectedRunId,
+  selectedRunName
+}: {
+  hasPosture: boolean;
+  connected: boolean;
+  feedsHealthy: boolean;
+  selectedRunId: string | null;
+  selectedRunName: string | null;
+}): PortfolioWorkflowTaskAction[] {
+  const actions: PortfolioWorkflowTaskAction[] = [];
+
+  if (!hasPosture || !connected || !feedsHealthy) {
+    actions.push({
+      id: "provider-setup",
+      label: "Repair provider setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+      ariaLabel: "Repair Alpaca provider setup from Portfolio readiness",
+      detail: "Verify credentials and connection posture before accepting portfolio state.",
+      detailId: portfolioWorkflowTaskActionDetailId("readiness", "provider-setup"),
+      variant: "default"
+    });
+  }
+
+  actions.push({
+    id: "brokerage-sync",
+    label: "Review brokerage sync",
+    href: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
+    ariaLabel: "Open brokerage sync review from Portfolio readiness",
+    detail: "Inspect account sync, execution feed health, exposure, and brokerage evidence.",
+    detailId: portfolioWorkflowTaskActionDetailId("readiness", "brokerage-sync"),
+    variant: actions.length === 0 ? "default" : "outline"
+  });
+
+  actions.push({
+    id: "trading-readiness",
+    label: "Inspect readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+    ariaLabel: "Open Trading readiness from Portfolio readiness",
+    detail: "Check paper-session, replay, execution-control, and readiness evidence.",
+    detailId: portfolioWorkflowTaskActionDetailId("readiness", "trading-readiness"),
+    variant: "outline"
+  });
+
+  if (selectedRunId) {
+    const runName = selectedRunName ?? "selected run";
+    actions.push({
+      id: "evidence",
+      label: "Open evidence",
+      href: evidenceWorkbenchPath("strategy-run", selectedRunId),
+      ariaLabel: `Open ${runName} evidence from Portfolio readiness`,
+      detail: "Review the linked strategy-run evidence packet before accepting portfolio state.",
+      detailId: portfolioWorkflowTaskActionDetailId("readiness", "evidence"),
+      variant: "outline"
+    });
+  }
+
+  return actions;
+}
+
 function buildWorkflowTaskActions({
   hasPosture,
   connected,
@@ -1189,9 +1559,10 @@ function buildWorkflowTaskActions({
     actions.push({
       id: "provider-setup",
       label: "Repair provider setup",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: `Repair ${providerSetupTarget} from brokerage sync review`,
       detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "provider-setup"),
       variant: "default"
     });
   }
@@ -1199,22 +1570,31 @@ function buildWorkflowTaskActions({
   actions.push({
     id: "trading-readiness",
     label: "Inspect readiness",
-    href: "/trading/readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     ariaLabel: "Open Trading readiness from brokerage sync review",
     detail: "Check paper-session, replay, execution-control, and readiness evidence.",
+    detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "trading-readiness"),
     variant: needsProviderRepair ? "outline" : "default"
   });
 
   actions.push({
     id: "trading-cockpit",
     label: "Open Trading cockpit",
-    href: "/trading",
+    href: WORKSTATION_ROUTE_CATALOG.trading,
     ariaLabel: "Open Trading cockpit from brokerage sync review",
     detail: "Review active positions, orders, and paper execution controls.",
+    detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "trading-cockpit"),
     variant: "outline"
   });
 
   return actions;
+}
+
+function portfolioWorkflowTaskActionDetailId(
+  panel: "readiness" | "brokerage-sync",
+  actionId: PortfolioWorkflowTaskAction["id"]
+): string {
+  return `portfolio-${panel}-${actionId}-detail`;
 }
 
 function buildPortfolioBackendLink(id: string, label: string, href: string): PortfolioBackendLink {

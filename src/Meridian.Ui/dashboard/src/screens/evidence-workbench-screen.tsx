@@ -64,25 +64,36 @@ export function EvidenceWorkbenchScreen() {
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.subtitle}</p>
           {vm.error ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <p role="alert" className="inline-flex items-center gap-2 text-sm text-danger">
-                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-                {vm.error}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={vm.reloadEvidence}
-                busy={vm.reloadCommand.busy}
-                busyLabel={vm.reloadCommand.busyLabel}
-                disabled={vm.reloadCommand.disabled}
-                disabledReason={vm.reloadCommand.disabledReason}
-                aria-label={vm.reloadCommand.ariaLabel}
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                {vm.reloadCommand.label}
-              </Button>
+            <div role="alert" className="mt-3 rounded-md border border-danger/40 bg-danger/10 px-3 py-3 text-sm text-danger">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="inline-flex items-center gap-2 font-medium">
+                    <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                    {vm.error.summary}
+                  </p>
+                  {vm.error.details.length > 0 ? (
+                    <ul className="mt-2 space-y-1 text-xs leading-5 text-danger/90">
+                      {vm.error.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={vm.reloadEvidence}
+                  busy={vm.reloadCommand.busy}
+                  busyLabel={vm.reloadCommand.busyLabel}
+                  disabled={vm.reloadCommand.disabled}
+                  disabledReason={vm.reloadCommand.disabledReason}
+                  aria-label={vm.reloadCommand.ariaLabel}
+                >
+                  <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                  {vm.reloadCommand.label}
+                </Button>
+              </div>
             </div>
           ) : null}
         </div>
