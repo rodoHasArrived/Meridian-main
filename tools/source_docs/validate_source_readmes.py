@@ -59,7 +59,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     moved_from_paths: set[str] = set()
 
     for module in coverage_modules:
-        transitions = _as_list(module.get("transitions"))
+        transitions = [t for t in _as_list(module.get("transitions")) if isinstance(t, dict)]
         for transition in transitions:
             transition_type = transition.get("type")
             if transition_type not in ALLOWED_TRANSITIONS:
