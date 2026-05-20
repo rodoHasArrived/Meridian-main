@@ -1237,14 +1237,14 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a quantity greater than zero.");
     expect(screen.getByText("Seeded buy AAPL limit ticket at 188.07. Enter quantity, then acknowledge before submitting.")).toBeInTheDocument();
-    expect(screen.queryByText("Enter a quantity greater than zero.")).not.toBeInTheDocument();
+    expect(screen.getByText("Enter a quantity greater than zero.")).toBeInTheDocument();
 
     const quantityInput = screen.getByLabelText("Order quantity in shares");
     await user.type(quantityInput, "0");
 
     expect(quantityInput).toHaveAttribute("aria-invalid", "true");
     expect(submitSpy).not.toHaveBeenCalled();
-    expect(await screen.findByText("Enter a quantity greater than zero.")).toBeInTheDocument();
+    expect(screen.getAllByText("Enter a quantity greater than zero.").length).toBeGreaterThan(0);
   });
 
   it("syncs the active symbol when the symbol query parameter changes", async () => {
