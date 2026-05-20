@@ -124,7 +124,7 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
-            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1281,6 +1281,21 @@ public static class ExecutionEndpoints
         }
 
         return ExecutionOrderMetadataPolicy.RemoveClientRejectedServerOwnedKeys(metadata);
+    }
+
+    private static bool ContainsRestrictedBrokerRoutingMetadata(IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null || metadata.Count == 0)
+        {
+            return false;
+        }
+
+        return metadata.Keys.Any(static key => key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("alpaca:broker_account_id", StringComparison.OrdinalIgnoreCase));
     }
 
     private static Dictionary<string, string> MergeMetadata(
