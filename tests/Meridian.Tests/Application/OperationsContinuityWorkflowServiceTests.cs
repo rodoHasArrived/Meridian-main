@@ -801,6 +801,35 @@ public sealed class OperationsContinuityWorkflowServiceTests
             blocker.Gate == OperationsGateKeyDto.SecurityMaster);
     }
 
+
+    [Fact]
+    public async Task RunReconciliationAsync_WithSecurityAccountingIssues_ShouldReturnDeterministicSecurityMasterBlockerCode()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var first = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "security master terms missing",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 1,
+            ExpectedAccountingEventCount: 0,
+            ExpectedJournalPreviewCount: 0));
+
+        var second = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            first.Workflow!.Version,
+            "ops-user",
+            "security master terms still missing",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 2,
+            ExpectedAccountingEventCount: 0,
+            ExpectedJournalPreviewCount: 0));
+
+        first.Workflow!.Blockers.Should().ContainSingle(blocker => blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE");
+        second.Workflow!.Blockers.Should().ContainSingle(blocker => blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE");
+    }
+
     [Fact]
     public async Task ApproveWorkflowAsync_ShouldRequireApprovalMetadata()
     {
