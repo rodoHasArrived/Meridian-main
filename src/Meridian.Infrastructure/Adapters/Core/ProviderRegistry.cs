@@ -184,7 +184,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         return _allProviders.Values
             .Where(r => r.IsEnabled)
-            .OrderBy(r => r.Priority)
+             .OrderBy(r => r.Priority)
+            .ThenBy(r => r.Name, StringComparer.Ordinal)
             .Select(r => r.Provider)
             .ToList();
     }
@@ -207,7 +208,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         return _allProviders.Values
             .Where(r => r.IsEnabled && predicate(r.Provider.ProviderCapabilities))
-            .OrderBy(r => r.Priority)
+             .OrderBy(r => r.Priority)
+            .ThenBy(r => r.Name, StringComparer.Ordinal)
             .Select(r => r.Provider)
             .ToList();
     }
@@ -224,7 +226,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         return _allProviders.Values
             .Where(r => r.IsEnabled && r.Provider is T)
-            .OrderBy(r => r.Priority)
+             .OrderBy(r => r.Priority)
+            .ThenBy(r => r.Name, StringComparer.Ordinal)
             .Select(r => (T)r.Provider)
             .ToList();
     }
@@ -256,7 +259,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         var candidates = _allProviders.Values
             .Where(r => r.IsEnabled && r.Provider is T)
-            .OrderBy(r => r.Priority);
+            .OrderBy(r => r.Priority)
+            .ThenBy(r => r.Name, StringComparer.Ordinal);
 
         foreach (var registered in candidates)
         {
