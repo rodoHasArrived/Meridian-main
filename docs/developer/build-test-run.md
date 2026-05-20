@@ -64,6 +64,16 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
+The `Maintenance` workflow also enforces a **metadata integrity gate** for tooling manifests via:
+
+```bash
+python3 build/scripts/validate-tooling-metadata.py
+```
+
+PR branch protection should require the `Maintenance / Workflow Hygiene` check so dependency and
+tooling metadata changes (including `.github/dependabot.yml`, `package.json`, `Makefile`, and
+`make/*.mk`) cannot merge without this validation.
+
 The `Windows Desktop Build` workflow mirrors a Windows-only WPF build and test pass:
 
 ```powershell
@@ -108,4 +118,3 @@ python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-res
 python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
 python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
 ```
-
