@@ -210,6 +210,66 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityDetail_ShouldExposeExplicitContinuityContractFields()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+        var evidence = new OperationsEvidenceLinkDto(
+            EvidenceId: "ev-close-checklist",
+            Label: "Close Checklist",
+            Route: "/api/workstation/reporting/close-checklist/ev-close-checklist",
+            Source: "ops-runbook",
+            CapturedAtUtc: new DateTimeOffset(2026, 5, 20, 9, 30, 0, TimeSpan.Zero));
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            fundAccountId,
+            "2026-05",
+            Guid.NewGuid(),
+            "custodian",
+            "spoofed-user",
+            EvidenceLinks: [evidence]));
+        var workflowId = start.Workflow!.WorkflowId;
+
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user", EvidenceLinks: [evidence]));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user", EvidenceLinks: [evidence]));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user", EvidenceLinks: [evidence]));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true, EvidenceLinks: [evidence]));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true, EvidenceLinks: [evidence]));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                EvidenceLinks: [evidence],
+                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+        var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: [], EvidenceLinks: [evidence]));
+        var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            new OperationsGatePostureRequestDto(
+                reconciled.Workflow!.Version,
+                "spoofed-user",
+                ReportPackReady: false,
+                ReportPackId: "report-pack-2026-05",
+                EvidenceLinks: [evidence]));
+
+        posture.Workflow.Should().NotBeNull();
+        var workflow = posture.Workflow!;
+        workflow.EvidenceLinks.Should().NotBeEmpty();
+        workflow.ReportPackReadiness.ReportPackId.Should().Be("report-pack-2026-05");
+        workflow.ReportPackReadiness.IsReady.Should().BeFalse();
+        workflow.NextActions.Should().NotBeEmpty();
+        workflow.Blockers.Should().Contain(blocker => blocker.EvidenceLinks.Any());
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldUseTrustedActorInsteadOfRequestActor()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
