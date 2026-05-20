@@ -366,7 +366,7 @@ not as a generic trading-workstation program.
 
 **Current planning alignment:**
 
-- Phase 11 — Reorganize the UX around Research, Trading, Data Operations, and Governance workspaces
+- Phase 11 — Historical workspace consolidation around Research, Trading, Data Operations, and Governance; current planning maps this into the browser-first `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` model with retained WPF compatibility aliases
 - Phase 12 — Standardize shared run / portfolio / ledger read models
 - Phase 13 — Unify native backtesting, Lean integration, and paper-trading workflows
 
@@ -465,7 +465,7 @@ not as a generic trading-workstation program.
 > Source: `docs/audits/workspace-visual-audit-checklist-2026-04-22.md`
 > Date: 2026-04-22 | Status: Complete — 4 outliers identified for follow-up cleanup
 
-**Scope:** Research, Trading, Data Operations, and Governance workspace shell pages (`ResearchWorkspaceShellPage.xaml`, `TradingWorkspaceShellPage.xaml`, `DataOperationsWorkspaceShellPage.xaml`, `GovernanceWorkspaceShellPage.xaml`).
+**Scope:** Research, Trading, Data, and Governance workspace shell pages (`ResearchWorkspaceShellPage.xaml`, `TradingWorkspaceShellPage.xaml`, `Features/Data/Shell/DataWorkspaceShellPage.xaml`, `GovernanceWorkspaceShellPage.xaml`).
 
 **Checklist outcome:** All items confirmed:
 

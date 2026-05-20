@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
+import {
+  resolveReportPackProfileKeyCommand,
+  useReportingScreenViewModel
+} from "@/screens/reporting-screen.view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
 
 const reporting: GovernanceReportingSummary = {
@@ -29,6 +33,36 @@ const reporting: GovernanceReportingSummary = {
   reportPackTargets: ["board", "audit"],
   summary: "2 export profiles available."
 };
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
+function buildExportResult(profileId: string, jobId = `export-${profileId}`): ExportAnalysisResult {
+  return {
+    jobId,
+    success: true,
+    status: "completed",
+    profileId,
+    symbols: [],
+    filesGenerated: 1,
+    totalRecords: 20,
+    totalBytes: 1200,
+    outputDirectory: "exports",
+    durationSeconds: 1,
+    error: null,
+    warnings: [],
+    files: [],
+    timestamp: "2026-05-01T00:00:00Z"
+  };
+}
 
 describe("useReportingScreenViewModel", () => {
   it("returns profile rows from reporting data", () => {
@@ -74,13 +108,44 @@ describe("useReportingScreenViewModel", () => {
       targetsLabel: "Report-pack approval targets",
       hasTargets: true,
       profileListLabel: "Report-pack export profiles",
-      hasProfiles: true
+      hasProfiles: true,
+      actionListLabel: "Selected report-pack export actions",
+      hasActions: true
+    });
+    expect(result.current.workflowTaskPanel?.actions.map((action) => action.label)).toEqual([
+      "Preview payload",
+      "Run export"
+    ]);
+    expect(result.current.workflowTaskPanel?.actions.map((action) => action.describedById)).toEqual([
+      "reporting-action-excel-preview-report-pack-task-status",
+      "reporting-action-excel-run-report-pack-task-status"
+    ]);
+    expect(result.current.workflowTaskPanel?.actions[1]).toMatchObject({
+      id: "run",
+      isDisabled: true,
+      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      statusBadgeLabel: "Gated",
+      statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence"
     });
     expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
     expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
       "Dictionary only",
       "Loader only"
     ]);
+    expect(result.current.workflowTaskPanel?.profiles[0]).toMatchObject({
+      id: "excel",
+      isSelected: true,
+      isExpanded: true,
+      controlsId: "report-pack-profile-selected-summary report-pack-profile-actions report-pack-profile-backend-links",
+      descriptionId: "report-pack-profile-excel-description",
+      tabIndex: 0
+    });
+    expect(result.current.workflowTaskPanel?.profiles[1]).toMatchObject({
+      id: "csv",
+      isSelected: false,
+      isExpanded: false,
+      tabIndex: -1
+    });
     expect(result.current.selectedProfile?.title).toBe("Excel");
     expect(result.current.rows.find((row) => row.id === "excel")?.isSelected).toBe(true);
     expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
@@ -91,6 +156,15 @@ describe("useReportingScreenViewModel", () => {
       "/api/export/preview?profile=excel",
       "/api/export/analysis"
     ]);
+    expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.interactionLabel)).toEqual([
+      "Open",
+      "Open",
+      "Reference"
+    ]);
+    expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-run")).toMatchObject({
+      isBrowserNavigable: false,
+      ariaLabel: "Reference-only POST /api/export/analysis for Excel export analysis"
+    });
   });
 
   it("lets operators clear the default report-pack profile selection", () => {
@@ -104,6 +178,51 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
       "Select a profile to enable packet preview and export actions."
     );
+    expect(result.current.workflowTaskPanel?.hasActions).toBe(false);
+    expect(result.current.workflowTaskPanel?.actionsEmptyText).toBe(
+      "Select a report-pack profile before previewing or running export analysis."
+    );
+    expect(result.current.workflowTaskPanel?.profiles.map((profile) => ({
+      id: profile.id,
+      tabIndex: profile.tabIndex,
+      isExpanded: profile.isExpanded
+    }))).toEqual([
+      { id: "excel", tabIndex: 0, isExpanded: false },
+      { id: "csv", tabIndex: -1, isExpanded: false }
+    ]);
+  });
+
+  it("moves report-pack profile selection with VM-owned adjacent commands", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
+
+    act(() => { result.current.selectAdjacentReportPackProfile("next"); });
+
+    expect(result.current.selectedProfile?.title).toBe("CSV");
+    expect(result.current.workflowTaskPanel?.selectedProfileId).toBe("csv");
+    expect(result.current.workflowTaskPanel?.profiles.map((profile) => ({
+      id: profile.id,
+      tabIndex: profile.tabIndex,
+      isExpanded: profile.isExpanded
+    }))).toEqual([
+      { id: "excel", tabIndex: -1, isExpanded: false },
+      { id: "csv", tabIndex: 0, isExpanded: true }
+    ]);
+
+    act(() => { result.current.selectAdjacentReportPackProfile("last"); });
+    expect(result.current.selectedProfile?.title).toBe("CSV");
+
+    act(() => { result.current.selectAdjacentReportPackProfile("previous"); });
+    expect(result.current.selectedProfile?.title).toBe("Excel");
+  });
+
+  it("resolves report-pack profile keyboard commands", () => {
+    expect(resolveReportPackProfileKeyCommand("ArrowRight")).toBe("next");
+    expect(resolveReportPackProfileKeyCommand("ArrowDown")).toBe("next");
+    expect(resolveReportPackProfileKeyCommand("ArrowLeft")).toBe("previous");
+    expect(resolveReportPackProfileKeyCommand("ArrowUp")).toBe("previous");
+    expect(resolveReportPackProfileKeyCommand("Home")).toBe("first");
+    expect(resolveReportPackProfileKeyCommand("End")).toBe("last");
+    expect(resolveReportPackProfileKeyCommand("Enter")).toBeNull();
   });
 
   it("prefers a fully wired report-pack profile when no profile is recommended", () => {
@@ -169,6 +288,13 @@ describe("useReportingScreenViewModel", () => {
       "CSV is selected for report-pack approval using Csv output to Generic."
     );
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-preview")).toMatchObject({
+      href: "/api/export/preview?profile=csv",
+      isBrowserNavigable: true,
+      interactionLabel: "Open",
+      ariaLabel: "GET /api/export/preview?profile=csv for CSV export preview"
+    });
+    expect(result.current.workflowTaskPanel?.actions[0]).toMatchObject({
+      id: "preview",
       href: "/api/export/preview?profile=csv",
       ariaLabel: "Preview CSV export payload"
     });
@@ -242,8 +368,12 @@ describe("useReportingScreenViewModel", () => {
       label: "Preview payload",
       href: "/api/export/preview?profile=excel",
       ariaLabel: "Preview Excel export payload",
-      describedById: "reporting-action-excel-preview-status",
+      describedById: "reporting-action-excel-preview-profile-detail-status",
       statusText: "Opens the current export payload preview in a new browser tab.",
+      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusBadgeLabel: "GET",
+      statusBadgeAriaLabel: "Excel export preview uses GET",
+      statusBadgeVariant: "outline",
       isDisabled: false,
       variant: "outline",
       method: "GET",
@@ -252,7 +382,12 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile?.actions[1]).toMatchObject({
       id: "run",
       label: "Run export",
-      variant: "default"
+      variant: "default",
+      isDisabled: true,
+      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      statusBadgeLabel: "Gated",
+      statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence",
+      descriptionText: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
     expect(result.current.rows.find((r) => r.id === "excel")?.isExpanded).toBe(true);
@@ -297,7 +432,10 @@ describe("useReportingScreenViewModel", () => {
       href: "/api/export/analysis",
       method: "POST",
       profileId: "board-packet",
-      isRunning: false
+      isRunning: false,
+      isDisabled: false,
+      disabledReason: null,
+      statusBadgeLabel: "POST"
     });
   });
 
@@ -326,8 +464,13 @@ describe("useReportingScreenViewModel", () => {
         label: "Running export…",
         isDisabled: true,
         isRunning: true,
+        busyLabel: "Running export…",
         disabledReason: "Excel export is already running.",
-        describedById: "reporting-action-excel-run-status",
+        statusBadgeLabel: "Running",
+        statusBadgeAriaLabel: "Excel export is running",
+        statusBadgeVariant: "warning",
+        descriptionText: "Excel export is running. Wait for the result before starting another export.",
+        describedById: "reporting-action-excel-run-profile-detail-status",
         statusText: "Excel export is running. Wait for the result before starting another export."
       });
     });
@@ -389,8 +532,12 @@ describe("useReportingScreenViewModel", () => {
   it("ignores stale export results after the operator selects another profile", async () => {
     let releaseExport!: (value: ExportAnalysisResult) => void;
     const calls: string[] = [];
-    const runExport = (profileId: string) => {
+    const signals: AbortSignal[] = [];
+    const runExport = (profileId: string, options?: { signal?: AbortSignal }) => {
       calls.push(profileId);
+      if (options?.signal) {
+        signals.push(options.signal);
+      }
       return new Promise<ExportAnalysisResult>((resolve) => {
         releaseExport = resolve;
       });
@@ -414,6 +561,8 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile?.title).toBe("CSV");
     expect(result.current.runningProfileId).toBeNull();
     expect(result.current.exportStatus).toBeNull();
+    expect(signals).toHaveLength(1);
+    expect(signals[0].aborted).toBe(true);
 
     await act(async () => {
       releaseExport({
@@ -439,6 +588,61 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile?.title).toBe("CSV");
     expect(result.current.runningProfileId).toBeNull();
     expect(result.current.exportStatus).toBeNull();
+  });
+
+  it("aborts older same-profile export commands and keeps only the newest result", async () => {
+    const firstExport = createDeferred<ExportAnalysisResult>();
+    const secondExport = createDeferred<ExportAnalysisResult>();
+    const signals: AbortSignal[] = [];
+    const runExport = (_profileId: string, options?: { signal?: AbortSignal }) => {
+      if (options?.signal) {
+        signals.push(options.signal);
+      }
+
+      return signals.length === 1 ? firstExport.promise : secondExport.promise;
+    };
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, { runExport }));
+
+    let firstPromise: Promise<void> = Promise.resolve();
+    act(() => {
+      firstPromise = result.current.runExport("csv", "CSV");
+    });
+
+    await waitFor(() => {
+      expect(result.current.runningProfileId).toBe("csv");
+      expect(result.current.exportStatus?.text).toBe("Starting CSV export…");
+    });
+
+    let secondPromise: Promise<void> = Promise.resolve();
+    act(() => {
+      secondPromise = result.current.runExport("csv", "CSV");
+    });
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0].aborted).toBe(true);
+    expect(signals[1].aborted).toBe(false);
+
+    await act(async () => {
+      firstExport.resolve(buildExportResult("csv", "stale-export"));
+      await Promise.resolve();
+    });
+
+    expect(result.current.exportStatus?.text).toBe("Starting CSV export…");
+    expect(result.current.runningProfileId).toBe("csv");
+
+    await act(async () => {
+      secondExport.resolve(buildExportResult("csv", "fresh-export"));
+      await secondPromise;
+      await firstPromise;
+    });
+
+    expect(result.current.runningProfileId).toBeNull();
+    expect(result.current.exportStatus).toMatchObject({
+      text: "CSV export completed — 1 file generated.",
+      fields: expect.arrayContaining([
+        expect.objectContaining({ label: "Job ID", value: "fresh-export" })
+      ])
+    });
   });
 
   it("warns when the export service resolves a different profile id", async () => {
@@ -496,6 +700,46 @@ describe("useReportingScreenViewModel", () => {
         expect.objectContaining({ label: "Profile", value: "CSV", tone: "default", className: "text-foreground" }),
         expect.objectContaining({ label: "Failure", value: "Disk full", tone: "warning", className: "text-warning" })
       ]),
+      warnings: [],
+      artifacts: []
+    });
+  });
+
+  it("surfaces structured API validation detail for export failures", async () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, {
+      runExport: async () => {
+        throw createApiErrorFromResponseBody(
+          "/api/export/analysis",
+          400,
+          JSON.stringify({
+            title: "Validation failed",
+            detail: "One or more validation errors occurred.",
+            errors: {
+              profileId: ["Profile is required."],
+              approvalReason: ["Approval reason must cite packet evidence."]
+            }
+          })
+        );
+      }
+    }));
+
+    await act(async () => {
+      await result.current.runExport("csv", "CSV");
+    });
+
+    expect(result.current.exportStatus).toMatchObject({
+      text: "CSV export failed. One or more validation errors occurred.",
+      tone: "danger",
+      fields: expect.arrayContaining([
+        expect.objectContaining({ label: "Profile", value: "CSV" }),
+        expect.objectContaining({ label: "Failure", value: "One or more validation errors occurred." })
+      ]),
+      warnings: [
+        "Endpoint returned 400 for /api/export/analysis.",
+        "Validation failed",
+        "profileId: Profile is required.",
+        "approvalReason: Approval reason must cite packet evidence."
+      ],
       artifacts: []
     });
   });

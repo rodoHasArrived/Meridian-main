@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Backtesting;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 
 namespace Meridian.Application.Backtesting;
@@ -11,7 +13,14 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
 {
     private static readonly string[] KnownReplayDataTypes = ["bars", "quotes", "book", "trades"];
 
-    public Task<BacktestPreflightReportV2Dto> RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default)
+    private readonly ISecurityValidationGateService? _securityValidationGate;
+
+    public BacktestPreflightService(ISecurityValidationGateService? securityValidationGate = null)
+    {
+        _securityValidationGate = securityValidationGate;
+    }
+
+    public async Task<BacktestPreflightReportV2Dto> RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
@@ -29,6 +38,11 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
             checks.AddRange(ValidateReplayCoverage(request));
         }
 
+        if (_securityValidationGate is not null)
+        {
+            checks.Add(await ValidateSecurityMasterAsync(request, ct).ConfigureAwait(false));
+        }
+
         sw.Stop();
 
         var hasFailures = checks.Any(c => c.Status == BacktestPreflightCheckStatusDto.Failed);
@@ -39,13 +53,94 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
                 ? "Backtest preflight passed with warnings"
                 : "Backtest preflight passed";
 
-        return Task.FromResult(new BacktestPreflightReportV2Dto(
+        return new BacktestPreflightReportV2Dto(
             IsReadyToRun: !hasFailures,
             HasWarnings: hasWarnings,
             Checks: checks,
             TotalDurationMs: sw.ElapsedMilliseconds,
             CheckedAt: DateTimeOffset.UtcNow,
-            SummaryMessage: summary));
+            SummaryMessage: summary);
+    }
+
+    private async Task<BacktestPreflightCheckResultDto> ValidateSecurityMasterAsync(
+        BacktestPreflightRequestDto request,
+        CancellationToken ct)
+    {
+        var normalizedSymbols = NormalizeSymbols(request.Symbols);
+        if (normalizedSymbols.Length == 0)
+        {
+            return new BacktestPreflightCheckResultDto(
+                Name: "Security Master Validation",
+                Status: BacktestPreflightCheckStatusDto.Warning,
+                Message: "Security Master validation was skipped because no symbols were specified.",
+                Remediation: "Specify symbols so StrategyRun preflight can validate canonical instrument identity.");
+        }
+
+        var results = new List<SecurityValidationGateResultDto>(normalizedSymbols.Length);
+        foreach (var symbol in normalizedSymbols)
+        {
+            ct.ThrowIfCancellationRequested();
+            results.Add(await _securityValidationGate!
+                .ValidateSymbolAsync(
+                    symbol,
+                    SecurityValidationWorkflowDto.StrategyRunPreflight,
+                    workflowReference: $"{request.From:yyyy-MM-dd}:{request.To:yyyy-MM-dd}",
+                    actor: "strategy-run-preflight",
+                    persistSnapshot: false,
+                    ct)
+                .ConfigureAwait(false));
+        }
+
+        var blocked = results
+            .Where(static result => result.IsBlocked)
+            .Select(static result => result.Symbol ?? result.SecurityId?.ToString() ?? "unknown")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.Ordinal)
+            .ToArray();
+        var warnings = results
+            .Where(static result => !result.IsBlocked && result.Report.Issues.Count > 0)
+            .Select(static result => result.Symbol ?? result.SecurityId?.ToString() ?? "unknown")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.Ordinal)
+            .ToArray();
+        var issueCodes = results
+            .SelectMany(static result => result.Report.Issues.Select(static issue => issue.Code))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static code => code, StringComparer.Ordinal)
+            .ToArray();
+
+        if (blocked.Length > 0)
+        {
+            return new BacktestPreflightCheckResultDto(
+                Name: "Security Master Validation",
+                Status: BacktestPreflightCheckStatusDto.Failed,
+                Message: $"Security Master validation blocked {blocked.Length} strategy input symbol(s).",
+                Remediation: "Resolve blocking Security Master validation issues before replaying the StrategyRun.",
+                Details: new Dictionary<string, string>
+                {
+                    ["blockedSymbols"] = string.Join(",", blocked),
+                    ["issueCodes"] = string.Join(",", issueCodes)
+                });
+        }
+
+        if (warnings.Length > 0)
+        {
+            return new BacktestPreflightCheckResultDto(
+                Name: "Security Master Validation",
+                Status: BacktestPreflightCheckStatusDto.Warning,
+                Message: $"Security Master validation found warning issues for {warnings.Length} strategy input symbol(s).",
+                Remediation: "Review Security Master warnings before relying on governed replay outputs.",
+                Details: new Dictionary<string, string>
+                {
+                    ["warningSymbols"] = string.Join(",", warnings),
+                    ["issueCodes"] = string.Join(",", issueCodes)
+                });
+        }
+
+        return new BacktestPreflightCheckResultDto(
+            Name: "Security Master Validation",
+            Status: BacktestPreflightCheckStatusDto.Passed,
+            Message: "Requested strategy input symbols passed Security Master validation.");
     }
 
     private static IEnumerable<BacktestPreflightCheckResultDto> ValidateReplayCoverage(BacktestPreflightRequestDto request)
@@ -190,6 +285,14 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
 
         return resolved.ToArray();
     }
+
+    private static string[] NormalizeSymbols(IReadOnlyList<string>? symbols)
+        => (symbols ?? [])
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Select(static symbol => symbol.Trim().ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.Ordinal)
+            .ToArray();
 
     private static IEnumerable<DateOnly> EnumerateMonths(DateOnly from, DateOnly to)
     {

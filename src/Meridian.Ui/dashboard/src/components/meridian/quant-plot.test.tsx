@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { QuantPlotChart, histogramBins, prepareSeries } from "@/components/meridian/quant-plot";
+import { QuantPlotChart, buildQuantPlotViewModel, histogramBins, prepareSeries } from "@/components/meridian/quant-plot";
 import type { QuantPlot } from "@/types";
 
 function point(date: string, value: number) {
@@ -119,6 +119,47 @@ describe("QuantPlotChart", () => {
         plot={{ ...basePlot, type: "Heatmap", multiSeries: null }}
       />
     );
-    expect(screen.getByText(/not yet rendered in browser/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(/not yet renderable in the browser/i);
+  });
+});
+
+describe("buildQuantPlotViewModel", () => {
+  it("moves multiline chart geometry and token colors into the view model", () => {
+    const vm = buildQuantPlotViewModel({
+      title: "Equity curve",
+      type: "MultiLine",
+      series: null,
+      multiSeries: [
+        { label: "A", values: [point("2026-01-01", 100), point("2026-01-02", 110)] },
+        { label: "B", values: [point("2026-01-01", 100), point("2026-01-02", 95)] }
+      ],
+      candlestick: null,
+      heatmapData: null,
+      heatmapLabels: null
+    });
+
+    expect(vm.kind).toBe("line");
+    if (vm.kind !== "line") throw new Error("expected line");
+    expect(vm.frame.descriptionId).toBe("quant-plot-equity-curve-summary");
+    expect(vm.frame.legend.map((item) => item.label)).toEqual(["A", "B"]);
+    expect(vm.frame.legend.map((item) => item.color)).toEqual(["var(--chart-ma20)", "var(--chart-up)"]);
+    expect(vm.series[0].linePath).toMatch(/^M /);
+    expect(vm.axisTicks).toHaveLength(5);
+  });
+
+  it("uses design-system semantic tokens for positive and negative bars", () => {
+    const vm = buildQuantPlotViewModel({
+      title: "Returns",
+      type: "Bar",
+      series: [point("gain", 1), point("loss", -1)],
+      multiSeries: null,
+      candlestick: null,
+      heatmapData: null,
+      heatmapLabels: null
+    });
+
+    expect(vm.kind).toBe("bar");
+    if (vm.kind !== "bar") throw new Error("expected bar");
+    expect(vm.bars.map((bar) => bar.fill)).toEqual(["var(--chart-bench)", "var(--chart-dn)"]);
   });
 });

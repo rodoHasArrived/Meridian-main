@@ -9,7 +9,7 @@ terminal products.
 
 Meridian ships two distinct UI surfaces, both represented here:
 
-1. **Web Dashboard** (`src/Meridian.Ui/dashboard/`) — the active browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) — the active browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 2. **Retained WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 10 desktop operator shell retained for shared contracts, regression fixes, and desktop support. It still shares brand assets and icon vocabulary.
 
 ## Sources
@@ -38,8 +38,10 @@ You don't need access to the repo to use this design system — everything is co
 - **`preview/preview-common.css`** — shared preview navigation, focus, and accessible-heading utilities
 - **`preview/component-state-matrix.html`** — component states across operator state semantics
 - **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff
+- **`preview/reference-workbench.html`** — Security Master and schedule-heavy reference workbench recipe
 - **`preview/chart-table-standards.html`** — chart, dense-table, status-window, and row-detail standards
 - **`ui_kits/dashboard/`** — React component kit for the web dashboard
+- **`ui_kits/security_master*.html`** — static Security Master master/detail, company, and print packet references
 - **`scripts/check_design_system_governance.py`** — local governance checks for links, tokens, workspace names, radii, gradients, and table numerics
 - **`tests/test_design_system_governance.py`** — unittest coverage for the governance script
 - **`SKILL.md`** — skill manifest for using this as a Claude Skill
@@ -74,6 +76,7 @@ See `VISUAL_FOUNDATIONS.md`. In short:
 - **Borders:** precise — `#1F344C` on navy, `#2A4566` for selected rows, active frames, and high-contrast separators.
 - **Shadows:** 1-2px workstation shadows with inset highlights. Large glow and elevation theatre are out.
 - **Layout:** masthead + left rail + dense content workbench. Uploaded references favor compact filters, selected-row detail panes, KPI-to-evidence flow, and horizontal status windows.
+- **Reference workbench:** Security Master, security detail, and cash-flow/factor schedule surfaces use a command deck, searchable master list, persistent selected detail frame, dense schedules, controls, notes, and audit evidence in one selected-security context.
 - **Motion:** 200ms ease transitions on hover/press. No bouncing. No parallax. Spinners only for async refresh.
 - **Typography:** three families working together — IBM Plex Sans (UI), IBM Plex Mono (data), Space Grotesk (display headings). Numbers, identifiers, timestamps, prices, and row counts are always mono.
 
@@ -90,6 +93,8 @@ contains:
 - custody, portfolio-reporting, and trade-manager screens that demonstrate table density, filter bars, selected-row details, and status windows;
 - Beta One product-guide captures that show annotated task flows for upload, pricing, profiles, and send-to-desk actions;
 - charting and security-master examples that support split workbenches and canonical identifier panels.
+- the cash-flow/factor schedule prototype archive, summarized into the Security Master reference
+  workbench recipe rather than copied as Spark/shadcn implementation code.
 
 Use those images to refine structure and density. Do not copy third-party branding, labels, marks,
 or product-specific layouts. Meridian keeps its own navy/cyan semantic system and operator copy.
@@ -101,8 +106,8 @@ or product-specific layouts. Meridian keeps its own navy/cyan semantic system an
 Run these before promoting design-system changes:
 
 ```bash
-python "Meridian Design System (3)/scripts/check_design_system_governance.py"
-python -m unittest "Meridian Design System (3)/tests/test_design_system_governance.py"
+python "Meridian Design System/scripts/check_design_system_governance.py"
+python -m unittest "Meridian Design System/tests/test_design_system_governance.py"
 ```
 
 The checker intentionally baselines older preview exceptions so new files must use tokens, current

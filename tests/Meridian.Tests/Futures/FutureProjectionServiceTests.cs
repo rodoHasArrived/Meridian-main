@@ -50,6 +50,26 @@ public sealed class FutureProjectionServiceTests
     }
 
     [Fact]
+    public async Task GetFrontMonthAsync_IgnoresExpiredRollTargets()
+    {
+        IReadOnlyList<FutureProjectionRow> rows =
+        [
+            MakeRow(Guid.NewGuid(), "ES", "ESM5", new DateOnly(2025, 6, 20), true, "Expired"),
+            MakeRow(Guid.NewGuid(), "ES", "ESU6", new DateOnly(2026, 9, 18), false, "Active")
+        ];
+
+        var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
+        projectionStore.GetByRootSymbolAsync("ES", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(rows));
+        var service = new FutureProjectionService(Substitute.For<ISecurityMasterStore>(), projectionStore);
+
+        var frontMonth = await service.GetFrontMonthAsync("ES");
+
+        frontMonth.Should().NotBeNull();
+        frontMonth!.PrimaryIdentifier.Should().Be("ESU6");
+    }
+
+    [Fact]
     public async Task GetExpiryLadderAsync_ReturnsEmpty_ForBlankRootSymbol()
     {
         var service = new FutureProjectionService(

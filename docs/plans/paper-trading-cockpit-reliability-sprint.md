@@ -1,6 +1,20 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-04-29
+**Last Reviewed:** 2026-05-20
+
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **paper trading cockpit reliability sprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the paper trading cockpit reliability sprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+Planning review note 2026-05-18: this remains the Wave 2 cockpit reliability contract. The active
+operator UI proof path is the browser workstation, with retained WPF/API surfaces consuming the
+same readiness, session, replay, control, audit, and promotion seams. Start from
+[`current-direction-and-status.md`](current-direction-and-status.md) for the consolidated current
+planning interpretation before using this sprint as the Wave 2 detail contract.
 
 ## Summary
 
@@ -30,6 +44,32 @@ This sprint closes that gap with four explicit acceptance gates:
 2. session persistence
 3. risk auditability
 4. promotion traceability
+
+## Sprint Completion Scoreboard (2026-05-18)
+
+This section turns the reliability sprint into an execution checklist so Wave 2 can be closed with
+evidence instead of feature-count claims.
+
+| Gate | Current Status | Evidence In Repo | Remaining Work To Mark Done |
+| --- | --- | --- | --- |
+| Replay confidence | **Completed (implementation); awaiting fresh dated packet per release** | Shared readiness models stale replay evidence and work-item IDs (`paper-replay-stale-{normalizedSessionId}`; lower-cased with non-alphanumerics collapsed to `-`), replay audits persist compared counts and mismatch reason, and the Wave 2 evidence runbook now defines `verify -> stale -> re-verify` capture steps. | Generate and archive the current-release date-stamped evidence packet from the runbook sequence. |
+| Session persistence | **Completed** | Session metadata, fills, order history, and ledger continuity persistence are in service seams; readiness reads those seams; automated continuity flow now covers `create -> restart/restore -> verify -> close` in one test. | Keep this coverage green in Wave 2 acceptance runs. |
+| Risk auditability | **Completed (implementation); awaiting fresh dated packet per release** | Readiness keeps `audit-controls` in review when actor/scope/rationale are missing, projects an execution-control work item, and focused readiness tests fail when explainability fields are missing. | Capture one dated operator evidence snapshot in the same packet used for release gating. |
+| Promotion traceability | **Completed (implementation); awaiting fresh dated packet per release** | Durable promotion history is persisted and replayed after restart; readiness gates require operator/rationale/lineage/audit-reference completeness; API-level readiness tests enforce review-required posture when trace is incomplete. | Include approve/reject trace evidence in the dated release packet and verify audit-reference continuity. |
+
+### Definition of Done for This Sprint
+
+Wave 2 cockpit reliability is complete only when all of the following are true in the same
+date-stamped evidence slice:
+
+1. `ReadyForPaperOperation=true` is produced only when all acceptance gates pass and no critical
+   operator work items remain.
+2. The operator-inbox and trading-readiness lanes agree on blocker severity for replay, controls,
+   promotion trace, reconciliation, and DK1 trust-gate posture.
+3. Restart continuity is proven by automated tests and one operator runbook packet generated from a
+   fresh local run.
+4. The pass packet is attached to the current delivery status docs without widening claims into
+   live-readiness language.
 
 ## Scope
 
@@ -162,9 +202,12 @@ beside the acceptance gates, so API diagnostics can show the same replay, promot
 brokerage-sync, reconciliation, and execution-control blockers that desktop operators see through
 the shared queue. The browser readiness console ranks those work items plus direct readiness rows
 into one route-backed primary next action, so an operator can resolve the highest-severity blocker
-before scanning every evidence panel. Critical operator-inbox items must keep the browser console
-headline blocked even when the trading-readiness payload is unavailable, so missing upstream
-readiness data does not visually soften known operator blockers.
+before scanning every evidence panel. It also normalizes the full-console checkpoint band in the
+view model: session active, replay verified, risk/control explainable, promotion trace complete,
+brokerage sync healthy, reconciliation clear, report-pack approval ready, and operator work items
+settled. Critical operator-inbox items must keep the browser console headline blocked even when
+the trading-readiness payload is unavailable, so missing upstream readiness data does not visually
+soften known operator blockers.
 If reconciliation break queue storage cannot seed or load, the endpoint keeps the trading-readiness
 items available and adds a stable `reconciliation-break-queue-unavailable` warning routed to
 `GovernanceShell` instead of failing the whole operator inbox.
@@ -194,6 +237,7 @@ explain why a decision was allowed, rejected, or manually overridden.
 Replay readiness is rebuilt from durable execution-audit evidence, so replay verification audit entries persist `isConsistent`, compared fill/order/ledger counts, last-persisted timestamps, and the primary mismatch reason. This keeps the shared readiness lane specific after restart and when verification was triggered through the service layer instead of the endpoint wrapper.
 The replay gate now treats those compared counts as a freshness contract: if the active session's fill, order, or ledger-entry counts diverge after verification, the gate drops back to review-required and emits a stable `paper-replay-stale-{sessionId}` work item until replay verification is run again.
 The WPF cockpit acceptance card now renders those stale replay counts beside session state, showing active-session order/fill/ledger counts and the latest verified replay counts instead of treating a count-stale but otherwise consistent replay audit as green.
+The shared readiness service now resolves the latest run and durable promotion trace before selecting an active paper session, so an unrelated active session cannot make the backtest-to-paper cockpit look ready. The API-backed acceptance path is `POST /api/promotion/approve` -> `POST /api/execution/sessions/create` -> `GET /api/execution/sessions/{sessionId}/replay` -> `GET /api/workstation/trading/readiness`; stale replay evidence is recovered by rerunning the replay endpoint, which writes the fresh audit reference consumed by the readiness contract.
 
 Reconciliation break queue items now carry calibrated governance routing metadata: exception route,
 tolerance profile, tolerance band, required sign-off role, and sign-off status. The operator inbox
@@ -435,3 +479,56 @@ Declare this matrix complete only when **every row is green** under:
 2. account-scoped brokerage sync update scenarios.
 
 Fixture-seeded success alone is not sufficient for Wave 2 exit.
+
+
+## Canonical gate-evaluation acceptance criteria (2026-05-19 update)
+
+1. `GET /api/workstation/trading/readiness` and `GET /api/workstation/trading` must return the same readiness projection (`overallStatus`, `acceptanceGates`, `workItems`) for the same request scope.
+2. Overall posture is computed through one canonical gate flow in precedence order: replay verification, reconciliation, acceptance controls/promotion/trust/report-pack/session, then brokerage-sync.
+3. Every `acceptanceGates[]` row must expose explicit explainability fields: `status`, `reason`, `lastEvidenceAt`, and `requiredNextAction`.
+4. Replay stale evidence must demote replay to `ReviewRequired` and emit a `paper-replay-stale-*` work item until replay verification is rerun.
+5. `fundAccountId` scoped calls must preserve brokerage-sync + operator-inbox account context and not alter unrelated gate semantics.
+
+## Operator sign-off sequence
+
+1. Resolve `Blocked` acceptance gates.
+2. Resolve or acknowledge `ReviewRequired` replay/reconciliation/brokerage items.
+3. Confirm promotion trace and audit-control explainability are complete.
+4. Confirm DK1 trust-gate sign-off packet binding is valid for the current packet.
+5. Record operator sign-off evidence and rerun readiness + operator-inbox probes for final packet capture.
+
+
+## Gated Rollout Criteria (Read-Only -> Paper -> Production)
+
+Use this staged gate model for operator rollout decisions. Promotion to the next stage requires all
+mandatory checks to pass and all required evidence artifacts to be attached in the same dated packet.
+
+### Gate Matrix
+
+| Gate Stage | Purpose | Mandatory Compatibility Checks | Mandatory Reconciliation Accuracy Checks | Mandatory Degradation Calibration Checks | Sign-off Owners | Required Evidence Artifacts |
+| --- | --- | --- | --- | --- | --- | --- |
+| Read-Only Validation Gate | Prove contracts and posture projections are safe before enabling order-entry paper workflows. | `contract-compatibility-matrix` must show no blocking deltas for shared readiness DTOs, workstation endpoints, and operator-inbox routing fields; API and consumer surfaces must agree on acceptance-gate precedence and status mapping (`Ready`/`ReviewRequired`/`Blocked`). | Reconciliation queue loads without storage/seed failures; open/in-review break projections are consistent between trading readiness and operator inbox; no unresolved schema/enum mismatch in reconciliation route metadata (exception route, tolerance profile, sign-off role/status). | Latest provider calibration packet is present, internally consistent, and marked pass-ready per `provider-degradation-calibration` governance checks; no summary/packet gate contradiction. | Platform Engineering lead, Contracts owner, Governance/Accounting owner. | 1) Contract compatibility snapshot (`docs/status/contract-compatibility-matrix.md` update or attached report). 2) Readiness + operator-inbox API probe captures. 3) Reconciliation queue projection sample with route/sign-off metadata. 4) Calibration summary + packet consistency report. |
+| Paper Operation Gate | Allow controlled paper-session create/verify/close and promotion-review workflows. | End-to-end scenario continuity across `/api/execution/*`, `/api/promotion/*`, `/api/workstation/trading/readiness`, and `/api/workstation/operator/inbox`; no status-mapping drift between cockpit acceptance cards and shared DTO contract. | Reconciliation accuracy meets policy threshold for sampled runs (no persistent unresolved drift after triage SLA window); open breaks include accountable routing and required sign-off metadata; replay/readiness and reconciliation posture are mutually consistent for account-scoped requests (`fundAccountId`). | Candidate degradation kernel has fresh incident-backed calibration run; pass/fail decision is operator-visible in readiness/governance views; calibration freshness window has not expired. | Trading Operations owner, Reconciliation Operations owner, Risk & Controls owner, QA release owner. | 1) Dated paper-session reliability packet (`create -> replay verify -> stale -> re-verify -> close`). 2) Promotion approve/reject trace packet with operator/rationale/audit linkage. 3) Reconciliation accuracy runbook output and break triage log. 4) Calibration CLI output + signed governance recommendation. |
+| Production Promotion Gate | Permit production execution workflows after paper reliability is continuously proven. | Zero blocking compatibility issues across shared contracts, UI consumers, and retained surfaces; release candidate passes focused contract/regression slices tied to readiness, operator inbox, and promotion trace DTOs. | Reconciliation drift remains within approved tolerance across consecutive readiness windows; no orphaned unresolved critical breaks; governed reporting/reconciliation evidence is complete and sign-off state current. | Production-target kernel version is the same reviewed candidate from paper gate (or newer with a new approved calibration packet); incident replay set coverage is complete for required providers. | Head of Trading, Head of Operations/Accounting, Risk Officer, Release Manager. | 1) Production go/no-go checklist signed by all owners. 2) Consecutive-window reconciliation drift summary and exception decisions. 3) Approved kernel calibration packet + operator sign-off artifact. 4) Release validation bundle linking compatibility, readiness, reconciliation, and promotion trace checks. |
+
+### Operational Rollback Triggers (Mandatory)
+
+Rollback to the previous gate stage is required when any trigger below is observed and cannot be
+cleared inside the defined incident window.
+
+| Trigger Family | Trigger Condition | Immediate Action | Rollback Destination | Required Incident Evidence |
+| --- | --- | --- | --- | --- |
+| Persistent reconciliation drift | Reconciliation variance exceeds approved tolerance for two consecutive monitoring windows, or the same high-severity break reopens after resolution without data correction proof. | Freeze gate advancement, open incident, route to reconciliation owner, and block readiness posture from reporting `ReadyForPaperOperation=true` for affected scope. | Production -> Paper, or Paper -> Read-Only depending on severity and blast radius. | Drift timeline, affected accounts/runs, break IDs, triage notes, and remediation plan with ETA. |
+| Status-mapping failures | Any mismatch where one surface reports `Ready` while shared readiness/acceptance gates resolve to `ReviewRequired` or `Blocked`, including enum/projection desync between API and UI clients. | Mark release state invalid, disable progression, execute compatibility hotfix or rollback build, and re-run compatibility + endpoint parity checks. | Production -> Paper for live mismatches; Paper -> Read-Only for pre-production mismatches. | Before/after payload captures, UI screenshots/logs, version/build IDs, and fixed contract test evidence. |
+| Readiness posture inconsistencies | Trading readiness and operator inbox disagree on blocker severity, work-item routing priority, or account-scoped (`fundAccountId`) posture for the same session/account window. | Treat as control-plane inconsistency, hold promotions/session expansion, reconcile projections, and rerun readiness/inbox probes for the same correlation window. | Production -> Paper, or Paper -> Read-Only if unresolved after one incident cycle. | Paired endpoint responses with timestamps, correlation IDs, route metadata diffs, and resolution verification output. |
+
+### Gate Evidence and Sign-off Workflow
+
+1. Generate a dated gate packet under `artifacts/` that includes compatibility, reconciliation,
+   calibration, and readiness evidence for the same execution window.
+2. Route packet review to the gate's listed sign-off owners; all signatories must either approve or
+   explicitly record a conditional exception with expiry.
+3. Record final decision (`promote`, `hold`, or `rollback`) and cross-link it from status docs used
+   for release governance.
+4. If any mandatory trigger fires post-approval, reopen the gate decision and apply the rollback
+   matrix above before resuming normal promotion flow.

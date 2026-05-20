@@ -504,8 +504,9 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
         try
         {
-            var snapshot = await _presentationService.GetSnapshotAsync(_timeRange, _refreshCts.Token).ConfigureAwait(false);
-            ApplySnapshot(snapshot);
+            var refreshToken = _refreshCts.Token;
+            var snapshot = await _presentationService.GetSnapshotAsync(_timeRange, refreshToken).ConfigureAwait(false);
+            await RunOnUiThreadAsync(() => ApplySnapshot(snapshot), refreshToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_refreshCts.IsCancellationRequested || ct.IsCancellationRequested)
         {
@@ -527,7 +528,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         OverallGradeText = snapshot.OverallGradeText;
         StatusText = snapshot.StatusText;
         ScoreBrush = ToneToBrush(snapshot.ScoreTone);
-        ScoreSegments = new DoubleCollection { snapshot.OverallScore, Math.Max(0, 100 - snapshot.OverallScore) };
+        ScoreSegments = CreateScoreSegments(snapshot.OverallScore);
         LatencyText = snapshot.LatencyText;
         CompletenessText = snapshot.CompletenessText;
         HealthyFilesText = snapshot.HealthyFilesText;
@@ -716,22 +717,57 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         _ => DataQualityVisualTones.Info
     };
 
+    private static async Task RunOnUiThreadAsync(Action action, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        await dispatcher.InvokeAsync(
+            action,
+            System.Windows.Threading.DispatcherPriority.Normal,
+            ct);
+    }
+
     private static Brush ToneToBrush(string tone) => tone switch
     {
         DataQualityVisualTones.Success => SuccessBrush(),
-        DataQualityVisualTones.Info => new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-        DataQualityVisualTones.Warning => new SolidColorBrush(Color.FromRgb(255, 193, 7)),
-        DataQualityVisualTones.Error => new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-        _ => new SolidColorBrush(Color.FromRgb(139, 148, 158))
+        DataQualityVisualTones.Info => CreateFrozenBrush(Color.FromRgb(33, 150, 243)),
+        DataQualityVisualTones.Warning => CreateFrozenBrush(Color.FromRgb(255, 193, 7)),
+        DataQualityVisualTones.Error => CreateFrozenBrush(Color.FromRgb(244, 67, 54)),
+        _ => CreateFrozenBrush(Color.FromRgb(139, 148, 158))
     };
 
     private static SolidColorBrush CloneBrush(Brush brush)
     {
         var color = brush is SolidColorBrush solid ? solid.Color : Colors.Gray;
-        return new SolidColorBrush(color);
+        return CreateFrozenBrush(color);
     }
 
-    private static SolidColorBrush SuccessBrush() => new(Color.FromRgb(63, 185, 80));
+    private static SolidColorBrush SuccessBrush() => CreateFrozenBrush(Color.FromRgb(63, 185, 80));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
+    private static DoubleCollection CreateScoreSegments(double score)
+    {
+        var segments = new DoubleCollection { score, Math.Max(0, 100 - score) };
+        if (segments.CanFreeze)
+        {
+            segments.Freeze();
+        }
+
+        return segments;
+    }
 
     private static void ReplaceCollection<T>(ObservableCollection<T> target, IEnumerable<T> items)
     {

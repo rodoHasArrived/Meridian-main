@@ -1,7 +1,15 @@
 # Evidence-Backed Investment Operations Plan
 
-**Date:** 2026-04-29
-**Status:** Active product-positioning and roadmap filter
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **evidence backed investment operations plan** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the evidence backed investment operations plan workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+**Date:** 2026-05-18
+**Status:** Active product-positioning and roadmap filter, refreshed against current browser-workstation support evidence
 **Audience:** Product, roadmap, architecture, web dashboard, governance, and fund-operations contributors
 
 This plan incorporates the 2026-04-29 differentiation revision. Meridian should not be positioned
@@ -10,7 +18,8 @@ as another trading workstation or generic front-to-back suite. The sharper categ
 impact, reconciliation outcomes, approvals, and governed report artifacts tied together in one
 explainable chain.
 
-Use this document as the product-category filter for roadmap work. It does not create a new wave
+Use this document as the product-category filter for roadmap work after starting from
+[`current-direction-and-status.md`](current-direction-and-status.md). It does not create a new wave
 or claim the modules below are already delivered. It sharpens Waves 2-4 and tells maintainers what
 to keep active, what to demote, and what to archive.
 
@@ -57,7 +66,14 @@ compatibility aliases or grouping language, not new root navigation.
 | 5 | Shadow Books and Shadow NAV | Wave 4 later slice | Planned on top of ledger, reconciliation, external-statement import, and report-pack foundations |
 | 6 | Strategy / Promotion Passport | Wave 2 into Wave 3 | Partial support through promotion checklist and review-packet state |
 | 7 | Data Trust Passport | Wave 1 maintenance into Wave 3 | Partial support through DK1 trust packets, validation evidence, and data-quality posture |
-| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness`, shared readiness payloads, and evidence packet actions into `/reporting/evidence`; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
+| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness`, full-console checkpoint gates, shared readiness payloads, provider-setup repair handoffs for BrokerageSync blockers, and evidence packet actions into `/reporting/evidence`; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
+
+Current browser support evidence also includes the Overview Today panel, local Price Alerts,
+visual Strategy Designer, Covered Call saved-run and trade-timeline inspection, and Meridian
+Design System reference workbench/tokenized-color support.
+These strengthen the evidence-backed workflow lane, but they do not change the planned/completion
+status of Evidence Vault, report-line provenance, durable reconciliation casework, report-pack
+lifecycle acceptance, or live-readiness.
 
 Do not expand live-broker breadth, generic analytics, or bank-style governance frameworks ahead of
 these evidence-producing seams unless the roadmap explicitly pulls that work forward.
@@ -109,6 +125,7 @@ Keep these active unless they are explicitly replaced and their strong reference
 - [`../status/ROADMAP.md`](../status/ROADMAP.md)
 - [`../status/ROADMAP_COMBINED.md`](../status/ROADMAP_COMBINED.md)
 - [`../status/FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md)
+- [`current-direction-and-status.md`](current-direction-and-status.md)
 - [`meridian-pilot-workflow.md`](meridian-pilot-workflow.md)
 - [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md)
 - [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md)

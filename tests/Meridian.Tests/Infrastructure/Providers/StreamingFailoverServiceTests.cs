@@ -235,4 +235,33 @@ public sealed class StreamingFailoverServiceTests : IDisposable
         snap = _service.GetProviderHealthSnapshots().First(s => s.ProviderId == "primary");
         snap.LastFailureTime.Should().NotBeNull();
     }
+
+    [Fact]
+    public void AutomaticFailover_SelectsFirstConfiguredHealthyBackup_WhenPrimaryDegraded()
+    {
+        var deterministicRule = new FailoverRuleConfig(
+            Id: "ordered-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: new[] { "backup1", "backup2" },
+            FailoverThreshold: 2,
+            RecoveryThreshold: 2);
+
+        var config = new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: new[] { deterministicRule });
+
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.RegisterProvider("backup2");
+        _service.Start(config);
+
+        _service.RecordFailure("backup1", "already degraded");
+        _service.RecordFailure("backup1", "already degraded");
+        _service.RecordFailure("primary", "timeout");
+        _service.RecordFailure("primary", "timeout");
+
+        _service.GetActiveProviderId("ordered-rule").Should().Be("backup2");
+    }
+
 }

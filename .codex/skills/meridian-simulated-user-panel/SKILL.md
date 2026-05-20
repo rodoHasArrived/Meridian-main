@@ -19,7 +19,8 @@ Read `../_shared/project-context.md` before making claims about current Meridian
 Read `references/review-contract.md` before choosing the output shape. Read
 `references/personas.md` before choosing a panel. Read `references/review-modes.md` when the best
 mode or focus area is unclear. Read `references/artifact-bundles.md` when the review depends on
-screenshots, workflow manifests, smoke-test notes, or repeatable WPF evidence.
+screenshots, workflow manifests, smoke-test notes, browser workstation evidence, or retained WPF
+evidence.
 
 Use these bundle templates when you need a ready manifest:
 
@@ -68,8 +69,8 @@ Default assumptions:
 ## Workflow
 
 1. Validate the review manifest and note any missing evidence.
-2. Inspect the artifact bundle: code, XAML, screenshots, workflow manifests, smoke-test notes,
-   docs, or roadmap text.
+2. Inspect the artifact bundle: code, React/TypeScript, XAML, screenshots, workflow manifests,
+   smoke-test notes, docs, or roadmap text.
 3. Select the panel from `references/personas.md`. Honor user-specified roles exactly.
 4. For each persona, evaluate:
    - first reaction
@@ -126,6 +127,7 @@ The stable result shape is defined in `assets/eval-result.schema.json`.
 
 - Use at least 4 personas when the user asks for a panel.
 - Name tradeoffs when one persona's request hurts another persona.
+- Treat mobile-only requests as out of scope unless the prompt or roadmap explicitly reopens mobile development.
 - In `release_gate`, separate blockers from polish and end with `ship`, `ship_with_caveats`, or
   `hold`.
 - In `usability_lab`, surface repeated complaint clusters and note whether the output is strong

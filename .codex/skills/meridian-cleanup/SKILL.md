@@ -1,6 +1,6 @@
 ---
 name: meridian-cleanup
-description: Clean up Meridian code and docs without changing observable behavior. Use when the user asks to clean up, tidy, remove dead code, reduce duplication, fix safe anti-patterns, remove stale docs, or make focused maintainability improvements in Meridian C#, F#, WPF, or documentation files.
+description: Clean up Meridian code and docs without changing observable behavior. Use when the user asks to clean up, tidy, remove dead code, reduce duplication, fix safe anti-patterns, remove stale docs, or make focused maintainability improvements in Meridian C#, F#, browser dashboard, retained WPF, or documentation files.
 ---
 
 # Meridian Cleanup
@@ -31,6 +31,7 @@ Read `../_shared/project-context.md` before editing. If the cleanup touches spec
 - Duplication: consolidate truly identical private logic and repeated guards, but not code with subtly different semantics.
 - Safe anti-patterns: fix structured logging issues, async blocking, obvious package-version drift, and other repository rule violations when behavior remains unchanged.
 - Documentation: fix stale paths, broken links, duplicate sections, and formatting drift when the code reality is clear.
+- Browser workstation cleanup: keep behavior in view models/catalogs, preserve keyboard and accessible-name semantics, and keep route/deep-link behavior intact.
 - WPF cleanup: remove unused `x:Name`, empty handlers, duplicate usings, and inert code-behind noise without moving behavior into new layers.
 
 ## Meridian-Specific Rules
@@ -39,6 +40,7 @@ Read `../_shared/project-context.md` before editing. If the cleanup touches spec
 - Route storage-related cleanup through existing WAL and `AtomicFileWriter` expectations rather than "simplifying" durability away.
 - Keep hot-path cleanup mindful of `EventPipelinePolicy`, cancellation, and structured logging.
 - When cleanup touches providers, verify options, resilience, and JSON-context rules still match neighboring implementations.
+- When cleanup touches `src/Meridian.Ui/dashboard/`, prefer focused `npm --prefix src/Meridian.Ui/dashboard run test` or `npm --prefix src/Meridian.Ui/dashboard run build` validation over unrelated WPF checks.
 
 ## Output Standards
 

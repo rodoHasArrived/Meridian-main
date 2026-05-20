@@ -185,9 +185,9 @@ Tests for WPF-specific behavior that genuinely depends on WPF types (`System.Win
    - Fixture banner dismissal and ticker-strip toggle behavior
    - Uses an isolated `workspace-data.json` override so mixed-suite shell runs do not inherit persisted workstation state from neighboring tests
 
-6. **Shell-first workstation regressions** (focused slices)
+6. **Retained shell workstation regressions** (focused slices)
    - `AppServiceRegistrationTests` verifies DI coverage for the shell pages and shell-linked deep pages
-   - `WorkspaceShellPageSmokeTests`, `DataOperationsWorkspaceShellSmokeTests`, and `GovernanceWorkspaceShellSmokeTests` verify the four workspace home pages construct from DI
+   - `WorkspaceShellPageSmokeTests`, `DataOperationsWorkspaceShellSmokeTests`, and `GovernanceWorkspaceShellSmokeTests` verify retained compatibility workspace home pages construct from DI, including the feature-owned Data shell page
    - `WorkstationPageSmokeTests` and `RunMatUiSmokeTests` verify that deep-page navigation now lands inside `WorkspaceDeepPageHostPage` and still exposes the expected hosted inner page
    - `NavigationPageSmokeTests` verifies the dock host wraps WPF `Page` content inside `Frame` containers and can replace shell fallback content on retry
    - `WorkspaceDeepPageChromeTests` verifies the host toggles embedded-shell state on hosted pages and that representative legacy pages, including action-heavy surfaces such as `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter`, opt into the shared compact-host styles without losing page-specific command bands
@@ -426,13 +426,13 @@ public void ServiceName_Scenario_ExpectedBehavior()
 Desktop tests run in CI via GitHub Actions:
 
 - **Windows runners**: Run full WPF test suite
-- **Linux/macOS runners**: Skip WPF tests, run integration tests
-- **Reusable solution lanes**: Use `Category!=Integration|FullyQualifiedName!~Integration`
+- **Linux runners**: Build the WPF project as a CI-compatible stub during solution validation
+- **Desktop lane filter**: Use `Category!=Integration&FullyQualifiedName!~Integration`
   so untagged WPF xUnit tests still run while known integration suites stay excluded.
   New integration suites should use both `[Trait("Category", "Integration")]` and an
   `Integration` test class name.
 
-See `.github/workflows/desktop-builds.yml` for CI configuration.
+See `.github/workflows/windows-desktop-build.yml` for CI configuration.
 
 ## Additional Resources
 

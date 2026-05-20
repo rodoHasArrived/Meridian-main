@@ -4,6 +4,10 @@ import {
   getDataWorkspace,
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
+  getProviderConnections,
+  getProviderRoutingBindings,
+  getProviderRoutingConnections,
+  getProviderRoutingTrustSnapshots,
   hasDevelopmentFixtureUsage,
   getPortfolioWorkspace,
   getReportingWorkspace,
@@ -15,12 +19,17 @@ import {
   getWorkflowLibrary,
   getWorkflowPresets
 } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -43,6 +52,11 @@ interface WorkstationDataState {
   governance: GovernanceWorkspaceResponse | null;
   reporting: GovernanceWorkspaceResponse | null;
   brokerageConnection: BrokerageConnectionStatus | null;
+  providerConnections: ProviderConnectionRow[] | null;
+  providerRoutingConnections: ProviderRoutingConnection[] | null;
+  providerRoutingBindings: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing: boolean;
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
@@ -63,6 +77,11 @@ const initialState: WorkstationDataState = {
   governance: null,
   reporting: null,
   brokerageConnection: null,
+  providerConnections: null,
+  providerRoutingConnections: null,
+  providerRoutingBindings: null,
+  providerRoutingTrustSnapshots: null,
+  providerRoutingRefreshing: false,
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
@@ -78,8 +97,10 @@ export function useWorkstationData() {
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const tradingRefreshRevisionRef = useRef(0);
+  const providerRoutingRefreshRevisionRef = useRef(0);
   const refreshAbortRef = useRef<AbortController | null>(null);
   const tradingRefreshAbortRef = useRef<AbortController | null>(null);
+  const providerRoutingRefreshAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -88,8 +109,10 @@ export function useWorkstationData() {
       mountedRef.current = false;
       refreshRevisionRef.current += 1;
       tradingRefreshRevisionRef.current += 1;
+      providerRoutingRefreshRevisionRef.current += 1;
       refreshAbortRef.current?.abort();
       tradingRefreshAbortRef.current?.abort();
+      providerRoutingRefreshAbortRef.current?.abort();
     };
   }, []);
 
@@ -101,8 +124,12 @@ export function useWorkstationData() {
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
     tradingRefreshRevisionRef.current += 1;
+    providerRoutingRefreshRevisionRef.current += 1;
+    portfolioRefreshRevisionRef.current += 1;
     refreshAbortRef.current?.abort();
     tradingRefreshAbortRef.current?.abort();
+    providerRoutingRefreshAbortRef.current?.abort();
+    portfolioRefreshAbortRef.current?.abort();
     const controller = new AbortController();
     refreshAbortRef.current = controller;
     const requestOptions = { signal: controller.signal };
@@ -119,6 +146,10 @@ export function useWorkstationData() {
       governance,
       reporting,
       brokerageConnection,
+      providerConnections,
+      providerRoutingConnections,
+      providerRoutingBindings,
+      providerRoutingTrustSnapshots,
       brokeragePortfolio,
       workflowLibrary,
       workflowPresets
@@ -132,6 +163,10 @@ export function useWorkstationData() {
       getGovernanceWorkspace(requestOptions),
       getReportingWorkspace(requestOptions),
       getAlpacaConnectionStatus(requestOptions),
+      getProviderConnections(requestOptions),
+      getProviderRoutingConnections(requestOptions),
+      getProviderRoutingBindings(requestOptions),
+      getProviderRoutingTrustSnapshots(requestOptions),
       getBrokerageHouseholdPortfolio("alpaca", requestOptions),
       getWorkflowLibrary(requestOptions),
       getWorkflowPresets(requestOptions)
@@ -180,6 +215,11 @@ export function useWorkstationData() {
       governance: readWorkspace(["accounting"], governance),
       reporting: readWorkspace(["reporting"], reporting),
       brokerageConnection: readWorkspace(["portfolio"], brokerageConnection),
+      providerConnections: readWorkspace(["settings", "data"], providerConnections),
+      providerRoutingConnections: readWorkspace(["settings"], providerRoutingConnections),
+      providerRoutingBindings: readWorkspace(["settings"], providerRoutingBindings),
+      providerRoutingTrustSnapshots: readWorkspace(["settings"], providerRoutingTrustSnapshots),
+      providerRoutingRefreshing: false,
       brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),
@@ -256,6 +296,148 @@ export function useWorkstationData() {
     }
   }, []);
 
+  // Keep provider-routing evidence current without reloading the full workstation.
+  const refreshingProviderRouting = useRef(false);
+  const refreshProviderRouting = useCallback(async () => {
+    if (refreshingProviderRouting.current || !mountedRef.current) return;
+    const revision = providerRoutingRefreshRevisionRef.current + 1;
+    providerRoutingRefreshRevisionRef.current = revision;
+    providerRoutingRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    providerRoutingRefreshAbortRef.current = controller;
+    refreshingProviderRouting.current = true;
+    setState((current) => ({ ...current, providerRoutingRefreshing: true }));
+
+    try {
+      const [providerConnections, routingConnections, routingBindings, trustSnapshots] = await Promise.allSettled([
+        getProviderConnections({ signal: controller.signal }),
+        getProviderRoutingConnections({ signal: controller.signal }),
+        getProviderRoutingBindings({ signal: controller.signal }),
+        getProviderRoutingTrustSnapshots({ signal: controller.signal })
+      ]);
+
+      if (!mountedRef.current || providerRoutingRefreshRevisionRef.current !== revision) {
+        return;
+      }
+
+      setState((current) => {
+        let next = { ...current };
+        const previousSettingsError = current.workspaceErrors.settings;
+        const refreshErrors: string[] = [];
+
+        if (providerConnections.status === "fulfilled") {
+          next = { ...next, providerConnections: providerConnections.value };
+        } else {
+          refreshErrors.push(formatRequestError(providerConnections.reason, "Provider connection refresh failed."));
+        }
+
+        if (routingConnections.status === "fulfilled") {
+          next = { ...next, providerRoutingConnections: routingConnections.value };
+        } else {
+          refreshErrors.push(formatRequestError(routingConnections.reason, "Provider-routing connection refresh failed."));
+        }
+
+        if (routingBindings.status === "fulfilled") {
+          next = { ...next, providerRoutingBindings: routingBindings.value };
+        } else {
+          refreshErrors.push(formatRequestError(routingBindings.reason, "Provider-routing binding refresh failed."));
+        }
+
+        if (trustSnapshots.status === "fulfilled") {
+          next = { ...next, providerRoutingTrustSnapshots: trustSnapshots.value };
+        } else {
+          refreshErrors.push(formatRequestError(trustSnapshots.reason, "Provider-routing trust refresh failed."));
+        }
+
+        const refreshError = refreshErrors.length > 0 ? refreshErrors.join("; ") : null;
+        const workspaceErrors = refreshError
+          ? { ...current.workspaceErrors, settings: refreshError }
+          : withoutWorkspaceError(current.workspaceErrors, "settings");
+        const error = refreshError
+          ? current.error === null || current.error === previousSettingsError
+            ? refreshError
+            : current.error
+          : current.error === previousSettingsError
+            ? firstWorkspaceError(workspaceErrors) ?? null
+            : current.error;
+
+        return {
+          ...next,
+          workspaceErrors,
+          error,
+          providerRoutingRefreshing: false,
+          usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
+        };
+      });
+    } finally {
+      if (providerRoutingRefreshAbortRef.current === controller) {
+        providerRoutingRefreshAbortRef.current = null;
+        if (mountedRef.current) {
+          setState((current) => ({ ...current, providerRoutingRefreshing: false }));
+        }
+      }
+      refreshingProviderRouting.current = false;
+    }
+  }, []);
+
+  // Keep portfolio positions in sync with strategy execution.
+  const portfolioRefreshRevisionRef = useRef(0);
+  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
+  const refreshingPortfolio = useRef(false);
+  const refreshPortfolio = useCallback(async () => {
+    if (refreshingPortfolio.current || !mountedRef.current) return;
+    const revision = portfolioRefreshRevisionRef.current + 1;
+    portfolioRefreshRevisionRef.current = revision;
+    portfolioRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    portfolioRefreshAbortRef.current = controller;
+    refreshingPortfolio.current = true;
+    try {
+      const [portfolio, brokeragePortfolio] = await Promise.allSettled([
+        getPortfolioWorkspace({ signal: controller.signal }),
+        getBrokerageHouseholdPortfolio("alpaca", { signal: controller.signal })
+      ]);
+      if (!mountedRef.current || portfolioRefreshRevisionRef.current !== revision) return;
+      setState((current) => {
+        let next = { ...current };
+        const previousPortfolioError = current.workspaceErrors.portfolio;
+        const refreshErrors: string[] = [];
+        if (portfolio.status === "fulfilled") {
+          next = { ...next, portfolio: portfolio.value };
+        } else {
+          refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
+        }
+        if (brokeragePortfolio.status === "fulfilled") {
+          next = { ...next, brokeragePortfolio: brokeragePortfolio.value };
+        } else {
+          refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed"));
+        }
+
+        const refreshError = refreshErrors.length > 0 ? refreshErrors.join("; ") : null;
+        const workspaceErrors = refreshError
+          ? { ...current.workspaceErrors, portfolio: refreshError }
+          : withoutWorkspaceError(current.workspaceErrors, "portfolio");
+        const error = refreshError
+          ? current.error === null || current.error === previousPortfolioError
+            ? refreshError
+            : current.error
+          : current.error === previousPortfolioError
+            ? firstWorkspaceError(workspaceErrors) ?? null
+            : current.error;
+
+        next = {
+          ...next,
+          workspaceErrors,
+          error
+        };
+        return next;
+      });
+    } finally {
+      if (portfolioRefreshAbortRef.current === controller) portfolioRefreshAbortRef.current = null;
+      refreshingPortfolio.current = false;
+    }
+  }, []);
+
   const upsertWorkflowPreset = useCallback((preset: WorkflowPreset) => {
     if (!mountedRef.current) {
       return;
@@ -289,11 +471,21 @@ export function useWorkstationData() {
     return () => clearInterval(id);
   }, [refreshTrading]);
 
-  return { ...state, refresh, refreshTrading, upsertWorkflowPreset };
+  useEffect(() => {
+    const id = setInterval(() => { void refreshProviderRouting(); }, 30_000);
+    return () => clearInterval(id);
+  }, [refreshProviderRouting]);
+
+  useEffect(() => {
+    const id = setInterval(() => { void refreshPortfolio(); }, 60_000);
+    return () => clearInterval(id);
+  }, [refreshPortfolio]);
+
+  return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, upsertWorkflowPreset };
 }
 
 function formatRequestError(reason: unknown, fallback: string): string {
-  return reason instanceof Error && reason.message.trim() ? reason.message : fallback;
+  return describeApiError(reason, fallback).summary;
 }
 
 function appendWorkspaceError(errors: WorkspaceErrorMap, key: WorkspaceKey, message: string) {

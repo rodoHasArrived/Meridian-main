@@ -80,6 +80,10 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
             (!request.StopPrice.HasValue || request.StopPrice <= 0))
             return Task.FromResult(new OrderValidationResult(false, "Stop/stop-limit orders require a positive stop price."));
 
+        if (request.Type is SdkOrderType.TrailingStop &&
+            (!HasExactlyOnePositiveTrail(request.TrailPrice, request.TrailPercent)))
+            return Task.FromResult(new OrderValidationResult(false, "Trailing stop orders require exactly one positive trail price or trail percent."));
+
         return Task.FromResult(new OrderValidationResult(true));
     }
 
@@ -164,4 +168,11 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
         SdkOrderStatus.Expired => GatewayOrderStatus.Cancelled,
         _ => GatewayOrderStatus.Rejected
     };
+
+    private static bool HasExactlyOnePositiveTrail(decimal? trailPrice, decimal? trailPercent)
+    {
+        var hasTrailPrice = trailPrice.HasValue && trailPrice.Value > 0m;
+        var hasTrailPercent = trailPercent.HasValue && trailPercent.Value > 0m;
+        return hasTrailPrice ^ hasTrailPercent;
+    }
 }

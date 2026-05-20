@@ -1,135 +1,57 @@
 # GitHub Actions Workflows - Summary
 
-This document provides a quick reference for all GitHub Actions workflows in the Meridian repository.
+**Status:** Active
+**Reviewed:** 2026-05-18
 
-**Last Updated:** 2026-03-20
-**Scope:** Core workflow summary (see `.github/workflows/README.md` for the full current inventory)
-**Authoritative Reference:** [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md)
+The Meridian Actions surface is documented from the generated workflow inventory
+artifacts instead of hand-maintained counts. Use the generated command and
+validation outputs as the source of truth:
 
----
-
-## Core Workflow Inventory
-
-### Build & Release (5 workflows)
-
-| Workflow | File | Trigger | Purpose |
-| --- | --- | --- | --- |
-| Pull Request Checks | `pr-checks.yml` | PRs to main/develop | Format, build, test, coverage, AI review |
-| Docker | `docker.yml` | Manual dispatch | Multi-arch Docker images, optional GHCR push |
-| Release Management | `release.yml` | Manual dispatch | Semver validation, changelog, tag, GitHub release |
-| Desktop Builds | `desktop-builds.yml` | Push/PRs (desktop paths), manual | WPF desktop builds with selective targeting |
-| Reusable .NET Build | `reusable-dotnet-build.yml` | Called by other workflows | Shared build/test steps |
-
-### Code Quality & Security (3 workflows)
+- `docs/status/workflow-manifest.json` (canonical workflow manifest)
+- `docs/generated/workflow-command-reference.md` (generated workflow list + commands)
+- `docs/status/workflow-validation-summary.json` (machine-readable inventory summary)
 
 | Workflow | File | Trigger | Purpose |
 | --- | --- | --- | --- |
-| Code Quality | `code-quality.yml` | Push/PRs (source changes) | Formatting, analyzers, AI quality suggestions |
-| Security | `security.yml` | PRs to main, weekly (Mon 5 AM UTC), manual | CodeQL, dependency review, secret detection, SAST, AI assessment |
-| Validate Workflows | `validate-workflows.yml` | PRs (workflow changes), manual | YAML validation, action ref checks, permission audit |
+| CI | `.github/workflows/ci.yml` | Pull requests, pushes to `main`, manual | Restore solution, format check, focused web-workstation Release build, non-integration .NET tests, dashboard tests, dashboard build |
+| Windows Desktop Build | `.github/workflows/windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full Windows WPF build, WPF tests, desktop publish smoke |
+| Publish Smoke | `.github/workflows/publish-smoke.yml` | Manual | Standalone Windows publish artifact for `collector`, `desktop`, or `web-workstation` |
+| Maintenance | `.github/workflows/maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene checks and Action YAML linting |
 
-### Testing (4 workflows)
+## Local Command Map
 
-| Workflow | File | Trigger | Purpose |
-| --- | --- | --- | --- |
-| Test Matrix | `test-matrix.yml` | Push/PRs (source changes) | Cross-platform tests (Linux on PRs, Win/Mac on main) |
-| Python Package using Conda | `python-package-conda.yml` | Push | Flake8 and pytest coverage for Python automation scripts |
-| Nightly Testing | `nightly.yml` | Daily (1 AM UTC), manual | Full cross-platform tests, benchmarks, AI failure diagnosis |
-| Benchmark | `benchmark.yml` | Manual dispatch | BenchmarkDotNet performance tracking |
+The automatic CI lane mirrors:
 
-### Documentation & Maintenance (5 workflows)
-
-| Workflow | File | Trigger | Purpose |
-| --- | --- | --- | --- |
-| Documentation | `documentation.yml` | Push/PRs (docs/source), weekly (Mon 3 AM UTC), `ai-known-error` issues, manual | Doc generation, linting, link checks, AI instruction sync, task marker scan |
-| Labeling | `labeling.yml` | PR opened/edited/reopened, manual | Auto-label by file paths and PR size |
-| Stale Management | `stale.yml` | Daily (midnight UTC), manual | Mark/close stale issues (60d) and PRs (30d) |
-| Scheduled Maintenance | `scheduled-maintenance.yml` | Weekly (Sun 8 AM UTC), manual | Tests, dependency health, cache cleanup, AI recommendations |
-| Build Observability | `build-observability.yml` | Manual dispatch | Build diagnostics, metrics, fingerprint collection |
-
----
-
-## Consolidation History
-
-The workflow surface has continued to evolve after the 2026-02-05 consolidation pass, so this document intentionally summarizes the core lanes rather than maintaining an exact file count.
-
-| Consolidated Workflow | Replaced |
-| --- | --- |
-| `documentation.yml` | `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `task-automation.yml` |
-| `desktop-builds.yml` | `desktop-app.yml`, `wpf-desktop.yml`, `wpf-commands.yml` |
-| `security.yml` | absorbed `dependency-review.yml` |
-| `scheduled-maintenance.yml` | absorbed `cache-management.yml` |
-
----
-
-## AI-Powered Features
-
-All AI features use `actions/ai-inference@v1` with `continue-on-error: true` (never blocks workflows):
-
-| Workflow | AI Feature |
-| --- | --- |
-| `pr-checks.yml` | PR review with risk assessment |
-| `code-quality.yml` | Quality suggestions with priority fixes |
-| `security.yml` | Vulnerability assessment and remediation |
-| `nightly.yml` | Failure diagnosis with root cause analysis |
-| `desktop-builds.yml` | Build failure diagnosis |
-| `documentation.yml` | Doc quality review, task marker triage |
-| `scheduled-maintenance.yml` | Dependency upgrade recommendations |
-
----
-
-## Custom Action
-
-### Setup .NET with Cache (`.github/actions/setup-dotnet-cache/`)
-
-- Composite action for .NET SDK setup with NuGet caching
-- Inputs: `dotnet-version` (default: 10.0.x), `cache-suffix`
-- Cache key based on project file hashes
-- On macOS, exports `DOTNET_ROOT`, `DOTNET_ROOT_ARM64`, and `DOTNET_ROOT_X64` from the resolved
-  real `dotnet` command path so generated test apphosts, including the F# xUnit v3 discovery
-  executable, can find `hostfxr` when the SDK comes from the hosted runner image or a symlinked
-  `dotnet` shim instead of `actions/setup-dotnet`; the action now verifies that the resolved root
-  contains `host/fxr` and falls back one directory when the executable lives under an architecture
-  subfolder.
-
----
-
-## Configuration Files
-
-| File | Purpose |
-| --- | --- |
-| `.github/dependabot.yml` | Weekly dependency updates (npm, NuGet, Actions, Docker) |
-| `.github/labeler.yml` | Auto-label path patterns |
-| `.github/labels.yml` | Label definitions |
-| `.github/markdown-link-check-config.json` | Link checker settings |
-| `.github/spellcheck-config.yml` | Spell-check configuration |
-| `environment.yml` | Conda dependencies for Python workflow tests, including Pillow-backed screenshot diff fixtures |
-
----
-
-## Quick Commands
-
-```bash
-# View all workflows
-ls .github/workflows/*.yml
-
-# Validate YAML syntax
-for f in .github/workflows/*.yml; do
-  python3 -c "import yaml; yaml.safe_load(open('$f'))"
-done
-
-# Check recent workflow runs
-gh run list --limit 10
-
-# Trigger a workflow manually
-gh workflow run benchmark.yml
+```powershell
+dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
+npm ci --prefix src/Meridian.Ui/dashboard
+npm --prefix src/Meridian.Ui/dashboard run test
+npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
----
+The Windows desktop lane mirrors:
 
-## Related Documentation
+```powershell
+dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration&FullyQualifiedName!~Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+```
 
-- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md) - Full workflow details and dependency diagram
-- [`docs/ai/claude/CLAUDE.actions.md`](../ai/claude/CLAUDE.actions.md) - AI assistant CI/CD guide
-- [`docs/development/build-observability.md`](build-observability.md) - Build metrics system
-- [`docs/development/github-actions-testing.md`](github-actions-testing.md) - CI testing tips
+The manual publish smoke lane mirrors:
+
+```powershell
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project collector -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
+```
+
+## Removed Automation
+
+The previous workflow set included overlapping PR, test-matrix, quality, nightly,
+release, documentation, Docker, benchmark, issue-management, AI, and generated-artifact
+workflows. Useful build/test/publish logic was merged into the current generated
+workflow inventory described by the canonical manifest and generated outputs above.
+Externally deploying or mutating jobs were removed from the active workflow surface.

@@ -1,17 +1,21 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildOverviewActivityDetail,
   buildOverviewActivityRows,
   buildOverviewBriefingItems,
+  buildOverviewPortfolioPanel,
   buildOverviewPriorityRoutes,
+  buildOverviewRefreshCommand,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
   buildOverviewValueBlockers,
   buildOverviewWorkspaceLinks,
+  useOverviewActivitySelectionViewModel,
   useOverviewStatusViewModel,
   type OverviewRefreshFetcher
 } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
@@ -35,6 +39,33 @@ const session: SessionInfo = {
   commandCount: 9
 };
 
+const tradingWorkspace: TradingWorkspaceResponse = {
+  metrics: [],
+  positions: [],
+  openOrders: [],
+  fills: [],
+  risk: {
+    state: "Healthy",
+    summary: "Paper account is inside guardrails.",
+    netExposure: "$0",
+    grossExposure: "$0",
+    var95: "$0",
+    maxDrawdown: "0%",
+    buyingPowerUsed: "0%",
+    activeGuardrails: []
+  },
+  brokerage: {
+    provider: "Alpaca",
+    account: "Paper",
+    environment: "paper",
+    connection: "Connected",
+    lastHeartbeat: "2026-04-28T18:15:00Z",
+    orderIngress: "Ready",
+    fillFeed: "Ready",
+    notes: "Ready for paper orders."
+  }
+};
+
 describe("overview-screen view model", () => {
   it("derives status, fallback stats, and empty activity copy", () => {
     const state = buildOverviewStatusState({
@@ -52,8 +83,19 @@ describe("overview-screen view model", () => {
     expect(state.statusBanner.detailId).toBe("overview-status-detail");
     expect(state.statusBanner.ariaLabel).toContain("System Degraded");
     expect(state.statusBanner.detailText).toContain("2 of 4 providers online");
+    expect(state.statusBanner.detailParts).toEqual({
+      providerSummary: "2 of 4 providers online",
+      storageLabel: "Warning",
+      storageClassName: "text-warning",
+      lastHeartbeatLabel: state.lastHeartbeatLabel
+    });
+    expect(state.statusBanner.icon).toBe("warning");
+    expect(state.statusBanner.containerClassName).toBe("border-warning/30 bg-warning/10");
+    expect(state.statusBanner.iconClassName).toBe("text-warning");
+    expect(state.statusBanner.titleClassName).toBe("text-warning");
     expect(state.providerSummary).toBe("2 of 4 providers online");
     expect(state.storageLabel).toBe("Warning");
+    expect(state.lastHeartbeatLabel).toBe("Apr 28, 18:15 UTC");
     expect(state.hasMetrics).toBe(false);
     expect(state.hasEvents).toBe(false);
     expect(state.hasValueBlockers).toBe(true);
@@ -106,7 +148,16 @@ describe("overview-screen view model", () => {
     expect(state.refreshAnnouncement).toBe(state.refreshErrorText);
     expect(state.statusBanner.role).toBe("alert");
     expect(state.statusBanner.ariaLabel).toContain("Refresh failed: Provider offline");
+    expect(state.statusBanner.icon).toBe("offline");
+    expect(state.statusBanner.containerClassName).toBe("border-danger/35 bg-danger/10");
     expect(state.refreshButtonLabel).toBe("Refresh");
+    expect(state.refreshCommand).toMatchObject({
+      label: "Refresh",
+      ariaLabel: "Refresh system status",
+      busy: false,
+      disabled: false,
+      disabledReason: null
+    });
   });
 
   it("does not crash when the host status payload omits optional overview collections", () => {
@@ -143,10 +194,41 @@ describe("overview-screen view model", () => {
     expect(state.statusBanner.role).toBe("status");
     expect(state.statusBanner.ariaLive).toBe("polite");
     expect(state.statusBanner.detailText).toBe("Waiting for the workstation status payload.");
+    expect(state.statusBanner.detailParts).toBeNull();
+    expect(state.statusBanner.icon).toBe("pending");
+    expect(state.statusBanner.containerClassName).toBe("border-border/70 bg-secondary/25");
     expect(state.refreshButtonLabel).toBe("Refreshing...");
     expect(state.refreshAriaLabel).toBe("Refreshing system status");
+    expect(state.refreshCommand).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Refreshing system status",
+      busyLabel: "Refreshing...",
+      disabled: true,
+      disabledReason: "System status refresh is already in progress.",
+      busy: true
+    });
     expect(state.refreshAnnouncement).toBe("Refreshing system status.");
     expect(state.activityEmptyText).toBe("Loading activity feed...");
+  });
+
+  it("derives refresh command presentation state for idle and busy states", () => {
+    expect(buildOverviewRefreshCommand(false)).toEqual({
+      label: "Refresh",
+      ariaLabel: "Refresh system status",
+      busyLabel: null,
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+
+    expect(buildOverviewRefreshCommand(true)).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Refreshing system status",
+      busyLabel: "Refreshing...",
+      disabled: true,
+      disabledReason: "System status refresh is already in progress.",
+      busy: true
+    });
   });
 
   it("builds canonical workspace links instead of legacy overview cards", () => {
@@ -310,6 +392,20 @@ describe("overview-screen view model", () => {
     expect(state.valueBlockerSummary).toBe("No immediate readiness blockers detected. Continue with the priority routes below.");
   });
 
+  it("projects route-backed portfolio empty-state actions", () => {
+    expect(buildOverviewPortfolioPanel(null, null).emptyAction).toEqual({
+      href: "/settings#alpaca-provider-setup",
+      label: "Connect provider",
+      ariaLabel: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
+    });
+
+    expect(buildOverviewPortfolioPanel(tradingWorkspace, null).emptyAction).toEqual({
+      href: "/trading",
+      label: "Open trading cockpit",
+      ariaLabel: "Open Trading cockpit from the empty portfolio positions panel"
+    });
+  });
+
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {
     const rows = buildOverviewActivityRows([
       {
@@ -343,8 +439,78 @@ describe("overview-screen view model", () => {
       statusCode: "ERR",
       badgeVariant: "danger",
       tone: "danger",
-      source: "Unknown source"
+      source: "Unknown source",
+      timestampLabel: "Apr 28, 18:15 UTC"
     });
+    expect(rows[1].ariaLabel).toBe("Error event from Unknown source at Apr 28, 18:15 UTC: Storage verification failed.");
+    expect(rows[1]).toMatchObject({
+      selectAriaLabel: "Inspect Error event from Unknown source at Apr 28, 18:15 UTC: Storage verification failed.",
+      detailPanelId: "overview-activity-selected-detail",
+      expanded: false
+    });
+  });
+
+  it("builds selected activity details from event rows", () => {
+    const rows = buildOverviewActivityRows([
+      {
+        id: "evt-2",
+        type: "error",
+        message: "Storage verification failed.",
+        source: " ",
+        timestamp: "2026-04-28T18:15:00Z"
+      }
+    ]);
+
+    expect(buildOverviewActivityDetail(rows[0])).toEqual({
+      eyebrow: "Error event",
+      title: "Storage verification failed.",
+      subtitle: "Unknown source",
+      description: "Error evidence needs triage before the related workflow can be trusted.",
+      badgeLabel: "ERR",
+      badgeVariant: "danger",
+      ariaLabel: "Selected recent activity detail for Error event from Unknown source",
+      fields: [
+        { label: "Source", value: "Unknown source" },
+        { label: "Timestamp", value: "Apr 28, 18:15 UTC" },
+        { label: "Severity", value: "Error" },
+        { label: "Event ID", value: "evt-2" }
+      ]
+    });
+    expect(buildOverviewActivityDetail(null)).toBeNull();
+  });
+
+  it("keeps recent activity selection in the view model", () => {
+    const rows = buildOverviewActivityRows([
+      {
+        id: "evt-1",
+        type: "warning",
+        message: "Brokerage sync delayed.",
+        source: "Provider health",
+        timestamp: "2026-04-28T18:15:00Z"
+      },
+      {
+        id: "evt-2",
+        type: "info",
+        message: "Backfill completed.",
+        source: "Data",
+        timestamp: "2026-04-28T18:20:00Z"
+      }
+    ]);
+
+    const { result } = renderHook(() => useOverviewActivitySelectionViewModel(rows));
+
+    expect(result.current.selectedRowId).toBe("evt-1");
+    expect(result.current.rows[0].expanded).toBe(true);
+    expect(result.current.selectedDetail?.title).toBe("Brokerage sync delayed.");
+    expect(result.current.tableLabel).toBe("2 recent system events");
+
+    act(() => {
+      result.current.selectActivity("evt-2");
+    });
+
+    expect(result.current.selectedRowId).toBe("evt-2");
+    expect(result.current.rows[1].expanded).toBe(true);
+    expect(result.current.selectedDetail?.title).toBe("Backfill completed.");
   });
 
   it("derives healthy status banner semantics as a polite status region", () => {
@@ -360,6 +526,15 @@ describe("overview-screen view model", () => {
     expect(healthy.role).toBe("status");
     expect(healthy.ariaLive).toBe("polite");
     expect(healthy.detailText).toBe("4 of 4 providers online. Storage Healthy. Last heartbeat 10:15 AM.");
+    expect(healthy.detailParts).toEqual({
+      providerSummary: "4 of 4 providers online",
+      storageLabel: "Healthy",
+      storageClassName: "text-success",
+      lastHeartbeatLabel: "10:15 AM"
+    });
+    expect(healthy.icon).toBe("healthy");
+    expect(healthy.containerClassName).toBe("border-success/30 bg-success/10");
+    expect(healthy.titleClassName).toBe("text-success");
     expect(healthy.ariaLabel).toContain("All Systems Healthy");
   });
 

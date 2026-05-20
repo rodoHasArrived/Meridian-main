@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.Accounts;
+using Meridian.Application.Backtesting;
 using Meridian.Application.Commodities;
 using Meridian.Application.CertificatesOfDeposit;
 using Meridian.Application.CryptoCurrency;
@@ -15,13 +16,17 @@ using Meridian.Application.Futures;
 using Meridian.Application.FxSpot;
 using Meridian.Application.MoneyMarketFunds;
 using Meridian.Application.Options;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Domain;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
+using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -29,6 +34,7 @@ using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
 using Meridian.Storage.SecurityMaster;
@@ -48,9 +54,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
     {
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
+        LedgerStartup.EnsureEnvironmentDefaults();
 
         var securityMasterOptions = CreateSecurityMasterOptions();
         var directLendingOptions = CreateDirectLendingOptions();
+        var ledgerOptions = CreateLedgerOptions();
+
+        services.TryAddSingleton(_ => AssetClassValidatorRegistry.CreateDefault());
+        services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
+        services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
+        services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>
@@ -85,8 +98,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var registry = new SymbolRegistryService(storageOptions.RootPath);
 
-            // Initialize the persisted/default registry before any singleton depends on it.
-            registry.InitializeAsync().GetAwaiter().GetResult();
+            // Run on the thread pool so a captured SynchronizationContext cannot cause a deadlock.
+            Task.Run(() => registry.InitializeAsync()).GetAwaiter().GetResult();
 
             return registry;
         });
@@ -94,6 +107,24 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Position snapshot store — files land under {StorageRoot}/portfolios/ so the
         // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
         services.AddSingleton<IPositionSnapshotStore, JsonlPositionSnapshotStore>();
+
+        if (LedgerStartup.IsConfigured())
+        {
+            services.AddSingleton(ledgerOptions);
+            services.AddSingleton<PostgresLedgerJournalStore>();
+            services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<LedgerMigrationRunner>();
+            services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+            services.AddSingleton<PostgresOperationsContinuityStore>();
+            services.AddSingleton<IOperationsContinuityRepository>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            services.AddSingleton<IOperationsWorkflowAuditStore>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            services.AddSingleton<IOperationsContinuityTransactionalCommitStore>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            services.AddSingleton<ILedgerBookService>(sp =>
+                new PostgresLedgerBookService(
+                    sp.GetRequiredService<ILedgerJournalStore>(),
+                    sp.GetService<IOperatorInboxService>()));
+        }
 
         // Analysis export service for data export operations
         services.AddSingleton<AnalysisExportService>(sp =>
@@ -137,6 +168,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<IBondReferenceService, BondProjectionService>();
             services.AddSingleton<IOptionReferenceService, OptionProjectionService>();
             services.AddSingleton<IOptionChainImportService>(sp => (OptionProjectionService)sp.GetRequiredService<IOptionReferenceService>());
@@ -185,6 +217,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
+        services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
@@ -193,10 +226,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         {
             services.AddSingleton(directLendingOptions);
             services.AddSingleton<DirectLendingEventRebuilder>();
-            services.AddSingleton<IDirectLendingStateStore, PostgresDirectLendingStateStore>();
+            services.AddSingleton<IDirectLendingStateStore>(sp =>
+                new PostgresDirectLendingStateStore(
+                    directLendingOptions,
+                    sp.GetService<ILedgerJournalStore>()));
             services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
             services.AddSingleton<DirectLendingMigrationRunner>();
             services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
+            services.AddSingleton<LoanAccountingProjector>();
+            services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
             services.AddHostedService<DirectLendingOutboxDispatcher>();
@@ -267,6 +305,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             OutboxBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_BATCH_SIZE", 50),
             OutboxPollIntervalSeconds = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_POLL_SECONDS", 5),
             ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250)
+        };
+
+    private static LedgerJournalStoreOptions CreateLedgerOptions()
+        => new()
+        {
+            ConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
+            SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
+            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true)
         };
 
     private static int ParseInt(string name, int defaultValue)

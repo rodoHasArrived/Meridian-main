@@ -2,8 +2,22 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **waves 2 4 operator readiness addendum** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the waves 2 4 operator readiness addendum workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
+
+Planning review note 2026-05-18: this addendum remains the active dependency plan for Waves 2-4.
+It should be interpreted through the browser-first operator UI lane, retained-WPF support policy,
+the consolidated current-direction entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md), and the active plan index in
+[`README.md`](README.md).
 
 ---
 
@@ -50,6 +64,7 @@ Current shell-support evidence also includes Welcome readiness progress for prov
 
 It should be read with:
 
+- [`current-direction-and-status.md`](current-direction-and-status.md)
 - [`trading-workstation-migration-blueprint.md`](trading-workstation-migration-blueprint.md)
 - [`paper-trading-cockpit-reliability-sprint.md`](paper-trading-cockpit-reliability-sprint.md)
 - [`brokerage-portfolio-sync-blueprint.md`](brokerage-portfolio-sync-blueprint.md)

@@ -1,6 +1,6 @@
 # Getting Started
 
-**Last Reviewed:** 2026-04-05
+**Last Reviewed:** 2026-05-12
 
 This guide covers the fastest verified ways to get Meridian running locally. For the broader operator reference, see [../HELP.md](../HELP.md).
 
@@ -58,6 +58,18 @@ You can also use:
 make run
 ```
 
+When the workstation bundle has been built, the browser operator UI is served from:
+
+```text
+http://localhost:8080/workstation/
+```
+
+For active browser UI development, use the dashboard package directly:
+
+```bash
+npm --prefix src/Meridian.Ui/dashboard run dev
+```
+
 ### Headless collector
 
 ```bash
@@ -78,7 +90,9 @@ Manual fallback:
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 
-The WPF shell is the Windows-only desktop workstation path and the primary interactive operator surface.
+The WPF shell is the Windows-only retained desktop workstation path. New operator-facing UI
+development targets the browser workstation in `src/Meridian.Ui/dashboard/`; use WPF for retained
+desktop compatibility, regression checks, and shared-contract support.
 
 ## Provider Setup
 

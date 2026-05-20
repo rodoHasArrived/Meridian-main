@@ -168,6 +168,32 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertEqual(freed_bytes, 0)
             self.assertTrue(old_bin.exists())
 
+    def test_skips_artifact_root_symlink_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir) / "repo"
+            external_root = Path(temp_dir) / "external-bin"
+            repo_root.mkdir()
+            (repo_root / "artifacts").mkdir()
+            external_old_run = self._create_artifact(external_root, "old-run", age_days=45)
+            artifact_root_link = repo_root / "artifacts" / "bin"
+            try:
+                artifact_root_link.symlink_to(external_root, target_is_directory=True)
+            except OSError as exc:
+                self.skipTest(f"Directory symlinks are not available: {exc}")
+
+            deleted_count, freed_bytes = self.buildctl._prune_isolated_build_artifacts(
+                repo_root,
+                max_age_days=14,
+                retain_latest=1,
+                max_root_size_mb=1,
+                active_isolation_key=None,
+                now=datetime(2026, 4, 28, tzinfo=timezone.utc),
+            )
+
+            self.assertEqual(deleted_count, 0)
+            self.assertEqual(freed_bytes, 0)
+            self.assertTrue(external_old_run.exists())
+
     @staticmethod
     def _create_artifact(
         repo_root: Path,

@@ -1,0 +1,71 @@
+schema_version: 1
+modules:
+  - id: meridian-host
+    name: Meridian Host
+    layer: host
+    priority_tier: priority
+    state: active
+    canonical_path: src/Meridian
+    readme_path: src/Meridian/README.md
+    architecture_boundary: composition-root-and-runtime-host
+    roadmap_anchor: W2-paper-trading-cockpit
+
+  - id: meridian-application
+    name: Meridian Application
+    layer: application
+    priority_tier: priority
+    state: active
+    canonical_path: src/Meridian.Application
+    readme_path: src/Meridian.Application/README.md
+    architecture_boundary: orchestrators-commands-and-use-cases
+    roadmap_anchor: W3-research-to-paper-continuity
+
+  - id: meridian-contracts
+    name: Meridian Contracts
+    layer: contracts
+    priority_tier: priority
+    state: active
+    canonical_path: src/Meridian.Contracts
+    readme_path: src/Meridian.Contracts/README.md
+    architecture_boundary: shared-dtos-and-transport-contracts
+    roadmap_anchor: W3-research-to-paper-continuity
+
+  - id: meridian-ui-services
+    name: Meridian UI Services
+    layer: ui_services
+    priority_tier: priority
+    state: active
+    canonical_path: src/Meridian.Ui.Services
+    readme_path: src/Meridian.Ui.Services/README.md
+    architecture_boundary: api-services-and-workstation-endpoints
+    roadmap_anchor: W2-paper-trading-cockpit
+
+  - id: meridian-ui-shared
+    name: Meridian UI Shared
+    layer: ui_shared
+    priority_tier: priority
+    state: active
+    canonical_path: src/Meridian.Ui.Shared
+    readme_path: src/Meridian.Ui.Shared/README.md
+    architecture_boundary: shared-ui-read-models-and-contract-shims
+    roadmap_anchor: W2-paper-trading-cockpit
+
+  - id: meridian-ui-dashboard
+    name: Meridian UI Dashboard
+    layer: ui_dashboard
+    priority_tier: priority
+    state: active
+    canonical_path: src/Meridian.Ui/dashboard
+    readme_path: src/Meridian.Ui/dashboard/README.md
+    architecture_boundary: browser-operator-workstation
+    roadmap_anchor: W2-paper-trading-cockpit
+
+  - id: meridian-wpf-retained
+    name: Meridian WPF (Retained Scope)
+    layer: wpf_retained
+    priority_tier: priority
+    state: retained_support
+    canonical_path: src/Meridian.Wpf
+    readme_path: src/Meridian.Wpf/README.md
+    architecture_boundary: retained-desktop-shell-and-compatibility
+    roadmap_anchor: W4-governance-productization

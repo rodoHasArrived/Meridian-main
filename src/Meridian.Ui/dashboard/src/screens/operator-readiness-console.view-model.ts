@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
-import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   DataOperationsProviderRecord,
@@ -44,6 +44,7 @@ export interface ReadinessConsoleRow {
   value: string;
   detail: string;
   meta: string;
+  createdAtLabel?: string | null;
   level: ReadinessConsoleLevel;
   ariaLabel: string;
   statusAriaLabel: string;
@@ -56,8 +57,9 @@ export interface ReadinessConsoleNextAction {
   detail: string;
   meta: string;
   label: string;
-  route: string;
+  route: string | null;
   level: ReadinessConsoleLevel;
+  disabledReason: string | null;
   ariaLabel: string;
   actionAriaLabel: string;
 }
@@ -80,6 +82,26 @@ export interface ReadinessConsoleSelectedWorkItemDetail {
   action: ReadinessConsoleRowAction | null;
 }
 
+export interface ReadinessConsoleSelectedEvidenceDetail {
+  id: string;
+  title: string;
+  statusLabel: string;
+  statusAriaLabel: string;
+  detail: string;
+  meta: string;
+  level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  fields: ReadinessConsoleDetailField[];
+  action: ReadinessConsoleRowAction | null;
+}
+
+export interface ReadinessConsoleRecoveryState {
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionAriaLabel: string;
+}
+
 type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel" | "delta" | "tone" | "detailId">;
 type ReadinessConsoleApiSourceBase = Omit<ReadinessConsoleApiSource, "ariaLabel" | "statusAriaLabel">;
 type ReadinessConsoleRowBase = Omit<ReadinessConsoleRow, "ariaLabel" | "statusAriaLabel" | "detailId">;
@@ -98,7 +120,13 @@ export interface ReadinessConsolePanel {
   emptyText: string;
   ariaLabel: string;
   listLabel: string;
+  tableLabel: string;
+  detailLabel: string;
+  detailPanelId: string;
+  selectedRowId: string | null;
+  selectedDetail: ReadinessConsoleSelectedEvidenceDetail | null;
   rows: ReadinessConsoleRow[];
+  selectRow: (id: string) => void;
 }
 
 export interface ReadinessConsoleRowAction {
@@ -124,11 +152,14 @@ export interface ReadinessConsoleState {
   inboxRefreshDisabled: boolean;
   inboxRefreshDisabledReason: string | null;
   inboxRefreshBusy: boolean;
+  inboxErrorRecovery: ReadinessConsoleRecoveryState | null;
   nextAction: ReadinessConsoleNextAction;
   metrics: ReadinessConsoleMetric[];
   metricsLabel: string;
   apiSources: ReadinessConsoleApiSource[];
   apiSourcesLabel: string;
+  checkpointGates: ReadinessConsoleRow[];
+  checkpointGatesLabel: string;
   latestRuns: ReadinessConsoleRow[];
   activeSessionFacts: ReadinessConsoleRow[];
   providerTrustRows: ReadinessConsoleRow[];
@@ -139,6 +170,8 @@ export interface ReadinessConsoleState {
   workItems: ReadinessConsoleRow[];
   workItemsSummary: string;
   workItemsOverflowText: string | null;
+  workItemsEmptyText: string;
+  workItemsEmptyAction: ReadinessConsoleRowAction;
   workItemsRegionLabel: string;
   workItemsListLabel: string;
   workItemsTableLabel: string;
@@ -160,7 +193,9 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   inboxLoading: boolean;
   inboxError: string | null;
   selectedWorkItemId?: string | null;
+  selectedPanelRowIds?: Partial<Record<ReadinessConsolePanelId, string>>;
   selectWorkItem?: (id: string) => void;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
   refreshInbox?: () => Promise<void>;
 }
 
@@ -172,6 +207,9 @@ const defaultServices: OperatorReadinessConsoleServices = {
   getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options)
 };
 
+const REPORT_PACKS_ROUTE = WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
+const PROVIDER_SETUP_ROUTE = WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
+
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
   services: OperatorReadinessConsoleServices = defaultServices
@@ -180,6 +218,7 @@ export function useOperatorReadinessConsoleViewModel(
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
+  const [selectedPanelRowIds, setSelectedPanelRowIds] = useState<Partial<Record<ReadinessConsolePanelId, string>>>({});
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const inboxAbortRef = useRef<AbortController | null>(null);
@@ -187,6 +226,12 @@ export function useOperatorReadinessConsoleViewModel(
   const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
   const selectWorkItem = useCallback((id: string) => {
     setSelectedWorkItemId(id);
+  }, []);
+  const selectPanelRow = useCallback((panelId: ReadinessConsolePanelId, rowId: string) => {
+    setSelectedPanelRowIds((current) => current[panelId] === rowId ? current : {
+      ...current,
+      [panelId]: rowId
+    });
   }, []);
 
   useEffect(() => {
@@ -248,10 +293,12 @@ export function useOperatorReadinessConsoleViewModel(
       inboxLoading,
       inboxError,
       selectedWorkItemId,
+      selectedPanelRowIds,
       selectWorkItem,
+      selectPanelRow,
       refreshInbox
     }),
-    [inboxError, inboxLoading, operatorInbox, payload, selectedWorkItemId, selectWorkItem, refreshInbox]
+    [inboxError, inboxLoading, operatorInbox, payload, selectedPanelRowIds, selectedWorkItemId, selectPanelRow, selectWorkItem, refreshInbox]
   );
 }
 
@@ -265,11 +312,13 @@ export function buildOperatorReadinessConsoleState({
   inboxLoading,
   inboxError,
   selectedWorkItemId,
+  selectedPanelRowIds,
   selectWorkItem,
+  selectPanelRow,
   refreshInbox
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = trading?.readiness ?? null;
-  const workItems = operatorInbox?.items ?? readiness?.workItems ?? [];
+  const workItems = mergeOperatorWorkItems(operatorInbox?.items ?? [], readiness?.workItems ?? []);
   const latestRuns = withRowPresentation(buildLatestRunRows(research?.runs ?? []), "latest-runs");
   const activeSessionFacts = withRowPresentation(buildActiveSessionFacts(readiness), "active-session");
   const providerTrustRows = withRowPresentation(buildProviderTrustRows(readiness, dataOperations?.providers ?? []), "provider-trust");
@@ -277,9 +326,17 @@ export function buildOperatorReadinessConsoleState({
   const promotionRows = withRowPresentation(buildPromotionRows(readiness, workItems), "promotion");
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
   const reportPackFacts = withRowPresentation(buildReportPackFacts(reporting ?? governance), "report-pack");
+  const checkpointGates = withRowPresentation(buildCockpitGateRows({
+    readiness,
+    providerTrustRows,
+    reconciliationRows,
+    reportPackFacts,
+    workItems: prioritizedWorkItems
+  }), "cockpit-gates");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
-  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, selectedWorkItemId ?? null);
+  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, prioritizedWorkItems, selectedWorkItemId ?? null);
   const nextAction = buildNextAction({
+    checkpointGates,
     workItemRows,
     activeSessionFacts,
     providerTrustRows,
@@ -300,15 +357,13 @@ export function buildOperatorReadinessConsoleState({
     operatorInbox,
     inboxLoading,
     inboxError,
-    reconciliationRows,
-    promotionRows,
-    reportPackFacts
+    checkpointGates
   });
   const readinessStatusLabel = readiness
     ? formatReadinessStatusValue(readiness.overallStatus)
     : "Awaiting readiness payload";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
-  const asOf = operatorInbox?.asOf ?? readiness?.asOf ?? "Unavailable";
+  const asOf = formatReadinessUtcMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
 
   return {
     title: "Operator Readiness Console",
@@ -319,9 +374,7 @@ export function buildOperatorReadinessConsoleState({
       operatorInbox,
       inboxLoading,
       inboxError,
-      reconciliationRows,
-      promotionRows,
-      reportPackFacts
+      checkpointGates
     }),
     overallLevel,
     asOf,
@@ -336,6 +389,7 @@ export function buildOperatorReadinessConsoleState({
     inboxRefreshDisabled: inboxLoading,
     inboxRefreshDisabledReason: inboxLoading ? "Operator inbox is already refreshing." : null,
     inboxRefreshBusy: inboxLoading,
+    inboxErrorRecovery: buildInboxErrorRecovery(inboxError),
     nextAction,
     metrics,
     metricsLabel: "Operator readiness metrics",
@@ -350,6 +404,8 @@ export function buildOperatorReadinessConsoleState({
       inboxError
     })),
     apiSourcesLabel: "Shared readiness API sources",
+    checkpointGates,
+    checkpointGatesLabel: "Full-console readiness checkpoints",
     latestRuns,
     activeSessionFacts,
     providerTrustRows,
@@ -362,11 +418,15 @@ export function buildOperatorReadinessConsoleState({
       providerTrustRows,
       reconciliationRows,
       promotionRows,
-      reportPackFacts
+      reportPackFacts,
+      selectedPanelRowIds: selectedPanelRowIds ?? {},
+      selectPanelRow
     }),
     workItems: workItemRows,
     workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
     workItemsOverflowText: buildWorkItemsOverflowText(prioritizedWorkItems.length, workItemRows.length),
+    workItemsEmptyText: buildWorkItemsEmptyText(operatorInbox, inboxLoading, inboxError),
+    workItemsEmptyAction: buildWorkItemsEmptyAction(nextAction),
     workItemsRegionLabel: "Operator inbox review work items",
     workItemsListLabel: "Prioritized operator work items",
     workItemsTableLabel: "Prioritized operator work items table",
@@ -401,7 +461,12 @@ function withApiSourcePresentation(sources: ReadinessConsoleApiSourceBase[]): Re
 function withRowPresentation(rows: ReadinessConsoleRowBase[], collectionId: string): ReadinessConsoleRow[] {
   return rows.map((row) => ({
     ...row,
-    ariaLabel: `${row.label}: ${row.value}. ${row.detail} ${row.meta}`,
+    ariaLabel: [
+      `${row.label}: ${row.value}.`,
+      row.detail,
+      row.meta,
+      row.createdAtLabel ? `Created ${row.createdAtLabel}` : null
+    ].filter(Boolean).join(" "),
     statusAriaLabel: `${row.label} status ${row.value}`,
     detailId: `readiness-row-${slugifyId(collectionId)}-${slugifyId(row.id)}-detail`
   }));
@@ -413,7 +478,9 @@ function buildConsolePanels({
   providerTrustRows,
   reconciliationRows,
   promotionRows,
-  reportPackFacts
+  reportPackFacts,
+  selectedPanelRowIds,
+  selectPanelRow
 }: {
   latestRuns: ReadinessConsoleRow[];
   activeSessionFacts: ReadinessConsoleRow[];
@@ -421,43 +488,57 @@ function buildConsolePanels({
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
   reportPackFacts: ReadinessConsoleRow[];
+  selectedPanelRowIds: Partial<Record<ReadinessConsolePanelId, string>>;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
 }): ReadinessConsolePanel[] {
   return [
     buildConsolePanel({
       id: "latest-runs",
       title: "Latest runs",
       emptyText: "No Strategy runs loaded.",
-      rows: latestRuns
+      rows: latestRuns,
+      selectedRowId: selectedPanelRowIds["latest-runs"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "active-paper-session",
       title: "Active paper session",
       emptyText: "No active paper session loaded.",
-      rows: activeSessionFacts
+      rows: activeSessionFacts,
+      selectedRowId: selectedPanelRowIds["active-paper-session"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "provider-trust",
       title: "Provider trust",
       emptyText: "No provider trust rows loaded.",
-      rows: providerTrustRows
+      rows: providerTrustRows,
+      selectedRowId: selectedPanelRowIds["provider-trust"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "reconciliation-breaks",
       title: "Reconciliation breaks",
       emptyText: "No open or in-review reconciliation breaks.",
-      rows: reconciliationRows
+      rows: reconciliationRows,
+      selectedRowId: selectedPanelRowIds["reconciliation-breaks"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "promotion-blockers",
       title: "Promotion blockers",
       emptyText: "No promotion blockers surfaced by readiness.",
-      rows: promotionRows
+      rows: promotionRows,
+      selectedRowId: selectedPanelRowIds["promotion-blockers"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "reporting-report-packs",
       title: "Reporting report packs",
       emptyText: "No reporting readiness payload loaded.",
-      rows: reportPackFacts
+      rows: reportPackFacts,
+      selectedRowId: selectedPanelRowIds["reporting-report-packs"] ?? null,
+      selectPanelRow
     })
   ];
 }
@@ -466,20 +547,67 @@ function buildConsolePanel({
   id,
   title,
   emptyText,
-  rows
+  rows,
+  selectedRowId,
+  selectPanelRow
 }: {
   id: ReadinessConsolePanelId;
   title: string;
   emptyText: string;
   rows: ReadinessConsoleRow[];
+  selectedRowId: string | null;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
 }): ReadinessConsolePanel {
+  const detailPanelId = `operator-readiness-${id}-evidence-detail`;
+  const selectedDetail = buildSelectedEvidenceDetail(rows, selectedRowId, title);
+
   return {
     id,
     title,
     emptyText,
     ariaLabel: `${title} readiness evidence`,
     listLabel: `${title} rows`,
-    rows
+    tableLabel: `${title} readiness evidence table`,
+    detailLabel: `Selected ${title.toLowerCase()} evidence detail`,
+    detailPanelId,
+    selectedRowId: selectedDetail?.id ?? null,
+    selectedDetail,
+    rows,
+    selectRow: (rowId: string) => {
+      selectPanelRow?.(id, rowId);
+    }
+  };
+}
+
+function buildSelectedEvidenceDetail(
+  rows: ReadinessConsoleRow[],
+  selectedRowId: string | null,
+  panelTitle: string
+): ReadinessConsoleSelectedEvidenceDetail | null {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? rows[0];
+  const actionRoute = selectedRow.action?.route ?? "No route action";
+
+  return {
+    id: selectedRow.id,
+    title: selectedRow.label,
+    statusLabel: selectedRow.value,
+    statusAriaLabel: selectedRow.statusAriaLabel,
+    detail: selectedRow.detail,
+    meta: selectedRow.meta,
+    level: selectedRow.level,
+    ariaLabel: `Selected ${panelTitle.toLowerCase()} evidence: ${selectedRow.label}`,
+    fields: [
+      { label: "Evidence ID", value: selectedRow.id },
+      { label: "Attention", value: formatLevelText(selectedRow.level) },
+      ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      { label: "Route", value: actionRoute },
+      { label: "Evidence", value: selectedRow.meta }
+    ],
+    action: selectedRow.action ?? null
   };
 }
 
@@ -521,7 +649,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
       label: "Paper portfolio value",
       value: session.portfolioValue === null || session.portfolioValue === undefined ? "Unavailable" : formatCurrency(session.portfolioValue),
       detail: `Initial cash ${formatCurrency(session.initialCash)}`,
-      meta: `Created ${session.createdAt}`,
+      meta: `Created ${formatReadinessUtcMinute(session.createdAt, "timestamp unavailable")}`,
       level: session.portfolioValue === null || session.portfolioValue === undefined ? "review" : "ready"
     },
     {
@@ -590,7 +718,7 @@ function buildBrokerageTrustRow(status: WorkstationBrokerageSyncStatus): Readine
     meta: status.providerId ?? "No provider linked",
     level: status.health === "Healthy" && !status.isStale
       ? "ready"
-      : status.health === "Failed" || status.health === "Degraded"
+      : status.health === "Failed"
         ? "blocked"
         : "review"
   };
@@ -655,7 +783,7 @@ function buildPromotionRows(
 
   workItems
     .filter((item) => item.kind === "PromotionReview")
-    .forEach((item) => rows.push(buildWorkItemRow(item, false)));
+    .forEach((item) => rows.push(buildWorkItemRow(item, true)));
 
   return dedupeRows(rows).slice(0, 6);
 }
@@ -704,8 +832,229 @@ function buildReportPackFacts(reportingPayload: GovernanceWorkspaceResponse | nu
   ];
 }
 
+function buildCockpitGateRows({
+  readiness,
+  providerTrustRows,
+  reconciliationRows,
+  reportPackFacts,
+  workItems
+}: {
+  readiness: TradingOperatorReadiness | null;
+  providerTrustRows: ReadinessConsoleRow[];
+  reconciliationRows: ReadinessConsoleRow[];
+  reportPackFacts: ReadinessConsoleRow[];
+  workItems: OperatorWorkItem[];
+}): ReadinessConsoleRowBase[] {
+  const gateById = new Map((readiness?.acceptanceGates ?? []).map((gate) => [gate.gateId, gate]));
+  const activeSession = readiness?.activeSession ?? null;
+  const replay = readiness?.replay ?? null;
+  const controls = readiness?.controls ?? null;
+  const promotion = readiness?.promotion ?? null;
+  const brokerage = readiness?.brokerageSync ?? null;
+  const brokerageRow = providerTrustRows.find((row) => row.id === "brokerage-sync") ?? null;
+  const reportPackReviewCount = reportPackFacts.filter((row) => row.level !== "ready").length;
+  const criticalWorkItemCount = workItems.filter((item) => item.tone === "Critical").length;
+  const warningWorkItemCount = workItems.filter((item) => item.tone === "Warning").length;
+
+  return [
+    buildCheckpointGateRow({
+      id: "session-active",
+      label: "Session active",
+      fallbackValue: activeSession?.isActive ? "Ready" : "Review required",
+      fallbackDetail: activeSession
+        ? `${activeSession.sessionId} is ${activeSession.isActive ? "active" : "not active"} with ${activeSession.orderCount} orders and ${activeSession.symbolCount} symbols.`
+        : "No active paper session is present in the readiness payload.",
+      fallbackMeta: activeSession?.sessionId ?? "No session id",
+      fallbackLevel: activeSession?.isActive ? "ready" : "review",
+      gate: gateById.get("session"),
+      action: {
+        label: "Open Trading cockpit",
+        route: WORKSTATION_ROUTE_CATALOG.trading,
+        ariaLabel: "Open Trading cockpit for paper session readiness",
+        variant: "outline"
+      }
+    }),
+    buildCheckpointGateRow({
+      id: "replay-verified",
+      label: "Replay verified",
+      fallbackValue: replay?.isConsistent ? "Ready" : replay ? "Blocked" : "Review required",
+      fallbackDetail: replay
+        ? `${replay.isConsistent ? "Replay matched" : "Replay mismatch"} across ${replay.comparedFillCount} fills, ${replay.comparedOrderCount} orders, and ${replay.comparedLedgerEntryCount} ledger entries.`
+        : "Run replay verification for the active paper session before accepting readiness.",
+      fallbackMeta: replay?.verificationAuditId ?? "No verification audit",
+      fallbackLevel: replay?.isConsistent ? "ready" : replay ? "blocked" : "review",
+      gate: gateById.get("replay"),
+      action: {
+        label: "Open replay evidence",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        ariaLabel: "Open replay evidence for paper readiness",
+        variant: replay?.isConsistent ? "outline" : "secondary"
+      }
+    }),
+    buildCheckpointGateRow({
+      id: "risk-control-explainable",
+      label: "Risk state explainable",
+      fallbackValue: controls?.circuitBreakerOpen ? "Blocked" : controls ? "Ready" : "Review required",
+      fallbackDetail: controls
+        ? controls.circuitBreakerOpen
+          ? controls.circuitBreakerReason ?? "Execution circuit breaker is open."
+          : `${controls.manualOverrideCount} manual overrides, ${controls.symbolLimitCount} symbol limits, and ${controls.defaultMaxPositionSize ?? "no"} default max-position limit are visible.`
+        : "Execution-control evidence has not loaded.",
+      fallbackMeta: controls?.circuitBreakerChangedBy ?? controls?.circuitBreakerChangedAt ?? "Execution controls",
+      fallbackLevel: controls?.circuitBreakerOpen ? "blocked" : controls ? "ready" : "review",
+      gate: gateById.get("audit-controls"),
+      action: {
+        label: "Open execution controls",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        ariaLabel: "Open execution-control evidence for paper readiness",
+        variant: controls?.circuitBreakerOpen ? "secondary" : "outline"
+      }
+    }),
+    buildCheckpointGateRow({
+      id: "promotion-trace-complete",
+      label: "Promotion review trace complete",
+      fallbackValue: promotion?.requiresReview ? "Review required" : promotion ? "Ready" : "Review required",
+      fallbackDetail: promotion?.reason ?? "Promotion trace evidence is not attached to the readiness payload.",
+      fallbackMeta: promotion
+        ? [promotion.sourceRunId, promotion.targetRunId, promotion.auditReference].filter(Boolean).join(" - ") || "No promotion audit reference"
+        : "No promotion record",
+      fallbackLevel: promotion?.requiresReview ? "review" : promotion ? "ready" : "review",
+      gate: gateById.get("promotion"),
+      action: {
+        label: "Open promotion review",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        ariaLabel: "Open promotion review trace for paper readiness",
+        variant: promotion?.requiresReview ? "secondary" : "outline"
+      }
+    }),
+    buildCheckpointGateRow({
+      id: "brokerage-sync",
+      label: "Brokerage sync healthy",
+      fallbackValue: brokerage?.health ?? "Unavailable",
+      fallbackDetail: brokerageRow?.detail ?? "No account-scoped brokerage sync posture is attached to readiness.",
+      fallbackMeta: brokerage
+        ? [brokerage.fundAccountId, brokerage.providerId, brokerage.externalAccountId].filter(Boolean).join(" - ") || "No provider linked"
+        : "No brokerage sync payload",
+      fallbackLevel: brokerageRow?.level ?? "review",
+      action: {
+        label: "Open brokerage sync",
+        route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
+        ariaLabel: "Open brokerage sync for paper readiness",
+        variant: brokerageRow?.level === "blocked" ? "secondary" : "outline"
+      }
+    }),
+    buildCheckpointGateRow({
+      id: "reconciliation-clear",
+      label: "Reconciliation clear",
+      fallbackValue: reconciliationRows.length === 0 ? "Ready" : `${reconciliationRows.length} open`,
+      fallbackDetail: reconciliationRows.length === 0
+        ? "No open or in-review reconciliation breaks are visible."
+        : "Open or in-review reconciliation breaks must be cleared before full-console readiness is accepted.",
+      fallbackMeta: reconciliationRows[0]?.meta ?? "Accounting break queue",
+      fallbackLevel: reconciliationRows.some((row) => row.level === "blocked") ? "blocked" : reconciliationRows.length > 0 ? "review" : "ready",
+      action: {
+        label: "Open break queue",
+        route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        ariaLabel: "Open reconciliation break queue for paper readiness",
+        variant: reconciliationRows.some((row) => row.level === "blocked") ? "secondary" : "outline"
+      }
+    }),
+    buildCheckpointGateRow({
+      id: "report-pack-ready",
+      label: "Report pack approval ready",
+      fallbackValue: reportPackReviewCount === 0 ? "Ready" : `${reportPackReviewCount} review`,
+      fallbackDetail: reportPackReviewCount === 0
+        ? "Governed report-pack targets and recommended profiles are available."
+        : "Report-pack targets or recommended profiles are incomplete.",
+      fallbackMeta: reportPackFacts[0]?.meta ?? "Reporting payload unavailable",
+      fallbackLevel: reportPackReviewCount === 0 ? "ready" : "review",
+      action: {
+        label: "Open report packs",
+        route: REPORT_PACKS_ROUTE,
+        ariaLabel: "Open report packs for paper readiness",
+        variant: "outline"
+      }
+    }),
+    {
+      id: "operator-work-items",
+      label: "Operator work items settled",
+      value: criticalWorkItemCount > 0 ? `${criticalWorkItemCount} critical` : warningWorkItemCount > 0 ? `${warningWorkItemCount} warning` : "Ready",
+      detail: criticalWorkItemCount > 0
+        ? "Critical operator work items keep the console blocked until resolved."
+        : warningWorkItemCount > 0
+          ? "Warning operator work items keep the console in review until resolved."
+          : "No warning or critical operator work items are visible.",
+      meta: `${workItems.length} merged work items`,
+      level: criticalWorkItemCount > 0 ? "blocked" : warningWorkItemCount > 0 ? "review" : "ready",
+      action: workItems.length > 0
+        ? buildWorkItemAction(workItems[0])
+        : {
+            label: "Open Trading cockpit",
+            route: WORKSTATION_ROUTE_CATALOG.trading,
+            ariaLabel: "Open Trading cockpit after operator work items settle",
+            variant: "outline"
+          }
+    }
+  ];
+}
+
+function buildCheckpointGateRow({
+  id,
+  label,
+  fallbackValue,
+  fallbackDetail,
+  fallbackMeta,
+  fallbackLevel,
+  gate,
+  action
+}: {
+  id: string;
+  label: string;
+  fallbackValue: string;
+  fallbackDetail: string;
+  fallbackMeta: string;
+  fallbackLevel: ReadinessConsoleLevel;
+  gate?: TradingAcceptanceGate;
+  action?: ReadinessConsoleRowAction | null;
+}): ReadinessConsoleRowBase {
+  return {
+    id,
+    label,
+    value: gate ? formatReadinessStatusValue(gate.status) : fallbackValue,
+    detail: gate?.detail ?? fallbackDetail,
+    meta: gate
+      ? [gate.runId, gate.sessionId, gate.auditReference].filter(Boolean).join(" - ") || fallbackMeta
+      : fallbackMeta,
+    level: gate ? levelFromReadiness(gate.status) : fallbackLevel,
+    action: action ?? null
+  };
+}
+
 function buildWorkItemRows(workItems: OperatorWorkItem[]): ReadinessConsoleRowBase[] {
   return workItems.slice(0, 6).map((item) => buildWorkItemRow(item, true));
+}
+
+function mergeOperatorWorkItems(primaryItems: OperatorWorkItem[], fallbackItems: OperatorWorkItem[]): OperatorWorkItem[] {
+  const byId = new Map<string, { item: OperatorWorkItem; index: number }>();
+  [...fallbackItems, ...primaryItems].forEach((item, index) => {
+    const existing = byId.get(item.workItemId);
+    if (!existing || shouldReplaceWorkItem(existing.item, item)) {
+      byId.set(item.workItemId, { item, index: existing?.index ?? index });
+    }
+  });
+
+  return Array.from(byId.values())
+    .sort((left, right) => left.index - right.index)
+    .map(({ item }) => item);
+}
+
+function shouldReplaceWorkItem(existing: OperatorWorkItem, candidate: OperatorWorkItem): boolean {
+  const toneDelta = tonePriority(candidate.tone) - tonePriority(existing.tone);
+  if (toneDelta !== 0) {
+    return toneDelta < 0;
+  }
+
+  return timestampPriority(candidate.createdAt) >= timestampPriority(existing.createdAt);
 }
 
 function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] {
@@ -729,20 +1078,44 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
+  const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
+  const signoffSummary = buildSignoffSummary(item);
 
   return {
     id: item.workItemId,
     label: item.label,
     value: item.tone,
     detail: item.detail,
-    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" - ") || item.kind,
+    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference, signoffSummary].filter(Boolean).join(" - ") || item.kind,
+    createdAtLabel,
     level: levelFromTone(item.tone),
     action
   };
 }
 
+function buildSignoffSummary(item: OperatorWorkItem): string | null {
+  const role = item.requiredSignoffRole?.trim();
+  const status = item.signoffStatus?.trim();
+  if (!role && !status) {
+    return null;
+  }
+
+  if (role && status) {
+    return `${role} sign-off ${status}`;
+  }
+
+  return role ? `${role} sign-off` : `Sign-off ${status}`;
+}
+
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const route = normalizeLocalWorkstationRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
+  const normalizedRoute = item.kind === "BrokerageSync"
+    ? PROVIDER_SETUP_ROUTE
+    : normalizeLocalWorkstationRoute(item.targetRoute)
+      ?? routeFromWorkItemTarget(item)
+      ?? fallbackRouteForWorkItemKind(item.kind);
+  const route = item.kind === "ReportPackApproval" && normalizedRoute === WORKSTATION_ROUTE_CATALOG.reporting
+    ? REPORT_PACKS_ROUTE
+    : normalizedRoute;
   if (!route) {
     return null;
   }
@@ -756,43 +1129,59 @@ function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction 
   };
 }
 
-function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function routeFromWorkItemTarget(item: OperatorWorkItem): string | null {
+  if (!item.targetPageTag && !item.workspace) {
+    return null;
+  }
+
+  return workflowTargetPath(item.targetPageTag, item.workspace);
+}
+
+function fallbackRouteForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
     case "PromotionReview":
     case "ExecutionControl":
-      return "/trading/readiness";
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
     case "BrokerageSync":
-      return "/portfolio/brokerage-sync";
+      return PROVIDER_SETUP_ROUTE;
     case "SecurityMasterCoverage":
-      return "/accounting/security-master";
+      return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
     case "ReconciliationBreak":
-      return "/accounting/reconciliation";
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
+    case "LedgerPeriodClose":
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
     case "ReportPackApproval":
-      return "/reporting";
+      return REPORT_PACKS_ROUTE;
     case "ProviderTrustGate":
-      return "/data";
+      return WORKSTATION_ROUTE_CATALOG.data;
+    default:
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   }
 }
 
-function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function actionLabelForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
       return "Open replay evidence";
     case "PromotionReview":
       return "Open promotion review";
     case "BrokerageSync":
-      return "Open brokerage sync";
+      return "Fix provider setup";
     case "SecurityMasterCoverage":
       return "Open Security Master";
     case "ReconciliationBreak":
       return "Open break queue";
+    case "LedgerPeriodClose":
+      return "Open reconciliation";
     case "ReportPackApproval":
       return "Open report packs";
     case "ProviderTrustGate":
       return "Open provider trust";
     case "ExecutionControl":
       return "Open execution controls";
+    default:
+      return "Open operator item";
   }
 }
 
@@ -821,8 +1210,41 @@ function buildWorkItemsOverflowText(totalCount: number, visibleCount: number): s
   return `${formatCount(hiddenCount, "additional work item")} hidden from this view after priority sorting.`;
 }
 
+function buildWorkItemsEmptyText(
+  operatorInbox: OperatorInbox | null,
+  inboxLoading: boolean,
+  inboxError: string | null
+): string {
+  if (inboxLoading) {
+    return "Operator inbox work items are loading. The console will select the first actionable item when the queue arrives.";
+  }
+
+  if (inboxError) {
+    return "Operator inbox work items are unavailable. Use the retry action above, or continue from the primary next action while the console preserves fallback readiness evidence.";
+  }
+
+  if (operatorInbox) {
+    return "No operator work items need attention. Continue monitoring the paper cockpit and readiness evidence before accepting new live risk.";
+  }
+
+  return "No operator work items returned. Continue from the primary next action while shared readiness payloads finish loading.";
+}
+
+function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): ReadinessConsoleRowAction {
+  const nextActionRoute = nextAction.route ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness;
+  return {
+    label: nextAction.level === "ready" ? "Open Trading cockpit" : nextAction.label,
+    route: nextAction.level === "ready" ? WORKSTATION_ROUTE_CATALOG.trading : nextActionRoute,
+    ariaLabel: nextAction.level === "ready"
+      ? "Open Trading cockpit from empty operator inbox"
+      : `${nextAction.actionAriaLabel} from empty operator inbox`,
+    variant: nextAction.level === "blocked" ? "secondary" : "outline"
+  };
+}
+
 function buildSelectedWorkItemDetail(
   rows: ReadinessConsoleRow[],
+  workItems: OperatorWorkItem[],
   selectedWorkItemId: string | null
 ): ReadinessConsoleSelectedWorkItemDetail | null {
   if (rows.length === 0) {
@@ -831,6 +1253,7 @@ function buildSelectedWorkItemDetail(
 
   const selectedRow = rows.find((row) => row.id === selectedWorkItemId) ?? rows[0];
   const actionRoute = selectedRow.action?.route ?? "No route action";
+  const selectedWorkItem = workItems.find((item) => item.workItemId === selectedRow.id) ?? null;
 
   return {
     id: selectedRow.id,
@@ -844,10 +1267,27 @@ function buildSelectedWorkItemDetail(
     fields: [
       { label: "Work item ID", value: selectedRow.id },
       { label: "Attention", value: formatLevelText(selectedRow.level) },
+      ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      ...(selectedWorkItem?.requiredSignoffRole ? [{ label: "Required sign-off role", value: selectedWorkItem.requiredSignoffRole }] : []),
+      ...(selectedWorkItem?.signoffStatus ? [{ label: "Sign-off status", value: selectedWorkItem.signoffStatus }] : []),
+      ...(selectedWorkItem?.toleranceProfileId ? [{ label: "Tolerance profile", value: selectedWorkItem.toleranceProfileId }] : []),
       { label: "Route", value: actionRoute },
       { label: "Evidence", value: selectedRow.meta }
     ],
     action: selectedRow.action ?? null
+  };
+}
+
+function buildInboxErrorRecovery(inboxError: string | null): ReadinessConsoleRecoveryState | null {
+  if (!inboxError) {
+    return null;
+  }
+
+  return {
+    title: "Operator inbox unavailable",
+    detail: `${inboxError}. Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.`,
+    actionLabel: "Retry inbox",
+    actionAriaLabel: "Retry loading operator inbox work items after failure"
   };
 }
 
@@ -856,13 +1296,15 @@ interface NextActionCandidate {
   detail: string;
   meta: string;
   label: string;
-  route: string;
+  route: string | null;
   level: ReadinessConsoleLevel;
+  disabledReason?: string | null;
   sourcePriority: number;
   index: number;
 }
 
 function buildNextAction({
+  checkpointGates,
   workItemRows,
   activeSessionFacts,
   providerTrustRows,
@@ -870,6 +1312,7 @@ function buildNextAction({
   promotionRows,
   reportPackFacts
 }: {
+  checkpointGates: ReadinessConsoleRow[];
   workItemRows: ReadinessConsoleRow[];
   activeSessionFacts: ReadinessConsoleRow[];
   providerTrustRows: ReadinessConsoleRow[];
@@ -882,44 +1325,52 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: row.action?.label ?? "Review item",
-        route: row.action?.route ?? "/trading/readiness",
+        route: row.action?.route ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         sourcePriority: 0,
+        index
+      })),
+    ...checkpointGates
+      .filter((row) => row.level === "blocked" || row.level === "review")
+      .map((row, index) => nextActionCandidateFromRow(row, {
+        label: row.action?.label ?? "Review checkpoint",
+        route: row.action?.route ?? null,
+        sourcePriority: 1,
         index
       })),
     ...reconciliationRows.map((row, index) => nextActionCandidateFromRow(row, {
       label: "Open break queue",
-      route: "/accounting/reconciliation",
-      sourcePriority: 1,
+      route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+      sourcePriority: 2,
       index
     })),
     ...promotionRows.map((row, index) => nextActionCandidateFromRow(row, {
       label: "Open promotion review",
-      route: "/trading/readiness",
-      sourcePriority: 2,
+      route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+      sourcePriority: 3,
       index
     })),
     ...providerTrustRows
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open provider trust",
-        route: "/data",
-        sourcePriority: 3,
+        route: WORKSTATION_ROUTE_CATALOG.data,
+        sourcePriority: 4,
         index
       })),
     ...reportPackFacts
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open report packs",
-        route: "/reporting",
-        sourcePriority: 4,
+        route: REPORT_PACKS_ROUTE,
+        sourcePriority: 5,
         index
       })),
     ...activeSessionFacts
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open Trading cockpit",
-        route: "/trading",
-        sourcePriority: 5,
+        route: WORKSTATION_ROUTE_CATALOG.trading,
+        sourcePriority: 6,
         index
       }))
   ].sort((left, right) => {
@@ -941,8 +1392,9 @@ function buildNextAction({
     detail: "The visible readiness queue is settled. Continue monitoring the paper cockpit and latest workstation evidence.",
     meta: "Operator inbox and readiness evidence are clear",
     label: "Open Trading cockpit",
-    route: "/trading",
+    route: WORKSTATION_ROUTE_CATALOG.trading,
     level: "ready" as ReadinessConsoleLevel,
+    disabledReason: null,
     sourcePriority: 99,
     index: 0
   };
@@ -954,6 +1406,7 @@ function buildNextAction({
     label: candidate.label,
     route: candidate.route,
     level: candidate.level,
+    disabledReason: candidate.route ? null : "No route-backed action is available for this checkpoint.",
     ariaLabel: `Primary next action: ${candidate.title}. ${candidate.detail} ${candidate.meta}`,
     actionAriaLabel: `${candidate.label}: ${candidate.title}`
   };
@@ -963,7 +1416,7 @@ function nextActionCandidateFromRow(
   row: ReadinessConsoleRow,
   options: {
     label: string;
-    route: string;
+    route: string | null;
     sourcePriority: number;
     index: number;
   }
@@ -1167,17 +1620,13 @@ function determineOverallLevel({
   operatorInbox,
   inboxLoading,
   inboxError,
-  reconciliationRows,
-  promotionRows,
-  reportPackFacts
+  checkpointGates
 }: {
   readiness: TradingOperatorReadiness | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
-  reconciliationRows: ReadinessConsoleRow[];
-  promotionRows: ReadinessConsoleRow[];
-  reportPackFacts: ReadinessConsoleRow[];
+  checkpointGates: ReadinessConsoleRow[];
 }): ReadinessConsoleLevel {
   if (!readiness) {
     return hasCriticalOperatorInbox(operatorInbox) ? "blocked" : "review";
@@ -1186,8 +1635,7 @@ function determineOverallLevel({
   if (
     readiness.overallStatus === "Blocked" ||
     (operatorInbox?.criticalCount ?? 0) > 0 ||
-    reconciliationRows.some((row) => row.level === "blocked") ||
-    promotionRows.some((row) => row.level === "blocked")
+    checkpointGates.some((row) => row.level === "blocked")
   ) {
     return "blocked";
   }
@@ -1199,9 +1647,7 @@ function determineOverallLevel({
   if (
     readiness.overallStatus === "Ready" &&
     (operatorInbox?.warningCount ?? 0) === 0 &&
-    reconciliationRows.length === 0 &&
-    promotionRows.length === 0 &&
-    !hasReportPackReadinessGap(reportPackFacts)
+    checkpointGates.every((row) => row.level === "ready")
   ) {
     return "ready";
   }
@@ -1214,17 +1660,13 @@ function buildOverallDetail({
   operatorInbox,
   inboxLoading,
   inboxError,
-  reconciliationRows,
-  promotionRows,
-  reportPackFacts
+  checkpointGates
 }: {
   readiness: TradingOperatorReadiness | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
-  reconciliationRows: ReadinessConsoleRow[];
-  promotionRows: ReadinessConsoleRow[];
-  reportPackFacts: ReadinessConsoleRow[];
+  checkpointGates: ReadinessConsoleRow[];
 }): string {
   if (!readiness) {
     return buildMissingReadinessDetail(operatorInbox, inboxLoading, inboxError);
@@ -1240,12 +1682,13 @@ function buildOverallDetail({
   }
 
   const reviewCount = operatorInbox?.reviewCount ?? readiness.workItems.length;
-  const reportPackReviewCount = reportPackFacts.filter((row) => row.level !== "ready").length;
-  if (reportPackReviewCount > 0) {
-    return `${reviewCount} operator review item(s), ${reconciliationRows.length} reconciliation item(s), ${promotionRows.length} promotion blocker(s), and ${reportPackReviewCount} report-pack readiness item(s) still need review.`;
+  const blockedGateCount = checkpointGates.filter((row) => row.level === "blocked").length;
+  const reviewGateCount = checkpointGates.filter((row) => row.level === "review").length;
+  if (blockedGateCount > 0 || reviewGateCount > 0) {
+    return `${reviewCount} operator review item(s), ${blockedGateCount} blocked checkpoint(s), and ${reviewGateCount} review checkpoint(s) still need attention.`;
   }
 
-  return `${reviewCount} operator review item(s), ${reconciliationRows.length} reconciliation item(s), ${promotionRows.length} promotion blocker(s), and governed report-pack readiness are visible in the web console.`;
+  return `${reviewCount} operator review item(s), all full-console checkpoints, and governed report-pack readiness are clear in the web console.`;
 }
 
 function buildStatusAnnouncement(
@@ -1333,10 +1776,6 @@ function formatEffectiveOverallLabel(
   return readinessStatusLabel;
 }
 
-function hasReportPackReadinessGap(reportPackFacts: ReadinessConsoleRow[]): boolean {
-  return reportPackFacts.length === 0 || reportPackFacts.some((row) => row.level !== "ready");
-}
-
 function buildMissingReadinessDetail(
   operatorInbox: OperatorInbox | null,
   inboxLoading: boolean,
@@ -1414,6 +1853,25 @@ function formatCurrency(value: number): string {
     maximumFractionDigits: 2
   });
 }
+
+function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return fallback;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function toErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message.trim()) {

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.Storage.DirectLending;
 
@@ -47,6 +48,7 @@ public interface IDirectLendingStateStore
         JsonDocument payload,
         DirectLendingEventWriteMetadata metadata,
         DirectLendingPersistenceBatch? persistenceBatch,
+        IReadOnlyList<LedgerJournalEntryWrite>? ledgerJournalEntries,
         Guid eventId,
         CancellationToken ct = default);
 }

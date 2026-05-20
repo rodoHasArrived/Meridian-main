@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-04-29
+> Last verified: 2026-05-13
 > Canonical deep reference: `.claude/skills/_shared/project-context.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
@@ -10,6 +10,7 @@ repeating the same facts in every `SKILL.md`.
 ## Platform Snapshot
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- The authoritative local checkout path for this workspace is `C:\Dev\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one evidence-backed
@@ -17,10 +18,14 @@ repeating the same facts in every `SKILL.md`.
   `Strategy`, `Data`, and `Settings`.
 - New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
   contracts, regression fixes, or retained desktop support.
-- `src/Meridian.Ui/dashboard/` is now the active browser-based operator UI lane, with production
+- `src/Meridian.Ui/dashboard/` is now the active browser-based operator workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support the web dashboard first while preserving retained desktop compatibility.
+  that should support the web workstation first while preserving retained desktop compatibility.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product
+  surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+  mobile-first workflows. Responsive browser validation is allowed only to keep the browser
+  workstation usable at supported viewport sizes.
 - Keep top-level operator navigation to seven workspaces: `Trading`, `Portfolio`, `Accounting`,
   `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
   `Governance` names remain compatibility aliases, not visible root workspaces.
@@ -30,9 +35,16 @@ repeating the same facts in every `SKILL.md`.
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
 - `README.md`
+- `docs/architecture/project-structure.md`
+- `docs/architecture/module-map.md`
+- `docs/architecture/mvvm-guidelines.md`
+- `docs/developer/build-test-run.md`
+- `docs/prompts/repo-maintenance-prompts.md`
 - `docs/status/ROADMAP.md`
 - `docs/status/FEATURE_INVENTORY.md`
 - `docs/status/IMPROVEMENTS.md`
+- `docs/status/production-status.md`
+- `docs/plans/web-ui-development-pivot.md`
 - `docs/plans/evidence-backed-investment-operations-plan.md`
 - `docs/plans/trading-workstation-migration-blueprint.md`
 - `docs/plans/governance-fund-ops-blueprint.md`
@@ -47,8 +59,8 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 make test
-make desktop-run
 pwsh ./scripts/dev/run-desktop.ps1
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
@@ -73,7 +85,7 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
-- `src/Meridian.Ui/dashboard/`: browser-based operator workstation dashboard
+- `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
   services, workstation endpoints, and the retained WPF shell
@@ -86,6 +98,7 @@ Prefer the narrowest validation command that matches the files being changed.
 - Minimal MCP host: `src/Meridian.Mcp/Meridian.Mcp.csproj`
 - Market-data MCP host: `src/Meridian.McpServer/Meridian.McpServer.csproj`
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
+- Host-served workstation route: `http://localhost:8080/workstation/`
 - Retained WPF workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
 
 ## Desktop Persistence Baseline
@@ -100,6 +113,9 @@ Prefer the narrowest validation command that matches the files being changed.
 - Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs,
   collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under
   the resolved external config and data roots so upgrades do not depend on the install directory.
+- Provider credentials saved by browser workstation flows use the shared encrypted
+  `IProviderCredentialStore` under the resolved data root; environment variables are read-only
+  legacy fallback and new flows must not write provider secrets to user-level env vars.
 - Wizard review/save flows should use `AppConfigJsonOptions` plus `ConfigStore` so previewed JSON
   and persisted config share the same serializer and resolved config path.
 - Paper-session order history is lifecycle-sensitive metadata; await the durable append before

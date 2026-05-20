@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildParameterPanelState,
   buildParameterRow,
+  buildQuantMetricRows,
   buildQuantParameters,
+  buildQuantTradeLedgerState,
+  buildQuantTradeRows,
   buildRunCommandState,
   buildRunResultPanelState,
   buildSourceEditorState,
@@ -85,6 +88,42 @@ const noEvidenceSuccessfulRunState: QuantRunState = {
     metrics: [],
     plots: [],
     trades: [],
+    runtimeParameters: []
+  }
+};
+
+const tradesOnlySuccessfulRunState: QuantRunState = {
+  phase: "ready",
+  error: null,
+  result: {
+    success: true,
+    elapsedMs: 9,
+    compileTimeMs: 21,
+    peakMemoryBytes: 1024 * 12,
+    runtimeError: null,
+    consoleOutput: "",
+    compilationErrors: [],
+    runtimeDiagnostics: [],
+    metrics: [],
+    plots: [],
+    trades: [
+      {
+        timestamp: "2026-01-02T14:31:00Z",
+        symbol: "SPY",
+        side: "buy",
+        quantity: 10,
+        price: 512.35,
+        commission: 1.25
+      },
+      {
+        timestamp: "2026-01-02T15:45:00Z",
+        symbol: "SPY",
+        side: "sell",
+        quantity: 10,
+        price: 514.1,
+        commission: 1.25
+      }
+    ],
     runtimeParameters: []
   }
 };
@@ -285,7 +324,18 @@ describe("Quant Lab view model helpers", () => {
       title: "Run succeeded",
       statusBadgeLabel: "OK",
       runtimeSummary: "Compiled in 30 ms · executed in 12 ms · peak 16 KB",
-      metricsLabel: "Metrics · 1",
+      metricsLabel: "Metrics - 1",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: expect.stringMatching(/script run/i),
+      metricsEmptyText: "No metrics returned by this run.",
+      metricRows: [
+        {
+          id: "quant-metric-answer",
+          label: "answer",
+          value: "42",
+          ariaLabel: "answer: 42"
+        }
+      ],
       consoleLabel: "Console output",
       plotsDescription: "1 chart returned by this run.",
       hasResult: true,
@@ -319,6 +369,14 @@ describe("Quant Lab view model helpers", () => {
       evidenceEmptyTitle: "Run completed without runtime evidence"
     });
 
+    expect(buildRunResultPanelState(tradesOnlySuccessfulRunState)).toMatchObject({
+      role: "region",
+      title: "Run succeeded",
+      hasResult: true,
+      hasTrades: true,
+      hasEvidence: true
+    });
+
     expect(buildRunResultPanelState({
       phase: "error",
       result: null,
@@ -329,6 +387,65 @@ describe("Quant Lab view model helpers", () => {
       title: "Run failed",
       description: "503 Quant Lab disabled"
     });
+  });
+
+  it("projects script metrics into stable dense-table rows", () => {
+    expect(buildQuantMetricRows([
+      { label: "answer", value: "42" },
+      { label: "  ", value: "  " }
+    ])).toEqual([
+      {
+        id: "quant-metric-answer",
+        label: "answer",
+        value: "42",
+        ariaLabel: "answer: 42"
+      },
+      {
+        id: "quant-metric-metric-2",
+        label: "Metric 2",
+        value: "Not reported",
+        ariaLabel: "Metric 2: Not reported"
+      }
+    ]);
+  });
+
+  it("projects Quant Lab trades into selectable rows and detail evidence", () => {
+    const trades = tradesOnlySuccessfulRunState.result!.trades;
+    const rows = buildQuantTradeRows(trades);
+
+    expect(rows[0]).toMatchObject({
+      symbol: "SPY",
+      side: "Buy",
+      quantity: "10",
+      price: "$512.35",
+      notional: "$5,123.50",
+      commission: "$1.25"
+    });
+    expect(rows[0]?.ariaLabel).toContain("Select SPY buy trade");
+
+    const ledger = buildQuantTradeLedgerState(trades, rows[1]!.id);
+
+    expect(ledger).toMatchObject({
+      title: "Trade ledger - 2",
+      hasTrades: true,
+      selectedRowId: rows[1]!.id
+    });
+    expect(ledger.selectedDetail).toMatchObject({
+      title: "SPY Sell",
+      statusLabel: "SELL",
+      statusTone: "warning",
+      description: "Net cash impact +$5,139.75 after $1.25 commission."
+    });
+    expect(ledger.selectedDetail?.fields).toEqual([
+      { label: "Symbol", value: "SPY" },
+      { label: "Side", value: "Sell" },
+      { label: "Timestamp", value: "2026-01-02T15:45:00Z" },
+      { label: "Quantity", value: "-10" },
+      { label: "Price", value: "$514.10" },
+      { label: "Gross notional", value: "$5,141.00" },
+      { label: "Commission", value: "$1.25" },
+      { label: "Net cash", value: "+$5,139.75" }
+    ]);
   });
 
   it("ignores stale parameter extraction responses after the source changes", async () => {

@@ -11,6 +11,7 @@ namespace Meridian.Infrastructure.Adapters.Synthetic;
 public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, ICorporateActionSource
 {
     private readonly SyntheticMarketDataConfig _config;
+    private int _requestCounter;
 
     public SyntheticHistoricalDataProvider(SyntheticMarketDataConfig? config = null)
     {
@@ -26,13 +27,51 @@ public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, I
 
     public Task<bool> IsAvailableAsync(CancellationToken ct = default) => Task.FromResult(_config.Enabled);
 
-    public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<HistoricalBar>>(BuildAdjustedBars(symbol, from, to)
-            .Select(bar => bar.ToHistoricalBar(preferAdjusted: true))
-            .ToArray());
+    private async Task ApplyScenarioAsync(bool replayOrBackfillRequest, CancellationToken ct)
+    {
+        var scenario = _config.Scenario;
+        if (scenario is null || !scenario.Enabled || !scenario.ApplyToHistorical)
+            return;
 
-    public Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<AdjustedHistoricalBar>>(BuildAdjustedBars(symbol, from, to));
+        var call = Interlocked.Increment(ref _requestCounter);
+        if (scenario.ThrottleEveryNCalls > 0 && call % scenario.ThrottleEveryNCalls == 0)
+            await Task.Delay(TimeSpan.FromMilliseconds(Math.Max(1, scenario.ThrottleDelayMs)), ct).ConfigureAwait(false);
+
+        if (scenario.TimeoutEveryNCalls > 0 && call % scenario.TimeoutEveryNCalls == 0)
+            throw new TimeoutException("Synthetic scenario timeout injected for deterministic provider testing.");
+    }
+
+    private int ResolveHistoryLimit(bool replayOrBackfillRequest)
+    {
+        var scenario = _config.Scenario;
+        if (scenario is null || !scenario.Enabled || !scenario.ApplyToHistorical)
+            return 0;
+
+        if (replayOrBackfillRequest && scenario.BackfillBarsLimit > 0)
+            return scenario.BackfillBarsLimit;
+
+        return scenario.ReplayBarsLimit;
+    }
+
+    public async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    {
+        await ApplyScenarioAsync(replayOrBackfillRequest: true, ct).ConfigureAwait(false);
+        var bars = BuildAdjustedBars(symbol, from, to).Select(bar => bar.ToHistoricalBar(preferAdjusted: true));
+        var limit = ResolveHistoryLimit(replayOrBackfillRequest: true);
+        if (limit > 0)
+            bars = bars.Take(limit);
+        return bars.ToArray();
+    }
+
+    public async Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    {
+        await ApplyScenarioAsync(replayOrBackfillRequest: true, ct).ConfigureAwait(false);
+        var bars = BuildAdjustedBars(symbol, from, to).AsEnumerable();
+        var limit = ResolveHistoryLimit(replayOrBackfillRequest: true);
+        if (limit > 0)
+            bars = bars.Take(limit);
+        return bars.ToArray();
+    }
 
     public Task<HistoricalQuotesResult> GetHistoricalQuotesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default)
         => Task.FromResult(BuildHistoricalQuotes(new[] { symbol }, start, end, limit));

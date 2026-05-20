@@ -187,27 +187,31 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void ReusableDotnetBuildWorkflow_ShouldEnableFullWpfTestsForSolutionBuildAndTest()
+    public void WindowsDesktopBuildWorkflow_ShouldEnableFullWpfBuildTestAndPublish()
     {
-        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\reusable-dotnet-build.yml"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\windows-desktop-build.yml"));
 
-        workflow.Should().Contain("default: 'Category!=Integration|FullyQualifiedName!~Integration'");
-        workflow.Should().Contain("dotnet restore Meridian.sln -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
-        workflow.Should().Contain("dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
-        workflow.Should().Contain("-p:EnableFullWpfBuild=true \\");
+        workflow.Should().Contain("dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        workflow.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj");
+        workflow.Should().Contain("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        workflow.Should().Contain("dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj");
+        workflow.Should().Contain("dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj");
+        workflow.Should().Contain("/p:EnableWindowsTargeting=true");
+        workflow.Should().Contain("/p:EnableFullWpfBuild=true");
+        workflow.Should().Contain("/p:WindowsPackageType=None");
+        workflow.Should().Contain("/p:PublishReadyToRun=false");
+        workflow.Should().Contain("artifacts/publish/desktop-smoke/Meridian.Desktop.exe");
     }
 
     [Fact]
-    public void RefreshScreenshotsWorkflow_ShouldTrackCheckpointHelperDependency()
+    public void WorkflowReadme_ShouldDocumentWindowsDesktopBuildWorkflow()
     {
-        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\refresh-screenshots.yml"));
+        var readme = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\README.md"));
 
-        workflow.Should().Contain("'scripts/dev/SharedCheckpoint.ps1'");
-        workflow.Should().Contain("pwsh -File scripts/dev/run-desktop-workflow.ps1");
-        workflow.Should().Contain("-SkipBuild");
-        workflow.Should().Contain("run: npm ci --include=optional");
-        workflow.Should().Contain("name: wpf-build-binaries");
-        workflow.Should().Contain("path: src");
+        readme.Should().Contain("| Windows Desktop Build | `windows-desktop-build.yml` |");
+        readme.Should().Contain("dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true");
+        readme.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None");
+        readme.Should().Contain("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&FullyQualifiedName!~Integration\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true");
     }
 
     [Fact]

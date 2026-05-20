@@ -53,27 +53,13 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
         ThrowIfDisposed();
         ValidateSymbol(symbol);
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = $"{BaseUrl}/?s={normalizedSymbol}.us&i=d";
 
         Log.Information("Requesting Stooq history for {Symbol} ({Url})", symbol, url);
-
-        using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var httpResult = await ResponseHandler.HandleResponseAsync(response, symbol, "daily bars", ct: ct).ConfigureAwait(false);
-            var errorMsg = httpResult.IsNotFound
-                ? $"Symbol {symbol} not found (404)"
-                : $"HTTP error {httpResult.StatusCode}: {httpResult.ReasonPhrase}";
-
-            Log.Warning("Stooq HTTP error for {Symbol}: {Error}", symbol, errorMsg);
-            throw new InvalidOperationException($"Failed to fetch Stooq data for {symbol}: {errorMsg}");
-        }
-
-        var csv = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var csv = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
+        if (csv is null)
+            return Array.Empty<HistoricalBar>();
         var bars = ParseCsvResponse(csv, symbol, from, to);
 
         Log.Information("Fetched {Count} bars for {Symbol} from Stooq", bars.Count, symbol);

@@ -11,7 +11,10 @@ import {
   type ReadinessConsolePanel,
   type ReadinessConsoleLevel,
   type ReadinessConsoleNextAction,
+  type ReadinessConsoleRecoveryState,
+  type ReadinessConsoleRowAction,
   type ReadinessConsoleRow,
+  type ReadinessConsoleSelectedEvidenceDetail,
   type ReadinessConsoleSelectedWorkItemDetail
 } from "@/screens/operator-readiness-console.view-model";
 import type {
@@ -82,6 +85,34 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   }
 ];
 
+const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.id}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+  },
+  {
+    id: "detail",
+    label: "Detail",
+    render: (row) => <span className="block min-w-[12rem] text-xs leading-5 text-foreground/80">{row.detail}</span>
+  },
+  {
+    id: "source",
+    label: "Source",
+    render: (row) => <span className="block min-w-[10rem] break-words font-mono text-[11px] text-muted-foreground">{row.meta}</span>
+  }
+];
+
 export function OperatorReadinessConsole({
   research,
   trading,
@@ -147,10 +178,14 @@ export function OperatorReadinessConsole({
             {vm.inboxLoadingLabel ? (
               <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
             ) : null}
-            {vm.inboxErrorText ? (
-              <div role="alert" className="rounded-lg border border-warning/35 bg-warning/10 px-3 py-2 text-sm text-warning">
-                {vm.inboxErrorText}
-              </div>
+            {vm.inboxErrorRecovery ? (
+              <InboxErrorRecovery
+                recovery={vm.inboxErrorRecovery}
+                onRetry={vm.refreshInbox}
+                disabled={vm.inboxRefreshDisabled}
+                disabledReason={vm.inboxRefreshDisabledReason}
+                busy={vm.inboxRefreshBusy}
+              />
             ) : null}
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
@@ -160,7 +195,7 @@ export function OperatorReadinessConsole({
                 <Link to="/accounting/reconciliation">Break queue</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link to="/reporting">Report packs</Link>
+                <Link to="/reporting/report-packs">Report packs</Link>
               </Button>
               <Button
                 type="button"
@@ -208,6 +243,18 @@ export function OperatorReadinessConsole({
             ))}
           </CardContent>
         </Card>
+      </section>
+
+      <section
+        role="list"
+        aria-label={vm.checkpointGatesLabel}
+        className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+      >
+        {vm.checkpointGates.map((gate) => (
+          <div key={gate.id} role="listitem">
+            <ReadinessRow row={gate} />
+          </div>
+        ))}
       </section>
 
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-6" aria-label={vm.metricsLabel}>
@@ -276,7 +323,7 @@ export function OperatorReadinessConsole({
               />
             </div>
           ) : (
-            <EmptyConsoleState text="No operator work items returned." />
+            <EmptyConsoleState text={vm.workItemsEmptyText} action={vm.workItemsEmptyAction} />
           )}
         </CardContent>
       </Card>
@@ -342,6 +389,32 @@ function SelectedWorkItemDetail({
 }
 
 function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
+  const actionButton = action.route ? (
+    <Button
+      asChild
+      variant={action.level === "blocked" ? "secondary" : "outline"}
+      size="sm"
+      className="shrink-0"
+    >
+      <Link to={action.route} aria-label={action.actionAriaLabel}>
+        {action.label}
+        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+      </Link>
+    </Button>
+  ) : (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="shrink-0"
+      disabled
+      disabledReason={action.disabledReason}
+      aria-label={action.actionAriaLabel}
+    >
+      {action.label}
+    </Button>
+  );
+
   return (
     <div
       role="group"
@@ -355,17 +428,7 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
           <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
         </div>
-        <Button
-          asChild
-          variant={action.level === "blocked" ? "secondary" : "outline"}
-          size="sm"
-          className="shrink-0"
-        >
-          <Link to={action.route} aria-label={action.actionAriaLabel}>
-            {action.label}
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
+        {actionButton}
       </div>
     </div>
   );
@@ -388,18 +451,89 @@ function ConsolePanel({ panel }: { panel: ReadinessConsolePanel }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {panel.rows.length > 0 ? (
-          <div role="list" aria-label={panel.listLabel} className="space-y-3">
-            {panel.rows.map((row) => (
-              <div key={row.id} role="listitem">
-                <ReadinessRow row={row} />
-              </div>
-            ))}
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
+            <DenseDataTable
+              columns={evidencePanelColumns}
+              rows={panel.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => `Select ${panel.title.toLowerCase()} evidence ${row.label}`}
+              getRowAriaControls={() => panel.detailPanelId}
+              getRowAriaExpanded={(row) => row.id === panel.selectedRowId}
+              onRowSelect={(row) => panel.selectRow(row.id)}
+              selectedRowId={panel.selectedRowId}
+              emptyText={panel.emptyText}
+              ariaLabel={panel.tableLabel}
+              caption={panel.listLabel}
+            />
+            <SelectedEvidenceDetail
+              detail={panel.selectedDetail}
+              id={panel.detailPanelId}
+              ariaLabel={panel.detailLabel}
+            />
           </div>
         ) : (
           <EmptyConsoleState text={panel.emptyText} />
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function SelectedEvidenceDetail({
+  detail,
+  id,
+  ariaLabel
+}: {
+  detail: ReadinessConsoleSelectedEvidenceDetail | null;
+  id: string;
+  ariaLabel: string;
+}) {
+  if (!detail) {
+    return <EmptyConsoleState text="Select an evidence row to inspect its source and routing." />;
+  }
+
+  return (
+    <aside
+      id={id}
+      className="row-detail-panel h-fit min-w-0"
+      role="region"
+      aria-label={ariaLabel}
+      aria-live="polite"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>Selected evidence</span>
+        <Badge variant={levelBadge[detail.level]} aria-label={detail.statusAriaLabel}>{detail.statusLabel}</Badge>
+      </div>
+      <div className="body">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
+          <p className="mt-2 break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+        </div>
+        <dl className="mt-3 grid gap-2">
+          {detail.fields.map((field) => (
+            <div
+              key={field.label}
+              className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+        {detail.action ? (
+          <div className="mt-3">
+            <Button asChild variant={detail.action.variant} size="sm">
+              <Link to={detail.action.route} aria-label={detail.action.ariaLabel}>
+                {detail.action.label}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    </aside>
   );
 }
 
@@ -432,10 +566,60 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
   );
 }
 
-function EmptyConsoleState({ text }: { text: string }) {
+function InboxErrorRecovery({
+  recovery,
+  onRetry,
+  disabled,
+  disabledReason,
+  busy
+}: {
+  recovery: ReadinessConsoleRecoveryState;
+  onRetry: () => Promise<void>;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}) {
+  return (
+    <div role="alert" className="rounded-lg border border-warning/35 bg-warning/10 px-3 py-2 text-sm text-warning">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="font-semibold">{recovery.title}</div>
+          <p className="mt-1 leading-5">{recovery.detail}</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void onRetry()}
+          disabled={disabled}
+          disabledReason={disabledReason}
+          busy={busy}
+          busyLabel={recovery.actionLabel}
+          aria-label={recovery.actionAriaLabel}
+          className="shrink-0"
+        >
+          <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+          {recovery.actionLabel}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function EmptyConsoleState({ text, action }: { text: string; action?: ReadinessConsoleRowAction }) {
   return (
     <div role="status" className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
-      {text}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span>{text}</span>
+        {action ? (
+          <Button asChild variant={action.variant} size="sm" className="shrink-0">
+            <Link to={action.route} aria-label={action.ariaLabel}>
+              {action.label}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

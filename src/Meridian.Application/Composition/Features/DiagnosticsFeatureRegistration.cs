@@ -36,7 +36,11 @@ internal sealed class DiagnosticsFeatureRegistration : IServiceFeatureRegistrati
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
-            return new DiagnosticBundleService(config.DataRoot, null, () => configStore.Load());
+            var metrics = sp.GetService<IEventMetrics>();
+            return new DiagnosticBundleService(
+                config.DataRoot,
+                metrics is null ? null : metrics.GetSnapshot,
+                () => configStore.Load());
         });
 
         // Sample data generator

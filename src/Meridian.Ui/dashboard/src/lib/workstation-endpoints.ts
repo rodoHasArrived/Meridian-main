@@ -12,6 +12,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   workflowSummary: "/api/workstation/workflow-summary",
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
+  operationsContinuity: "/api/workstation/operations/continuity",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
@@ -35,6 +36,10 @@ export const EXECUTION_API_ENDPOINTS = {
   audit: "/api/execution/audit",
   controls: "/api/execution/controls",
   manualOverrides: "/api/execution/controls/manual-overrides"
+} as const;
+
+export const RISK_API_ENDPOINTS = {
+  rules: "/api/risk/rules"
 } as const;
 
 export const REPLAY_API_ENDPOINTS = {
@@ -70,6 +75,20 @@ export const STRATEGY_API_ENDPOINTS = {
   base: "/api/strategies"
 } as const;
 
+export const STRATEGY_DESIGNER_API_ENDPOINTS = {
+  templates: "/api/workstation/strategy/designer/templates",
+  fieldCatalog: "/api/workstation/strategy/designer/field-catalog",
+  drafts: "/api/workstation/strategy/designer/drafts",
+  validate: "/api/workstation/strategy/designer/validate",
+  preview: "/api/workstation/strategy/designer/preview",
+  runBacktest: "/api/workstation/strategy/designer/run-backtest"
+} as const;
+
+export const STRATEGY_ENGINE_API_ENDPOINTS = {
+  definitions: "/api/workstation/strategy/engine/definitions",
+  validateRun: "/api/workstation/strategy/engine/validate-run"
+} as const;
+
 export const SECURITY_MASTER_API_ENDPOINTS = {
   base: "/api/security-master",
   workstationSecurities: "/api/workstation/security-master/securities",
@@ -83,6 +102,9 @@ export const RECONCILIATION_API_ENDPOINTS = {
 } as const;
 
 export const BACKFILL_API_ENDPOINTS = {
+  checkpoints: "/api/backfill/checkpoints",
+  checkpointsResumable: "/api/backfill/checkpoints/resumable",
+  checkpointsValidation: "/api/backfill/checkpoints/validation",
   progress: "/api/backfill/progress",
   run: "/api/backfill/run",
   runPreview: "/api/backfill/run/preview"
@@ -90,7 +112,15 @@ export const BACKFILL_API_ENDPOINTS = {
 
 export const PROVIDER_API_ENDPOINTS = {
   configure: "/api/providers/configure",
-  status: "/api/providers/status"
+  status: "/api/providers/status",
+  connections: "/api/providers/connections"
+} as const;
+
+export const PROVIDER_ROUTING_API_ENDPOINTS = {
+  connections: "/api/provider-routing/connections",
+  bindings: "/api/provider-routing/bindings",
+  trustSnapshots: "/api/provider-routing/trust-snapshots",
+  preview: "/api/provider-routing/preview"
 } as const;
 
 export const SYMBOL_API_ENDPOINTS = {
@@ -122,6 +152,14 @@ export const QUANT_API_ENDPOINTS = {
   run: "/api/quant/run"
 } as const;
 
+export const COVERED_CALL_API_ENDPOINTS = {
+  runs: "/api/strategies/covered-call/runs",
+  chainPreview: "/api/strategies/covered-call/chain-preview",
+  runStatus: coveredCallRunStatusEndpoint,
+  runResult: coveredCallRunResultEndpoint,
+  runCancel: coveredCallRunCancelEndpoint
+} as const;
+
 export const CONFIG_API_ENDPOINTS = {
   config: "/api/config"
 } as const;
@@ -140,10 +178,30 @@ export function brokerageConnectionConnectEndpoint(provider: BrokerageConnection
   return `${brokerageConnectionEndpoint(provider)}/connect`;
 }
 
+export function providerCredentialEndpoint(providerId: string): string {
+  return `/api/providers/${pathSegment(providerId, "providerId")}/credentials`;
+}
+
+export function providerVerifyEndpoint(providerId: string): string {
+  return `/api/providers/${pathSegment(providerId, "providerId")}/verify`;
+}
+
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
     : WORKSTATION_API_ENDPOINTS.operatorInbox;
+}
+
+export function riskRuleEndpoint(ruleName: string): string {
+  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}`;
+}
+
+export function riskRuleStatusEndpoint(ruleName: string): string {
+  return `${riskRuleEndpoint(ruleName)}/status`;
+}
+
+export function riskRuleConfigEndpoint(ruleName: string): string {
+  return `${riskRuleEndpoint(ruleName)}/config`;
 }
 
 export function workstationWorkflowSummaryEndpoint(options: {
@@ -167,6 +225,30 @@ export function workstationWorkflowPresetPinEndpoint(presetId: string): string {
 
 export function workstationWorkflowPresetUsedEndpoint(presetId: string): string {
   return `${workstationWorkflowPresetEndpoint(presetId)}/used`;
+}
+
+export function workstationOperationsContinuityEndpoint(options: {
+  fundAccountId?: string;
+  periodId?: string;
+  status?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}${queryString(options)}`;
+}
+
+export function workstationOperationsContinuityDetailEndpoint(workflowId: string): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}/${pathSegment(workflowId, "workflowId")}`;
+}
+
+export function workstationOperationsContinuityTimelineEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/timeline`;
+}
+
+export function workstationOperationsContinuityBreaksEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/breaks`;
+}
+
+export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
 }
 
 export function workstationRunLedgerEndpoint(runId: string): string {
@@ -227,6 +309,26 @@ export function workstationEvidenceExportManifestEndpoint(subjectKind: string, s
   return `${workstationEvidenceSubjectBaseEndpoint(subjectKind, subjectId)}/export-manifest`;
 }
 
+export function coveredCallRunsEndpoint(limit?: number): string {
+  return `${COVERED_CALL_API_ENDPOINTS.runs}${queryString({ limit })}`;
+}
+
+export function coveredCallRunEndpoint(runId: string): string {
+  return `${COVERED_CALL_API_ENDPOINTS.runs}/${pathSegment(runId, "runId")}`;
+}
+
+export function coveredCallRunStatusEndpoint(runId: string): string {
+  return `${coveredCallRunEndpoint(runId)}/status`;
+}
+
+export function coveredCallRunResultEndpoint(runId: string): string {
+  return `${coveredCallRunEndpoint(runId)}/result`;
+}
+
+export function coveredCallRunCancelEndpoint(runId: string): string {
+  return `${coveredCallRunEndpoint(runId)}/cancel`;
+}
+
 export function promotionEvaluateEndpoint(runId: string): string {
   return `${PROMOTION_API_ENDPOINTS.evaluate}/${pathSegment(runId, "runId")}`;
 }
@@ -285,6 +387,12 @@ export function strategyActionEndpoint(strategyId: string, action: "pause" | "st
 
 export function strategyRunsEndpoint(strategyId: string, type?: "backtest" | "paper" | "live"): string {
   return `${strategyEndpoint(strategyId)}/runs${queryString({ type })}`;
+}
+
+export function strategyDesignerDraftEndpoint(documentId?: string): string {
+  return documentId
+    ? `${STRATEGY_DESIGNER_API_ENDPOINTS.drafts}/${pathSegment(documentId, "documentId")}`
+    : STRATEGY_DESIGNER_API_ENDPOINTS.drafts;
 }
 
 export function replaySessionActionEndpoint(
@@ -400,6 +508,18 @@ export function reconciliationBreakReviewEndpoint(breakId: string): string {
 
 export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return `${reconciliationBreakEndpoint(breakId)}/resolve`;
+}
+
+export function backfillCheckpointEndpoint(jobId: string): string {
+  return `${BACKFILL_API_ENDPOINTS.checkpoints}/${pathSegment(jobId, "jobId")}`;
+}
+
+export function backfillCheckpointPendingEndpoint(jobId: string): string {
+  return `${backfillCheckpointEndpoint(jobId)}/pending`;
+}
+
+export function backfillCheckpointResumeEndpoint(jobId: string): string {
+  return `${backfillCheckpointEndpoint(jobId)}/resume`;
 }
 
 export function providerEndpoint(providerId: string): string {

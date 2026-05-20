@@ -1,10 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildComparisonTable,
   buildDiffPanel,
+  buildResearchLoadingState,
+  buildPlotToolMomentsTable,
+  buildPlotNotebookToolbarItems,
+  buildPlotToolSampleTable,
+  buildPlotStudyDetail,
+  buildPlotStudyRows,
   buildPlotToolState,
   buildPlotToolTabs,
   buildPromotionCashForm,
+  buildPromotionHistoryDetail,
   buildPromotionPanelState,
   buildPromotionHistoryTable,
   buildResearchCommandStates,
@@ -12,11 +20,14 @@ import {
   buildRunDetail,
   buildRunTable,
   nextPlotToolViewForKey,
+  plotToolTabIdForView,
   parsePromotionInitialCashInput,
   shouldCloseRunDetailForKey,
-  toggleRunSelection
+  toggleRunSelection,
+  useResearchRunLibraryViewModel,
+  type ResearchRunLibraryServices
 } from "@/screens/research-screen.view-model";
-import type { MetricSnapshot, PromotionEvaluationResult, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunDiff, RunComparisonRow } from "@/types";
+import type { MetricSnapshot, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunDiff, RunComparisonRow } from "@/types";
 
 const runs: ResearchRunRecord[] = [
   {
@@ -137,6 +148,20 @@ const metrics: MetricSnapshot[] = [
 ];
 
 describe("research-screen view model", () => {
+  it("derives the Strategy loading state outside the view", () => {
+    expect(buildResearchLoadingState()).toEqual({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      titleId: "strategy-loading-title",
+      detailId: "strategy-loading-detail",
+      title: "Loading Strategy",
+      detail: "Waiting for run history, PlotTool state, and promotion evidence.",
+      badgeLabel: "Loading",
+      routeLabel: "Strategy"
+    });
+  });
+
   it("keeps run selection capped to the latest two ids and supports deselection", () => {
     expect(toggleRunSelection([], "run-1")).toEqual(["run-1"]);
     expect(toggleRunSelection(["run-1"], "run-2")).toEqual(["run-1", "run-2"]);
@@ -179,7 +204,57 @@ describe("research-screen view model", () => {
       href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1",
       ariaLabel: "Open Mean Reversion FX evidence packet"
     });
-    expect(state.runTable.rows[0].selectAriaLabel).toBe("Select Mean Reversion FX");
+    expect(state.runTable.rows[0].selectAriaLabel).toBe("Remove Mean Reversion FX for compare and diff");
+    expect(state.inspectedRunId).toBe("run-1");
+    expect(state.inspectedRunDetail).toMatchObject({
+      id: "run-1",
+      panelId: "strategy-run-library-selected-run-detail",
+      ariaLabel: "Selected strategy run detail for Mean Reversion FX",
+      title: "Mean Reversion FX"
+    });
+    expect(state.runTable.rows[0]).toMatchObject({
+      selectedForComparison: true,
+      detailExpanded: true,
+      detailPanelId: "strategy-run-library-selected-run-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX run detail"
+    });
+  });
+
+  it("derives default and requested run detail state for the selected-row panel", () => {
+    const defaultState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(defaultState.inspectedRunId).toBe("run-1");
+    expect(defaultState.inspectedRunDetail?.title).toBe("Mean Reversion FX");
+    expect(defaultState.runTable.rows[0].detailExpanded).toBe(true);
+    expect(defaultState.runTable.rows[1].detailExpanded).toBe(false);
+
+    const requestedState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      inspectedRunId: "run-2",
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(requestedState.inspectedRunId).toBe("run-2");
+    expect(requestedState.inspectedRunDetail?.title).toBe("Index Momentum");
+    expect(requestedState.runTable.rows[1]).toMatchObject({
+      detailExpanded: true,
+      rowAriaLabel: "Index Momentum: Completed, BACKTEST, P&L +1.9%, Sharpe 0.91."
+    });
   });
 
   it("derives busy labels, errors, and result announcements", () => {
@@ -269,10 +344,34 @@ describe("research-screen view model", () => {
     expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
     expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
     expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
+    expect(comparisonTable.rows[0].detailExpanded).toBe(true);
+    expect(comparisonTable.rows[0].detailPanelId).toBe("strategy-run-comparison-selected-detail");
+    expect(comparisonTable.rows[0].rowSelectAriaLabel).toBe("Inspect Mean Reversion FX comparison evidence");
     expect(comparisonTable.rows[0].ariaLabel).toContain("Mean Reversion FX: Running; net P&L +$3,200");
     expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
     expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
+
+    const comparisonDetailState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [
+        comparison[0],
+        { ...comparison[0], runId: "run-2", strategyName: "Index Momentum" }
+      ],
+      selectedComparisonRowId: "run-2",
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+    expect(comparisonDetailState.selectedComparisonRowId).toBe("run-2");
+    expect(comparisonDetailState.selectedComparisonDetail).toMatchObject({
+      panelId: "strategy-run-comparison-selected-detail",
+      ariaLabel: "Selected comparison evidence for Index Momentum",
+      title: "Index Momentum"
+    });
 
     const emptyDiff = buildDiffPanel(diff);
     expect(emptyDiff.summaryLabel).toBe("Run diff metric summary");
@@ -283,13 +382,52 @@ describe("research-screen view model", () => {
     expect(emptyDiff.hasParameterChanges).toBe(false);
     expect(emptyDiff.positionSectionLabel).toBe("0 position changes returned");
     expect(emptyDiff.parameterSectionLabel).toBe("0 parameter changes returned");
+    expect(emptyDiff.positionTable.emptyText).toBe("No position changes returned for this diff.");
+    expect(emptyDiff.parameterTable.emptyText).toBe("No parameter changes returned for this diff.");
     expect(emptyDiff.positionEmptyText).toBe("No position changes returned for this diff.");
     expect(emptyDiff.parameterEmptyText).toBe("No parameter changes returned for this diff.");
 
     const historyTable = buildPromotionHistoryTable(history);
+    expect(historyTable.caption).toBe("Promotion history decisions returned for Strategy runs. Select a row to inspect gate evidence.");
     expect(historyTable.rows[0].routeText).toBe("backtest to paper");
     expect(historyTable.rows[0].qualifyingSharpeText).toBe("1.820");
+    expect(historyTable.rows[0]).toMatchObject({
+      detailPanelId: "strategy-promotion-history-selected-detail",
+      detailExpanded: true,
+      rowSelectAriaLabel: "Inspect Carry Pair FX promotion decision",
+      decisionText: "Approved for paper",
+      qualifyingMaxDrawdownText: "-3.2%",
+      qualifyingTotalReturnText: "6.5%"
+    });
+    expect(historyTable.rows[0].ariaLabel).toContain("Carry Pair FX: backtest to paper; decision Approved for paper");
     expect(buildPromotionHistoryTable([]).emptyText).toBe("No promotion history records returned.");
+
+    const selectedSecond = buildPromotionHistoryTable([
+      history[0],
+      { ...history[0], promotionId: "promo-2", strategyName: "Index Momentum", targetRunType: "live" }
+    ], "promo-2");
+    expect(selectedSecond.rows[0].detailExpanded).toBe(false);
+    expect(selectedSecond.rows[1].detailExpanded).toBe(true);
+
+    const detail = buildPromotionHistoryDetail({
+      ...history[0],
+      sourceRunId: "run-backtest-1",
+      targetRunId: "run-paper-1",
+      approvedBy: "risk-ops",
+      auditReference: "audit-42",
+      approvalReason: "Gate metrics passed."
+    });
+    expect(detail).toMatchObject({
+      id: "promo-1",
+      panelId: "strategy-promotion-history-selected-detail",
+      ariaLabel: "Selected promotion decision detail for Carry Pair FX",
+      title: "Carry Pair FX",
+      statusLabel: "PAPER",
+      statusVariant: "paper"
+    });
+    expect(detail.description).toBe("Approved for paper promotion decision with Gate metrics passed.");
+    expect(detail.fields).toContainEqual({ label: "Source run", value: "run-backtest-1" });
+    expect(detail.fields).toContainEqual({ label: "Target run", value: "run-paper-1" });
   });
 
   it("tracks empty command result panels after successful commands return no rows", () => {
@@ -311,7 +449,40 @@ describe("research-screen view model", () => {
     expect(compared.comparisonTable.hasRows).toBe(false);
     expect(compared.showPromotionHistoryPanel).toBe(true);
     expect(compared.promotionHistoryTable.emptyText).toBe("No promotion history records returned.");
+    expect(compared.selectedPromotionHistoryId).toBe(null);
+    expect(compared.selectedPromotionHistoryDetail).toBe(null);
     expect(compared.statusAnnouncement).toBe("No comparison rows returned for the selected pair.");
+  });
+
+  it("derives selected promotion-history detail state outside the view", () => {
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [
+        history[0],
+        { ...history[0], promotionId: "promo-2", strategyName: "Index Momentum", targetRunType: "live" }
+      ],
+      selectedPromotionHistoryId: "promo-2",
+      promotionHistoryLoaded: true,
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.selectedPromotionHistoryId).toBe("promo-2");
+    expect(state.selectedPromotionHistoryDetailPanelId).toBe("strategy-promotion-history-selected-detail");
+    expect(state.selectedPromotionHistoryDetail).toMatchObject({
+      id: "promo-2",
+      ariaLabel: "Selected promotion decision detail for Index Momentum",
+      statusLabel: "LIVE",
+      statusVariant: "live"
+    });
+    expect(state.promotionHistoryTable.rows[1]).toMatchObject({
+      detailExpanded: true,
+      rowSelectAriaLabel: "Inspect Index Momentum promotion decision"
+    });
   });
 
   it("derives modal detail copy with unavailable fallback", () => {
@@ -341,16 +512,64 @@ describe("research-screen view model", () => {
     expect(panel.positionChanges[0]).toMatchObject({
       symbolText: "AAPL",
       changeTypeText: "Added",
+      baseQuantityText: "0",
+      targetQuantityText: "100",
       quantityText: "Qty +100",
+      basePnlText: "$0",
+      targetPnlText: "$250",
       pnlText: "P&L +$250",
       badgeVariant: "success",
-      ariaLabel: "AAPL Added. Qty +100. P&L +$250."
+      ariaLabel: "AAPL Added. Qty +100. P&L +$250.",
+      rowSelectAriaLabel: "Inspect AAPL added position diff",
+      detailPanelId: "strategy-run-diff-selected-position-detail",
+      detailExpanded: true
+    });
+    expect(panel.positionTable.caption).toContain("Select a row to inspect base and target exposure.");
+    expect(panel.selectedPositionDetail).toMatchObject({
+      ariaLabel: "Selected position diff detail for AAPL",
+      title: "AAPL",
+      statusLabel: "Added"
     });
     expect(panel.hasParameterChanges).toBe(true);
     expect(panel.parameterChanges[0]).toMatchObject({
       key: "lookback",
       valueText: "20 -> 30",
-      ariaLabel: "lookback changed from 20 to 30."
+      ariaLabel: "lookback changed from 20 to 30.",
+      rowSelectAriaLabel: "Inspect lookback parameter diff",
+      detailPanelId: "strategy-run-diff-selected-parameter-detail",
+      detailExpanded: true
+    });
+    expect(panel.parameterTable.caption).toContain("Select a row to inspect base and target values.");
+    expect(panel.selectedParameterDetail).toMatchObject({
+      ariaLabel: "Selected parameter diff detail for lookback",
+      title: "lookback",
+      statusLabel: "Changed"
+    });
+
+    const selectedSecond = buildDiffPanel({
+      ...diff,
+      addedPositions: [
+        { symbol: "AAPL", baseQuantity: 0, targetQuantity: 100, basePnl: 0, targetPnl: 250, changeType: "Added" },
+        { symbol: "MSFT", baseQuantity: 25, targetQuantity: 40, basePnl: 120, targetPnl: 180, changeType: "Modified" }
+      ],
+      parameterChanges: [
+        { key: "lookback", baseValue: "20", targetValue: "30" },
+        { key: "threshold", baseValue: "1.5", targetValue: "2.0" }
+      ]
+    }, {
+      selectedPositionKey: "MSFT-Modified",
+      selectedParameterKey: "threshold"
+    });
+    expect(selectedSecond.selectedPositionKey).toBe("MSFT-Modified");
+    expect(selectedSecond.positionChanges[1]).toMatchObject({
+      detailExpanded: true,
+      quantityText: "Qty +15",
+      pnlText: "P&L +$60"
+    });
+    expect(selectedSecond.selectedParameterKey).toBe("threshold");
+    expect(selectedSecond.parameterChanges[1]).toMatchObject({
+      detailExpanded: true,
+      valueText: "1.5 -> 2.0"
     });
   });
 
@@ -367,6 +586,16 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).toBe("PAPER");
     expect(plotTool.workspace.expression).toContain("mean_reversion_fx.spread()");
     expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
+    expect(plotTool.workspace.notebookToolbarItems).toEqual([
+      { id: "count", label: "Notebook set", value: "3 retained" },
+      { id: "selected", label: "Selected", value: "Mean Reversion FX", active: true },
+      { id: "lane", label: "Lane", value: "Strategy" }
+    ]);
+    expect(plotTool.studies[0]).toMatchObject({
+      id: "run-1",
+      detailPanelId: "plottool-selected-study-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX PlotTool study detail"
+    });
     expect(plotTool.workspace.legendItems[1]).toMatchObject({ label: "Current", detail: "88.40 / 73.80", tone: "current" });
     expect(plotTool.workspace.focusPoint).toMatchObject({ label: "Current marker", xValueText: "88.40", yValueText: "73.80" });
     expect(plotTool.workspace.scatterChart).toMatchObject({
@@ -402,6 +631,90 @@ describe("research-screen view model", () => {
     expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
     expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
     expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
+    expect(plotTool.statistics.momentsTable).toMatchObject({
+      hasRows: true,
+      caption: "PlotTool moments for the active strategy pair.",
+      emptyText: "No PlotTool moments are available for the active strategy context."
+    });
+    expect(plotTool.statistics.momentsTable.rows[0]).toMatchObject({ label: "Net P&L", benchmark: "Pair summary" });
+    expect(plotTool.statistics.sampleTable).toMatchObject({
+      hasRows: true,
+      caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
+      emptyText: "No PlotTool observation rows are available for the active strategy context."
+    });
+    expect(plotTool.statistics.sampleTable.rows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
+  });
+
+  it("builds PlotTool table states with explicit empty copy", () => {
+    expect(buildPlotToolMomentsTable([])).toEqual({
+      rows: [],
+      hasRows: false,
+      caption: "PlotTool moments for the active strategy pair.",
+      emptyText: "No PlotTool moments are available for the active strategy context."
+    });
+    expect(buildPlotToolSampleTable([])).toEqual({
+      rows: [],
+      hasRows: false,
+      caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
+      emptyText: "No PlotTool observation rows are available for the active strategy context."
+    });
+  });
+
+  it("derives PlotTool study row detail state outside the view", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs,
+      selectedRuns: [runs[0], runs[1]],
+      comparison,
+      runDiff: diff
+    });
+    const rows = buildPlotStudyRows(plotTool.studies, "run-2");
+    const detail = buildPlotStudyDetail(rows[1]);
+
+    expect(rows[0]).toMatchObject({
+      detailExpanded: false,
+      detailPanelId: "plottool-selected-study-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX PlotTool study detail"
+    });
+    expect(rows[1]).toMatchObject({
+      detailExpanded: true,
+      ariaLabel: "Index Momentum PlotTool study. Completed. +1.9% · Sharpe 0.91."
+    });
+    expect(detail).toMatchObject({
+      id: "run-2",
+      panelId: "plottool-selected-study-detail",
+      ariaLabel: "Selected PlotTool study detail for Index Momentum",
+      title: "Index Momentum",
+      statusLabel: "BACKTEST",
+      statusVariant: "research"
+    });
+    expect(detail.fields).toContainEqual({ label: "Notebook", value: "Retained notebook" });
+    expect(buildPlotNotebookToolbarItems(rows, "run-2")).toEqual([
+      { id: "count", label: "Notebook set", value: "3 retained" },
+      { id: "selected", label: "Selected", value: "Index Momentum", active: true },
+      { id: "lane", label: "Lane", value: "Strategy" }
+    ]);
+
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      selectedPlotStudyId: "run-2",
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.selectedPlotStudyId).toBe("run-2");
+    expect(state.selectedPlotStudyDetail?.title).toBe("Index Momentum");
+    expect(state.plotTool.studies[1].detailExpanded).toBe(true);
+    expect(state.plotTool.workspace.notebookToolbarItems[1]).toMatchObject({
+      label: "Selected",
+      value: "Index Momentum",
+      active: true
+    });
   });
 
   it("derives PlotTool tab selection and keyboard transitions outside the view", () => {
@@ -430,6 +743,8 @@ describe("research-screen view model", () => {
     expect(nextPlotToolViewForKey("statistics", "Home")).toBe("workspace");
     expect(nextPlotToolViewForKey("workspace", "End")).toBe("statistics");
     expect(nextPlotToolViewForKey("workspace", "Enter")).toBeNull();
+    expect(plotToolTabIdForView("workspace")).toBe("plottool-workspace-tab");
+    expect(plotToolTabIdForView("statistics")).toBe("plottool-statistics-tab");
   });
 
   it("keeps run detail keyboard-close decisions testable outside the view", () => {
@@ -447,31 +762,90 @@ describe("research-screen view model", () => {
     const valid = buildPromotionCashForm({
       input: "100000",
       eligible: true,
-      promoteState: "evaluated"
+      promoteState: "evaluated",
+      acknowledged: true
     });
 
     expect(valid.canSubmit).toBe(true);
+    expect(valid.disabledReason).toBeNull();
     expect(valid.errorText).toBeNull();
     expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
+    expect(valid.inputHelpId).toBe("promote-initial-cash-help");
+    expect(valid.inputDescribedBy).toBe("promote-initial-cash-help");
+    expect(valid.inputDisabledReasonId).toBeNull();
     expect(valid.describedBy).toBe("promote-initial-cash-help");
+    expect(valid.acknowledgementChecked).toBe(true);
+    expect(valid.acknowledgementLabel).toBe("I reviewed the promotion gates and paper-capital impact.");
+    expect(valid.acknowledgementDescribedBy).toBeUndefined();
+
+    const unacknowledged = buildPromotionCashForm({
+      input: "100000",
+      eligible: true,
+      promoteState: "evaluated",
+      acknowledged: false
+    });
+
+    expect(unacknowledged.canSubmit).toBe(false);
+    expect(unacknowledged.disabledReason).toBe(
+      "Acknowledge the evaluated gates and paper-capital impact before starting a paper session."
+    );
+    expect(unacknowledged.submitAriaLabel).toContain("unavailable");
 
     const invalid = buildPromotionCashForm({
       input: "500",
       eligible: true,
-      promoteState: "evaluated"
+      promoteState: "evaluated",
+      acknowledged: true
     });
 
     expect(invalid.canSubmit).toBe(false);
+    expect(invalid.disabledReason).toBe("Enter at least $1,000 in whole-dollar paper capital.");
     expect(invalid.errorText).toBe("Enter at least $1,000 in whole dollars.");
+    expect(invalid.helpText).toBe("Enter at least $1,000 in whole dollars.");
+
+    const empty = buildPromotionCashForm({
+      input: "",
+      eligible: true,
+      promoteState: "evaluated",
+      acknowledged: true
+    });
+
+    expect(empty.canSubmit).toBe(false);
+    expect(empty.disabledReason).toBe("Enter initial paper capital of at least $1,000.");
+    expect(empty.helpText).toBe("Enter initial paper capital of at least $1,000.");
 
     const creating = buildPromotionCashForm({
       input: "100000",
       eligible: true,
-      promoteState: "creating"
+      promoteState: "creating",
+      acknowledged: true
     });
 
     expect(creating.canSubmit).toBe(false);
+    expect(creating.disabledReason).toBe("Paper-session creation is already running.");
+    expect(creating.helpText).toBe("Paper-session creation is already running.");
     expect(creating.submitLabel).toBe("Starting paper session...");
+    expect(creating.inputDisabled).toBe(true);
+    expect(creating.inputDisabledReason).toBe("Paper-session creation is already running; wait before changing capital.");
+    expect(creating.inputDisabledReasonId).toBe("promote-initial-cash-disabled-reason");
+    expect(creating.inputDescribedBy).toBe("promote-initial-cash-help promote-initial-cash-disabled-reason");
+    expect(creating.acknowledgementDisabled).toBe(true);
+    expect(creating.acknowledgementDisabledReason).toBe(
+      "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(creating.acknowledgementDisabledReasonId).toBe(
+      "promote-paper-session-acknowledgement-disabled-reason"
+    );
+    expect(creating.acknowledgementDescribedBy).toBe(
+      "promote-paper-session-acknowledgement-disabled-reason"
+    );
+    expect(creating.cancelDisabled).toBe(true);
+    expect(creating.cancelDisabledReason).toBe(
+      "Paper-session creation is already running; wait for the session result before closing setup."
+    );
+    expect(creating.cancelAriaLabel).toBe(
+      "Paper-session creation is already running; wait for the session result before closing setup."
+    );
   });
 
   it("derives disabled command reasons for incomplete selections", () => {
@@ -551,6 +925,15 @@ describe("research-screen view model", () => {
     expect(eligible.evaluation?.reason).toBe("Promotion evaluation returned no reason.");
     expect(eligible.showCashForm).toBe(true);
     expect(eligible.showIneligibleDismiss).toBe(false);
+
+    const creating = buildPromotionPanelState({
+      promoteState: "creating",
+      promotionEval: { ...promotionEvaluation, isEligible: true, reason: "", blockingReasons: [] },
+      promotionSession: null
+    });
+
+    expect(creating.showCashForm).toBe(true);
+    expect(creating.sessionCreated).toBeNull();
 
     const done = buildPromotionPanelState({
       promoteState: "done",
@@ -676,4 +1059,93 @@ describe("research-screen view model", () => {
     expect(state.plotTool.workspace.title).toBe("API workspace");
     expect(state.plotTool.statistics.title).toBe("API stats");
   });
+
+  it("ignores duplicate paper-session submit attempts while creation is unresolved", async () => {
+    const pendingSession = createDeferred<PaperSessionSummary>();
+    const services: ResearchRunLibraryServices = {
+      compareRuns: vi.fn(),
+      diffRuns: vi.fn(),
+      getPromotionHistory: vi.fn(),
+      evaluatePromotion: vi.fn().mockResolvedValue({
+        ...promotionEvaluation,
+        isEligible: true,
+        ready: true,
+        reason: "Promotion gates passed.",
+        blockingReasons: []
+      }),
+      createPaperSession: vi.fn().mockReturnValue(pendingSession.promise)
+    };
+
+    const { result } = renderHook(() =>
+      useResearchRunLibraryViewModel({ metrics, runs }, services)
+    );
+
+    act(() => {
+      result.current.toggleRun("run-2");
+    });
+
+    await act(async () => {
+      await result.current.promoteSelectedRun();
+    });
+
+    act(() => {
+      result.current.setPromotionInitialCash("150000");
+    });
+
+    act(() => {
+      result.current.setPromotionAcknowledgement(true);
+    });
+
+    act(() => {
+      void result.current.confirmPromotion();
+      void result.current.confirmPromotion();
+    });
+
+    await waitFor(() => {
+      expect(services.createPaperSession).toHaveBeenCalledTimes(1);
+    });
+    expect(services.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 150000);
+
+    act(() => {
+      result.current.setPromotionInitialCash("900000");
+      result.current.setPromotionAcknowledgement(false);
+      result.current.cancelPromotion();
+    });
+
+    expect(result.current.showPromotePanel).toBe(true);
+    expect(result.current.promoteState).toBe("creating");
+    expect(result.current.promotionCashForm.value).toBe("150000");
+    expect(result.current.promotionCashForm.acknowledgementChecked).toBe(true);
+    expect(result.current.promotionCashForm.submitLabel).toBe("Starting paper session...");
+    expect(result.current.promotionCashForm.inputDisabled).toBe(true);
+    expect(result.current.promotionCashForm.acknowledgementDisabled).toBe(true);
+    expect(result.current.promotionCashForm.cancelDisabled).toBe(true);
+
+    await act(async () => {
+      pendingSession.resolve({
+        sessionId: "session-dup-guard",
+        strategyId: "run-2",
+        strategyName: "Index Momentum",
+        initialCash: 100000,
+        createdAt: "2026-05-14T00:00:00Z",
+        closedAt: null,
+        isActive: true
+      });
+      await pendingSession.promise;
+    });
+
+    expect(result.current.promoteState).toBe("done");
+    expect(result.current.promotionSession?.sessionId).toBe("session-dup-guard");
+  });
 });
+
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}

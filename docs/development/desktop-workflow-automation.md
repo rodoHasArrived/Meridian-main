@@ -47,6 +47,16 @@ For migration context and replacement mappings, see:
 | `manual-research-and-trading` | Research, backtesting, Quant Script, and trading flow | Included in the generated user manual |
 | `manual-governance` | Governance, ledger, notifications, and reference data flow | Included in the generated user manual |
 
+The `Refresh UI Screenshots` GitHub workflow derives its desktop matrix from this same catalog via
+`scripts/dev/screenshot_workflow_plan.py`. A workflow named `screenshot-catalog` runs for catalog
+captures, and any workflow with `includeInManual: true` is automatically included when the manual
+screenshot group is selected. The web capture set is planned from
+`scripts/dev/web-screenshot-routes.json`, so screenshot additions should be made in the definition
+files rather than by editing the workflow matrix directly. Strategy Designer is part of that web
+evidence lane through `/workstation/strategy/designer`; keep its screenshot route paired with
+`scripts/dev/web-screenshot-fixtures.json` and the dashboard no-host fixtures for the designer
+template, field-catalog, and draft GET endpoints.
+
 ## Runner Behavior
 
 `run-desktop-workflow.ps1` uses two navigation mechanisms:
@@ -157,6 +167,10 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
   ]
 }
 ```
+
+Once a new manual workflow is marked `includeInManual: true`, the screenshot refresh workflow picks
+it up dynamically. Use `purpose: "manual"` for operator manual flows and leave debug-only workflows
+without `includeInManual` so they do not expand scheduled screenshot capture time.
 
 Supported step fields:
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config;
+using Meridian.Application.Config.Credentials;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian;
@@ -15,10 +16,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class BrokerageConnectionEndpointsTests
 {
     [Fact]
@@ -58,8 +61,27 @@ public sealed class BrokerageConnectionEndpointsTests
         status.ExternalAccountId.Should().Be("PA-ENDPOINT");
         status.MaskedKeyId.Should().NotContain("endpoint-key");
         status.LastError.Should().BeNull();
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().NotBe("endpoint-key");
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().NotBe("endpoint-secret");
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var stored = await store.ReadForProviderAsync("alpaca");
+        stored.Should().NotBeNull();
+        stored!.Get("KeyId").Should().Be("endpoint-key");
         capturedRequest.Should().NotBeNull();
         capturedRequest!.RequestUri!.ToString().Should().Be("https://paper-api.alpaca.markets/v2/account");
+    }
+
+    [Fact]
+    public async Task PostAlpacaConnect_TradeDeskRolePermissions_ReturnsForbidden()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(_ => { }, RolePermissions.For(UserRole.TradeDesk));
+
+        var response = await app.GetTestClient().PostAsync(
+            "/api/brokerage-connections/alpaca/connect",
+            JsonContent(new { keyId = "trade-desk-key", secretKey = "trade-desk-secret", environment = "paper" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -91,6 +113,75 @@ public sealed class BrokerageConnectionEndpointsTests
             app.Services.GetService<BrokerageConnectionOptions>().Should().NotBeNull();
             app.Services.GetService<BrokerageConnectionService>().Should().NotBeNull();
             app.Services.GetService<AlpacaBrokerageConnectionService>().Should().NotBeNull();
+            app.Services.GetService<ProviderConnectionLifecycleService>().Should().NotBeNull();
+            app.Services.GetService<IProviderCredentialStore>().Should().NotBeNull();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_BackfillCoordinator_UsesRegisteredHistoricalProviders()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        Environment.SetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName, "alpaca-backfill-key");
+        Environment.SetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName, "alpaca-backfill-secret");
+        Environment.SetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName, AlpacaCredentialEnvironment.PaperEnvironment);
+
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "ui-server-backfill", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
+
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            var app = GetServerApp(server);
+
+            var coordinator = app.Services.GetRequiredService<BackfillCoordinator>();
+            var providerNames = coordinator.DescribeProviders()
+                .Select(static provider => provider.GetType().GetProperty("Name")?.GetValue(provider)?.ToString())
+                .Where(static name => !string.IsNullOrWhiteSpace(name))
+                .ToArray();
+
+            providerNames.Should().Contain("alpaca");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_RegistersLifecycleRoutes_ForManagedShutdown()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "ui-server-lifecycle", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
+
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            await server.StartAsync();
+            var app = GetServerApp(server);
+
+            var routes = app.Services.GetServices<EndpointDataSource>()
+                .SelectMany(source => source.Endpoints)
+                .OfType<RouteEndpoint>()
+                .Select(endpoint => endpoint.RoutePattern.RawText)
+                .ToArray();
+
+            routes.Should().Contain("/api/system/lifecycle");
+            routes.Should().Contain("/api/system/shutdown");
         }
         finally
         {
@@ -110,6 +201,8 @@ public sealed class BrokerageConnectionEndpointsTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(
+            Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-endpoints", Guid.NewGuid().ToString("N"))));
         builder.Services.AddSingleton<AlpacaBrokerageConnectionService>();
         configureServices(builder.Services);
 

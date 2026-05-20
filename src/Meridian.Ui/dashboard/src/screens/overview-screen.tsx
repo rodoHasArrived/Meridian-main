@@ -12,26 +12,41 @@ import {
   RefreshCcw,
   Settings,
   Shield,
+  Sparkles,
   TrendingUp,
   XCircle
 } from "lucide-react";
 import type { ElementType } from "react";
 import { Link } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   buildOverviewPortfolioPanel,
+  useOverviewActivitySelectionViewModel,
   useOverviewStatusViewModel,
+  type OverviewActivityDetail,
   type OverviewActivityRow,
   type OverviewBriefingBadgeVariant,
   type OverviewBriefingTone,
   type OverviewPortfolioPanel,
+  type OverviewStatusBannerIcon,
   type OverviewValueBlocker,
   type PortfolioPanelTone
 } from "@/screens/overview-screen.view-model";
+import {
+  buildTodayPanelViewModel,
+  type TodayFillRow,
+  type TodayMetric,
+  type TodayMoverRow,
+  type TodayOrderRow,
+  type TodayPanelViewModel,
+  type TodayQuickAction,
+  type TodayTone
+} from "@/screens/today-panel.view-model";
 import type {
   PortfolioWorkspaceResponse,
   SessionInfo,
@@ -47,47 +62,12 @@ interface OverviewScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
 }
 
-const systemStatusConfig = {
-  Healthy: {
-    icon: CheckCircle2,
-    className: "text-success",
-    bannerClass: "border-success/30 bg-success/5"
-  },
-  Degraded: {
-    icon: AlertCircle,
-    className: "text-warning",
-    bannerClass: "border-warning/30 bg-warning/5"
-  },
-  Offline: {
-    icon: XCircle,
-    className: "text-danger",
-    bannerClass: "border-danger/30 bg-danger/5"
-  }
-} as const;
-
-const storageHealthConfig = {
-  Healthy: { className: "text-success" },
-  Warning: { className: "text-warning" },
-  Critical: { className: "text-danger" }
-} as const;
-
-const activityToneConfig = {
-  default: {
-    icon: Activity,
-    iconClassName: "text-muted-foreground",
-    rowClassName: "border-border/55 bg-secondary/20"
-  },
-  warning: {
-    icon: AlertCircle,
-    iconClassName: "text-warning",
-    rowClassName: "border-warning/30 bg-warning/5"
-  },
-  danger: {
-    icon: XCircle,
-    iconClassName: "text-danger",
-    rowClassName: "border-danger/30 bg-danger/5"
-  }
-} as const;
+const statusBannerIconConfig: Record<OverviewStatusBannerIcon, ElementType> = {
+  healthy: CheckCircle2,
+  warning: AlertCircle,
+  offline: XCircle,
+  pending: Radio
+};
 
 const blockerToneConfig = {
   default: {
@@ -117,12 +97,174 @@ const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: str
   settings: { icon: Settings, accent: "text-muted-foreground" }
 };
 
+const activityColumns: DenseDataTableColumn<OverviewActivityRow>[] = [
+  {
+    id: "status",
+    label: "Status",
+    render: (event) => <Badge variant={event.badgeVariant} dot>{event.statusCode}</Badge>
+  },
+  {
+    id: "source",
+    label: "Source",
+    render: (event) => <span className="font-mono text-xs text-muted-foreground">{event.source}</span>
+  },
+  {
+    id: "time",
+    label: "Time",
+    render: (event) => <span className="font-mono text-xs text-muted-foreground">{event.timestampLabel}</span>
+  },
+  {
+    id: "message",
+    label: "Message",
+    render: (event) => <span className="text-sm text-foreground">{event.message}</span>
+  }
+];
+
+const todayMoverColumns: DenseDataTableColumn<TodayMoverRow>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.symbol
+  },
+  {
+    id: "side",
+    label: "Side",
+    render: (row) => (
+      <Badge variant={row.sideBadgeVariant} className="text-[10px]">
+        {row.side}
+      </Badge>
+    )
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.quantity
+  },
+  {
+    id: "mark",
+    label: "Mark",
+    align: "right",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.markPrice
+  },
+  {
+    id: "day-pnl",
+    label: "Day P&L",
+    align: "right",
+    className: "font-mono",
+    render: (row) => <span className={todayMoverPnlToneClass[row.dayPnlTone]}>{row.dayPnl}</span>
+  }
+];
+
+const todayOrderColumns: DenseDataTableColumn<TodayOrderRow>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.symbol
+  },
+  {
+    id: "side",
+    label: "Side",
+    render: (row) => (
+      <Badge variant={row.sideBadgeVariant} className="text-[10px]">
+        {row.side}
+      </Badge>
+    )
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.quantity
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.priceLabel
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} aria-label={row.statusAriaLabel} dot>
+        {row.status}
+      </Badge>
+    )
+  },
+  {
+    id: "submitted",
+    label: "Submitted",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.submittedLabel
+  }
+];
+
+const todayFillColumns: DenseDataTableColumn<TodayFillRow>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.symbol
+  },
+  {
+    id: "side",
+    label: "Side",
+    render: (row) => (
+      <Badge variant={row.sideBadgeVariant} className="text-[10px]">
+        {row.side}
+      </Badge>
+    )
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.quantity
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.price
+  },
+  {
+    id: "venue",
+    label: "Venue",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.venue
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} aria-label={row.statusAriaLabel} dot>
+        {row.statusLabel}
+      </Badge>
+    )
+  },
+  {
+    id: "time",
+    label: "Time",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.timestampLabel
+  }
+];
+
 export function OverviewScreen({ data, session, trading = null, portfolio = null }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data, session);
-  const current = vm.current;
-  const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
-  const StatusIcon = statusConfig?.icon ?? Radio;
+  const StatusIcon = statusBannerIconConfig[vm.statusBanner.icon];
   const portfolioPanel = buildOverviewPortfolioPanel(trading, portfolio);
+  const todayPanel = buildTodayPanelViewModel(trading, portfolio);
+  const activityVm = useOverviewActivitySelectionViewModel(vm.activityRows);
 
   return (
     <div className="space-y-6">
@@ -132,28 +274,24 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
         aria-live={vm.statusBanner.ariaLive}
         aria-labelledby={vm.statusBanner.titleId}
         aria-describedby={vm.statusBanner.detailId ?? undefined}
-        className={cn(
-          "flex items-center gap-3 rounded-lg border px-4 py-3",
-          statusConfig?.bannerClass ?? "border-border bg-muted/30"
-        )}
+        className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", vm.statusBanner.containerClassName)}
       >
-        <StatusIcon aria-hidden="true" className={cn("size-5 shrink-0", statusConfig?.className)} />
+        <StatusIcon aria-hidden="true" className={cn("size-5 shrink-0", vm.statusBanner.iconClassName)} />
         <div className="flex-1">
-          <p id={vm.statusBanner.titleId} className={cn("text-sm font-medium", statusConfig?.className)}>
+          <p id={vm.statusBanner.titleId} className={cn("text-sm font-medium", vm.statusBanner.titleClassName)}>
             {vm.statusLabel}
           </p>
-          {current && vm.providerSummary && vm.storageLabel && vm.lastHeartbeatLabel && (
+          {vm.statusBanner.detailParts ? (
             <p id={vm.statusBanner.detailId ?? undefined} className="text-xs text-muted-foreground mt-0.5">
-              {vm.providerSummary}
+              {vm.statusBanner.detailParts.providerSummary}
               {" · "}
-              Storage: <span className={storageHealthConfig[current.storageHealth].className}>
-                {vm.storageLabel}
+              Storage: <span className={vm.statusBanner.detailParts.storageClassName}>
+                {vm.statusBanner.detailParts.storageLabel}
               </span>
               {" · "}
-              Last heartbeat: {vm.lastHeartbeatLabel}
+              Last heartbeat: {vm.statusBanner.detailParts.lastHeartbeatLabel}
             </p>
-          )}
-          {!current && vm.statusBanner.detailText ? (
+          ) : vm.statusBanner.detailText ? (
             <p id={vm.statusBanner.detailId ?? undefined} className="text-xs text-muted-foreground mt-0.5">
               {vm.statusBanner.detailText}
             </p>
@@ -163,12 +301,15 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
           variant="ghost"
           size="sm"
           onClick={() => { void vm.refresh(); }}
-          disabled={vm.refreshing}
-          aria-label={vm.refreshAriaLabel}
+          busy={vm.refreshCommand.busy}
+          busyLabel={vm.refreshCommand.busyLabel}
+          disabled={vm.refreshCommand.disabled}
+          disabledReason={vm.refreshCommand.disabledReason}
+          aria-label={vm.refreshCommand.ariaLabel}
           className="shrink-0"
         >
-          <RefreshCcw className={cn("size-4 mr-1.5", vm.refreshing && "animate-spin")} />
-          {vm.refreshButtonLabel}
+          <RefreshCcw className="size-4 mr-1.5" aria-hidden="true" />
+          {vm.refreshCommand.label}
         </Button>
       </div>
       <span className="sr-only" aria-live="polite">{vm.refreshAnnouncement}</span>
@@ -177,6 +318,8 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
           {vm.refreshErrorText}
         </div>
       )}
+
+      <TodayPanel panel={todayPanel} />
 
       <PortfolioPanel panel={portfolioPanel} />
 
@@ -282,13 +425,32 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
           </CardHeader>
           <CardContent>
             {vm.hasEvents ? (
-              <ul aria-label={vm.activityListLabel} className="space-y-2">
-                {vm.activityRows.map((event) => (
-                  <EventRow key={event.id} event={event} />
-                ))}
-              </ul>
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.44fr)]">
+                <DenseDataTable
+                  columns={activityColumns}
+                  rows={activityVm.rows}
+                  getRowId={(event) => event.id}
+                  getRowAriaLabel={(event) => event.ariaLabel}
+                  getRowSelectAriaLabel={(event) => event.selectAriaLabel}
+                  getRowAriaControls={(event) => event.detailPanelId}
+                  getRowAriaExpanded={(event) => event.expanded}
+                  onRowSelect={(event) => activityVm.selectActivity(event.id)}
+                  selectedRowId={activityVm.selectedRowId}
+                  emptyText={vm.activityEmptyText}
+                  ariaLabel={activityVm.tableLabel}
+                  caption={activityVm.tableCaption}
+                />
+                <ActivityDetailPanel
+                  id={activityVm.detailPanelId}
+                  title={activityVm.detailPanelTitle}
+                  description={activityVm.detailPanelDescription}
+                  emptyText={activityVm.detailPanelEmptyText}
+                  ariaLabel={activityVm.detailPanelAriaLabel}
+                  detail={activityVm.selectedDetail}
+                />
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-4 text-center">
+              <p role="status" className="text-sm text-muted-foreground py-4 text-center">
                 {vm.activityEmptyText}
               </p>
             )}
@@ -479,9 +641,15 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
                 </ul>
               </div>
             ) : (
-              <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-center text-xs text-muted-foreground">
-                {panel.emptyMessage}
-              </p>
+              <div className="rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-center text-xs text-muted-foreground">
+                <p>{panel.emptyMessage}</p>
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link to={panel.emptyAction.href} aria-label={panel.emptyAction.ariaLabel}>
+                    {panel.emptyAction.label}
+                    <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
             )}
             {panel.riskSummary ? (
               <p className={cn("text-xs leading-5", portfolioPanelToneClass[panel.riskTone])}>
@@ -490,8 +658,201 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
             ) : null}
           </div>
         ) : (
-          <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
-            {panel.emptyMessage}
+          <div className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
+            <p>{panel.emptyMessage}</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to={panel.emptyAction.href} aria-label={panel.emptyAction.ariaLabel}>
+                {panel.emptyAction.label}
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActivityDetailPanel({
+  id,
+  title,
+  description,
+  emptyText,
+  ariaLabel,
+  detail
+}: {
+  id: string;
+  title: string;
+  description: string;
+  emptyText: string;
+  ariaLabel: string;
+  detail: OverviewActivityDetail | null;
+}) {
+  return (
+    <aside
+      id={id}
+      role="complementary"
+      aria-label={ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>{title}</span>
+        {detail ? <Badge variant={detail.badgeVariant}>{detail.badgeLabel}</Badge> : null}
+      </div>
+      <div className="body">
+        {detail ? (
+          <div role="region" aria-label={detail.ariaLabel} className="space-y-3">
+            <div>
+              <div className="eyebrow-label">{detail.eyebrow}</div>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">{detail.title}</h3>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
+            <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+              {detail.fields.map((field) => (
+                <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
+                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : (
+          <div role="status" className="rounded-md border border-dashed border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-sm font-semibold text-foreground">{description}</div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{emptyText}</p>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+const todayToneTextClass: Record<TodayTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+};
+
+const todayMoverPnlToneClass: Record<TodayTone, string> = {
+  default: "text-muted-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+};
+
+function TodayPanel({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/70 bg-panel-strong">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="eyebrow-label">{panel.headline}</div>
+            <CardTitle className="mt-1 flex items-center gap-2 text-lg">
+              <Sparkles className="size-4 text-primary" aria-hidden="true" />
+              Your day at a glance
+            </CardTitle>
+            <CardDescription className="mt-1">{panel.subheadline}</CardDescription>
+          </div>
+          {panel.brokerageLabel ? (
+            <p className="font-mono text-[11px] text-muted-foreground">{panel.brokerageLabel}</p>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {panel.hasData ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {panel.metrics.map((metric) => (
+                <TodayMetricTile key={metric.id} metric={metric} />
+              ))}
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-3">
+              <TodayMoversCard panel={panel} />
+              <TodayOrdersCard panel={panel} />
+              <TodayFillsCard panel={panel} />
+            </div>
+
+            <TodayQuickActions
+              label={panel.quickActionsLabel}
+              eyebrow={panel.quickActionsEyebrow}
+              actions={panel.quickActions}
+            />
+          </>
+        ) : (
+          <div className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
+            <p>{panel.emptyMessage}</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to={panel.emptyActionHref} aria-label={panel.emptyActionAriaLabel}>
+                <Settings className="size-3.5" aria-hidden="true" />
+                <span className="ml-1.5">{panel.emptyActionLabel}</span>
+              </Link>
+            </Button>
+            <TodayQuickActions
+              label={panel.quickActionsLabel}
+              eyebrow={panel.quickActionsEyebrow}
+              actions={panel.quickActions}
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayMetricTile({ metric }: { metric: TodayMetric }) {
+  return (
+    <div
+      role="group"
+      aria-label={metric.ariaLabel}
+      className="rounded-lg border border-border/70 bg-background/70 p-4"
+    >
+      <div className="eyebrow-label">{metric.label}</div>
+      <p className={cn("mt-2 text-xl font-semibold tabular-nums", todayToneTextClass[metric.tone])}>
+        {metric.value}
+      </p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+    </div>
+  );
+}
+
+function TodayMoversCard({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/60 bg-background/60">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm font-semibold">Top movers</CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to="/portfolio" aria-label="Open portfolio for all positions">
+              Portfolio
+              <ArrowRight className="size-3" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2 pt-0">
+        {panel.hasMovers ? (
+          <>
+            <DenseDataTable
+              columns={todayMoverColumns}
+              rows={panel.movers}
+              getRowId={(row) => row.key}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowClassName={(row) => row.rowClassName}
+              emptyText={panel.moversEmptyMessage}
+              ariaLabel={panel.moversTableLabel}
+              caption={panel.moversTableCaption}
+            />
+            {panel.moversMoreLabel ? (
+              <p role="status" className="pt-1 text-[11px] text-muted-foreground">{panel.moversMoreLabel}</p>
+            ) : null}
+          </>
+        ) : (
+          <p className="rounded-md border border-dashed border-border/60 px-3 py-3 text-xs text-muted-foreground">
+            {panel.moversEmptyMessage}
           </p>
         )}
       </CardContent>
@@ -499,28 +860,130 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
   );
 }
 
-function EventRow({ event }: { event: OverviewActivityRow }) {
-  const config = activityToneConfig[event.tone];
-  const Icon = config.icon;
-
+function TodayOrdersCard({ panel }: { panel: TodayPanelViewModel }) {
   return (
-    <li>
-      <div
-        role="group"
-        aria-label={event.ariaLabel}
-        className={cn("flex items-start gap-3 rounded-md border px-3 py-2", config.rowClassName)}
-      >
-        <Icon aria-hidden="true" className={cn("mt-0.5 size-3.5 shrink-0", config.iconClassName)} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={event.badgeVariant} dot>{event.statusCode}</Badge>
-            <span className="font-mono text-[11px] text-muted-foreground">{event.source}</span>
-            <span aria-hidden="true" className="text-muted-foreground/45">·</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{event.timestampLabel}</span>
-          </div>
-          <p className="mt-1 text-sm leading-snug">{event.message}</p>
+    <Card className="border-border/60 bg-background/60">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm font-semibold">
+            Open orders
+            {panel.ordersTotal > 0 ? (
+              <span className="ml-1.5 font-mono text-[11px] font-normal text-muted-foreground">
+                ({panel.ordersTotal})
+              </span>
+            ) : null}
+          </CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to="/trading" aria-label="Open trading cockpit for all orders">
+              Trading
+              <ArrowRight className="size-3" aria-hidden="true" />
+            </Link>
+          </Button>
         </div>
-      </div>
-    </li>
+      </CardHeader>
+      <CardContent className="space-y-2 pt-0">
+        {panel.hasOrders ? (
+          <>
+            <DenseDataTable
+              columns={todayOrderColumns}
+              rows={panel.orders}
+              getRowId={(row) => row.key}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowClassName={(row) => row.rowClassName}
+              emptyText={panel.ordersEmptyMessage}
+              ariaLabel={panel.ordersTableLabel}
+              caption={panel.ordersTableCaption}
+            />
+            {panel.ordersMoreLabel ? (
+              <p role="status" className="pt-1 text-[11px] text-muted-foreground">{panel.ordersMoreLabel}</p>
+            ) : null}
+          </>
+        ) : (
+          <p className="rounded-md border border-dashed border-border/60 px-3 py-3 text-xs text-muted-foreground">
+            {panel.ordersEmptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayFillsCard({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/60 bg-background/60">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm font-semibold">
+            Recent fills
+            {panel.fillsTotal > 0 ? (
+              <span className="ml-1.5 font-mono text-[11px] font-normal text-muted-foreground">
+                ({panel.fillsTotal})
+              </span>
+            ) : null}
+          </CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to="/trading" aria-label="Open trading cockpit for all fills">
+              Trading
+              <ArrowRight className="size-3" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2 pt-0">
+        {panel.hasFills ? (
+          <>
+            <DenseDataTable
+              columns={todayFillColumns}
+              rows={panel.fills}
+              getRowId={(row) => row.key}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowClassName={(row) => row.rowClassName}
+              emptyText={panel.fillsEmptyMessage}
+              ariaLabel={panel.fillsTableLabel}
+              caption={panel.fillsTableCaption}
+            />
+            {panel.fillsMoreLabel ? (
+              <p role="status" className="pt-1 text-[11px] text-muted-foreground">{panel.fillsMoreLabel}</p>
+            ) : null}
+          </>
+        ) : (
+          <p className="rounded-md border border-dashed border-border/60 px-3 py-3 text-xs text-muted-foreground">
+            {panel.fillsEmptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+const todayQuickActionIcon: Record<TodayQuickAction["id"], ElementType> = {
+  "place-order": TrendingUp,
+  "add-symbol": Database,
+  "live-quote": LineChart,
+  reconcile: Shield
+};
+
+function TodayQuickActions({ label, eyebrow, actions }: { label: string; eyebrow: string; actions: TodayQuickAction[] }) {
+  return (
+    <div
+      aria-label={label}
+      className="flex flex-wrap items-center gap-2"
+      role="group"
+    >
+      <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">
+        {eyebrow}
+      </span>
+      {actions.map((action) => {
+        const Icon = todayQuickActionIcon[action.id];
+        return (
+          <Button asChild variant="outline" size="sm" key={action.id}>
+            <Link to={action.href} aria-label={action.ariaLabel}>
+              <Icon className="size-3.5" aria-hidden="true" />
+              <span className="ml-1.5">{action.label}</span>
+            </Link>
+          </Button>
+        );
+      })}
+    </div>
   );
 }

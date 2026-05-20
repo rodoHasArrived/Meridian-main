@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
@@ -69,6 +70,163 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Completeness.MissingIds.Should().Contain("missing");
         packet.Completeness.StaleIds.Should().Contain("stale");
         packet.Completeness.BlockingWorkItemIds.Should().Contain("provider-trust:sample-review");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "invalid-edge" &&
+            issue.EvidenceId == "ready");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "missing-required-evidence" &&
+            issue.EvidenceId == "missing" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "stale-required-evidence" &&
+            issue.EvidenceId == "stale");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "review-required-evidence" &&
+            issue.EvidenceId == "review" &&
+            issue.RelatedWorkItemId == "provider-trust:sample-review");
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringGovernedReportReview_ExplainsReadyMissingStaleAndReviewStates()
+    {
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
+        var ready = Node(subject, "ready", "analysis-export", EvidenceStatusDto.Ready);
+        var stale = Node(subject, "stale", "report-pack", EvidenceStatusDto.Stale, stale: true);
+        var review = Node(subject, "review", "portfolio-context", EvidenceStatusDto.ReviewRequired, workItemIds: ["report-pack-lineage:current"]);
+        var service = new EvidencePacketValidationService();
+
+        var readyResult = service.Validate(
+            [ready],
+            [],
+            new HashSet<string>(["ready"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        readyResult.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        readyResult.Completeness.ValidationIssues.Should().BeEmpty();
+
+        var missingResult = service.Validate(
+            [ready],
+            [],
+            new HashSet<string>(["ready", "missing"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        missingResult.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        missingResult.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "missing-required-evidence" &&
+            issue.EvidenceId == "missing" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+
+        var staleResult = service.Validate(
+            [stale],
+            [],
+            new HashSet<string>(["stale"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        staleResult.Completeness.Status.Should().Be(EvidenceStatusDto.Stale);
+        staleResult.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "stale-required-evidence" &&
+            issue.EvidenceId == "stale" &&
+            issue.EvidenceKind == "report-pack");
+
+        var reviewResult = service.Validate(
+            [review],
+            [],
+            new HashSet<string>(["review"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        reviewResult.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        reviewResult.Completeness.BlockingWorkItemIds.Should().Contain("report-pack-lineage:current");
+        reviewResult.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "review-required-evidence" &&
+            issue.RelatedWorkItemId == "report-pack-lineage:current");
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringLedgerReview_ExplainsLedgerArtifactIntegrityIssues()
+    {
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-ledger-integrity");
+        var ledger = Node(
+            subject,
+            "ledger",
+            "run-ledger",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto(
+                    "ledger:journal",
+                    "ledger-journal",
+                    Path: null,
+                    Route: null,
+                    GeneratedAt: DateTimeOffset.UtcNow,
+                    Hash: null,
+                    Retained: false)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [ledger],
+            [],
+            new HashSet<string>(["ledger"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-missing-trial-balance-artifact" &&
+            issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-artifact-not-retained" &&
+            issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-artifact-not-addressable" &&
+            issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringLedgerReview_MarksWarningOnlyRetentionIssuesForReview()
+    {
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-ledger-retention");
+        var generatedAt = DateTimeOffset.UtcNow;
+        var ledger = Node(
+            subject,
+            "ledger",
+            "run-ledger",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto(
+                    "ledger:journal",
+                    "ledger-journal",
+                    Path: "runs/run-ledger-retention/ledger-journal.json",
+                    Route: null,
+                    GeneratedAt: generatedAt,
+                    Hash: null,
+                    Retained: false),
+                new EvidenceArtifactRefDto(
+                    "ledger:trial-balance",
+                    "ledger-trial-balance",
+                    Path: "runs/run-ledger-retention/trial-balance.json",
+                    Route: null,
+                    GeneratedAt: generatedAt,
+                    Hash: null,
+                    Retained: true)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [ledger],
+            [],
+            new HashSet<string>(["ledger"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-artifact-not-retained" &&
+            issue.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.ValidationIssues.Should().NotContain(issue =>
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
     }
 
     [Fact]
@@ -124,8 +282,51 @@ public sealed class EvidenceWorkflowFabricTests
         var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
         export.Should().NotBeNull();
         export!.Retained.Should().BeTrue();
+        export.VaultIdentity.Should().NotBeNull();
+        export.VaultIdentity!.VaultId.Should().StartWith("ev-");
+        export.VaultIdentity.ManifestPath.Should().Be(export.ManifestPath);
+        export.VaultIdentity.ManifestRoute.Should().Be(export.ManifestRoute);
+        export.VaultIdentity.ContentHashSha256.Should().HaveLength(64);
+        export.VaultIdentity.StorageKind.Should().Be("file-manifest");
         export.WarningCount.Should().Be(0);
         File.Exists(Path.Combine(root, export.ManifestPath.Replace('/', Path.DirectorySeparatorChar))).Should().BeTrue();
+        var indexPath = Path.Combine(root, "workstation", "evidence", "_vault", $"{export.VaultIdentity.VaultId}.json");
+        File.Exists(indexPath).Should().BeTrue();
+        var indexJson = await File.ReadAllTextAsync(indexPath);
+        var indexedIdentity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(indexJson, ServerJsonOptions);
+        indexedIdentity.Should().BeEquivalentTo(export.VaultIdentity);
+
+        var manifestResponse = await client.GetAsync(export.ManifestRoute);
+        manifestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        manifestResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+        var manifestJson = await manifestResponse.Content.ReadAsStringAsync();
+        manifestJson.Should().Contain("\"manifestOnly\": true");
+        manifestJson.Should().Contain("\"requestedBy\": \"operator\"");
+        manifestJson.Should().Contain("\"vaultIdentity\": {");
+        manifestJson.Should().Contain(export.VaultIdentity.VaultId);
+
+        var vaultResponse = await client.GetAsync($"/workstation/evidence/vault/{export.VaultIdentity.VaultId}");
+        vaultResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        vaultResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+
+        var missingVaultResponse = await client.GetAsync("/workstation/evidence/vault/ev-000000000000000000000000");
+        missingVaultResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var missingVaultError = await missingVaultResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        missingVaultError!.Code.Should().Be("evidence-vault-manifest-not-found");
+        missingVaultError.VaultId.Should().Be("ev-000000000000000000000000");
+
+        var traversalResponse = await client.GetAsync("/workstation/evidence/report-pack/current/..%2Fsecret-manifest.json");
+        traversalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var traversalError = await traversalResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        traversalError!.Code.Should().Be("evidence-manifest-not-found");
+
+        var malformedExportResponse = await client.PostAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new StringContent("{", Encoding.UTF8, "application/json"));
+        malformedExportResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var malformedExportError = await malformedExportResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        malformedExportError!.Code.Should().Be("invalid-evidence-export-request");
+        malformedExportError.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
     }
 
     [Fact]
@@ -137,6 +338,9 @@ public sealed class EvidenceWorkflowFabricTests
         var response = await client.GetAsync("/api/workstation/evidence/subjects/unknown/current/packet");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        error!.Code.Should().Be("unsupported-evidence-subject-kind");
+        error.SubjectKind.Should().Be("unknown");
     }
 
     [Fact]
@@ -150,7 +354,19 @@ public sealed class EvidenceWorkflowFabricTests
             GeneratedAt: DateTimeOffset.UtcNow,
             Nodes: [Node(subject, "node-1", "analysis-export", EvidenceStatusDto.Ready)],
             Edges: [],
-            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], []),
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], [])
+            {
+                ValidationIssues =
+                [
+                    new EvidenceValidationIssueDto(
+                        Code: "review-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Warning,
+                        Message: "Report-pack approval evidence requires review.",
+                        EvidenceId: "node-1",
+                        EvidenceKind: "analysis-export",
+                        SourceSystem: "test")
+                ]
+            },
             Actions: [],
             Warnings: ["This warning should be excluded."]);
 
@@ -160,9 +376,58 @@ public sealed class EvidenceWorkflowFabricTests
 
         response.ManifestPath.Should().Contain("review jan-..-2026");
         response.ManifestRoute.Should().Contain("/workstation/evidence/report-pack/review%20jan-..-2026/");
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.SubjectId.Should().Be("Review Jan/../2026");
         response.WarningCount.Should().Be(0);
+        var retainedManifest = await store.TryOpenManifestByVaultIdAsync(response.VaultIdentity.VaultId);
+        retainedManifest.Should().NotBeNull();
+        using (var reader = new StreamReader(retainedManifest!.Content))
+        {
+            var retainedJson = await reader.ReadToEndAsync();
+            retainedJson.Should().Contain("\"subjectId\": \"Review Jan/../2026\"");
+            retainedJson.Should().Contain(response.VaultIdentity.VaultId);
+        }
+
         manifestJson.Should().Contain("\"schemaVersion\": 1");
+        manifestJson.Should().Contain("\"validationIssues\": [");
+        manifestJson.Should().Contain("\"vaultIdentity\": {");
+        manifestJson.Should().Contain("\"code\": \"review-required-evidence\"");
         manifestJson.Should().NotContain("This warning should be excluded.");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestRead_RejectsDotSegmentSubjectTraversal()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject("report-pack", "current");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "node-1", "analysis-export", EvidenceStatusDto.Ready)],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export"));
+        var generatedFileName = Uri.UnescapeDataString(response.ManifestRoute.Split('/')[^1]);
+        var validManifest = await store.TryOpenManifestAsync("report-pack", "current", generatedFileName);
+        validManifest.Should().NotBeNull();
+        await validManifest!.Content.DisposeAsync();
+
+        var evidenceRoot = Path.Combine(root, "workstation", "evidence");
+        Directory.CreateDirectory(evidenceRoot);
+        var escapedManifestPath = Path.Combine(evidenceRoot, "secret-manifest.json");
+        await File.WriteAllTextAsync(escapedManifestPath, """{"schemaVersion":1}""");
+
+        var subjectIdTraversal = await store.TryOpenManifestAsync("report-pack", "..", "secret-manifest.json");
+        var subjectKindTraversal = await store.TryOpenManifestAsync("..", "report-pack", "secret-manifest.json");
+        var encodedSeparatorTraversal = await store.TryOpenManifestAsync("report-pack", "current/..", "secret-manifest.json");
+
+        subjectIdTraversal.Should().BeNull();
+        subjectKindTraversal.Should().BeNull();
+        encodedSeparatorTraversal.Should().BeNull();
     }
 
     [Fact]

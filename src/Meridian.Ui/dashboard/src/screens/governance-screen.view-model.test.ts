@@ -1,28 +1,39 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
 import {
   buildCalibrationSummaryViewState,
+  buildCorporateActionsViewState,
   buildGovernanceCashFlowViewState,
   buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
+  buildSecurityScheduleRows,
+  buildSecuritySchedulesViewState,
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationDetailActions,
+  buildReconciliationQueuePanelViewState,
   buildReconciliationDetailViewState,
   buildReconciliationNarrative,
   buildReconciliationResolveDialogState,
   buildSecurityConflictRows,
+  buildSecurityConflictRefreshCommand,
   buildSecurityIdentityDrillInState,
+  buildSecurityMasterPageViewState,
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
+  resolveSecurityScheduleEvents,
   resolveGovernanceWorkstream,
   resolveSelectedReconciliation,
+  useGovernanceReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
+  GovernanceReconciliationServices,
+  SecurityCashFlowScheduleEvent,
   SecurityMasterDrillInServices,
   SecurityMasterServices
 } from "@/screens/governance-screen.view-model";
@@ -130,6 +141,84 @@ const tradingParameters: TradingParameters = {
   asOf: "2026-05-10T00:00:00Z"
 };
 
+const corporateActions: CorporateAction[] = [
+  {
+    corpActId: "ca-div-1",
+    securityId: "sec-1",
+    eventType: "Dividend",
+    exDate: "2026-05-01T00:00:00Z",
+    payDate: "2026-05-15T00:00:00Z",
+    dividendPerShare: 0.24,
+    currency: "USD",
+    splitRatio: null,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  },
+  {
+    corpActId: "ca-split-1",
+    securityId: "sec-1",
+    eventType: "StockSplit",
+    exDate: "2026-06-01T00:00:00Z",
+    payDate: null,
+    dividendPerShare: null,
+    currency: null,
+    splitRatio: 4,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  }
+];
+
+const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
+  {
+    eventId: "sched-1-coupon",
+    securityId: "sec-1",
+    scheduleFamily: "bond",
+    eventType: "Coupon",
+    paymentDate: "2026-05-15T00:00:00Z",
+    accrualStartDate: "2025-11-15T00:00:00Z",
+    accrualEndDate: "2026-05-15T00:00:00Z",
+    couponRatePct: 5.25,
+    expectedAmount: 26250,
+    actualAmount: 26250,
+    principalAmount: null,
+    interestAmount: 26250,
+    factorStart: 1,
+    factorEnd: 1,
+    currency: "USD",
+    postingStatus: "Posted",
+    auditReference: "fixture/schedule/coupon",
+    note: "Coupon posted."
+  },
+  {
+    eventId: "sched-1-paydown",
+    securityId: "sec-1",
+    scheduleFamily: "structured",
+    eventType: "Paydown",
+    paymentDate: "2026-11-15T00:00:00Z",
+    accrualStartDate: "2026-05-15T00:00:00Z",
+    accrualEndDate: "2026-11-15T00:00:00Z",
+    couponRatePct: 5.25,
+    expectedAmount: 126250,
+    actualAmount: 124900,
+    principalAmount: 100000,
+    interestAmount: 26250,
+    factorStart: 1,
+    factorEnd: 0.9,
+    currency: "USD",
+    postingStatus: "Variance",
+    auditReference: "fixture/schedule/paydown",
+    note: "Expected-versus-actual variance."
+  }
+];
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -221,7 +310,10 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     reviewedAt: "2026-01-02T00:05:00Z",
     resolvedBy: "ops.gov",
     resolvedAt: "2026-01-02T00:10:00Z",
-    resolutionNote: "Reviewed in governance panel."
+    resolutionNote: "Reviewed in governance panel.",
+    routingTarget: "FundTrialBalance",
+    routingDetail: "Open the accounting trial balance for evidence review.",
+    recommendedAction: "Review matched fee entries before closing."
   }
 ];
 
@@ -259,6 +351,43 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("derives reconciliation detail queue row state and empty inspector copy", () => {
+    const state = buildReconciliationQueuePanelViewState(reconciliationQueue, "run-57");
+
+    expect(state).toMatchObject({
+      title: "Reconciliation detail queue",
+      overviewTitle: "Reconciliation queue",
+      overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+      overviewActionHref: "/accounting/reconciliation",
+      overviewActionLabel: "Open reconciliation",
+      overviewActionAriaLabel: "Open Accounting reconciliation workstream",
+      listLabel: "Reconciliation runs",
+      detailPanelId: "reconciliation-run-detail-panel",
+      hasRows: true
+    });
+    expect(state.rows[0]).toMatchObject({
+      runId: "run-42",
+      isSelected: false,
+      isExpanded: false,
+      controlsId: "reconciliation-run-detail-panel",
+      reconciliationTone: "warning",
+      openBreakLabel: "1 open",
+      selectAriaLabel: "Inspect reconciliation run Paper Index Mean Reversion"
+    });
+    expect(state.rows[1]).toMatchObject({
+      runId: "run-57",
+      isSelected: true,
+      isExpanded: true,
+      reconciliationTone: "primary",
+      openBreakLabel: "0 open"
+    });
+
+    const emptyState = buildReconciliationQueuePanelViewState([], null);
+    expect(emptyState.hasRows).toBe(false);
+    expect(emptyState.rows).toEqual([]);
+    expect(emptyState.detailEmptyAriaLabel).toBe("No reconciliation run selected");
   });
 
   it("derives canonical Accounting and Reporting loading states", () => {
@@ -364,7 +493,15 @@ describe("governance-screen view model", () => {
       statusTextClassName: "text-warning",
       statusBannerClassName: "border-warning/30 bg-warning/5",
       profilesLabel: "1 tolerance profile",
-      hasProfiles: true
+      hasProfiles: true,
+      tableAriaLabel: "Tolerance profile health by reconciliation route",
+      selectedProfileId: "profile-cash",
+      refreshCommand: {
+        label: "Refresh calibration",
+        ariaLabel: "Refresh calibration summary",
+        disabled: false,
+        disabledReason: null
+      }
     });
     expect(state.metricRows).toEqual([
       expect.objectContaining({ id: "total", label: "Total breaks", value: 8, tone: "default", ariaLabel: "Total breaks: 8" }),
@@ -375,6 +512,189 @@ describe("governance-screen view model", () => {
       expect.objectContaining({ id: "missing-metadata", label: "Missing metadata", value: 1, tone: "warning" })
     ]);
     expect(state.profileRows[0].ariaLabel).toContain("profile-cash");
+    expect(state.profileRows[0]).toMatchObject({
+      maxToleranceBandLabel: "$250",
+      totalBreakCount: 8,
+      inReviewBreakCount: 3,
+      signedOffCount: 4,
+      selectAriaLabel: "Inspect tolerance profile profile-cash: Operator review required",
+      detailPanelId: "calibration-profile-detail-panel",
+      isSelected: true
+    });
+    expect(state.selectedProfile).toMatchObject({
+      title: "Selected tolerance profile - profile-cash",
+      statusLabel: "Operator review required",
+      statusTone: "danger",
+      ariaLabel: "Tolerance profile detail for profile-cash"
+    });
+    expect(state.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      { label: "Tolerance band", value: "$250" },
+      { label: "Pending sign-off", value: "3" },
+      { label: "Last updated", value: "2026-05-09" }
+    ]));
+  });
+
+  it("selects requested calibration profile details and falls back to the first available row", () => {
+    const summary: ReconciliationCalibrationSummary = {
+      status: "Ready",
+      summary: "Profiles calibrated.",
+      asOf: "2026-05-09T14:30:00Z",
+      totalBreakCount: 2,
+      activeBreakCount: 0,
+      openBreakCount: 0,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 2,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 2,
+      missingCalibrationMetadataCount: 0,
+      profiles: [
+        {
+          toleranceProfileId: "profile-a",
+          exceptionRoute: "cash",
+          highestSeverity: "Info",
+          maxToleranceBand: null,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 0,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T14:00:00Z"
+        },
+        {
+          toleranceProfileId: "profile-b",
+          exceptionRoute: "settlement",
+          highestSeverity: "Warning",
+          maxToleranceBand: 125,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 1,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T15:00:00Z"
+        }
+      ]
+    };
+
+    const selected = buildCalibrationSummaryViewState(summary, false, null, "profile-b");
+    expect(selected.selectedProfileId).toBe("profile-b");
+    expect(selected.profileRows.map((row) => [row.toleranceProfileId, row.isSelected])).toEqual([
+      ["profile-a", false],
+      ["profile-b", true]
+    ]);
+    expect(selected.selectedProfile).toMatchObject({
+      title: "Selected tolerance profile - profile-b",
+      statusLabel: "Pending sign-off",
+      statusTone: "warning"
+    });
+    expect(selected.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      { label: "Tolerance band", value: "$125" }
+    ]));
+
+    const fallback = buildCalibrationSummaryViewState(summary, false, null, "missing-profile");
+    expect(fallback.selectedProfileId).toBe("profile-a");
+    expect(fallback.selectedProfile?.statusLabel).toBe("Within tolerance");
+  });
+
+  it("derives calibration refresh command states for loading and retry recovery", () => {
+    expect(buildCalibrationSummaryViewState(null, true, null).refreshCommand).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Calibration summary refresh is already running",
+      disabled: true,
+      disabledReason: "Calibration summary refresh is already running."
+    });
+    expect(buildCalibrationSummaryViewState(null, false, "Calibration API offline").refreshCommand).toEqual({
+      label: "Retry calibration summary",
+      ariaLabel: "Retry calibration summary load",
+      disabled: false,
+      disabledReason: null
+    });
+  });
+
+  it("retries calibration summary loads and ignores stale responses", async () => {
+    let resolveFirst!: (summary: ReconciliationCalibrationSummary) => void;
+    const firstLoad = new Promise<ReconciliationCalibrationSummary>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const retrySummary: ReconciliationCalibrationSummary = {
+      status: "Ready",
+      summary: "Retry summary loaded.",
+      asOf: "2026-05-09T16:00:00Z",
+      totalBreakCount: 1,
+      activeBreakCount: 0,
+      openBreakCount: 0,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 1,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 1,
+      missingCalibrationMetadataCount: 0,
+      profiles: [
+        {
+          toleranceProfileId: "retry-profile",
+          exceptionRoute: "cash",
+          highestSeverity: "Info",
+          maxToleranceBand: null,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 0,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T16:00:00Z"
+        }
+      ]
+    };
+    const staleSummary: ReconciliationCalibrationSummary = {
+      ...retrySummary,
+      summary: "Stale first response.",
+      profiles: [
+        {
+          ...retrySummary.profiles[0],
+          toleranceProfileId: "stale-profile"
+        }
+      ]
+    };
+    const services: GovernanceReconciliationServices = {
+      getBreakQueue: vi.fn().mockResolvedValue([]),
+      reviewBreak: vi.fn(),
+      resolveBreak: vi.fn(),
+      getTrialBalance: vi.fn().mockResolvedValue([]),
+      getCalibrationSummary: vi.fn()
+        .mockReturnValueOnce(firstLoad)
+        .mockResolvedValueOnce(retrySummary)
+    };
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue: [],
+      cashFlow: null,
+      reporting: null
+    } as unknown as GovernanceWorkspaceResponse;
+
+    const { result } = renderHook(() => useGovernanceReconciliationViewModel({
+      ...bootstrapData
+    }, "reconciliation", services));
+
+    await waitFor(() => expect(result.current.calibrationView.refreshCommand.disabled).toBe(true));
+    act(() => {
+      result.current.calibrationView.refresh();
+    });
+    await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
+
+    act(() => {
+      resolveFirst(staleSummary);
+    });
+
+    await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
+    expect(result.current.calibrationView.selectedProfile?.title).toContain("retry-profile");
   });
 
   it("derives trial-balance table rows, labels, and status announcements", () => {
@@ -382,30 +702,144 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: trialBalanceLines,
       loading: false,
-      errorText: null
+      error: null
     });
 
     expect(state).toMatchObject({
-      title: "Multi-ledger trial balance",
-      description: "Baseline ledger balances for run-42 grouped by account type.",
-      tableLabel: "Trial balance lines for run-42",
+      title: "Primary trial balance",
+      description: "Primary basis ledger balances for run-42 grouped by account type. Values are basis per configured policy until accountant review.",
+      tableLabel: "Primary trial balance lines for run-42",
+      selectedBasis: "Primary",
       state: "ready",
       hasRows: true,
       statusAnnouncement: "2 trial balance lines loaded for run-42."
     });
+    expect(state.basisOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "Primary", rowCount: 2, rowCountLabel: "2 rows", isSelected: true }),
+      expect.objectContaining({ id: "Gaap", rowCount: 0, rowCountLabel: "0 rows", isSelected: false })
+    ]));
     expect(state.rows[0]).toMatchObject({
-      rowId: "Cash-Asset-acct-cash",
+      rowId: "Primary-Cash-Asset-acct-cash",
       accountLabel: "Cash",
       accountTypeLabel: "Asset",
+      basisLabel: "Primary basis",
+      policyLabel: "legacy-v1/legacy-v1",
       balanceLabel: "$120,500",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Balance $120,500. 12 entries"
+      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Balance $120,500. 12 entries",
+      selectAriaLabel: "Inspect trial-balance account Cash for Asset",
+      detailPanelId: "trial-balance-account-detail",
+      isExpanded: true
+    });
+    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash");
+    expect(state.selectedDetail).toMatchObject({
+      eyebrow: "Trial-balance detail",
+      title: "Cash",
+      subtitle: "Asset · acct-cash",
+      statusLabel: "Debit / asset",
+      statusVariant: "success",
+      ariaLabel: "Trial-balance detail for Cash"
     });
     expect(state.rows[1]).toMatchObject({
       balanceLabel: "-$500",
-      balanceTone: "danger"
+      balanceTone: "danger",
+      isExpanded: false
     });
+
+    const selectedFinancing = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      selectedRowId: "Primary-Financing payable-Liability-acct-financing",
+      loading: false,
+      error: null
+    });
+    expect(selectedFinancing.selectedDetail).toMatchObject({
+      title: "Financing payable",
+      statusLabel: "Credit / payable",
+      statusVariant: "danger"
+    });
+  });
+
+  it("filters trial-balance rows by basis and builds a basis bridge", () => {
+    const state = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      selectedBasis: "Gaap",
+      rows: [
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 120500,
+          entryCount: 12,
+          security: null,
+          accountingBasis: "Primary",
+          accountingPolicyId: "legacy-v1",
+          accountingPolicyVersion: "legacy-v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        },
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 119500,
+          entryCount: 10,
+          security: null,
+          accountingBasis: "Gaap",
+          accountingPolicyId: "gaap-default-v1",
+          accountingPolicyVersion: "v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        },
+        {
+          accountName: "Accrued interest receivable",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-interest",
+          balance: 1000,
+          entryCount: 1,
+          security: null,
+          accountingBasis: "Gaap",
+          accountingPolicyId: "gaap-default-v1",
+          accountingPolicyVersion: "v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        }
+      ],
+      loading: false,
+      error: null
+    });
+
+    expect(state.selectedBasis).toBe("Gaap");
+    expect(state.rows).toHaveLength(2);
+    expect(state.rows[0]).toMatchObject({
+      basisLabel: "GAAP basis",
+      basisTone: "success",
+      policyLabel: "gaap-default-v1/v1"
+    });
+    expect(state.basisOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "Primary", rowCount: 1, isSelected: false }),
+      expect.objectContaining({ id: "Gaap", rowCount: 2, isSelected: true })
+    ]));
+    expect(state.basisBridge).toMatchObject({
+      title: "Basis bridge",
+      fromBasis: "Primary",
+      toBasis: "Gaap",
+      hasRows: true
+    });
+    expect(state.basisBridge.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        accountLabel: "Cash",
+        primaryBalanceLabel: "$120,500",
+        comparisonBalanceLabel: "$119,500",
+        varianceLabel: "-$1,000",
+        varianceTone: "danger",
+        sourceLabel: "Source event-42 / Rule direct-lending.daily-accrual"
+      })
+    ]));
   });
 
   it("derives trial-balance loading, empty, and error states", () => {
@@ -413,7 +847,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: [],
       loading: true,
-      errorText: null
+      error: null
     })).toMatchObject({
       state: "loading",
       loadingText: "Loading trial balance for run-42.",
@@ -424,7 +858,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: [],
       loading: false,
-      errorText: null
+      error: null
     })).toMatchObject({
       state: "empty",
       emptyTitle: "No trial balance lines",
@@ -435,7 +869,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: trialBalanceLines,
       loading: false,
-      errorText: "Ledger unavailable."
+      error: "Ledger unavailable."
     })).toMatchObject({
       state: "error",
       errorText: "Ledger unavailable.",
@@ -493,6 +927,8 @@ describe("governance-screen view model", () => {
     expect(complete.resultRows[0]).toMatchObject({
       rowId: "security-result-sec-1",
       isSelected: false,
+      detailPanelId: "security-master-identity-detail",
+      isExpanded: false,
       selectAriaLabel: "Open identity drill-in for Apple Inc.",
       primaryIdentifierLabel: "Ticker: AAPL",
       statusTone: "success",
@@ -508,12 +944,179 @@ describe("governance-screen view model", () => {
     expect(rows[0]).toMatchObject({
       rowId: "security-result-sec-1",
       isSelected: true,
+      detailPanelId: "security-master-identity-detail",
+      isExpanded: true,
       selectAriaLabel: "Open identity drill-in for Apple Inc.",
       primaryIdentifierLabel: "Ticker: AAPL",
       statusTone: "success"
     });
     expect(rows[0].ariaLabel).toContain("selected");
     expect(buildSecuritySearchResultRows(null, null)).toEqual([]);
+  });
+
+  it("derives selectable corporate-action rows with a detail panel", () => {
+    const state = buildCorporateActionsViewState("sec-1", corporateActions, "ca-split-1", false, null);
+
+    expect(state).toMatchObject({
+      tableLabel: "Corporate actions for sec-1",
+      detailPanelId: "corporate-action-detail-panel",
+      selectedRowId: "ca-split-1",
+      hasRows: true,
+      errorText: null,
+      errorDetails: [],
+      loadingText: null
+    });
+    expect(state.rows[1]).toMatchObject({
+      rowId: "ca-split-1",
+      eventTypeLabel: "Stock split",
+      amountLabel: "4:1 split",
+      selectAriaLabel: "Inspect corporate action Stock split for sec-1",
+      detailPanelId: "corporate-action-detail-panel",
+      isExpanded: true
+    });
+    expect(state.selectedDetail).toMatchObject({
+      id: "corporate-action-detail-panel",
+      title: "Stock split",
+      ariaLabel: "Corporate action detail for Stock split on sec-1",
+      statusLabel: "Pay date unavailable"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Amount or ratio", value: "4:1 split", tone: "default" },
+      { label: "Pay date", value: "—", tone: "warning" }
+    ]));
+  });
+
+  it("keeps corporate-action loading, empty, and error states in the view model", () => {
+    expect(buildCorporateActionsViewState("sec-1", null, null, true, null)).toMatchObject({
+      loadingText: "Loading corporate actions...",
+      statusAnnouncement: "Loading corporate actions for sec-1."
+    });
+
+    expect(buildCorporateActionsViewState("sec-1", [], null, false, null)).toMatchObject({
+      hasRows: false,
+      emptyText: "No corporate actions recorded for sec-1.",
+      selectedDetail: null,
+      detailEmptyAriaLabel: "No corporate action selected"
+    });
+
+    expect(buildCorporateActionsViewState("sec-1", [], null, false, "Corporate API offline")).toMatchObject({
+      errorText: "Corporate API offline",
+      errorDetails: [],
+      statusAnnouncement: "Corporate actions error: Corporate API offline"
+    });
+  });
+
+  it("preserves structured Governance api-errors in trial balance, calibration, and corporate actions views", () => {
+    const apiError = new MeridianApiError({
+      path: "/api/workstation/governance/trial-balance",
+      status: 422,
+      title: "Validation failed",
+      detail: "Fund account is required.",
+      validationIssues: [
+        {
+          field: "fundAccountId",
+          label: "Fund account",
+          messages: ["Select a fund account before loading governance evidence."]
+        }
+      ]
+    });
+
+    const displayError = describeApiError(apiError, "Trial balance failed to load.");
+
+    const trialBalanceState = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [],
+      loading: false,
+      error: displayError
+    });
+    expect(trialBalanceState).toMatchObject({
+      state: "error",
+      errorText: "Fund account is required."
+    });
+    expect(trialBalanceState.errorDetails).toEqual([
+      "Endpoint returned 422 for /api/workstation/governance/trial-balance.",
+      "Validation failed",
+      "Fund account: Select a fund account before loading governance evidence."
+    ]);
+
+    const calibrationState = buildCalibrationSummaryViewState(null, false, displayError);
+    expect(calibrationState.errorText).toBe("Fund account is required.");
+    expect(calibrationState.errorDetails).toEqual(trialBalanceState.errorDetails);
+
+    const corporateActionsState = buildCorporateActionsViewState("sec-1", [], null, false, displayError);
+    expect(corporateActionsState.errorText).toBe("Fund account is required.");
+    expect(corporateActionsState.errorDetails).toEqual(trialBalanceState.errorDetails);
+  });
+
+  it("derives cash-flow and factor schedule rows with selected detail state", () => {
+    const rows = buildSecurityScheduleRows(cashFlowSchedules, "sched-1-paydown");
+    const state = buildSecuritySchedulesViewState({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Fixed Income",
+      schedules: cashFlowSchedules,
+      selectedRowId: "sched-1-paydown"
+    });
+
+    expect(rows[1]).toMatchObject({
+      rowId: "sched-1-paydown",
+      eventTypeLabel: "Paydown",
+      paymentDateLabel: "2026-11-15",
+      expectedAmountLabel: "126,250 USD",
+      actualAmountLabel: "124,900 USD",
+      varianceLabel: "-1,350 USD",
+      factorLabel: "1.000000 -> 0.900000",
+      postingStatusLabel: "Variance review",
+      postingStatusTone: "danger",
+      selectAriaLabel: "Inspect schedule event Paydown for sec-1 on 2026-11-15",
+      detailPanelId: "security-schedule-detail-panel",
+      isExpanded: true
+    });
+    expect(state).toMatchObject({
+      title: "Cash-flow and factor schedules",
+      tableLabel: "Cash-flow and factor schedules for sec-1",
+      selectedRowId: "sched-1-paydown",
+      hasRows: true,
+      statusAnnouncement: "2 cash-flow schedule events loaded for sec-1."
+    });
+    expect(state.toolbarItems).toEqual(expect.arrayContaining([
+      { id: "events", label: "Events", value: "2", active: true },
+      { id: "variance", label: "Variance", value: "1" }
+    ]));
+    expect(state.selectedDetail).toMatchObject({
+      id: "security-schedule-detail-panel",
+      title: "Paydown",
+      ariaLabel: "Cash-flow schedule detail for Paydown on sec-1",
+      statusLabel: "Variance review",
+      statusTone: "danger"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Expected", value: "126,250 USD" },
+      { label: "Actual", value: "124,900 USD", tone: "default" },
+      { label: "Variance", value: "-1,350 USD", tone: "danger" },
+      { label: "Factor", value: "1.000000 -> 0.900000" }
+    ]));
+  });
+
+  it("keeps cash-flow schedule empty states and fixture resolution deterministic", () => {
+    expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
+    expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+
+    const state = buildSecuritySchedulesViewState({
+      securityId: "unknown-security",
+      displayName: "Unknown security",
+      assetClass: "Unclassified",
+      schedules: [],
+      selectedRowId: null
+    });
+
+    expect(state).toMatchObject({
+      hasRows: false,
+      selectedDetail: null,
+      emptyText: "No cash-flow or factor schedule rows are available for unknown-security.",
+      detailEmptyAriaLabel: "No cash-flow schedule event selected",
+      statusAnnouncement: ""
+    });
   });
 
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {
@@ -611,12 +1214,152 @@ describe("governance-screen view model", () => {
     expect(failed.statusAnnouncement).toBe("Security search failed: Provider offline");
     expect(countOpenSecurityConflicts(conflicts)).toBe(1);
     expect(countOpenSecurityConflicts(null)).toBe(0);
+    expect(buildSecurityConflictRefreshCommand(false, null)).toEqual({
+      label: "Refresh conflicts",
+      ariaLabel: "Refresh Security Master identifier conflicts",
+      disabled: false,
+      disabledReason: null,
+      busy: false,
+      busyLabel: null,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: null
+    });
+    expect(buildSecurityConflictRefreshCommand(true, null)).toMatchObject({
+      label: "Refreshing...",
+      disabled: true,
+      disabledReason: "Identifier conflicts are already loading.",
+      busy: true,
+      busyLabel: "Refreshing..."
+    });
+    expect(buildSecurityConflictRefreshCommand(false, "Provider offline")).toMatchObject({
+      label: "Retry conflicts",
+      ariaLabel: "Retry loading Security Master identifier conflicts"
+    });
+    expect(buildSecurityConflictRefreshCommand(false, null, "conflict-1")).toMatchObject({
+      label: "Refresh conflicts",
+      ariaLabel: "Refresh disabled while identifier conflict conflict-1 is resolving",
+      disabled: true,
+      disabledReason: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.",
+      busy: false,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue."
+    });
+  });
+
+  it("preserves structured Security Master search errors with operator details", () => {
+    const failed = buildSecuritySearchState({
+      query: "AAPL",
+      searching: false,
+      results: [],
+      searchError: describeApiError(new MeridianApiError({
+        path: "/api/security-master/search",
+        status: 503,
+        title: "Provider unavailable",
+        detail: "Search feed is offline."
+      }), "Security search failed."),
+      identityLoading: false,
+      identityError: null
+    });
+
+    expect(failed.searchErrorText).toBe("Security search failed: Search feed is offline.");
+    expect(failed.searchErrorDetails).toEqual([
+      "Endpoint returned 503 for /api/security-master/search.",
+      "Provider unavailable"
+    ]);
+    expect(failed.statusAnnouncement).toBe("Security search failed: Search feed is offline.");
+  });
+
+  it("derives Security Master master-detail page summary from selected state", () => {
+    const state = buildSecurityMasterPageViewState({
+      query: "AAPL",
+      results: [securityResult],
+      selectedSecurityId: "sec-1",
+      selectedDisplayName: "Apple Inc.",
+      selectedAssetClass: "Equity",
+      selectedStatus: "Active",
+      identity: securityIdentity,
+      identityLoading: false,
+      conflicts,
+      conflictsLoading: false,
+      corporateActions,
+      securitySchedules: cashFlowSchedules,
+      tradingParameters
+    });
+
+    expect(state).toMatchObject({
+      ariaLabel: "Security Master command deck",
+      title: "Security Master command deck",
+      detailTitle: "Security detail page",
+      detailSubtitle: "sec-1 · Equity",
+      detailStatusLabel: "Active",
+      detailStatusBadgeVariant: "success"
+    });
+    expect(state.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "results", value: "1", tone: "success" }),
+      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Security ID sec-1" }),
+      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" })
+    ]));
+    expect(state.detailSections).toEqual(expect.arrayContaining([
+      { id: "overview", label: "Overview", value: "1 identifier", active: true },
+      { id: "schedules", label: "Schedules", value: "2 cash-flow events" },
+      { id: "controls", label: "Controls", value: "Trading set" },
+      { id: "audit", label: "Audit", value: "1 conflict" }
+    ]));
+  });
+
+  it("retries Security Master identifier conflicts through view-model command state", async () => {
+    const retryConflicts = deferred<SecurityMasterConflict[]>();
+    const services = createSecurityMasterServices({
+      getConflicts: vi.fn()
+        .mockRejectedValueOnce(new MeridianApiError({
+          path: "/api/workstation/security-master/conflicts",
+          status: 503,
+          detail: "Conflict API offline"
+        }))
+        .mockReturnValueOnce(retryConflicts.promise)
+    });
+    const drillInServices = createSecurityMasterDrillInServices();
+
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+
+    await waitFor(() => expect(result.current.conflictsErrorText).toBe("Conflict API offline"));
+    expect(result.current.conflictsErrorDetails).toEqual([
+      "Endpoint returned 503 for /api/workstation/security-master/conflicts."
+    ]);
+    expect(result.current.conflictRefreshCommand).toMatchObject({
+      label: "Retry conflicts",
+      disabled: false
+    });
+
+    let retry!: Promise<void>;
+    act(() => {
+      retry = result.current.refreshConflicts();
+    });
+
+    await waitFor(() => expect(result.current.conflictRefreshCommand).toMatchObject({
+      label: "Refreshing...",
+      disabled: true,
+      busy: true
+    }));
+
+    await act(async () => {
+      retryConflicts.resolve(conflicts);
+      await retry;
+    });
+
+    expect(result.current.conflictsErrorText).toBeNull();
+    expect(result.current.conflictRows).toHaveLength(2);
+    expect(result.current.conflictRefreshCommand).toMatchObject({
+      label: "Refresh conflicts",
+      disabled: false
+    });
   });
 
   it("derives Security Master identity drill-in rows and accessible table labels", () => {
     const state = buildSecurityIdentityDrillInState(securityIdentity);
 
     expect(state).toMatchObject({
+      panelId: "security-master-identity-detail",
       title: "Identity drill-in · Apple Inc.",
       subtitle: "sec-1 · v3 · Equity",
       description: "1 identifier · 1 alias · effective 2024-01-01 -> active",
@@ -669,19 +1412,22 @@ describe("governance-screen view model", () => {
         resolution: "AcceptA",
         label: "Use Bloomberg",
         disabled: true,
-        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+        disabledReason: "Resolution is already in progress for identifier conflict conflict-1.",
+        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1. Disabled: Resolution is already in progress for identifier conflict conflict-1."
       }),
       expect.objectContaining({
         resolution: "AcceptB",
         label: "Use Refinitiv",
         disabled: true,
-        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Refinitiv value sec-2"
+        disabledReason: "Resolution is already in progress for identifier conflict conflict-1.",
+        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Refinitiv value sec-2. Disabled: Resolution is already in progress for identifier conflict conflict-1."
       }),
       expect.objectContaining({
         resolution: "Dismiss",
         label: "Dismiss conflict",
         disabled: true,
-        ariaLabel: "Dismiss identifier conflict conflict-1 on identifiers.CUSIP"
+        disabledReason: "Resolution is already in progress for identifier conflict conflict-1.",
+        ariaLabel: "Dismiss identifier conflict conflict-1 on identifiers.CUSIP. Disabled: Resolution is already in progress for identifier conflict conflict-1."
       })
     ]);
     expect(rows[1]).toMatchObject({
@@ -698,6 +1444,11 @@ describe("governance-screen view model", () => {
     expect(rows[0]).toMatchObject({
       breakId: "run-42:cash",
       actionBusy: true,
+      varianceLabel: "+$500.00",
+      varianceTone: "success",
+      statusBadgeVariant: "danger",
+      ownerLabel: "Unassigned",
+      rowSelectAriaLabel: "Inspect reconciliation break run-42:cash",
       assignLabel: "Assigning...",
       canAssign: false,
       canResolve: false,
@@ -713,6 +1464,7 @@ describe("governance-screen view model", () => {
 
     const state = buildReconciliationBreakQueueState({
       breakQueue,
+      selectedBreakId: "run-57:fees",
       loading: false,
       loadError: null,
       action: { breakId: "run-42:cash", command: "assign" },
@@ -720,6 +1472,27 @@ describe("governance-screen view model", () => {
     });
 
     expect(state.hasBreaks).toBe(true);
+    expect(state.tableLabel).toBe("Reconciliation break queue");
+    expect(state.selectedBreakId).toBe("run-57:fees");
+    expect(state.selectedDetail).toMatchObject({
+      id: "reconciliation-break-detail-panel",
+      title: "Intraday Vol Carry - FeeMismatch",
+      statusLabel: "Resolved",
+      statusBadgeVariant: "success",
+      recommendedActionText: "Review matched fee entries before closing.",
+      routingActionLabel: "Open routing target",
+      routingActionHref: "/accounting",
+      routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Detected", value: "Jan 2, 00:00 UTC" },
+      { label: "Updated", value: "Jan 2, 00:00 UTC" }
+    ]));
+    expect(state.rows[1]).toMatchObject({
+      isSelected: true,
+      isExpanded: true,
+      detailPanelId: "reconciliation-break-detail-panel"
+    });
     expect(state.statusAnnouncement).toBe("Assigning reconciliation break run-42:cash.");
   });
 
@@ -733,6 +1506,8 @@ describe("governance-screen view model", () => {
     });
 
     expect(empty.hasBreaks).toBe(false);
+    expect(empty.selectedDetail).toBeNull();
+    expect(empty.detailEmptyAriaLabel).toBe("No reconciliation break selected");
     expect(empty.emptyText).toBe("No reconciliation breaks in the current queue.");
     expect(empty.statusAnnouncement).toBe("No reconciliation breaks in the current queue.");
 
@@ -862,6 +1637,7 @@ describe("governance-screen view model", () => {
     expect(state.selectedExportProfileId).toBe("board");
     expect(state.exportCanRun).toBe(true);
     expect(state.exportAriaLabel).toBe("Run reporting export for Board packet");
+    expect(state.exportDisabledReason).toBeNull();
     expect(state.backendLinks).toEqual([
       {
         id: "preview",
@@ -896,6 +1672,36 @@ describe("governance-screen view model", () => {
     expect(state.nextAction).toBe("Sync reporting profile metadata before packet generation.");
     expect(state.exportCanRun).toBe(false);
     expect(state.exportAriaLabel).toBe("Run reporting export unavailable until a reporting profile is loaded");
+    expect(state.exportDisabledReason).toBe("Load or select a reporting profile before running an export.");
+  });
+
+  it("surfaces reporting export busy state from the view model", () => {
+    const state = buildGovernanceReportingViewState({
+      reporting: {
+        profileCount: 1,
+        recommendedProfiles: ["excel"],
+        reportPackTargets: ["board"],
+        summary: "1 profile loaded.",
+        profiles: [
+          {
+            id: "excel",
+            name: "Excel",
+            targetTool: "Excel",
+            format: "Xlsx",
+            description: "Board-ready workbook export.",
+            loaderScript: false,
+            dataDictionary: true
+          }
+        ]
+      },
+      selectedProfileId: "excel",
+      exportBusy: true
+    });
+
+    expect(state.exportCanRun).toBe(false);
+    expect(state.exportButtonLabel).toBe("Export running...");
+    expect(state.exportAriaLabel).toBe("Excel reporting export is already running");
+    expect(state.exportDisabledReason).toBe("Excel reporting export is already running.");
   });
 
   it("formats reporting export command results for success and failure states", () => {

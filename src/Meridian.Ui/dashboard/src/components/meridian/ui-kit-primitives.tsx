@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactNode } from "react";
+import { useId, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ToolbarStripItem {
@@ -41,7 +41,13 @@ export interface DenseDataTableColumn<T> {
   label: string;
   align?: "left" | "right";
   className?: string;
+  sortable?: boolean;
   render: (row: T) => ReactNode;
+}
+
+export interface DenseDataTableSortState {
+  columnId: string;
+  direction: "asc" | "desc";
 }
 
 export function DenseDataTable<T>({
@@ -51,12 +57,16 @@ export function DenseDataTable<T>({
   getRowAriaLabel,
   getRowAriaControls,
   getRowAriaExpanded,
+  getRowClassName,
   getRowSelectAriaLabel,
   onRowSelect,
   selectedRowId,
   emptyText,
   ariaLabel,
-  caption
+  tableId,
+  caption,
+  sort = null,
+  onToggleSort
 }: {
   columns: DenseDataTableColumn<T>[];
   rows: T[];
@@ -64,32 +74,73 @@ export function DenseDataTable<T>({
   getRowAriaLabel?: (row: T) => string;
   getRowAriaControls?: (row: T) => string | undefined;
   getRowAriaExpanded?: (row: T) => boolean | undefined;
+  getRowClassName?: (row: T) => string | undefined;
   getRowSelectAriaLabel?: (row: T) => string;
   onRowSelect?: (row: T) => void;
   selectedRowId?: string | null;
   emptyText: string;
   ariaLabel: string;
+  tableId?: string;
   caption?: string | null;
+  sort?: DenseDataTableSortState | null;
+  onToggleSort?: (columnId: string) => void;
 }) {
+  const generatedKeyboardInstructionsId = useId();
+  const selectableRows = onRowSelect !== undefined && rows.length > 0;
+  const keyboardInstructionsId = `${tableId ?? generatedKeyboardInstructionsId}-keyboard-instructions`;
+  const focusableRowId = resolveFocusableDenseRowId(rows, getRowId, selectedRowId);
+
   return (
     <div className="dense-data-table-wrap">
-      <table className="dense-data-table" aria-label={ariaLabel}>
+      {selectableRows ? (
+        <p id={keyboardInstructionsId} className="sr-only">
+          Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row.
+        </p>
+      ) : null}
+      <table
+        id={tableId}
+        className="dense-data-table"
+        aria-label={ariaLabel}
+        aria-describedby={selectableRows ? keyboardInstructionsId : undefined}
+      >
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr>
-            {columns.map((column) => (
-              <th
-                key={column.id}
-                scope="col"
-                className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
-              >
-                {column.label}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const sortable = Boolean(column.sortable && onToggleSort);
+              const sorted = sortable && sort?.columnId === column.id;
+              return (
+                <th
+                  key={column.id}
+                  scope="col"
+                  aria-sort={sortable ? sorted ? sort.direction === "asc" ? "ascending" : "descending" : "none" : undefined}
+                  className={cn(
+                    column.align === "right" ? "text-right" : "text-left",
+                    sortable ? "dense-data-table-sortable" : undefined,
+                    sorted ? "dense-data-table-sorted" : undefined,
+                    column.className
+                  )}
+                >
+                  {sortable ? (
+                    <button
+                      type="button"
+                      className="dense-data-table-sort-button"
+                      onClick={() => onToggleSort?.(column.id)}
+                      aria-label={buildSortButtonAriaLabel(column, sorted ? sort : null)}
+                    >
+                      <span>{column.label}</span>
+                      <span className="dense-data-table-sort-indicator" aria-hidden="true">
+                        {sorted ? sort.direction === "asc" ? "^" : "v" : "-"}
+                      </span>
+                    </button>
+                  ) : column.label}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
-          {rows.length > 0 ? rows.map((row) => {
+          {rows.length > 0 ? rows.map((row, rowIndex) => {
             const rowId = getRowId(row);
             const selected = selectedRowId === rowId;
             const selectable = onRowSelect !== undefined;
@@ -104,15 +155,22 @@ export function DenseDataTable<T>({
                 aria-controls={selectable ? getRowAriaControls?.(row) : undefined}
                 aria-expanded={rowAriaExpanded}
                 aria-selected={selected || undefined}
-                tabIndex={selectable ? 0 : undefined}
+                tabIndex={selectable ? rowId === focusableRowId ? 0 : -1 : undefined}
                 data-selectable={selectable ? "true" : undefined}
-                className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined)}
+                data-dense-row-id={selectable ? rowId : undefined}
+                className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined, getRowClassName?.(row))}
                 onClick={selectable ? (event) => {
                   if (isInteractiveTableTarget(event.target)) return;
                   onRowSelect(row);
                 } : undefined}
                 onKeyDown={selectable ? (event) => {
-                  handleSelectableRowKeyDown(event, row, onRowSelect);
+                  handleSelectableRowKeyDown(event, {
+                    row,
+                    rowIndex,
+                    rows,
+                    getRowId,
+                    onRowSelect
+                  });
                 } : undefined}
               >
                 {columns.map((column) => (
@@ -138,16 +196,87 @@ export function DenseDataTable<T>({
   );
 }
 
+function resolveFocusableDenseRowId<T>(
+  rows: T[],
+  getRowId: (row: T) => string,
+  selectedRowId?: string | null
+): string | null {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  if (selectedRowId && rows.some((row) => getRowId(row) === selectedRowId)) {
+    return selectedRowId;
+  }
+
+  return getRowId(rows[0]);
+}
+
+function buildSortButtonAriaLabel<T>(
+  column: DenseDataTableColumn<T>,
+  sort: DenseDataTableSortState | null
+): string {
+  if (!sort) {
+    return `Sort by ${column.label}`;
+  }
+
+  return `${column.label} sorted ${sort.direction === "asc" ? "ascending" : "descending"}. Activate to change sort.`;
+}
+
 function handleSelectableRowKeyDown<T>(
   event: KeyboardEvent<HTMLTableRowElement>,
-  row: T,
-  onRowSelect: (row: T) => void
+  options: {
+    row: T;
+    rowIndex: number;
+    rows: T[];
+    getRowId: (row: T) => string;
+    onRowSelect: (row: T) => void;
+  }
 ) {
   if (event.target !== event.currentTarget) return;
-  if (event.key !== "Enter" && event.key !== " ") return;
+
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    options.onRowSelect(options.row);
+    return;
+  }
+
+  const targetIndex = resolveKeyboardTargetRowIndex(event.key, options.rowIndex, options.rows.length);
+  if (targetIndex === null) {
+    return;
+  }
 
   event.preventDefault();
-  onRowSelect(row);
+  const targetRow = options.rows[targetIndex];
+  if (!targetRow) {
+    return;
+  }
+
+  const targetRowId = options.getRowId(targetRow);
+  const targetElement = event.currentTarget
+    .closest("tbody")
+    ?.querySelector<HTMLTableRowElement>(`tr[data-dense-row-id="${escapeAttributeSelectorValue(targetRowId)}"]`);
+  targetElement?.focus();
+  options.onRowSelect(targetRow);
+}
+
+function resolveKeyboardTargetRowIndex(key: string, rowIndex: number, rowCount: number): number | null {
+  switch (key) {
+    case "ArrowDown":
+      return Math.min(rowCount - 1, rowIndex + 1);
+    case "ArrowUp":
+      return Math.max(0, rowIndex - 1);
+    case "Home":
+      return 0;
+    case "End":
+      return rowCount - 1;
+    default:
+      return null;
+  }
+}
+
+function escapeAttributeSelectorValue(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
 }
 
 function isInteractiveTableTarget(target: EventTarget): boolean {
@@ -161,6 +290,7 @@ export interface EntitySummaryField {
 }
 
 export function EntitySummary({
+  id,
   eyebrow,
   title,
   subtitle,
@@ -170,6 +300,7 @@ export function EntitySummary({
   actions,
   ariaLabel
 }: {
+  id?: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -180,7 +311,7 @@ export function EntitySummary({
   ariaLabel: string;
 }) {
   return (
-    <section className="entity-summary" role="region" aria-label={ariaLabel}>
+    <section id={id} className="entity-summary" role="region" aria-label={ariaLabel}>
       <div className="entity-summary-head">
         <div className="min-w-0">
           <div className="eyebrow-label">{eyebrow}</div>

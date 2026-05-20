@@ -117,7 +117,10 @@ public static class FundAccountEndpoints
             return Results.Json(accounts, jsonOptions);
         })
         .WithName("GetFundAccountsByOwnershipTraversal")
-        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .AddEndpointFilter(RequireFundAccountAccess);
 
         group.MapPatch("/{accountId:guid}/custodian-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
@@ -173,7 +176,11 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var deactivatedBy = context.Request.Query["deactivatedBy"].FirstOrDefault() ?? "system";
+            if (!EndpointAuthorization.TryResolveActor(context, out var deactivatedBy))
+            {
+                return Results.Unauthorized();
+            }
+
             var result = await service.DeactivateAccountAsync(accountId, deactivatedBy, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
@@ -186,7 +193,7 @@ public static class FundAccountEndpoints
         group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -202,7 +209,7 @@ public static class FundAccountEndpoints
         app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -218,7 +225,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -234,7 +241,7 @@ public static class FundAccountEndpoints
         group.MapPost("/{accountId:guid}/brokerage-sync/link", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -258,7 +265,7 @@ public static class FundAccountEndpoints
         group.MapPost("/{accountId:guid}/brokerage-sync/run", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -278,7 +285,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -294,7 +301,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -314,7 +321,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -333,7 +340,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/cash-flow", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -402,6 +409,34 @@ public static class FundAccountEndpoints
         })
         .WithName("GetLatestAccountBalanceSnapshot")
         .Produces<AccountBalanceSnapshotDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        // ── Sync history and readiness ───────────────────────────────────────
+
+        group.MapGet("/{accountId:guid}/sync-history", async (Guid accountId, HttpContext context) =>
+        {
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
+                return ServiceUnavailable();
+
+            var capability = context.Request.Query["capability"].FirstOrDefault();
+            var results = await queryService.GetSyncHistoryAsync(accountId, capability, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(results, jsonOptions);
+        })
+        .WithName("GetAccountSyncHistory")
+        .Produces<IReadOnlyList<AccountSyncHistoryEntryDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/{accountId:guid}/readiness", async (Guid accountId, HttpContext context) =>
+        {
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
+                return ServiceUnavailable();
+
+            var result = await queryService.GetReadinessAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetAccountReadiness")
+        .Produces<AccountReadinessSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
         // ── Statement ingestion ───────────────────────────────────────────────
@@ -557,29 +592,20 @@ public static class FundAccountEndpoints
 
     private static ValueTask<object?> RequireFundAccountAccess(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
-        if (!TryGetCurrentRole(context.HttpContext, out var role))
+        if (!EndpointAuthorization.TryGetPermissions(context.HttpContext, out _))
         {
             return ValueTask.FromResult<object?>(Results.Unauthorized());
         }
 
-        if (role is UserRole.Admin or UserRole.Developer or UserRole.Accounting)
+        if (EndpointAuthorization.HasAnyPermission(
+                context.HttpContext,
+                UserPermission.AdminMaintenance,
+                UserPermission.ManageDirectLending))
         {
             return next(context);
         }
 
-        return ValueTask.FromResult<object?>(Results.Forbid());
-    }
-
-    private static bool TryGetCurrentRole(HttpContext context, out UserRole role)
-    {
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var item) && item is UserRole currentRole)
-        {
-            role = currentRole;
-            return true;
-        }
-
-        role = default;
-        return false;
+        return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
     }
 
     private static IResult ServiceUnavailable() =>
@@ -589,15 +615,14 @@ public static class FundAccountEndpoints
         Results.Problem("Brokerage sync service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasBrokerageSyncAccess(HttpContext context)
-        => TryGetCurrentPermissions(context, out var permissions)
-           && permissions.HasFlag(UserPermission.ViewTrades);
+        => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);
 
     private static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
         Guid accountId,
         HttpContext context,
         bool requireWriteAccess = false)
     {
-        if (!TryGetCurrentPermissions(context, out var permissions)
+        if (!EndpointAuthorization.TryGetPermissions(context, out var permissions)
             || !permissions.HasFlag(UserPermission.ViewTrades))
         {
             return false;
@@ -618,18 +643,6 @@ public static class FundAccountEndpoints
 
         var account = await queryService.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
         return account is not null;
-    }
-
-    private static bool TryGetCurrentPermissions(HttpContext context, out UserPermission permissions)
-    {
-        permissions = UserPermission.None;
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission currentPermissions)
-        {
-            permissions = currentPermissions;
-            return true;
-        }
-
-        return false;
     }
 
     private static async Task<WorkstationBrokerageSyncRunRequestDto?> ReadBrokerageSyncRequestAsync(

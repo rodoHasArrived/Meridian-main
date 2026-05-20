@@ -22,6 +22,7 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
 
     def test_workflow_publishes_pilot_readiness_artifact(self) -> None:
         self.assertIn("generate-pilot-readiness-dashboard.py", self.workflow)
+        self.assertIn("artifacts/pilot-acceptance/latest/pilot-readiness.md", self.workflow)
         self.assertIn("artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md", self.workflow)
         self.assertIn("name: pilot-acceptance-evidence", self.workflow)
 

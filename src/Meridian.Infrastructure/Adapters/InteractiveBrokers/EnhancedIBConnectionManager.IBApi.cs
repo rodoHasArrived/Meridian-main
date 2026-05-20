@@ -870,6 +870,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             permId,
             clientId,
             whyHeld,
+            null,
             DateTimeOffset.UtcNow));
     }
 
@@ -923,6 +924,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             execution.AcctNumber,
             execution.Exchange,
             execution.PermId,
+            BuildContractMetadata(contract),
             executedAt));
     }
 

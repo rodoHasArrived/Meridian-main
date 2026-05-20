@@ -38,13 +38,36 @@ public sealed class SwapProjectionService : ISwapReferenceService
         }
 
         var rows = await _projectionStore.GetBySwapTypeAsync(swapType.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(r => MapRow(r, default)).ToArray();
+        return await MapRowsWithSecurityTermsAsync(rows, ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<SwapReferenceDto>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
     {
         var rows = await _projectionStore.GetMaturingBeforeAsync(beforeDate, ct).ConfigureAwait(false);
-        return rows.Select(r => MapRow(r, default)).ToArray();
+        return await MapRowsWithSecurityTermsAsync(rows, ct).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<SwapReferenceDto>> MapRowsWithSecurityTermsAsync(
+        IReadOnlyList<SwapProjectionRow> rows,
+        CancellationToken ct)
+    {
+        if (rows.Count == 0)
+        {
+            return Array.Empty<SwapReferenceDto>();
+        }
+
+        var results = new List<SwapReferenceDto>(rows.Count);
+        foreach (var row in rows)
+        {
+            var security = await _securityMasterStore.GetProjectionAsync(row.SecurityId, ct).ConfigureAwait(false);
+            var terms = security is not null &&
+                string.Equals(security.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase)
+                    ? security.AssetSpecificTerms
+                    : default;
+            results.Add(MapRow(row, terms));
+        }
+
+        return results;
     }
 
     private static SwapReferenceDto MapRow(SwapProjectionRow row, JsonElement assetSpecificTerms)

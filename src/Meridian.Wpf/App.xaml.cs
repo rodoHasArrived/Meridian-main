@@ -115,6 +115,7 @@ public partial class App : System.Windows.Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        WpfServices.LoggingService.Instance.LogInfo("WPF application startup beginning");
         _launchArgs = e.Args;
         var launchRequest = DesktopLaunchArguments.Parse(e.Args);
         if (launchRequest.HasActions && WpfServices.SingleInstanceService.TrySendArgsToPrimary(e.Args, timeoutMs: 5000))
@@ -151,6 +152,7 @@ public partial class App : System.Windows.Application
                 ConfigureServices(services);
             })
             .Build();
+        WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
         Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
@@ -167,6 +169,7 @@ public partial class App : System.Windows.Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
         mainWindow.Show();
+        WpfServices.LoggingService.Instance.LogInfo("WPF main window shown");
         mainWindow.ForceStartupWindowRecovery();
 
         // Begin listening for args forwarded from secondary instances as soon as
@@ -178,6 +181,7 @@ public partial class App : System.Windows.Application
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+        WpfServices.LoggingService.Instance.LogInfo("WPF async startup completed");
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
     }
@@ -505,7 +509,13 @@ public partial class App : System.Windows.Application
         });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
-        services.AddSingleton(PromotionRecordStoreOptions.Default);
+        services.AddSingleton<PromotionRecordStoreOptions>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            return new PromotionRecordStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "promotions"));
+        });
         services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
@@ -627,7 +637,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
-            // Continue - app should still work without persistence
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Offline tracking persistence failed to initialize; continuing without crash recovery persistence");
         }
     }
 
@@ -646,7 +657,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
-            // Continue - app should still work without background services
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Background services failed to initialize; continuing with reduced background processing");
         }
     }
 
@@ -669,6 +681,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Workspace session restore failed; continuing with default workspace");
         }
     }
 
@@ -693,6 +707,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Workspace session save failed during shutdown");
         }
     }
 
@@ -749,9 +765,11 @@ public partial class App : System.Windows.Application
     /// </summary>
     private void OnExit(object sender, ExitEventArgs e)
     {
+        WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown requested");
         SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
         WpfServices.SingleInstanceService.Instance.Dispose();
+        WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown complete");
     }
 
     /// <summary>
@@ -775,7 +793,7 @@ public partial class App : System.Windows.Application
             // Shutdown services in parallel with timeout for better performance
             var shutdownTasks = new[]
             {
-                ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(), "BackgroundTaskScheduler", cts.Token),
+                ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(cts.Token), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token),
@@ -797,11 +815,15 @@ public partial class App : System.Windows.Application
             }
 
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF shutdown timed out",
+                ("Error", ex.Message));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError("WPF shutdown failed", ex);
         }
     }
 
@@ -822,9 +844,13 @@ public partial class App : System.Windows.Application
         }
         catch (OperationCanceledException)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF host stop timed out",
+                ("TimeoutMs", HostShutdownTimeoutMs.ToString()));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError("WPF host stop failed", ex);
         }
 
         try
@@ -837,9 +863,11 @@ public partial class App : System.Windows.Application
             {
                 host.Dispose();
             }
+            WpfServices.LoggingService.Instance.LogInfo("WPF host disposed");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError("WPF host dispose failed", ex);
         }
     }
 
@@ -862,12 +890,22 @@ public partial class App : System.Windows.Application
         try
         {
             await shutdownAction().WaitAsync(ct).ConfigureAwait(false);
+            WpfServices.LoggingService.Instance.LogInfo(
+                "WPF shutdown service completed",
+                ("Service", serviceName));
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF shutdown service timed out",
+                ("Service", serviceName),
+                ("Error", ex.Message));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError(
+                $"WPF shutdown service failed: {serviceName}",
+                ex);
         }
     }
 
@@ -885,9 +923,15 @@ public partial class App : System.Windows.Application
             }
             catch (OperationCanceledException)
             {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "WPF shutdown service timed out",
+                    ("Service", serviceName));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                WpfServices.LoggingService.Instance.LogError(
+                    $"WPF shutdown service failed: {serviceName}",
+                    ex);
             }
         }, ct).ConfigureAwait(false);
     }

@@ -166,9 +166,13 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Full-console readiness checkpoints" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Brokerage sync healthy: Unavailable/i })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
-    expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("table", { name: "Promotion blockers readiness evidence table" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected promotion blockers evidence detail" })).toBeInTheDocument();
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
       undefined,
       expect.objectContaining({ signal: expect.any(Object) })
@@ -260,7 +264,49 @@ describe("OperatorReadinessConsole", () => {
 
     expect(warningRow).toHaveAttribute("aria-expanded", "true");
     expect(within(detail).getByRole("heading", { name: "Warning item 5" })).toBeInTheDocument();
-    expect(within(detail).getByRole("link", { name: "Open report packs: Warning item 5" })).toHaveAttribute("href", "/reporting");
+    expect(within(detail).getByRole("link", { name: "Open report packs: Warning item 5" })).toHaveAttribute("href", "/reporting/report-packs");
+  });
+
+  it("uses selectable dense tables and detail panels for evidence panel rows", async () => {
+    const secondPromotionItem: OperatorWorkItem = {
+      ...inbox.items[0],
+      workItemId: "promotion-review-run-2",
+      label: "Second promotion review",
+      detail: "Confirm replay evidence before promotion.",
+      createdAt: "2026-04-29T12:05:00Z",
+      auditReference: "audit-promotion-2"
+    };
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce({
+      ...inbox,
+      items: [inbox.items[0], secondPromotionItem],
+      warningCount: 2,
+      reviewCount: 2,
+      summary: "2 review items need attention."
+    });
+
+    renderWithRouter(
+      <OperatorReadinessConsole
+        research={null}
+        trading={null}
+        dataOperations={null}
+        governance={null}
+        reporting={null}
+      />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+
+    const detail = await screen.findByRole("region", { name: "Selected promotion blockers evidence detail" });
+    expect(detail).toHaveAttribute("id", "operator-readiness-promotion-blockers-evidence-detail");
+    expect(within(detail).getByRole("heading", { name: "Promotion checklist incomplete" })).toBeInTheDocument();
+
+    const secondRow = screen.getByRole("row", { name: "Select promotion blockers evidence Second promotion review" });
+    expect(secondRow).toHaveAttribute("aria-controls", "operator-readiness-promotion-blockers-evidence-detail");
+    expect(secondRow).toHaveAttribute("aria-expanded", "false");
+    fireEvent.keyDown(secondRow, { key: "Enter" });
+
+    expect(secondRow).toHaveAttribute("aria-expanded", "true");
+    expect(within(detail).getByRole("heading", { name: "Second promotion review" })).toBeInTheDocument();
+    expect(within(detail).getByRole("link", { name: "Open promotion review: Second promotion review" })).toHaveAttribute("href", "/trading/readiness");
   });
 
   it("lets operators retry a failed inbox load from the console", async () => {
@@ -279,9 +325,11 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Operator inbox 503");
+    const recovery = await screen.findByRole("alert");
+    expect(recovery).toHaveTextContent("Operator inbox 503");
+    expect(within(recovery).getByRole("button", { name: "Retry loading operator inbox work items after failure" })).toHaveTextContent("Retry inbox");
 
-    fireEvent.click(screen.getByRole("button", { name: "Refresh operator inbox work items" }));
+    fireEvent.click(within(recovery).getByRole("button", { name: "Retry loading operator inbox work items after failure" }));
 
     await waitFor(() => expect(screen.getAllByText("1 review item needs attention.").length).toBeGreaterThan(0));
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(2));

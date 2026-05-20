@@ -20,14 +20,6 @@ public abstract class WorkspaceShellViewModelBase : BindableBase
     }
 }
 
-public sealed class DataOperationsWorkspaceShellViewModel : WorkspaceShellViewModelBase
-{
-    public DataOperationsWorkspaceShellViewModel()
-        : base(ShellNavigationCatalog.GetWorkspaceShell("data")!)
-    {
-    }
-}
-
 public sealed class GovernanceWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public GovernanceWorkspaceShellViewModel()
@@ -56,6 +48,14 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 {
     public ReportingWorkspaceShellViewModel()
         : base(ShellNavigationCatalog.GetWorkspaceShell("reporting")!)
+    {
+    }
+}
+
+public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
+{
+    public DataWorkspaceShellViewModel()
+        : base(ShellNavigationCatalog.GetWorkspaceShell("data")!)
     {
     }
 }

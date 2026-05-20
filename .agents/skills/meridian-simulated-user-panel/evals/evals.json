@@ -1,0 +1,517 @@
+{
+  "skill_name": "meridian-simulated-user-panel",
+  "schema_version": "2026-04-14",
+  "last_updated": "2026-04-14",
+  "required_sections": [
+    "executive_summary",
+    "panel",
+    "persona_findings",
+    "cross_persona_tensions",
+    "owner_actions",
+    "release_recommendation",
+    "confidence_notes"
+  ],
+  "rubric_dimensions": [
+    "workflow fit",
+    "trust / controls",
+    "time-to-value",
+    "data confidence",
+    "extensibility",
+    "learning curve"
+  ],
+  "evals": [
+    {
+      "id": 1,
+      "slug": "welcome-onboarding-design-partner",
+      "title": "Welcome onboarding design-partner review",
+      "mode": "design_partner",
+      "artifact_type": "screen-review",
+      "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
+      "expected_output": "A design-partner review that flags onboarding discoverability gaps, chooses sensible onboarding personas, and recommends the highest-leverage improvements first.",
+      "artifact_manifest": {
+        "schema_version": "2026-04-14",
+        "mode": "design_partner",
+        "artifact_type": "screen-review",
+        "artifact_paths": [
+          "src/Meridian.Wpf/Views/WelcomePage.xaml",
+          "docs/screenshots/desktop/welcome-page.png"
+        ],
+        "artifact_summary": "The welcome screen headline is 'Start Your Desktop Workstation'. It shows cards for Connect a Provider, Add Symbols, and Launch Live Session. A note says runtime config is stored outside the install directory, but the path is not named. Launch Live Session stays disabled until provider credentials exist, but the reason is not clear. There is no visible estimate of setup time.",
+        "persona_set": {
+          "panel": "growth-adoption",
+          "required_roles": [
+            "Owner-Operator"
+          ]
+        },
+        "focus_areas": [
+          "first_impression",
+          "workflow_fit",
+          "adoption_and_positioning"
+        ],
+        "constraints": [
+          "Stay grounded in the supplied artifact summary.",
+          "Assume this is an early product-shaping review, not a ship/no-ship gate."
+        ],
+        "success_criteria": [
+          "Identify what new users would understand immediately.",
+          "Flag onboarding friction that would create support burden."
+        ],
+        "decision_deadline": "before the next workstation onboarding pass"
+      },
+      "checks": {
+        "minimum_personas": 4,
+        "required_personas_all": [
+          "Owner-Operator"
+        ],
+        "required_personas_any": [
+          "Hobbyist Builder",
+          "Support / Onboarding Lead"
+        ],
+        "required_phrases": [
+          {
+            "label": "config path or gating friction",
+            "any_of": [
+              "config path",
+              "outside the install directory",
+              "disabled",
+              "time-to-value",
+              "credentials"
+            ]
+          }
+        ],
+        "required_priority_buckets": [
+          "Now",
+          "Next",
+          "Later"
+        ],
+        "require_verified": true,
+        "require_inferred": true,
+        "require_missing_evidence": true,
+        "required_release_terms_any": [
+          "steer",
+          "prototype",
+          "defer"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "provider-onboarding-release-gate",
+      "title": "Screenshot-backed WPF provider onboarding release gate",
+      "mode": "release_gate",
+      "artifact_type": "workflow-walkthrough",
+      "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
+      "expected_output": "A release-gate review grounded in a WPF workflow bundle that calls out operator friction, launch blockers, and a clear ship recommendation.",
+      "artifact_manifest": {
+        "schema_version": "2026-04-14",
+        "mode": "release_gate",
+        "artifact_type": "workflow-walkthrough",
+        "artifact_paths": [
+          "src/Meridian.Wpf/Views/AddProviderWizardPage.xaml",
+          "src/Meridian.Wpf/Views/ProviderHealthPage.xaml",
+          "artifacts/desktop-workflows/provider-onboarding/manifest.json",
+          "artifacts/desktop-workflows/provider-onboarding/screenshots/01-provider-wizard.png"
+        ],
+        "artifact_summary": "The bundle walks through Add Provider Wizard, Data Sources, and Provider Health. The wizard shows credential inputs and a Connect action. Provider Health shows provider status and retry actions. The flow captures screenshots and a workflow manifest, but there is no strong confirmation that credentials were saved successfully, and recovery guidance after a failed validation is thin.",
+        "persona_set": {
+          "panel": "operations-controls",
+          "required_roles": [
+            "Fund Operations Lead",
+            "Owner-Operator"
+          ]
+        },
+        "focus_areas": [
+          "workflow_fit",
+          "trust_and_controls",
+          "release_readiness"
+        ],
+        "constraints": [
+          "Treat this as a near-ship release gate.",
+          "Do not invent unshown success states."
+        ],
+        "success_criteria": [
+          "An operator can complete setup without hidden prerequisites.",
+          "A failed validation has an obvious recovery path.",
+          "End with ship, ship_with_caveats, or hold."
+        ],
+        "decision_deadline": "before the next desktop release candidate"
+      },
+      "checks": {
+        "minimum_personas": 4,
+        "required_personas_all": [
+          "Fund Operations Lead",
+          "Owner-Operator"
+        ],
+        "required_personas_any": [
+          "Support / Onboarding Lead",
+          "Data Operations Manager"
+        ],
+        "required_phrases": [
+          {
+            "label": "confirmation or recovery gap",
+            "any_of": [
+              "confirmation",
+              "saved successfully",
+              "recovery",
+              "retry",
+              "validation"
+            ]
+          },
+          {
+            "label": "provider health evidence",
+            "any_of": [
+              "provider health",
+              "wizard",
+              "workflow manifest"
+            ]
+          }
+        ],
+        "required_priority_buckets": [
+          "Now",
+          "Next",
+          "Later"
+        ],
+        "require_verified": true,
+        "require_inferred": true,
+        "require_missing_evidence": true,
+        "required_release_terms_any": [
+          "ship",
+          "ship_with_caveats",
+          "hold"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "fund-ledger-controls-review",
+      "title": "Governance and accounting controls review",
+      "mode": "release_gate",
+      "artifact_type": "ship-readiness",
+      "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
+      "expected_output": "A controls-heavy panel that surfaces approval-state gaps, audit issues, and a production-trust verdict.",
+      "artifact_manifest": {
+        "schema_version": "2026-04-14",
+        "mode": "release_gate",
+        "artifact_type": "ship-readiness",
+        "artifact_paths": [
+          "src/Meridian.Wpf/Views/FundLedgerPage.xaml",
+          "src/Meridian.Wpf/Views/NotificationCenterPage.xaml",
+          "docs/screenshots/desktop/fund-ledger.png"
+        ],
+        "artifact_summary": "A Fund Ledger page shows balances, unsettled cash, and recent journal events. A separate Approvals panel exists, but the ledger page does not show whether a balance change is pending approval, approved, or rejected. Exceptions are logged in an activity feed, but there is no dedicated exception queue or owner assignment. CSV export exists, but there is no audit snapshot bundle or reviewer sign-off artifact.",
+        "persona_set": {
+          "panel": "operations-controls",
+          "required_roles": [
+            "Fund Accountant",
+            "Risk / Compliance Lead"
+          ]
+        },
+        "focus_areas": [
+          "trust_and_controls",
+          "release_readiness"
+        ],
+        "constraints": [
+          "Treat this as a production-trust review.",
+          "Do not invent approvals or audit features that are not in the artifact."
+        ],
+        "success_criteria": [
+          "Call out missing approval-state visibility.",
+          "State whether the control surface looks safe enough to ship."
+        ],
+        "decision_deadline": "before governance rollout"
+      },
+      "checks": {
+        "minimum_personas": 4,
+        "required_personas_all": [
+          "Fund Accountant",
+          "Risk / Compliance Lead"
+        ],
+        "required_personas_any": [
+          "Fund Operations Lead",
+          "Owner-Operator"
+        ],
+        "required_phrases": [
+          {
+            "label": "approval state visibility gap",
+            "any_of": [
+              "pending approval",
+              "approved",
+              "rejected",
+              "approval state"
+            ]
+          },
+          {
+            "label": "audit or exception handling gap",
+            "any_of": [
+              "exception queue",
+              "audit",
+              "reviewer",
+              "owner assignment",
+              "sign-off"
+            ]
+          }
+        ],
+        "required_priority_buckets": [
+          "Now",
+          "Next",
+          "Later"
+        ],
+        "require_verified": true,
+        "require_inferred": true,
+        "require_missing_evidence": true,
+        "required_release_terms_any": [
+          "ship",
+          "ship_with_caveats",
+          "hold"
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "analysis-export-power-user-review",
+      "title": "Research export power-user depth review",
+      "mode": "design_partner",
+      "artifact_type": "workflow-walkthrough",
+      "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
+      "expected_output": "A power-user review that identifies repeated manual work, provenance risk, and the next leverage features for researchers.",
+      "artifact_manifest": {
+        "schema_version": "2026-04-14",
+        "mode": "design_partner",
+        "artifact_type": "workflow-walkthrough",
+        "artifact_paths": [
+          "src/Meridian.Wpf/Views/AnalysisExportPage.xaml",
+          "src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml",
+          "docs/screenshots/desktop/analysis-export.png"
+        ],
+        "artifact_summary": "The Analysis Export flow can export filtered datasets to CSV and Parquet. Filters must be re-entered each time because saved export presets are not visible in the current flow. There is no direct handoff to DuckDB, Jupyter, or notebook-oriented launch tooling. Export progress is visible, but there is no provenance summary explaining exactly which symbols, time ranges, or providers were included.",
+        "persona_set": {
+          "panel": "research",
+          "required_roles": [
+            "Quantitative Analyst"
+          ]
+        },
+        "focus_areas": [
+          "power_user_depth",
+          "workflow_fit"
+        ],
+        "constraints": [
+          "Optimize for research leverage and repeatability.",
+          "Stay grounded in the supplied workflow summary."
+        ],
+        "success_criteria": [
+          "Identify the current design ceiling for advanced users.",
+          "Recommend concrete leverage improvements."
+        ],
+        "decision_deadline": "before export workflow planning"
+      },
+      "checks": {
+        "minimum_personas": 4,
+        "required_personas_all": [
+          "Quantitative Analyst"
+        ],
+        "required_personas_any": [
+          "Academic Researcher",
+          "Data Engineer"
+        ],
+        "required_phrases": [
+          {
+            "label": "manual repeat work or presets gap",
+            "any_of": [
+              "preset",
+              "re-entered",
+              "re-enter",
+              "manual work"
+            ]
+          },
+          {
+            "label": "provenance or notebook gap",
+            "any_of": [
+              "provenance",
+              "DuckDB",
+              "Jupyter",
+              "notebook",
+              "symbols",
+              "providers"
+            ]
+          }
+        ],
+        "required_priority_buckets": [
+          "Now",
+          "Next",
+          "Later"
+        ],
+        "require_verified": true,
+        "require_inferred": true,
+        "require_missing_evidence": true,
+        "required_release_terms_any": [
+          "steer",
+          "prototype",
+          "defer"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "research-promotion-roadmap-review",
+      "title": "Research-to-live roadmap critique",
+      "mode": "design_partner",
+      "artifact_type": "roadmap-review",
+      "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
+      "expected_output": "A roadmap critique that identifies likely first adopters, blockers, and whether the bet strengthens Meridian's product direction.",
+      "artifact_manifest": {
+        "schema_version": "2026-04-14",
+        "mode": "design_partner",
+        "artifact_type": "roadmap-review",
+        "artifact_paths": [
+          "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
+          "docs/status/ROADMAP.md"
+        ],
+        "artifact_summary": "Roadmap item: create a research-to-live promotion workspace that lets operators compare a paper strategy run, inspect risk and portfolio impacts, approve a promotion plan, and transition the strategy into a later live workflow with recorded sign-off.",
+        "persona_set": {
+          "panel": "core-finance",
+          "required_roles": [
+            "Owner-Operator",
+            "Fund Manager"
+          ]
+        },
+        "focus_areas": [
+          "adoption_and_positioning",
+          "trust_and_controls",
+          "power_user_depth"
+        ],
+        "constraints": [
+          "Treat this as a product bet, not an implemented feature."
+        ],
+        "success_criteria": [
+          "Identify likely first adopters or champions.",
+          "Identify what could block adoption.",
+          "State whether the bet strengthens Meridian's strategic coherence."
+        ],
+        "decision_deadline": "before roadmap reprioritization"
+      },
+      "checks": {
+        "minimum_personas": 4,
+        "required_personas_all": [
+          "Owner-Operator",
+          "Fund Manager"
+        ],
+        "required_personas_any": [
+          "Academic Researcher",
+          "Implementation Consultant"
+        ],
+        "required_phrases": [
+          {
+            "label": "first adopter or champion language",
+            "any_of": [
+              "first adopter",
+              "champion",
+              "who would care",
+              "adopt"
+            ]
+          },
+          {
+            "label": "blocker or strategic coherence language",
+            "any_of": [
+              "blocker",
+              "adoption drag",
+              "strategic coherence",
+              "differentiation"
+            ]
+          }
+        ],
+        "required_priority_buckets": [
+          "Now",
+          "Next",
+          "Later"
+        ],
+        "require_verified": true,
+        "require_inferred": true,
+        "require_missing_evidence": true,
+        "required_release_terms_any": [
+          "steer",
+          "prototype",
+          "defer"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "slug": "provider-health-usability-lab",
+      "title": "Provider health usability-lab comparison",
+      "mode": "usability_lab",
+      "artifact_type": "workflow-walkthrough",
+      "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
+      "expected_output": "A benchmark-style review that clusters repeated complaints, names disagreements, and recommends whether the flow should advance to a release gate.",
+      "artifact_manifest": {
+        "schema_version": "2026-04-14",
+        "mode": "usability_lab",
+        "artifact_type": "workflow-walkthrough",
+        "artifact_paths": [
+          "src/Meridian.Wpf/Views/ProviderHealthPage.xaml",
+          "artifacts/desktop-workflows/provider-health/manifest.json",
+          "artifacts/desktop-workflows/provider-health/screenshots/01-health.png"
+        ],
+        "artifact_summary": "A comparison bundle captures three provider health runs. The page lists provider status, warnings, and retry actions. One run shows a stale warning badge that remains after a successful retry. Another run records a failed retry without clear owner assignment. The page shows heartbeat and data-gap indicators, but alert severity and operator next steps are inconsistent across runs.",
+        "persona_set": {
+          "panel": "operations-controls",
+          "required_roles": [
+            "Data Operations Manager",
+            "Owner-Operator"
+          ]
+        },
+        "focus_areas": [
+          "trust_and_controls",
+          "workflow_fit",
+          "release_readiness"
+        ],
+        "constraints": [
+          "Treat this as a comparison-oriented usability-lab pass.",
+          "Surface repeated complaint clusters and disagreements explicitly."
+        ],
+        "success_criteria": [
+          "Name the repeated complaint clusters across runs.",
+          "Call out any disagreement between operator personas and owner priorities.",
+          "Recommend advance_to_release_gate, rerun_after_changes, or defer."
+        ],
+        "decision_deadline": "before the next ops reliability checkpoint"
+      },
+      "checks": {
+        "minimum_personas": 4,
+        "required_personas_all": [
+          "Data Operations Manager",
+          "Owner-Operator"
+        ],
+        "required_personas_any": [
+          "Risk / Compliance Lead",
+          "Trading Operations Lead"
+        ],
+        "required_phrases": [
+          {
+            "label": "repeated complaint or stale-state signal",
+            "any_of": [
+              "repeated complaint",
+              "cluster",
+              "stale warning",
+              "owner assignment",
+              "inconsistent"
+            ]
+          }
+        ],
+        "required_priority_buckets": [
+          "Now",
+          "Next",
+          "Later"
+        ],
+        "require_verified": true,
+        "require_inferred": true,
+        "require_missing_evidence": true,
+        "require_disagreement_signal": true,
+        "required_release_terms_any": [
+          "advance_to_release_gate",
+          "rerun_after_changes",
+          "defer"
+        ]
+      }
+    }
+  ]
+}

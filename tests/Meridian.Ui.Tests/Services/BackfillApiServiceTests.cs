@@ -139,6 +139,11 @@ public sealed class BackfillApiServiceTests
         UiApiRoutes.BackfillRun.Should().StartWith("/api/");
         UiApiRoutes.BackfillRunPreview.Should().Be($"{UiApiRoutes.BackfillRun}/preview");
         UiApiRoutes.BackfillProgress.Should().Be("/api/backfill/progress");
+        UiApiRoutes.BackfillCheckpointsResumable.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/resumable");
+        UiApiRoutes.BackfillCheckpointsValidation.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/validation");
+        UiApiRoutes.BackfillCheckpointById.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}");
+        UiApiRoutes.BackfillCheckpointPending.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}/pending");
+        UiApiRoutes.BackfillCheckpointResume.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}/resume");
     }
 
     [Fact]
@@ -195,7 +200,13 @@ public sealed class BackfillApiServiceTests
             UiApiRoutes.BackfillStatus,
             UiApiRoutes.BackfillRun,
             UiApiRoutes.BackfillRunPreview,
-            UiApiRoutes.BackfillProgress
+            UiApiRoutes.BackfillProgress,
+            UiApiRoutes.BackfillCheckpoints,
+            UiApiRoutes.BackfillCheckpointsResumable,
+            UiApiRoutes.BackfillCheckpointsValidation,
+            UiApiRoutes.BackfillCheckpointById,
+            UiApiRoutes.BackfillCheckpointPending,
+            UiApiRoutes.BackfillCheckpointResume
         };
 
         routes.Distinct().Should().HaveCount(routes.Length);

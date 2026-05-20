@@ -1,0 +1,187 @@
+version: 1
+schema:
+  roadmap_item: docs/roadmap/schemas/roadmap-item.v1.schema.json
+  evidence_record: docs/roadmap/schemas/evidence-record.v1.schema.json
+
+contract:
+  statuses:
+    - planned
+    - in_progress
+    - ready_for_acceptance
+    - accepted
+    - done
+
+  transition_evidence_requirements:
+    ready_for_acceptance:
+      minimum_evidence_records: 1
+      require_reviewer_metadata: true
+      allowed_review_statuses:
+        - in_review
+        - approved
+    accepted:
+      minimum_evidence_records: 2
+      require_reviewer_metadata: true
+      allowed_review_statuses:
+        - approved
+      required_evidence_types:
+        - validation
+    done:
+      minimum_evidence_records: 2
+      require_reviewer_metadata: true
+      allowed_review_statuses:
+        - approved
+      required_evidence_types:
+        - validation
+        - release_note
+
+items:
+  - id: W1-provider-trust-gate
+    title: "W1 - Provider trust gate closure and maintenance"
+    status: done
+    health: on_track
+    priority: high
+    evidence_posture: complete
+    completion_term: near_term
+    owner: trading-workstation-owner
+    plan_reference: docs/plans/evidence-backed-investment-operations-plan.md
+    status_reference: docs/status/provider-validation-matrix.md
+    exit_criteria:
+      criteria_version: 1
+      checks:
+        - id: w1-parity-packet
+          description: "Latest DK1 parity packet is generated and valid for exit claim."
+          required: true
+        - id: w1-operator-signoff
+          description: "Packet-bound operator sign-off is signed by required owners."
+          required: true
+    evidence:
+      - type: validation
+        path: artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json
+        produced_by: scripts/dev/generate-dk1-pilot-parity-packet.ps1
+        produced_on: 2026-04-27
+        commit_sha: a1b2c3d4
+        reviewed_by: provider-readiness-board
+        review_status: approved
+      - type: release_note
+        path: docs/status/provider-validation-matrix.md
+        produced_by: docs/status/provider-validation-matrix.md
+        produced_on: 2026-04-27
+        commit_sha: b2c3d4e5
+        reviewed_by: trading-workstation-owner
+        review_status: approved
+
+  - id: W2-paper-trading-cockpit
+    title: "W2 - Paper trading cockpit reliability"
+    status: in_progress
+    health: at_risk
+    priority: critical
+    evidence_posture: partial
+    completion_term: near_term
+    owner: trading-workstation-owner
+    plan_reference: docs/plans/paper-trading-cockpit-reliability-sprint.md
+    status_reference: docs/status/kernel-readiness-dashboard.md
+    exit_criteria:
+      criteria_version: 1
+      checks:
+        - id: w2-readiness-endpoint
+          description: "Trading readiness endpoint is stable for account and global scopes."
+          required: true
+        - id: w2-operator-inbox-routing
+          description: "Operator inbox exposes actionable readiness and reconciliation routing."
+          required: true
+        - id: w2-replay-audit
+          description: "Replay verification remains durable across restart and audit reconstruction."
+          required: true
+    evidence:
+      - type: validation
+        path: docs/testing/WAVE2_ACCEPTANCE_TESTS.md
+        produced_by: tests/Meridian.Tests/Meridian.Tests.csproj
+        produced_on: 2026-05-19
+        commit_sha: c3d4e5f6
+        reviewed_by: qa-automation
+        review_status: in_review
+        notes: "Acceptance slices updated and tied to W2 readiness checks."
+
+  - id: W3-research-to-paper-continuity
+    title: "W3 - Research to paper continuity"
+    status: planned
+    health: on_track
+    priority: high
+    evidence_posture: not_started
+    completion_term: mid_term
+    owner: strategy-and-research-owner
+    plan_reference: docs/plans/waves-2-4-operator-readiness-addendum.md
+    exit_criteria:
+      criteria_version: 1
+      checks:
+        - id: w3-lineage-continuity
+          description: "Research lineage is preserved through paper-session promotion trail."
+          required: true
+        - id: w3-operator-workflow
+          description: "Operator workflow supports explainable run-to-promotion handoff."
+          required: true
+
+  - id: W4-governance-productization
+    title: "W4 - Governance productization"
+    status: planned
+    health: watch
+    priority: high
+    evidence_posture: not_started
+    completion_term: long_term
+    owner: governance-and-accounting-owner
+    plan_reference: docs/plans/waves-2-4-operator-readiness-addendum.md
+    exit_criteria:
+      criteria_version: 1
+      checks:
+        - id: w4-governed-report-pack
+          description: "Governed report-pack lifecycle has approval and export audit evidence."
+          required: true
+        - id: w4-dk2-signoff
+          description: "DK2 readiness sign-off packet is approved by all required owners."
+          required: true
+
+  - id: W5-source-doc-mesh
+    title: "W5 - Source documentation mesh"
+    status: ready_for_acceptance
+    health: on_track
+    priority: medium
+    evidence_posture: sufficient_for_acceptance
+    completion_term: near_term
+    owner: docs-and-automation-owner
+    plan_reference: docs/plans/approach-b-plus-v2-implementation-plan.md
+    exit_criteria:
+      criteria_version: 1
+      checks:
+        - id: w5-priority-modules
+          description: "Priority modules are registered with canonical paths and stable IDs."
+          required: true
+        - id: w5-readme-mapping
+          description: "README coverage mapping exists for priority modules with transition metadata."
+          required: true
+    evidence:
+      - type: validation
+        path: docs/source/source-documentation-standard.md
+        produced_by: tools/source_docs/validate_source_readmes.py
+        produced_on: 2026-05-20
+        commit_sha: d4e5f6a7
+        reviewed_by: docs-architecture-review
+        review_status: approved
+
+  - id: W6-ci-drift-and-determinism
+    title: "W6 - CI drift and deterministic generation gates"
+    status: planned
+    health: on_track
+    priority: medium
+    evidence_posture: not_started
+    completion_term: mid_term
+    owner: platform-automation-owner
+    plan_reference: docs/plans/approach-b-plus-v2-implementation-plan.md
+    exit_criteria:
+      criteria_version: 1
+      checks:
+        - id: w6-drift-gate
+          description: "CI fails on generator drift and post-render diff mismatch."
+          required: true
+        - id: w6-determinism-gate
+          description: "Render-twice determinism checks are enforced in CI."
+          required: true

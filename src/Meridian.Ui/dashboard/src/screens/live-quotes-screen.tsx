@@ -2,7 +2,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   ArrowDown,
+  ArrowRight,
   ArrowUp,
+  BellPlus,
   CheckCircle2,
   ListPlus,
   LineChart,
@@ -14,18 +16,23 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
+import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
-import type { SessionStatsDto } from "@/types";
+import { cn } from "@/lib/utils";
 import {
   computeIntradayMetrics,
   useLiveQuotesScreenViewModel,
   type LiveQuotesBboPanelViewModel,
   type LiveQuotesDepthLadderViewModel,
+  type LiveQuotesDepthLevelViewModel,
+  type LiveQuotesMarketDataViewModel,
   type LiveQuotesPanelState,
   type LiveQuotesPriceChartViewModel,
+  type LiveQuotesSessionStatsViewModel,
   type LiveQuotesSparklineViewModel,
   type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
@@ -43,7 +50,7 @@ export function LiveQuotesScreen() {
     }
   );
   const { activeSymbol, lookup: symbolLookupVm, market: marketVm, quickTrade } = vm;
-  const session = marketVm.quoteRow?.session ?? null;
+  const session = marketVm.sessionStats;
 
   return (
     <div className="space-y-6">
@@ -92,6 +99,17 @@ export function LiveQuotesScreen() {
                   <span className="ml-1.5">Watchlist</span>
                 </Link>
               </Button>
+              {activeSymbol ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    to={`/data/alerts?symbol=${encodeURIComponent(activeSymbol)}`}
+                    aria-label={`Set a price alert for ${activeSymbol}`}
+                  >
+                    <BellPlus className="h-4 w-4" aria-hidden="true" />
+                    <span className="ml-1.5">Set alert</span>
+                  </Link>
+                </Button>
+              ) : null}
               {vm.refreshCommand ? (
                 <Button
                   type="button"
@@ -209,7 +227,7 @@ export function LiveQuotesScreen() {
               ) : (
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.tradesState} />
-                  <TradesTable trades={marketVm.tradeDisplayRows} />
+                  <TradesTable market={marketVm} />
                 </div>
               )}
             </CardContent>
@@ -246,46 +264,38 @@ function PanelStateMessage({ state }: { state: LiveQuotesPanelState }) {
   );
 }
 
-function SessionStatsBanner({ session }: { session: SessionStatsDto }) {
-  const tone = session.change > 0
-    ? "text-positive"
-    : session.change < 0
-      ? "text-danger"
-      : "text-foreground";
-  const sign = session.change > 0 ? "+" : "";
-  const pct = session.changePercent;
-  const pctText = pct === null || !Number.isFinite(pct)
-    ? ""
-    : ` (${pct > 0 ? "+" : ""}${pct.toFixed(2)}%)`;
-  const changeText = `${sign}${session.change.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  })}${pctText}`;
-  const volumeText = session.volume >= 1_000_000
-    ? `${(session.volume / 1_000_000).toFixed(2)}M`
-    : session.volume >= 1_000
-      ? `${(session.volume / 1_000).toFixed(1)}K`
-      : session.volume.toLocaleString();
+function SessionStatsBanner({ session }: { session: LiveQuotesSessionStatsViewModel }) {
+  const tone = sessionStatsChangeClass[session.changeTone];
 
   return (
-    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2.5">
+    <section
+      id={session.id}
+      aria-label={session.ariaLabel}
+      aria-describedby={session.descriptionId}
+      className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2.5"
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex items-baseline gap-3">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">Today</span>
-          <span className={`font-mono text-base ${tone}`} aria-label="Day change">{changeText}</span>
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">{session.periodLabel}</span>
+          <span className={`font-mono text-base ${tone}`} aria-label={session.changeAriaLabel}>{session.changeLabel}</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">Session {session.sessionDate}</span>
+        <span className="text-[11px] text-muted-foreground">{session.dateLabel}</span>
       </div>
+      <p id={session.descriptionId} className="sr-only">{session.description}</p>
       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs sm:grid-cols-5">
-        <SessionStatCell label="Open" value={formatSessionPrice(session.open)} />
-        <SessionStatCell label="High" value={formatSessionPrice(session.high)} />
-        <SessionStatCell label="Low" value={formatSessionPrice(session.low)} />
-        <SessionStatCell label="VWAP" value={formatSessionPrice(session.vwap)} />
-        <SessionStatCell label="Volume" value={volumeText} />
+        {session.stats.map((stat) => (
+          <SessionStatCell key={stat.id} label={stat.label} value={stat.value} />
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
+
+const sessionStatsChangeClass = {
+  positive: "text-positive",
+  negative: "text-danger",
+  default: "text-foreground"
+} as const;
 
 function SessionStatCell({ label, value }: { label: string; value: string }) {
   return (
@@ -294,17 +304,6 @@ function SessionStatCell({ label, value }: { label: string; value: string }) {
       <span className="text-foreground">{value}</span>
     </div>
   );
-}
-
-function formatSessionPrice(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  });
 }
 
 interface BboPanelProps {
@@ -360,53 +359,120 @@ interface DepthLadderProps {
 
 function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 font-mono text-xs">
-      <div>
-        <div className="mb-1 flex justify-between text-muted-foreground">
-          <span>Bid size</span>
-          <span>Price</span>
-        </div>
-        {ladder.bids.map((level) => (
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,0.58fr)]">
+      <div className="grid grid-cols-2 gap-2 font-mono text-xs" role="group" aria-label={ladder.tableLabel}>
+        <DepthLadderSide
+          label="Bid size"
+          valueLabel="Price"
+          levels={ladder.bids}
+          side="bid"
+          onActivate={(level) => {
+            ladder.selectLevel(level.id);
+            onSeedSell?.(level.price);
+          }}
+        />
+        <DepthLadderSide
+          label="Price"
+          valueLabel="Ask size"
+          levels={ladder.asks}
+          side="ask"
+          onActivate={(level) => {
+            ladder.selectLevel(level.id);
+            onSeedBuy?.(level.price);
+          }}
+        />
+      </div>
+      <div id={ladder.detailPanelId} aria-live="polite">
+        {ladder.selectedDetail ? (
+          <EntitySummary
+            eyebrow={ladder.selectedDetail.eyebrow}
+            title={ladder.selectedDetail.title}
+            subtitle={ladder.selectedDetail.subtitle}
+            description={ladder.selectedDetail.description}
+            status={
+              <Badge variant={ladder.selectedDetail.statusBadgeVariant}>
+                {ladder.selectedDetail.statusLabel}
+              </Badge>
+            }
+            fields={ladder.selectedDetail.fields}
+            ariaLabel={ladder.selectedDetail.ariaLabel}
+          />
+        ) : (
+          <section
+            role="status"
+            className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
+            aria-label={ladder.detailEmptyTitle}
+          >
+            <div className="eyebrow-label">{ladder.detailEmptyTitle}</div>
+            <p className="mt-2">{ladder.detailEmptyText}</p>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DepthLadderSide({
+  label,
+  valueLabel,
+  levels,
+  side,
+  onActivate
+}: {
+  label: string;
+  valueLabel: string;
+  levels: LiveQuotesDepthLevelViewModel[];
+  side: "bid" | "ask";
+  onActivate: (level: LiveQuotesDepthLevelViewModel) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-1 flex justify-between text-muted-foreground">
+        <span>{label}</span>
+        <span>{valueLabel}</span>
+      </div>
+      {levels.map((level) => {
+        const selectedClass = level.expanded
+          ? "border-primary/45 bg-primary/10"
+          : side === "bid"
+            ? "border-transparent hover:bg-positive/10"
+            : "border-transparent hover:bg-danger/10";
+        return (
           <button
             type="button"
             key={level.id}
-            onClick={() => onSeedSell?.(level.price)}
-            aria-label={level.seedLabel}
-            className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-positive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            onClick={() => onActivate(level)}
+            aria-label={level.selectLabel}
+            aria-controls={level.detailPanelId}
+            aria-expanded={level.expanded}
+            aria-pressed={level.expanded}
+            className={cn(
+              "relative flex w-full justify-between rounded-sm border px-2 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              selectedClass
+            )}
           >
             <span
               aria-hidden="true"
-              className="absolute inset-y-0 right-0 rounded-sm bg-positive/15"
+              className={cn(
+                "absolute inset-y-0 rounded-sm",
+                side === "bid" ? "right-0 bg-positive/15" : "left-0 bg-danger/15"
+              )}
               style={{ width: level.barWidth }}
             />
-            <span className="relative">{level.sizeLabel}</span>
-            <span className="relative text-positive">{level.priceLabel}</span>
+            {side === "bid" ? (
+              <>
+                <span className="relative">{level.sizeLabel}</span>
+                <span className="relative text-positive">{level.priceLabel}</span>
+              </>
+            ) : (
+              <>
+                <span className="relative text-danger">{level.priceLabel}</span>
+                <span className="relative">{level.sizeLabel}</span>
+              </>
+            )}
           </button>
-        ))}
-      </div>
-      <div>
-        <div className="mb-1 flex justify-between text-muted-foreground">
-          <span>Price</span>
-          <span>Ask size</span>
-        </div>
-        {ladder.asks.map((level) => (
-          <button
-            type="button"
-            key={level.id}
-            onClick={() => onSeedBuy?.(level.price)}
-            aria-label={level.seedLabel}
-            className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-0 rounded-sm bg-danger/15"
-              style={{ width: level.barWidth }}
-            />
-            <span className="relative text-danger">{level.priceLabel}</span>
-            <span className="relative">{level.sizeLabel}</span>
-          </button>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
@@ -419,6 +485,11 @@ interface QuickTradeCardProps {
 function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
   const { fields, ticket, reviewAcknowledgement, submitCommand, status } = vm;
   const statusToneClass = quickTicketStatusClass[status.tone];
+  const sideDisabledReasonId = `${fields.side.id}-disabled-reason`;
+  const typeDisabledReasonId = `${fields.type.id}-disabled-reason`;
+  const quantityDisabledReasonId = `${fields.quantity.id}-disabled-reason`;
+  const limitPriceDisabledReasonId = `${fields.limitPrice.id}-disabled-reason`;
+  const acknowledgementDisabledReasonId = `${reviewAcknowledgement.id}-disabled-reason`;
   return (
     <Card>
       <CardHeader>
@@ -441,13 +512,16 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 onChange={(event) => vm.updateField("side", event.target.value as "Buy" | "Sell")}
                 className={vm.sideToneClass}
                 aria-label={fields.side.ariaLabel}
-                aria-describedby={fields.side.describedBy}
+                aria-describedby={joinDescribedByIds(fields.side.describedBy, sideDisabledReasonId)}
                 disabled={fields.side.disabled}
-                title={fields.side.disabledReason ?? undefined}
               >
                 <option value="Buy">Buy</option>
                 <option value="Sell">Sell</option>
               </Select>
+              <FieldSupportText
+                disabledReason={fields.side.disabledReason}
+                disabledReasonId={sideDisabledReasonId}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor={fields.type.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.type.label}</label>
@@ -456,13 +530,16 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 value={ticket.type}
                 onChange={(event) => vm.updateField("type", event.target.value as "Market" | "Limit")}
                 aria-label={fields.type.ariaLabel}
-                aria-describedby={fields.type.describedBy}
+                aria-describedby={joinDescribedByIds(fields.type.describedBy, typeDisabledReasonId)}
                 disabled={fields.type.disabled}
-                title={fields.type.disabledReason ?? undefined}
               >
                 <option value="Limit">Limit</option>
                 <option value="Market">Market</option>
               </Select>
+              <FieldSupportText
+                disabledReason={fields.type.disabledReason}
+                disabledReasonId={typeDisabledReasonId}
+              />
             </div>
           </div>
 
@@ -482,9 +559,12 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 spellCheck={false}
                 error={vm.quantityInvalid}
                 aria-label={fields.quantity.ariaLabel}
-                aria-describedby={fields.quantity.describedBy}
+                aria-describedby={joinDescribedByIds(fields.quantity.describedBy, quantityDisabledReasonId)}
                 disabled={fields.quantity.disabled}
-                title={fields.quantity.disabledReason ?? undefined}
+              />
+              <FieldSupportText
+                disabledReason={fields.quantity.disabledReason}
+                disabledReasonId={quantityDisabledReasonId}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -505,8 +585,11 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 spellCheck={false}
                 error={vm.priceInvalid}
                 aria-label={fields.limitPrice.ariaLabel}
-                aria-describedby={fields.limitPrice.describedBy}
-                title={fields.limitPrice.disabledReason ?? undefined}
+                aria-describedby={joinDescribedByIds(fields.limitPrice.describedBy, limitPriceDisabledReasonId)}
+              />
+              <FieldSupportText
+                disabledReason={fields.limitPrice.disabledReason}
+                disabledReasonId={limitPriceDisabledReasonId}
               />
             </div>
           </div>
@@ -514,7 +597,6 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
           <label
             htmlFor={reviewAcknowledgement.id}
             className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-            title={reviewAcknowledgement.disabledReason ?? undefined}
           >
             <input
               id={reviewAcknowledgement.id}
@@ -522,7 +604,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               checked={reviewAcknowledgement.checked}
               disabled={reviewAcknowledgement.disabled}
               onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
-              aria-describedby={`${reviewAcknowledgement.id}-description ${status.id}`}
+              aria-describedby={joinDescribedByIds(`${reviewAcknowledgement.id}-description`, acknowledgementDisabledReasonId, status.id)}
               className="mt-1 h-4 w-4 accent-primary"
             />
             <span className="min-w-0">
@@ -530,6 +612,11 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               <span id={`${reviewAcknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
                 {reviewAcknowledgement.description}
               </span>
+              <FieldSupportText
+                disabledReason={reviewAcknowledgement.disabledReason}
+                disabledReasonId={acknowledgementDisabledReasonId}
+                disabledReasonClassName="mt-1 block"
+              />
             </span>
           </label>
 
@@ -551,12 +638,34 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
             id={status.id}
             role={status.role}
             aria-live="polite"
-            className={`flex min-h-[1.25rem] items-center gap-1.5 text-xs ${statusToneClass}`}
+            aria-atomic="true"
+            className={`flex min-h-[1.25rem] items-start gap-1.5 text-xs ${statusToneClass}`}
           >
             {status.showSuccessIcon ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : null}
             {status.showErrorIcon ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-            <span>{status.message}</span>
+            <div className="min-w-0">
+              <div>{status.message}</div>
+              {status.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] leading-5">
+                  {status.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
+          {status.actions.length > 0 ? (
+            <div className="flex flex-wrap gap-2" aria-label="Quick trade next actions">
+              {status.actions.map((action) => (
+                <Button key={action.id} asChild variant="outline" size="sm" className="bg-background/40">
+                  <Link to={action.href} aria-label={action.ariaLabel}>
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{action.label}</span>
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          ) : null}
         </form>
       </CardContent>
     </Card>
@@ -569,31 +678,86 @@ const quickTicketStatusClass = {
   danger: "text-danger"
 } as const;
 
-function TradesTable({ trades }: { trades: LiveQuotesTradeRowViewModel[] }) {
+const tradeColumns: DenseDataTableColumn<LiveQuotesTradeRowViewModel>[] = [
+  {
+    id: "time",
+    label: "Time",
+    className: "font-mono",
+    render: (trade) => trade.timeLabel
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono",
+    render: (trade) => trade.priceLabel
+  },
+  {
+    id: "size",
+    label: "Size",
+    align: "right",
+    className: "font-mono",
+    render: (trade) => trade.sizeLabel
+  },
+  {
+    id: "aggressor",
+    label: "Aggressor",
+    className: "font-mono",
+    render: (trade) => (
+      <span className={tradeAggressorClass[trade.aggressorTone]}>{trade.aggressorLabel}</span>
+    )
+  },
+  {
+    id: "venue",
+    label: "Venue",
+    className: "font-mono text-muted-foreground",
+    render: (trade) => trade.venueLabel
+  }
+];
+
+function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-sm">
-        <thead>
-          <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <th className="px-2 py-2 font-medium">Time</th>
-            <th className="px-2 py-2 font-medium text-right">Price</th>
-            <th className="px-2 py-2 font-medium text-right">Size</th>
-            <th className="px-2 py-2 font-medium">Aggressor</th>
-            <th className="px-2 py-2 font-medium">Venue</th>
-          </tr>
-        </thead>
-        <tbody className="font-mono">
-          {trades.map((trade) => (
-              <tr key={trade.id} className="border-b border-border/30">
-                <td className="px-2 py-1.5">{trade.timeLabel}</td>
-                <td className="px-2 py-1.5 text-right">{trade.priceLabel}</td>
-                <td className="px-2 py-1.5 text-right">{trade.sizeLabel}</td>
-                <td className={`px-2 py-1.5 ${tradeAggressorClass[trade.aggressorTone]}`}>{trade.aggressorLabel}</td>
-                <td className="px-2 py-1.5 text-muted-foreground">{trade.venueLabel}</td>
-              </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.58fr)]">
+      <DenseDataTable
+        columns={tradeColumns}
+        rows={market.tradeDisplayRows}
+        getRowId={(trade) => trade.id}
+        getRowAriaLabel={(trade) => trade.ariaLabel}
+        getRowSelectAriaLabel={(trade) => trade.selectAriaLabel}
+        getRowAriaControls={(trade) => trade.detailPanelId}
+        getRowAriaExpanded={(trade) => trade.expanded}
+        onRowSelect={(trade) => market.selectTrade(trade.id)}
+        selectedRowId={market.selectedTradeId}
+        emptyText={market.tradesDetailEmptyText}
+        ariaLabel={market.tradesTableLabel}
+        caption={market.tradesTableCaption}
+      />
+      <div id={market.tradesDetailPanelId} aria-live="polite">
+        {market.selectedTradeDetail ? (
+          <EntitySummary
+            eyebrow={market.selectedTradeDetail.eyebrow}
+            title={market.selectedTradeDetail.title}
+            subtitle={market.selectedTradeDetail.subtitle}
+            description={market.selectedTradeDetail.description}
+            status={
+              <Badge variant={market.selectedTradeDetail.statusBadgeVariant}>
+                {market.selectedTradeDetail.statusLabel}
+              </Badge>
+            }
+            fields={market.selectedTradeDetail.fields}
+            ariaLabel={market.selectedTradeDetail.ariaLabel}
+          />
+        ) : (
+          <section
+            role="status"
+            className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
+            aria-label={market.tradesDetailEmptyTitle}
+          >
+            <div className="eyebrow-label">{market.tradesDetailEmptyTitle}</div>
+            <p className="mt-2">{market.tradesDetailEmptyText}</p>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

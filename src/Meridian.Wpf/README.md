@@ -1,3 +1,13 @@
+---
+id: meridian-wpf-retained
+title: Meridian WPF (Retained Scope)
+layer: wpf_retained
+state: retained_support
+canonical_path: src/Meridian.Wpf
+architecture_boundary: retained-desktop-shell-and-compatibility
+roadmap_anchor: W4-governance-productization
+---
+
 # Meridian - WPF Desktop Application
 
 This is the WPF (.NET 10) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
@@ -15,7 +25,7 @@ The current WPF application projects seven root workspace capabilities: Trading,
 - **Settings workflows** - credentials, diagnostics, system health, service management, activity, notifications, local AI agent, shortcuts, help, and setup
 - **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context, the governance shell keeps the currently selected lane plus its next handoff visible above the queue wall, and the trading shell now keeps a desk-briefing hero above the workbench so context, replay/controls posture, and the next desk action stay explicit
 
-The header operator queue consumes shared inbox route metadata and maps readiness work items into concrete workbenches: replay and DK1 trust items open `FundAuditTrail`, promotion review opens `StrategyRuns`, brokerage-sync blockers open `AccountPortfolio`, execution-control blockers open `RunRisk`, and governance items open `SecurityMaster`, `FundReconciliation`, or `FundReportPack`.
+The header operator queue consumes shared inbox route metadata and maps readiness work items into concrete workbenches: replay and DK1 trust items open `FundAuditTrail`, promotion review opens `StrategyRuns`, brokerage-sync blockers open `AccountPortfolio`, execution-control blockers open `RunRisk`, ledger-period close sign-off opens `FundReconciliation`, and governance items open `SecurityMaster`, `FundReconciliation`, or `FundReportPack`.
 
 The repo now also includes persisted built-in workspace categories for `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`, plus hidden compatibility aliases for the former `Research`, `Data Operations`, and `Governance` roots.
 

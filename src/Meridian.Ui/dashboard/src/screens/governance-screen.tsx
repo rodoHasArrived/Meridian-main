@@ -1,5 +1,6 @@
-import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
+import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { workspaceForPath } from "@/lib/workspace";
 import {
   buildGovernanceLoadingViewState,
   resolveGovernanceWorkstream,
+  SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useGovernanceCashFlowViewModel,
   useGovernanceReconciliationViewModel,
   useGovernanceReportingViewModel,
@@ -18,8 +20,18 @@ import {
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
-  CalibrationSummaryViewState,
+  CalibrationProfileRowViewModel,
+  CalibrationSummaryViewModel,
+  CorporateActionsViewState,
   CorporateActionRowViewModel,
+  ReconciliationBreakRowViewModel,
+  ReconciliationQueuePanelViewState,
+  ReconciliationQueueRunRowViewModel,
+  ReconciliationQueueRunTone,
+  GovernanceTrialBalanceRowViewModel,
+  SecuritySchedulesViewState,
+  SecurityScheduleRowViewModel,
+  SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
@@ -28,13 +40,219 @@ interface GovernanceScreenProps {
   data: GovernanceWorkspaceResponse | null;
 }
 
-const statusTone: Record<NonNullable<GovernanceWorkspaceResponse["reconciliationQueue"][number]["reconciliationStatus"]>, string> = {
-  NotStarted: "text-muted-foreground",
-  BreaksOpen: "text-warning",
-  SecurityCoverageOpen: "text-warning",
-  Resolved: "text-primary",
-  Balanced: "text-success"
+const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (row) => <span className="font-mono text-foreground">{row.toleranceProfileId}</span>
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => <span className="text-muted-foreground">{row.exceptionRoute}</span>
+  },
+  {
+    id: "severity",
+    label: "Severity",
+    render: (row) => <span className={cn("font-mono", calibrationSeverityClass(row.highestSeverity))}>{row.highestSeverity}</span>
+  },
+  {
+    id: "open",
+    label: "Open",
+    align: "right",
+    render: (row) => <span className={cn("font-mono tabular-nums", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</span>
+  },
+  {
+    id: "in-review",
+    label: "Review",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.inReviewBreakCount}</span>
+  },
+  {
+    id: "pending-signoff",
+    label: "Sign-off",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>
+        {row.pendingSignoffCount}
+      </span>
+    )
+  },
+  {
+    id: "tolerance",
+    label: "Tolerance",
+    align: "right",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.maxToleranceBandLabel}</span>
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span>
+  }
+];
+
+const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
+  muted: "text-muted-foreground",
+  warning: "text-warning",
+  success: "text-success",
+  primary: "text-primary"
 };
+
+function calibrationSeverityClass(severity: string): string {
+  const normalized = severity.trim().toLowerCase();
+  if (normalized === "critical") {
+    return "text-danger";
+  }
+
+  if (normalized === "warning" || normalized === "warn") {
+    return "text-warning";
+  }
+
+  return "text-foreground";
+}
+
+const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
+  {
+    id: "run",
+    label: "Run",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.strategyName}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.runId}</span>
+      </span>
+    )
+  },
+  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
+  { id: "status", label: "Status", render: (row) => row.runStatusLabel },
+  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono">{row.breakCountLabel}</span> },
+  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono">{row.openBreakLabel}</span> },
+  {
+    id: "reconciliation",
+    label: "Reconciliation",
+    render: (row) => (
+      <span className={cn("font-mono text-xs uppercase tracking-[0.14em]", reconciliationQueueToneClass[row.reconciliationTone])}>
+        {row.reconciliationStatusLabel}
+      </span>
+    )
+  },
+  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
+];
+
+const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
+  {
+    id: "break",
+    label: "Break",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.strategyName}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.breakId}</span>
+      </span>
+    )
+  },
+  { id: "category", label: "Category", render: (row) => <span className="font-mono text-muted-foreground">{row.category}</span> },
+  {
+    id: "variance",
+    label: "Variance",
+    align: "right",
+    render: (row) => (
+      <span
+        className={cn(
+          "font-mono tabular-nums",
+          row.varianceTone === "success" ? "text-success" : row.varianceTone === "danger" ? "text-danger" : "text-foreground"
+        )}
+      >
+        {row.varianceLabel}
+      </span>
+    )
+  },
+  { id: "owner", label: "Owner", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
+  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
+];
+
+const trialBalanceColumns: DenseDataTableColumn<GovernanceTrialBalanceRowViewModel>[] = [
+  {
+    id: "account",
+    label: "Account",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.accountLabel}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.financialAccountId ?? "Unassigned"}</span>
+      </span>
+    )
+  },
+  { id: "type", label: "Type", render: (row) => <span className="font-mono text-muted-foreground">{row.accountTypeLabel}</span> },
+  { id: "basis", label: "Basis", render: (row) => <Badge variant={row.basisTone}>{row.basisLabel}</Badge> },
+  {
+    id: "balance",
+    label: "Balance",
+    align: "right",
+    render: (row) => (
+      <span
+        className={cn(
+          "font-mono tabular-nums",
+          row.balanceTone === "success" ? "text-success" : row.balanceTone === "danger" ? "text-danger" : "text-foreground"
+        )}
+      >
+        {row.balanceLabel}
+      </span>
+    )
+  },
+  { id: "entries", label: "Entries", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.entryCountLabel}</span> }
+];
+
+const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[] = [
+  {
+    id: "eventType",
+    label: "Event type",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.corpActId}</span>
+      </span>
+    )
+  },
+  { id: "exDate", label: "Ex-date", render: (row) => <span className="font-mono text-muted-foreground">{row.exDateLabel}</span> },
+  { id: "payDate", label: "Pay date", render: (row) => <span className="font-mono text-muted-foreground">{row.payDateLabel}</span> },
+  { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
+];
+
+const securityScheduleColumns: DenseDataTableColumn<SecurityScheduleRowViewModel>[] = [
+  {
+    id: "eventType",
+    label: "Event",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.eventId}</span>
+      </span>
+    )
+  },
+  { id: "paymentDate", label: "Payment date", render: (row) => <span className="font-mono text-muted-foreground">{row.paymentDateLabel}</span> },
+  { id: "expected", label: "Expected", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.expectedAmountLabel}</span> },
+  {
+    id: "actual",
+    label: "Actual",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.actualAmount === null ? "text-muted-foreground" : "text-foreground")}>
+        {row.actualAmountLabel}
+      </span>
+    )
+  },
+  {
+    id: "variance",
+    label: "Variance",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.postingStatus === "Variance" ? "text-danger" : "text-muted-foreground")}>
+        {row.varianceLabel}
+      </span>
+    )
+  },
+  { id: "factor", label: "Factor", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.postingStatusTone}>{row.postingStatusLabel}</Badge> }
+];
 
 const focusCopy: Record<string, { title: string; description: string }> = {
   ledger: {
@@ -70,14 +288,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
     : null;
-  const identifierColumns: DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[] = [
+  const identifierColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (identifier) => <span className="font-mono">{identifier.kind}</span> },
     { id: "value", label: "Value", render: (identifier) => <span className="font-mono text-foreground">{identifier.value}</span> },
     { id: "provider", label: "Provider", render: (identifier) => identifier.providerLabel },
     { id: "state", label: "State", render: (identifier) => <Badge variant={identifier.primaryBadgeVariant}>{identifier.primaryLabel}</Badge> },
     { id: "range", label: "Valid range", render: (identifier) => <span className="font-mono text-muted-foreground">{identifier.validRangeLabel}</span> }
-  ];
-  const aliasColumns: DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[] = [
+  ], []);
+  const aliasColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (alias) => <span className="font-mono">{alias.aliasKind}</span> },
     {
       id: "alias",
@@ -93,6 +311,75 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     { id: "scope", label: "Scope", render: (alias) => alias.scope },
     { id: "state", label: "State", render: (alias) => <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge> },
     { id: "range", label: "Valid range", render: (alias) => <span className="font-mono text-muted-foreground">{alias.validRangeLabel}</span> }
+  ], []);
+  const securityResultColumns = useMemo<DenseDataTableColumn<SecuritySearchResultRowViewModel>[]>(() => [
+    {
+      id: "name",
+      label: "Name",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.displayName}</span>
+          <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.securityId}</span>
+        </span>
+      )
+    },
+    { id: "assetClass", label: "Asset Class", render: (row) => row.classification.assetClass },
+    { id: "primaryId", label: "Primary ID", render: (row) => <span className="font-mono text-muted-foreground">{row.primaryIdentifierLabel}</span> },
+    { id: "currency", label: "Currency", render: (row) => <span className="font-mono text-muted-foreground">{row.economicDefinition.currency}</span> },
+    { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone === "success" ? "success" : "warning"}>{row.status}</Badge> }
+  ], []);
+  const activeResolveBreak = resolveDialog.active
+    ? reconciliation.rows.find((item) => item.breakId === resolveDialog.active?.breakId) ?? null
+    : null;
+  const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
+    ...reconciliationBreakColumns,
+    {
+      id: "actions",
+      label: "Actions",
+      render: (item) => (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!item.canAssign}
+            disabledReason={item.assignDisabledReason}
+            aria-label={item.assignAriaLabel}
+            onClick={() => {
+              reconciliation.selectBreak(item.breakId);
+              void reconciliation.assignBreak(item.breakId);
+            }}
+          >
+            {item.assignLabel}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
+            disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "resolve", item.resolveDisabledReason)}
+            aria-label={item.resolveAriaLabel}
+            onClick={() => {
+              reconciliation.selectBreak(item.breakId);
+              resolveDialog.open(item.breakId, "Resolved");
+            }}
+          >
+            {item.resolveLabel}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
+            disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "dismiss", item.dismissDisabledReason)}
+            aria-label={item.dismissAriaLabel}
+            onClick={() => {
+              reconciliation.selectBreak(item.breakId);
+              resolveDialog.open(item.breakId, "Dismissed");
+            }}
+          >
+            {item.dismissLabel}
+          </Button>
+        </div>
+      )
+    }
   ];
 
   if (!data) {
@@ -210,100 +497,112 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         </Card>
       </section>
 
-      {workstream === "reconciliation" && selectedReconciliation && selectedReconciliationDetail ? (
+      {workstream === "reconciliation" ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <BookCheck className="h-4 w-4 text-primary" />
-                Reconciliation detail queue
+                {reconciliation.queuePanelView.title}
               </CardTitle>
-              <CardDescription>Select a run to inspect its active reconciliation detail panel.</CardDescription>
+              <CardDescription>{reconciliation.queuePanelView.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {data.reconciliationQueue.map((item) => (
-                <button
-                  key={item.runId}
-                  type="button"
-                  onClick={() => reconciliation.selectRun(item.runId)}
-                  className={cn(
-                    "w-full rounded-xl border px-4 py-4 text-left transition-colors",
-                    item.runId === selectedReconciliation.runId
-                      ? "border-primary/50 bg-primary/10"
-                      : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                  )}
+              {reconciliation.queuePanelView.hasRows ? (
+                <DenseDataTable
+                  columns={reconciliationQueueColumns}
+                  rows={reconciliation.queuePanelView.rows}
+                  getRowId={(row) => row.runId}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                  getRowAriaControls={(row) => row.controlsId}
+                  getRowAriaExpanded={(row) => row.isExpanded}
+                  selectedRowId={selectedReconciliation?.runId ?? null}
+                  onRowSelect={(row) => reconciliation.selectRun(row.runId)}
+                  emptyText={reconciliation.queuePanelView.emptyText}
+                  ariaLabel={reconciliation.queuePanelView.listLabel}
+                  caption={reconciliation.queuePanelView.description}
+                />
+              ) : (
+                <div
+                  role="status"
+                  className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-semibold">{item.strategyName}</div>
-                    <div className={cn("font-mono text-xs uppercase tracking-[0.16em]", statusTone[item.reconciliationStatus])}>
-                      {item.reconciliationStatus}
-                    </div>
-                  </div>
-                  <div className="mt-2 font-mono text-sm text-muted-foreground">{item.runId}</div>
-                  <div className="mt-3 flex items-center justify-between gap-4 text-sm">
-                    <span className="text-muted-foreground">{item.status}</span>
-                    <span className="font-mono">{item.openBreakCount} open</span>
-                  </div>
-                </button>
-              ))}
+                  {reconciliation.queuePanelView.emptyText}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="panel-surface-strong bg-panel-strong text-foreground" role="region" aria-label={selectedReconciliationDetail.ariaLabel}>
+          <Card
+            id={reconciliation.queuePanelView.detailPanelId}
+            className="panel-surface-strong bg-panel-strong text-foreground"
+            role="region"
+            aria-live="polite"
+            aria-label={selectedReconciliationDetail?.ariaLabel ?? reconciliation.queuePanelView.detailEmptyAriaLabel}
+          >
             <CardHeader>
-              <div className="eyebrow-label">{selectedReconciliationDetail.eyebrow}</div>
-              <CardTitle>{selectedReconciliationDetail.title}</CardTitle>
+              <div className="eyebrow-label">{selectedReconciliationDetail?.eyebrow ?? "Reconciliation detail"}</div>
+              <CardTitle>{selectedReconciliationDetail?.title ?? reconciliation.queuePanelView.detailEmptyTitle}</CardTitle>
               <CardDescription className="text-muted-foreground">
-                {selectedReconciliationDetail.description}
+                {selectedReconciliationDetail?.description ?? reconciliation.queuePanelView.detailEmptyText}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              {selectedReconciliationDetail.fields.map((field) => (
-                <GovernanceValue
-                  key={field.label}
-                  label={field.label}
-                  value={field.value}
-                  tone={cashFlowTextClass(field.tone)}
-                  ariaLabel={field.ariaLabel}
-                />
-              ))}
-              <div
-                aria-label={selectedReconciliationDetail.narrativeLabel}
-                className="rounded-lg border border-border/70 bg-background/70 p-4 text-muted-foreground"
-              >
-                {selectedReconciliationDetail.narrative}
-              </div>
-              {reconciliation.detailActions ? (
-                <div className="flex flex-wrap gap-3">
-                  <Button asChild variant="secondary">
-                    <Link
-                      to={reconciliation.detailActions.evidencePacketHref}
-                      aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
-                    >
-                      <Network className="h-4 w-4" />
-                      {reconciliation.detailActions.evidencePacketLabel}
-                    </Link>
-                  </Button>
-                  <Button asChild variant="secondary">
-                    <a
-                      href={reconciliation.detailActions.breakChecklistHref}
-                      aria-label={reconciliation.detailActions.breakChecklistAriaLabel}
-                    >
-                      {reconciliation.detailActions.breakChecklistLabel}
-                    </a>
-                  </Button>
-                  <Button asChild variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
-                    <a
-                      href={reconciliation.detailActions.auditPacketHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={reconciliation.detailActions.auditPacketAriaLabel}
-                    >
-                      {reconciliation.detailActions.auditPacketLabel}
-                    </a>
-                  </Button>
+              {selectedReconciliationDetail ? (
+                <>
+                  {selectedReconciliationDetail.fields.map((field) => (
+                    <GovernanceValue
+                      key={field.label}
+                      label={field.label}
+                      value={field.value}
+                      tone={cashFlowTextClass(field.tone)}
+                      ariaLabel={field.ariaLabel}
+                    />
+                  ))}
+                  <div
+                    aria-label={selectedReconciliationDetail.narrativeLabel}
+                    className="rounded-lg border border-border/70 bg-background/70 p-4 text-muted-foreground"
+                  >
+                    {selectedReconciliationDetail.narrative}
+                  </div>
+                  {reconciliation.detailActions ? (
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild variant="secondary">
+                        <Link
+                          to={reconciliation.detailActions.evidencePacketHref}
+                          aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
+                        >
+                          <Network className="h-4 w-4" />
+                          {reconciliation.detailActions.evidencePacketLabel}
+                        </Link>
+                      </Button>
+                      <Button asChild variant="secondary">
+                        <a
+                          href={reconciliation.detailActions.breakChecklistHref}
+                          aria-label={reconciliation.detailActions.breakChecklistAriaLabel}
+                        >
+                          {reconciliation.detailActions.breakChecklistLabel}
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
+                        <a
+                          href={reconciliation.detailActions.auditPacketHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={reconciliation.detailActions.auditPacketAriaLabel}
+                        >
+                          {reconciliation.detailActions.auditPacketLabel}
+                        </a>
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                  {reconciliation.queuePanelView.detailEmptyText}
                 </div>
-              ) : null}
+              )}
             </CardContent>
           </Card>
         </section>
@@ -318,48 +617,61 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardHeader>
             <CardContent>
               <span className="sr-only" aria-live="polite">{reconciliation.trialBalanceView.statusAnnouncement}</span>
-              {reconciliation.trialBalanceView.hasRows ? (
-                <div className="overflow-x-auto rounded-lg border border-border/70">
-                  <table
-                    aria-label={reconciliation.trialBalanceView.tableLabel}
-                    className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
+              <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Accounting basis">
+                {reconciliation.trialBalanceView.basisOptions.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    size="sm"
+                    variant={option.isSelected ? "default" : "outline"}
+                    aria-pressed={option.isSelected}
+                    aria-label={`${option.label} basis, ${option.rowCountLabel}. ${option.description}`}
+                    onClick={() => reconciliation.selectAccountingBasis(option.id)}
                   >
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {["Account", "Type", "Balance", "Entries"].map((column) => (
-                          <th
-                            key={column}
-                            scope="col"
-                            className={cn("px-3 py-2", column === "Balance" || column === "Entries" ? "text-right" : undefined)}
-                          >
-                            {column}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/50">
-                      {reconciliation.trialBalanceView.rows.map((line) => (
-                        <tr key={line.rowId} aria-label={line.ariaLabel} className="hover:bg-secondary/20">
-                          <td className="px-3 py-2">{line.accountLabel}</td>
-                          <td className="px-3 py-2 font-mono">{line.accountTypeLabel}</td>
-                          <td className="px-3 py-2 text-right font-mono">
-                            <span
-                              className={cn(
-                                line.balanceTone === "success"
-                                  ? "text-success"
-                                  : line.balanceTone === "danger"
-                                    ? "text-danger"
-                                    : "text-foreground"
-                              )}
-                            >
-                              {line.balanceLabel}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-right font-mono">{line.entryCountLabel}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    <span>{option.label}</span>
+                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                  </Button>
+                ))}
+              </div>
+              {reconciliation.trialBalanceView.hasRows ? (
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
+                  <DenseDataTable
+                    columns={trialBalanceColumns}
+                    rows={reconciliation.trialBalanceView.rows}
+                    getRowId={(line) => line.rowId}
+                    getRowAriaLabel={(line) => line.ariaLabel}
+                    getRowSelectAriaLabel={(line) => line.selectAriaLabel}
+                    getRowAriaControls={(line) => line.detailPanelId}
+                    getRowAriaExpanded={(line) => line.isExpanded}
+                    selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                    onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                    emptyText={reconciliation.trialBalanceView.emptyDetail}
+                    ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                  />
+                  {reconciliation.trialBalanceView.selectedDetail ? (
+                    <div id={reconciliation.trialBalanceView.detailPanelId} className="min-w-0">
+                      <EntitySummary
+                        eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
+                        title={reconciliation.trialBalanceView.selectedDetail.title}
+                        subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
+                        description={reconciliation.trialBalanceView.selectedDetail.description}
+                        status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
+                        fields={reconciliation.trialBalanceView.selectedDetail.fields}
+                        ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
+                      />
+                    </div>
+                  ) : (
+                    <aside
+                      id={reconciliation.trialBalanceView.detailPanelId}
+                      role="region"
+                      aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
+                      className="row-detail-panel h-fit min-w-0"
+                    >
+                      <div className="eyebrow-label">Trial-balance detail</div>
+                      <h3 className="mt-1 text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.detailEmptyTitle}</h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{reconciliation.trialBalanceView.detailEmptyText}</p>
+                    </aside>
+                  )}
                 </div>
               ) : (
                 <div
@@ -375,6 +687,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   <p className="mt-2 text-sm leading-6">
                     {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
                   </p>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
@@ -384,17 +703,53 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               ) : null}
               {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
                 <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.trialBalanceView.errorText}
+                  <div>{reconciliation.trialBalanceView.errorText}</div>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               ) : null}
             </CardContent>
           </Card>
           <Card className="panel-surface">
             <CardHeader>
-              <CardTitle>Reporting exports</CardTitle>
-              <CardDescription>Entry points for report/export handoff using existing export infrastructure.</CardDescription>
+              <CardTitle>{reconciliation.trialBalanceView.basisBridge.title}</CardTitle>
+              <CardDescription>{reconciliation.trialBalanceView.basisBridge.description}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
+              <div role="region" aria-label={reconciliation.trialBalanceView.basisBridge.tableLabel}>
+                {reconciliation.trialBalanceView.basisBridge.hasRows ? (
+                  <div className="space-y-2">
+                    {reconciliation.trialBalanceView.basisBridge.rows.map((row) => (
+                      <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
+                            <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
+                          </span>
+                          <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
+                        </div>
+                        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                          <span className="font-mono">Primary {row.primaryBalanceLabel}</span>
+                          <span className="font-mono">{row.comparisonBalanceLabel}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                    {reconciliation.trialBalanceView.basisBridge.emptyText}
+                  </p>
+                )}
+              </div>
+              <div className="border-t border-border/70 pt-4">
+                <h3 className="text-sm font-semibold text-foreground">Reporting exports</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">Entry points for report/export handoff using existing export infrastructure.</p>
+              </div>
               <Button asChild>
                 <a href={reporting.backendLinks[0].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[0].ariaLabel}>
                   {reporting.backendLinks[0].label}
@@ -404,8 +759,10 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 type="button"
                 variant="outline"
                 disabled={!reporting.exportCanRun}
+                disabledReason={reporting.exportDisabledReason}
+                busy={reporting.exportBusy}
+                busyLabel={reporting.exportButtonLabel}
                 aria-label={reporting.exportAriaLabel}
-                aria-busy={reporting.exportBusy}
                 onClick={() => void reporting.runExport()}
               >
                 {reporting.exportButtonLabel}
@@ -433,44 +790,10 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         </section>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BookCheck className="h-4 w-4 text-primary" />
-              Reconciliation queue
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-xl border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Run", "Strategy", "Mode", "Status", "Breaks", "Open", "Reconciliation", "Updated"].map((column) => (
-                      <th key={column} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {data.reconciliationQueue.map((item) => (
-                    <tr key={item.runId} className="bg-background/20">
-                      <td className="px-3 py-2 font-mono text-foreground">{item.runId}</td>
-                      <td className="px-3 py-2 text-foreground">{item.strategyName}</td>
-                      <td className="px-3 py-2 font-mono uppercase text-muted-foreground">{item.mode}</td>
-                      <td className="px-3 py-2 text-foreground">{item.status}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{item.breakCount}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{item.openBreakCount}</td>
-                      <td className={cn("px-3 py-2 font-mono", statusTone[item.reconciliationStatus])}>{item.reconciliationStatus}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{item.lastUpdated}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+      <section className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
+        {workstream !== "reconciliation" ? (
+          <ReconciliationQueueSummaryCard view={reconciliation.queuePanelView} />
+        ) : null}
 
         <Card className="panel-surface">
           <CardHeader>
@@ -573,6 +896,38 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {workstream === "security-master" && (
         <section className="space-y-6">
+          <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="eyebrow-label">{securityMaster.pageView.eyebrow}</div>
+                <h2 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">{securityMaster.pageView.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{securityMaster.pageView.description}</p>
+              </div>
+              <Button variant="outline" size="sm" asChild className="shrink-0">
+                <a href="#security-master-search" aria-label="Jump to Security Master search">
+                  <Search className="h-3.5 w-3.5" aria-hidden="true" />
+                  Search securities
+                </a>
+              </Button>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {securityMaster.pageView.metrics.map((metric) => (
+                <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+                  <div
+                    className={cn(
+                      "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",
+                      metric.tone === "success" ? "text-success" : metric.tone === "warning" ? "text-warning" : "text-foreground"
+                    )}
+                  >
+                    {metric.value}
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* Search panel */}
           <Card className="panel-surface">
             <CardHeader>
@@ -618,60 +973,54 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {securityMaster.searchErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.searchErrorText}
+                  <div>{securityMaster.searchErrorText}</div>
+                  {securityMaster.searchErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {securityMaster.searchErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
 
               {securityMaster.hasResults && (
-                <div className="overflow-x-auto rounded-xl border border-border/70">
-                  <table id="security-master-results" aria-label={securityMaster.resultsTableLabel} className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                    <caption className="sr-only">{securityMaster.searchStatusText}</caption>
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {securityMaster.resultColumns.map((col) => (
-                          <th key={col.id} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col.label}</th>
+                <DenseDataTable
+                  columns={securityResultColumns}
+                  rows={securityMaster.resultRows}
+                  getRowId={(row) => row.rowId}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                  getRowAriaControls={(row) => row.detailPanelId}
+                  getRowAriaExpanded={(row) => row.isExpanded}
+                  onRowSelect={(row) => void securityMaster.selectSecurity(row.securityId)}
+                  selectedRowId={securityMaster.selectedSecurityId ? `security-result-${securityMaster.selectedSecurityId}` : null}
+                  emptyText={securityMaster.searchStatusText ?? "No Security Master results returned."}
+                  ariaLabel={securityMaster.resultsTableLabel}
+                  tableId="security-master-results"
+                  caption={securityMaster.searchStatusText}
+                />
+              )}
+              <div id={identity?.panelId ?? SECURITY_IDENTITY_DETAIL_PANEL_ID} className="space-y-4">
+                {securityMaster.identityLoading && (
+                  <p role="status" className="rounded-md border border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] px-3 py-3 text-sm text-[var(--state-pending-fg)]">
+                    Loading identity drill-in…
+                  </p>
+                )}
+                {securityMaster.identityErrorText && (
+                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                    <div>{securityMaster.identityErrorText}</div>
+                    {securityMaster.identityErrorDetails.length > 0 ? (
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                        {securityMaster.identityErrorDetails.map((detail) => (
+                          <li key={detail}>{detail}</li>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/50">
-                      {securityMaster.resultRows.map((s) => (
-                        <tr
-                          key={s.rowId}
-                          aria-label={s.ariaLabel}
-                          className={cn(
-                            "bg-background/20 transition-colors hover:bg-secondary/30",
-                            s.isSelected ? "bg-primary/10" : ""
-                          )}
-                        >
-                          <td className="px-3 py-2">
-                            <button
-                              type="button"
-                              className="rounded-sm text-left font-semibold text-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-                              aria-pressed={s.isSelected}
-                              aria-label={s.selectAriaLabel}
-                              onClick={() => void securityMaster.selectSecurity(s.securityId)}
-                            >
-                              {s.displayName}
-                            </button>
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{s.classification.assetClass}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{s.primaryIdentifierLabel}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{s.economicDefinition.currency}</td>
-                          <td className={cn("px-3 py-2 font-mono uppercase", s.statusTone === "success" ? "text-success" : "text-warning")}>{s.status}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              {securityMaster.identityLoading && <p role="status" className="text-sm text-muted-foreground">Loading identity drill-in…</p>}
-              {securityMaster.identityErrorText && (
-                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.identityErrorText}
-                </div>
-              )}
-              {identity && (
-                <div className="space-y-4">
+                      </ul>
+                    ) : null}
+                  </div>
+                )}
+                {identity && (
+                  <>
                   <EntitySummary
                     eyebrow="Identity drill-in"
                     title={identity.title}
@@ -726,37 +1075,81 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       />
                     )}
                   </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           {/* Conflicts panel */}
           <Card className="panel-surface">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                Identifier conflicts
-                {securityMaster.openConflictCount > 0 && (
-                  <span className="ml-2 inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
-                    {securityMaster.conflictCountLabel}
-                  </span>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Identifier ambiguities detected when multiple providers map the same identifier to different securities.
-              </CardDescription>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <CardTitle className="flex flex-wrap items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    Identifier conflicts
+                    {securityMaster.openConflictCount > 0 && (
+                      <span className="inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
+                        {securityMaster.conflictCountLabel}
+                      </span>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    Identifier ambiguities detected when multiple providers map the same identifier to different securities.
+                  </CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  busy={securityMaster.conflictRefreshCommand.busy}
+                  busyLabel={securityMaster.conflictRefreshCommand.busyLabel}
+                  disabled={securityMaster.conflictRefreshCommand.disabled}
+                  disabledReason={securityMaster.conflictRefreshCommand.disabledReason}
+                  aria-label={securityMaster.conflictRefreshCommand.ariaLabel}
+                  aria-describedby={securityMaster.conflictRefreshCommand.feedbackText ? securityMaster.conflictRefreshCommand.feedbackId : undefined}
+                  onClick={() => void securityMaster.refreshConflicts()}
+                  className="shrink-0"
+                >
+                  <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                  {securityMaster.conflictRefreshCommand.label}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
+              {securityMaster.conflictRefreshCommand.feedbackText && (
+                <p
+                  id={securityMaster.conflictRefreshCommand.feedbackId}
+                  role="status"
+                  className="mb-3 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
+                >
+                  {securityMaster.conflictRefreshCommand.feedbackText}
+                </p>
+              )}
               {securityMaster.conflictsLoading && <p role="status" className="text-sm text-muted-foreground">Loading conflicts…</p>}
               {securityMaster.conflictsErrorText && (
                 <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.conflictsErrorText}
+                  <div>{securityMaster.conflictsErrorText}</div>
+                  {securityMaster.conflictsErrorDetails.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {securityMaster.conflictsErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               {securityMaster.conflictActionErrorText && (
                 <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.conflictActionErrorText}
+                  <div>{securityMaster.conflictActionErrorText}</div>
+                  {securityMaster.conflictActionErrorDetails.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {securityMaster.conflictActionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               {!securityMaster.conflictsLoading && securityMaster.conflicts !== null && !securityMaster.hasConflicts && (
@@ -796,6 +1189,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                                 size="sm"
                                 variant={action.variant}
                                 disabled={action.disabled}
+                                disabledReason={action.disabledReason}
                                 aria-label={action.ariaLabel}
                                 onClick={() => void securityMaster.resolveConflict(conflict.conflictId, action.resolution)}
                               >
@@ -815,18 +1209,47 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardContent>
           </Card>
 
-          {/* Corporate actions and trading parameters — shown when a security is selected */}
           {securityMaster.selectedSecurityId && (
-            <div className="grid gap-4 xl:grid-cols-2">
-              <CorporateActionsPanel
-                securityId={securityMaster.selectedSecurityId}
-                rows={securityMaster.corporateActionRows}
-                loading={securityMaster.corporateActionsLoading}
-                errorText={securityMaster.corporateActionsErrorText}
-                hasActions={securityMaster.hasCorporateActions}
+            <section className="panel-surface-strong space-y-4 p-5" aria-labelledby="security-detail-page-title">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="min-w-0">
+                  <div className="eyebrow-label">{securityMaster.pageView.detailEyebrow}</div>
+                  <h2 id="security-detail-page-title" className="mt-2 text-xl font-semibold tracking-normal text-foreground">
+                    {securityMaster.pageView.detailTitle}
+                  </h2>
+                  <p className="mt-1 break-words font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                    {securityMaster.pageView.detailSubtitle}
+                  </p>
+                  <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
+                    {securityMaster.pageView.detailDescription}
+                  </p>
+                </div>
+                <Badge variant={securityMaster.pageView.detailStatusBadgeVariant} dot className="w-fit shrink-0">
+                  {securityMaster.pageView.detailStatusLabel}
+                </Badge>
+              </div>
+              <ToolbarStrip
+                ariaLabel={securityMaster.pageView.detailToolbarAriaLabel}
+                items={securityMaster.pageView.detailSections}
               />
-              <TradingParametersPanel view={securityMaster.tradingParametersView} />
-            </div>
+            </section>
+          )}
+
+          {/* Schedule workbench, corporate actions, and trading controls — shown when a security is selected */}
+          {securityMaster.selectedSecurityId && (
+            <>
+              <SecuritySchedulesPanel
+                view={securityMaster.schedulesView}
+                onSelect={securityMaster.selectScheduleEvent}
+              />
+              <div className="grid gap-4 xl:grid-cols-2">
+                <CorporateActionsPanel
+                  view={securityMaster.corporateActionsView}
+                  onSelect={securityMaster.selectCorporateAction}
+                />
+                <TradingParametersPanel view={securityMaster.tradingParametersView} />
+              </div>
+            </>
           )}
 
           {/* Extended security details & lots tracker — shown when a security is selected */}
@@ -864,60 +1287,90 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {reconciliation.errorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.errorText}
+                  <div>{reconciliation.errorText}</div>
+                  {reconciliation.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.actionErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.actionErrorText}
+                  <div>{reconciliation.actionErrorText}</div>
+                  {reconciliation.actionErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.actionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
-              {!reconciliation.loadingText && !reconciliation.hasBreaks && (
-                <p className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                  {reconciliation.emptyText}
-                </p>
-              )}
-              {reconciliation.rows.map((item) => (
-                <div key={item.breakId} className="rounded-lg border border-border/70 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-semibold">{item.strategyName} · {item.category}</div>
-                      <div className="text-xs text-muted-foreground">{item.reason}</div>
-                    </div>
-                    <div className="font-mono text-xs">{item.status}</div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!item.canAssign}
-                      aria-label={item.assignAriaLabel}
-                      onClick={() => void reconciliation.assignBreak(item.breakId)}
-                    >
-                      {item.assignLabel}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
-                      aria-label={item.resolveAriaLabel}
-                      onClick={() => resolveDialog.open(item.breakId, "Resolved")}
-                    >
-                      {item.resolveLabel}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
-                      aria-label={item.dismissAriaLabel}
-                      onClick={() => resolveDialog.open(item.breakId, "Dismissed")}
-                    >
-                      {item.dismissLabel}
-                    </Button>
-                  </div>
-                  {resolveDialog.active?.breakId === item.breakId && (
+              <DenseDataTable
+                columns={reconciliationBreakTableColumns}
+                rows={reconciliation.rows}
+                getRowId={(item) => item.breakId}
+                getRowAriaLabel={(item) => item.rowAriaLabel}
+                getRowSelectAriaLabel={(item) => item.rowSelectAriaLabel}
+                getRowAriaControls={(item) => item.detailPanelId}
+                getRowAriaExpanded={(item) => item.isExpanded}
+                onRowSelect={(item) => reconciliation.selectBreak(item.breakId)}
+                selectedRowId={reconciliation.selectedBreakId}
+                emptyText={reconciliation.emptyText}
+                ariaLabel={reconciliation.tableLabel}
+                caption={reconciliation.tableCaption}
+              />
+              <div id={reconciliation.detailPanelId} aria-live="polite">
+                {reconciliation.selectedDetail ? (
+                  <EntitySummary
+                    eyebrow={reconciliation.selectedDetail.eyebrow}
+                    title={reconciliation.selectedDetail.title}
+                    subtitle={reconciliation.selectedDetail.subtitle}
+                    description={reconciliation.selectedDetail.description}
+                    ariaLabel={reconciliation.selectedDetail.ariaLabel}
+                    fields={reconciliation.selectedDetail.fields}
+                    status={<Badge variant={reconciliation.selectedDetail.statusBadgeVariant}>{reconciliation.selectedDetail.statusLabel}</Badge>}
+                  />
+                ) : (
+                  <section
+                    role="region"
+                    aria-label={reconciliation.detailEmptyAriaLabel}
+                    className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground"
+                  >
+                    <div className="eyebrow-label">{reconciliation.detailEmptyTitle}</div>
+                    <p className="mt-1">{reconciliation.detailEmptyText}</p>
+                  </section>
+                )}
+              </div>
+              {reconciliation.selectedDetail?.analysisText ? (
+                <div className="rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                  <span className="font-medium text-foreground">Analysis: </span>
+                  {reconciliation.selectedDetail.analysisText}
+                </div>
+              ) : null}
+              {reconciliation.selectedDetail?.recommendedActionText ? (
+                <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
+                  <span className="font-medium text-primary">Recommended: </span>
+                  <span className="text-foreground">{reconciliation.selectedDetail.recommendedActionText}</span>
+                </div>
+              ) : null}
+              {reconciliation.selectedDetail?.routingActionHref && reconciliation.selectedDetail.routingActionLabel ? (
+                <Button asChild variant="secondary" className="w-fit">
+                  <Link
+                    to={reconciliation.selectedDetail.routingActionHref}
+                    aria-label={reconciliation.selectedDetail.routingActionAriaLabel ?? reconciliation.selectedDetail.routingActionLabel}
+                  >
+                    <Network className="h-4 w-4" aria-hidden="true" />
+                    {reconciliation.selectedDetail.routingActionLabel}
+                  </Link>
+                </Button>
+              ) : null}
+              {activeResolveBreak && resolveDialog.active ? (
                     <form
-                      className="mt-3 space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
+                      className="space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
                       aria-label={resolveDialog.active.formAriaLabel}
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -942,7 +1395,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         {resolveDialog.active.helpText}
                       </p>
                       <div className="flex gap-2">
-                        <Button type="submit" size="sm" disabled={resolveDialog.active.isSubmitDisabled} aria-label={resolveDialog.active.submitAriaLabel}>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={resolveDialog.active.isSubmitDisabled}
+                          disabledReason={resolveDialog.active.submitDisabledReason}
+                          aria-label={resolveDialog.active.submitAriaLabel}
+                        >
                           {resolveDialog.active.submitLabel}
                         </Button>
                         <Button type="button" size="sm" variant="ghost" aria-label={resolveDialog.active.cancelAriaLabel} onClick={resolveDialog.close}>
@@ -950,9 +1409,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         </Button>
                       </div>
                     </form>
-                  )}
-                </div>
-              ))}
+              ) : null}
             </CardContent>
           </Card>
 
@@ -963,24 +1420,46 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   );
 }
 
-function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }) {
+function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }) {
   const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
 
   return (
-          <Card className="panel-surface">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <BookCheck className="h-4 w-4 text-primary" />
-          Calibration summary
-        </CardTitle>
-        <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+    <Card className="panel-surface">
+      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BookCheck className="h-4 w-4 text-primary" />
+            Calibration summary
+          </CardTitle>
+          <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={view.refresh}
+          disabled={view.refreshCommand.disabled}
+          disabledReason={view.refreshCommand.disabledReason}
+          aria-label={view.refreshCommand.ariaLabel}
+          className="shrink-0"
+        >
+          <RefreshCcw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+          {view.refreshCommand.label}
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && (
@@ -1008,35 +1487,47 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }
                 </div>
               ))}
             </div>
-            {view.hasProfiles && (
-              <div>
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
-                <div className="overflow-x-auto rounded-lg border border-border/60">
-                  <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {["Profile", "Route", "Severity", "Open", "Resolved", "Pending sign-off", "Updated"].map((col) => (
-                          <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/40">
-                      {view.profileRows.map((row) => (
-                        <tr key={row.toleranceProfileId} aria-label={row.ariaLabel} className="hover:bg-secondary/20">
-                          <td className="px-3 py-2 font-mono text-foreground">{row.toleranceProfileId}</td>
-                          <td className="px-3 py-2 text-muted-foreground">{row.exceptionRoute}</td>
-                          <td className="px-3 py-2 font-mono">{row.highestSeverity}</td>
-                          <td className={cn("px-3 py-2 font-mono", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</td>
-                          <td className="px-3 py-2 font-mono text-foreground">{row.resolvedBreakCount}</td>
-                          <td className={cn("px-3 py-2 font-mono", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>{row.pendingSignoffCount}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{row.lastUpdatedLabel}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
+              {view.hasProfiles ? (
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                  <DenseDataTable
+                    columns={calibrationProfileColumns}
+                    rows={view.profileRows}
+                    getRowId={(row) => row.toleranceProfileId}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.isSelected}
+                    selectedRowId={view.selectedProfileId}
+                    onRowSelect={(row) => view.selectProfile(row.toleranceProfileId)}
+                    emptyText={view.emptyText}
+                    ariaLabel={view.tableAriaLabel}
+                  />
+                  <div id={view.detailPanelId} aria-live="polite">
+                    {view.selectedProfile ? (
+                      <EntitySummary
+                        eyebrow="Tolerance profile"
+                        title={view.selectedProfile.title}
+                        subtitle={view.selectedProfile.subtitle}
+                        description={view.selectedProfile.description}
+                        status={<Badge variant={view.selectedProfile.statusTone} dot>{view.selectedProfile.statusLabel}</Badge>}
+                        fields={view.selectedProfile.fields}
+                        ariaLabel={view.selectedProfile.ariaLabel}
+                      />
+                    ) : (
+                      <div role="status" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
+                        Select a tolerance profile to inspect its calibration posture.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                  {view.emptyText}
+                </div>
+              )}
+            </div>
           </>
         )}
       </CardContent>
@@ -1045,62 +1536,143 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }
 }
 
 function CorporateActionsPanel({
-  securityId,
-  rows,
-  loading,
-  errorText,
-  hasActions
+  view,
+  onSelect
 }: {
-  securityId: string;
-  rows: CorporateActionRowViewModel[];
-  loading: boolean;
-  errorText: string | null;
-  hasActions: boolean;
+  view: CorporateActionsViewState;
+  onSelect: (rowId: string) => void;
 }) {
   return (
-    <Card>
+    <Card className="panel-surface">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Table2 className="h-4 w-4 text-primary" />
           Corporate actions
         </CardTitle>
         <CardDescription>
-          Dividends, splits, spin-offs, and other corporate events for <span className="font-mono">{securityId}</span>.
+          Dividends, splits, spin-offs, and other corporate events for <span className="font-mono">{view.securityId}</span>.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {loading && <p role="status" className="text-sm text-muted-foreground">Loading corporate actions…</p>}
-        {errorText && (
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {errorText}
-          </div>
-        )}
-        {!loading && !errorText && !hasActions && (
-          <p className="text-sm text-muted-foreground">No corporate actions recorded for this security.</p>
-        )}
-        {hasActions && (
-          <div className="overflow-x-auto rounded-lg border border-border/60">
-            <table aria-label={`Corporate actions for ${securityId}`} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-              <thead className="bg-secondary/30">
-                <tr>
-                  {["Event type", "Ex-date", "Pay date", "Amount"].map((col) => (
-                    <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {rows.map((row) => (
-                  <tr key={row.rowId} aria-label={row.ariaLabel} className="hover:bg-secondary/20">
-                    <td className="px-3 py-2 font-semibold text-foreground">{row.eventTypeLabel}</td>
-                    <td className="px-3 py-2 font-mono text-muted-foreground">{row.exDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-muted-foreground">{row.payDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-foreground">{row.amountLabel}</td>
-                  </tr>
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
                 ))}
-              </tbody>
-            </table>
+              </ul>
+            ) : null}
           </div>
         )}
+        {!view.loadingText && !view.errorText && (
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
+            <DenseDataTable
+              columns={corporateActionColumns}
+              rows={view.rows}
+              getRowId={(row) => row.rowId}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.isExpanded}
+              onRowSelect={(row) => onSelect(row.rowId)}
+              selectedRowId={view.selectedRowId}
+              emptyText={view.emptyText}
+              ariaLabel={view.tableLabel}
+              caption={view.tableCaption}
+            />
+            <div
+              id={view.detailPanelId}
+              className="row-detail-panel h-fit min-w-0"
+            >
+              {view.selectedDetail ? (
+                <EntitySummary
+                  eyebrow={view.selectedDetail.eyebrow}
+                  title={view.selectedDetail.title}
+                  subtitle={view.selectedDetail.subtitle}
+                  description={view.selectedDetail.description}
+                  ariaLabel={view.selectedDetail.ariaLabel}
+                  status={<Badge variant={view.selectedDetail.statusLabel === "Pay date scheduled" ? "success" : "warning"}>{view.selectedDetail.statusLabel}</Badge>}
+                  fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
+                />
+              ) : (
+                <div role="region" aria-label={view.detailEmptyAriaLabel}>
+                  <div className="eyebrow-label">Corporate action detail</div>
+                  <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SecuritySchedulesPanel({
+  view,
+  onSelect
+}: {
+  view: SecuritySchedulesViewState;
+  onSelect: (rowId: string) => void;
+}) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Table2 className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.title}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.description}</CardDescription>
+          </div>
+          <div className="min-w-0 lg:max-w-[28rem]">
+            <ToolbarStrip ariaLabel={view.toolbarAriaLabel} items={view.toolbarItems} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
+          <DenseDataTable
+            columns={securityScheduleColumns}
+            rows={view.rows}
+            getRowId={(row) => row.rowId}
+            getRowAriaLabel={(row) => row.ariaLabel}
+            getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+            getRowAriaControls={(row) => row.detailPanelId}
+            getRowAriaExpanded={(row) => row.isExpanded}
+            onRowSelect={(row) => onSelect(row.rowId)}
+            selectedRowId={view.selectedRowId}
+            emptyText={view.emptyText}
+            ariaLabel={view.tableLabel}
+            caption={view.tableCaption}
+          />
+          <div id={view.detailPanelId} className="row-detail-panel h-fit min-w-0">
+            {view.selectedDetail ? (
+              <EntitySummary
+                eyebrow={view.selectedDetail.eyebrow}
+                title={view.selectedDetail.title}
+                subtitle={view.selectedDetail.subtitle}
+                description={view.selectedDetail.description}
+                ariaLabel={view.selectedDetail.ariaLabel}
+                status={<Badge variant={view.selectedDetail.statusTone}>{view.selectedDetail.statusLabel}</Badge>}
+                fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
+              />
+            ) : (
+              <div role="region" aria-label={view.detailEmptyAriaLabel}>
+                <div className="eyebrow-label">Schedule event detail</div>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
+              </div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -1124,7 +1696,14 @@ function TradingParametersPanel({ view }: { view: TradingParametersViewState }) 
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && view.fields.length === 0 && (
@@ -1145,6 +1724,40 @@ function TradingParametersPanel({ view }: { view: TradingParametersViewState }) 
             ))}
           </dl>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePanelViewState }) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.overviewTitle}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.overviewDescription}</CardDescription>
+          </div>
+          <Button asChild variant="outline" size="sm" className="w-fit shrink-0">
+            <Link to={view.overviewActionHref} aria-label={view.overviewActionAriaLabel}>
+              {view.overviewActionLabel}
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <DenseDataTable
+          columns={reconciliationQueueColumns}
+          rows={view.rows}
+          getRowId={(row) => row.runId}
+          getRowAriaLabel={(row) => row.ariaLabel}
+          emptyText={view.emptyText}
+          ariaLabel={view.listLabel}
+          caption={view.overviewCaption}
+        />
       </CardContent>
     </Card>
   );

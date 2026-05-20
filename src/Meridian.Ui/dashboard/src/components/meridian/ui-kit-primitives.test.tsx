@@ -46,6 +46,10 @@ describe("DenseDataTable", () => {
     expect(selectedRow).toHaveAttribute("aria-expanded", "true");
     expect(selectedRow).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("table", { name: "Test table" })).toHaveAccessibleDescription(
+      "Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row."
+    );
 
     await user.click(screen.getByRole("row", { name: "Select MSFT" }));
     expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
@@ -56,6 +60,44 @@ describe("DenseDataTable", () => {
 
     await user.keyboard(" ");
     expect(onRowSelect).toHaveBeenLastCalledWith(rows[0]);
+  });
+
+  it("moves master-detail row focus and selection with arrow, home, and end keys", async () => {
+    const user = userEvent.setup();
+    const onRowSelect = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowSelectAriaLabel={(row) => `Select ${row.symbol}`}
+        onRowSelect={onRowSelect}
+        selectedRowId="aapl"
+        emptyText="No rows"
+        ariaLabel="Keyboard table"
+      />
+    );
+
+    const firstRow = screen.getByRole("row", { name: "Select AAPL" });
+    const secondRow = screen.getByRole("row", { name: "Select MSFT" });
+
+    firstRow.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
+    expect(secondRow).toHaveFocus();
+
+    await user.keyboard("{Home}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[0]);
+    expect(firstRow).toHaveFocus();
+
+    await user.keyboard("{End}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
+    expect(secondRow).toHaveFocus();
+
+    await user.keyboard("{ArrowUp}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[0]);
+    expect(firstRow).toHaveFocus();
   });
 
   it("does not hijack interactive controls inside selectable rows", async () => {
@@ -91,5 +133,50 @@ describe("DenseDataTable", () => {
 
     expect(onButtonClick).toHaveBeenCalledTimes(1);
     expect(onRowSelect).not.toHaveBeenCalled();
+  });
+
+  it("renders sortable headers with aria-sort and toggle commands", async () => {
+    const user = userEvent.setup();
+    const onToggleSort = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={[
+          { id: "symbol", label: "Symbol", sortable: true, render: (row) => row.symbol },
+          { id: "status", label: "Status", sortable: true, render: (row) => row.status }
+        ]}
+        rows={rows}
+        getRowId={(row) => row.id}
+        emptyText="No rows"
+        ariaLabel="Sortable table"
+        sort={{ columnId: "symbol", direction: "asc" }}
+        onToggleSort={onToggleSort}
+      />
+    );
+
+    expect(screen.getByRole("columnheader", { name: /symbol/i })).toHaveAttribute("aria-sort", "ascending");
+    expect(screen.getByRole("columnheader", { name: /status/i })).toHaveAttribute("aria-sort", "none");
+    expect(screen.getByRole("button", { name: "Symbol sorted ascending. Activate to change sort." })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Sort by Status" }));
+
+    expect(onToggleSort).toHaveBeenCalledWith("status");
+  });
+
+  it("applies view-model-owned row classes", () => {
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        getRowClassName={(row) => row.id === "msft" ? "state-disabled" : undefined}
+        emptyText="No rows"
+        ariaLabel="State table"
+      />
+    );
+
+    expect(screen.getByRole("row", { name: "AAPL Active" })).not.toHaveClass("state-disabled");
+    expect(screen.getByRole("row", { name: "MSFT Monitored" })).toHaveClass("state-disabled");
   });
 });

@@ -101,9 +101,9 @@ def compare_workflow(baseline: dict, current: dict) -> list[Regression]:
 
     baseline_metrics = index_by_id(baseline.get("keyMetrics", []))
     current_metrics = index_by_id(current.get("keyMetrics", []))
-    tolerance_windows = index_by_id(current.get("acceptedToleranceWindows", []), key="metricId")
-    if not tolerance_windows:
-        tolerance_windows = index_by_id(baseline.get("acceptedToleranceWindows", []), key="metricId")
+    baseline_tolerance_windows = index_by_id(baseline.get("acceptedToleranceWindows", []), key="metricId")
+    current_tolerance_windows = index_by_id(current.get("acceptedToleranceWindows", []), key="metricId")
+    tolerance_windows = baseline_tolerance_windows or current_tolerance_windows
 
     for metric_id, baseline_metric in baseline_metrics.items():
         current_metric = current_metrics.get(metric_id)
@@ -128,6 +128,33 @@ def compare_workflow(baseline: dict, current: dict) -> list[Regression]:
         tolerance = tolerance_windows.get(metric_id)
         if tolerance is None:
             continue
+
+        current_tolerance = current_tolerance_windows.get(metric_id)
+        if current_tolerance is not None and tolerance is not current_tolerance:
+            baseline_warning_threshold = float(tolerance.get("warningDegradationPercent", 0.0))
+            baseline_failure_threshold = float(
+                tolerance.get("failureDegradationPercent", baseline_warning_threshold)
+            )
+            current_warning_threshold = float(current_tolerance.get("warningDegradationPercent", 0.0))
+            current_failure_threshold = float(
+                current_tolerance.get("failureDegradationPercent", current_warning_threshold)
+            )
+            if (
+                current_warning_threshold > baseline_warning_threshold
+                or current_failure_threshold > baseline_failure_threshold
+            ):
+                regressions.append(
+                    Regression(
+                        workflow_id=workflow_id,
+                        category="tolerance_window",
+                        severity="failure",
+                        message=(
+                            f"Metric '{metric_id}' current tolerance window weakens the approved baseline "
+                            f"(warning {current_warning_threshold:.2f}% vs {baseline_warning_threshold:.2f}%, "
+                            f"failure {current_failure_threshold:.2f}% vs {baseline_failure_threshold:.2f}%)."
+                        ),
+                    )
+                )
 
         warning_threshold = float(tolerance.get("warningDegradationPercent", 0.0))
         failure_threshold = float(tolerance.get("failureDegradationPercent", warning_threshold))

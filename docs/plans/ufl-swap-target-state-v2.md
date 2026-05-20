@@ -2,7 +2,15 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **ufl swap target state v2** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the ufl swap target state v2 workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** active
 **Reviewed:** 2026-03-26
 
@@ -68,7 +76,7 @@ flowchart TD
     Snapshot --> Valuation["Valuation Reference Projection"]
 
     Legs --> Pricing["Pricing / Analytics"]
-    Lifecycle --> Governance["Governance UI"]
+    Lifecycle --> Governance["Accounting / Reporting workstation"]
     Exposure --> Recon["Reconciliation / Risk"]
     Valuation --> APIs["Derivative Reference APIs"]
 ```
@@ -342,7 +350,7 @@ tests/
 
 ## 11. Final Target State
 
-Meridian treats a swap as a canonical derivative identity with explainable leg structure, lifecycle state, and valuation-reference metadata. Governance, reconciliation, and pricing consumers all use the same rebuilt reference model.
+Meridian treats a swap as a canonical derivative identity with explainable leg structure, lifecycle state, and valuation-reference metadata. Accounting, reconciliation, and pricing consumers all use the same rebuilt reference model.
 
 ## Related Documents
 

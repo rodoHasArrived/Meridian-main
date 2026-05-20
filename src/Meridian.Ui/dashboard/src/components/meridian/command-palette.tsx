@@ -1,38 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
+  type CommandPaletteFocusAction,
   type CommandPaletteFocusBoundary,
-  type CommandPaletteItemKind,
-  type CommandPaletteItem,
   type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
-import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
+import { COMMAND_PALETTE_DIALOG_ID, type AppShellOperatingScopeInput } from "@/app-shell.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
-
-const KIND_LABELS: Record<CommandPaletteItemKind, string> = {
-  workspace: "Workspaces",
-  route: "Quick routes",
-  preset: "Presets",
-  workflow: "Workflows"
-};
-
-const KIND_ORDER: CommandPaletteItemKind[] = ["workspace", "route", "preset", "workflow"];
-
-interface CommandGroup {
-  kind: CommandPaletteItemKind;
-  label: string;
-  items: CommandPaletteItem[];
-}
-
-function groupItems(items: CommandPaletteItem[]): CommandGroup[] {
-  return KIND_ORDER
-    .map((kind) => ({ kind, label: KIND_LABELS[kind], items: items.filter((item) => item.kind === kind) }))
-    .filter((group) => group.items.length > 0);
-}
 
 /**
  * Full-screen command palette overlay for quick workspace navigation.
@@ -59,6 +38,9 @@ interface CommandPaletteProps {
   workflowLibrary?: WorkflowLibrary | null;
   workflowPresets?: WorkflowPresetLibrary | null;
   workflowError?: string | null;
+  operatorFocusItems?: CommandPaletteFocusAction[] | null;
+  operatingContextSymbol?: string | null;
+  operatingScope?: AppShellOperatingScopeInput | null;
   onPresetUsed?: (presetId: string) => void | Promise<void>;
 }
 
@@ -68,23 +50,30 @@ export function CommandPalette({
   workflowLibrary,
   workflowPresets,
   workflowError,
+  operatorFocusItems,
+  operatingContextSymbol,
+  operatingScope,
   onPresetUsed
 }: CommandPaletteProps) {
-  const { pathname } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const currentRoute = `${pathname}${search}${hash}`;
   const viewModel = buildCommandPaletteViewModel(
-    pathname,
+    currentRoute,
     undefined,
     {
       workflowLibrary,
       workflowPresets,
-      workflowError
+      workflowError,
+      operatorFocusItems
     },
-    query
+    query,
+    operatingContextSymbol ?? null,
+    operatingScope ?? null
   );
 
   useEffect(() => {
@@ -188,6 +177,9 @@ export function CommandPalette({
         </div>
         <div className="command-palette-summary" aria-label={viewModel.scopeLabel}>
           <span className="command-palette-chip">{viewModel.activeWorkspaceLabel}</span>
+          {viewModel.operatingContextLabel ? (
+            <span className="command-palette-chip">{viewModel.operatingContextLabel}</span>
+          ) : null}
           <span className="command-palette-chip">{viewModel.shortcutHint}</span>
           {viewModel.backendStatusLabel ? (
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
@@ -205,7 +197,7 @@ export function CommandPalette({
           spellCheck={false}
           placeholder={viewModel.searchPlaceholder}
           aria-label={viewModel.searchInputLabel}
-          aria-describedby="command-palette-filter-count"
+          aria-describedby={viewModel.searchDescribedBy}
           className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -217,14 +209,58 @@ export function CommandPalette({
             </div>
           </div>
           {viewModel.emptyState ? (
-            <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm">
-              <div className="font-semibold">{viewModel.emptyState.title}</div>
-              <div className="mt-1 text-muted-foreground">{viewModel.emptyState.detail}</div>
-            </div>
+            <section
+              id={viewModel.emptyState.id}
+              aria-labelledby={viewModel.emptyState.titleId}
+              className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {viewModel.emptyState.statusLabel}
+                  </div>
+                  <div
+                    id={viewModel.emptyState.titleId}
+                    className="mt-2 font-semibold"
+                  >
+                    {viewModel.emptyState.title}
+                  </div>
+                  <div
+                    id={viewModel.emptyState.detailId}
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    className="mt-1 text-muted-foreground"
+                  >
+                    {viewModel.emptyState.detail}
+                  </div>
+                </div>
+                {viewModel.emptyState.canClearSearch && viewModel.emptyState.actionLabel ? (
+                  <Button
+                    id={viewModel.emptyState.actionId ?? undefined}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    aria-label={viewModel.emptyState.actionAriaLabel ?? viewModel.emptyState.actionLabel}
+                    onClick={() => {
+                      setQuery("");
+                      searchInputRef.current?.focus();
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    {viewModel.emptyState.actionLabel}
+                  </Button>
+                ) : null}
+              </div>
+            </section>
           ) : null}
-          {groupItems(viewModel.filteredItems).map((group) => (
+          {viewModel.commandGroups.map((group) => (
             <div key={group.kind} className="command-palette-group">
-              <div className="command-palette-group-label">{group.label}</div>
+              <div className="command-palette-group-label" aria-label={group.ariaLabel}>
+                <span>{group.label}</span>
+                <span className="font-mono text-[10px] text-muted-foreground">{group.countLabel}</span>
+              </div>
               <div className="grid gap-1">
                 {group.items.map((item) => (
                   <Link
@@ -258,8 +294,13 @@ export function CommandPalette({
                         <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
                           {item.routeLabel}
                         </span>
-                        {item.active && (
-                          <span className="rounded-sm border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                        {(item.active || item.statusVisible) && (
+                          <span
+                            className={cn(
+                              "command-palette-status",
+                              `command-palette-status-${item.statusTone}`
+                            )}
+                          >
                             {item.statusLabel}
                           </span>
                         )}

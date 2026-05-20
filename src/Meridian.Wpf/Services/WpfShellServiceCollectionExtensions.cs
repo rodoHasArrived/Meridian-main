@@ -1,4 +1,5 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Shell.Refresh;
 using Meridian.Wpf.Shell.Root;
 using Meridian.Wpf.Shell.Services;
@@ -41,25 +42,39 @@ public static class WpfShellServiceCollectionExtensions
             sp.GetService<WorkstationWorkflowSummaryService>(),
             sp.GetService<Meridian.Strategies.Services.PromotionService>()));
         services.AddTransient<TradingWorkspaceShellPresentationService>();
+        services.AddMeridianWpfFeatureModules();
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.GovernanceWorkspaceShellStateProvider));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.GovernanceWorkspaceShellViewModel));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Views.GovernanceWorkspaceShellPage));
 
         foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
         {
-            services.AddTransient(pageType);
+            AddTransientIfMissing(services, pageType);
         }
 
         foreach (var shellDefinition in ShellNavigationCatalog.WorkspaceShells)
         {
             if (shellDefinition.StateProviderType is not null)
             {
-                services.AddTransient(shellDefinition.StateProviderType);
+                AddTransientIfMissing(services, shellDefinition.StateProviderType);
             }
 
             if (shellDefinition.ViewModelType is not null)
             {
-                services.AddTransient(shellDefinition.ViewModelType);
+                AddTransientIfMissing(services, shellDefinition.ViewModelType);
             }
         }
 
         return services;
+    }
+
+    private static void AddTransientIfMissing(IServiceCollection services, Type serviceType)
+    {
+        if (services.Any(descriptor => descriptor.ServiceType == serviceType))
+        {
+            return;
+        }
+
+        services.AddTransient(serviceType);
     }
 }

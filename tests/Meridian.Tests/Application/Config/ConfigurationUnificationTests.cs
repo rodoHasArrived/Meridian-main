@@ -97,7 +97,7 @@ public sealed class ConfigurationUnificationTests
         context.Mode.Should().Be(DeploymentMode.Headless);
         context.HttpPort.Should().Be(9000);
         context.RequiresHttpServer.Should().BeFalse();
-        context.ModeResolutionError.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--mode web'.");
+        context.ModeResolutionError.Should().Be("The legacy web dashboard mode has been removed; use workstation mode for the browser workstation or desktop/headless mode instead of '--mode web'.");
     }
 
     [Fact]
@@ -109,7 +109,22 @@ public sealed class ConfigurationUnificationTests
 
         context.Mode.Should().Be(DeploymentMode.Headless);
         context.HttpPort.Should().Be(8080); // Default port
-        context.ModeResolutionError.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--ui'.");
+        context.ModeResolutionError.Should().Be("The legacy web dashboard mode has been removed; use workstation mode for the browser workstation or desktop/headless mode instead of '--ui'.");
+    }
+
+    [Fact]
+    public void DeploymentContext_FromArgs_ResolvesWorkstationMode()
+    {
+        var args = new[] { "--mode", "workstation", "--http-port", "9090" };
+
+        var context = DeploymentContext.FromArgs(args, "test.json");
+
+        context.Mode.Should().Be(DeploymentMode.Workstation);
+        context.HttpPort.Should().Be(9090);
+        context.RequiresHttpServer.Should().BeTrue();
+        context.RunsCollector.Should().BeFalse();
+        context.ModeDescription.Should().Contain("Browser workstation");
+        context.ModeResolutionError.Should().BeNull();
     }
 
     [Fact]
@@ -181,6 +196,19 @@ public sealed class ConfigurationUnificationTests
     }
 
     [Fact]
+    public void DeploymentContext_ForWorkstation_CreatesWorkstationContext()
+    {
+        var context = DeploymentContext.ForWorkstation("/config.json", port: 5000, hotReload: true);
+
+        context.Mode.Should().Be(DeploymentMode.Workstation);
+        context.HttpPort.Should().Be(5000);
+        context.HotReloadEnabled.Should().BeTrue();
+        context.RequiresHttpServer.Should().BeTrue();
+        context.RunsCollector.Should().BeFalse();
+        context.IsDocker.Should().BeFalse();
+    }
+
+    [Fact]
     public void DeploymentContext_ComputedProperties_AreConsistent()
     {
         // Desktop mode
@@ -188,6 +216,12 @@ public sealed class ConfigurationUnificationTests
         desktopContext.RequiresHttpServer.Should().BeTrue();
         desktopContext.RunsCollector.Should().BeTrue();
         desktopContext.RequiresGracefulShutdown.Should().BeTrue();
+
+        // Workstation mode
+        var workstationContext = DeploymentContext.ForWorkstation("test.json");
+        workstationContext.RequiresHttpServer.Should().BeTrue();
+        workstationContext.RunsCollector.Should().BeFalse();
+        workstationContext.RequiresGracefulShutdown.Should().BeTrue();
 
         // One-shot command
         var commandContext = DeploymentContext.ForCommand("validate", "test.json");

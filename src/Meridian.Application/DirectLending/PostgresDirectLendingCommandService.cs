@@ -11,17 +11,20 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     private readonly IDirectLendingStateStore _stateStore;
     private readonly IDirectLendingOperationsStore _operationsStore;
     private readonly IDirectLendingQueryService _queryService;
+    private readonly LoanAccountingProjector _loanAccountingProjector;
     private readonly DirectLendingOptions _options;
 
     public PostgresDirectLendingCommandService(
         IDirectLendingStateStore stateStore,
         IDirectLendingOperationsStore operationsStore,
         IDirectLendingQueryService queryService,
+        LoanAccountingProjector loanAccountingProjector,
         DirectLendingOptions options)
     {
         _stateStore = stateStore;
         _operationsStore = operationsStore;
         _queryService = queryService;
+        _loanAccountingProjector = loanAccountingProjector;
         _options = options;
     }
 
@@ -959,7 +962,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         return results;
     }
 
-    private Task SaveAsync(
+    private async Task SaveAsync(
         Guid loanId,
         long expectedVersion,
         long nextVersion,
@@ -974,7 +977,17 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     {
         var eventMetadata = DirectLendingServiceSupport.CreateEventMetadata(metadata, "meridian.direct-lending");
         var eventId = Guid.NewGuid();
-        return _stateStore.SaveAsync(
+        var ledgerJournalEntries = await _loanAccountingProjector.ProjectAsync(
+            loanId,
+            contract,
+            eventType,
+            effectiveDate,
+            payload,
+            eventId,
+            eventMetadata,
+            ct).ConfigureAwait(false);
+
+        await _stateStore.SaveAsync(
             loanId,
             expectedVersion,
             nextVersion,
@@ -993,7 +1006,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 servicing.ServicingRevision,
                 eventMetadata,
                 persistenceBatch),
+            ledgerJournalEntries,
             eventId,
-            ct);
+            ct).ConfigureAwait(false);
     }
 }

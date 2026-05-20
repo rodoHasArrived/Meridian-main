@@ -1,6 +1,9 @@
+import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { QuantNotebook } from "@/components/meridian/quant-notebook";
+import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,12 +12,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type {
+  ResearchComparisonTableRow,
+  ResearchDiffChangeRow,
+  ResearchDiffDetailState,
+  ResearchParameterChangeRow,
   ResearchPlotLegendItem,
+  ResearchPlotMomentRow,
   ResearchPlotSampleRow,
   ResearchPlotScatterChartState,
   ResearchPlotStatisticsState,
+  ResearchPlotStudyDetailState,
   ResearchPlotStudyItem,
-  ResearchPlotWorkspaceState
+  ResearchPlotWorkspaceState,
+  ResearchPromotionHistoryRow,
+  ResearchRunTableRow
 } from "@/screens/research-screen.view-model";
 import type { ResearchWorkspaceResponse } from "@/types";
 
@@ -65,20 +76,284 @@ const sampleToneBadgeVariant = {
   danger: "danger"
 } as const;
 
+const plotToolMomentColumns: DenseDataTableColumn<ResearchPlotMomentRow>[] = [
+  {
+    id: "metric",
+    label: "Metric",
+    className: "text-muted-foreground",
+    render: (moment) => moment.label
+  },
+  {
+    id: "value",
+    label: "Value",
+    className: "font-mono",
+    render: (moment) => moment.value
+  },
+  {
+    id: "benchmark",
+    label: "Benchmark",
+    className: "text-muted-foreground",
+    render: (moment) => moment.benchmark
+  }
+];
+
+const diffPositionColumns: DenseDataTableColumn<ResearchDiffChangeRow>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.symbolText
+  },
+  {
+    id: "change",
+    label: "Change",
+    render: (row) => <Badge variant={row.badgeVariant}>{row.changeTypeText}</Badge>
+  },
+  {
+    id: "quantity",
+    label: "Qty delta",
+    align: "right",
+    className: "font-mono",
+    render: (row) => row.quantityText
+  },
+  {
+    id: "pnl",
+    label: "P&L delta",
+    align: "right",
+    className: "font-mono",
+    render: (row) => row.pnlText
+  }
+];
+
+const diffParameterColumns: DenseDataTableColumn<ResearchParameterChangeRow>[] = [
+  {
+    id: "parameter",
+    label: "Parameter",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.key
+  },
+  {
+    id: "base",
+    label: "Base",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.baseValueText
+  },
+  {
+    id: "target",
+    label: "Target",
+    className: "font-mono",
+    render: (row) => row.targetValueText
+  }
+];
+
+const plotToolObservationColumns: DenseDataTableColumn<ResearchPlotSampleRow>[] = [
+  {
+    id: "date",
+    label: "Date",
+    className: "text-muted-foreground",
+    render: (row) => row.timestamp
+  },
+  {
+    id: "spread",
+    label: "Spread",
+    className: "font-mono",
+    render: (row) => row.spreadText
+  },
+  {
+    id: "implied-vol",
+    label: "3m IV",
+    className: "font-mono",
+    render: (row) => row.impliedVolText
+  },
+  {
+    id: "z-score",
+    label: "Z-score",
+    className: "font-mono",
+    render: (row) => <span className={plotToneClass[row.tone]}>{row.zScoreText}</span>
+  },
+  {
+    id: "signal",
+    label: "Signal",
+    render: (row) => <Badge variant={sampleToneBadgeVariant[row.tone]}>{row.signalText}</Badge>
+  }
+];
+
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
   const navigate = useNavigate();
+  const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   if (!data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading Strategy</CardTitle>
-          <CardDescription>Waiting for run history and comparison state.</CardDescription>
+      <Card
+        role={vm.loadingState.role}
+        aria-busy={vm.loadingState.ariaBusy}
+        aria-live={vm.loadingState.ariaLive}
+        aria-labelledby={vm.loadingState.titleId}
+        aria-describedby={vm.loadingState.detailId}
+        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+      >
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
+              dot
+            >
+              {vm.loadingState.badgeLabel}
+            </Badge>
+            <span className="toolbar-chip" aria-label={`Route ${vm.loadingState.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{vm.loadingState.routeLabel}</b>
+            </span>
+          </div>
+          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
+          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
         </CardHeader>
       </Card>
     );
   }
+
+  const runColumns = useMemo<DenseDataTableColumn<ResearchRunTableRow>[]>(() => [
+    {
+      id: "compare",
+      label: "",
+      render: (run) => (
+        <input
+          type="checkbox"
+          aria-label={run.selectAriaLabel}
+          checked={run.selectedForComparison}
+          onChange={() => vm.toggleRun(run.id)}
+          className="h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
+      )
+    },
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (run) => <span className="font-semibold text-foreground">{run.strategyName}</span>
+    },
+    {
+      id: "mode",
+      label: "Mode",
+      render: (run) => <Badge variant={run.modeBadgeVariant}>{run.modeLabel}</Badge>
+    },
+    {
+      id: "engine",
+      label: "Engine",
+      render: (run) => run.engineText
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (run) => run.statusText
+    },
+    {
+      id: "pnl",
+      label: "P&L",
+      align: "right",
+      className: "font-mono",
+      render: (run) => run.pnlText
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      className: "font-mono",
+      render: (run) => run.sharpeText
+    },
+    {
+      id: "updated",
+      label: "Updated",
+      render: (run) => <span className="font-mono text-xs text-muted-foreground">{run.lastUpdatedText}</span>
+    }
+  ], [vm]);
+
+  const promotionHistoryColumns = useMemo<DenseDataTableColumn<ResearchPromotionHistoryRow>[]>(() => [
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (record) => (
+        <span className="font-semibold text-foreground">{record.strategyName}</span>
+      )
+    },
+    {
+      id: "route",
+      label: "Route",
+      render: (record) => record.routeText
+    },
+    {
+      id: "decision",
+      label: "Decision",
+      render: (record) => record.decisionText
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      render: (record) => record.qualifyingSharpeText
+    },
+    {
+      id: "promoted",
+      label: "Promoted",
+      render: (record) => <span className="font-mono text-xs">{record.promotedAtText}</span>
+    }
+  ], []);
+
+  const comparisonColumns = useMemo<DenseDataTableColumn<ResearchComparisonTableRow>[]>(() => [
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (row) => (
+        <span className="font-semibold text-foreground">{row.strategyName}</span>
+      )
+    },
+    {
+      id: "mode",
+      label: "Mode",
+      render: (row) => <Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge>
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge>
+    },
+    {
+      id: "net-pnl",
+      label: "Net P&L",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.netPnlTone]}>{row.netPnlText}</span>
+    },
+    {
+      id: "return",
+      label: "Return",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.totalReturnTone]}>{row.totalReturnText}</span>
+    },
+    {
+      id: "drawdown",
+      label: "Drawdown",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.maxDrawdownTone]}>{row.maxDrawdownText}</span>
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.sharpeRatioText
+    },
+    {
+      id: "fills",
+      label: "Fills",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.fillCountText
+    }
+  ], []);
 
   return (
     <div className="space-y-8">
@@ -103,8 +378,10 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 aria-label="PlotTool views"
                 className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1"
                 onKeyDown={(event) => {
-                  if (vm.selectPlotToolViewForKey(event.key)) {
+                  const focusTargetTabId = vm.selectPlotToolViewForKey(event.key);
+                  if (focusTargetTabId) {
                     event.preventDefault();
+                    plotToolTabRefs.current[focusTargetTabId]?.focus();
                   }
                 }}
               >
@@ -119,6 +396,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     aria-label={tab.ariaLabel}
                     tabIndex={tab.tabIndex}
                     id={tab.tabId}
+                    ref={(node) => {
+                      plotToolTabRefs.current[tab.tabId] = node;
+                    }}
                     onClick={() => vm.selectPlotToolView(tab.id)}
                   >
                     {tab.label}
@@ -268,15 +548,17 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       step={vm.promotionCashForm.step}
                       value={vm.promotionCashForm.value}
                       onChange={(e) => vm.setPromotionInitialCash(e.target.value)}
+                      disabled={vm.promotionCashForm.inputDisabled}
+                      title={vm.promotionCashForm.inputDisabledReason ?? undefined}
                       aria-invalid={vm.promotionCashForm.errorText ? "true" : "false"}
-                      aria-describedby={vm.promotionCashForm.describedBy}
+                      aria-describedby={vm.promotionCashForm.inputDescribedBy}
                       className={cn(
                         "w-44 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                         vm.promotionCashForm.errorText ? "border-danger/50 text-danger" : "border-border text-foreground"
                       )}
                     />
                     <p
-                      id={vm.promotionCashForm.describedBy}
+                      id={vm.promotionCashForm.inputHelpId}
                       className={cn(
                         "max-w-56 text-[11px] leading-4",
                         vm.promotionCashForm.errorText ? "text-danger" : "text-muted-foreground"
@@ -284,16 +566,61 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     >
                       {vm.promotionCashForm.helpText}
                     </p>
+                    {vm.promotionCashForm.inputDisabledReason ? (
+                      <p
+                        id={vm.promotionCashForm.inputDisabledReasonId ?? undefined}
+                        className="max-w-56 rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                      >
+                        {vm.promotionCashForm.inputDisabledReason}
+                      </p>
+                    ) : null}
                   </div>
+                  <label
+                    htmlFor={vm.promotionCashForm.acknowledgementId}
+                    className="flex max-w-sm items-start gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-2 text-xs leading-5 text-muted-foreground"
+                  >
+                    <input
+                      id={vm.promotionCashForm.acknowledgementId}
+                      type="checkbox"
+                      checked={vm.promotionCashForm.acknowledgementChecked}
+                      onChange={(e) => vm.setPromotionAcknowledgement(e.target.checked)}
+                      disabled={vm.promotionCashForm.acknowledgementDisabled}
+                      title={vm.promotionCashForm.acknowledgementDisabledReason ?? undefined}
+                      aria-describedby={vm.promotionCashForm.acknowledgementDescribedBy}
+                      className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    />
+                    <span className="grid gap-1">
+                      <span>{vm.promotionCashForm.acknowledgementLabel}</span>
+                      {vm.promotionCashForm.acknowledgementDisabledReason ? (
+                        <span
+                          id={vm.promotionCashForm.acknowledgementDisabledReasonId ?? undefined}
+                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                        >
+                          {vm.promotionCashForm.acknowledgementDisabledReason}
+                        </span>
+                      ) : null}
+                    </span>
+                  </label>
                   <Button
                     type="submit"
                     size="sm"
                     disabled={!vm.promotionCashForm.canSubmit}
+                    disabledReason={vm.promotionCashForm.disabledReason}
                     aria-label={vm.promotionCashForm.submitAriaLabel}
                   >
                     {vm.promotionCashForm.submitLabel}
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={vm.cancelPromotion}>Cancel</Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={vm.cancelPromotion}
+                    disabled={vm.promotionCashForm.cancelDisabled}
+                    disabledReason={vm.promotionCashForm.cancelDisabledReason}
+                    aria-label={vm.promotionCashForm.cancelAriaLabel}
+                  >
+                    {vm.promotionCashForm.cancelLabel}
+                  </Button>
                 </form>
               )}
               {vm.promotionPanel.showIneligibleDismiss && (
@@ -303,7 +630,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           )}
 
           {vm.activePlotToolView === "workspace" ? (
-            <PlotToolWorkspacePanel vm={vm.plotTool.workspace} studies={vm.plotTool.studies} />
+            <PlotToolWorkspacePanel
+              vm={vm.plotTool.workspace}
+              studies={vm.plotTool.studies}
+              selectedStudyId={vm.selectedPlotStudyId}
+              selectedStudyDetail={vm.selectedPlotStudyDetail}
+              studyDetailPanelId={vm.selectedPlotStudyDetailPanelId}
+              onStudySelect={vm.selectPlotStudy}
+            />
           ) : (
             <PlotToolStatisticsPanel vm={vm.plotTool.statistics} />
           )}
@@ -317,55 +651,60 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="overflow-x-auto rounded-lg border border-border/70">
-            <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run library">
-              <caption className="sr-only">{vm.runTable.caption}</caption>
-              <thead className="bg-secondary/30">
-                <tr>
-                  {["", "Strategy", "Mode", "Engine", "Status", "P&L", "Sharpe", "Updated", ""].map((column, index) => (
-                    <th key={`${column || "action"}-${index}`} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{column}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {vm.runTable.hasRows ? vm.runTable.rows.map((run) => (
-                  <tr key={run.id}>
-                    <td className="px-3 py-2">
-                      <input
-                        type="checkbox"
-                        aria-label={run.selectAriaLabel}
-                        checked={vm.selectedIds.includes(run.id)}
-                        onChange={() => vm.toggleRun(run.id)}
-                      />
-                    </td>
-                    <td className="px-3 py-2 font-semibold">{run.strategyName}</td>
-                    <td className="px-3 py-2"><Badge variant={run.mode === "paper" ? "paper" : run.mode === "live" ? "live" : "research"}>{run.modeLabel}</Badge></td>
-                    <td className="px-3 py-2">{run.engineText}</td>
-                    <td className="px-3 py-2">{run.statusText}</td>
-                    <td className="px-3 py-2 font-mono">{run.pnlText}</td>
-                    <td className="px-3 py-2 font-mono">{run.sharpeText}</td>
-                    <td className="px-3 py-2">{run.lastUpdatedText}</td>
-                    <td className="px-3 py-2">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <DenseDataTable
+              columns={runColumns}
+              rows={vm.runTable.rows}
+              getRowId={(run) => run.id}
+              getRowAriaLabel={(run) => run.rowAriaLabel}
+              getRowSelectAriaLabel={(run) => run.rowSelectAriaLabel}
+              getRowAriaControls={(run) => run.detailPanelId}
+              getRowAriaExpanded={(run) => run.detailExpanded}
+              selectedRowId={vm.inspectedRunId}
+              onRowSelect={(run) => vm.selectRunDetail(run.id)}
+              emptyText={vm.runTable.emptyText}
+              ariaLabel="Strategy run library"
+              caption={vm.runTable.caption}
+            />
+            {vm.inspectedRunDetail ? (
+              <div id={vm.inspectedRunDetail.panelId} className="min-w-0">
+                <EntitySummary
+                  eyebrow={vm.inspectedRunDetail.eyebrow}
+                  title={vm.inspectedRunDetail.title}
+                  subtitle={vm.inspectedRunDetail.subtitle}
+                  description={vm.inspectedRunDetail.description}
+                  fields={vm.inspectedRunDetail.fields}
+                  ariaLabel={vm.inspectedRunDetail.ariaLabel}
+                  status={<Badge variant={vm.inspectedRunDetail.statusVariant}>{vm.inspectedRunDetail.statusLabel}</Badge>}
+                  actions={(
+                    <>
                       <Button
                         size="sm"
                         variant="outline"
                         aria-haspopup="dialog"
-                        aria-label={run.openDetailLabel}
-                        onClick={() => vm.openRunDetail(run.raw)}
+                        aria-label={vm.inspectedRunDetail.openDetailLabel}
+                        onClick={() => vm.openRunDetailById(vm.inspectedRunDetail!.id)}
                       >
                         Open
                       </Button>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
-                      {vm.runTable.emptyText}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      <Button asChild size="sm" variant="ghost">
+                        <Link to={vm.inspectedRunDetail.evidenceAction.href} aria-label={vm.inspectedRunDetail.evidenceAction.ariaLabel}>
+                          {vm.inspectedRunDetail.evidenceAction.label}
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+                />
+              </div>
+            ) : (
+              <div
+                id={vm.selectedRunDetailPanelId}
+                role="status"
+                className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+              >
+                {vm.runTable.emptyText}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -376,45 +715,43 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             <CardTitle>Run comparison</CardTitle>
             <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run comparison evidence">
-                <caption className="sr-only">{vm.comparisonTable.caption}</caption>
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Strategy", "Mode", "Status", "Net P&L", "Return", "Drawdown", "Sharpe", "Fills", "Evidence"].map((column) => (
-                      <th key={column} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.comparisonTable.hasRows ? vm.comparisonTable.rows.map((row) => (
-                    <tr key={row.runId} aria-label={row.ariaLabel} className="align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold">{row.strategyName}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.promotionStateText}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.equityText}</div>
-                      </td>
-                      <td className="px-3 py-2"><Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge></td>
-                      <td className="px-3 py-2"><Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge></td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.netPnlTone])}>{row.netPnlText}</td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.totalReturnTone])}>{row.totalReturnText}</td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.maxDrawdownTone])}>{row.maxDrawdownText}</td>
-                      <td className="px-3 py-2 font-mono">{row.sharpeRatioText}</td>
-                      <td className="px-3 py-2 font-mono">{row.fillCountText}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.evidenceText}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
-                        {vm.comparisonTable.emptyText}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+              <DenseDataTable
+                columns={comparisonColumns}
+                rows={vm.comparisonTable.rows}
+                getRowId={(row) => row.runId}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.detailExpanded}
+                selectedRowId={vm.selectedComparisonRowId}
+                onRowSelect={(row) => vm.selectComparisonRow(row.runId)}
+                emptyText={vm.comparisonTable.emptyText}
+                ariaLabel="Strategy run comparison evidence"
+                caption={vm.comparisonTable.caption}
+              />
+              {vm.selectedComparisonDetail ? (
+                <div id={vm.selectedComparisonDetail.panelId} className="min-w-0">
+                  <EntitySummary
+                    eyebrow={vm.selectedComparisonDetail.eyebrow}
+                    title={vm.selectedComparisonDetail.title}
+                    subtitle={vm.selectedComparisonDetail.subtitle}
+                    description={vm.selectedComparisonDetail.description}
+                    fields={vm.selectedComparisonDetail.fields}
+                    ariaLabel={vm.selectedComparisonDetail.ariaLabel}
+                    status={<Badge variant={vm.selectedComparisonDetail.statusVariant} dot>{vm.selectedComparisonDetail.statusLabel}</Badge>}
+                  />
+                </div>
+              ) : (
+                <div
+                  id={vm.selectedComparisonDetailPanelId}
+                  role="status"
+                  className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+                >
+                  {vm.comparisonTable.emptyText}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -437,7 +774,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 ))}
               </section>
             )}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 2xl:grid-cols-2">
               <section aria-label={vm.diffPanel.positionSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold">Position changes</div>
@@ -445,24 +782,27 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     {vm.diffPanel.positionChanges.length} rows
                   </Badge>
                 </div>
-                <ul aria-label={vm.diffPanel.positionListLabel} className="mt-3 space-y-2 text-sm">
-                  {vm.diffPanel.hasPositionChanges ? vm.diffPanel.positionChanges.map((item) => (
-                    <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-mono font-semibold">{item.symbolText}</span>
-                        <Badge variant={item.badgeVariant}>{item.changeTypeText}</Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground">
-                        <span>{item.quantityText}</span>
-                        <span>{item.pnlText}</span>
-                      </div>
-                    </li>
-                  )) : (
-                    <li className="rounded-md border border-dashed border-border/70 bg-background/35 px-3 py-3 text-muted-foreground">
-                      {vm.diffPanel.positionEmptyText}
-                    </li>
-                  )}
-                </ul>
+                <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+                  <DenseDataTable
+                    columns={diffPositionColumns}
+                    rows={vm.diffPanel.positionTable.rows}
+                    getRowId={(row) => row.key}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.detailExpanded}
+                    selectedRowId={vm.diffPanel.selectedPositionKey}
+                    onRowSelect={(row) => vm.selectDiffPositionChange(row.key)}
+                    emptyText={vm.diffPanel.positionTable.emptyText}
+                    ariaLabel={vm.diffPanel.positionListLabel}
+                    caption={vm.diffPanel.positionTable.caption}
+                  />
+                  <ResearchDiffDetailPanel
+                    id={vm.diffPanel.selectedPositionDetailPanelId}
+                    detail={vm.diffPanel.selectedPositionDetail}
+                    emptyText={vm.diffPanel.positionEmptyText}
+                  />
+                </div>
               </section>
               <section aria-label={vm.diffPanel.parameterSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -471,18 +811,27 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     {vm.diffPanel.parameterChanges.length} rows
                   </Badge>
                 </div>
-                <ul aria-label={vm.diffPanel.parameterListLabel} className="mt-3 space-y-2 text-sm">
-                  {vm.diffPanel.hasParameterChanges ? vm.diffPanel.parameterChanges.map((item) => (
-                    <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2 font-mono">
-                      <div className="text-foreground">{item.key}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{item.valueText}</div>
-                    </li>
-                  )) : (
-                    <li className="rounded-md border border-dashed border-border/70 bg-background/35 px-3 py-3 text-muted-foreground">
-                      {vm.diffPanel.parameterEmptyText}
-                    </li>
-                  )}
-                </ul>
+                <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+                  <DenseDataTable
+                    columns={diffParameterColumns}
+                    rows={vm.diffPanel.parameterTable.rows}
+                    getRowId={(row) => row.key}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.detailExpanded}
+                    selectedRowId={vm.diffPanel.selectedParameterKey}
+                    onRowSelect={(row) => vm.selectDiffParameterChange(row.key)}
+                    emptyText={vm.diffPanel.parameterTable.emptyText}
+                    ariaLabel={vm.diffPanel.parameterListLabel}
+                    caption={vm.diffPanel.parameterTable.caption}
+                  />
+                  <ResearchDiffDetailPanel
+                    id={vm.diffPanel.selectedParameterDetailPanelId}
+                    detail={vm.diffPanel.selectedParameterDetail}
+                    emptyText={vm.diffPanel.parameterEmptyText}
+                  />
+                </div>
               </section>
             </div>
           </CardContent>
@@ -495,30 +844,47 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             <CardTitle>Promotion history</CardTitle>
             <CardDescription>Latest paper and live promotion decisions.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
-                <caption className="sr-only">{vm.promotionHistoryTable.caption}</caption>
-                <thead className="bg-secondary/30">
-                  <tr>{["Strategy", "Route", "Sharpe", "Promoted"].map((column) => <th key={column} className="px-3 py-2">{column}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {vm.promotionHistoryTable.hasRows ? vm.promotionHistoryTable.rows.map((record) => (
-                    <tr key={record.promotionId}>
-                      <td className="px-3 py-2 font-semibold">{record.strategyName}</td>
-                      <td className="px-3 py-2">{record.routeText}</td>
-                      <td className="px-3 py-2 font-mono">{record.qualifyingSharpeText}</td>
-                      <td className="px-3 py-2">{record.promotedAtText}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
-                        {vm.promotionHistoryTable.emptyText}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+              <DenseDataTable
+                columns={promotionHistoryColumns}
+                rows={vm.promotionHistoryTable.rows}
+                getRowId={(record) => record.promotionId}
+                getRowAriaLabel={(record) => record.ariaLabel}
+                getRowSelectAriaLabel={(record) => record.rowSelectAriaLabel}
+                getRowAriaControls={(record) => record.detailPanelId}
+                getRowAriaExpanded={(record) => record.detailExpanded}
+                selectedRowId={vm.selectedPromotionHistoryId}
+                onRowSelect={(record) => vm.selectPromotionHistoryRecord(record.promotionId)}
+                emptyText={vm.promotionHistoryTable.emptyText}
+                ariaLabel="Promotion history decisions"
+                caption={vm.promotionHistoryTable.caption}
+              />
+              {vm.selectedPromotionHistoryDetail ? (
+                <div id={vm.selectedPromotionHistoryDetail.panelId} className="min-w-0">
+                  <EntitySummary
+                    eyebrow={vm.selectedPromotionHistoryDetail.eyebrow}
+                    title={vm.selectedPromotionHistoryDetail.title}
+                    subtitle={vm.selectedPromotionHistoryDetail.subtitle}
+                    description={vm.selectedPromotionHistoryDetail.description}
+                    fields={vm.selectedPromotionHistoryDetail.fields}
+                    ariaLabel={vm.selectedPromotionHistoryDetail.ariaLabel}
+                    status={(
+                      <Badge variant={vm.selectedPromotionHistoryDetail.statusVariant}>
+                        {vm.selectedPromotionHistoryDetail.statusLabel}
+                      </Badge>
+                    )}
+                  />
+                </div>
+              ) : (
+                <div
+                  id={vm.selectedPromotionHistoryDetailPanelId}
+                  role="status"
+                  className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+                >
+                  {vm.promotionHistoryTable.emptyText}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -578,7 +944,58 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   );
 }
 
-function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceState; studies: ResearchPlotStudyItem[] }) {
+function ResearchDiffDetailPanel({
+  id,
+  detail,
+  emptyText
+}: {
+  id: string;
+  detail: ResearchDiffDetailState | null;
+  emptyText: string;
+}) {
+  if (!detail) {
+    return (
+      <div
+        id={id}
+        role="status"
+        className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+      >
+        {emptyText}
+      </div>
+    );
+  }
+
+  return (
+    <div id={detail.panelId} className="min-w-0">
+      <EntitySummary
+        eyebrow={detail.eyebrow}
+        title={detail.title}
+        subtitle={detail.subtitle}
+        description={detail.description}
+        fields={detail.fields}
+        ariaLabel={detail.ariaLabel}
+        status={<Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>}
+      />
+    </div>
+  );
+}
+
+function PlotToolWorkspacePanel({
+  vm,
+  studies,
+  selectedStudyId,
+  selectedStudyDetail,
+  studyDetailPanelId,
+  onStudySelect
+}: {
+  vm: ResearchPlotWorkspaceState;
+  studies: ResearchPlotStudyItem[];
+  selectedStudyId: string | null;
+  selectedStudyDetail: ResearchPlotStudyDetailState | null;
+  studyDetailPanelId: string;
+  onStudySelect: (id: string) => void;
+}) {
+  const notebookVm = useQuantNotebookViewModel();
   const studyColumns: DenseDataTableColumn<ResearchPlotStudyItem>[] = [
     {
       id: "study",
@@ -635,23 +1052,30 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
           </CardHeader>
           <CardContent className="space-y-3">
             <ToolbarStrip
-              ariaLabel="Strategy notebook filters"
-              items={[
-                { id: "count", label: "Notebook set", value: `${studies.length} retained`, active: true },
-                { id: "active", label: "Primary", value: studies.find((study) => study.isActive)?.title ?? "None" },
-                { id: "lane", label: "Lane", value: "Strategy" }
-              ]}
+              ariaLabel={vm.notebookToolbarAriaLabel}
+              items={vm.notebookToolbarItems}
             />
-            <DenseDataTable
-              columns={studyColumns}
-              rows={studies}
-              getRowId={(study) => study.id}
-              getRowAriaLabel={(study) => `${study.title}, ${study.statusText}, ${study.metricText}`}
-              selectedRowId={studies.find((study) => study.isActive)?.id ?? null}
-              emptyText="No retained PlotTool studies are available."
-              ariaLabel="Strategy notebooks"
-              caption="Retained strategy notebooks aligned to the active PlotTool workspace."
-            />
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.85fr)]">
+              <DenseDataTable
+                columns={studyColumns}
+                rows={studies}
+                getRowId={(study) => study.id}
+                getRowAriaLabel={(study) => study.ariaLabel}
+                getRowSelectAriaLabel={(study) => study.rowSelectAriaLabel}
+                getRowAriaControls={() => studyDetailPanelId}
+                getRowAriaExpanded={(study) => study.detailExpanded}
+                onRowSelect={(study) => onStudySelect(study.id)}
+                selectedRowId={selectedStudyId}
+                emptyText={vm.studyTableEmptyText}
+                ariaLabel="Strategy notebooks"
+                caption={vm.studyTableCaption}
+              />
+              <SelectedPlotStudyDetail
+                id={studyDetailPanelId}
+                detail={selectedStudyDetail}
+                emptyText={vm.selectedStudyEmptyText}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -671,45 +1095,49 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
         </Card>
       </div>
 
-      <Card className="border-border/70 bg-background/35">
-        <CardHeader className="pb-3">
-          <ToolbarStrip
-            ariaLabel="PlotTool workspace controls"
-            items={vm.toolbarPills.map((pill, index) => ({
-              id: `plot-pill-${index}`,
-              label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
-              value: pill,
-              active: index === 0
-            }))}
-          />
-          <div className="space-y-2">
-            <div className="eyebrow-label">Scatter / residual view</div>
-            <CardTitle>{vm.title}</CardTitle>
-            <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="plottool-chart-shell">
-            <PlotToolScatterChart
-              chart={vm.scatterChart}
+      <div className="space-y-4">
+        <Card className="border-border/70 bg-background/35">
+          <CardHeader className="pb-3">
+            <ToolbarStrip
+              ariaLabel="PlotTool workspace controls"
+              items={vm.toolbarPills.map((pill, index) => ({
+                id: `plot-pill-${index}`,
+                label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
+                value: pill,
+                active: index === 0
+              }))}
             />
-          </div>
-          <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
-            {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
-            <div>
-              <div className="eyebrow-label">{vm.focusPoint.label}</div>
-              <div className="mt-1 font-mono text-sm text-foreground">
-                {vm.focusPoint.xValueText}
-                <span className="px-2 text-muted-foreground">/</span>
-                {vm.focusPoint.yValueText}
-              </div>
+            <div className="space-y-2">
+              <div className="eyebrow-label">Scatter / residual view</div>
+              <CardTitle>{vm.title}</CardTitle>
+              <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
             </div>
-            <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="plottool-chart-shell">
+              <PlotToolScatterChart
+                chart={vm.scatterChart}
+              />
+            </div>
+            <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
+              {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
+              <div>
+                <div className="eyebrow-label">{vm.focusPoint.label}</div>
+                <div className="mt-1 font-mono text-sm text-foreground">
+                  {vm.focusPoint.xValueText}
+                  <span className="px-2 text-muted-foreground">/</span>
+                  {vm.focusPoint.yValueText}
+                </div>
+              </div>
+              <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <QuantNotebook vm={notebookVm} studyChips={vm.toolbarPills} />
+      </div>
 
       <div className="space-y-4">
         <Card className="border-border/70 bg-background/35">
@@ -758,6 +1186,60 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
         </Card>
       </div>
     </section>
+  );
+}
+
+function SelectedPlotStudyDetail({
+  id,
+  detail,
+  emptyText
+}: {
+  id: string;
+  detail: ResearchPlotStudyDetailState | null;
+  emptyText: string;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={id}
+        role="status"
+        aria-live="polite"
+        className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+      >
+        {emptyText}
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>{detail.eyebrow}</span>
+        <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
+      </div>
+      <div className="body">
+        <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
+        <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
+        <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
+        <dl className="mt-3 grid gap-2">
+          {detail.fields.map((field) => (
+            <div
+              key={field.label}
+              className="grid grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </aside>
   );
 }
 
@@ -841,26 +1323,15 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
             <CardDescription>Meridian-ready statistical readout with promotion and evidence cues.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Metric</th>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Value</th>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Benchmark</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.moments.map((moment) => (
-                    <tr key={moment.id}>
-                      <td className="px-3 py-2 text-muted-foreground">{moment.label}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{moment.value}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{moment.benchmark}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DenseDataTable
+              columns={plotToolMomentColumns}
+              rows={vm.momentsTable.rows}
+              getRowId={(moment) => moment.id}
+              getRowAriaLabel={(moment) => `${moment.label}: ${moment.value}. Benchmark ${moment.benchmark}.`}
+              emptyText={vm.momentsTable.emptyText}
+              ariaLabel="PlotTool moments table"
+              caption={vm.momentsTable.caption}
+            />
           </CardContent>
         </Card>
 
@@ -870,22 +1341,15 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
             <CardDescription>Recent records packaged for analyst review without leaving the Strategy lane.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Date", "Spread", "3m IV", "Z-score", "Signal"].map((column) => (
-                      <th key={column} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.sampleRows.map((row) => <PlotToolObservationRow key={row.id} row={row} />)}
-                </tbody>
-              </table>
-            </div>
+            <DenseDataTable
+              columns={plotToolObservationColumns}
+              rows={vm.sampleTable.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => `${row.timestamp}: spread ${row.spreadText}, implied volatility ${row.impliedVolText}, z-score ${row.zScoreText}, signal ${row.signalText}.`}
+              emptyText={vm.sampleTable.emptyText}
+              ariaLabel="PlotTool observation sheet"
+              caption={vm.sampleTable.caption}
+            />
           </CardContent>
         </Card>
       </div>
@@ -1018,18 +1482,4 @@ function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | 
   }
 
   return undefined;
-}
-
-function PlotToolObservationRow({ row }: { row: ResearchPlotSampleRow }) {
-  return (
-    <tr>
-      <td className="px-3 py-2 text-muted-foreground">{row.timestamp}</td>
-      <td className="px-3 py-2 font-mono text-foreground">{row.spreadText}</td>
-      <td className="px-3 py-2 font-mono text-foreground">{row.impliedVolText}</td>
-      <td className={cn("px-3 py-2 font-mono", plotToneClass[row.tone])}>{row.zScoreText}</td>
-      <td className="px-3 py-2">
-        <Badge variant={sampleToneBadgeVariant[row.tone]}>{row.signalText}</Badge>
-      </td>
-    </tr>
-  );
 }

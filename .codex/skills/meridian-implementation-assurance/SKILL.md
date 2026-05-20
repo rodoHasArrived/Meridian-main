@@ -68,12 +68,14 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - Keep mirrored Codex, Claude, and GitHub agent guidance aligned when a shared workflow or policy changes.
 - Avoid auxiliary docs inside skill folders unless they directly support execution or are required by the host format.
 - If `agents/openai.yaml` exists, regenerate or update it so the UI-facing metadata still matches the skill instructions.
-- Run package validation after editing, and run representative tests for any added or changed scripts.
+- Run `python build/scripts/docs/check-ai-inventory.py --summary` after Codex skill metadata or shared-context edits, and run representative tests for any added or changed scripts.
 
 ## Correctness Guardrails
 
 - Preserve existing contracts, nullability expectations, and cancellation flow.
 - Keep layer boundaries explicit across UI, service, storage, provider, execution, and governance seams.
+- For browser workstation work, keep `src/Meridian.Ui/dashboard/` as the default UI lane, preserve `/workstation/` route behavior, and keep MVVM-owned labels, disabled reasons, empty states, and live-region status out of leaf React components.
+- Do not create mobile apps, mobile-specific surfaces, or mobile-first workflow guidance unless the user or roadmap explicitly reopens mobile development.
 - Add or extend tests for happy path, failure path, and cancellation/disposal where relevant.
 - Prefer deterministic behavior over timing-sensitive heuristics.
 

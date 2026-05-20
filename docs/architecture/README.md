@@ -35,6 +35,9 @@ This directory contains documentation about the system's design, architectural d
 | Document | Description |
 | -------- | ----------- |
 | [Overview](overview.md) | High-level system architecture |
+| [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
+| [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
+| [MVVM Guidelines](mvvm-guidelines.md) | Browser and retained WPF view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
 | [Deterministic Canonicalization](deterministic-canonicalization.md) | Data normalization and deduplication |
@@ -44,14 +47,15 @@ This directory contains documentation about the system's design, architectural d
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
-| [Deterministic Canonicalization](deterministic-canonicalization.md) | Normalization and deduplication rules |
-| [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, and accounting architecture notes |
+| [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, Security Master expected accounting, and accounting architecture notes |
+| [Strategy Builder Integration](strategy-builder-integration.md) | Browser Strategy Builder contracts, JSONL draft storage, QuantScript proof execution, and prototype boundary |
+| [Strategy Engine Foundation](strategy-engine-foundation.md) | Shared Strategy Engine definitions, run validation, data dependency policy, evidence manifests, and workstation API surface |
 | [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
-| [Desktop Layers](desktop-layers.md) | WPF desktop application layering |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
-| [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Shared workstation-shell UX pattern for WPF research, trading, data operations, and governance |
+| [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Retained desktop shell UX pattern and compatibility guidance for WPF workspace shells |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
+| [Current Direction and Status](../plans/current-direction-and-status.md) | Consolidated planning interpretation for current product direction, status, and plan-file roles |
 | [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md) | Target run model, workspace IA, and migration phases |
 | [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md) | Current product-category filter and documentation archive rule |
 | [MCP Server](layer-boundaries.md#dependency-graph) | MCP tool server — dependency position and boundary rules |

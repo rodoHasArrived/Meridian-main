@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSystemStatus } from "@/lib/api";
-import { WORKSPACES, workspacePath } from "@/lib/workspace";
+import { WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type {
   MetricSnapshot,
   PortfolioWorkspaceResponse,
@@ -37,6 +37,39 @@ export interface OverviewActivityRow {
   source: string;
   timestampLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  expanded: boolean;
+}
+
+export interface OverviewActivityDetailField {
+  label: string;
+  value: string;
+}
+
+export interface OverviewActivityDetail {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  badgeLabel: string;
+  badgeVariant: OverviewActivityBadgeVariant;
+  ariaLabel: string;
+  fields: OverviewActivityDetailField[];
+}
+
+export interface OverviewActivitySelectionViewModel {
+  rows: OverviewActivityRow[];
+  selectedRowId: string | null;
+  selectedDetail: OverviewActivityDetail | null;
+  detailPanelId: string;
+  detailPanelTitle: string;
+  detailPanelDescription: string;
+  detailPanelEmptyText: string;
+  detailPanelAriaLabel: string;
+  tableLabel: string;
+  tableCaption: string;
+  selectActivity: (id: string) => void;
 }
 
 export type OverviewBriefingTone = "default" | "success" | "warning" | "danger";
@@ -80,6 +113,15 @@ export interface OverviewValueBlocker {
   ariaLabel: string;
 }
 
+export type OverviewStatusBannerIcon = "healthy" | "warning" | "offline" | "pending";
+
+export interface OverviewStatusBannerDetailParts {
+  providerSummary: string;
+  storageLabel: string;
+  storageClassName: string;
+  lastHeartbeatLabel: string;
+}
+
 export interface OverviewStatusBannerState {
   role: "status" | "alert";
   ariaLive: "polite" | "assertive";
@@ -87,7 +129,21 @@ export interface OverviewStatusBannerState {
   detailId: string | null;
   label: string;
   detailText: string | null;
+  detailParts: OverviewStatusBannerDetailParts | null;
   ariaLabel: string;
+  icon: OverviewStatusBannerIcon;
+  containerClassName: string;
+  iconClassName: string;
+  titleClassName: string;
+}
+
+export interface OverviewRefreshCommandState {
+  label: string;
+  ariaLabel: string;
+  busyLabel: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
 }
 
 export interface OverviewStatusState {
@@ -113,6 +169,7 @@ export interface OverviewStatusState {
   storageLabel: string | null;
   lastHeartbeatLabel: string | null;
   activityEmptyText: string;
+  refreshCommand: OverviewRefreshCommandState;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
   refreshErrorText: string | null;
@@ -147,6 +204,7 @@ export function buildOverviewStatusState({
   const storageLabel = current ? storageLabels[current.storageHealth] : null;
   const lastHeartbeatLabel = current ? formatTime(current.lastHeartbeatUtc) : null;
   const valueBlockers = buildOverviewValueBlockers(current, refreshErrorText);
+  const refreshCommand = buildOverviewRefreshCommand(refreshing);
 
   return {
     current,
@@ -185,12 +243,24 @@ export function buildOverviewStatusState({
     storageLabel,
     lastHeartbeatLabel,
     activityEmptyText: current ? "No recent events." : "Loading activity feed...",
-    refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh",
-    refreshAriaLabel: refreshing ? "Refreshing system status" : "Refresh system status",
+    refreshCommand,
+    refreshButtonLabel: refreshCommand.label,
+    refreshAriaLabel: refreshCommand.ariaLabel,
     refreshErrorText,
     refreshAnnouncement: refreshing
       ? "Refreshing system status."
       : refreshErrorText ?? (refreshedAtLabel ? `System status refreshed at ${refreshedAtLabel}.` : "")
+  };
+}
+
+export function buildOverviewRefreshCommand(refreshing: boolean): OverviewRefreshCommandState {
+  return {
+    label: refreshing ? "Refreshing..." : "Refresh",
+    ariaLabel: refreshing ? "Refreshing system status" : "Refresh system status",
+    busyLabel: refreshing ? "Refreshing..." : null,
+    disabled: refreshing,
+    disabledReason: refreshing ? "System status refresh is already in progress." : null,
+    busy: refreshing
   };
 }
 
@@ -199,7 +269,7 @@ export function useOverviewStatusViewModel(
   session: SessionInfo | null,
   fetchSystemStatus: OverviewRefreshFetcher = getSystemStatus
 ) {
-  const mountedRef = useRef(false);
+  const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const [refreshing, setRefreshing] = useState(false);
   const [liveData, setLiveData] = useState<SystemOverviewResponse | null>(initialData);
@@ -253,6 +323,50 @@ export function useOverviewStatusViewModel(
     ...state,
     refreshing,
     refresh
+  };
+}
+
+export const OVERVIEW_ACTIVITY_DETAIL_PANEL_ID = "overview-activity-selected-detail";
+
+export function useOverviewActivitySelectionViewModel(
+  activityRows: OverviewActivityRow[]
+): OverviewActivitySelectionViewModel {
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+
+  const selectedRowId = useMemo(
+    () => resolveSelectedActivityId(activityRows, selectedActivityId),
+    [activityRows, selectedActivityId]
+  );
+
+  useEffect(() => {
+    if (selectedActivityId !== selectedRowId) {
+      setSelectedActivityId(selectedRowId);
+    }
+  }, [selectedActivityId, selectedRowId]);
+
+  const rows = useMemo(
+    () => activityRows.map((row) => ({ ...row, expanded: row.id === selectedRowId })),
+    [activityRows, selectedRowId]
+  );
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null;
+  const selectedDetail = useMemo(() => buildOverviewActivityDetail(selectedRow), [selectedRow]);
+
+  return {
+    rows,
+    selectedRowId,
+    selectedDetail,
+    detailPanelId: OVERVIEW_ACTIVITY_DETAIL_PANEL_ID,
+    detailPanelTitle: selectedDetail ? "Selected activity" : "No activity selected",
+    detailPanelDescription: selectedDetail
+      ? `${selectedDetail.title} from ${selectedDetail.subtitle}.`
+      : "Select an event row to inspect event source, timestamp, and operator severity.",
+    detailPanelEmptyText: activityRows.length > 0
+      ? "Select an event row to inspect its triage detail."
+      : "No recent events are available for this status snapshot.",
+    detailPanelAriaLabel: selectedDetail?.ariaLabel ?? "Recent activity detail",
+    tableLabel: activityRows.length === 1 ? "1 recent system event" : `${activityRows.length} recent system events`,
+    tableCaption: "Recent system events. Select a row to update the activity detail panel.",
+    selectActivity: setSelectedActivityId
   };
 }
 
@@ -321,7 +435,7 @@ export function buildOverviewValueBlockers(
       id: "refresh-failed",
       title: "Live status refresh failed",
       detail: refreshErrorText,
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Refresh",
       badgeVariant: "danger",
@@ -334,7 +448,7 @@ export function buildOverviewValueBlockers(
       id: "status-unavailable",
       title: "System posture is still loading",
       detail: "The workstation has not returned a status payload yet. If this remains blank, review backend capability coverage.",
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Waiting",
       badgeVariant: "warning",
@@ -349,7 +463,7 @@ export function buildOverviewValueBlockers(
       id: "system-offline",
       title: "Workstation host is offline",
       detail: "Operator workflows cannot be trusted until the local host reports online status.",
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Offline",
       badgeVariant: "danger",
@@ -362,7 +476,7 @@ export function buildOverviewValueBlockers(
       id: "providers-missing",
       title: "No provider baseline configured",
       detail: "Connect a paper provider before expecting quotes, backfills, readiness checks, or paper orders to be useful.",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       actionLabel: "Connect provider",
       badgeLabel: "Setup",
       badgeVariant: "danger",
@@ -373,7 +487,7 @@ export function buildOverviewValueBlockers(
       id: "providers-offline",
       title: "All configured providers are offline",
       detail: `${current.providersTotal} configured ${pluralize(current.providersTotal, "provider")} need connectivity before market-data workflows are useful.`,
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       actionLabel: "Repair provider",
       badgeLabel: "Offline",
       badgeVariant: "danger",
@@ -385,7 +499,7 @@ export function buildOverviewValueBlockers(
       id: "providers-degraded",
       title: "Provider baseline is degraded",
       detail: `${offlineCount} of ${current.providersTotal} ${pluralize(current.providersTotal, "provider")} are offline. Review provider posture before accepting readiness evidence.`,
-      href: "/data/providers",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
       actionLabel: "Review providers",
       badgeLabel: "Provider",
       badgeVariant: "warning",
@@ -398,7 +512,7 @@ export function buildOverviewValueBlockers(
       id: "symbols-empty",
       title: "No monitored symbols",
       detail: "Seed a watchlist before validating quotes, historical data, backfills, or paper-trade tickets.",
-      href: "/data/watchlist",
+      href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
       actionLabel: "Seed watchlist",
       badgeLabel: "Symbols",
       badgeVariant: "warning",
@@ -413,7 +527,7 @@ export function buildOverviewValueBlockers(
       detail: current.storageHealth === "Critical"
         ? "Generated evidence and replay outputs are not safe to trust until storage health recovers."
         : "Storage is warning. Confirm evidence durability before relying on generated reports or replay packets.",
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review storage",
       badgeLabel: "Storage",
       badgeVariant: current.storageHealth === "Critical" ? "danger" : "warning",
@@ -426,7 +540,7 @@ export function buildOverviewValueBlockers(
       id: "backfills-active",
       title: "Backfill work is still running",
       detail: `${current.activeBackfills} active ${pluralize(current.activeBackfills, "backfill")} may change data coverage and downstream evidence.`,
-      href: "/data/backfills",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       actionLabel: "Review backfills",
       badgeLabel: "Backfill",
       badgeVariant: "outline",
@@ -441,7 +555,7 @@ export function buildOverviewValueBlockers(
       id: `event-${latestError.id}`,
       title: "Recent system error needs triage",
       detail: `${latestError.source.trim() || "Unknown source"}: ${latestError.message}`,
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Error",
       badgeVariant: "danger",
@@ -519,6 +633,7 @@ export function buildOverviewActivityRows(events: SystemEventRecord[]): Overview
     const typeState = activityTypeState[event.type];
     const source = event.source.trim() || "Unknown source";
     const timestampLabel = formatTime(event.timestamp);
+    const ariaLabel = `${typeState.typeLabel} event from ${source} at ${timestampLabel}: ${event.message}`;
 
     return {
       id: event.id,
@@ -530,9 +645,36 @@ export function buildOverviewActivityRows(events: SystemEventRecord[]): Overview
       message: event.message,
       source,
       timestampLabel,
-      ariaLabel: `${typeState.typeLabel} event from ${source} at ${timestampLabel}: ${event.message}`
+      ariaLabel,
+      selectAriaLabel: `Inspect ${ariaLabel}`,
+      detailPanelId: OVERVIEW_ACTIVITY_DETAIL_PANEL_ID,
+      expanded: false
     };
   });
+}
+
+export function buildOverviewActivityDetail(
+  row: OverviewActivityRow | null
+): OverviewActivityDetail | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    eyebrow: `${row.typeLabel} event`,
+    title: row.message,
+    subtitle: row.source,
+    description: overviewActivityDetailDescription[row.tone],
+    badgeLabel: row.statusCode,
+    badgeVariant: row.badgeVariant,
+    ariaLabel: `Selected recent activity detail for ${row.typeLabel} event from ${row.source}`,
+    fields: [
+      { label: "Source", value: row.source },
+      { label: "Timestamp", value: row.timestampLabel },
+      { label: "Severity", value: row.typeLabel },
+      { label: "Event ID", value: row.id }
+    ]
+  };
 }
 
 export function buildOverviewStatusBanner({
@@ -555,7 +697,16 @@ export function buildOverviewStatusBanner({
     : current
       ? "Status detail is unavailable."
       : "Waiting for the workstation status payload.";
+  const detailParts = current && providerSummary && storageLabel && lastHeartbeatLabel
+    ? {
+        providerSummary,
+        storageLabel,
+        storageClassName: storageHealthClassNames[current.storageHealth],
+        lastHeartbeatLabel
+      }
+    : null;
   const isInterruptive = refreshErrorText !== null || current?.systemStatus === "Degraded" || current?.systemStatus === "Offline";
+  const presentation = overviewStatusBannerPresentationFor(current, refreshErrorText);
 
   return {
     role: isInterruptive ? "alert" : "status",
@@ -564,7 +715,12 @@ export function buildOverviewStatusBanner({
     detailId: detailText ? "overview-status-detail" : null,
     label: statusLabel,
     detailText,
-    ariaLabel: `${statusLabel}. ${refreshErrorText ?? detailText}`
+    detailParts,
+    ariaLabel: `${statusLabel}. ${refreshErrorText ?? detailText}`,
+    icon: presentation.icon,
+    containerClassName: presentation.containerClassName,
+    iconClassName: presentation.iconClassName,
+    titleClassName: presentation.titleClassName
   };
 }
 
@@ -579,6 +735,67 @@ const storageLabels: Record<SystemOverviewResponse["storageHealth"], string> = {
   Warning: "Warning",
   Critical: "Critical"
 };
+
+const storageHealthClassNames: Record<SystemOverviewResponse["storageHealth"], string> = {
+  Healthy: "text-success",
+  Warning: "text-warning",
+  Critical: "text-danger"
+};
+
+type OverviewStatusBannerTone = "healthy" | "warning" | "danger" | "pending";
+
+const overviewStatusBannerPresentation: Record<
+  OverviewStatusBannerTone,
+  Pick<OverviewStatusBannerState, "icon" | "containerClassName" | "iconClassName" | "titleClassName">
+> = {
+  healthy: {
+    icon: "healthy",
+    containerClassName: "border-success/30 bg-success/10",
+    iconClassName: "text-success",
+    titleClassName: "text-success"
+  },
+  warning: {
+    icon: "warning",
+    containerClassName: "border-warning/30 bg-warning/10",
+    iconClassName: "text-warning",
+    titleClassName: "text-warning"
+  },
+  danger: {
+    icon: "offline",
+    containerClassName: "border-danger/35 bg-danger/10",
+    iconClassName: "text-danger",
+    titleClassName: "text-danger"
+  },
+  pending: {
+    icon: "pending",
+    containerClassName: "border-border/70 bg-secondary/25",
+    iconClassName: "text-muted-foreground",
+    titleClassName: "text-foreground"
+  }
+};
+
+function overviewStatusBannerPresentationFor(
+  current: SystemOverviewResponse | null,
+  refreshErrorText: string | null
+) {
+  if (refreshErrorText) {
+    return overviewStatusBannerPresentation.danger;
+  }
+
+  if (!current) {
+    return overviewStatusBannerPresentation.pending;
+  }
+
+  if (current.systemStatus === "Healthy") {
+    return overviewStatusBannerPresentation.healthy;
+  }
+
+  if (current.systemStatus === "Offline") {
+    return overviewStatusBannerPresentation.danger;
+  }
+
+  return overviewStatusBannerPresentation.warning;
+}
 
 const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivityRow, "typeLabel" | "statusCode" | "badgeVariant" | "tone">> = {
   info: {
@@ -600,6 +817,23 @@ const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivity
     tone: "danger"
   }
 };
+
+const overviewActivityDetailDescription: Record<OverviewActivityTone, string> = {
+  default: "Informational evidence is available for operator context.",
+  warning: "Observation evidence needs review before treating the workstation posture as fully clear.",
+  danger: "Error evidence needs triage before the related workflow can be trusted."
+};
+
+function resolveSelectedActivityId(
+  rows: OverviewActivityRow[],
+  selectedActivityId: string | null
+): string | null {
+  if (selectedActivityId && rows.some((row) => row.id === selectedActivityId)) {
+    return selectedActivityId;
+  }
+
+  return rows[0]?.id ?? null;
+}
 
 const priorityRouteCopy: Record<
   OverviewPriorityRoute["id"],
@@ -628,7 +862,7 @@ const priorityRouteCopy: Record<
     title: "Seed a working watchlist",
     detail: "No monitored symbols are loaded yet. Add a starter pack before validating quotes, backfills, or paper orders.",
     buttonLabel: "Open watchlist",
-    href: "/data/watchlist",
+    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
     ariaLabel: "Open Data watchlist starter packs"
   },
   settings: {
@@ -636,7 +870,7 @@ const priorityRouteCopy: Record<
     title: "Connect provider baseline",
     detail: "Provider setup is blocking useful validation. Verify workstation setup before expecting quotes or readiness checks.",
     buttonLabel: "Open setup checks",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: "Open Alpaca paper provider setup checklist"
   }
 };
@@ -770,7 +1004,17 @@ function formatTime(value: string | Date | null | undefined): string {
   }
 
   const date = typeof value === "string" ? new Date(value) : value;
-  return Number.isNaN(date.getTime()) ? "Unavailable" : date.toLocaleTimeString();
+  return Number.isNaN(date.getTime()) ? "Unavailable" : formatUtcMinute(date);
+}
+
+function formatUtcMinute(date: Date): string {
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
 // --- Portfolio at-a-glance panel ---
@@ -789,6 +1033,12 @@ export interface OverviewPositionRow {
   ariaLabel: string;
 }
 
+export interface OverviewPortfolioEmptyAction {
+  href: string;
+  label: string;
+  ariaLabel: string;
+}
+
 export interface OverviewPortfolioPanel {
   hasData: boolean;
   metrics: MetricSnapshot[];
@@ -799,6 +1049,7 @@ export interface OverviewPortfolioPanel {
   brokerageLabel: string;
   openOrderCount: number;
   emptyMessage: string;
+  emptyAction: OverviewPortfolioEmptyAction;
 }
 
 export function buildOverviewPortfolioPanel(
@@ -817,7 +1068,12 @@ export function buildOverviewPortfolioPanel(
       riskSummary: "",
       brokerageLabel: "—",
       openOrderCount: 0,
-      emptyMessage: "Connect a brokerage account or start a paper session to see your portfolio here."
+      emptyMessage: "Connect a brokerage account or start a paper session to see your portfolio here.",
+      emptyAction: {
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        label: "Connect provider",
+        ariaLabel: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
+      }
     };
   }
 
@@ -887,6 +1143,11 @@ export function buildOverviewPortfolioPanel(
     riskSummary: source.risk?.summary ?? "",
     brokerageLabel,
     openOrderCount: trading?.openOrders.length ?? 0,
-    emptyMessage: "No open positions. Use the trading cockpit to place your first order."
+    emptyMessage: "No open positions. Use the trading cockpit to place your first order.",
+    emptyAction: {
+      href: WORKSTATION_ROUTE_CATALOG.trading,
+      label: "Open trading cockpit",
+      ariaLabel: "Open Trading cockpit from the empty portfolio positions panel"
+    }
   };
 }

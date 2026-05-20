@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Activity, AlertCircle, CheckCircle2, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
+import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,8 @@ import {
   useWatchlistScreenViewModel,
   type WatchlistDetailFieldTone,
   type WatchlistRowViewModel,
-  type WatchlistSelectedDetail
+  type WatchlistSelectedDetail,
+  type WatchlistSortColumn
 } from "@/screens/watchlist-screen.view-model";
 
 export function WatchlistScreen() {
@@ -57,17 +58,18 @@ export function WatchlistScreen() {
             className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center"
             aria-label={vm.formLabel}
           >
-            <label htmlFor={vm.inputId} className="sr-only">Add symbol</label>
+            <label htmlFor={vm.addSymbolField.id} className="sr-only">{vm.addSymbolField.label}</label>
             <Input
-              id={vm.inputId}
-              placeholder={vm.inputPlaceholder}
+              id={vm.addSymbolField.id}
+              placeholder={vm.addSymbolField.placeholder}
               value={vm.pendingSymbol}
               onChange={(event) => vm.setPendingSymbol(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              error={vm.submitFeedback?.tone === "danger"}
-              disabled={vm.submitting}
-              aria-describedby={vm.inputHelpId}
+              error={vm.addSymbolField.invalid}
+              disabled={vm.addSymbolField.disabled}
+              aria-describedby={vm.addSymbolField.describedBy}
+              aria-errormessage={vm.addSymbolField.errorMessageId}
             />
             <Button
               type="submit"
@@ -75,7 +77,7 @@ export function WatchlistScreen() {
               disabled={vm.addDisabled}
               disabledReason={vm.addDisabledReason}
               busy={vm.submitting}
-              busyLabel="Adding..."
+              busyLabel={vm.addButtonLabel}
               aria-label={vm.addButtonAriaLabel}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
@@ -89,14 +91,14 @@ export function WatchlistScreen() {
               aria-label={vm.refreshButtonAriaLabel}
               disabled={vm.refreshDisabled}
               busy={vm.refreshing}
-              busyLabel="Refreshing..."
+              busyLabel={vm.refreshButtonLabel}
             >
               <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
               <span className="ml-1.5">{vm.refreshButtonLabel}</span>
             </Button>
           </form>
-          <p id="add-symbol-help" className="mt-2 text-xs text-muted-foreground">
-            {vm.inputHelpText}
+          <p id={vm.addSymbolField.helperId} className="mt-2 text-xs text-muted-foreground">
+            {vm.addSymbolField.helperText}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2" aria-label={vm.starterPackGroupLabel}>
             <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">{vm.starterPackEyebrow}</span>
@@ -111,7 +113,7 @@ export function WatchlistScreen() {
                 disabled={pack.disabled}
                 disabledReason={pack.disabledReason}
                 busy={pack.busy}
-                busyLabel="Adding..."
+                busyLabel={pack.busyLabel}
                 aria-label={pack.ariaLabel}
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -122,19 +124,34 @@ export function WatchlistScreen() {
           </div>
           {vm.submitFeedback ? (
             <div
-              id="add-symbol-feedback"
-              role={vm.submitFeedback.tone === "success" ? "status" : "alert"}
+              id={vm.addSymbolField.feedbackId}
+              role={vm.addSymbolField.feedbackRole}
               className={`mt-2 flex flex-wrap items-center gap-2 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
             >
               <span className="inline-flex min-w-0 items-center gap-1.5">
                 <FeedbackIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>{vm.submitFeedback.message}</span>
               </span>
+              {vm.submitFeedback.details && vm.submitFeedback.details.length > 0 ? (
+                <ul className="w-full list-disc space-y-1 pl-5 text-xs leading-5">
+                  {vm.submitFeedback.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
               {vm.submitFeedback.providerSetupHandoff ? (
                 <Button asChild variant="outline" size="sm">
                   <Link to={vm.submitFeedback.providerSetupHandoff.href} aria-label={vm.submitFeedback.providerSetupHandoff.ariaLabel}>
                     <Settings className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>{vm.submitFeedback.providerSetupHandoff.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+              {vm.submitFeedback.nextActionHandoff ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={vm.submitFeedback.nextActionHandoff.href} aria-label={vm.submitFeedback.nextActionHandoff.ariaLabel}>
+                    <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{vm.submitFeedback.nextActionHandoff.label}</span>
                   </Link>
                 </Button>
               ) : null}
@@ -155,26 +172,63 @@ export function WatchlistScreen() {
             items={vm.toolbarItems}
             ariaLabel="Symbol watchlist status"
             right={
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant={vm.staleFilterCommand.pressed ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => vm.setHideStale(!vm.hideStale)}
+                  disabled={vm.staleFilterCommand.disabled}
+                  disabledReason={vm.staleFilterCommand.disabledReason}
+                  aria-pressed={vm.staleFilterCommand.pressed}
+                  aria-label={vm.staleFilterCommand.ariaLabel}
+                >
+                  {vm.staleFilterCommand.pressed ? (
+                    <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  <span className="ml-1">{vm.staleFilterCommand.label}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void vm.refreshQuotes()}
+                  disabled={vm.quoteRefreshCommand.disabled}
+                  disabledReason={vm.quoteRefreshCommand.disabledReason}
+                  busy={vm.quoteRefreshCommand.busy}
+                  busyLabel={vm.quoteRefreshCommand.label}
+                  aria-label={vm.quoteRefreshCommand.ariaLabel}
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${vm.quoteRefreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                  <span className="ml-1">{vm.quoteRefreshCommand.label}</span>
+                </Button>
+              </div>
+            }
+          />
+          {vm.listState === "error" ? (
+            <div
+              role="alert"
+              className="flex flex-col gap-3 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger sm:flex-row sm:items-center sm:justify-between"
+            >
+              <span>{vm.listDescription}</span>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => void vm.refreshQuotes()}
-                disabled={vm.quoteRefreshCommand.disabled}
-                disabledReason={vm.quoteRefreshCommand.disabledReason}
-                busy={vm.quoteRefreshCommand.busy}
-                busyLabel={vm.quoteRefreshCommand.label}
-                aria-label={vm.quoteRefreshCommand.ariaLabel}
+                className="w-fit bg-background/50"
+                onClick={() => void vm.refresh()}
+                disabled={vm.listRetryCommand.disabled}
+                disabledReason={vm.listRetryCommand.disabledReason}
+                busy={vm.listRetryCommand.busy}
+                busyLabel={vm.listRetryCommand.label}
+                aria-label={vm.listRetryCommand.ariaLabel}
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${vm.quoteRefreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
-                <span className="ml-1">{vm.quoteRefreshCommand.label}</span>
+                <RefreshCw className={`h-3.5 w-3.5 ${vm.listRetryCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                <span className="ml-1">{vm.listRetryCommand.label}</span>
               </Button>
-            }
-          />
-          {vm.listState === "error" ? (
-            <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-              {vm.listDescription}
-            </p>
+            </div>
           ) : vm.listState === "loading" ? (
             <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
               {vm.listDescription}
@@ -182,15 +236,31 @@ export function WatchlistScreen() {
           ) : (
             <>
               {vm.loadError ? (
-                <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {vm.loadError}
-                </p>
+                <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  <div>{vm.loadError.summary}</div>
+                  {vm.loadError.details.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {vm.loadError.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               ) : null}
               <div
                 role={vm.quoteStatusTone === "danger" ? "alert" : "status"}
                 className={`flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${quoteStatusClass[vm.quoteStatusTone]}`}
               >
-                <span>{vm.quoteStatusLabel}</span>
+                <div className="min-w-0">
+                  <div>{vm.quoteStatusLabel}</div>
+                  {vm.quoteStatusDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {vm.quoteStatusDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
                 {vm.quoteProviderSetupHandoff ? (
                   <Button asChild variant="outline" size="sm" className="w-fit bg-background/40">
                     <Link to={vm.quoteProviderSetupHandoff.href} aria-label={vm.quoteProviderSetupHandoff.ariaLabel}>
@@ -214,6 +284,8 @@ export function WatchlistScreen() {
                   emptyText={vm.listDescription}
                   ariaLabel={vm.tableLabel}
                   caption={vm.tableCaption}
+                  sort={vm.sort}
+                  onToggleSort={(columnId) => vm.toggleSort(columnId as WatchlistSortColumn)}
                 />
                 <WatchlistDetailPanel
                   title={vm.detailPanelTitle}
@@ -263,11 +335,13 @@ function buildColumns(
       id: "symbol",
       label: "Symbol",
       className: "font-mono font-semibold text-foreground",
+      sortable: true,
       render: (row) => row.symbol
     },
     {
       id: "status",
       label: "Status",
+      sortable: true,
       render: (row) => <Badge variant={row.statusVariant} dot>{row.status}</Badge>
     },
     {
@@ -289,6 +363,7 @@ function buildColumns(
       label: "Last",
       align: "right",
       className: `font-mono`,
+      sortable: true,
       render: (row) => <span className={lastToneClass[row.lastTone]}>{row.lastPriceLabel}</span>
     },
     {
@@ -303,6 +378,7 @@ function buildColumns(
       label: "Chg%",
       align: "right",
       className: "font-mono",
+      sortable: true,
       render: (row) => <span className={detailFieldToneClass[row.changeTone]}>{row.changePercentLabel}</span>
     },
     {
@@ -317,12 +393,14 @@ function buildColumns(
       label: "Spread",
       align: "right",
       className: "font-mono text-muted-foreground",
+      sortable: true,
       render: (row) => row.spreadLabel
     },
     {
       id: "quote-age",
       label: "Quote age",
       className: "text-muted-foreground",
+      sortable: true,
       render: (row) => <span className={row.quoteStale ? "text-warning" : undefined}>{row.quoteAgeLabel}</span>
     },
     {

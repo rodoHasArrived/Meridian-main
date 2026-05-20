@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
+import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
+import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   BACKFILL_API_ENDPOINTS,
   CONFIG_API_ENDPOINTS,
@@ -23,6 +26,10 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -36,9 +43,11 @@ export interface SettingsAlpacaConnectionFormState {
   keyId: string;
   secretKey: string;
   environment: AlpacaEnvironment;
+  liveAcknowledged: boolean;
   busyAction: "connect" | "clear" | null;
   submitted: boolean;
   actionMessage: string | null;
+  actionDetails: string[];
   actionTone: "default" | "success" | "danger";
 }
 
@@ -56,6 +65,8 @@ export interface SettingsAlpacaConnectionCommandState {
     secretKey: string;
     environment: string;
   };
+  keyIdField: SettingsAlpacaCredentialFieldState;
+  secretKeyField: SettingsAlpacaCredentialFieldState;
   submitLabel: string;
   clearLabel: string;
   canSubmit: boolean;
@@ -66,12 +77,28 @@ export interface SettingsAlpacaConnectionCommandState {
   clearDisabledReason: string | null;
   statusRole: "status" | "alert";
   statusClassName: string;
+  statusDetails: string[];
   keyIdHelpText: string;
   secretKeyHelpText: string;
   environmentHelpText: string;
   environmentLegend: string;
   environmentOptions: SettingsAlpacaEnvironmentOption[];
+  liveAcknowledgement: SettingsAlpacaLiveAcknowledgementState;
   requirements: SettingsAlpacaRequirementRow[];
+}
+
+export interface SettingsAlpacaCredentialFieldState {
+  id: string;
+  label: string;
+  type: "text" | "password";
+  autoComplete: string;
+  placeholder: string;
+  helpId: string;
+  helpText: string;
+  describedBy: string;
+  error: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface SettingsAlpacaEnvironmentOption {
@@ -79,10 +106,13 @@ export interface SettingsAlpacaEnvironmentOption {
   value: AlpacaEnvironment;
   label: string;
   badgeLabel: string;
+  endpointLabel: string;
   description: string;
   descriptionId: string;
   isSelected: boolean;
   disabled: boolean;
+  disabledReason: string | null;
+  disabledReasonId: string | null;
   ariaLabel: string;
   tone: "paper" | "live";
 }
@@ -93,6 +123,20 @@ export interface SettingsAlpacaRequirementRow {
   value: string;
   met: boolean;
   tone: "success" | "warning" | "muted";
+}
+
+export interface SettingsAlpacaLiveAcknowledgementState {
+  id: string;
+  descriptionId: string;
+  label: string;
+  detail: string;
+  checked: boolean;
+  visible: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+  disabledReasonId: string | null;
+  required: boolean;
+  ariaLabel: string;
 }
 
 export interface SettingsAlpacaSetupStep {
@@ -111,51 +155,91 @@ export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaCon
   setKeyId: (value: string) => void;
   setSecretKey: (value: string) => void;
   setEnvironment: (value: AlpacaEnvironment) => void;
+  setLiveAcknowledged: (value: boolean) => void;
   connect: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   clear: () => Promise<void>;
 }
 
 interface SettingsAlpacaConnectionDependencies {
-  connectConnection?: (request: AlpacaBrokerageConnectionRequest) => Promise<BrokerageConnectionStatus>;
-  revokeConnection?: () => Promise<BrokerageConnectionStatus>;
+  connectConnection?: (request: AlpacaBrokerageConnectionRequest, options?: ApiRequestOptions) => Promise<BrokerageConnectionStatus>;
+  revokeConnection?: (options?: ApiRequestOptions) => Promise<BrokerageConnectionStatus>;
 }
 
 const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
   keyId: "",
   secretKey: "",
   environment: "paper",
+  liveAcknowledged: false,
   busyAction: null,
   submitted: false,
   actionMessage: null,
+  actionDetails: [],
   actionTone: "default"
 };
 
+function joinDescribedBy(...parts: Array<string | null | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part)).join(" ");
+}
+
 export function buildAlpacaConnectionCommandState({
   form,
-  canClear
+  canClear,
+  clearConfirmationPending = false
 }: {
   form: SettingsAlpacaConnectionFormState;
   canClear: boolean;
+  clearConfirmationPending?: boolean;
 }): SettingsAlpacaConnectionCommandState {
   const keyIdMissing = form.keyId.trim().length === 0;
   const secretKeyMissing = form.secretKey.trim().length === 0;
   const hasValidationErrors = keyIdMissing || secretKeyMissing;
   const busy = form.busyAction !== null;
+  const liveSelected = form.environment === "live";
+  const liveAcknowledgementMissing = liveSelected && !form.liveAcknowledged;
+  const liveReviewValue = liveSelected ? form.liveAcknowledged ? "Accepted" : "Required" : "Not required";
+  const liveReviewTone: SettingsAlpacaRequirementRow["tone"] = liveAcknowledgementMissing
+    ? "warning"
+    : liveSelected
+      ? "success"
+      : "muted";
+  const clearConfirmationReady = !busy && canClear && clearConfirmationPending;
   const validationVisible = form.submitted || form.actionTone === "danger";
   const keyIdError = validationVisible && keyIdMissing;
   const secretKeyError = validationVisible && secretKeyMissing;
   const missingCredentialValue = validationVisible ? "Required" : "Needed";
   const missingCredentialTone = validationVisible ? "warning" : "muted";
+  const formPanelId = "alpaca-credential-readiness";
+  const fieldHelpIds = {
+    keyId: "alpaca-key-id-help",
+    secretKey: "alpaca-secret-key-help",
+    environment: "alpaca-environment-help"
+  };
+  const editDisabledReason = busy ? "Alpaca credential request is already running." : null;
+  const environmentDisabledReasonId = busy ? "alpaca-environment-disabled-reason" : null;
+  const liveAcknowledgementDisabledReasonId = busy ? "alpaca-live-acknowledgement-disabled-reason" : null;
+  const keyIdHelpText = busy
+    ? editDisabledReason!
+    : keyIdError
+    ? "Key ID is required before Meridian can test the Alpaca account."
+    : "Stored values remain masked after refresh.";
+  const secretKeyHelpText = busy
+    ? editDisabledReason!
+    : secretKeyError
+    ? "Secret key is required and is cleared after a connection test."
+    : "Secret key is never displayed after submit.";
   const environmentOptions: SettingsAlpacaEnvironmentOption[] = [
     {
       id: "alpaca-environment-paper",
       value: "paper",
       label: "Paper",
       badgeLabel: "Default",
+      endpointLabel: "https://paper-api.alpaca.markets/v2",
       description: "Paper endpoint for workstation validation and readiness rehearsal.",
       descriptionId: "alpaca-environment-paper-description",
       isSelected: form.environment === "paper",
       disabled: busy,
+      disabledReason: editDisabledReason,
+      disabledReasonId: environmentDisabledReasonId,
       ariaLabel: "Use Alpaca paper endpoint for workstation validation",
       tone: "paper"
     },
@@ -164,10 +248,13 @@ export function buildAlpacaConnectionCommandState({
       value: "live",
       label: "Live",
       badgeLabel: "Real money",
+      endpointLabel: "https://api.alpaca.markets/v2",
       description: "Live endpoint for production brokerage verification.",
       descriptionId: "alpaca-environment-live-description",
       isSelected: form.environment === "live",
       disabled: busy,
+      disabledReason: editDisabledReason,
+      disabledReasonId: environmentDisabledReasonId,
       ariaLabel: "Use Alpaca live endpoint for production brokerage verification",
       tone: "live"
     }
@@ -193,57 +280,98 @@ export function buildAlpacaConnectionCommandState({
       value: form.environment === "live" ? "LIVE" : "PAPER",
       met: true,
       tone: form.environment === "live" ? "warning" : "success"
+    },
+    {
+      id: "alpaca-live-acknowledgement-requirement",
+      label: "Live review",
+      value: liveReviewValue,
+      met: !liveAcknowledgementMissing,
+      tone: liveReviewTone
     }
   ];
   const formPanelTone: SettingsAlpacaConnectionCommandState["formPanelTone"] = busy
     ? "warning"
+    : clearConfirmationReady
+      ? "warning"
     : form.actionTone === "danger"
       ? "danger"
       : form.actionTone === "success"
         ? "success"
         : hasValidationErrors && validationVisible
           ? "warning"
-          : "default";
+          : liveAcknowledgementMissing
+            ? "warning"
+            : "default";
   const formPanelTitle = busy
     ? form.busyAction === "clear"
       ? "Clearing Alpaca credentials"
       : "Testing Alpaca credentials"
+    : clearConfirmationReady
+      ? "Confirm Alpaca credential clear"
     : form.actionMessage
       ? form.actionMessage
-      : hasValidationErrors && validationVisible
-        ? "Credentials incomplete"
-        : hasValidationErrors
-          ? "Enter Alpaca credentials"
-          : "Credentials ready for test";
+      : liveAcknowledgementMissing && !hasValidationErrors
+        ? "Live endpoint review required"
+        : hasValidationErrors && validationVisible
+          ? "Credentials incomplete"
+          : hasValidationErrors
+            ? "Enter Alpaca credentials"
+            : "Credentials ready for test";
   const formPanelDetail = busy
     ? "Meridian is waiting on the brokerage connection request."
+    : clearConfirmationReady
+      ? "Confirming will remove the stored Alpaca key reference and block provider-backed workflows until a new connection test succeeds."
     : form.actionMessage
       ? hasValidationErrors
         ? "Review the required fields before the next connection test."
         : "Credential readiness has been recalculated from the current form state."
-      : hasValidationErrors && validationVisible
-        ? "Enter the required Alpaca API values before Meridian can call /v2/account."
-        : hasValidationErrors
-          ? "Paste the paper key ID and secret key to enable account verification."
-          : "Submitting will test the account and clear the secret key from the form after the response.";
+      : liveAcknowledgementMissing && !hasValidationErrors
+        ? "Acknowledge that Meridian will verify live Alpaca brokerage credentials before submitting."
+        : hasValidationErrors && validationVisible
+          ? "Enter the required Alpaca API values before Meridian can call /v2/account."
+          : hasValidationErrors
+            ? "Paste the paper key ID and secret key to enable account verification."
+            : "Submitting will test the account and clear the secret key from the form after the response.";
 
   return {
     keyIdError,
     secretKeyError,
-    formPanelId: "alpaca-credential-readiness",
+    formPanelId,
     formPanelTitle,
     formPanelDetail,
     formPanelTone,
     formPanelRole: formPanelTone === "danger" ? "alert" : "status",
     formPanelAriaLive: formPanelTone === "danger" ? "assertive" : "polite",
-    fieldHelpIds: {
-      keyId: "alpaca-key-id-help",
-      secretKey: "alpaca-secret-key-help",
-      environment: "alpaca-environment-help"
+    fieldHelpIds,
+    keyIdField: {
+      id: "alpaca-key-id",
+      label: "Key ID",
+      type: "text",
+      autoComplete: "off",
+      placeholder: "ALPACA_KEY_ID",
+      helpId: fieldHelpIds.keyId,
+      helpText: keyIdHelpText,
+      describedBy: joinDescribedBy(fieldHelpIds.keyId, formPanelId),
+      error: keyIdError,
+      disabled: busy,
+      disabledReason: editDisabledReason
+    },
+    secretKeyField: {
+      id: "alpaca-secret-key",
+      label: "Secret key",
+      type: "password",
+      autoComplete: "off",
+      placeholder: "ALPACA_SECRET_KEY",
+      helpId: fieldHelpIds.secretKey,
+      helpText: secretKeyHelpText,
+      describedBy: joinDescribedBy(fieldHelpIds.secretKey, formPanelId),
+      error: secretKeyError,
+      disabled: busy,
+      disabledReason: editDisabledReason
     },
     submitLabel: "Connect and test",
-    clearLabel: "Clear",
-    canSubmit: !busy && !hasValidationErrors,
+    clearLabel: clearConfirmationReady ? "Confirm clear" : "Clear",
+    canSubmit: !busy && !hasValidationErrors && !liveAcknowledgementMissing,
     canEdit: !busy,
     submitBusy: form.busyAction === "connect",
     clearBusy: form.busyAction === "clear",
@@ -253,7 +381,9 @@ export function buildAlpacaConnectionCommandState({
         ? "Enter an Alpaca key ID before testing the connection."
         : secretKeyMissing
           ? "Enter an Alpaca secret key before testing the connection."
-          : null,
+          : liveAcknowledgementMissing
+            ? "Acknowledge the live Alpaca endpoint before testing live credentials."
+            : null,
     clearDisabledReason: busy
       ? "Alpaca credential request is already running."
       : canClear
@@ -261,13 +391,27 @@ export function buildAlpacaConnectionCommandState({
         : "No stored Alpaca credentials are available to clear.",
     statusRole: form.actionTone === "danger" ? "alert" : "status",
     statusClassName: form.actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
-    keyIdHelpText: keyIdError ? "Key ID is required before Meridian can test the Alpaca account." : "Stored values remain masked after refresh.",
-    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit.",
+    statusDetails: form.actionDetails,
+    keyIdHelpText,
+    secretKeyHelpText,
     environmentHelpText: form.environment === "live"
-      ? "Live endpoint selected. Paper remains the default workstation path."
+      ? "Live endpoint selected. Acknowledgement is required before Meridian can test these credentials."
       : "Paper endpoint selected for workstation validation.",
     environmentLegend: "Alpaca trading environment",
     environmentOptions,
+    liveAcknowledgement: {
+      id: "alpaca-live-acknowledgement",
+      descriptionId: "alpaca-live-acknowledgement-detail",
+      label: "I understand this test uses the live Alpaca endpoint.",
+      detail: "Use this only for production brokerage verification; paper remains the default onboarding and demo path.",
+      checked: form.liveAcknowledged,
+      visible: liveSelected,
+      disabled: busy,
+      disabledReason: editDisabledReason,
+      disabledReasonId: liveAcknowledgementDisabledReasonId,
+      required: liveSelected,
+      ariaLabel: "Acknowledge live Alpaca endpoint before testing credentials"
+    },
     requirements
   };
 }
@@ -282,31 +426,49 @@ export function useAlpacaConnectionFormViewModel({
   canClear: boolean;
 } & SettingsAlpacaConnectionDependencies): SettingsAlpacaConnectionFormViewModel {
   const [form, setForm] = useState<SettingsAlpacaConnectionFormState>(emptyAlpacaConnectionForm);
+  const [clearConfirmationPending, setClearConfirmationPending] = useState(false);
   const mountedRef = useRef(true);
   const actionRevisionRef = useRef(0);
-  const command = buildAlpacaConnectionCommandState({ form, canClear });
+  const actionAbortRef = useRef<AbortController | null>(null);
+  const command = buildAlpacaConnectionCommandState({ form, canClear, clearConfirmationPending });
 
   useEffect(() => () => {
     mountedRef.current = false;
     actionRevisionRef.current += 1;
+    actionAbortRef.current?.abort();
   }, []);
 
   const setKeyId = (keyId: string) => {
-    setForm((current) => ({ ...current, keyId, actionMessage: null, actionTone: "default" }));
+    setClearConfirmationPending(false);
+    setForm((current) => ({ ...current, keyId, actionMessage: null, actionDetails: [], actionTone: "default" }));
   };
 
   const setSecretKey = (secretKey: string) => {
-    setForm((current) => ({ ...current, secretKey, actionMessage: null, actionTone: "default" }));
+    setClearConfirmationPending(false);
+    setForm((current) => ({ ...current, secretKey, actionMessage: null, actionDetails: [], actionTone: "default" }));
   };
 
   const setEnvironment = (environment: AlpacaEnvironment) => {
-    setForm((current) => ({ ...current, environment, actionMessage: null, actionTone: "default" }));
+    setClearConfirmationPending(false);
+    setForm((current) => ({
+      ...current,
+      environment,
+      liveAcknowledged: environment === "live" ? current.liveAcknowledged : false,
+      actionMessage: null,
+      actionDetails: [],
+      actionTone: "default"
+    }));
+  };
+
+  const setLiveAcknowledged = (liveAcknowledged: boolean) => {
+    setClearConfirmationPending(false);
+    setForm((current) => ({ ...current, liveAcknowledged, actionMessage: null, actionDetails: [], actionTone: "default" }));
   };
 
   const connect = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const submittedForm = { ...form, submitted: true, actionMessage: null, actionTone: "default" as const };
+    const submittedForm = { ...form, submitted: true, actionMessage: null, actionDetails: [], actionTone: "default" as const };
     const submittedCommand = buildAlpacaConnectionCommandState({ form: submittedForm, canClear });
     if (!submittedCommand.canSubmit) {
       setForm(submittedForm);
@@ -315,6 +477,10 @@ export function useAlpacaConnectionFormViewModel({
 
     const revision = actionRevisionRef.current + 1;
     actionRevisionRef.current = revision;
+    actionAbortRef.current?.abort();
+    const controller = new AbortController();
+    actionAbortRef.current = controller;
+    setClearConfirmationPending(false);
     setForm({ ...submittedForm, busyAction: "connect" });
 
     try {
@@ -322,7 +488,7 @@ export function useAlpacaConnectionFormViewModel({
         keyId: form.keyId.trim(),
         secretKey: form.secretKey.trim(),
         environment: form.environment
-      });
+      }, { signal: controller.signal });
       if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
         return;
       }
@@ -340,6 +506,7 @@ export function useAlpacaConnectionFormViewModel({
         actionMessage: status.isConnected
           ? "Alpaca account verified."
           : status.lastError ?? status.warnings[0] ?? "Alpaca connection updated.",
+        actionDetails: [],
         actionTone: status.isConnected ? "success" : "danger"
       }));
     } catch (err) {
@@ -347,27 +514,42 @@ export function useAlpacaConnectionFormViewModel({
         return;
       }
 
+      const display = describeApiError(err, "Alpaca connection request failed.");
       setForm((current) => ({
         ...current,
         busyAction: null,
-        actionMessage: err instanceof Error ? err.message : "Alpaca connection request failed.",
+        actionMessage: display.summary,
+        actionDetails: display.details,
         actionTone: "danger"
       }));
+    } finally {
+      if (actionAbortRef.current === controller) {
+        actionAbortRef.current = null;
+      }
     }
   };
 
   const clear = async () => {
-    const currentCommand = buildAlpacaConnectionCommandState({ form, canClear });
+    const currentCommand = buildAlpacaConnectionCommandState({ form, canClear, clearConfirmationPending });
     if (currentCommand.clearDisabledReason) {
+      return;
+    }
+    if (!clearConfirmationPending) {
+      setClearConfirmationPending(true);
+      setForm((current) => ({ ...current, actionMessage: null, actionDetails: [], actionTone: "default" }));
       return;
     }
 
     const revision = actionRevisionRef.current + 1;
     actionRevisionRef.current = revision;
-    setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
+    actionAbortRef.current?.abort();
+    const controller = new AbortController();
+    actionAbortRef.current = controller;
+    setClearConfirmationPending(false);
+    setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionDetails: [], actionTone: "default" }));
 
     try {
-      await revokeConnection();
+      await revokeConnection({ signal: controller.signal });
       if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
         return;
       }
@@ -380,6 +562,7 @@ export function useAlpacaConnectionFormViewModel({
       setForm({
         ...emptyAlpacaConnectionForm,
         actionMessage: "Alpaca credentials cleared.",
+        actionDetails: [],
         actionTone: "success"
       });
     } catch (err) {
@@ -387,12 +570,18 @@ export function useAlpacaConnectionFormViewModel({
         return;
       }
 
+      const display = describeApiError(err, "Alpaca clear request failed.");
       setForm((current) => ({
         ...current,
         busyAction: null,
-        actionMessage: err instanceof Error ? err.message : "Alpaca clear request failed.",
+        actionMessage: display.summary,
+        actionDetails: display.details,
         actionTone: "danger"
       }));
+    } finally {
+      if (actionAbortRef.current === controller) {
+        actionAbortRef.current = null;
+      }
     }
   };
 
@@ -402,6 +591,7 @@ export function useAlpacaConnectionFormViewModel({
     setKeyId,
     setSecretKey,
     setEnvironment,
+    setLiveAcknowledged,
     connect,
     clear
   };
@@ -425,6 +615,54 @@ export interface SettingsSystemItem {
   label: string;
   value: string;
   tone: "default" | "success" | "warning" | "danger" | "muted";
+}
+
+export interface SettingsProfileAuthenticationFact {
+  id: string;
+  label: string;
+  value: string;
+  tone: "default" | "success" | "warning" | "danger" | "muted";
+}
+
+export interface SettingsProfileAuthenticationStep {
+  id: string;
+  label: string;
+  statusLabel: string;
+  detail: string;
+  tone: "success" | "warning" | "danger" | "muted";
+  badgeVariant: "success" | "warning" | "danger" | "outline";
+  actionLabel: string | null;
+  actionHref: string | null;
+  actionAriaLabel: string | null;
+}
+
+export interface SettingsProfileAuthenticationNotice {
+  title: string;
+  detail: string;
+  tone: "warning" | "danger";
+  role: "status" | "alert";
+}
+
+export interface SettingsProfileAuthenticationPanel {
+  regionLabel: string;
+  title: string;
+  summary: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  badgeVariant: "outline" | "success" | "warning" | "danger";
+  avatarInitials: string;
+  operatorName: string;
+  roleLabel: string;
+  environmentLabel: string;
+  workspaceLabel: string;
+  commandCountLabel: string;
+  authorityLabel: string;
+  authorityDetail: string;
+  notice: SettingsProfileAuthenticationNotice | null;
+  facts: SettingsProfileAuthenticationFact[];
+  stepsTitle: string;
+  stepsAriaLabel: string;
+  steps: SettingsProfileAuthenticationStep[];
 }
 
 export interface SettingsDiagnosticLink {
@@ -475,6 +713,30 @@ export interface SettingsEventRow {
   ariaLabel: string;
 }
 
+export interface SettingsRecentEventTableRow extends SettingsEventRow {
+  detailPanelId: string;
+  expanded: boolean;
+  selectAriaLabel: string;
+}
+
+export interface SettingsRecentEventDetailField {
+  label: string;
+  value: string;
+  tone: "default" | "warning" | "danger" | "muted";
+}
+
+export interface SettingsRecentEventDetail {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "warning" | "danger";
+  ariaLabel: string;
+  fields: SettingsRecentEventDetailField[];
+}
+
 export interface SettingsRecentEventsSection {
   title: string;
   description: string;
@@ -485,6 +747,22 @@ export interface SettingsRecentEventsSection {
   state: "ready" | "empty" | "unavailable";
   rows: SettingsEventRow[];
 }
+
+export interface SettingsRecentEventsSelectionViewModel {
+  tableLabel: string;
+  tableCaption: string;
+  rows: SettingsRecentEventTableRow[];
+  selectedRowId: string | null;
+  detailPanelId: string;
+  detailPanelTitle: string;
+  detailPanelDescription: string;
+  detailPanelEmptyText: string;
+  detailPanelAriaLabel: string;
+  selectedDetail: SettingsRecentEventDetail | null;
+  selectRow: (rowId: string) => void;
+}
+
+export const SETTINGS_RECENT_EVENT_DETAIL_PANEL_ID = "settings-recent-event-detail";
 
 export interface SettingsAlpacaConnectionPanel {
   providerLabel: string;
@@ -502,6 +780,56 @@ export interface SettingsAlpacaConnectionPanel {
   setupChecklistDetail: string;
   setupChecklistAriaLabel: string;
   setupChecklist: SettingsAlpacaSetupStep[];
+}
+
+export interface SettingsProviderConnectionRow {
+  providerId: string;
+  rowAnchorId: string;
+  displayName: string;
+  capabilityLabel: string;
+  credentialLabel: string;
+  credentialTone: "default" | "success" | "warning" | "danger" | "muted";
+  verificationLabel: string;
+  healthLabel: string;
+  healthTone: "default" | "success" | "warning" | "danger" | "muted";
+  sourceLabel: string;
+  environmentLabel: string;
+  maskedKeyPreviewLabel: string;
+  lastHeartbeatLabel: string;
+  fallbackLabel: string;
+  routingBindingsLabel: string;
+  trustScoreLabel: string;
+  productionStateLabel: string;
+  affectedWorkflowsLabel: string;
+  affectedWorkflows: string[];
+  recommendedAction: string;
+  actionHref: string;
+  actionLabel: string;
+  actionAriaLabel: string;
+}
+
+export interface SettingsProviderConnectionGroup {
+  id: "brokerage" | "data";
+  label: string;
+  summary: string;
+  rows: SettingsProviderConnectionRow[];
+  emptyLabel: string;
+}
+
+export interface SettingsProviderConnectionCenter {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  routingSummaryLabel: string;
+  refreshAction: {
+    label: string;
+    ariaLabel: string;
+    busy: boolean;
+    disabled: boolean;
+    disabledReason: string | null;
+  };
+  groups: SettingsProviderConnectionGroup[];
 }
 
 export interface SettingsDiagnosticCounts {
@@ -523,12 +851,14 @@ export interface SettingsScreenViewModel {
   sessionTitle: string;
   sessionItems: SettingsSessionItem[];
   hasSession: boolean;
+  profileAuthenticationPanel: SettingsProfileAuthenticationPanel;
   systemTitle: string;
   systemSummary: string;
   systemTone: "default" | "success" | "warning" | "danger";
   systemItems: SettingsSystemItem[];
   hasOverview: boolean;
   recentEventsSection: SettingsRecentEventsSection;
+  providerConnectionCenter: SettingsProviderConnectionCenter;
   alpacaConnectionPanel: SettingsAlpacaConnectionPanel;
   diagnosticLinks: SettingsDiagnosticLink[];
   diagnosticCounts: SettingsDiagnosticCounts;
@@ -553,10 +883,17 @@ export interface SettingsScreenPayload {
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
 }
+
+const noopSelectRecentEvent = () => {};
 
 interface DiagnosticEndpointDefinition {
   id: string;
@@ -664,7 +1001,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "trading",
     workspaceKey: "trading",
     workspaceLabel: "Trading",
-    route: "/trading",
+    route: WORKSTATION_ROUTE_CATALOG.trading,
     title: "Paper trading cockpit",
     description: "Trading positions, orders, sessions, replay, promotion, controls, and operator inbox readiness.",
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
@@ -682,7 +1019,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "portfolio",
     workspaceKey: "portfolio",
     workspaceLabel: "Portfolio",
-    route: "/portfolio",
+    route: WORKSTATION_ROUTE_CATALOG.portfolio,
     title: "Portfolio and run continuity",
     description: "Aggregate exposure, symbol exposure, run fills, ledger, attribution, continuity, and review packets.",
     isAvailable: (payload) => payload.portfolio !== null && payload.portfolio !== undefined,
@@ -700,7 +1037,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "accounting",
     workspaceKey: "accounting",
     workspaceLabel: "Accounting",
-    route: "/accounting",
+    route: WORKSTATION_ROUTE_CATALOG.accounting,
     title: "Accounting and reconciliation",
     description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
     isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
@@ -718,7 +1055,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "reporting",
     workspaceKey: "reporting",
     workspaceLabel: "Reporting",
-    route: "/reporting",
+    route: WORKSTATION_ROUTE_CATALOG.reporting,
     title: "Governed reports and exports",
     description: "Reporting workspace posture, analysis exports, report-pack targets, data dictionaries, and approval lanes.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
@@ -734,7 +1071,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "strategy",
     workspaceKey: "strategy",
     workspaceLabel: "Strategy",
-    route: "/strategy",
+    route: WORKSTATION_ROUTE_CATALOG.strategy,
     title: "Strategy run library",
     description: "Strategy workspace payloads, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
     isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
@@ -752,7 +1089,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "data",
     workspaceKey: "data",
     workspaceLabel: "Data",
-    route: "/data",
+    route: WORKSTATION_ROUTE_CATALOG.data,
     title: "Data trust and provider operations",
     description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
     isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
@@ -761,6 +1098,11 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
       { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
       { id: "backfill-run", method: "POST", label: "Backfill run", href: BACKFILL_API_ENDPOINTS.run },
+      { id: "backfill-checkpoints", method: "GET", label: "Checkpoints", href: BACKFILL_API_ENDPOINTS.checkpoints },
+      { id: "backfill-resumable", method: "GET", label: "Resumable jobs", href: BACKFILL_API_ENDPOINTS.checkpointsResumable },
+      { id: "backfill-validation", method: "GET", label: "Checkpoint validation", href: BACKFILL_API_ENDPOINTS.checkpointsValidation },
+      { id: "backfill-pending", method: "GET", label: "Pending symbols", href: `${BACKFILL_API_ENDPOINTS.checkpoints}/{jobId}/pending` },
+      { id: "backfill-resume", method: "POST", label: "Resume checkpoint", href: `${BACKFILL_API_ENDPOINTS.checkpoints}/{jobId}/resume` },
       { id: "symbols", method: "GET", label: "Symbols", href: SYMBOL_API_ENDPOINTS.symbols },
       { id: "quality-dashboard", method: "GET", label: "Quality", href: QUALITY_API_ENDPOINTS.dashboard }
     ]
@@ -769,7 +1111,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "settings",
     workspaceKey: "settings",
     workspaceLabel: "Settings",
-    route: "/settings",
+    route: WORKSTATION_ROUTE_CATALOG.settings,
     title: "Configuration and diagnostics",
     description: "Session context, health, configuration, workflow library, workflow presets, credentials, and diagnostics.",
     isAvailable: (payload) => payload.session !== null && payload.overview !== null,
@@ -834,7 +1176,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
   const events = overview.recentEvents ?? [];
   const rows = events.map((event) => {
     const source = event.source.trim() || "Unknown source";
-    const timestamp = event.timestamp.trim() || "Timestamp unavailable";
+    const timestamp = formatSettingsUtcMinute(event.timestamp, "Timestamp unavailable");
     const statusCode = eventStatusCode(event.type);
 
     return {
@@ -873,6 +1215,119 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
     state: "ready",
     rows
   };
+}
+
+export function useSettingsRecentEventsSelectionViewModel(
+  section: SettingsRecentEventsSection
+): SettingsRecentEventsSelectionViewModel {
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(section.rows[0]?.id ?? null);
+
+  useEffect(() => {
+    if (section.rows.length === 0) {
+      if (selectedRowId !== null) {
+        setSelectedRowId(null);
+      }
+      return;
+    }
+
+    if (!selectedRowId || !section.rows.some((row) => row.id === selectedRowId)) {
+      setSelectedRowId(section.rows[0].id);
+    }
+  }, [section.rows, selectedRowId]);
+
+  return buildSettingsRecentEventsSelectionViewModel(section, selectedRowId, setSelectedRowId);
+}
+
+export function buildSettingsRecentEventsSelectionViewModel(
+  section: SettingsRecentEventsSection,
+  selectedRowId: string | null,
+  selectRow: (rowId: string) => void = noopSelectRecentEvent
+): SettingsRecentEventsSelectionViewModel {
+  const selectedStableRow =
+    section.rows.find((row) => row.id === selectedRowId) ??
+    section.rows[0] ??
+    null;
+  const selectedStableRowId = selectedStableRow?.id ?? null;
+  const rows = section.rows.map((row) => ({
+    ...row,
+    detailPanelId: SETTINGS_RECENT_EVENT_DETAIL_PANEL_ID,
+    expanded: row.id === selectedStableRowId,
+    selectAriaLabel: `Select event ${row.id}. ${row.ariaLabel}`
+  }));
+
+  return {
+    tableLabel: section.listLabel,
+    tableCaption: "Select a recent event row to update the event detail panel.",
+    rows,
+    selectedRowId: selectedStableRowId,
+    detailPanelId: SETTINGS_RECENT_EVENT_DETAIL_PANEL_ID,
+    detailPanelTitle: "Selected event detail",
+    detailPanelDescription: "Inspect event source, timestamp, and severity without leaving Settings.",
+    detailPanelEmptyText: section.statusDetail,
+    detailPanelAriaLabel: "Selected recent event detail",
+    selectedDetail: selectedStableRow ? buildSettingsRecentEventDetail(selectedStableRow) : null,
+    selectRow
+  };
+}
+
+function buildSettingsRecentEventDetail(row: SettingsEventRow): SettingsRecentEventDetail {
+  return {
+    id: row.id,
+    eyebrow: `${row.statusCode} event`,
+    title: row.message,
+    subtitle: `${row.source} / ${row.id}`,
+    description: `${row.source} reported this event at ${row.timestamp}.`,
+    statusLabel: eventStatusLabel(row.type),
+    statusVariant: row.badgeVariant,
+    ariaLabel: `${row.statusCode} event detail for ${row.id}`,
+    fields: [
+      { label: "Event ID", value: row.id, tone: "muted" },
+      { label: "Source", value: row.source, tone: "default" },
+      { label: "Timestamp", value: row.timestamp, tone: row.timestamp === "Timestamp unavailable" ? "warning" : "muted" },
+      { label: "Type", value: eventTypeLabel(row.type), tone: eventDetailTone(row.type) },
+      { label: "Status code", value: row.statusCode, tone: eventDetailTone(row.type) }
+    ]
+  };
+}
+
+function eventTypeLabel(type: SettingsEventRow["type"]): string {
+  if (type === "error") return "Error";
+  if (type === "warning") return "Warning";
+  return "Info";
+}
+
+function eventStatusLabel(type: SettingsEventRow["type"]): string {
+  if (type === "error") return "Critical";
+  if (type === "warning") return "Observe";
+  return "Info";
+}
+
+function eventDetailTone(type: SettingsEventRow["type"]): SettingsRecentEventDetailField["tone"] {
+  if (type === "error") return "danger";
+  if (type === "warning") return "warning";
+  return "default";
+}
+
+function formatSettingsUtcMinute(
+  value: string | Date | null | undefined,
+  unavailableLabel = "Unavailable"
+): string {
+  if (!value) {
+    return unavailableLabel;
+  }
+
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) {
+    return unavailableLabel;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
 function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null): SettingsAlpacaConnectionPanel {
@@ -976,7 +1431,7 @@ function buildAlpacaSetupChecklist(
       tone: isConnected ? "success" : "muted",
       badgeVariant: isConnected ? "success" : "outline",
       actionLabel: isConnected ? "Open readiness" : null,
-      actionHref: isConnected ? "/trading/readiness" : null,
+      actionHref: isConnected ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : null,
       actionAriaLabel: isConnected ? "Open Trading readiness after Alpaca account verification" : null
     }
   ];
@@ -1018,6 +1473,666 @@ function connectionStatusDetail(connection: BrokerageConnectionStatus | null): s
   return "No Alpaca API-key connection is stored.";
 }
 
+function buildProfileAuthenticationPanel(
+  session: SessionInfo | null,
+  connection: BrokerageConnectionStatus | null,
+  diagnosticStatusVariant: SettingsScreenViewModel["diagnosticStatusVariant"]
+): SettingsProfileAuthenticationPanel {
+  const isLiveSession = session?.environment === "live";
+  const isConnected = connection?.isConnected === true;
+  const isConfigured = connection?.isConfigured === true;
+  const connectionFailed = connection?.state === "Degraded" || connection?.state === "ReauthorizationRequired";
+  const account = connection?.externalAccountId?.trim();
+  const workspaceLabel = session ? labelizeWorkspaceKey(session.activeWorkspace) : "Workspace unavailable";
+  const environmentLabel = session ? session.environment.toUpperCase() : "UNKNOWN";
+  const diagnosticBlocked = diagnosticStatusVariant === "danger";
+  const statusTone: SettingsProfileAuthenticationPanel["statusTone"] = !session || connectionFailed
+    ? "danger"
+    : isLiveSession || (isConfigured && !isConnected)
+      ? "warning"
+      : isConnected
+        ? "success"
+        : "default";
+  const statusLabel = !session
+    ? "Session unavailable"
+    : connectionFailed
+      ? "Authorization review"
+      : isLiveSession
+        ? "Live authority active"
+        : isConnected
+          ? "Access ready"
+          : isConfigured
+            ? "Verification needed"
+            : "Profile loaded";
+  const authorityLabel = isConnected
+    ? "Brokerage verified"
+    : isConfigured
+      ? "Brokerage test needed"
+      : "Brokerage not linked";
+  const authorityDetail = isConnected
+    ? account
+      ? `Alpaca account ${account} is verified for readiness handoffs.`
+      : "Alpaca account verification succeeded."
+    : connectionFailed
+      ? connection?.lastError?.trim() || "Brokerage authorization needs operator review."
+      : isConfigured
+        ? "Stored Alpaca keys still need account verification before readiness handoff."
+        : "Connect paper Alpaca credentials before relying on brokerage-backed workflows.";
+  const summary = !session
+    ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until the session payload returns."
+    : isLiveSession
+      ? `${session.displayName} is operating in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
+      : isConnected
+        ? `${session.displayName} has a ${session.role} session with verified brokerage authority for ${workspaceLabel}.`
+        : `${session.displayName} has a ${session.role} session in ${environmentLabel}; brokerage authority still needs verification.`;
+  const notice = !session
+    ? {
+        title: "Authentication context unavailable",
+        detail: "Reconnect to the Meridian API before changing credentials or acting on sensitive workflows.",
+        tone: "danger" as const,
+        role: "alert" as const
+      }
+    : connectionFailed
+      ? {
+          title: "Brokerage authorization needs review",
+          detail: authorityDetail,
+          tone: "danger" as const,
+          role: "alert" as const
+        }
+      : isLiveSession
+        ? {
+            title: "Live environment controls active",
+            detail: "Live mode can affect real brokerage state. Keep the Alpaca provider panel and readiness evidence in view before continuing.",
+            tone: "warning" as const,
+            role: "status" as const
+          }
+        : null;
+
+  return {
+    regionLabel: "Profile and authentication posture",
+    title: "Profile and access posture",
+    summary,
+    statusLabel,
+    statusTone,
+    badgeVariant: statusTone === "default" ? "outline" : statusTone,
+    avatarInitials: buildOperatorInitials(session?.displayName),
+    operatorName: session?.displayName ?? "Session unavailable",
+    roleLabel: session?.role ?? "Role unavailable",
+    environmentLabel,
+    workspaceLabel,
+    commandCountLabel: session ? `${session.commandCount} command${session.commandCount === 1 ? "" : "s"} issued` : "Commands unavailable",
+    authorityLabel,
+    authorityDetail,
+    notice,
+    facts: [
+      {
+        id: "operator",
+        label: "Operator",
+        value: session?.displayName ?? "Unavailable",
+        tone: session ? "default" : "danger"
+      },
+      {
+        id: "role",
+        label: "Role",
+        value: session?.role ?? "Unavailable",
+        tone: session ? "default" : "danger"
+      },
+      {
+        id: "environment",
+        label: "Environment",
+        value: environmentLabel,
+        tone: isLiveSession ? "warning" : session ? "success" : "danger"
+      },
+      {
+        id: "workspace",
+        label: "Workspace",
+        value: workspaceLabel,
+        tone: session ? "muted" : "danger"
+      },
+      {
+        id: "commands",
+        label: "Command trail",
+        value: session ? String(session.commandCount) : "Unavailable",
+        tone: session ? "muted" : "danger"
+      },
+      {
+        id: "brokerage",
+        label: "Brokerage authority",
+        value: authorityLabel,
+        tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted"
+      }
+    ],
+    stepsTitle: "Access readiness",
+    stepsAriaLabel: "Profile authentication and authorization readiness steps",
+    steps: [
+      {
+        id: "operator-session",
+        label: "Operator session",
+        statusLabel: session ? "Loaded" : "Missing",
+        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session payload has not loaded from the workstation host.",
+        tone: session ? "success" : "danger",
+        badgeVariant: session ? "success" : "danger",
+        actionLabel: null,
+        actionHref: null,
+        actionAriaLabel: null
+      },
+      {
+        id: "environment-authority",
+        label: "Operating mode",
+        statusLabel: environmentLabel,
+        detail: isLiveSession
+          ? "Live mode requires explicit brokerage and readiness evidence before sensitive actions."
+          : session
+            ? `${environmentLabel} mode is active for this workstation session.`
+            : "Operating mode is unknown until the session payload returns.",
+        tone: !session ? "danger" : isLiveSession ? "warning" : "success",
+        badgeVariant: !session ? "danger" : isLiveSession ? "warning" : "success",
+        actionLabel: null,
+        actionHref: null,
+        actionAriaLabel: null
+      },
+      {
+        id: "brokerage-authority",
+        label: "Brokerage authority",
+        statusLabel: isConnected ? "Verified" : connectionFailed ? "Review" : isConfigured ? "Test needed" : "Not linked",
+        detail: authorityDetail,
+        tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted",
+        badgeVariant: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "outline",
+        actionLabel: isConnected ? "Open readiness" : "Review provider setup",
+        actionHref: isConnected ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        actionAriaLabel: isConnected
+          ? "Open Trading readiness from verified profile authentication posture"
+          : "Review Alpaca provider setup from profile authentication posture"
+      },
+      {
+        id: "audit-diagnostics",
+        label: "Audit and diagnostics",
+        statusLabel: diagnosticBlocked ? "Review" : "Reachable",
+        detail: diagnosticBlocked
+          ? "At least one diagnostic payload failed; inspect API reachability before relying on profile state."
+          : "Session, diagnostics, and provider evidence can be inspected without leaving Settings.",
+        tone: diagnosticBlocked ? "warning" : "success",
+        badgeVariant: diagnosticBlocked ? "warning" : "success",
+        actionLabel: "Open diagnostics",
+        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints,
+        actionAriaLabel: "Open Settings diagnostic endpoints from profile authentication posture"
+      }
+    ]
+  };
+}
+
+function buildOperatorInitials(displayName: string | null | undefined): string {
+  const tokens = (displayName ?? "")
+    .replace(/[^A-Za-z0-9 ]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (tokens.length === 0) {
+    return "--";
+  }
+
+  return tokens.slice(0, 2).map((token) => token[0]?.toUpperCase() ?? "").join("");
+}
+
+function labelizeWorkspaceKey(workspace: WorkspaceKey): string {
+  return workspace.charAt(0).toUpperCase() + workspace.slice(1);
+}
+
+interface ProviderRoutingRowContext {
+  connection: ProviderRoutingConnection | null;
+  bindings: ProviderRoutingBinding[];
+  trustSnapshot: ProviderRoutingTrustSnapshot | null;
+}
+
+function buildProviderConnectionCenter(
+  connections: ProviderConnectionRow[] | null | undefined,
+  routingConnections: ProviderRoutingConnection[] | null | undefined,
+  routingBindings: ProviderRoutingBinding[] | null | undefined,
+  trustSnapshots: ProviderRoutingTrustSnapshot[] | null | undefined,
+  refreshing: boolean
+): SettingsProviderConnectionCenter {
+  const routingConnectionRows = routingConnections ?? [];
+  const bindingRows = routingBindings ?? [];
+  const trustRows = trustSnapshots ?? [];
+  const matchedRoutingConnectionIds = new Set<string>();
+
+  const rows = [
+    ...(connections ?? []).map((row) => {
+      const connection = findRoutingConnectionForProviderRow(row, routingConnectionRows);
+      if (connection) {
+        matchedRoutingConnectionIds.add(normalizeProviderRoutingId(connection.connectionId));
+      }
+      return buildProviderConnectionRow(row, buildProviderRoutingRowContext(connection, bindingRows, trustRows));
+    }),
+    ...routingConnectionRows
+      .filter((connection) => !matchedRoutingConnectionIds.has(normalizeProviderRoutingId(connection.connectionId)))
+      .map((connection) => buildProviderRoutingConnectionRow(
+        connection,
+        buildProviderRoutingRowContext(connection, bindingRows, trustRows)
+      ))
+  ];
+  const brokerageRows = rows.filter((row) => row.capabilityLabel.includes("Brokerage"));
+  const dataRows = rows.filter((row) => !row.capabilityLabel.includes("Brokerage"));
+  const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
+  const warningCount = rows.filter((row) => row.healthTone === "warning").length;
+  const verifiedCount = rows.filter((row) => row.credentialLabel === "Verified" || row.credentialLabel === "Not required").length;
+  const routingSummaryLabel = routingConnectionRows.length === 0
+    ? "Routing catalog unavailable"
+    : `${formatCount(routingConnectionRows.length, "routing connection")} · ${formatCount(bindingRows.length, "binding")} · ${formatCount(trustRows.length, "trust snapshot")}`;
+
+  const statusLabel = rows.length === 0
+    ? "Unavailable"
+    : refreshing
+      ? "Refreshing"
+    : blockedCount > 0
+      ? `${blockedCount} blocked`
+      : warningCount > 0
+        ? `${warningCount} need review`
+        : "Continuity ready";
+
+  return {
+    title: "Provider Connection Center",
+    description: rows.length === 0
+      ? "Provider connection evidence has not loaded for this Settings session."
+      : `${verifiedCount}/${rows.length} providers are verified or credential-free; ${routingSummaryLabel}.`,
+    statusLabel,
+    statusVariant: rows.length === 0 ? "warning" : blockedCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success",
+    routingSummaryLabel,
+    refreshAction: {
+      label: refreshing ? "Refreshing..." : "Refresh routing",
+      ariaLabel: refreshing ? "Provider routing refresh in progress" : "Refresh Provider Connection Center routing data",
+      busy: refreshing,
+      disabled: refreshing,
+      disabledReason: refreshing ? "Provider routing refresh is already in progress." : null
+    },
+    groups: [
+      {
+        id: "brokerage",
+        label: "Brokerage capable",
+        summary: "Trading and account-sync providers with credential or gateway posture.",
+        rows: brokerageRows,
+        emptyLabel: "No brokerage-capable provider rows loaded."
+      },
+      {
+        id: "data",
+        label: "Data providers",
+        summary: "Market-data and reference-data providers used by backfill and repair workflows.",
+        rows: dataRows,
+        emptyLabel: "No data-provider rows loaded."
+      }
+    ]
+  };
+}
+
+function buildProviderConnectionRow(
+  row: ProviderConnectionRow,
+  routingContext: ProviderRoutingRowContext
+): SettingsProviderConnectionRow {
+  const healthTone = providerHealthTone(row.health);
+  const credentialTone = providerCredentialTone(row.credentialState);
+  const routingCapabilityLabels = buildProviderRoutingCapabilityLabels(routingContext.bindings);
+  const workflows = row.affectedWorkflows.length > 0
+    ? row.affectedWorkflows
+    : routingCapabilityLabels.length > 0
+      ? routingCapabilityLabels
+      : ["Workflow impact not declared"];
+  return {
+    providerId: row.providerId,
+    rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
+    displayName: row.displayName,
+    capabilityLabel: providerCapabilityLabel(row.capability),
+    credentialLabel: providerCredentialLabel(row.credentialState),
+    credentialTone,
+    verificationLabel: providerVerificationLabel(row.verificationState),
+    healthLabel: providerHealthLabel(row.health),
+    healthTone,
+    sourceLabel: providerCredentialSourceLabel(row.credentialSource),
+    environmentLabel: row.environment ? row.environment.toUpperCase() : "Not set",
+    maskedKeyPreviewLabel: row.maskedKeyPreview ?? "Masked after save",
+    lastHeartbeatLabel: formatSettingsUtcMinute(row.lastSuccessfulAt ?? row.lastVerifiedAt),
+    fallbackLabel: row.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(routingContext.bindings),
+    routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
+    trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
+    productionStateLabel: providerRoutingProductionStateLabel(routingContext.connection),
+    affectedWorkflowsLabel: workflows.join(", "),
+    affectedWorkflows: workflows,
+    recommendedAction: row.recommendedAction,
+    actionHref: row.actionHref || settingsProviderConnectionRoute(row.providerId),
+    actionLabel: row.providerId === "alpaca" ? "Manage Alpaca" : "Open provider row",
+    actionAriaLabel: `Open ${row.displayName} provider connection row`
+  };
+}
+
+function buildProviderRoutingConnectionRow(
+  connection: ProviderRoutingConnection,
+  routingContext: ProviderRoutingRowContext
+): SettingsProviderConnectionRow {
+  const routingCapabilityLabels = buildProviderRoutingCapabilityLabels(routingContext.bindings);
+  const credentialConfigured = Boolean(connection.credentialReference?.trim());
+  const healthTone = providerRoutingHealthTone(connection, routingContext.trustSnapshot);
+  const credentialTone: SettingsProviderConnectionRow["credentialTone"] = credentialConfigured
+    ? connection.productionReady ? "success" : "warning"
+    : "success";
+  const workflows = routingCapabilityLabels.length > 0 ? routingCapabilityLabels : ["Routing capability not bound"];
+
+  return {
+    providerId: connection.connectionId,
+    rowAnchorId: `provider-${connection.connectionId}-connection`,
+    displayName: connection.displayName,
+    capabilityLabel: providerRoutingCapabilityLabel(routingContext.bindings, connection),
+    credentialLabel: credentialConfigured ? "Configured" : "Not required",
+    credentialTone,
+    verificationLabel: connection.productionReady ? "Certified" : "Certification pending",
+    healthLabel: providerRoutingHealthLabel(connection, routingContext.trustSnapshot),
+    healthTone,
+    sourceLabel: credentialConfigured ? "Vault reference" : "Not required",
+    environmentLabel: credentialReferenceEnvironmentLabel(connection.credentialReference),
+    maskedKeyPreviewLabel: "Hidden by routing API",
+    lastHeartbeatLabel: "Live routing snapshot",
+    fallbackLabel: providerRoutingFallbackLabel(routingContext.bindings),
+    routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
+    trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
+    productionStateLabel: providerRoutingProductionStateLabel(connection),
+    affectedWorkflowsLabel: workflows.join(", "),
+    affectedWorkflows: workflows,
+    recommendedAction: providerRoutingRecommendedAction(connection, routingContext),
+    actionHref: settingsProviderConnectionRoute(connection.connectionId),
+    actionLabel: "Open provider row",
+    actionAriaLabel: `Open ${connection.displayName} provider connection row`
+  };
+}
+
+function buildProviderRoutingRowContext(
+  connection: ProviderRoutingConnection | null,
+  bindings: ProviderRoutingBinding[],
+  trustSnapshots: ProviderRoutingTrustSnapshot[]
+): ProviderRoutingRowContext {
+  if (!connection) {
+    return { connection: null, bindings: [], trustSnapshot: null };
+  }
+
+  return {
+    connection,
+    bindings: bindings.filter((binding) =>
+      normalizeProviderRoutingId(binding.connectionId) === normalizeProviderRoutingId(connection.connectionId)),
+    trustSnapshot: trustSnapshots.find((snapshot) =>
+      normalizeProviderRoutingId(snapshot.connectionId) === normalizeProviderRoutingId(connection.connectionId)) ?? null
+  };
+}
+
+function findRoutingConnectionForProviderRow(
+  row: ProviderConnectionRow,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderRoutingId(row.providerId);
+  const displayName = normalizeProviderRoutingId(row.displayName);
+  return routingConnections.find((connection) =>
+    normalizeProviderRoutingId(connection.connectionId) === providerId ||
+    normalizeProviderRoutingId(connection.providerFamilyId) === providerId ||
+    normalizeProviderRoutingId(connection.displayName) === displayName) ?? null;
+}
+
+function normalizeProviderRoutingId(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function buildProviderRoutingCapabilityLabels(bindings: ProviderRoutingBinding[]): string[] {
+  return bindings
+    .map((binding) => formatProviderRoutingCapability(binding.capability))
+    .filter((value, index, values) => values.indexOf(value) === index);
+}
+
+function providerRoutingCapabilityLabel(
+  bindings: ProviderRoutingBinding[],
+  connection: ProviderRoutingConnection
+): string {
+  if (bindings.some((binding) => providerRoutingCapabilityGroup(binding.capability) === "brokerage")) {
+    return "Brokerage";
+  }
+
+  const labels = buildProviderRoutingCapabilityLabels(bindings);
+  if (labels.length > 0) {
+    return labels.slice(0, 2).join(" + ");
+  }
+
+  return connection.connectionType.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function providerRoutingBindingsLabel(bindings: ProviderRoutingBinding[]): string {
+  const labels = buildProviderRoutingCapabilityLabels(bindings);
+  return labels.length > 0 ? labels.join(", ") : "No routing binding loaded";
+}
+
+function providerRoutingFallbackLabel(bindings: ProviderRoutingBinding[]): string {
+  const fallbackCount = bindings.reduce((count, binding) => count + (binding.failoverConnectionIds?.length ?? 0), 0);
+  return fallbackCount > 0 ? `${formatCount(fallbackCount, "failover route")}` : "Primary route";
+}
+
+function providerRoutingTrustScoreLabel(snapshot: ProviderRoutingTrustSnapshot | null): string {
+  if (!snapshot) {
+    return "No trust snapshot";
+  }
+
+  return `${formatProviderRoutingScore(snapshot.score)} · ${snapshot.healthStatus}`;
+}
+
+function providerRoutingProductionStateLabel(connection: ProviderRoutingConnection | null): string {
+  if (!connection) {
+    return "Not in routing catalog";
+  }
+
+  return connection.productionReady ? "Production ready" : "Certification needed";
+}
+
+function providerRoutingHealthLabel(
+  connection: ProviderRoutingConnection,
+  snapshot: ProviderRoutingTrustSnapshot | null
+): string {
+  if (!connection.enabled) {
+    return "Disabled";
+  }
+
+  if (snapshot?.healthStatus?.trim()) {
+    return snapshot.healthStatus.trim();
+  }
+
+  return connection.productionReady ? "Routable" : "Certification needed";
+}
+
+function providerRoutingHealthTone(
+  connection: ProviderRoutingConnection,
+  snapshot: ProviderRoutingTrustSnapshot | null
+): SettingsProviderConnectionRow["healthTone"] {
+  if (!connection.enabled) {
+    return "danger";
+  }
+
+  if (!connection.productionReady) {
+    return "warning";
+  }
+
+  if (!snapshot) {
+    return "warning";
+  }
+
+  if (snapshot.isHealthy) {
+    return "success";
+  }
+
+  const status = snapshot.healthStatus.toLowerCase();
+  return status.includes("blocked") || status.includes("degraded") ? "danger" : "warning";
+}
+
+function providerRoutingRecommendedAction(
+  connection: ProviderRoutingConnection,
+  routingContext: ProviderRoutingRowContext
+): string {
+  if (!connection.enabled) {
+    return "Enable the routing connection before selecting it for provider workflows.";
+  }
+
+  if (routingContext.bindings.length === 0) {
+    return "Add a provider-routing binding before selecting this connection.";
+  }
+
+  if (!connection.productionReady) {
+    return "Run provider certification before production routing.";
+  }
+
+  if (routingContext.trustSnapshot && !routingContext.trustSnapshot.isHealthy) {
+    return "Inspect provider health before routing new workflow traffic.";
+  }
+
+  return "Provider routing is ready for supported capabilities.";
+}
+
+function credentialReferenceEnvironmentLabel(reference: string | null | undefined): string {
+  const value = reference?.trim();
+  if (!value) {
+    return "Not set";
+  }
+
+  const parts = value.split("/");
+  const environment = parts.length > 1 ? parts[parts.length - 1]?.trim() : "";
+  return environment ? environment.toUpperCase() : "Configured";
+}
+
+function formatProviderRoutingCapability(capability: string): string {
+  switch (capability) {
+    case "RealtimeMarketData":
+      return "Realtime";
+    case "HistoricalBars":
+      return "Historical bars";
+    case "ReferenceData":
+      return "Reference data";
+    case "SecurityMasterSeed":
+      return "Security Master";
+    case "OrderExecution":
+      return "Order routing";
+    case "ExecutionHistory":
+      return "Execution history";
+    case "AccountBalances":
+      return "Balances";
+    case "AccountPositions":
+      return "Positions";
+    case "ReconciliationFeed":
+      return "Reconciliation";
+    case "CashTransactions":
+      return "Cash activity";
+    case "BankStatements":
+      return "Statements";
+    default:
+      return capability.replace(/([a-z])([A-Z])/g, "$1 $2");
+  }
+}
+
+function providerRoutingCapabilityGroup(capability: string): "brokerage" | "data" {
+  switch (capability) {
+    case "OrderExecution":
+    case "ExecutionHistory":
+    case "AccountBalances":
+    case "AccountPositions":
+    case "ReconciliationFeed":
+    case "CashTransactions":
+    case "BankStatements":
+      return "brokerage";
+    default:
+      return "data";
+  }
+}
+
+function formatProviderRoutingScore(score: number): string {
+  const percentage = score <= 1 ? score * 100 : score;
+  return `${Math.round(Math.max(0, Math.min(100, percentage)))}%`;
+}
+
+function formatCount(value: number, singular: string): string {
+  return `${value} ${singular}${value === 1 ? "" : "s"}`;
+}
+
+function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): string {
+  switch (value) {
+    case "DataAndBrokerage":
+      return "Data + Brokerage";
+    case "Brokerage":
+      return "Brokerage";
+    default:
+      return "Data";
+  }
+}
+
+function providerCredentialLabel(value: ProviderConnectionRow["credentialState"]): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    default:
+      return value.replace(/([a-z])([A-Z])/g, "$1 $2");
+  }
+}
+
+function providerVerificationLabel(value: ProviderConnectionRow["verificationState"]): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    case "NotVerified":
+      return "Not verified";
+    default:
+      return value;
+  }
+}
+
+function providerHealthLabel(value: ProviderConnectionRow["health"]): string {
+  return value === "Unknown" ? "Unknown" : value;
+}
+
+function providerCredentialSourceLabel(value: ProviderConnectionRow["credentialSource"]): string {
+  switch (value) {
+    case "LocalEncryptedStore":
+      return "Encrypted local store";
+    case "Environment":
+      return "Legacy environment";
+    case "ExternalVaultReference":
+      return "External vault";
+    case "NotRequired":
+      return "Not required";
+    default:
+      return "Not configured";
+  }
+}
+
+function providerCredentialTone(value: ProviderConnectionRow["credentialState"]): SettingsProviderConnectionRow["credentialTone"] {
+  switch (value) {
+    case "Verified":
+    case "NotRequired":
+      return "success";
+    case "Configured":
+      return "warning";
+    case "Partial":
+    case "Invalid":
+      return "danger";
+    case "Missing":
+      return "warning";
+    default:
+      return "muted";
+  }
+}
+
+function providerHealthTone(value: ProviderConnectionRow["health"]): SettingsProviderConnectionRow["healthTone"] {
+  switch (value) {
+    case "Healthy":
+      return "success";
+    case "Warning":
+    case "Unknown":
+      return "warning";
+    case "Degraded":
+    case "Blocked":
+      return "danger";
+    default:
+      return "muted";
+  }
+}
+
 export function buildSettingsScreenViewModel(payload: SettingsScreenPayload): SettingsScreenViewModel;
 export function buildSettingsScreenViewModel(
   session: SessionInfo | null,
@@ -1053,7 +2168,7 @@ export function buildSettingsScreenViewModel(
         { label: "Symbols monitored", value: String(overview.symbolsMonitored), tone: "default" },
         { label: "Active backfills", value: String(overview.activeBackfills), tone: "muted" },
         { label: "Storage health", value: overview.storageHealth, tone: storageTone(overview.storageHealth) },
-        { label: "Last heartbeat", value: overview.lastHeartbeatUtc, tone: "muted" }
+        { label: "Last heartbeat", value: formatSettingsUtcMinute(overview.lastHeartbeatUtc), tone: "muted" }
       ]
     : [];
 
@@ -1063,19 +2178,33 @@ export function buildSettingsScreenViewModel(
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
+  const providerConnectionCenter = buildProviderConnectionCenter(
+    payload.providerConnections ?? null,
+    payload.providerRoutingConnections ?? null,
+    payload.providerRoutingBindings ?? null,
+    payload.providerRoutingTrustSnapshots ?? null,
+    payload.providerRoutingRefreshing === true
+  );
+  const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null);
 
   return {
     headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel),
     sessionTitle: session ? `Session - ${session.displayName}` : "Session",
     sessionItems,
     hasSession: session !== null,
+    profileAuthenticationPanel: buildProfileAuthenticationPanel(
+      session,
+      payload.brokerageConnection ?? null,
+      diagnosticSection.diagnosticStatusVariant
+    ),
     systemTitle: "System posture",
     systemSummary: sysSummary,
     systemTone: sysTone,
     systemItems,
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
-    alpacaConnectionPanel: buildAlpacaConnectionPanel(payload.brokerageConnection ?? null),
+    providerConnectionCenter,
+    alpacaConnectionPanel,
     ...diagnosticSection,
     ...backendCapabilitySection
   };
@@ -1122,7 +2251,7 @@ function buildSettingsHeaderChips(
     { label: "Environment", value: session ? session.environment.toUpperCase() : "—" },
     { label: "Workspace", value: session?.activeWorkspace ?? "—" },
     { label: "Diagnostics", value: diagnosticStatusLabel },
-    { label: "Heartbeat", value: overview?.lastHeartbeatUtc ?? "—" }
+    { label: "Heartbeat", value: overview ? formatSettingsUtcMinute(overview.lastHeartbeatUtc) : "—" }
   ];
 }
 

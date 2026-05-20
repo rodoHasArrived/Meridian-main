@@ -185,7 +185,8 @@ public sealed class StrategyRunReviewPacketService
                     ? OperatorWorkItemToneDto.Critical
                     : OperatorWorkItemToneDto.Warning,
                 runId,
-                fundAccountId));
+                fundAccountId,
+                providerId: brokerageStatus.ProviderId));
         }
 
         if (items.Count == 0)
@@ -214,9 +215,10 @@ public sealed class StrategyRunReviewPacketService
         OperatorWorkItemToneDto tone,
         string? runId,
         Guid? fundAccountId = null,
-        string? auditReference = null)
+        string? auditReference = null,
+        string? providerId = null)
     {
-        var navigation = ResolveNavigation(kind, runId, fundAccountId);
+        var navigation = ResolveNavigation(kind, runId, fundAccountId, providerId);
         var scope = fundAccountId?.ToString("N") ?? runId ?? auditReference ?? label;
         return new(
             WorkItemId: BuildScopedId(idPrefix, scope),
@@ -236,7 +238,8 @@ public sealed class StrategyRunReviewPacketService
     private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveNavigation(
         OperatorWorkItemKindDto kind,
         string? runId,
-        Guid? fundAccountId)
+        Guid? fundAccountId,
+        string? providerId)
     {
         return kind switch
         {
@@ -249,11 +252,9 @@ public sealed class StrategyRunReviewPacketService
                 UiApiRoutes.ReconciliationBreakQueue,
                 "FundReconciliation"),
             OperatorWorkItemKindDto.BrokerageSync => (
-                "Trading",
-                fundAccountId.HasValue
-                    ? UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.Value.ToString())
-                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
-                "TradingShell"),
+                "Settings",
+                BuildProviderConnectionSettingsRoute(providerId),
+                "ProviderConnectionCenter"),
             _ => (
                 "Trading",
                 string.IsNullOrWhiteSpace(runId)
@@ -261,6 +262,19 @@ public sealed class StrategyRunReviewPacketService
                     : UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", runId),
                 "TradingShell")
         };
+    }
+
+    private static string BuildProviderConnectionSettingsRoute(string? providerId)
+    {
+        if (string.IsNullOrWhiteSpace(providerId))
+        {
+            return "/settings#provider-connection-center";
+        }
+
+        var normalized = providerId.Trim().ToLowerInvariant();
+        return normalized == "alpaca"
+            ? "/settings#alpaca-provider-setup"
+            : $"/settings#provider-{normalized}-connection";
     }
 
     private static string BuildScopedId(string prefix, string scope)

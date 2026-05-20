@@ -14,6 +14,8 @@ import {
   buildPromotionGateState,
   buildPromotionRejectionRequest,
   buildTradingReadinessState,
+  buildTradingLoadingState,
+  buildTradingScreenShellViewModel,
   buildPromotionApprovalChecklist,
   createTradingConfirmState,
   emptyPaperSessionForm,
@@ -27,9 +29,11 @@ import {
   validateOrderTicketForm,
   validatePromotionApproval,
   validatePromotionRejection,
+  useOrderTicketViewModel,
   useTradingConfirmViewModel,
   useTradingReadinessViewModel,
   usePromotionGateViewModel,
+  type OrderTicketServices,
   type TradingConfirmServices,
   type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
@@ -60,6 +64,40 @@ function createDeferred<T>() {
 
   return { promise, resolve, reject };
 }
+
+describe("trading shell loading state", () => {
+  it("projects route-aware pending state for the Trading loading branch", () => {
+    expect(buildTradingLoadingState("/trading/risk")).toEqual({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      regionLabel: "Trading cockpit loading state",
+      titleId: "trading-loading-title",
+      detailId: "trading-loading-detail",
+      title: "Loading Trading",
+      detail: "Waiting for paper-trading state, order flow, brokerage wiring, and risk guardrail snapshots.",
+      statusLabel: "Loading",
+      routeLabel: "Risk guardrails",
+      chips: [
+        { label: "Route", value: "/trading/risk" },
+        { label: "Workstream", value: "Risk guardrails" },
+        { label: "Snapshots", value: "Pending" }
+      ]
+    });
+  });
+
+  it("keeps loading state inside the shell view model when data is unavailable", () => {
+    const shell = buildTradingScreenShellViewModel({
+      pathname: "/trading/positions",
+      data: null,
+      activeWorkflowPanel: null
+    });
+
+    expect(shell.loadingState.routeLabel).toBe("Position book");
+    expect(shell.loadingState.chips).toContainEqual({ label: "Snapshots", value: "Pending" });
+    expect(shell.headerChips).toContainEqual({ label: "Account", value: "-" });
+  });
+});
 
 const blockedReadiness: TradingOperatorReadiness = {
   asOf: "2026-04-26T16:05:00Z",
@@ -333,13 +371,15 @@ describe("trading blotter view model", () => {
     const state = buildTradingBlotterViewModel({
       data: tradingWorkspace,
       selectedPositionId: "tsla-short-1",
-      selectedOrderId: "po-1-0"
+      selectedOrderId: "po-1-0",
+      selectedFillId: "FL-1"
     });
 
     expect(state.hasPositions).toBe(true);
     expect(state.hasOpenOrders).toBe(true);
     expect(state.hasFills).toBe(true);
     expect(state.cancelAllDisabled).toBe(false);
+    expect(state.cancelAllDisabledReason).toBeNull();
     expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open orders");
     expect(state.positionRows[1]).toMatchObject({
       id: "tsla-short-1",
@@ -354,6 +394,13 @@ describe("trading blotter view model", () => {
       statusTone: "success",
       cancelAriaLabel: "Cancel order PO-1"
     });
+    expect(state.fillRows[0]).toMatchObject({
+      id: "FL-1",
+      isSelected: true,
+      detailPanelId: "trading-fill-detail",
+      ariaExpanded: true,
+      selectAriaLabel: "Inspect fill FL-1"
+    });
     expect(state.selectedPosition).toEqual(expect.objectContaining({
       title: "TSLA",
       statusLabel: "Observe",
@@ -367,6 +414,13 @@ describe("trading blotter view model", () => {
       statusTone: "success",
       ariaLabel: "Order detail for PO-1"
     }));
+    expect(state.selectedFill).toEqual(expect.objectContaining({
+      title: "FL-1",
+      statusLabel: "Fill evidence",
+      statusTone: "success",
+      ariaLabel: "Fill detail for FL-1"
+    }));
+    expect(state.selectedFill?.fields).toContainEqual({ label: "Provider", value: "Interactive Brokers", tone: "muted" });
     expect(state.fillRows[0].cells).toEqual(["FL-1", "PO-0", "NVDA", "Sell", "10", "948.20", "NASDAQ", "09:40:10 ET"]);
   });
 
@@ -378,10 +432,12 @@ describe("trading blotter view model", () => {
     expect(unavailable.hasFills).toBe(false);
     expect(unavailable.selectedPosition).toBeNull();
     expect(unavailable.selectedOrder).toBeNull();
+    expect(unavailable.selectedFill).toBeNull();
     expect(unavailable.cancelAllDisabled).toBe(true);
     expect(unavailable.positionEmptyText).toBe("Trading workspace data unavailable.");
     expect(unavailable.orderEmptyText).toBe("Trading workspace data unavailable.");
     expect(unavailable.fillEmptyText).toBe("Trading workspace data unavailable.");
+    expect(unavailable.cancelAllDisabledReason).toBe("No open orders require cancellation.");
 
     const empty = buildTradingBlotterViewModel({
       data: { ...tradingWorkspace, positions: [], openOrders: [], fills: [] }
@@ -391,6 +447,7 @@ describe("trading blotter view model", () => {
     expect(empty.orderEmptyText).toBe("No open orders require operator action.");
     expect(empty.fillEmptyText).toBe("No recent fills have been reported for this session.");
     expect(empty.cancelAllAriaLabel).toBe("No open orders to cancel");
+    expect(empty.cancelAllDisabledReason).toBe("No open orders require cancellation.");
   });
 });
 
@@ -430,6 +487,9 @@ describe("execution evidence view model", () => {
     expect(loading.auditEmptyText).toBe("Loading execution audit entries...");
     expect(loading.controlsEmptyText).toBe("Loading execution controls snapshot...");
     expect(loading.refreshButtonLabel).toBe("Refreshing...");
+    expect(loading.refreshBusyLabel).toBe("Refreshing evidence...");
+    expect(loading.refreshDisabled).toBe(true);
+    expect(loading.refreshDisabledReason).toBe("Execution evidence refresh is already running.");
 
     const failed = buildExecutionEvidenceState({
       auditEntries: [],
@@ -440,6 +500,8 @@ describe("execution evidence view model", () => {
 
     expect(failed.auditEmptyText).toBe("No execution audit entries available.");
     expect(failed.controlsEmptyText).toBe("Snapshot unavailable.");
+    expect(failed.refreshDisabled).toBe(false);
+    expect(failed.refreshDisabledReason).toBeNull();
     expect(failed.statusAnnouncement).toBe("Execution evidence refresh failed: Controls API unavailable.");
   });
 });
@@ -466,10 +528,19 @@ describe("paper session view model", () => {
         canRestore: false,
         canVerify: false,
         canClose: false,
-        verifyButtonLabel: "Verifying...",
+        verifyButtonLabel: "Verifying…",
+        restoreDisabledReason: "Paper session sess-1 verification is running.",
+        verifyDisabledReason: "Paper session sess-1 verification is running.",
+        closeDisabledReason: "Paper session sess-1 verification is running.",
+        verifyAriaLabel: "Verifying replay for paper session sess-1",
         ariaLabel: "sess-1, strat-1, Active, $100,000.00 initial cash"
       })
     ]);
+    expect(state.toggleCreateButtonAriaLabel).toBe("Open paper session creation form");
+    expect(state.toggleCreateButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
+    expect(state.createButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
+    expect(state.cancelCreateButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
+    expect(state.formRequirementText).toBe("Paper session sess-1 verification is running.");
     expect(state.selectedSessionLabel).toBe("Selected session: sess-1");
     expect(state.detail).toEqual(expect.objectContaining({
       sessionId: "sess-1",
@@ -495,6 +566,28 @@ describe("paper session view model", () => {
     }));
     expect(state.detail?.replay?.rows).toContainEqual({ label: "Verification audit", value: "audit-verify-1" });
     expect(state.statusAnnouncement).toBe("Verifying paper session sess-1.");
+    expect(state.strategyIdField).toMatchObject({
+      id: "paper-session-strategy-id",
+      label: "Strategy ID",
+      field: "strategyId",
+      value: "",
+      describedBy: "paper-session-create-requirements",
+      disabled: true,
+      disabledReason: "Paper session sess-1 verification is running.",
+      invalid: false
+    });
+    expect(state.initialCashField).toMatchObject({
+      id: "paper-session-initial-cash",
+      label: "Initial cash ($)",
+      field: "initialCash",
+      value: "100000",
+      describedBy: "paper-session-create-requirements",
+      disabled: true,
+      disabledReason: "Paper session sess-1 verification is running.",
+      invalid: false,
+      min: 1000,
+      step: 1000
+    });
   });
 
   it("validates create-session cash and builds default strategy ids", () => {
@@ -522,7 +615,12 @@ describe("paper session view model", () => {
     });
 
     expect(invalidState.canSubmitCreate).toBe(false);
+    expect(invalidState.createButtonDisabledReason).toBe("Enter initial cash of at least $1,000.");
+    expect(invalidState.cancelCreateButtonDisabledReason).toBeNull();
     expect(invalidState.formRequirementText).toBe("Enter initial cash of at least $1,000.");
+    expect(invalidState.strategyIdField.invalid).toBe(false);
+    expect(invalidState.initialCashField.invalid).toBe(true);
+    expect(invalidState.initialCashField.disabled).toBe(false);
     expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
   });
 });
@@ -645,7 +743,7 @@ describe("trading readiness view model", () => {
       expect.objectContaining({ id: "overall", label: "Overall", value: "Blocked", level: "atRisk", ariaLabel: "Overall readiness: Blocked" }),
       expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
       expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
-      expect.objectContaining({ id: "as-of", label: "As of", value: "2026-04-26T16:05:00Z", level: "review" })
+      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 16:05 UTC" })
     ]);
     expect(state.workItems).toHaveLength(1);
     expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
@@ -679,7 +777,7 @@ describe("trading readiness view model", () => {
         ariaLabel: "Trading readiness warning: Portfolio snapshot failed."
       }
     ]);
-    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of 2026-04-26T16:05:00Z.");
+    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 16:05 UTC.");
   });
 
   it("limits displayed operator work items and warnings in the view model", () => {
@@ -738,6 +836,9 @@ describe("trading readiness view model", () => {
 
     expect(refreshing.refreshButtonLabel).toBe("Refreshing...");
     expect(refreshing.refreshAriaLabel).toBe("Refreshing trading readiness");
+    expect(refreshing.refreshBusyLabel).toBe("Refreshing readiness...");
+    expect(refreshing.refreshDisabled).toBe(true);
+    expect(refreshing.refreshDisabledReason).toBe("Trading readiness refresh is already running.");
     expect(refreshing.statusAnnouncement).toBe("Refreshing trading readiness.");
 
     const failed = buildTradingReadinessState({
@@ -747,6 +848,8 @@ describe("trading readiness view model", () => {
     });
 
     expect(failed.summaryRows).toEqual([]);
+    expect(failed.refreshDisabled).toBe(false);
+    expect(failed.refreshDisabledReason).toBeNull();
     expect(failed.statusAnnouncement).toBe("Trading readiness refresh failed: Network failed.");
   });
 
@@ -790,7 +893,7 @@ describe("trading readiness view model", () => {
     });
 
     expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
-    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of 2026-04-26T16:10:00Z.");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 16:10 UTC.");
   });
 
   it("normalizes readiness and brokerage status levels", () => {
@@ -812,6 +915,8 @@ describe("strategy lifecycle controls view model", () => {
     expect(state.stopAction).toBeNull();
     expect(state.statusText).toBe("Enter a registered strategy ID to enable lifecycle actions.");
     expect(state.pauseAriaLabel).toBe("Enter a strategy ID before pausing a strategy");
+    expect(state.pauseDisabledReason).toBe("Enter a registered strategy ID before using lifecycle actions.");
+    expect(state.stopDisabledReason).toBe("Enter a registered strategy ID before using lifecycle actions.");
   });
 
   it("trims the strategy ID and derives confirmation actions", () => {
@@ -824,6 +929,8 @@ describe("strategy lifecycle controls view model", () => {
     expect(state.stopAction).toEqual({ kind: "stop-strategy", strategyId: "mean-reversion-fx-01" });
     expect(state.statusAnnouncement).toBe("Strategy lifecycle controls ready for mean-reversion-fx-01.");
     expect(state.stopAriaLabel).toBe("Open stop confirmation for strategy mean-reversion-fx-01");
+    expect(state.pauseDisabledReason).toBeNull();
+    expect(state.stopDisabledReason).toBeNull();
   });
 });
 
@@ -1018,6 +1125,14 @@ describe("trading order ticket view model", () => {
     expect(invalid.canSubmit).toBe(false);
     expect(invalid.invalidField).toBe("quantity");
     expect(invalid.requirementText).toBe("Enter an order quantity greater than zero.");
+    expect(invalid.submitDisabledReason).toBe("Enter an order quantity greater than zero.");
+    expect(invalid.acknowledgement).toMatchObject({
+      id: "order-ticket-review-acknowledgement",
+      label: "I reviewed the order preview and risk warnings",
+      checked: false,
+      disabled: true,
+      disabledReason: "Complete valid order fields before acknowledging the preview."
+    });
     expect(invalid.formId).toBe("trading-order-ticket");
     expect(invalid.requirementId).toBe("order-ticket-requirements");
     expect(invalid.controls.symbol).toMatchObject({
@@ -1048,18 +1163,41 @@ describe("trading order ticket view model", () => {
       errorText: null
     });
 
-    expect(submitting.submitButtonLabel).toBe("Submitting...");
+    expect(submitting.submitButtonLabel).toBe("Submitting…");
+    expect(submitting.submitBusy).toBe(true);
+    expect(submitting.submitDisabledReason).toBe("Order submission is already running.");
+    expect(submitting.closeButtonLabel).toBe("Cancel");
+    expect(submitting.closeAriaLabel).toBe("Order submission is in progress.");
+    expect(submitting.closeDisabledReason).toBe("Order submission is in progress.");
     expect(submitting.statusAnnouncement).toBe("Submitting order request.");
     expect(submitting.controls.limitPrice).toBeNull();
 
-    const limitOrder = buildOrderTicketState({
-      form: { ...emptyOrderTicketForm, symbol: "MSFT", type: "Limit", quantity: 2, limitPrice: 189.44 },
+    const validUnacknowledged = buildOrderTicketState({
+      form: { ...emptyOrderTicketForm, symbol: "MSFT", quantity: 2 },
       open: true,
       phase: "idle",
       orderId: null,
       errorText: null
     });
 
+    expect(validUnacknowledged.canSubmit).toBe(false);
+    expect(validUnacknowledged.submitDisabledReason).toBe("Review the order preview and acknowledge before submitting.");
+    expect(validUnacknowledged.acknowledgement.disabled).toBe(false);
+
+    const limitOrder = buildOrderTicketState({
+      form: { ...emptyOrderTicketForm, symbol: "MSFT", type: "Limit", quantity: 2, limitPrice: 189.44 },
+      open: true,
+      phase: "idle",
+      orderId: null,
+      errorText: null,
+      acknowledged: true
+    });
+
+    expect(limitOrder.canSubmit).toBe(true);
+    expect(limitOrder.submitDisabledReason).toBeNull();
+    expect(limitOrder.closeAriaLabel).toBe("Close order ticket without submitting");
+    expect(limitOrder.closeDisabledReason).toBeNull();
+    expect(limitOrder.acknowledgement.checked).toBe(true);
     expect(limitOrder.controls.limitPrice).toMatchObject({
       id: "order-ticket-limit-price",
       label: "Limit price",
@@ -1080,6 +1218,38 @@ describe("trading order ticket view model", () => {
 
     expect(submitted.successText).toBe("Order submitted - ord-42.");
     expect(submitted.statusAnnouncement).toBe("Order submitted with id ord-42.");
+  });
+
+  it("ignores duplicate order submits while the first request is still pending", async () => {
+    const deferred = createDeferred<Awaited<ReturnType<OrderTicketServices["submitOrder"]>>>();
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockReturnValue(deferred.promise)
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      const firstSubmit = result.current.submitOrder();
+      const duplicateSubmit = result.current.submitOrder();
+
+      expect(services.submitOrder).toHaveBeenCalledTimes(1);
+      deferred.resolve({ success: true, orderId: "ord-42", reason: null });
+      await Promise.all([firstSubmit, duplicateSubmit]);
+    });
+
+    expect(services.submitOrder).toHaveBeenCalledWith({
+      symbol: "MSFT",
+      side: "Buy",
+      type: "Market",
+      quantity: 2
+    });
+    expect(result.current.successText).toBe("Order submitted - ord-42.");
   });
 });
 

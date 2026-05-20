@@ -11,18 +11,29 @@ import config, {
 import type { ProxyOptions, UserConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+  COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
+  STRATEGY_ENGINE_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   executionAuditEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
   historicalBarsEndpoint,
   marketDataQuoteEndpoint,
-  marketDataQuotesSnapshotEndpoint
+  marketDataQuotesSnapshotEndpoint,
+  promotionEvaluateEndpoint,
+  securityMasterCorporateActionsEndpoint,
+  securityMasterOperatorOverridesEndpoint,
+  securityMasterTradingParametersEndpoint,
+  workstationOperatorInboxEndpoint,
+  workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterSearchEndpoint
 } from "./lib/workstation-endpoints";
 
 function getApiProxyTarget(proxy: Record<string, string | ProxyOptions> | undefined): string | undefined {
@@ -66,6 +77,9 @@ describe("Vite Meridian API proxy", () => {
       isAvailable: async () => false
     });
     const response = new FakeResponse();
+    const breakQueueResponse = new FakeResponse();
+    const readinessResponse = new FakeResponse();
+    const scopedInboxResponse = new FakeResponse();
 
     const result = await bypass(
       { method: "GET", url: WORKSTATION_API_ENDPOINTS.session, headers: { accept: "application/json" } } as IncomingMessage,
@@ -78,6 +92,48 @@ describe("Vite Meridian API proxy", () => {
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
     expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
     expect(JSON.parse(response.body)).toMatchObject({ displayName: "Ops Desk" });
+
+    await bypass(
+      { method: "GET", url: RECONCILIATION_API_ENDPOINTS.breakQueue, headers: { accept: "application/json" } } as IncomingMessage,
+      breakQueueResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(breakQueueResponse.statusCode).toBe(200);
+    expect(breakQueueResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(breakQueueResponse.body)).toEqual([
+      expect.objectContaining({ breakId: "run-42:cash", status: "Open" })
+    ]);
+
+    await bypass(
+      {
+        method: "GET",
+        url: `${WORKSTATION_API_ENDPOINTS.tradingReadiness}?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749`,
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
+      readinessResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      {
+        method: "GET",
+        url: workstationOperatorInboxEndpoint("53bf0251-17f6-4fb7-8dbe-6fb4966e2749"),
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
+      scopedInboxResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(readinessResponse.statusCode).toBe(200);
+    expect(readinessResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(readinessResponse.body)).toMatchObject({
+      activeSession: expect.objectContaining({ sessionId: "paper-dev-42" })
+    });
+    expect(scopedInboxResponse.statusCode).toBe(200);
+    expect(scopedInboxResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(scopedInboxResponse.body)).toMatchObject({
+      summary: expect.stringContaining("operator review items")
+    });
   });
 
   it("serves seeded market-data fixtures for the no-host quote demo path", async () => {
@@ -148,6 +204,65 @@ describe("Vite Meridian API proxy", () => {
     });
   });
 
+  it("serves Security Master search and drill-in fixtures for no-host preview", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const searchResponse = new FakeResponse();
+    const identityResponse = new FakeResponse();
+    const overridesResponse = new FakeResponse();
+    const actionsResponse = new FakeResponse();
+    const parametersResponse = new FakeResponse();
+
+    await bypass(
+      {
+        method: "GET",
+        url: workstationSecurityMasterSearchEndpoint({ query: "AAPL", take: 25, activeOnly: true }),
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
+      searchResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationSecurityMasterIdentityEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      identityResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: securityMasterOperatorOverridesEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      overridesResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: securityMasterCorporateActionsEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      actionsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: securityMasterTradingParametersEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      parametersResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(searchResponse.statusCode).toBe(200);
+    expect(searchResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(searchResponse.body)).toEqual([
+      expect.objectContaining({ securityId: "sec-dev-001", displayName: "Apple Inc." })
+    ]);
+    expect(JSON.parse(identityResponse.body)).toMatchObject({
+      securityId: "sec-dev-001",
+      identifiers: expect.arrayContaining([expect.objectContaining({ kind: "Ticker", value: "AAPL" })])
+    });
+    expect(JSON.parse(overridesResponse.body)).toMatchObject({
+      securityId: "sec-dev-001",
+      values: expect.objectContaining({ issuer: "Apple Inc.", couponRate: "0.25" })
+    });
+    expect(JSON.parse(actionsResponse.body)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ securityId: "sec-dev-001", eventType: "Dividend" })
+    ]));
+    expect(JSON.parse(parametersResponse.body)).toMatchObject({ securityId: "sec-dev-001", lotSize: 1 });
+  });
+
   it("serves Quant Lab bootstrap fixtures for no-host preview without opening mutation routes", async () => {
     const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
       isAvailable: async () => false
@@ -184,6 +299,131 @@ describe("Vite Meridian API proxy", () => {
     });
   });
 
+  it("serves Strategy Designer evidence fixtures for no-host browser previews", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const templatesResponse = new FakeResponse();
+    const fieldCatalogResponse = new FakeResponse();
+    const draftsResponse = new FakeResponse();
+    const draftResponse = new FakeResponse();
+    const runBacktestResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: STRATEGY_DESIGNER_API_ENDPOINTS.templates, headers: { accept: "application/json" } } as IncomingMessage,
+      templatesResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog, headers: { accept: "application/json" } } as IncomingMessage,
+      fieldCatalogResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: STRATEGY_DESIGNER_API_ENDPOINTS.drafts, headers: { accept: "application/json" } } as IncomingMessage,
+      draftsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: `${STRATEGY_DESIGNER_API_ENDPOINTS.drafts}/strategy-designer-fixture-1`, headers: { accept: "application/json" } } as IncomingMessage,
+      draftResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    const mutationResult = await bypass(
+      { method: "POST", url: STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest, headers: { accept: "application/json" } } as IncomingMessage,
+      runBacktestResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(templatesResponse.statusCode).toBe(200);
+    expect(templatesResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(templatesResponse.body)).toEqual([
+      expect.objectContaining({
+        templateId: "quality-momentum-rotation",
+        document: expect.objectContaining({ documentId: "strategy-designer-fixture-1" })
+      })
+    ]);
+    expect(fieldCatalogResponse.statusCode).toBe(200);
+    expect(JSON.parse(fieldCatalogResponse.body)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fieldId: "MOMENTUM_63D", isEnabled: true }),
+      expect.objectContaining({ fieldId: "AMX_PRIVATE_SCORE", disabledReason: "No Meridian canonical source" })
+    ]));
+    expect(draftsResponse.statusCode).toBe(200);
+    expect(JSON.parse(draftsResponse.body)).toEqual([
+      expect.objectContaining({ documentId: "strategy-designer-fixture-1", validationSummary: "Fixture draft passes no-host validation." })
+    ]);
+    expect(draftResponse.statusCode).toBe(200);
+    expect(JSON.parse(draftResponse.body)).toMatchObject({
+      documentId: "strategy-designer-fixture-1",
+      cells: expect.arrayContaining([expect.objectContaining({ cellId: "momentum-score" })])
+    });
+    expect(mutationResult).toBeUndefined();
+    expect(runBacktestResponse.writableEnded).toBe(false);
+  });
+
+  it("exposes Strategy Engine endpoints through the typed catalog", () => {
+    expect(STRATEGY_ENGINE_API_ENDPOINTS.definitions).toBe("/api/workstation/strategy/engine/definitions");
+    expect(STRATEGY_ENGINE_API_ENDPOINTS.validateRun).toBe("/api/workstation/strategy/engine/validate-run");
+  });
+
+  it("serves Covered Call preview fixtures for no-host strategy demos without opening run mutations", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const runsResponse = new FakeResponse();
+    const runResultResponse = new FakeResponse();
+    const chainPreviewResponse = new FakeResponse();
+    const startRunResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: `${COVERED_CALL_API_ENDPOINTS.runs}?limit=50`, headers: { accept: "application/json" } } as IncomingMessage,
+      runsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: COVERED_CALL_API_ENDPOINTS.runResult("covered-call-dev-1"), headers: { accept: "application/json" } } as IncomingMessage,
+      runResultResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "POST", url: COVERED_CALL_API_ENDPOINTS.chainPreview, headers: { accept: "application/json" } } as IncomingMessage,
+      chainPreviewResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    const mutationResult = await bypass(
+      { method: "POST", url: COVERED_CALL_API_ENDPOINTS.runs, headers: { accept: "application/json" } } as IncomingMessage,
+      startRunResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(runsResponse.statusCode).toBe(200);
+    expect(runsResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(runsResponse.body)).toEqual([
+      expect.objectContaining({ runId: "covered-call-dev-1", underlyingSymbol: "SPY" })
+    ]);
+    expect(runResultResponse.statusCode).toBe(200);
+    expect(runResultResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(runResultResponse.body)).toMatchObject({
+      runId: "covered-call-dev-1",
+      metrics: expect.objectContaining({ sharpeRatio: 1.18 }),
+      openPositionsAtEnd: expect.arrayContaining([
+        expect.objectContaining({ positionId: "covered-call-dev-open-1" })
+      ])
+    });
+    expect(chainPreviewResponse.statusCode).toBe(200);
+    expect(chainPreviewResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(chainPreviewResponse.body)).toMatchObject({
+      underlyingSymbol: "SPY",
+      filtersPassed: 2,
+      candidates: expect.arrayContaining([
+        expect.objectContaining({ strike: 515, meetsAllFilters: true }),
+        expect.objectContaining({ rejectReason: "Open interest below minimum" })
+      ])
+    });
+    expect(mutationResult).toBeUndefined();
+    expect(startRunResponse.writableEnded).toBe(false);
+  });
+
   it("serves Trading cockpit support fixtures for no-host demo smoke", async () => {
     const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
       isAvailable: async () => false
@@ -194,6 +434,7 @@ describe("Vite Meridian API proxy", () => {
     const replayFilesResponse = new FakeResponse();
     const auditResponse = new FakeResponse();
     const controlsResponse = new FakeResponse();
+    const promotionEvaluateResponse = new FakeResponse();
     const promotionHistoryResponse = new FakeResponse();
 
     await bypass(
@@ -227,6 +468,11 @@ describe("Vite Meridian API proxy", () => {
       {} as ProxyOptions
     );
     await bypass(
+      { method: "GET", url: promotionEvaluateEndpoint("run-dev-2"), headers: { accept: "application/json" } } as IncomingMessage,
+      promotionEvaluateResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
       { method: "GET", url: PROMOTION_API_ENDPOINTS.history, headers: { accept: "application/json" } } as IncomingMessage,
       promotionHistoryResponse as unknown as ServerResponse,
       {} as ProxyOptions
@@ -253,6 +499,11 @@ describe("Vite Meridian API proxy", () => {
     expect(JSON.parse(controlsResponse.body)).toMatchObject({
       circuitBreaker: { isOpen: false },
       manualOverrides: [expect.objectContaining({ overrideId: "override-fixture-1" })]
+    });
+    expect(JSON.parse(promotionEvaluateResponse.body)).toMatchObject({
+      runId: "run-dev-2",
+      isEligible: true,
+      reason: "Promotion gates passed."
     });
     expect(JSON.parse(promotionHistoryResponse.body)).toEqual([
       expect.objectContaining({ promotionId: "promo-dev-1", targetRunId: "paper-dev-42" })

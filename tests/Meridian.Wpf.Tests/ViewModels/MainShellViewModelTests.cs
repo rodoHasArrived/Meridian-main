@@ -360,6 +360,34 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void ShowStartupExperience_PresentsBrandedBriefingAndNotification()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var notificationService = NotificationService.Instance;
+            notificationService.UpdateSettings(new NotificationSettings { Enabled = true });
+            notificationService.ClearHistory();
+
+            using var vm = CreateMainWindowViewModel();
+
+            vm.ShowStartupExperience();
+
+            vm.StartupBannerVisibility.Should().Be(Visibility.Visible);
+            vm.StartupBannerStatusText.Should().Be("Startup briefing");
+            vm.StartupBannerMessage.Should().Contain("operating context");
+            vm.StartupBannerDetail.Should().Contain("Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings");
+
+            notificationService.GetHistory().Should().ContainSingle(item =>
+                item.Title == "Meridian ready"
+                && item.Message.Contains("Review operating context and readiness", StringComparison.Ordinal));
+
+            vm.DismissStartupBannerCommand.Execute(null);
+
+            vm.StartupBannerVisibility.Should().Be(Visibility.Collapsed);
+        });
+    }
+
+    [Fact]
     public void ShowClipboardSymbols_WhenManySymbolsDetected_UsesCompactPreview()
     {
         WpfTestThread.Run(() =>
@@ -371,6 +399,19 @@ public sealed class MainShellViewModelTests
             vm.ClipboardBannerText.Should().Contain("6 symbols detected in clipboard");
             vm.ClipboardBannerText.Should().Contain("AAPL, MSFT, NVDA, AMD +2 more");
         });
+    }
+
+    [Fact]
+    public void MainWindowXaml_BindsStartupExperienceBanner()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\MainWindow.xaml"));
+
+        xaml.Should().Contain("StartupBannerVisibility");
+        xaml.Should().Contain("StartupBannerStatusText");
+        xaml.Should().Contain("StartupBannerMessage");
+        xaml.Should().Contain("StartupBannerDetail");
+        xaml.Should().Contain("DismissStartupBannerCommand");
+        xaml.Should().Contain("CommandParameter=\"Welcome\"");
     }
 
     [Fact]
@@ -664,6 +705,43 @@ public sealed class MainShellViewModelTests
                         Kind: OperatorWorkItemKindDto.ReconciliationBreak,
                         Label: "Reconciliation break requires review",
                         Detail: "Cash mismatch needs governance review.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("FundReconciliation");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.CurrentPageTag.Should().Be("FundReconciliation");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_RoutesLedgerPeriodCloseToReconciliation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "ledger-period-close-2026-p02",
+                        Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+                        Label: "SoftClosed sign-off required",
+                        Detail: "Alpha Fund 2026-P02 requires controller sign-off.",
                         Tone: OperatorWorkItemToneDto.Warning,
                         CreatedAt: DateTimeOffset.UtcNow,
                         TargetRoute: UiApiRoutes.ReconciliationBreakQueue,

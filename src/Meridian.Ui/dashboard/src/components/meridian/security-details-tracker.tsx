@@ -3,8 +3,22 @@ import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
+import { Input } from "@/components/ui/input";
+import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import {
+  buildSecurityDetailsViewModel,
+  buildLotsTrackerViewModel,
+  parseLotNumber,
+  type SecurityDetailFieldDef,
+  type SecurityDetailFieldViewModel,
+  type LotsTrackerDraftFieldViewModel,
+  type LotsTrackerRowViewModel,
+  type SecurityLot,
+  type SecurityDetailsServerStatus
+} from "./security-details-tracker.view-model";
 import type {
   OperatorOverridesDto,
   OperatorOverridesPatchRequest,
@@ -22,201 +36,6 @@ const defaultOperatorOverridesService: OperatorOverridesService = {
   get: defaultGetOperatorOverrides,
   patch: defaultPatchOperatorOverrides
 };
-
-export type SecurityDetailFieldKind = "text" | "number" | "date" | "select" | "boolean";
-
-export interface SecurityDetailFieldDef {
-  key: string;
-  label: string;
-  kind: SecurityDetailFieldKind;
-  options?: readonly string[];
-  placeholder?: string;
-  derive?: (ctx: SecurityDetailContext) => string | null | undefined;
-  format?: (value: string) => string;
-}
-
-export interface SecurityDetailGroupDef {
-  id: string;
-  title: string;
-  fields: readonly SecurityDetailFieldDef[];
-}
-
-export interface SecurityDetailContext {
-  entry: SecurityMasterEntry | null;
-  identity: SecurityIdentityDrillIn | null;
-  tradingParameters: TradingParameters | null;
-}
-
-const RATING_OPTIONS = [
-  "AAA", "AA+", "AA", "AA-", "A+", "A", "A-",
-  "BBB+", "BBB", "BBB-", "BB+", "BB", "BB-",
-  "B+", "B", "B-", "CCC+", "CCC", "CCC-", "CC", "C", "D",
-  "NR"
-] as const;
-
-const MOODYS_RATING_OPTIONS = [
-  "Aaa", "Aa1", "Aa2", "Aa3", "A1", "A2", "A3",
-  "Baa1", "Baa2", "Baa3", "Ba1", "Ba2", "Ba3",
-  "B1", "B2", "B3", "Caa1", "Caa2", "Caa3", "Ca", "C",
-  "NR"
-] as const;
-
-const COUPON_TYPE_OPTIONS = [
-  "Fixed", "Floating", "Variable", "Step-Up", "Zero Coupon", "Inflation-Linked", "PIK"
-] as const;
-
-const COUPON_FREQUENCY_OPTIONS = [
-  "Annual", "Semi-Annual", "Quarterly", "Monthly", "At Maturity", "Irregular"
-] as const;
-
-const DAY_COUNT_OPTIONS = [
-  "30/360", "30E/360", "ACT/360", "ACT/365", "ACT/ACT", "NL/365"
-] as const;
-
-const PAY_CONVENTION_OPTIONS = [
-  "Following", "Modified Following", "Preceding", "Modified Preceding", "Unadjusted"
-] as const;
-
-const ASSET_CLASS_OPTIONS = [
-  "Equity", "FixedIncome", "Future", "Option", "Fund", "Currency", "Commodity", "Crypto", "Index"
-] as const;
-
-const yesNo = ["Yes", "No"] as const;
-
-function pickIdentifier(identity: SecurityIdentityDrillIn | null, kind: string): string | null {
-  if (!identity) return null;
-  const exact = identity.identifiers.find((i) => i.kind.toLowerCase() === kind.toLowerCase());
-  if (exact) return exact.value;
-  const alias = identity.aliases.find((a) => a.aliasKind.toLowerCase() === kind.toLowerCase());
-  return alias?.aliasValue ?? null;
-}
-
-export const SECURITY_DETAIL_GROUPS: readonly SecurityDetailGroupDef[] = [
-  {
-    id: "identification",
-    title: "Identification",
-    fields: [
-      { key: "identifier", label: "Identifier", kind: "text", derive: (c) => c.identity?.securityId ?? c.entry?.securityId ?? null },
-      { key: "description", label: "Description", kind: "text", derive: (c) => c.identity?.displayName ?? c.entry?.displayName ?? null },
-      { key: "ticker", label: "Ticker", kind: "text", derive: (c) => pickIdentifier(c.identity, "Ticker") },
-      { key: "isin", label: "ISIN", kind: "text", derive: (c) => pickIdentifier(c.identity, "ISIN") },
-      { key: "cusip", label: "CUSIP", kind: "text", derive: (c) => pickIdentifier(c.identity, "CUSIP") },
-      { key: "sedol", label: "SEDOL", kind: "text", derive: (c) => pickIdentifier(c.identity, "SEDOL") },
-      { key: "figi", label: "FIGI", kind: "text", derive: (c) => pickIdentifier(c.identity, "FIGI") },
-      { key: "securityId", label: "Security ID", kind: "text", derive: (c) => c.identity?.securityId ?? c.entry?.securityId ?? null }
-    ]
-  },
-  {
-    id: "issuer",
-    title: "Issuer & Concentration",
-    fields: [
-      { key: "issuer", label: "Issuer", kind: "text" },
-      { key: "issuerConcentration", label: "Issuer Concentration (%)", kind: "number", placeholder: "0.00" },
-      { key: "servicer", label: "Servicer", kind: "text" },
-      { key: "series", label: "Series", kind: "text" },
-      { key: "shareClass", label: "Share Class", kind: "text" },
-      { key: "sharesOutstanding", label: "Shares Outstanding", kind: "number" }
-    ]
-  },
-  {
-    id: "classification",
-    title: "Classification",
-    fields: [
-      { key: "assetClass", label: "Asset Class", kind: "select", options: ASSET_CLASS_OPTIONS, derive: (c) => c.identity?.assetClass ?? c.entry?.classification.assetClass ?? null },
-      { key: "securityType", label: "Security Type", kind: "text", derive: (c) => c.entry?.classification.subType ?? null },
-      { key: "securityTypeCategory", label: "Security Type Category", kind: "text" },
-      { key: "marketSector", label: "Market Sector", kind: "text" },
-      { key: "industrySector", label: "Industry Sector", kind: "text" },
-      { key: "industryGroup", label: "Industry Group", kind: "text" },
-      { key: "industrySubgroup", label: "Industry Subgroup", kind: "text" },
-      { key: "sicCode", label: "SIC Code", kind: "text" },
-      { key: "sicCodeDescription", label: "SIC Code Description", kind: "text" }
-    ]
-  },
-  {
-    id: "geography",
-    title: "Geography & Currency",
-    fields: [
-      { key: "countryOfHeadquarters", label: "Country of Headquarters", kind: "text" },
-      { key: "countryOfIncorporation", label: "Country of Incorporation", kind: "text" },
-      { key: "countryOfIssue", label: "Country of Issue", kind: "text" },
-      { key: "countryOfGovGuarantee", label: "Country of Gov Guarantee", kind: "text" },
-      { key: "currency", label: "Currency", kind: "text", derive: (c) => c.entry?.economicDefinition.currency ?? null }
-    ]
-  },
-  {
-    id: "ratings",
-    title: "Ratings",
-    fields: [
-      { key: "spRating", label: "S&P Rating", kind: "select", options: RATING_OPTIONS },
-      { key: "moodysRating", label: "Moody's Rating", kind: "select", options: MOODYS_RATING_OPTIONS },
-      { key: "fitchRating", label: "Fitch Rating", kind: "select", options: RATING_OPTIONS },
-      { key: "simpleCreditRating", label: "Simple Credit Rating", kind: "select", options: RATING_OPTIONS },
-      { key: "impliedRatingsEligible", label: "Implied Ratings Eligible", kind: "select", options: yesNo }
-    ]
-  },
-  {
-    id: "coupon",
-    title: "Coupon",
-    fields: [
-      { key: "couponRate", label: "Coupon Rate (%)", kind: "number" },
-      { key: "couponType", label: "Coupon Type", kind: "select", options: COUPON_TYPE_OPTIONS },
-      { key: "couponFrequency", label: "Coupon Frequency", kind: "select", options: COUPON_FREQUENCY_OPTIONS },
-      { key: "couponCurrency", label: "Coupon Currency", kind: "text" },
-      { key: "couponCap", label: "Coupon Cap (%)", kind: "number" },
-      { key: "couponFloor", label: "Coupon Floor (%)", kind: "number" },
-      { key: "couponEffectiveDate", label: "Coupon Effective Date", kind: "date" },
-      { key: "couponPayConvention", label: "Coupon Pay Convention", kind: "select", options: PAY_CONVENTION_OPTIONS },
-      { key: "couponPayDay", label: "Coupon Pay Day", kind: "text" },
-      { key: "couponResetFrequency", label: "Coupon Reset Frequency", kind: "select", options: COUPON_FREQUENCY_OPTIONS },
-      { key: "dayCount", label: "Day Count", kind: "select", options: DAY_COUNT_OPTIONS }
-    ]
-  },
-  {
-    id: "maturity",
-    title: "Maturity & Factor",
-    fields: [
-      { key: "finalMaturity", label: "Final Maturity", kind: "date" },
-      { key: "factor", label: "Factor", kind: "number" },
-      { key: "factorEffectiveDate", label: "Factor Effective Date", kind: "date" },
-      { key: "sinkable", label: "Sinkable", kind: "select", options: yesNo },
-      { key: "sequential", label: "Sequential", kind: "select", options: yesNo },
-      { key: "continuouslyCallable", label: "Continuously Callable", kind: "select", options: yesNo },
-      { key: "coveredBond", label: "Covered Bond", kind: "select", options: yesNo }
-    ]
-  },
-  {
-    id: "pricing",
-    title: "Pricing & Risk",
-    fields: [
-      { key: "marketPrice", label: "Market Price", kind: "number" },
-      { key: "yield", label: "Yield (%)", kind: "number" },
-      { key: "duration", label: "Duration", kind: "number" },
-      { key: "convexity", label: "Convexity", kind: "number" },
-      { key: "convexityGroup", label: "Convexity Group", kind: "text" },
-      { key: "contractSize", label: "Contract Size", kind: "number" }
-    ]
-  },
-  {
-    id: "conversion",
-    title: "Conversion (Convertibles)",
-    fields: [
-      { key: "convertible", label: "Convertible", kind: "select", options: yesNo },
-      { key: "conversionOption", label: "Conversion Option", kind: "text" },
-      { key: "conversionOptionEndDate", label: "Conversion Option End Date", kind: "date" },
-      { key: "conversionPrice", label: "Conversion Price", kind: "number" },
-      { key: "conversionRatio", label: "Conversion Ratio", kind: "number" }
-    ]
-  },
-  {
-    id: "regulatory",
-    title: "Regulatory & Tax",
-    fields: [
-      { key: "fdicNumber", label: "FDIC Number", kind: "text" },
-      { key: "fedTax", label: "Fed Tax", kind: "select", options: ["Taxable", "Tax-Exempt", "AMT"] }
-    ]
-  }
-] as const;
 
 const STORAGE_PREFIX_OVERRIDES = "meridian.security.overrides.";
 const STORAGE_PREFIX_LOTS = "meridian.security.lots.";
@@ -295,7 +114,7 @@ export function SecurityDetailsPanel({
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
-  const [serverStatus, setServerStatus] = useState<"idle" | "loading" | "synced" | "offline" | "saving" | "error">("idle");
+  const [serverStatus, setServerStatus] = useState<SecurityDetailsServerStatus>("idle");
   const [serverErrorText, setServerErrorText] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -336,9 +155,19 @@ export function SecurityDetailsPanel({
       });
   }, [securityId, overridesService]);
 
-  const ctx = useMemo<SecurityDetailContext>(
-    () => ({ entry, identity, tradingParameters }),
-    [entry, identity, tradingParameters]
+  const vm = useMemo(
+    () => buildSecurityDetailsViewModel({
+      entry,
+      identity,
+      tradingParameters,
+      overrides,
+      editingKey,
+      serverStatus,
+      serverErrorText,
+      updatedBy,
+      updatedAt
+    }),
+    [editingKey, entry, identity, overrides, serverErrorText, serverStatus, tradingParameters, updatedAt, updatedBy]
   );
 
   const beginEdit = useCallback((field: SecurityDetailFieldDef, currentValue: string) => {
@@ -402,7 +231,7 @@ export function SecurityDetailsPanel({
     return null;
   }
 
-  const overrideCount = Object.keys(overrides).length;
+  const overrideCount = vm.overrideCount;
 
   return (
     <Card className="panel-surface">
@@ -421,65 +250,78 @@ export function SecurityDetailsPanel({
           server when available and fall back to local storage when offline.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <ServerStatusBadge status={serverStatus} />
-          {updatedBy && updatedAt && (
+          {vm.syncStatus ? (
+            <span
+              className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", vm.syncStatus.className)}
+              aria-label={vm.syncStatus.ariaLabel}
+            >
+              {vm.syncStatus.label}
+            </span>
+          ) : null}
+          {vm.hiddenOverridesLabel && vm.hiddenOverridesTitle && (
+            <Badge
+              variant="warning"
+              title={vm.hiddenOverridesTitle}
+            >
+              {vm.hiddenOverridesLabel}
+            </Badge>
+          )}
+          {vm.updatedLabel && (
             <span className="font-mono">
-              last edit by {updatedBy} @ {updatedAt}
+              {vm.updatedLabel}
             </span>
           )}
-          {serverErrorText && (
-            <span role="alert" className="font-mono text-warning">{serverErrorText}</span>
+          {vm.serverError && (
+            <span role="alert" aria-label={vm.serverError.ariaLabel} className="font-mono text-warning">
+              {vm.serverError.text}
+            </span>
           )}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {SECURITY_DETAIL_GROUPS.map((group) => (
+        {vm.groups.map((group) => (
           <section key={group.id} aria-label={group.title} className="space-y-2">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
-                const derived = field.derive?.(ctx) ?? null;
-                const override = overrides[field.key];
-                const isOverridden = override !== undefined && override !== "";
-                const value = isOverridden ? override : (derived ?? "");
-                const displayValue = value === "" ? "—" : (field.format ? field.format(value) : value);
-                const isEditing = editingKey === field.key;
                 return (
                   <div
                     key={field.key}
                     className={cn(
                       "grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto] items-start gap-3 rounded-md border px-3 py-2",
-                      isOverridden ? "border-primary/40 bg-primary/5" : "border-border/60 bg-secondary/25"
+                      field.isOverridden ? "border-primary/40 bg-primary/5" : "border-border/60 bg-secondary/25"
                     )}
                   >
                     <dt className="min-w-0 text-xs text-muted-foreground">
                       {field.label}
-                      {isOverridden && (
+                      {field.isOverridden && (
                         <span className="ml-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary">override</span>
                       )}
                     </dt>
                     <dd className="min-w-0 break-words font-mono text-xs text-foreground">
-                      {isEditing ? (
+                      {field.isEditing ? (
                         <SecurityDetailFieldEditor
                           field={field}
                           value={draftValue}
                           onChange={setDraftValue}
-                          onSubmit={() => commitEdit(field)}
+                          onSubmit={() => commitEdit(field.def)}
                           onCancel={cancelEdit}
                         />
                       ) : (
-                        <span className={cn(value === "" ? "text-muted-foreground" : "")}>{displayValue}</span>
+                        <span className={cn(field.value === "" ? "text-muted-foreground" : "")}>{field.displayValue}</span>
                       )}
                     </dd>
                     <div className="flex shrink-0 items-center gap-1">
-                      {isEditing ? (
+                      {field.isEditing ? (
                         <>
                           <Button
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Save ${field.label}`}
-                            onClick={() => commitEdit(field)}
+                            aria-label={field.saveCommand.ariaLabel}
+                            disabled={field.saveCommand.disabled}
+                            disabledReason={field.saveCommand.disabledReason}
+                            onClick={() => commitEdit(field.def)}
                           >
                             <Save className="h-3.5 w-3.5" />
                           </Button>
@@ -487,7 +329,9 @@ export function SecurityDetailsPanel({
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Cancel editing ${field.label}`}
+                            aria-label={field.cancelCommand.ariaLabel}
+                            disabled={field.cancelCommand.disabled}
+                            disabledReason={field.cancelCommand.disabledReason}
                             onClick={cancelEdit}
                           >
                             <X className="h-3.5 w-3.5" />
@@ -499,18 +343,22 @@ export function SecurityDetailsPanel({
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Edit ${field.label}`}
-                            onClick={() => beginEdit(field, isOverridden ? override : "")}
+                            aria-label={field.editCommand.ariaLabel}
+                            disabled={field.editCommand.disabled}
+                            disabledReason={field.editCommand.disabledReason}
+                            onClick={() => beginEdit(field.def, field.isOverridden ? field.overrideValue ?? "" : "")}
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          {isOverridden && (
+                          {field.clearCommand && (
                             <Button
                               type="button"
                               size="sm"
                               variant="ghost"
-                              aria-label={`Clear override for ${field.label}`}
-                              onClick={() => clearOverride(field)}
+                              aria-label={field.clearCommand.ariaLabel}
+                              disabled={field.clearCommand.disabled}
+                              disabledReason={field.clearCommand.disabledReason}
+                              onClick={() => clearOverride(field.def)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -529,31 +377,8 @@ export function SecurityDetailsPanel({
   );
 }
 
-type ServerStatus = "idle" | "loading" | "synced" | "offline" | "saving" | "error";
-
-function ServerStatusBadge({ status }: { status: ServerStatus }) {
-  if (status === "idle") return null;
-  const label = (
-    status === "loading" ? "Loading from server"
-    : status === "saving" ? "Saving"
-    : status === "synced" ? "Synced"
-    : status === "offline" ? "Offline (local only)"
-    : "Error"
-  );
-  const tone = (
-    status === "synced" ? "border-success/35 bg-success/10 text-success"
-    : status === "saving" || status === "loading" ? "border-primary/35 bg-primary/10 text-primary"
-    : "border-warning/35 bg-warning/10 text-warning"
-  );
-  return (
-    <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", tone)}>
-      {label}
-    </span>
-  );
-}
-
 interface SecurityDetailFieldEditorProps {
-  field: SecurityDetailFieldDef;
+  field: SecurityDetailFieldViewModel;
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -561,6 +386,9 @@ interface SecurityDetailFieldEditorProps {
 }
 
 function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel }: SecurityDetailFieldEditorProps) {
+  const def = field.def;
+  const editor = field.editor;
+  const disabledReasonId = `${editor.id}-disabled-reason`;
   const baseClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === "Enter") {
@@ -571,46 +399,63 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
       onCancel();
     }
   };
-  if (field.kind === "select" && field.options) {
+  if (def.kind === "select" && def.options) {
     return (
-      <select
+      <span className="block space-y-1">
+        <select
+          id={editor.id}
+          className={baseClass}
+          value={value}
+          autoFocus
+          disabled={editor.disabled}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-label={editor.ariaLabel}
+          aria-describedby={joinDescribedByIds(editor.describedBy, disabledReasonId)}
+        >
+          <option value="">—</option>
+          {def.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <FieldSupportText
+          helpId={editor.helperId}
+          helpText={editor.helperText}
+          helpClassName="block text-[11px] leading-4"
+          disabledReason={editor.disabledReason}
+          disabledReasonId={disabledReasonId}
+          disabledReasonClassName="block"
+        />
+      </span>
+    );
+  }
+  const inputType = def.kind === "number" ? "number" : def.kind === "date" ? "date" : "text";
+  return (
+    <span className="block space-y-1">
+      <input
+        id={editor.id}
+        type={inputType}
         className={baseClass}
         value={value}
         autoFocus
+        disabled={editor.disabled}
+        placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        aria-label={field.label}
-      >
-        <option value="">—</option>
-        {field.options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
-      </select>
-    );
-  }
-  const inputType = field.kind === "number" ? "number" : field.kind === "date" ? "date" : "text";
-  return (
-    <input
-      type={inputType}
-      className={baseClass}
-      value={value}
-      autoFocus
-      placeholder={field.placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={handleKeyDown}
-      aria-label={field.label}
-      step={field.kind === "number" ? "any" : undefined}
-    />
+        aria-label={editor.ariaLabel}
+        aria-describedby={joinDescribedByIds(editor.describedBy, disabledReasonId)}
+        step={def.kind === "number" ? "any" : undefined}
+      />
+      <FieldSupportText
+        helpId={editor.helperId}
+        helpText={editor.helperText}
+        helpClassName="block text-[11px] leading-4"
+        disabledReason={editor.disabledReason}
+        disabledReasonId={disabledReasonId}
+        disabledReasonClassName="block"
+      />
+    </span>
   );
-}
-
-export interface SecurityLot {
-  lotId: string;
-  tradeDate: string;
-  quantity: number;
-  price: number;
-  fees: number;
-  note: string;
 }
 
 function loadLots(securityId: string): SecurityLot[] {
@@ -650,22 +495,6 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function parseNumber(value: string): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function formatNumber(value: number, fractionDigits = 4): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: fractionDigits });
-}
-
-function formatCurrency(value: number, currency: string | null): string {
-  if (!Number.isFinite(value)) return "—";
-  const text = value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return currency ? `${text} ${currency}` : text;
-}
-
 export interface LotsTrackerPanelProps {
   securityId: string | null;
   currency: string | null;
@@ -683,20 +512,27 @@ function readMarketPriceOverride(securityId: string | null): number | null {
 export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps) {
   const [lots, setLots] = useState<SecurityLot[]>([]);
   const [marketPriceOverride, setMarketPriceOverride] = useState<number | null>(null);
+  const [selectedLotId, setSelectedLotId] = useState<string | null>(null);
   const [draftDate, setDraftDate] = useState(todayIso());
   const [draftQty, setDraftQty] = useState("");
   const [draftPrice, setDraftPrice] = useState("");
   const [draftFees, setDraftFees] = useState("");
   const [draftNote, setDraftNote] = useState("");
+  const [pendingRemoveLotId, setPendingRemoveLotId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!securityId) {
       setLots([]);
       setMarketPriceOverride(null);
+      setSelectedLotId(null);
+      setPendingRemoveLotId(null);
       return;
     }
-    setLots(loadLots(securityId));
+    const loadedLots = loadLots(securityId);
+    setLots(loadedLots);
+    setSelectedLotId(loadedLots[0]?.lotId ?? null);
     setMarketPriceOverride(readMarketPriceOverride(securityId));
+    setPendingRemoveLotId(null);
   }, [securityId]);
 
   useEffect(() => {
@@ -711,198 +547,293 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
     return () => window.removeEventListener(OVERRIDES_CHANGED_EVENT, handler);
   }, [securityId]);
 
-  const totals = useMemo(() => {
-    let qty = 0;
-    let cost = 0;
-    let fees = 0;
-    for (const lot of lots) {
-      qty += lot.quantity;
-      cost += lot.quantity * lot.price;
-      fees += lot.fees;
-    }
-    const totalCostWithFees = cost + fees;
-    const avgCost = qty !== 0 ? totalCostWithFees / qty : 0;
-    const marketValue = marketPriceOverride != null && Number.isFinite(marketPriceOverride) ? marketPriceOverride * qty : null;
-    const unrealisedPnl = marketValue != null ? marketValue - totalCostWithFees : null;
-    return { qty, cost, fees, totalCostWithFees, avgCost, marketValue, unrealisedPnl };
-  }, [lots, marketPriceOverride]);
+  const vm = useMemo(() => {
+    if (!securityId) return null;
+    return buildLotsTrackerViewModel({
+      securityId,
+      currency,
+      lots,
+      marketPriceOverride,
+      draft: {
+        tradeDate: draftDate,
+        quantity: draftQty,
+        price: draftPrice,
+        fees: draftFees,
+        note: draftNote
+      },
+      selectedLotId,
+      pendingRemoveLotId
+    });
+  }, [currency, draftDate, draftFees, draftNote, draftPrice, draftQty, lots, marketPriceOverride, pendingRemoveLotId, securityId, selectedLotId]);
 
   const addLot = useCallback(() => {
-    if (!securityId) return;
-    const quantity = parseNumber(draftQty);
-    const price = parseNumber(draftPrice);
-    if (quantity === 0 || !draftDate) return;
+    if (!securityId || !vm || vm.addCommand.disabled) return;
+    const quantity = parseLotNumber(draftQty);
+    const price = parseLotNumber(draftPrice);
     const lot: SecurityLot = {
       lotId: newLotId(),
       tradeDate: draftDate,
       quantity,
       price,
-      fees: parseNumber(draftFees),
+      fees: parseLotNumber(draftFees),
       note: draftNote.trim()
     };
     const next = [...lots, lot].sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
     setLots(next);
+    setSelectedLotId(lot.lotId);
     saveLots(securityId, next);
     setDraftQty("");
     setDraftPrice("");
     setDraftFees("");
     setDraftNote("");
     setDraftDate(todayIso());
-  }, [draftDate, draftFees, draftNote, draftPrice, draftQty, lots, securityId]);
+    setPendingRemoveLotId(null);
+  }, [draftDate, draftFees, draftNote, draftPrice, draftQty, lots, securityId, vm]);
 
   const removeLot = useCallback((lotId: string) => {
     if (!securityId) return;
+    if (pendingRemoveLotId !== lotId) {
+      setPendingRemoveLotId(lotId);
+      setSelectedLotId(lotId);
+      return;
+    }
     const next = lots.filter((l) => l.lotId !== lotId);
     setLots(next);
+    setSelectedLotId((current) => current === lotId ? next[0]?.lotId ?? null : current);
+    setPendingRemoveLotId(null);
     saveLots(securityId, next);
-  }, [lots, securityId]);
+  }, [lots, pendingRemoveLotId, securityId]);
 
-  if (!securityId) {
+  if (!securityId || !vm) {
     return null;
   }
 
-  const inputClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
-  const labelClass = "text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground";
+  const lotColumns: DenseDataTableColumn<LotsTrackerRowViewModel>[] = [
+    {
+      id: "trade-date",
+      label: "Trade date",
+      render: (row) => <span className="font-mono text-muted-foreground">{row.tradeDateLabel}</span>
+    },
+    {
+      id: "quantity",
+      label: "Quantity",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-foreground">{row.quantityLabel}</span>
+    },
+    {
+      id: "price",
+      label: "Price",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-foreground">{row.priceLabel}</span>
+    },
+    {
+      id: "fees",
+      label: "Fees",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.feesLabel}</span>
+    },
+    {
+      id: "cost",
+      label: "Cost",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-foreground">{row.costLabel}</span>
+    },
+    {
+      id: "note",
+      label: "Note",
+      render: (row) => <span className="text-muted-foreground">{row.noteLabel}</span>
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (row) => (
+        <Button
+          type="button"
+          size="sm"
+          variant={row.removeConfirmationPending ? "secondary" : "ghost"}
+          aria-label={row.removeAriaLabel}
+          onClick={() => removeLot(row.lotId)}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          {row.removeConfirmationPending && <span className="ml-1">{row.removeLabel}</span>}
+        </Button>
+      )
+    }
+  ];
 
   return (
     <Card className="panel-surface">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Briefcase className="h-4 w-4 text-primary" />
-          Lots tracker
+          {vm.title}
         </CardTitle>
         <CardDescription>
-          Record purchase lots for <span className="font-mono">{securityId}</span> to track quantity, cost basis, and
-          unrealised P/L. Lots are stored locally per security.
+          {vm.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-6">
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-date" className={labelClass}>Trade date</label>
-            <input
-              id="lot-date"
-              type="date"
-              className={inputClass}
-              value={draftDate}
-              onChange={(e) => setDraftDate(e.target.value)}
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-qty" className={labelClass}>Quantity</label>
-            <input
-              id="lot-qty"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftQty}
-              onChange={(e) => setDraftQty(e.target.value)}
-              placeholder="100"
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-price" className={labelClass}>Price</label>
-            <input
-              id="lot-price"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftPrice}
-              onChange={(e) => setDraftPrice(e.target.value)}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-fees" className={labelClass}>Fees</label>
-            <input
-              id="lot-fees"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftFees}
-              onChange={(e) => setDraftFees(e.target.value)}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="lot-note" className={labelClass}>Note</label>
-            <input
-              id="lot-note"
-              type="text"
-              className={inputClass}
-              value={draftNote}
-              onChange={(e) => setDraftNote(e.target.value)}
-              placeholder="Broker, strategy, etc."
-            />
-          </div>
+        <div role="group" aria-label={vm.formLabel} className="grid gap-2 sm:grid-cols-6">
+          <LotDraftField
+            field={vm.draftFields.tradeDate}
+            value={draftDate}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftDate(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.quantity}
+            value={draftQty}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftQty(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.price}
+            value={draftPrice}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftPrice(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.fees}
+            value={draftFees}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftFees(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.note}
+            value={draftNote}
+            className="sm:col-span-2"
+            onChange={(value) => {
+              setDraftNote(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
         </div>
+        <p
+          id={vm.draftStatus.id}
+          role={vm.draftStatus.role}
+          className={cn(
+            "rounded-md border px-3 py-2 text-xs leading-5",
+            vm.draftStatus.tone === "success"
+              ? "border-success/30 bg-success/10 text-success"
+              : "border-warning/30 bg-warning/10 text-warning"
+          )}
+        >
+          {vm.draftStatus.text}
+        </p>
         <div>
           <Button
             type="button"
             size="sm"
             onClick={addLot}
-            disabled={!draftDate || draftQty.trim() === "" || draftPrice.trim() === ""}
-            aria-label="Add lot"
+            disabled={vm.addCommand.disabled}
+            disabledReason={vm.addCommand.disabledReason}
+            aria-describedby={vm.draftStatus.id}
+            aria-label={vm.addCommand.ariaLabel}
           >
             <Plus className="mr-1 h-3.5 w-3.5" />
-            Add lot
+            {vm.addCommand.label}
           </Button>
         </div>
 
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <LotsMetric label="Total quantity" value={formatNumber(totals.qty)} />
-          <LotsMetric label="Average cost" value={formatCurrency(totals.avgCost, currency)} />
-          <LotsMetric label="Total cost (incl. fees)" value={formatCurrency(totals.totalCostWithFees, currency)} />
-          <LotsMetric
-            label="Unrealised P/L"
-            value={totals.unrealisedPnl == null ? "—" : formatCurrency(totals.unrealisedPnl, currency)}
-            tone={totals.unrealisedPnl == null ? undefined : totals.unrealisedPnl >= 0 ? "success" : "danger"}
-          />
+          {vm.metrics.map((metric) => (
+            <LotsMetric key={metric.id} label={metric.label} value={metric.value} tone={metric.tone} />
+          ))}
         </div>
 
-        {lots.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No lots recorded yet. Add a lot above to start tracking cost basis.</p>
+        {vm.rows.length === 0 ? (
+          <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+            {vm.emptyText}
+          </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border/60">
-            <table aria-label={`Lots for ${securityId}`} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-              <thead className="bg-secondary/30">
-                <tr>
-                  {["Trade date", "Quantity", "Price", "Fees", "Cost", "Note", ""].map((col) => (
-                    <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {lots.map((lot) => {
-                  const cost = lot.quantity * lot.price + lot.fees;
-                  return (
-                    <tr key={lot.lotId} className="hover:bg-secondary/20">
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{lot.tradeDate}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{formatNumber(lot.quantity)}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{formatCurrency(lot.price, currency)}</td>
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{formatCurrency(lot.fees, currency)}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{formatCurrency(cost, currency)}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{lot.note || "—"}</td>
-                      <td className="px-3 py-2 text-right">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          aria-label={`Remove lot from ${lot.tradeDate}`}
-                          onClick={() => removeLot(lot.lotId)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <DenseDataTable
+              columns={lotColumns}
+              rows={vm.rows}
+              getRowId={(row) => row.lotId}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.expanded}
+              selectedRowId={vm.selectedLotId}
+              onRowSelect={(row) => {
+                setSelectedLotId(row.lotId);
+                setPendingRemoveLotId(null);
+              }}
+              emptyText={vm.emptyText}
+              ariaLabel={vm.tableLabel}
+              caption={vm.tableCaption}
+            />
+            {vm.selectedDetail ? (
+              <div id={vm.selectedDetail.panelId}>
+                <EntitySummary
+                  eyebrow={vm.selectedDetail.eyebrow}
+                  title={vm.selectedDetail.title}
+                  subtitle={vm.selectedDetail.subtitle}
+                  description={vm.selectedDetail.description}
+                  status={<Badge variant={vm.selectedDetail.statusBadgeVariant} dot>{vm.selectedDetail.statusLabel}</Badge>}
+                  fields={vm.selectedDetail.fields}
+                  ariaLabel={vm.selectedDetail.ariaLabel}
+                />
+              </div>
+            ) : null}
+          </>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function LotDraftField({
+  field,
+  value,
+  onChange,
+  className
+}: {
+  field: LotsTrackerDraftFieldViewModel;
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("min-w-0 space-y-1", className)}>
+      <label htmlFor={field.id} className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        {field.label}
+      </label>
+      <Input
+        id={field.id}
+        type={field.type}
+        step={field.step}
+        value={value}
+        placeholder={field.placeholder}
+        error={field.invalid}
+        aria-describedby={field.describedBy}
+        aria-errormessage={field.errorText ? field.errorId : undefined}
+        className="min-h-8 px-2 py-1 text-xs"
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <p id={field.helperId} className="text-[11px] leading-4 text-muted-foreground">
+        {field.helperText}
+      </p>
+      {field.errorText ? (
+        <p id={field.errorId} className="text-[11px] leading-4 text-danger">
+          {field.errorText}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

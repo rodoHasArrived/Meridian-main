@@ -13,6 +13,58 @@ public static class EvidenceEndpoints
         this WebApplication app,
         JsonSerializerOptions jsonOptions)
     {
+        app.MapGet("/workstation/evidence/{subjectKind}/{subjectId}/{fileName}", async (
+            string subjectKind,
+            string subjectId,
+            string fileName,
+            HttpContext context) =>
+        {
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var manifest = await store
+                .TryOpenManifestAsync(subjectKind, subjectId, fileName, context.RequestAborted)
+                .ConfigureAwait(false);
+            return manifest is null
+                ? Results.NotFound(Error(
+                    "evidence-manifest-not-found",
+                    $"Evidence manifest '{subjectKind}/{subjectId}/{fileName}' was not found.",
+                    subjectKind,
+                    subjectId,
+                    fileName: fileName))
+                : Results.File(
+                    manifest.Content,
+                    manifest.ContentType,
+                    manifest.FileName,
+                    manifest.LastModified,
+                    enableRangeProcessing: true);
+        })
+        .WithName("GetWorkstationEvidenceManifest")
+        .Produces(200, contentType: "application/json")
+        .Produces<EvidenceEndpointErrorDto>(404);
+
+        app.MapGet("/workstation/evidence/vault/{vaultId}", async (
+            string vaultId,
+            HttpContext context) =>
+        {
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var manifest = await store
+                .TryOpenManifestByVaultIdAsync(vaultId, context.RequestAborted)
+                .ConfigureAwait(false);
+            return manifest is null
+                ? Results.NotFound(Error(
+                    "evidence-vault-manifest-not-found",
+                    $"Evidence vault manifest '{vaultId}' was not found.",
+                    vaultId: vaultId))
+                : Results.File(
+                    manifest.Content,
+                    manifest.ContentType,
+                    manifest.FileName,
+                    manifest.LastModified,
+                    enableRangeProcessing: true);
+        })
+        .WithName("GetWorkstationEvidenceVaultManifest")
+        .Produces(200, contentType: "application/json")
+        .Produces<EvidenceEndpointErrorDto>(404);
+
         var group = app.MapGroup("/api/workstation/evidence");
 
         group.MapGet("/subjects", async (HttpContext context) =>
@@ -34,8 +86,8 @@ public static class EvidenceEndpoints
         })
         .WithName("GetWorkstationEvidencePacket")
         .Produces<EvidencePacketDto>(200)
-        .Produces(400)
-        .Produces(404);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces<EvidenceEndpointErrorDto>(404);
 
         group.MapGet("/subjects/{subjectKind}/{subjectId}/graph", async (
             string subjectKind,
@@ -45,18 +97,26 @@ public static class EvidenceEndpoints
             var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
             if (!service.IsSupportedSubjectKind(subjectKind))
             {
-                return Results.BadRequest(new { error = $"Evidence subject kind '{subjectKind}' is not supported." });
+                return Results.BadRequest(Error(
+                    "unsupported-evidence-subject-kind",
+                    $"Evidence subject kind '{subjectKind}' is not supported.",
+                    subjectKind,
+                    subjectId));
             }
 
             var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted).ConfigureAwait(false);
             return graph is null
-                ? Results.NotFound(new { error = $"Evidence subject '{subjectKind}/{subjectId}' was not found." })
+                ? Results.NotFound(Error(
+                    "evidence-subject-not-found",
+                    $"Evidence subject '{subjectKind}/{subjectId}' was not found.",
+                    subjectKind,
+                    subjectId))
                 : Results.Json(graph, jsonOptions);
         })
         .WithName("GetWorkstationEvidenceGraph")
         .Produces<EvidenceGraphDto>(200)
-        .Produces(400)
-        .Produces(404);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces<EvidenceEndpointErrorDto>(404);
 
         group.MapPost("/subjects/{subjectKind}/{subjectId}/validate", async (
             string subjectKind,
@@ -70,8 +130,8 @@ public static class EvidenceEndpoints
         })
         .WithName("ValidateWorkstationEvidencePacket")
         .Produces<EvidenceCompletenessDto>(200)
-        .Produces(400)
-        .Produces(404);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces<EvidenceEndpointErrorDto>(404);
 
         group.MapPost("/subjects/{subjectKind}/{subjectId}/export-manifest", async (
             string subjectKind,
@@ -84,17 +144,22 @@ public static class EvidenceEndpoints
                 return packetResult.Result;
             }
 
-            var request = await ReadExportRequestAsync(context).ConfigureAwait(false);
+            var requestResult = await ReadExportRequestAsync(context, subjectKind, subjectId).ConfigureAwait(false);
+            if (requestResult.Error is not null)
+            {
+                return requestResult.Error;
+            }
+
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var response = await store
-                .WriteManifestAsync(packetResult.Packet, request, context.RequestAborted)
+                .WriteManifestAsync(packetResult.Packet, requestResult.Request, context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(response, jsonOptions);
         })
         .WithName("ExportWorkstationEvidenceManifest")
         .Produces<EvidencePacketExportResponse>(200)
-        .Produces(400)
-        .Produces(404);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces<EvidenceEndpointErrorDto>(404);
 
         group.MapGet("/templates", (HttpContext context) =>
         {
@@ -127,24 +192,63 @@ public static class EvidenceEndpoints
         var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
         if (!service.IsSupportedSubjectKind(subjectKind))
         {
-            return (null, Results.BadRequest(new { error = $"Evidence subject kind '{subjectKind}' is not supported." }));
+            return (null, Results.BadRequest(Error(
+                "unsupported-evidence-subject-kind",
+                $"Evidence subject kind '{subjectKind}' is not supported.",
+                subjectKind,
+                subjectId)));
         }
 
         var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted).ConfigureAwait(false);
         return packet is null
-            ? (null, Results.NotFound(new { error = $"Evidence subject '{subjectKind}/{subjectId}' was not found." }))
+            ? (null, Results.NotFound(Error(
+                "evidence-subject-not-found",
+                $"Evidence subject '{subjectKind}/{subjectId}' was not found.",
+                subjectKind,
+                subjectId)))
             : (packet, Results.Empty);
     }
 
-    private static async Task<EvidencePacketExportRequest> ReadExportRequestAsync(HttpContext context)
+    private static EvidenceEndpointErrorDto Error(
+        string code,
+        string message,
+        string? subjectKind = null,
+        string? subjectId = null,
+        string? fileName = null,
+        string? vaultId = null)
+        => new(code, message, subjectKind, subjectId, fileName, vaultId);
+
+    private static async Task<(EvidencePacketExportRequest Request, IResult? Error)> ReadExportRequestAsync(
+        HttpContext context,
+        string subjectKind,
+        string subjectId)
     {
         if (context.Request.ContentLength == 0)
         {
-            return new EvidencePacketExportRequest(null, null);
+            return (new EvidencePacketExportRequest(null, null), null);
         }
 
-        var request = await context.Request.ReadFromJsonAsync<EvidencePacketExportRequest>(
-            cancellationToken: context.RequestAborted).ConfigureAwait(false);
-        return request ?? new EvidencePacketExportRequest(null, null);
+        try
+        {
+            var request = await context.Request.ReadFromJsonAsync<EvidencePacketExportRequest>(
+                cancellationToken: context.RequestAborted).ConfigureAwait(false);
+            return (request ?? new EvidencePacketExportRequest(null, null), null);
+        }
+        catch (JsonException)
+        {
+            return (new EvidencePacketExportRequest(null, null), Results.BadRequest(Error(
+                "invalid-evidence-export-request",
+                "Evidence export request body must be a valid JSON object.",
+                subjectKind,
+                subjectId)));
+        }
+        catch (BadHttpRequestException)
+        {
+            return (new EvidencePacketExportRequest(null, null), Results.BadRequest(Error(
+                "invalid-evidence-export-request",
+                "Evidence export request body must be a valid JSON object.",
+                subjectKind,
+                subjectId)));
+        }
     }
 }

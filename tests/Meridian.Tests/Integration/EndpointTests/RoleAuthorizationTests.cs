@@ -67,13 +67,14 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public void RolePermissions_TradeDesk_CanExecuteTradesButCannotManageUsers()
+    public void RolePermissions_TradeDesk_CanExecuteTradesButCannotManageCredentialsOrUsers()
     {
         var perms = RolePermissions.For(UserRole.TradeDesk);
 
         perms.Should().HaveFlag(UserPermission.ViewMarketData);
         perms.Should().HaveFlag(UserPermission.ExecuteTrades);
         perms.Should().HaveFlag(UserPermission.ManageOrders);
+        perms.Should().NotHaveFlag(UserPermission.ManageCredentials);
         perms.Should().NotHaveFlag(UserPermission.ManageUsers);
         perms.Should().NotHaveFlag(UserPermission.ModifyConfig);
     }

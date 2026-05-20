@@ -11,10 +11,12 @@ describe("CommandPalette", () => {
 
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
     expect(screen.getByText("Route to common operator workflows and canonical workspaces. Current: Portfolio.")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "18 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "20 workstation commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
-    expect(screen.getByText("18 commands available")).toBeInTheDocument();
+    expect(screen.getByText("20 commands available")).toBeInTheDocument();
+    expect(screen.getByLabelText("Workspaces: 7 workspaces")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quick routes: 13 quick routes")).toBeInTheDocument();
     expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
   });
@@ -33,10 +35,10 @@ describe("CommandPalette", () => {
   it("keeps Tab focus inside the modal command surface", () => {
     const onOpenChange = vi.fn();
 
-    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings"] });
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings#alpaca-provider-setup"] });
 
     const closeButton = screen.getByRole("button", { name: "Close command palette" });
-    const lastCommand = screen.getByLabelText("Open Provider integrations route");
+    const lastCommand = screen.getByLabelText("Alpaca provider setup, current route");
 
     lastCommand.focus();
     fireEvent.keyDown(window, { key: "Tab" });
@@ -45,6 +47,19 @@ describe("CommandPalette", () => {
     fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
     expect(lastCommand).toHaveFocus();
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("does not mark the Alpaca setup command current from another Settings anchor", () => {
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, {
+      initialEntries: ["/settings#backend-capability-coverage"]
+    });
+
+    expect(screen.getByLabelText("Settings, current workspace")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
+    expect(screen.queryByLabelText("Alpaca provider setup, current route")).not.toBeInTheDocument();
   });
 
   it("closes when a workspace command is selected", async () => {
@@ -65,9 +80,14 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
 
-    expect(screen.getByText("2 of 18 commands match")).toBeInTheDocument();
+    expect(screen.getByText("2 of 20 commands match")).toBeInTheDocument();
+    expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
-    expect(screen.getByLabelText("Open Provider integrations route")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
   });
 
@@ -120,8 +140,61 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
 
-    expect(screen.getByText("0 of 18 commands match")).toBeInTheDocument();
+    expect(screen.getByText("0 of 20 commands match")).toBeInTheDocument();
+    const search = screen.getByRole("searchbox", { name: "Search command palette" });
+    expect(search).toHaveAttribute("aria-describedby", "command-palette-filter-count command-palette-empty-state-detail");
+    expect(screen.getByText("Empty")).toBeInTheDocument();
     expect(screen.getByText("No matching commands")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      'No commands match "missing command". Clear the search to return to all workstation commands.'
+    );
+    expect(screen.getByRole("button", { name: "Clear command palette search for missing command" })).toBeInTheDocument();
+  });
+
+  it("clears no-match search results and restores focus to search", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    const search = screen.getByRole("searchbox", { name: "Search command palette" });
+    await user.type(search, "missing command");
+    await user.click(screen.getByRole("button", { name: "Clear command palette search for missing command" }));
+
+    expect(search).toHaveValue("");
+    expect(search).toHaveFocus();
+    expect(screen.getByText("20 commands available")).toBeInTheDocument();
+    expect(screen.queryByText("No matching commands")).not.toBeInTheDocument();
+  });
+
+  it("renders ranked operator focus actions as first-class commands", () => {
+    renderWithRouter(
+      <CommandPalette
+        open
+        onOpenChange={vi.fn()}
+        operatorFocusItems={[
+          {
+            id: "work-item:brokerage-sync",
+            label: "Brokerage sync failed",
+            detail: "Account sync failed after the last provider heartbeat.",
+            route: "/settings#alpaca-provider-setup",
+            workspaceLabel: "Settings",
+            actionLabel: "Fix provider setup",
+            tone: "blocked",
+            ariaLabel: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+          }
+        ]}
+      />,
+      { initialEntries: ["/data/quotes?symbol=MSFT"] }
+    );
+
+    expect(screen.getByRole("navigation", { name: "21 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Focus actions: 1 focus action")).toBeInTheDocument();
+    expect(screen.getByText(/1 ranked focus action available\./)).toBeInTheDocument();
+    expect(screen.getByLabelText(
+      "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+    )).toHaveAttribute("href", "/settings#alpaca-provider-setup");
+    expect(screen.getByText("Blocked")).toBeInTheDocument();
+    expect(screen.getByText("Fix provider setup")).toBeInTheDocument();
   });
 
   it("closes when the backdrop is selected", () => {
@@ -202,7 +275,7 @@ describe("CommandPalette", () => {
       { initialEntries: ["/trading"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "20 commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "22 commands" })).toBeInTheDocument();
     expect(screen.getByText("1 workflow action - 1 preset")).toBeInTheDocument();
     expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/accounting/security-master");
 

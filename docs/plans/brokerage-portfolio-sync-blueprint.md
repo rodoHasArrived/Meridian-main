@@ -1,10 +1,23 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-20
+
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **brokerage portfolio sync blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the brokerage portfolio sync blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 ## Summary
 
-Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, and `Governance` workflows without turning market-data providers into portfolio-domain services.
+Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, `Accounting`, and `Reporting` workflows without turning market-data providers into portfolio-domain services.
+
+Planning review note 2026-05-18: this blueprint remains a Wave 3-4 continuity reference under the
+consolidated planning entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md). It does not promote live
+integration readiness ahead of the paper-first and read-only trust gates.
 
 This should extend the existing execution and brokerage seams already present in:
 
@@ -136,7 +149,7 @@ Robinhood connection configuration is environment-backed and credential-store co
 - local persistence of sync snapshots and sync cursors
 - fund-account and governance projections that consume synced brokerage state
 - shared workstation DTOs and endpoints for operator review, freshness, and reconciliation
-- WPF and workstation read-model integration where it reinforces existing `Trading` and `Governance` workflows
+- Browser workstation and retained WPF read-model integration where it reinforces existing `Trading`, `Portfolio`, `Accounting`, and `Reporting` workflows
 
 ### Out of scope
 
@@ -298,7 +311,7 @@ Use the synced data to deepen existing workflows instead of creating a new root 
 Recommended integration points:
 
 - `Trading`: show broker-account freshness, synced positions, and open-order divergence against local strategy/paper state
-- `Governance`: show linked brokerage accounts, latest sync age, open breaks, and imported cash activity as part of fund-operations review
+- `Accounting` / `Reporting`: show linked brokerage accounts, latest sync age, open breaks, and imported cash activity as part of fund-operations review
 - `FundLedgerViewModel`: consume sync posture alongside current account, bank snapshot, reconciliation, and report-pack data
 
 The UI should answer:

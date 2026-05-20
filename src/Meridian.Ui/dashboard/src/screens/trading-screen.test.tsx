@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { TradingWorkspaceResponse } from "@/types";
+import type { PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -94,6 +94,32 @@ vi.mock("@/lib/api", async () => {
         }
       ],
       asOf: "2026-01-01T00:20:00Z"
+    }),
+    getRiskRules: vi.fn().mockResolvedValue([
+      {
+        ruleName: "PositionLimit",
+        state: "Healthy",
+        summary: "No position breaches.",
+        isBreached: false,
+        threshold: "5000",
+        currentValue: "2500",
+        asOf: "2026-01-01T00:20:00Z",
+        recentViolations: []
+      }
+    ]),
+    getRiskRuleConfig: vi.fn().mockResolvedValue({
+      ruleName: "DrawdownCircuitBreaker",
+      defaultMaxPositionSize: null,
+      symbolPositionLimits: null,
+      maxDrawdownPercent: 5,
+      maxOrdersPerMinute: null
+    }),
+    updateRiskRuleConfig: vi.fn().mockResolvedValue({
+      ruleName: "DrawdownCircuitBreaker",
+      defaultMaxPositionSize: null,
+      symbolPositionLimits: null,
+      maxDrawdownPercent: 5,
+      maxOrdersPerMinute: null
     }),
     getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
@@ -276,7 +302,7 @@ beforeEach(() => {
 });
 
 async function renderTradingScreen(
-  screenData: TradingWorkspaceResponse = data,
+  screenData: TradingWorkspaceResponse | null = data,
   initialEntry = "/trading"
 ) {
   const result = renderWithRouter(<TradingScreen data={screenData} />, { initialEntries: [initialEntry] });
@@ -300,6 +326,17 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("renders a VM-owned pending state while the cockpit data loads", async () => {
+    await renderTradingScreen(null, "/trading/positions");
+
+    const loading = screen.getByRole("status", { name: "Loading Trading" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(loading).toHaveAttribute("aria-live", "polite");
+    expect(within(loading).getByText("Loading Trading")).toBeInTheDocument();
+    expect(within(loading).getAllByText("Position book")).toHaveLength(2);
+    expect(within(loading).getByLabelText("Trading loading dependencies")).toHaveTextContent("SnapshotsPending");
+  });
+
   it("renders cockpit tables and wiring state", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
@@ -310,6 +347,57 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
+  });
+
+  it("links blotter dense-table rows to detail panels with keyboard selection", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen({
+      ...data,
+      positions: [
+        ...data.positions,
+        { symbol: "MSFT", side: "Short", quantity: "40", averagePrice: "414.20", markPrice: "410.00", dayPnl: "+$60", unrealizedPnl: "+$168", exposure: "$16,400" }
+      ],
+      openOrders: [
+        ...data.openOrders,
+        { orderId: "PO-2", symbol: "AAPL", side: "Sell", type: "Market", quantity: "10", limitPrice: "", status: "Pending Routing", submittedAt: "09:44:00 ET" }
+      ],
+      fills: [
+        ...data.fills,
+        { fillId: "FL-2", orderId: "PO-2", symbol: "AAPL", side: "Sell", quantity: "10", price: "185.40", venue: "IEX", timestamp: "09:45:11 ET" }
+      ]
+    });
+
+    const msftPosition = screen.getByRole("row", { name: /inspect msft short position/i });
+    expect(msftPosition).toHaveAttribute("aria-controls", "trading-position-detail");
+    expect(msftPosition).toHaveAttribute("aria-expanded", "false");
+
+    msftPosition.focus();
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => expect(msftPosition).toHaveAttribute("aria-selected", "true"));
+    expect(msftPosition).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: /position detail for msft/i })).toHaveAttribute("id", "trading-position-detail");
+
+    const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
+    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(queuedOrder);
+
+    await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-detail");
+
+    const secondFill = screen.getByRole("row", { name: /inspect fill fl-2/i });
+    expect(secondFill).toHaveAttribute("aria-controls", "trading-fill-detail");
+    expect(secondFill).toHaveAttribute("aria-expanded", "false");
+
+    secondFill.focus();
+    await user.keyboard(" ");
+
+    await waitFor(() => expect(secondFill).toHaveAttribute("aria-selected", "true"));
+    expect(secondFill).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: /fill detail for fl-2/i })).toHaveAttribute("id", "trading-fill-detail");
   });
 
   it("announces active workflow side panels from the trading shell view model", async () => {
@@ -325,6 +413,25 @@ describe("TradingScreen", () => {
     expect(screen.getByRole("dialog", { name: /strategy lifecycle/i })).toHaveAttribute("id", "strategy-lifecycle-panel");
     expect(within(workflowStrip).getByLabelText("Panel: Strategy controls")).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("surfaces VM-owned disabled reasons for strategy lifecycle controls", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const strategyDialog = await openStrategyControls(user);
+    const pauseButton = within(strategyDialog).getByRole("button", { name: "Enter a strategy ID before pausing a strategy" });
+    const stopButton = within(strategyDialog).getByRole("button", { name: "Enter a strategy ID before stopping a strategy" });
+
+    expect(pauseButton).toBeDisabled();
+    expect(stopButton).toBeDisabled();
+    expect(pauseButton).toHaveAttribute("title", "Enter a registered strategy ID before using lifecycle actions.");
+    expect(stopButton).toHaveAttribute("title", "Enter a registered strategy ID before using lifecycle actions.");
+
+    await user.type(within(strategyDialog).getByLabelText("Strategy ID"), "strat-alpha");
+
+    expect(within(strategyDialog).getByRole("button", { name: "Open pause confirmation for strategy strat-alpha" })).toBeEnabled();
+    expect(within(strategyDialog).getByRole("button", { name: "Open stop confirmation for strategy strat-alpha" })).toBeEnabled();
   });
 
   it("fetches and renders execution controls snapshot", async () => {
@@ -355,7 +462,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
     expect(screen.getByText("Paper: Not paper ready")).toBeInTheDocument();
     expect(screen.getByText("Brokerage: No account sync")).toBeInTheDocument();
-    expect(screen.getByText("As of: 2026-04-26T16:00:00Z")).toBeInTheDocument();
+    expect(screen.getByText("As of: Apr 26, 16:00 UTC")).toBeInTheDocument();
     expect(screen.getByText("Replay verified")).toBeInTheDocument();
     expect(screen.getByText("Blocked")).toBeInTheDocument();
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
@@ -415,7 +522,7 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
     expect(screen.getByText("Brokerage: Failed stale")).toBeInTheDocument();
-    expect(screen.getByText("As of: 2026-04-26T16:05:00Z")).toBeInTheDocument();
+    expect(screen.getByText("As of: Apr 26, 16:05 UTC")).toBeInTheDocument();
     expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
     expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open provider setup for brokerage sync failed/i }))
@@ -466,9 +573,40 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
-    await user.click(screen.getByRole("button", { name: /submit order/i }));
+    const submitButton = screen.getByRole("button", { name: /submit order/i });
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveAttribute("title", "Review the order preview and acknowledge before submitting.");
+    await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
+    expect(submitButton).toBeEnabled();
+    await user.click(submitButton);
 
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
+  });
+
+  it("renders VM-owned disabled reasons for blocked trading commands", async () => {
+    await renderTradingScreen({ ...data, openOrders: [] });
+
+    const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
+    expect(cancelAll).toBeDisabled();
+    expect(cancelAll).toHaveAttribute("title", "No open orders require cancellation.");
+  });
+
+  it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+    await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
+    const quantityInput = screen.getAllByRole("spinbutton")[0];
+    await user.clear(quantityInput);
+    await user.type(quantityInput, "10");
+
+    const form = screen.getByRole("button", { name: /submit order/i }).closest("form");
+    expect(form).not.toBeNull();
+    fireEvent.submit(form!);
+
+    expect(api.submitOrder).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Review the order preview and acknowledge before submitting.");
   });
 
   it("renders the order ticket through shared labelled controls", async () => {
@@ -481,6 +619,7 @@ describe("TradingScreen", () => {
     expect(screen.getByRole("combobox", { name: "Order side" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
     expect(screen.getByRole("combobox", { name: "Order type" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
     expect(screen.getByLabelText("Order symbol")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i })).toBeDisabled();
 
     await user.type(screen.getByLabelText("Order symbol"), "AAPL");
     expect(screen.getByLabelText("Order quantity")).toHaveAttribute("aria-invalid", "true");
@@ -610,6 +749,43 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Selected session: sess-1/i)).toBeInTheDocument();
     expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
+  });
+
+  it("surfaces VM-owned disabled reasons while creating paper sessions", async () => {
+    let resolveCreate!: (value: PaperSessionSummary) => void;
+    vi.mocked(api.createPaperSession).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveCreate = resolve;
+    }));
+
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /open paper session creation form/i }));
+    await user.type(screen.getByLabelText("Strategy ID"), "strat-1");
+    expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
+    await user.click(screen.getByRole("button", { name: /create paper session/i }));
+
+    const creatingButton = await screen.findByRole("button", { name: /creating paper session/i });
+    expect(creatingButton).toBeDisabled();
+    expect(creatingButton).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByLabelText("Strategy ID")).toBeDisabled();
+    expect(screen.getByLabelText("Strategy ID")).toHaveAccessibleDescription("Paper session creation is in progress.");
+    expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
+    expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Paper session creation is in progress.");
+    expect(screen.getByText("Paper session creation is in progress.")).toHaveAttribute("id", "paper-session-create-requirements");
+
+    resolveCreate({
+      sessionId: "sess-new",
+      strategyId: "strat-new",
+      strategyName: null,
+      initialCash: 100000,
+      createdAt: "2026-01-01",
+      closedAt: null,
+      isActive: true
+    });
+    await waitFor(() => expect(api.createPaperSession).toHaveBeenCalledWith("strat-1", null, 100000));
   });
 
   it("shows replay verification and execution audit for the selected session", async () => {

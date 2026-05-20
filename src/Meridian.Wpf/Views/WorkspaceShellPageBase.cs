@@ -228,12 +228,12 @@ public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorks
     }
 }
 
-public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, DataOperationsWorkspaceShellViewModel>
+public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
 {
     protected DataOperationsWorkspaceShellPageBase(
         NavigationService navigationService,
         DataOperationsWorkspaceShellStateProvider stateProvider,
-        DataOperationsWorkspaceShellViewModel viewModel)
+        Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }

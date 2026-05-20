@@ -3,6 +3,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
 import {
   Sheet,
@@ -22,6 +24,7 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -44,8 +47,12 @@ import {
   type PaperSessionDetailPanel,
   type PaperSessionReplayPanel,
   type PromotionOutcomeLevel,
+  type TradingLoadingState,
   type TradingBlotterDetail,
   type TradingDataTone,
+  type TradingFillRow,
+  type TradingOrderRow,
+  type TradingPositionRow,
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel,
   type TradingReadinessWorkItemRow,
@@ -136,12 +143,265 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
   muted: "border-border/70 bg-secondary/20"
 };
 
+function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
+  return [
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono font-semibold text-foreground",
+      render: (position) => position.symbol
+    },
+    {
+      id: "side",
+      label: "Side",
+      className: "font-mono text-foreground",
+      render: (position) => position.side
+    },
+    {
+      id: "quantity",
+      label: "Qty",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (position) => position.quantity
+    },
+    {
+      id: "average",
+      label: "Avg",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (position) => position.averagePrice
+    },
+    {
+      id: "mark",
+      label: "Mark",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (position) => position.markPrice
+    },
+    {
+      id: "day-pnl",
+      label: "Day P&L",
+      align: "right",
+      render: (position) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[position.dayPnlTone])}>
+          {position.dayPnl}
+        </span>
+      )
+    },
+    {
+      id: "unrealized",
+      label: "Unrealized",
+      align: "right",
+      render: (position) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>
+          {position.unrealizedPnl}
+        </span>
+      )
+    },
+    {
+      id: "exposure",
+      label: "Exposure",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (position) => position.exposure
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (position) => (
+        <button
+          type="button"
+          onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
+          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={position.closeAriaLabel}
+          title={position.closeTitleLabel}
+        >
+          {position.closeActionLabel}
+        </button>
+      )
+    }
+  ];
+}
+
+function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingOrderRow>[] {
+  return [
+    {
+      id: "order",
+      label: "Order",
+      className: "font-mono font-semibold text-foreground",
+      render: (order) => order.orderId
+    },
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono text-foreground",
+      render: (order) => order.symbol
+    },
+    {
+      id: "side",
+      label: "Side",
+      className: "font-mono text-foreground",
+      render: (order) => order.side
+    },
+    {
+      id: "type",
+      label: "Type",
+      className: "font-mono text-foreground",
+      render: (order) => order.type
+    },
+    {
+      id: "quantity",
+      label: "Qty",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (order) => order.quantity
+    },
+    {
+      id: "limit",
+      label: "Limit",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (order) => order.limitPrice
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (order) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[order.statusTone])}>
+          {order.status}
+        </span>
+      )
+    },
+    {
+      id: "submitted",
+      label: "Submitted",
+      className: "font-mono text-muted-foreground",
+      render: (order) => order.submittedAt
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (order) => (
+        <button
+          type="button"
+          onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
+          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={order.cancelAriaLabel}
+          title={order.cancelTitleLabel}
+        >
+          {order.cancelActionLabel}
+        </button>
+      )
+    }
+  ];
+}
+
+const fillColumns: DenseDataTableColumn<TradingFillRow>[] = [
+  {
+    id: "fill",
+    label: "Fill",
+    className: "font-mono font-semibold text-foreground",
+    render: (fill) => fill.fillId
+  },
+  {
+    id: "order",
+    label: "Order",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.orderId
+  },
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.symbol
+  },
+  {
+    id: "side",
+    label: "Side",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.side
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.quantity
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.price
+  },
+  {
+    id: "venue",
+    label: "Venue",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.venue
+  },
+  {
+    id: "timestamp",
+    label: "Timestamp",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.timestamp
+  }
+];
+
 const sessionReplayStatusPanelClass = {
   default: "border-border/70 bg-secondary/25 text-muted-foreground",
   success: "border-success/30 bg-success/10 text-success",
   warning: "border-warning/30 bg-warning/10 text-warning",
   danger: "border-danger/30 bg-danger/10 text-danger"
 } as const;
+
+function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
+  return (
+    <Card
+      role={state.role}
+      aria-busy={state.ariaBusy}
+      aria-live={state.ariaLive}
+      aria-label={state.regionLabel}
+      aria-labelledby={state.titleId}
+      aria-describedby={state.detailId}
+      className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+    >
+      <CardHeader className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--state-pending-fg)]"
+              aria-hidden="true"
+            />
+            <span className="state-matrix-badge state-pending">{state.statusLabel}</span>
+            <span className="toolbar-chip" aria-label={`Route ${state.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{state.routeLabel}</b>
+            </span>
+          </div>
+          <RotateCcw className="h-4 w-4 animate-spin text-[var(--state-pending-fg)]" aria-hidden="true" />
+        </div>
+        <div>
+          <CardTitle id={state.titleId}>{state.title}</CardTitle>
+          <CardDescription id={state.detailId} className="mt-2 max-w-3xl leading-6">
+            {state.detail}
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2" aria-label="Trading loading dependencies">
+          {state.chips.map((chip) => (
+            <span key={chip.label} className="toolbar-chip">
+              <span className="text-muted-foreground">{chip.label}</span>
+              <span className="font-mono text-[var(--state-pending-fg)]">{chip.value}</span>
+            </span>
+          ))}
+        </div>
+      </CardHeader>
+    </Card>
+  );
+}
 
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
@@ -169,6 +429,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
       ]);
     }
   });
+  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
+  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -188,14 +450,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   if (!data) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading trading cockpit</CardTitle>
-          <CardDescription>Waiting for paper-trading state, order flow, and brokerage wiring snapshots.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
+    return <TradingLoadingPanel state={shellVm.loadingState} />;
   }
 
   const cockpitAcceptance = buildCockpitAcceptance({
@@ -356,7 +611,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => { void executionEvidence.refresh(); }}
-                    disabled={executionEvidence.loading}
+                    disabled={executionEvidence.refreshDisabled}
+                    disabledReason={executionEvidence.refreshDisabledReason}
+                    busy={executionEvidence.loading}
+                    busyLabel={executionEvidence.refreshBusyLabel}
                     aria-label={executionEvidence.refreshAriaLabel}
                   >
                     {executionEvidence.refreshButtonLabel}
@@ -392,6 +650,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
               ) : (
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
+            </div>
+            <div className="mt-3">
+              <RiskControlPanel />
             </div>
           </CardContent>
         </Card>
@@ -434,67 +695,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {blotterVm.hasPositions ? (
-              <div className="data-grid-surface overflow-x-auto">
-                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm" aria-label={blotterVm.positionsTableLabel}>
-                  <caption className="sr-only">Select a position to update the position detail status window.</caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      {["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure", ""].map((col) => (
-                        <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {blotterVm.positionRows.map((position) => (
-                      <tr
-                        key={position.id}
-                        aria-label={position.ariaLabel}
-                        aria-selected={position.isSelected}
-                        className={cn("bg-background/20 transition-colors", position.isSelected ? "bg-primary/10" : "hover:bg-secondary/20")}
-                      >
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={position.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={position.isSelected}
-                            aria-controls={blotterVm.positionDetailId}
-                            aria-label={position.selectAriaLabel}
-                            onClick={() => blotterVm.selectPosition(position.id)}
-                            className="justify-start px-2 font-mono font-semibold"
-                          >
-                            {position.symbol}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2 font-mono text-foreground">{position.side}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{position.quantity}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{position.averagePrice}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{position.markPrice}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", dataToneClass[position.dayPnlTone])}>{position.dayPnl}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>{position.unrealizedPnl}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{position.exposure}</td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
-                            className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                            aria-label={position.closeAriaLabel}
-                            title="Close position"
-                          >
-                            Close
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <EmptyEvidenceState text={blotterVm.positionEmptyText} />
-            )}
+            <DenseDataTable
+              ariaLabel={blotterVm.positionsTableLabel}
+              caption="Select a position to update the position detail status window."
+              columns={positionColumns}
+              rows={blotterVm.positionRows}
+              getRowId={(position) => position.id}
+              getRowAriaLabel={(position) => position.ariaLabel}
+              getRowSelectAriaLabel={(position) => position.selectAriaLabel}
+              getRowAriaControls={(position) => position.detailPanelId}
+              getRowAriaExpanded={(position) => position.ariaExpanded}
+              selectedRowId={blotterVm.selectedPositionRowId}
+              onRowSelect={(position) => blotterVm.selectPosition(position.id)}
+              emptyText={blotterVm.positionEmptyText}
+            />
             <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} />
           </CardContent>
         </Card>
@@ -512,6 +726,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   variant="outline"
                   onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
                   disabled={blotterVm.cancelAllDisabled}
+                  disabledReason={blotterVm.cancelAllDisabledReason}
                   aria-label={blotterVm.cancelAllAriaLabel}
                   title="Cancel all open orders"
                 >
@@ -626,6 +841,35 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
                 <OrderPreviewPanel preview={orderTicket.preview} />
 
+                <label
+                  htmlFor={orderTicket.acknowledgement.id}
+                  className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+                >
+                  <input
+                    id={orderTicket.acknowledgement.id}
+                    type="checkbox"
+                    checked={orderTicket.acknowledgement.checked}
+                    disabled={orderTicket.acknowledgement.disabled}
+                    onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
+                    aria-describedby={joinDescribedByIds(
+                      `${orderTicket.acknowledgement.id}-description`,
+                      `${orderTicket.acknowledgement.id}-disabled-reason`
+                    )}
+                    className="mt-1 h-4 w-4 accent-primary"
+                  />
+                  <span>
+                    <span className="block font-medium text-foreground">{orderTicket.acknowledgement.label}</span>
+                    <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                      {orderTicket.acknowledgement.description}
+                    </span>
+                    <FieldSupportText
+                      disabledReason={orderTicket.acknowledgement.disabledReason}
+                      disabledReasonId={`${orderTicket.acknowledgement.id}-disabled-reason`}
+                      disabledReasonClassName="mt-1 block"
+                    />
+                  </span>
+                </label>
+
                 {orderTicket.errorText && (
                   <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
                     <XCircle className="h-4 w-4 shrink-0" />
@@ -638,6 +882,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!orderTicket.canSubmit}
+                    disabledReason={orderTicket.submitDisabledReason}
+                    busy={orderTicket.submitBusy}
+                    busyLabel={orderTicket.submitBusyLabel}
                     aria-label={orderTicket.submitAriaLabel}
                     aria-describedby="order-ticket-requirements"
                   >
@@ -649,8 +896,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     variant="outline"
                     onClick={orderTicket.closeTicket}
                     disabled={!orderTicket.canClose}
+                    disabledReason={orderTicket.closeDisabledReason}
+                    aria-label={orderTicket.closeAriaLabel}
                   >
-                    Cancel
+                    {orderTicket.closeButtonLabel}
                   </Button>
                 </div>
               </form>
@@ -665,67 +914,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </CardContent>
           )}
           <CardContent className="space-y-3">
-            {blotterVm.hasOpenOrders ? (
-              <div className="data-grid-surface overflow-x-auto">
-                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm" aria-label={blotterVm.ordersTableLabel}>
-                  <caption className="sr-only">Select an order to update the order detail status window.</caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      {["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted", ""].map((col) => (
-                        <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {blotterVm.orderRows.map((order) => (
-                      <tr
-                        key={order.id}
-                        aria-label={order.ariaLabel}
-                        aria-selected={order.isSelected}
-                        className={cn("bg-background/20 transition-colors", order.isSelected ? "bg-primary/10" : "hover:bg-secondary/20")}
-                      >
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={order.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={order.isSelected}
-                            aria-controls={blotterVm.orderDetailId}
-                            aria-label={order.selectAriaLabel}
-                            onClick={() => blotterVm.selectOrder(order.id)}
-                            className="justify-start px-2 font-mono font-semibold"
-                          >
-                            {order.orderId}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.symbol}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.side}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.type}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.quantity}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{order.limitPrice}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", dataToneClass[order.statusTone])}>{order.status}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{order.submittedAt}</td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
-                            className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                            aria-label={order.cancelAriaLabel}
-                            title="Cancel order"
-                          >
-                            Cancel
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <EmptyEvidenceState text={blotterVm.orderEmptyText} />
-            )}
+            <DenseDataTable
+              ariaLabel={blotterVm.ordersTableLabel}
+              caption="Select an order to update the order detail status window."
+              columns={orderColumns}
+              rows={blotterVm.orderRows}
+              getRowId={(order) => order.id}
+              getRowAriaLabel={(order) => order.ariaLabel}
+              getRowSelectAriaLabel={(order) => order.selectAriaLabel}
+              getRowAriaControls={(order) => order.detailPanelId}
+              getRowAriaExpanded={(order) => order.ariaExpanded}
+              selectedRowId={blotterVm.selectedOrderRowId}
+              onRowSelect={(order) => blotterVm.selectOrder(order.id)}
+              emptyText={blotterVm.orderEmptyText}
+            />
             <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} />
           </CardContent>
         </Card>
@@ -733,18 +935,37 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
       <Card className="panel-surface">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CandlestickChart className="h-4 w-4 text-primary" />
-            Recent fills
-          </CardTitle>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CandlestickChart className="h-4 w-4 text-primary" />
+                Recent fills
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Select a fill to inspect execution venue, price, and linked order context.
+              </CardDescription>
+            </div>
+            <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
+          </div>
         </CardHeader>
-        <CardContent>
-          <TradingTable
-            ariaLabel={blotterVm.fillsTableLabel}
-            columns={["Fill", "Order", "Symbol", "Side", "Qty", "Price", "Venue", "Timestamp"]}
-            rows={blotterVm.fillRows}
-            emptyText={blotterVm.fillEmptyText}
-          />
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+            <DenseDataTable
+              ariaLabel={blotterVm.fillsTableLabel}
+              caption="Select a fill to update the fill detail status window."
+              columns={fillColumns}
+              rows={blotterVm.fillRows}
+              getRowId={(fill) => fill.id}
+              getRowAriaLabel={(fill) => fill.ariaLabel}
+              getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
+              getRowAriaControls={(fill) => fill.detailPanelId}
+              getRowAriaExpanded={(fill) => fill.ariaExpanded}
+              selectedRowId={blotterVm.selectedFillRowId}
+              onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
+              emptyText={blotterVm.fillEmptyText}
+            />
+            <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} />
+          </div>
         </CardContent>
       </Card>
 
@@ -763,9 +984,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 onClick={paperSessions.toggleCreateForm}
                 aria-expanded={paperSessions.showCreateForm}
                 aria-controls={paperSessions.formPanelId}
+                aria-label={paperSessions.toggleCreateButtonAriaLabel}
                 disabled={paperSessions.isBusy && !paperSessions.showCreateForm}
+                disabledReason={paperSessions.toggleCreateButtonDisabledReason}
               >
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="mr-2 h-4 w-4" aria-hidden="true" />
                 {paperSessions.toggleCreateButtonLabel}
               </Button>
             </div>
@@ -777,7 +1000,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
           {paperSessions.errorText && (
             <CardContent className="pt-0 pb-2">
               <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
-                <XCircle className="h-4 w-4 shrink-0" />
+                <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {paperSessions.errorText}
               </div>
             </CardContent>
@@ -792,33 +1015,55 @@ export function TradingScreen({ data }: TradingScreenProps) {
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor="paper-session-strategy-id" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Strategy ID
+                    <label htmlFor={paperSessions.strategyIdField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {paperSessions.strategyIdField.label}
                     </label>
-                    <input
-                      id="paper-session-strategy-id"
-                      type="text"
-                      placeholder="my-strategy-01"
-                      value={paperSessions.form.strategyId}
-                      onChange={(e) => paperSessions.updateField("strategyId", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    <Input
+                      id={paperSessions.strategyIdField.id}
+                      type={paperSessions.strategyIdField.type}
+                      placeholder={paperSessions.strategyIdField.placeholder}
+                      value={paperSessions.strategyIdField.value}
+                      autoComplete={paperSessions.strategyIdField.autoComplete}
+                      aria-label={paperSessions.strategyIdField.ariaLabel}
+                      aria-describedby={joinDescribedByIds(
+                        paperSessions.strategyIdField.describedBy,
+                        `${paperSessions.strategyIdField.id}-disabled-reason`
+                      )}
+                      disabled={paperSessions.strategyIdField.disabled}
+                      error={paperSessions.strategyIdField.invalid}
+                      onChange={(e) => paperSessions.updateField(paperSessions.strategyIdField.field, e.target.value)}
+                      className="font-mono"
+                    />
+                    <FieldSupportText
+                      disabledReason={paperSessions.strategyIdField.disabledReason}
+                      disabledReasonId={`${paperSessions.strategyIdField.id}-disabled-reason`}
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="paper-session-initial-cash" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Initial cash ($)
+                    <label htmlFor={paperSessions.initialCashField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {paperSessions.initialCashField.label}
                     </label>
-                    <input
-                      id="paper-session-initial-cash"
-                      type="number"
-                      min={1000}
-                      step={1000}
-                      value={paperSessions.form.initialCash}
-                      onChange={(e) => paperSessions.updateField("initialCash", e.target.value)}
-                      aria-describedby={paperSessions.formDescriptionId}
-                      aria-invalid={!paperSessions.canSubmitCreate ? true : undefined}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    <Input
+                      id={paperSessions.initialCashField.id}
+                      type={paperSessions.initialCashField.type}
+                      min={paperSessions.initialCashField.min}
+                      step={paperSessions.initialCashField.step}
+                      value={paperSessions.initialCashField.value}
+                      autoComplete={paperSessions.initialCashField.autoComplete}
+                      aria-label={paperSessions.initialCashField.ariaLabel}
+                      aria-describedby={joinDescribedByIds(
+                        paperSessions.initialCashField.describedBy,
+                        `${paperSessions.initialCashField.id}-disabled-reason`
+                      )}
+                      disabled={paperSessions.initialCashField.disabled}
+                      error={paperSessions.initialCashField.invalid}
+                      onChange={(e) => paperSessions.updateField(paperSessions.initialCashField.field, e.target.value)}
+                      className="font-mono"
                       required
+                    />
+                    <FieldSupportText
+                      disabledReason={paperSessions.initialCashField.disabledReason}
+                      disabledReasonId={`${paperSessions.initialCashField.id}-disabled-reason`}
                     />
                   </div>
                 </div>
@@ -830,6 +1075,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!paperSessions.canSubmitCreate}
+                    disabledReason={paperSessions.createButtonDisabledReason}
+                    busy={paperSessions.createButtonBusy}
+                    busyLabel={paperSessions.createButtonBusyLabel}
                     aria-label={paperSessions.createButtonAriaLabel}
                   >
                     {paperSessions.createButtonLabel}
@@ -840,6 +1088,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     variant="outline"
                     onClick={paperSessions.closeCreateForm}
                     disabled={!paperSessions.canCloseCreateForm}
+                    disabledReason={paperSessions.cancelCreateButtonDisabledReason}
                   >
                     {paperSessions.cancelCreateButtonLabel}
                   </Button>
@@ -879,6 +1128,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         variant="outline"
                         onClick={() => { void paperSessions.restoreSession(session.sessionId); }}
                         disabled={!session.canRestore}
+                        disabledReason={session.restoreDisabledReason}
                         aria-label={session.restoreAriaLabel}
                       >
                         {session.restoreButtonLabel}
@@ -888,6 +1138,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         variant="outline"
                         onClick={() => { void paperSessions.verifySessionReplay(session.sessionId); }}
                         disabled={!session.canVerify}
+                        disabledReason={session.verifyDisabledReason}
                         aria-label={session.verifyAriaLabel}
                       >
                         {session.verifyButtonLabel}
@@ -898,6 +1149,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                           variant="outline"
                           onClick={() => { void paperSessions.closeSession(session.sessionId); }}
                           disabled={!session.canClose}
+                          disabledReason={session.closeDisabledReason}
                           aria-label={session.closeAriaLabel}
                         >
                           {session.closeButtonLabel}
@@ -1004,6 +1256,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 aria-label={strategyLifecycle.pauseAriaLabel}
                 onClick={strategyLifecycle.openPauseConfirm}
                 disabled={!strategyLifecycle.canPause}
+                disabledReason={strategyLifecycle.pauseDisabledReason}
               >
                 <PauseCircle className="mr-2 h-4 w-4" />
                 {strategyLifecycle.pauseButtonLabel}
@@ -1014,6 +1267,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 aria-label={strategyLifecycle.stopAriaLabel}
                 onClick={strategyLifecycle.openStopConfirm}
                 disabled={!strategyLifecycle.canStop}
+                disabledReason={strategyLifecycle.stopDisabledReason}
               >
                 <StopCircle className="mr-2 h-4 w-4" />
                 {strategyLifecycle.stopButtonLabel}
@@ -1652,7 +1906,10 @@ function AcceptanceStatusCard({
               size="sm"
               variant="outline"
               onClick={() => { void readinessVm.refresh(); }}
-              disabled={readinessVm.refreshing}
+              disabled={readinessVm.refreshDisabled}
+              disabledReason={readinessVm.refreshDisabledReason}
+              busy={readinessVm.refreshing}
+              busyLabel={readinessVm.refreshBusyLabel}
               aria-label={readinessVm.refreshAriaLabel}
             >
               <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
@@ -1945,7 +2202,6 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
             <label
               htmlFor={vm.acknowledgement.id}
               className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-              title={vm.acknowledgement.disabledReason ?? undefined}
             >
               <input
                 id={vm.acknowledgement.id}
@@ -1953,7 +2209,10 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 checked={vm.acknowledgement.checked}
                 disabled={vm.acknowledgement.disabled}
                 onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
-                aria-describedby={`${vm.acknowledgement.id}-description`}
+                aria-describedby={joinDescribedByIds(
+                  `${vm.acknowledgement.id}-description`,
+                  `${vm.acknowledgement.id}-disabled-reason`
+                )}
                 className="mt-1 h-4 w-4 accent-primary"
               />
               <span>
@@ -1961,6 +2220,11 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 <span id={`${vm.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
                   {vm.acknowledgement.description}
                 </span>
+                <FieldSupportText
+                  disabledReason={vm.acknowledgement.disabledReason}
+                  disabledReasonId={`${vm.acknowledgement.id}-disabled-reason`}
+                  disabledReasonClassName="mt-1 block"
+                />
               </span>
             </label>
             <div className="flex justify-end gap-3">
@@ -1988,49 +2252,6 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function TradingTable({
-  ariaLabel,
-  columns,
-  rows,
-  emptyText
-}: {
-  ariaLabel: string;
-  columns: string[];
-  rows: Array<{ id: string; cells: string[]; ariaLabel: string }>;
-  emptyText: string;
-}) {
-  if (rows.length === 0) {
-    return <EmptyEvidenceState text={emptyText} />;
-  }
-
-  return (
-    <div className="data-grid-surface overflow-x-auto">
-      <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm" aria-label={ariaLabel}>
-        <thead className="bg-secondary/30">
-          <tr>
-            {columns.map((column) => (
-              <th key={column} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {column}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/50">
-          {rows.map((row) => (
-            <tr key={row.id} className="bg-background/20 transition-colors hover:bg-secondary/20" aria-label={row.ariaLabel}>
-              {row.cells.map((value, valueIndex) => (
-                <td key={`cell-${row.id}-${valueIndex}`} className="px-3 py-2 font-mono text-foreground">
-                  {value}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
@@ -2243,4 +2464,3 @@ function OrderPreviewWarningRow({ warning }: { warning: OrderPreviewWarning }) {
     </li>
   );
 }
-

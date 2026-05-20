@@ -2,12 +2,16 @@
 # Documentation
 # =============================================================================
 
-.PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
+.PHONY: verify-docs docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
-        update-claude-md docs-all check-workflow-docs-parity
+        update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims generate-icons generate-diagrams
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
+
+verify-docs: docs-lint check-workflow-docs-parity check-status-delivery-claims ## Canonical lane: docs command, workflow, and status-claim validation
+	@python3 build/scripts/docs/check-known-lanes.py
+	@echo "$(GREEN)Documentation lane verification complete$(NC)"
 
 gen-context: ## Generate project-context.md from code annotations
 	@echo "$(BLUE)Generating project context from code...$(NC)"
@@ -77,6 +81,12 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
 
+generate-icons: ## Generate documentation icon assets via npm script
+	@npm run generate-icons
+
+generate-diagrams: ## Generate documentation diagrams via npm script
+	@npm run generate-diagrams
+
 docs-lint: ## Validate documented make/pwsh command snippets resolve to real targets/scripts
 	@python3 build/scripts/docs/lint-command-snippets.py
 
@@ -86,3 +96,7 @@ docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows v
 check-workflow-docs-parity: ## Validate docs workflow command parity and generate remediation report
 	@python3 scripts/check_workflow_docs_parity.py --report artifacts/docs/workflow-docs-parity-report.md
 	@echo "$(GREEN)Workflow docs parity check complete$(NC)"
+
+check-status-delivery-claims: ## Validate status docs reference latest pass packet and avoid live-readiness claims
+	@python3 scripts/check_status_delivery_claims.py
+	@echo "$(GREEN)Status delivery-claim validation complete$(NC)"

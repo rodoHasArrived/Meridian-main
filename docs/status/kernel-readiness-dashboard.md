@@ -1,6 +1,6 @@
 # Kernel Readiness Dashboard (DK Program)
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-20
 **Program Scope:** Delivery Kernel waves DK1-DK2 mapped to Waves 2-4 in [`ROADMAP.md`](ROADMAP.md)  
 **Purpose:** single hand-authored status dashboard for subsystem kernel readiness, gate progression, implementation commitments, and rollback posture.
 
@@ -16,11 +16,13 @@
 
 ## Program Cadence and Operating Window
 
+- **Provider integration status board:** [`provider-integration-status.md`](./provider-integration-status.md) is the single per-broker phase/blocker/evidence timestamp surface; keep it synchronized with this dashboard and the provider validation matrix.
 - **Roadmap/readiness escalation feed:** use generated [`program-state-summary.md`](./program-state-summary.md) / [`program-state-summary.json`](./program-state-summary.json) for wave-level primary owner, backup owner, escalation SLA, and dependency-owner routing.
 
 - **Cadence:** weekly subsystem review (Mon), cross-subsystem interop review (Wed), operator-readiness review (Fri)
 - **Current operating window:** 2026-04-20 through 2026-06-26
 - **Status publication rule:** update this dashboard at least once per week; release-governance decisions reference this file plus `provider-validation-matrix.md`, and must pass `python3 scripts/check_program_state_consistency.py` before publication.
+- **Current sync note (2026-05-20):** Wave 1 provider evidence posture was refreshed in [`provider-validation-matrix.md`](./provider-validation-matrix.md) (focused Robinhood polling hardening and capability-claim parity/data-shape audit); the signed DK1 exit evidence baseline remains the packet-bound 2026-04-27 artifact set until a newly generated packet and matching sign-off replace it.
 
 ---
 

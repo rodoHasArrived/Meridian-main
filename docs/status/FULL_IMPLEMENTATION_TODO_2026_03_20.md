@@ -18,7 +18,7 @@ Use it with:
 - `FEATURE_INVENTORY.md` for current-vs-target capability status
 - `IMPROVEMENTS.md` for completed improvement history
 - `../plans/governance-fund-ops-blueprint.md`
-- `../plans/quant-script-environment-blueprint.md`
+- `../../archive/docs/plans/quant-script-environment-blueprint.md`
 - `../plans/l3-inference-implementation-plan.md`
 
 ---
@@ -226,7 +226,7 @@ Remaining optional work: deeper workflow integration and expanded sample script 
 
 Reference:
 
-- `../plans/quant-script-environment-blueprint.md`
+- `../../archive/docs/plans/quant-script-environment-blueprint.md`
 
 ### Track H: L3 inference and queue-aware execution simulation
 
@@ -302,7 +302,8 @@ Open work:
 References:
 
 - `../plans/codebase-audit-cleanup-roadmap.md`
-- `../plans/readability-refactor-roadmap.md`
+- `../plans/codebase-audit-cleanup-roadmap.md`
+- `../../archive/docs/plans/readability-refactor-roadmap.md`
 
 ---
 

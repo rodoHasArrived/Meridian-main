@@ -1,20 +1,94 @@
+import { type KeyboardEvent, useEffect, useRef } from "react";
 import { FileText, Landmark, Network } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
-import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
+import {
+  resolveReportPackProfileKeyCommand,
+  useReportingScreenViewModel,
+  type ReportingProfileRow
+} from "@/screens/reporting-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
 
 interface ReportingScreenProps {
   data: GovernanceWorkspaceResponse | null;
 }
 
+const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (profile) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{profile.name}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{profile.id}</span>
+      </span>
+    )
+  },
+  {
+    id: "target",
+    label: "Target",
+    render: (profile) => (
+      <span className="block min-w-0">
+        <span className="block font-medium text-foreground">{profile.targetLabel}</span>
+        <span className="mt-1 block break-words text-xs leading-5 text-muted-foreground">{profile.description}</span>
+      </span>
+    )
+  },
+  {
+    id: "format",
+    label: "Format",
+    render: (profile) => <span className="font-mono text-xs text-foreground">{profile.formatLabel}</span>
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (profile) => (
+      <span className="flex flex-wrap gap-1.5">
+        {profile.badges.length > 0 ? profile.badges.map((badge) => (
+          <Badge key={badge.label} variant={badge.variant}>
+            {badge.label}
+          </Badge>
+        )) : (
+          <Badge variant="outline">Evidence pending</Badge>
+        )}
+      </span>
+    )
+  }
+];
+
 export function ReportingScreen({ data }: ReportingScreenProps) {
   const { pathname } = useLocation();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
+  const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const shouldFocusReportPackProfile = useRef(false);
+
+  useEffect(() => {
+    if (!shouldFocusReportPackProfile.current) {
+      return;
+    }
+
+    shouldFocusReportPackProfile.current = false;
+    const selectedProfileId = vm.workflowTaskPanel?.selectedProfileId;
+    if (selectedProfileId) {
+      reportPackProfileButtonRefs.current[selectedProfileId]?.focus();
+    }
+  }, [vm.workflowTaskPanel?.selectedProfileId]);
+
+  function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const command = resolveReportPackProfileKeyCommand(event.key);
+    if (!command) {
+      return;
+    }
+
+    event.preventDefault();
+    shouldFocusReportPackProfile.current = true;
+    vm.selectAdjacentReportPackProfile(command);
+  }
 
   if (!data) {
     return (
@@ -108,10 +182,74 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             </div>
             <div
               role="status"
+              id={vm.workflowTaskPanel.selectedSummaryId}
               aria-label="Selected report-pack profile"
               className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
             >
               {vm.workflowTaskPanel.selectedSummary}
+            </div>
+            <div>
+              <div className="eyebrow-label">Actions</div>
+              {vm.workflowTaskPanel.hasActions ? (
+                <div
+                  id={vm.workflowTaskPanel.actionPanelId}
+                  role="list"
+                  aria-label={vm.workflowTaskPanel.actionListLabel}
+                  className="mt-2 grid gap-2 sm:grid-cols-2"
+                >
+                  {vm.workflowTaskPanel.actions.map((action) => (
+                    <div
+                      key={action.id}
+                      role="listitem"
+                      className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          asChild={action.method === "GET" && !action.isDisabled}
+                          disabled={action.isDisabled}
+                          busy={action.isRunning}
+                          busyLabel={action.busyLabel}
+                          disabledReason={action.disabledReason}
+                          size="sm"
+                          variant={action.variant}
+                          aria-label={action.ariaLabel}
+                          aria-describedby={action.describedById}
+                          onClick={
+                            action.method === "POST" && vm.selectedProfile
+                              ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                              : undefined
+                          }
+                        >
+                          {action.isDisabled ? (
+                            action.label
+                          ) : action.method === "POST" ? (
+                            action.label
+                          ) : (
+                            <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                              {action.label}
+                            </a>
+                          )}
+                        </Button>
+                        <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                          {action.statusBadgeLabel}
+                        </Badge>
+                      </div>
+                      <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {action.descriptionText}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p
+                  id={vm.workflowTaskPanel.actionPanelId}
+                  role="status"
+                  aria-label={vm.workflowTaskPanel.actionsEmptyAriaLabel}
+                  className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+                >
+                  {vm.workflowTaskPanel.actionsEmptyText}
+                </p>
+              )}
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
@@ -141,8 +279,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               </div>
               <div>
                 <div className="eyebrow-label">Backend</div>
-                <div aria-label={vm.workflowTaskPanel.backendLinksLabel} className="mt-2 grid gap-2">
-                  {vm.workflowTaskPanel.backendLinks.map((link) => (
+                <div
+                  id={vm.workflowTaskPanel.backendPanelId}
+                  aria-label={vm.workflowTaskPanel.backendLinksLabel}
+                  className="mt-2 grid gap-2"
+                >
+                  {vm.workflowTaskPanel.backendLinks.map((link) => link.isBrowserNavigable ? (
                     <a
                       key={link.id}
                       href={link.href}
@@ -151,12 +293,17 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       aria-label={link.ariaLabel}
                       className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      <Badge variant="outline">{link.method}</Badge>
-                      <span className="min-w-0">
-                        <span className="block font-semibold text-foreground">{link.label}</span>
-                        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
-                      </span>
+                      <ReportingBackendReference link={link} />
                     </a>
+                  ) : (
+                    <div
+                      key={link.id}
+                      role="group"
+                      aria-label={link.ariaLabel}
+                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+                    >
+                      <ReportingBackendReference link={link} />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -165,13 +312,29 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           <div>
             <div className="eyebrow-label">Approval profile</div>
             {vm.workflowTaskPanel.hasProfiles ? (
-              <div role="list" aria-label={vm.workflowTaskPanel.profileListLabel} className="mt-3 grid gap-2">
+              <div
+                role="list"
+                aria-label={vm.workflowTaskPanel.profileListLabel}
+                aria-describedby={vm.workflowTaskPanel.profileKeyboardHelpId}
+                className="mt-3 grid gap-2"
+                onKeyDown={handleReportPackProfileKeyDown}
+              >
+                <span id={vm.workflowTaskPanel.profileKeyboardHelpId} className="sr-only">
+                  {vm.workflowTaskPanel.profileKeyboardHelpText}
+                </span>
                 {vm.workflowTaskPanel.profiles.map((profile) => (
                   <div key={profile.id} role="listitem">
                     <button
+                      ref={(node) => {
+                        reportPackProfileButtonRefs.current[profile.id] = node;
+                      }}
                       type="button"
                       aria-pressed={profile.isSelected}
+                      aria-controls={profile.controlsId}
+                      aria-expanded={profile.isExpanded}
+                      aria-describedby={profile.descriptionId}
                       aria-label={profile.selectAriaLabel}
+                      tabIndex={profile.tabIndex}
                       onClick={() => vm.selectProfile(profile.id)}
                       className={cn(
                         "w-full rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
@@ -183,7 +346,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <span className="flex items-start justify-between gap-3">
                         <span>
                           <span className="block font-semibold text-foreground">{profile.name}</span>
-                          <span className="mt-1 block text-xs text-muted-foreground">{profile.summary}</span>
+                          <span id={profile.descriptionId} className="mt-1 block text-xs text-muted-foreground">
+                            {profile.summary}
+                          </span>
                         </span>
                         <Badge variant={profile.readinessVariant}>{profile.readinessLabel}</Badge>
                       </span>
@@ -298,51 +463,22 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
               ))}
             </div>
-            <div role="list" aria-label={vm.listLabel} className="space-y-2">
+            <div>
               {vm.hasRows ? (
-                vm.rows.map((profile) => (
-                  <div key={profile.id} role="listitem">
-                    <button
-                      type="button"
-                      aria-pressed={profile.isSelected}
-                      aria-controls={profile.controlsId}
-                      aria-expanded={profile.isExpanded}
-                      aria-label={profile.selectAriaLabel}
-                      onClick={() => vm.selectProfile(profile.id)}
-                      className={cn(
-                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
-                        profile.isSelected
-                          ? "border-primary/45 bg-primary/10"
-                          : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                      )}
-                    >
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="font-semibold text-foreground">{profile.name}</div>
-                            <div className="mt-1 font-mono text-xs text-muted-foreground">{profile.id}</div>
-                          </div>
-                          <div className="flex flex-wrap justify-end gap-2">
-                            <Badge variant="outline">{profile.formatLabel}</Badge>
-                            {profile.badges.map((badge) => (
-                              <Badge key={badge.label} variant={badge.variant}>
-                                {badge.label}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="grid gap-2 sm:grid-cols-3">
-                          <ReportingEvidenceField label="Profile ID" value={profile.id} />
-                          <ReportingEvidenceField label="Target" value={profile.targetLabel} />
-                          <ReportingEvidenceField label="Format" value={profile.formatLabel} />
-                        </div>
-                        <p className="text-sm leading-6 text-muted-foreground">
-                          {profile.description}
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-                ))
+                <DenseDataTable
+                  columns={reportingProfileColumns}
+                  rows={vm.rows}
+                  getRowId={(profile) => profile.id}
+                  getRowAriaLabel={(profile) => profile.selectAriaLabel}
+                  getRowSelectAriaLabel={(profile) => profile.selectAriaLabel}
+                  getRowAriaControls={(profile) => profile.controlsId}
+                  getRowAriaExpanded={(profile) => profile.isExpanded}
+                  onRowSelect={(profile) => vm.selectProfile(profile.id)}
+                  selectedRowId={vm.selectedProfile?.id ?? null}
+                  emptyText={vm.emptyText}
+                  ariaLabel={vm.listLabel}
+                  caption={`${vm.listLabel}. Select a row to inspect export evidence and actions.`}
+                />
               ) : (
                 <div
                   role="status"
@@ -357,150 +493,148 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
         <aside
           id={vm.detailId}
-          role="complementary"
+          role="region"
           aria-label={vm.statusTitle}
           aria-live="polite"
-          className="panel-surface h-fit min-w-0 overflow-hidden p-4"
+          className="row-detail-panel h-fit min-w-0"
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className="head flex items-center justify-between gap-3">
+            <span>Selected profile inspector</span>
+            <Badge variant={vm.statusBadgeVariant}>
+              {vm.statusBadgeLabel}
+            </Badge>
+          </div>
+          <div className="body">
             <div className="min-w-0">
-              <div className="eyebrow-label">Selected profile inspector</div>
-              <h3 className="mt-2 text-base font-semibold text-foreground">
+              <h3 className="text-sm font-semibold text-foreground">
                 {vm.selectedProfile?.title ?? vm.statusTitle}
               </h3>
               <p className="mt-1 font-mono text-xs text-muted-foreground">
                 {vm.selectedProfile ? `${vm.selectedProfile.id} · ${vm.selectedProfile.subtitle}` : vm.nextAction}
               </p>
             </div>
-            <Badge variant={vm.statusBadgeVariant}>
-              {vm.statusBadgeLabel}
-            </Badge>
-          </div>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
-          {vm.exportStatus ? (
-            <div
-              role="status"
-              aria-label={vm.exportStatus.ariaLabel}
-              className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
-            >
-              <p>{vm.exportStatus.text}</p>
-              {vm.exportStatus.fields.length > 0 ? (
-                <dl className="grid gap-2 sm:grid-cols-2">
-                  {vm.exportStatus.fields.map((field) => (
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
+            {vm.exportStatus ? (
+              <div
+                role="status"
+                aria-label={vm.exportStatus.ariaLabel}
+                className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
+              >
+                <p>{vm.exportStatus.text}</p>
+                {vm.exportStatus.fields.length > 0 ? (
+                  <dl className="grid gap-2 sm:grid-cols-2">
+                    {vm.exportStatus.fields.map((field) => (
+                      <div
+                        key={field.label}
+                        className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                      >
+                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {field.label}
+                        </dt>
+                        <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
+                          {field.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
+                {vm.exportStatus.warnings.length > 0 ? (
+                  <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+                    {vm.exportStatus.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {vm.exportStatus.artifacts.length > 0 ? (
+                  <dl
+                    aria-label="Export artifacts"
+                    className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                  >
+                    {vm.exportStatus.artifacts.map((artifact) => (
+                      <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
+                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {artifact.label}
+                        </dt>
+                        <dd className={cn("break-words font-mono text-xs", artifact.className)}>
+                          {artifact.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
+              </div>
+            ) : null}
+            <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
+            {vm.selectedProfile ? (
+              <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
+                <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
+                <div
+                  role="status"
+                  aria-label={`${vm.selectedProfile.title} readiness`}
+                  className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
+                >
+                  {vm.selectedProfile.readinessSummary}
+                </div>
+                <dl className="grid gap-2">
+                  {vm.selectedProfile.fields.map((field) => (
                     <div
                       key={field.label}
-                      className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                      className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
                     >
-                      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                        {field.label}
-                      </dt>
-                      <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
+                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                      <dd className={cn("text-right font-mono text-xs", field.className)}>
                         {field.value}
                       </dd>
                     </div>
                   ))}
                 </dl>
-              ) : null}
-              {vm.exportStatus.warnings.length > 0 ? (
-                <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
-                  {vm.exportStatus.warnings.map((warning) => (
-                    <li key={warning}>{warning}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {vm.exportStatus.artifacts.length > 0 ? (
-                <dl
-                  aria-label="Export artifacts"
-                  className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                >
-                  {vm.exportStatus.artifacts.map((artifact) => (
-                    <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
-                      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                        {artifact.label}
-                      </dt>
-                      <dd className={cn("break-words font-mono text-xs", artifact.className)}>
-                        {artifact.value}
-                      </dd>
+                <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
+                  {vm.selectedProfile.actions.map((action) => (
+                    <div
+                      key={action.id}
+                      role="listitem"
+                      className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          asChild={action.method === "GET" && !action.isDisabled}
+                          disabled={action.isDisabled}
+                          busy={action.isRunning}
+                          busyLabel={action.busyLabel}
+                          disabledReason={action.disabledReason}
+                          size="sm"
+                          variant={action.variant}
+                          aria-label={action.ariaLabel}
+                          aria-describedby={action.describedById}
+                          onClick={
+                            action.method === "POST"
+                              ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                              : undefined
+                          }
+                        >
+                          {action.isDisabled ? (
+                            action.label
+                          ) : action.method === "POST" ? (
+                            action.label
+                          ) : (
+                            <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                              {action.label}
+                            </a>
+                          )}
+                        </Button>
+                        <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                          {action.statusBadgeLabel}
+                        </Badge>
+                      </div>
+                      <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {action.descriptionText}
+                      </p>
                     </div>
                   ))}
-                </dl>
-              ) : null}
-            </div>
-          ) : null}
-          <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
-          {vm.selectedProfile ? (
-            <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
-              <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
-              <div
-                role="status"
-                aria-label={`${vm.selectedProfile.title} readiness`}
-                className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
-              >
-                {vm.selectedProfile.readinessSummary}
+                </div>
               </div>
-              <dl className="grid gap-2">
-                {vm.selectedProfile.fields.map((field) => (
-                  <div
-                    key={field.label}
-                    className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                  >
-                    <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                    <dd className={cn("text-right font-mono text-xs", field.className)}>
-                      {field.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
-                {vm.selectedProfile.actions.map((action) => (
-                  <div
-                    key={action.id}
-                    role="listitem"
-                    className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        asChild={action.method === "GET" && !action.isDisabled}
-                        disabled={action.isDisabled}
-                        busy={action.isRunning}
-                        busyLabel={action.isRunning ? "Running export…" : null}
-                        size="sm"
-                        variant={action.variant}
-                        aria-label={action.ariaLabel}
-                        aria-describedby={action.describedById}
-                        title={action.disabledReason ?? undefined}
-                        onClick={
-                          action.method === "POST"
-                            ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
-                            : undefined
-                        }
-                      >
-                        {action.isDisabled ? (
-                          action.label
-                        ) : action.method === "POST" ? (
-                          action.label
-                        ) : (
-                          <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
-                            {action.label}
-                          </a>
-                        )}
-                      </Button>
-                      {action.disabledReason ? (
-                        <Badge variant="warning">Disabled</Badge>
-                      ) : action.isRunning ? (
-                        <Badge variant="warning">Running</Badge>
-                      ) : (
-                        <Badge variant="outline">{action.method}</Badge>
-                      )}
-                    </div>
-                    <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {action.disabledReason ?? action.statusText}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </aside>
       </section>
     </div>
@@ -525,12 +659,26 @@ function ReportingChip({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ReportingEvidenceField({ label, value }: { label: string; value: string }) {
+function ReportingBackendReference({
+  link
+}: {
+  link: {
+    method: string;
+    label: string;
+    href: string;
+    interactionLabel: string;
+  };
+}) {
   return (
-    <div className="rounded-md border border-border/60 bg-background/20 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
-      <div className="mt-1 font-mono text-xs text-foreground">{value}</div>
-    </div>
+    <>
+      <Badge variant="outline">{link.method}</Badge>
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground">{link.label}</span>
+        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
+        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          {link.interactionLabel}
+        </span>
+      </span>
+    </>
   );
 }
-

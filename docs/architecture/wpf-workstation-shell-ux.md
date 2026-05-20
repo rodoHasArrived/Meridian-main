@@ -15,14 +15,20 @@ Each workspace shell follows the same structure:
 
 Only queues, inspectors, and docked surfaces scroll. The page chrome itself remains stable.
 
-The top-level shell remains fixed at four workspaces only:
+This document describes the retained WPF shell pattern. New operator-facing UI work now lands in the
+browser workstation first, using the visible seven-workspace model:
 
-- `Research`
+- `Data`
+- `Strategy`
 - `Trading`
-- `Data Operations`
-- `Governance`
+- `Portfolio`
+- `Accounting`
+- `Reporting`
+- `Settings`
 
-Accounting is now incorporated as a first-class Governance lane rather than a fifth workspace.
+The retained WPF shell keeps compatibility workspace groupings for desktop support and regression
+coverage, but open workflow work should avoid treating the older `Research`, `Data Operations`, and
+`Governance` labels as the product's visible root taxonomy.
 
 ## Operating Contexts
 
@@ -63,7 +69,7 @@ The shell now has a second shared seam for operator guidance: `WorkstationWorkfl
 
 - The shell now renders one current-workspace-first primary card and keeps the remaining workspace actions behind an explicit expansion affordance.
 - The primary card still answers the same three questions: the current workspace state, the primary blocker, and the next operator action with an explicit target page tag.
-- The WPF shell keeps `ShellNavigationCatalog`, the command palette, and the four-workspace model intact. The summary seam only changes what the shell emphasizes first.
+- The WPF shell keeps `ShellNavigationCatalog`, the command palette, and retained compatibility routes intact. The summary seam only changes what the shell emphasizes first.
 - `WorkspaceShellContextService` remains responsible for chrome, trust badges, and scope cues. It is not overloaded with cross-workspace workflow rules.
 
 The summary projection is shared with the workstation HTTP surface through `GET /api/workstation/workflow-summary`, so the next-action ordering stays consistent across shells and tests instead of being duplicated in WPF-specific page code.
@@ -113,9 +119,9 @@ The research handoff card exposes explicit `Start Backtest`, `Review Run`, and `
 Trading keeps the live-position, blotter, and capital-control surfaces while moving desk actions into the shared command bar, surfacing run or desk posture in the context strip, and exposing accounting and audit drill-ins from the cockpit.
 The cockpit shell now also carries a workflow-status card that replaces generic `Awaiting runs` copy with summary-driven handoff, blocker, and next-action labels. Active positions, risk posture, and the primary desk action now sit above KPI tiles and supporting narrative lanes, which keeps `no context selected`, `candidate awaiting paper review`, `active paper/live cockpit`, and `candidate awaiting governance review` visible without forcing operators to scroll past shell summaries.
 
-### Data Operations
+### Data
 
-Data Operations adopts the same shell with provider, backfill, and storage queues plus a recent-operations rail and docked operational surfaces scoped to the active operating context.
+Data adopts the same retained shell with provider, backfill, and storage queues plus a recent-operations rail and docked operational surfaces scoped to the active operating context. The current implementation lives under `src/Meridian.Wpf/Features/Data/` with feature-owned registration, snapshot, presentation, and view-model seams.
 
 ## Window Modes
 
