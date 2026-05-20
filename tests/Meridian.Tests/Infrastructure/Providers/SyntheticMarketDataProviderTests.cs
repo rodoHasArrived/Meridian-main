@@ -15,7 +15,7 @@ public sealed class SyntheticMarketDataProviderTests
     [Fact]
     public async Task HistoricalProvider_ReturnsAdjustedBars_WithCorporateActions()
     {
-        var provider = new SyntheticHistoricalDataProvider(new SyntheticMarketDataConfig(Enabled: true));
+        var provider = SyntheticProviderTestHarness.CreateHistorical();
 
         var bars = await provider.GetAdjustedDailyBarsAsync("NVDA", new DateOnly(2024, 6, 3), new DateOnly(2024, 6, 14));
         var dividends = await provider.GetDividendsAsync("NVDA", new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31));
@@ -31,7 +31,7 @@ public sealed class SyntheticMarketDataProviderTests
     [Fact]
     public async Task HistoricalProvider_ReturnsQuotesTradesAndAuctions()
     {
-        var provider = new SyntheticHistoricalDataProvider(new SyntheticMarketDataConfig(Enabled: true, HistoricalTradeDensityPerDay: 12, HistoricalQuoteDensityPerDay: 16));
+        var provider = SyntheticProviderTestHarness.CreateHistorical(SyntheticProviderTestHarness.BuildScenarioConfig(replayBarsLimit: 20));
         var start = new DateTimeOffset(2024, 3, 18, 13, 30, 0, TimeSpan.Zero);
         var end = new DateTimeOffset(2024, 3, 18, 20, 0, 0, TimeSpan.Zero);
 
@@ -116,6 +116,22 @@ public sealed class SyntheticMarketDataProviderTests
 
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("cfg");
+    }
+
+
+    [Fact]
+    public async Task HistoricalProvider_ScenarioTimeout_IsRepeatable()
+    {
+        var provider = SyntheticProviderTestHarness.CreateHistorical(
+            SyntheticProviderTestHarness.BuildScenarioConfig(timeoutEveryNCalls: 2));
+
+        var start = new DateOnly(2024, 4, 1);
+        var end = new DateOnly(2024, 4, 5);
+
+        await provider.GetAdjustedDailyBarsAsync("AAPL", start, end);
+        var act = async () => await provider.GetAdjustedDailyBarsAsync("AAPL", start, end);
+
+        await act.Should().ThrowAsync<TimeoutException>();
     }
 
     private sealed class RecordingPublisher : IMarketEventPublisher
