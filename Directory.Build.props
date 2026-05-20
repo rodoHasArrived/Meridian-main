@@ -21,18 +21,54 @@
     <!-- Keep generated build output trees out of compilation when local alternate obj/bin paths exist -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**\obj\**;**\obj-*\**;**\bin\**;**\bin-*\**;**\artifacts\codex-obj\**;$(MSBuildThisFileDirectory)artifacts\obj\**;$(MSBuildThisFileDirectory)artifacts\bin\**</DefaultItemExcludes>
     
-    <!-- Suppress common benign warnings across all projects -->
-    <!-- MSB3277: Assembly binding conflict (typically transitive dependencies, resolved automatically) -->
-    <!-- NETSDK1206: Version-specific or distribution-specific RID (legacy RIDs, handled by newer .NET) -->
-    <!-- NU1608: Package version outside of dependency constraint (transitive dependencies) -->
-    <!-- IL2026: RequiresUnreferencedCode (JSON serialization, app doesn't use trimming/AOT) -->
-    <!-- IL2070: Dynamic type access (JSON serialization, app doesn't use trimming/AOT) -->
-    <!-- CS1587: XML comment placement (false positive with records) -->
-    <!-- CS1591: Missing XML comment for publicly visible type or member (not required for all members) -->
-    <NoWarn>$(NoWarn);MSB3277;NETSDK1206;NU1608;IL2026;IL2070;CS1587;CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup Label="Global warning suppression inventory">
+    <!-- New entries in this list require explicit PR review with owner + ratchet plan. -->
+    <MeridianGlobalNoWarn Include="MSB3277">
+      <Owner>Core Team</Owner>
+      <Justification>Assembly binding conflict warnings from transitive dependency resolution noise.</Justification>
+      <RatchetPlan>Move to project-level suppression after dependency graph alignment for desktop and test lanes.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+    <MeridianGlobalNoWarn Include="NETSDK1206">
+      <Owner>Core Team</Owner>
+      <Justification>RID compatibility warnings in cross-platform builds while legacy RID references are phased out.</Justification>
+      <RatchetPlan>Move to project-level suppression for retained desktop/publish targets after RID cleanup.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+    <MeridianGlobalNoWarn Include="NU1608">
+      <Owner>Core Team</Owner>
+      <Justification>Transitive package constraint mismatch warnings while central package upgrades are sequenced.</Justification>
+      <RatchetPlan>Retire by dependency harmonization in Directory.Packages.props and adapter-specific package review.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+    <MeridianGlobalNoWarn Include="IL2026">
+      <Owner>Core Team</Owner>
+      <Justification>Trim-analysis warning in JSON-heavy paths where trimming/AOT is not an active deployment mode.</Justification>
+      <RatchetPlan>Move to project-level suppression per publish target after trim-readiness audit.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+    <MeridianGlobalNoWarn Include="IL2070">
+      <Owner>Core Team</Owner>
+      <Justification>Dynamic member-access trim warning in serializer-driven call paths without trimming enabled.</Justification>
+      <RatchetPlan>Move to project-level suppression with source-generation and linker annotation hardening.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+    <MeridianGlobalNoWarn Include="CS1587">
+      <Owner>Core Team</Owner>
+      <Justification>XML comment placement warnings in record-heavy source files where docs are not a release gate.</Justification>
+      <RatchetPlan>Move to project-level suppression after XML-doc policy is split between SDK/contract and internal projects.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+    <MeridianGlobalNoWarn Include="CS1591">
+      <Owner>Core Team</Owner>
+      <Justification>Public-member XML doc warning is currently too broad for repository-wide enforcement.</Justification>
+      <RatchetPlan>Move to project-level suppression by enabling strict XML docs only for publishable/API contract projects.</RatchetPlan>
+    </MeridianGlobalNoWarn>
+  </ItemGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);@(MeridianGlobalNoWarn)</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Exact advisory suppression only; accepted risk is documented in docs/security/known-vulnerabilities.md. -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhg6-9j5j-w4vf" />
+    <MeridianNuGetAuditSuppression Include="https://github.com/advisories/GHSA-xhg6-9j5j-w4vf">
+      <Owner>Core Team</Owner>
+      <Justification>Accepted risk documented in docs/security/known-vulnerabilities.md pending upstream remediation rollout.</Justification>
+      <RatchetPlan>Remove once upgraded transitive dependency chain no longer triggers the advisory.</RatchetPlan>
+    </MeridianNuGetAuditSuppression>
+    <NuGetAuditSuppress Include="@(MeridianNuGetAuditSuppression)" />
   </ItemGroup>
 </Project>

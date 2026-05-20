@@ -53,8 +53,37 @@ jobs:
       - name: Verify formatting
         run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 
+      - name: Validate warning suppression inventory
+        run: python3 build/scripts/ci/check-warning-suppressions.py
+
       - name: Build web workstation lane
-        run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
+        run: |
+          mkdir -p artifacts/build-logs
+          set -o pipefail
+          dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log
+
+      - name: Report build warning count
+        if: always()
+        run: |
+          LOG_PATH=artifacts/build-logs/web-workstation-build.log
+          if [ ! -f "$LOG_PATH" ]; then
+            echo "Build log missing; skipping warning count summary."
+            exit 0
+          fi
+
+          SUMMARY_LINE=$(grep -E '[0-9]+ Warning\(s\)' "$LOG_PATH" | tail -1 || true)
+          if [ -n "$SUMMARY_LINE" ]; then
+            WARNING_COUNT=$(echo "$SUMMARY_LINE" | sed -E 's/.*([0-9]+) Warning\(s\).*/\1/')
+          else
+            WARNING_COUNT=$(grep -Eic ' warning [A-Za-z]+[0-9]+' "$LOG_PATH" || true)
+          fi
+
+          echo "Build warning count: $WARNING_COUNT"
+          {
+            echo "### Build warning count"
+            echo ""
+            echo "- Web workstation build warnings: $WARNING_COUNT"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run non-integration tests
         run: |

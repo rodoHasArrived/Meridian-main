@@ -43,6 +43,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | --- | --- |
 | [Developer Setup](../developer/setup.md) | bootstrap the local checkout at `C:\Dev\Meridian-main` |
 | [Build, Test, Run](../developer/build-test-run.md) | choose a narrow build, test, or local run command |
+| [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
 | [Publish Standalone EXE](../developer/publish-standalone-exe.md) | produce local standalone publish output |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |

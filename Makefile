@@ -80,7 +80,16 @@ help: ## Show this help message
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'publish' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BLUE)Pre-PR & Quality:$(NC)"
-	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'pre-pr|ai-audit|ai-verify|ai-docs|ai-report|ai-arch|ai-maintenance' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^pre-pr|^pre-pr-full' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(BLUE)AI Required Quality Gates:$(NC)"
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^ai-verify|^ai-arch-check$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(BLUE)AI Advisory Tooling:$(NC)"
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^ai-audit|^ai-report|^ai-docs-freshness|^ai-docs-drift|^ai-docs-sync-report|^ai-arch-check-summary|^ai-arch-check-json' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(BLUE)AI Maintenance & Reporting:$(NC)"
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^ai-maintenance|^ai-docs-archive' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(BLUE)Skills:$(NC)"
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'skill-' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-24s$(NC) %s\n", $$1, $$2}'
