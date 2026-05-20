@@ -9,7 +9,9 @@ using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Tests.Ui;
 using Xunit;
@@ -111,6 +113,37 @@ public sealed class ProviderFactoryCredentialContextTests
             new ContextRequest(typeof(FredHistoricalDataProvider), ["FRED_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(NasdaqDataLinkHistoricalDataProvider), ["NASDAQ_DATA_LINK_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateBackfillProviders_WithConfiguredFreeProviderSet_IsDeterministicAndCapabilityAligned()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Yahoo: new YahooFinanceConfig(Enabled: true),
+                        Nasdaq: new NasdaqDataLinkConfig(Enabled: true, ApiKey: "cfg-nasdaq-key"),
+                        Stooq: new StooqConfig(Enabled: true),
+                        Tiingo: new TiingoConfig(Enabled: true, ApiToken: "cfg-tiingo-token"),
+                        AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: "cfg-alpha-key"),
+                        Finnhub: new FinnhubConfig(Enabled: true, ApiKey: "cfg-finnhub-key"),
+                        Fred: new FredConfig(Enabled: true, ApiKey: "cfg-fred-key")))),
+            resolver);
+
+        var first = factory.CreateBackfillProviders();
+        var second = factory.CreateBackfillProviders();
+
+        first.Select(p => p.Name).Should().Equal(second.Select(p => p.Name),
+            "backfill provider ordering should remain deterministic for parity/backfill planning");
+        first.Should().ContainSingle(p => p is YahooFinanceHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is NasdaqDataLinkHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is StooqHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is TiingoHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is AlphaVantageHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is FinnhubHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is FredHistoricalDataProvider);
     }
 
     [Fact]

@@ -108,6 +108,34 @@ If any check fails, promotion enablement is blocked and operator surfaces must s
 - Yahoo is active only as a historical and fallback provider row for Wave 1.
 - `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.
 
+## 2026-05-20 capability-claim parity + deterministic data-shape audit
+
+The following audit reconciles current capability claims versus deterministic data-shape compatibility for the requested provider set:
+Finnhub, NYSE, Edgar, OpenFigi, YahooFinance, Tradier, TwelveData, AlphaVantage, Tiingo, Stooq, Fred, and NasdaqDataLink.
+
+| Provider | Capability-claim parity posture | Deterministic data-shape compatibility posture | Evidence anchor |
+| --- | --- | --- | --- |
+| Finnhub | Backfill + symbol-search supported through credential-gated adapters | JSON parse and contract fixtures enforce stable bar parsing and symbol-search projection | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests`, `ProviderFactoryCredentialContextTests` |
+| NYSE | Deferred from active Wave 1 closure; retained as provider inventory/runtime lane | Message/csv parser and pipeline tests lock schema, exchange-code mapping, and publication flow | `NYSEMessageParsingTests`, `NyseNationalTradesCsvParserTests`, `NyseMessagePipelineTests` |
+| Edgar | Security Master/symbol-search inventory support | Parser coverage validates ticker-entry extraction, malformed payload handling, and ingest projections | `EdgarSymbolSearchProviderTests` |
+| OpenFigi | Symbol mapping/search support | Recorded-response contract tests validate mapping/search parse determinism | `OpenFigiClientTests` |
+| YahooFinance | Active Wave 1 historical + fallback row | Historical/intraday contract suites lock fallback bar-shape expectations | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` |
+| Tradier | Execution reconciliation support path (not active Wave 1 provider row) | Deterministic execution evidence + out-of-order/partial-fill handling covered in focused execution suites | `TradierExecutionReconciliationTests` |
+| TwelveData | Backfill inventory support via provider adapter | Stubbed-response parsing tests validate success/error/empty payload handling | `FreeHistoricalProviderParsingTests` |
+| AlphaVantage | Backfill inventory support (explicitly credential/enable gated) | Contract + parser tests validate rate-limit and error-shape behavior | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests` |
+| Tiingo | Backfill inventory support | Contract tests + factory credential-path tests keep adapter eligibility deterministic | `FreeProviderContractTests`, `ProviderFactoryCredentialContextTests` |
+| Stooq | Backfill inventory support | CSV parser tests validate stable row-to-bar conversion and empty dataset handling | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests` |
+| Fred | Backfill inventory support for economic-series lanes | Parser/credential tests validate deterministic failure surface when key/shape is invalid | `FreeHistoricalProviderParsingTests`, `ProviderFactoryCredentialContextTests` |
+| NasdaqDataLink | Backfill inventory support | Provider-factory credential/context tests verify deterministic inclusion and credential wiring | `ProviderFactoryCredentialContextTests` |
+
+### Unresolved items (owner + risk + defer rationale)
+
+| Item | Owner | Risk | Defer rationale |
+| --- | --- | --- | --- |
+| NYSE runtime entitlement/session evidence remains outside active Wave 1 closure | `@provider-infra` + `@ops-readiness` | False-positive readiness claims if parser-only confidence is mistaken for runtime-feed confidence | Wave 1 closure is intentionally limited to Alpaca/Robinhood/Yahoo; NYSE remains explicit deferred inventory while entitlement and runtime evidence lanes mature |
+| Tradier capability row is execution-focused and not yet normalized into an always-on provider matrix row | `@execution-reliability` | Claim drift between execution evidence and provider-row wording | Current closure requirement is execution reconciliation determinism; broader provider-row governance is deferred to next matrix expansion to avoid changing Wave 1 scope mid-gate |
+| OpenFigi + Edgar runtime dependency characteristics (rate/uptime/vendor policy) are not represented in DK1 runtime packet | `@security-master` + `@provider-infra` | Symbol-search quality can degrade without appearing in provider runtime packet gating | Current DK1 packet contract is broker/paper-session centered; expanding to search-governance metrics is deferred until packet schema revision window |
+
 
 ## Unified automation and promotion posture
 
