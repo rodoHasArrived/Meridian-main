@@ -1129,10 +1129,6 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         {
             blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_REQUIRED", "Ledger journal candidate period id is required.", evidence));
         }
-        else if (candidate.PeriodId != workflow.PeriodId)
-        {
-            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_MISMATCH", "Ledger journal candidate period id must match the workflow period.", evidence));
-        }
 
         if (candidate.AggregateId != Guid.Empty && candidate.AggregateId != workflow.FundAccountId)
         {
