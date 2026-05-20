@@ -345,7 +345,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An operations continuity start request is required." });
+                return MissingOperationsPayload("request", "An operations continuity start request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -414,7 +414,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An operations continuity transition request is required." });
+                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -451,7 +451,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An operations continuity transition request is required." });
+                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -488,7 +488,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An operations continuity posture request is required." });
+                return MissingOperationsPayload("request", "An operations continuity posture request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -520,7 +520,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A Security Master resolution request is required." });
+                return MissingOperationsPayload("request", "A Security Master resolution request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -553,7 +553,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A Security Master override approval request is required." });
+                return MissingOperationsPayload("request", "A Security Master override approval request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -590,7 +590,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A ledger draft request is required." });
+                return MissingOperationsPayload("request", "A ledger draft request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -622,7 +622,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A ledger validation request is required." });
+                return MissingOperationsPayload("request", "A ledger validation request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -654,7 +654,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A ledger posting request is required." });
+                return MissingOperationsPayload("request", "A ledger posting request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -691,7 +691,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A reconciliation run request is required." });
+                return MissingOperationsPayload("request", "A reconciliation run request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -724,7 +724,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A reconciliation break resolution request is required." });
+                return MissingOperationsPayload("request", "A reconciliation break resolution request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -756,7 +756,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An approval submission request is required." });
+                return MissingOperationsPayload("request", "An approval submission request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -788,7 +788,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An approval decision request is required." });
+                return MissingOperationsPayload("request", "An approval decision request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -820,7 +820,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "An approval rejection request is required." });
+                return MissingOperationsPayload("request", "An approval rejection request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -857,7 +857,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A close workflow request is required." });
+                return MissingOperationsPayload("request", "A close workflow request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -889,7 +889,7 @@ public static partial class WorkstationEndpoints
 
             if (request is null)
             {
-                return Results.BadRequest(new { error = "A reopen workflow request is required." });
+                return MissingOperationsPayload("request", "A reopen workflow request is required.");
             }
 
             if (!TryResolveCurrentUser(context, out var currentUser))
@@ -5567,6 +5567,12 @@ public static partial class WorkstationEndpoints
 
     private static OperationsWorkflowStatusDto? ParseOperationsWorkflowStatus(string? status)
         => Enum.TryParse<OperationsWorkflowStatusDto>(status, ignoreCase: true, out var parsed) ? parsed : null;
+
+    private static IResult MissingOperationsPayload(string field, string message)
+        => Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [field] = [message]
+        });
 
     private static IResult OperationsTransitionResult(OperationsTransitionResultDto result, JsonSerializerOptions jsonOptions)
     {
