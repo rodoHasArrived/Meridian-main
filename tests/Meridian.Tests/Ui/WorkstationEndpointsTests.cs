@@ -341,6 +341,46 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldReturnConsistentValidationShapeForMissingBody()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+
+        var endpoints = new[]
+        {
+            "/api/workstation/operations/continuity",
+            $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
+            $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
+            $"/api/workstation/operations/continuity/{workflowId}/approval/reject",
+            $"/api/workstation/operations/continuity/{workflowId}/close",
+            $"/api/workstation/operations/continuity/{workflowId}/reopen"
+        };
+
+        foreach (var endpoint in endpoints)
+        {
+            var response = await client.PostAsync(endpoint, content: null);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            json.RootElement.GetProperty("errors").GetProperty("request")[0].GetString().Should().NotBeNullOrWhiteSpace();
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_DataOperationsProviderMetrics_ShouldExposeDk1TrustRationale()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-metrics", Guid.NewGuid().ToString("N"));
@@ -1996,6 +2036,44 @@ public sealed class WorkstationEndpointsTests
             syncItem.TargetRoute.Should().Be("/settings#alpaca-provider-setup");
             syncItem.TargetPageTag.Should().Be("ProviderConnectionCenter");
             syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithFundAccountId_ShouldProjectDegradedBrokerageSyncForIbkrAndRobinhoodAsWarning()
+    {
+        var ibkrAccountId = Guid.Parse("c7774ca1-08f7-4f89-a4c3-89387fb7cd31");
+        var robinhoodAccountId = Guid.Parse("ec705f26-f620-4c71-b13a-3e8cce9018f9");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-inbox-degraded", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(ibkrAccountId, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
+            await brokerageSync.RunSyncAsync(robinhoodAccountId, new WorkstationBrokerageSyncRunRequestDto("robinhood", "RH-404", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            foreach (var accountId in new[] { ibkrAccountId, robinhoodAccountId })
+            {
+                var inbox = await client.GetFromJsonAsync<OperatorInboxDto>($"/api/workstation/operator/inbox?fundAccountId={accountId:D}", ServerJsonOptions);
+                inbox.Should().NotBeNull();
+                var syncItem = inbox!.Items.Should().ContainSingle(item =>
+                    item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountId).Which;
+
+                syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
+                syncItem.TargetPageTag.Should().Be("ProviderConnectionCenter");
+                syncItem.TargetRoute.Should().Contain("-provider-setup");
+                syncItem.Detail.Should().Contain("credentials are missing", StringComparison.OrdinalIgnoreCase);
+            }
         }
         finally
         {

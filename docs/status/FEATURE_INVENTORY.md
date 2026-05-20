@@ -109,6 +109,7 @@ Evidence-backed narrative, client-facing commentary drafting, and evidence-aware
 | **NoOp Client** | ✅ | `NoOpMarketDataClient` for dry-run / test harness scenarios |
 
 Provider validation matrix and evidence guidance now live in `docs/status/provider-validation-matrix.md` and `docs/providers/provider-confidence-baseline.md`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner and `artifacts/provider-validation/` treated as generated run output rather than retained source.
+Adapter capability readiness is canonically tracked in `docs/status/provider-capability-matrix.md`.
 
 ### Remaining work to reach full provider coverage
 

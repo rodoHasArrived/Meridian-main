@@ -234,6 +234,90 @@ public sealed class ReconciliationRunServiceTests
         detail.ExpectedJournalPreviews.Should().OnlyContain(preview => preview.IsBalanced);
     }
 
+
+    [Fact]
+    public async Task RunAsync_WithFixedCouponTerms_ShouldGenerateAccrualAndCouponExpectedEvents()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-fixed-coupon"));
+
+        var securityId = Guid.Parse("44444444-3333-3333-3333-333333333333");
+        var request = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-fixed-coupon",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND2", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Positions: [new SecurityMasterAccountingPosition("BOND2", securityId, "acct-1", 100_000m)]);
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-fixed-coupon"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        detail.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.ReceiveCashInterest);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithFactorPaydownAtPar_ShouldProjectExpectedPrincipalAtOnePointZeroFactor()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-factor-par"));
+
+        var securityId = Guid.Parse("55555555-3333-3333-3333-333333333333");
+        var request = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-factor-par",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "MBS1", "MortgageBacked", "USD", new SecurityFixedIncomeTerms(0.03m, "Fixed", "30/360", 12, CurrentFactor: 1.00m, RequiresFactorSchedule: true), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Positions: [new SecurityMasterAccountingPosition("MBS1", securityId, "acct-1", 100_000m)],
+            FactorSchedule: [new SecurityFactorScheduleEntry(securityId, new DateOnly(2026, 1, 15), 1.00m, 0.99m, "test")]);
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-factor-par"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.ExpectedPrincipalAmount == 1_000m);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithExpectedActualMismatch_ShouldEmitDeterministicIssueCode()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-mismatch"));
+
+        var securityId = Guid.Parse("66666666-3333-3333-3333-333333333333");
+        var request = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-mismatch",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND3", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Positions: [new SecurityMasterAccountingPosition("BOND3", securityId, "acct-1", 100_000m)],
+            ActualActivity: [new SecurityActualCashActivity("custodian", "coupon-row-mismatch", "acct-1", securityId, "BOND3", 1m, 0m, 1m, new DateOnly(2026, 1, 31), "Income")]);
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-mismatch"));
+
+        detail.Should().NotBeNull();
+        detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "SECURITY_MASTER_EXPECTED_VS_ACTUAL_MISMATCH");
+    }
+
     [Fact]
     public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldBuildInputsFromResolvedPositions()
     {

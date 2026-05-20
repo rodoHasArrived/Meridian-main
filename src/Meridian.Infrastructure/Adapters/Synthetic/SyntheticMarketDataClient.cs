@@ -21,6 +21,7 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
     private readonly ConcurrentDictionary<int, SyntheticSubscription> _tradeSubscriptions = new();
     private readonly ConcurrentDictionary<int, SyntheticSubscription> _depthSubscriptions = new();
     private int _nextSubscriptionId;
+    private int _streamEventCounter;
     private volatile bool _connected;
 
     public SyntheticMarketDataClient(IMarketEventPublisher publisher, SyntheticMarketDataConfig? config = null)
@@ -111,6 +112,30 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
         GC.SuppressFinalize(this);
     }
 
+    private async Task ApplyStreamingScenarioAsync(CancellationToken ct)
+    {
+        var scenario = _config.Scenario;
+        if (scenario is null || !scenario.Enabled || !scenario.ApplyToStreaming)
+            return;
+
+        var index = Interlocked.Increment(ref _streamEventCounter);
+        if (scenario.ThrottleEveryNCalls > 0 && index % scenario.ThrottleEveryNCalls == 0)
+            await Task.Delay(TimeSpan.FromMilliseconds(Math.Max(1, scenario.ThrottleDelayMs)), ct).ConfigureAwait(false);
+
+        if (scenario.TimeoutEveryNCalls > 0 && index % scenario.TimeoutEveryNCalls == 0)
+            throw new TimeoutException("Synthetic streaming timeout injected for deterministic provider testing.");
+    }
+
+    private decimal ApplyDegradation(decimal value)
+    {
+        var scenario = _config.Scenario;
+        if (scenario is null || !scenario.Enabled || !scenario.ApplyToStreaming || scenario.DegradeEveryNEvents <= 0)
+            return value;
+
+        var index = Volatile.Read(ref _streamEventCounter);
+        return index > 0 && index % scenario.DegradeEveryNEvents == 0 ? Round4(value * 0.975m) : value;
+    }
+
     private async Task PublishTradesAsync(SymbolConfig cfg, CancellationToken ct)
     {
         var profile = SyntheticReferenceDataCatalog.GetProfileOrDefault(cfg.Symbol);
@@ -121,7 +146,8 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
         {
             var now = DateTimeOffset.UtcNow;
             var anchor = ComputeAnchor(profile, now, seq);
-            var price = Round4(anchor * (1m + Noise(profile.Symbol, now.Millisecond, (int)seq, 0.0008m)));
+            await ApplyStreamingScenarioAsync(ct).ConfigureAwait(false);
+            var price = ApplyDegradation(Round4(anchor * (1m + Noise(profile.Symbol, now.Millisecond, (int)seq, 0.0008m))));
             var size = 25L * (1 + (long)(PositiveNoise(profile.Symbol, now.Second, (int)seq + 11, 40m)));
             var trade = new Trade(
                 Timestamp: now,
@@ -151,8 +177,9 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
             var anchor = ComputeAnchor(profile, now, seq);
             var tick = Math.Max(0.0001m, anchor * 0.00005m);
             var spread = Math.Max(0.01m, Round4(anchor * (0.00008m + PositiveNoise(profile.Symbol, now.Second, (int)seq, 0.00006m))));
-            var bestBid = Round4(anchor - spread / 2m);
-            var bestAsk = Round4(anchor + spread / 2m);
+            await ApplyStreamingScenarioAsync(ct).ConfigureAwait(false);
+            var bestBid = ApplyDegradation(Round4(anchor - spread / 2m));
+            var bestAsk = ApplyDegradation(Round4(anchor + spread / 2m));
             var bids = new List<OrderBookLevel>(levels);
             var asks = new List<OrderBookLevel>(levels);
 
