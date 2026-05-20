@@ -144,11 +144,11 @@ ledger posting, reconciliation, and approval as explicit gates. UI clients consu
 status from `IOperationsStatusDerivationService`; they must not infer close readiness from local
 component state.
 
-The first implementation slice provides:
+The implemented continuity slice provides:
 
 | Component | Responsibility |
 |-----------|----------------|
-| `OperationsContinuityWorkflowService` | Command-driven start and broker-import transitions, optimistic version checks, DTO projection |
+| `OperationsContinuityWorkflowService` | Command-driven workflow transitions, optimistic version checks, audit writes, DTO projection |
 | `IOperationsContinuityRepository` | Workflow snapshot persistence; the workstation host registers a file-backed implementation under the workstation data root |
 | `IOperationsWorkflowAuditStore` | Append-only audit timeline with previous/current SHA-256 hash chaining |
 | `OperationsStatusDerivationService` | Deterministic server-side overall status derivation from gate/sub-state posture |
@@ -156,9 +156,15 @@ The first implementation slice provides:
 
 Every implemented transition writes an audit record before the workflow snapshot is saved. Audit
 records include actor, rationale, correlation id, evidence references, previous hash, and current
-hash. Broker import is intentionally kept separate from normalization and posting; later slices
-will connect Security Master coverage, ledger draft validation, reconciliation run posture,
-approval, and close commands to the same aggregate.
+hash. Broker import is intentionally separate from normalization. Ledger drafting is intentionally
+separate from posting: validation can mark a journal preview ready, but reconciliation requires the
+explicit `ledger/post` command with a durable ledger batch reference.
+
+The command path now covers start, broker import, broker normalization, Security Master resolution,
+governed Security Master override approval, ledger draft, ledger validation, ledger posting,
+reconciliation run, break resolution, approval submit, approval approve/reject, close, and governed
+reopen. Posting is blocked without Security Master resolution or approved override, a validated
+journal draft, an open period posture, a posting kind, and a non-duplicate posting candidate.
 
 ---
 
@@ -233,6 +239,19 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `GET /api/workstation/operations/continuity/{workflowId}` | Workflow detail with gates, timeline, blockers, evidence links, and next actions |
 | `GET /api/workstation/operations/continuity/{workflowId}/timeline` | Append-only audit timeline for explainability |
 | `POST /api/workstation/operations/continuity/{workflowId}/broker/import` | Records broker/custodian/bank import progress with expected-version enforcement |
+| `POST /api/workstation/operations/continuity/{workflowId}/broker/normalize` | Records normalized external activity before Security Master resolution |
+| `POST /api/workstation/operations/continuity/{workflowId}/security-master/resolve` | Updates Security Master resolution and accounting-term blockers |
+| `POST /api/workstation/operations/continuity/{workflowId}/security-master/overrides/{overrideId}/approve` | Requires override approver, rationale, policy, expiration, and audit metadata |
+| `POST /api/workstation/operations/continuity/{workflowId}/ledger/draft` | Creates a ledger journal preview without committing it |
+| `POST /api/workstation/operations/continuity/{workflowId}/ledger/validate` | Validates balanced journal draft and period posture |
+| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Marks validated journal entries as posted with a durable batch reference before reconciliation |
+| `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/run` | Runs expected-vs-actual reconciliation after ledger posting |
+| `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/breaks/{breakId}/resolve` | Resolves or dismisses a break with rationale and evidence |
+| `POST /api/workstation/operations/continuity/{workflowId}/approval/submit` | Submits a clean workflow for reviewer approval with report-pack evidence |
+| `POST /api/workstation/operations/continuity/{workflowId}/approval/approve` | Records approval decision metadata and marks close readiness |
+| `POST /api/workstation/operations/continuity/{workflowId}/approval/reject` | Routes rejected workflows back to ledger draft or reconciliation based on reason code |
+| `POST /api/workstation/operations/continuity/{workflowId}/close` | Closes the approved workflow when all gates pass |
+| `POST /api/workstation/operations/continuity/{workflowId}/reopen` | Reopens a closed workflow only with governed admin and incident metadata |
 
 These endpoints are implemented in `WorkstationEndpoints.cs` and map to route constants in `UiApiRoutes`.
 

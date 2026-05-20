@@ -312,8 +312,10 @@ public sealed class WorkstationEndpointsTests
             new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
         var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
             new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(validated.Workflow!.Version, "spoofed-user", "ledger-batch-1", "period-close", true));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
-            new OperationsReconciliationRunRequestDto(validated.Workflow!.Version, "spoofed-user", BreakCases: []));
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",

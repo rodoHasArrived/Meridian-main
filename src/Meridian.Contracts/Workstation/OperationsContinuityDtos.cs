@@ -113,6 +113,16 @@ public sealed record OperationsTransitionRequestDto(
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
+public sealed record OperationsSecurityMasterOverrideApprovalRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string OverrideId,
+    string Rationale,
+    string PolicyReference,
+    DateOnly? ExpiresOn,
+    string? CorrelationId = null,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+
 public sealed record OperationsGatePostureRequestDto(
     long ExpectedVersion,
     string Actor,
@@ -164,6 +174,18 @@ public sealed record OperationsLedgerValidationRequestDto(
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
+public sealed record OperationsLedgerPostRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string LedgerBatchId,
+    string PostingKind,
+    bool PeriodOpen,
+    bool HasValidatedJournal = true,
+    bool HasDuplicatePostingCandidate = false,
+    string? Rationale = null,
+    string? CorrelationId = null,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+
 public sealed record OperationsReconciliationRunRequestDto(
     long ExpectedVersion,
     string Actor,
@@ -198,11 +220,29 @@ public sealed record OperationsApprovalDecisionRequestDto(
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
+public sealed record OperationsRejectWorkflowRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string Reviewer,
+    string Rationale,
+    string ReasonCode,
+    string? CorrelationId = null,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+
 public sealed record OperationsCloseWorkflowRequestDto(
     long ExpectedVersion,
     string Actor,
     string Rationale,
     string ReportPackId,
+    string? CorrelationId = null,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+
+public sealed record OperationsReopenWorkflowRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string Rationale,
+    string IncidentId,
+    bool IsGovernedAdmin,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 

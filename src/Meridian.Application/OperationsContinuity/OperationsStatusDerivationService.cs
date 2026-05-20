@@ -36,6 +36,15 @@ public sealed class OperationsStatusDerivationService : IOperationsStatusDerivat
                 : OperationsWorkflowStatusDto.ApprovalPending;
         }
 
+        if (workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
+            workflow.SecurityMasterGate.Status == OperationsGateStatusDto.Passed &&
+            workflow.LedgerPostingGate.Status == OperationsGateStatusDto.Passed &&
+            workflow.ReconciliationGate.Status == OperationsGateStatusDto.Passed &&
+            workflow.ApprovalGate.Status != OperationsGateStatusDto.Passed)
+        {
+            return OperationsWorkflowStatusDto.ApprovalPending;
+        }
+
         if (workflow.ApprovalGate.Status == OperationsGateStatusDto.InProgress ||
             workflow.ApprovalState is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned)
         {

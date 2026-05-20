@@ -11,6 +11,11 @@ public interface IOperationsContinuityWorkflowService
         OperationsTransitionRequestDto request,
         CancellationToken ct = default);
 
+    Task<OperationsTransitionResultDto> NormalizeBrokerTransactionsAsync(
+        Guid workflowId,
+        OperationsTransitionRequestDto request,
+        CancellationToken ct = default);
+
     Task<OperationsTransitionResultDto> RefreshGatePostureAsync(
         Guid workflowId,
         OperationsGatePostureRequestDto request,
@@ -21,6 +26,12 @@ public interface IOperationsContinuityWorkflowService
         OperationsSecurityMasterResolveRequestDto request,
         CancellationToken ct = default);
 
+    Task<OperationsTransitionResultDto> ApproveSecurityMasterOverrideAsync(
+        Guid workflowId,
+        string overrideId,
+        OperationsSecurityMasterOverrideApprovalRequestDto request,
+        CancellationToken ct = default);
+
     Task<OperationsTransitionResultDto> BuildLedgerDraftAsync(
         Guid workflowId,
         OperationsLedgerDraftRequestDto request,
@@ -29,6 +40,11 @@ public interface IOperationsContinuityWorkflowService
     Task<OperationsTransitionResultDto> ValidateLedgerDraftAsync(
         Guid workflowId,
         OperationsLedgerValidationRequestDto request,
+        CancellationToken ct = default);
+
+    Task<OperationsTransitionResultDto> PostLedgerEntriesAsync(
+        Guid workflowId,
+        OperationsLedgerPostRequestDto request,
         CancellationToken ct = default);
 
     Task<OperationsTransitionResultDto> RunReconciliationAsync(
@@ -52,9 +68,19 @@ public interface IOperationsContinuityWorkflowService
         OperationsApprovalDecisionRequestDto request,
         CancellationToken ct = default);
 
+    Task<OperationsTransitionResultDto> RejectWorkflowAsync(
+        Guid workflowId,
+        OperationsRejectWorkflowRequestDto request,
+        CancellationToken ct = default);
+
     Task<OperationsTransitionResultDto> CloseWorkflowAsync(
         Guid workflowId,
         OperationsCloseWorkflowRequestDto request,
+        CancellationToken ct = default);
+
+    Task<OperationsTransitionResultDto> ReopenWorkflowAsync(
+        Guid workflowId,
+        OperationsReopenWorkflowRequestDto request,
         CancellationToken ct = default);
 
     Task<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>> ListAsync(
@@ -262,6 +288,30 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ct: ct).ConfigureAwait(false);
     }
 
+    public async Task<OperationsTransitionResultDto> NormalizeBrokerTransactionsAsync(
+        Guid workflowId,
+        OperationsTransitionRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return await ApplyCommandAsync(
+            workflowId,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
+            request.CorrelationId,
+            request.EvidenceLinks,
+            eventType: "broker-transactions-normalized",
+            gate: OperationsGateKeyDto.BrokerIngest,
+            precondition: static workflow => workflow.GetBrokerNormalizeTransitionBlocker(),
+            command: (workflow, evidence, now) =>
+            {
+                workflow.NormalizeBrokerTransactions(request, evidence, now);
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
     public async Task<OperationsTransitionResultDto> ResolveSecurityMasterMappingsAsync(
         Guid workflowId,
         OperationsSecurityMasterResolveRequestDto request,
@@ -281,6 +331,36 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             command: (workflow, evidence, now) =>
             {
                 workflow.ResolveSecurityMasterMappings(request, evidence, now);
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
+    public async Task<OperationsTransitionResultDto> ApproveSecurityMasterOverrideAsync(
+        Guid workflowId,
+        string overrideId,
+        OperationsSecurityMasterOverrideApprovalRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var effectiveRequest = request with
+        {
+            OverrideId = string.IsNullOrWhiteSpace(request.OverrideId) ? overrideId : request.OverrideId
+        };
+
+        return await ApplyCommandAsync(
+            workflowId,
+            effectiveRequest.ExpectedVersion,
+            effectiveRequest.Actor,
+            effectiveRequest.Rationale,
+            effectiveRequest.CorrelationId,
+            effectiveRequest.EvidenceLinks,
+            eventType: "security-master-override-approved",
+            gate: OperationsGateKeyDto.SecurityMaster,
+            precondition: workflow => workflow.GetApproveSecurityMasterOverrideTransitionBlocker(effectiveRequest),
+            command: (workflow, evidence, now) =>
+            {
+                workflow.ApproveSecurityMasterOverride(effectiveRequest, evidence, now);
                 return null;
             },
             ct: ct).ConfigureAwait(false);
@@ -310,6 +390,30 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ct: ct).ConfigureAwait(false);
     }
 
+    public async Task<OperationsTransitionResultDto> PostLedgerEntriesAsync(
+        Guid workflowId,
+        OperationsLedgerPostRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return await ApplyCommandAsync(
+            workflowId,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
+            request.CorrelationId,
+            request.EvidenceLinks,
+            eventType: "ledger-posted",
+            gate: OperationsGateKeyDto.LedgerPosting,
+            precondition: static workflow => workflow.GetPostLedgerEntriesTransitionBlocker(),
+            command: (workflow, evidence, now) =>
+            {
+                workflow.PostLedgerEntries(request, evidence, now);
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
     public async Task<OperationsTransitionResultDto> ValidateLedgerDraftAsync(
         Guid workflowId,
         OperationsLedgerValidationRequestDto request,
@@ -334,6 +438,30 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ct: ct).ConfigureAwait(false);
     }
 
+    public async Task<OperationsTransitionResultDto> RejectWorkflowAsync(
+        Guid workflowId,
+        OperationsRejectWorkflowRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return await ApplyCommandAsync(
+            workflowId,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
+            request.CorrelationId,
+            request.EvidenceLinks,
+            eventType: "approval-rejected",
+            gate: OperationsGateKeyDto.Approval,
+            precondition: workflow => workflow.GetRejectTransitionBlocker(request),
+            command: (workflow, evidence, now) =>
+            {
+                workflow.Reject(request, evidence, now);
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
     public async Task<OperationsTransitionResultDto> RunReconciliationAsync(
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
@@ -353,6 +481,30 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             command: (workflow, evidence, now) =>
             {
                 workflow.RunReconciliation(request, evidence, now);
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
+    public async Task<OperationsTransitionResultDto> ReopenWorkflowAsync(
+        Guid workflowId,
+        OperationsReopenWorkflowRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return await ApplyCommandAsync(
+            workflowId,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
+            request.CorrelationId,
+            EnsureIncidentEvidence(request.IncidentId, request.EvidenceLinks),
+            eventType: "workflow-reopened",
+            gate: OperationsGateKeyDto.Reconciliation,
+            precondition: workflow => workflow.GetReopenTransitionBlocker(request),
+            command: (workflow, evidence, now) =>
+            {
+                workflow.Reopen(request, evidence, now);
                 return null;
             },
             ct: ct).ConfigureAwait(false);
@@ -707,6 +859,25 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 "Operations report pack",
                 "/workstation/reporting",
                 "report-pack",
+                DateTimeOffset.UtcNow));
+        }
+
+        return normalized;
+    }
+
+    private static IReadOnlyList<OperationsEvidenceLinkDto> EnsureIncidentEvidence(
+        string? incidentId,
+        IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
+    {
+        var normalized = NormalizeEvidence(evidenceLinks).ToList();
+        if (!string.IsNullOrWhiteSpace(incidentId) &&
+            normalized.All(link => !string.Equals(link.EvidenceId, incidentId, StringComparison.OrdinalIgnoreCase)))
+        {
+            normalized.Add(new OperationsEvidenceLinkDto(
+                incidentId.Trim(),
+                "Workflow reopen incident",
+                "/workstation/accounting",
+                "incident",
                 DateTimeOffset.UtcNow));
         }
 
