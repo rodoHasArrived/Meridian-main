@@ -93,7 +93,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 Some topics in this folder have deeper source material outside `docs/development/`:
 
-- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/README.md) is the authoritative workflow inventory referenced by the GitHub Actions summary.
+- [`docs/status/workflow-manifest.json`](../status/workflow-manifest.json), [`docs/generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), and [`docs/status/workflow-validation-summary.json`](../status/workflow-validation-summary.json) are the canonical workflow inventory source of truth surfaces referenced by the GitHub Actions summary.
 - [`build/scripts/docs/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
 - [`scripts/dev/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/scripts/dev) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
 

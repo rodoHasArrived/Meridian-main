@@ -3,9 +3,13 @@
 **Status:** Active
 **Reviewed:** 2026-05-18
 
-The Meridian Actions surface is now four workflows aligned to the current .NET 10
-solution, browser workstation, retained WPF desktop shell, and publish smoke needs.
-The detailed workflow reference lives in `.github/workflows/README.md`.
+The Meridian Actions surface is documented from the generated workflow inventory
+artifacts instead of hand-maintained counts. Use the generated command and
+validation outputs as the source of truth:
+
+- `docs/status/workflow-manifest.json` (canonical workflow manifest)
+- `docs/generated/workflow-command-reference.md` (generated workflow list + commands)
+- `docs/status/workflow-validation-summary.json` (machine-readable inventory summary)
 
 | Workflow | File | Trigger | Purpose |
 | --- | --- | --- | --- |
@@ -48,5 +52,6 @@ pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstat
 
 The previous workflow set included overlapping PR, test-matrix, quality, nightly,
 release, documentation, Docker, benchmark, issue-management, AI, and generated-artifact
-workflows. Useful build/test/publish logic was merged into the four active lanes above.
+workflows. Useful build/test/publish logic was merged into the current generated
+workflow inventory described by the canonical manifest and generated outputs above.
 Externally deploying or mutating jobs were removed from the active workflow surface.
