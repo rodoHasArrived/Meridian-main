@@ -9,5 +9,5 @@ evidence.
 
 For scripted capture workflows, see
 [docs/development/desktop-workflow-automation.md](../development/desktop-workflow-automation.md)
-and `scripts/dev/capture-web-screenshots.mjs`.
+and `npm run screenshots` from `src/Meridian.Ui/dashboard`.
 
