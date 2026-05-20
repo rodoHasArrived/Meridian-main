@@ -898,7 +898,7 @@ public sealed class AnalysisExportWizardService
 
     internal static string CreateUniqueFileStem(string symbol)
     {
-        var safeStem = CreateUniqueFileStem(symbol);
+        var safeStem = CreateSafeFileStem(symbol);
         var normalizedSymbol = symbol.Trim();
         var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedSymbol));
         var suffix = Convert.ToHexString(hashBytes, 0, 4).ToLowerInvariant();
