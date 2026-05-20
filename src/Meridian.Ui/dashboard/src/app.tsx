@@ -23,6 +23,7 @@ import {
   type AppShellWorkflowContinuityViewModel,
   type AppShellWorkflowContinuityDisclosurePanel,
   type AppShellOperatingScopeInput,
+  type AppShellTrustStripState,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
@@ -179,6 +180,7 @@ function AppShell() {
     error,
     workflowError,
     workspaceErrors,
+    usingDevelopmentFixtures,
     payload: {
       session,
       overview,
@@ -275,6 +277,8 @@ function AppShell() {
           <span className="workstation-search-placeholder">{shell.commandPaletteTrigger.placeholder}</span>
           <span className="workstation-search-kbd" aria-hidden="true">{shell.commandPaletteTrigger.shortcutLabel}</span>
         </button>
+
+        <WorkstationTrustStrip viewModel={shell.trustStrip} />
 
         <div className="workstation-actions">
           <PriceAlertsBell />
@@ -993,6 +997,48 @@ function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShell
   const compactLeft = compactOperatingScope(left);
   const compactRight = compactOperatingScope(right);
   return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
+}
+
+function WorkstationTrustStrip({
+  viewModel
+}: {
+  viewModel: AppShellTrustStripState;
+}) {
+  return (
+    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
+      {viewModel.items.map((item) => {
+        const content = (
+          <>
+            <span className="workstation-trust-label">{item.label}</span>
+            <span className="workstation-trust-value">{item.value}</span>
+            <span className="sr-only">
+              {item.detail}
+              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
+            </span>
+          </>
+        );
+
+        return item.href ? (
+          <Link
+            key={item.id}
+            to={item.href}
+            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
+            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
+          >
+            {content}
+          </Link>
+        ) : (
+          <span
+            key={item.id}
+            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
+            aria-label={item.ariaLabel}
+          >
+            {content}
+          </span>
+        );
+      })}
+    </section>
+  );
 }
 
 function PriceAlertsBell() {

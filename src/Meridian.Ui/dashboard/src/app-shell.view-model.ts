@@ -73,6 +73,8 @@ export interface AppShellTrustStripItem {
   detail: string;
   tone: AppShellTrustStripTone;
   ariaLabel: string;
+  href: string | null;
+  actionLabel: string | null;
 }
 
 export interface AppShellTrustStripState {
@@ -436,7 +438,9 @@ function buildTrustStripState({
         value: `v${packageJson.version}`,
         detail: "Browser workstation bundle version.",
         tone: "ready",
-        ariaLabel: `Build ${packageJson.version}. Browser workstation bundle version.`
+        ariaLabel: `Build ${packageJson.version}. Browser workstation bundle version.`,
+        href: null,
+        actionLabel: null
       },
       {
         id: "mode",
@@ -446,7 +450,11 @@ function buildTrustStripState({
           ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.`
           : "Session environment is not loaded yet.",
         tone: environmentTone,
-        ariaLabel: `Mode ${environmentValue}. ${session ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.` : "Session environment is not loaded yet."}`
+        ariaLabel: `Mode ${environmentValue}. ${session ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.` : "Session environment is not loaded yet."}`,
+        href: session?.environment === "live"
+          ? WORKSTATION_ROUTE_CATALOG.tradingReadiness
+          : null,
+        actionLabel: session?.environment === "live" ? "Review readiness" : null
       },
       {
         id: "source",
@@ -454,7 +462,11 @@ function buildTrustStripState({
         value: dataSourceValue,
         detail: dataSourceDetail,
         tone: dataSourceTone,
-        ariaLabel: `Data source ${dataSourceValue}. ${dataSourceDetail}`
+        ariaLabel: `Data source ${dataSourceValue}. ${dataSourceDetail}`,
+        href: bootstrapFailed || failedWorkspaceCount > 0
+          ? WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage
+          : null,
+        actionLabel: bootstrapFailed || failedWorkspaceCount > 0 ? "Open diagnostics" : null
       },
       providerPosture
     ]
@@ -469,7 +481,9 @@ function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResp
       value: "Pending",
       detail: "Provider posture has not loaded yet.",
       tone: "pending",
-      ariaLabel: "Providers Pending. Provider posture has not loaded yet."
+      ariaLabel: "Providers Pending. Provider posture has not loaded yet.",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+      actionLabel: "Open provider posture"
     };
   }
 
@@ -481,7 +495,9 @@ function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResp
       value: "No providers",
       detail: "No provider posture rows are available in the current workstation payload.",
       tone: "review",
-      ariaLabel: "Providers No providers. No provider posture rows are available in the current workstation payload."
+      ariaLabel: "Providers No providers. No provider posture rows are available in the current workstation payload.",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+      actionLabel: "Configure provider"
     };
   }
 
@@ -506,7 +522,11 @@ function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResp
     value,
     detail,
     tone,
-    ariaLabel: `Providers ${value}. ${detail}`
+    ariaLabel: `Providers ${value}. ${detail}`,
+    href: degraded > 0 || warning > 0
+      ? WORKSTATION_ROUTE_CATALOG.dataProviders
+      : null,
+    actionLabel: degraded > 0 || warning > 0 ? "Open provider posture" : null
   };
 }
 

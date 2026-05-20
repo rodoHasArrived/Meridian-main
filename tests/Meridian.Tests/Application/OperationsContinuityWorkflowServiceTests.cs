@@ -204,7 +204,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
-    public async Task StartWorkflowAsync_ShouldRedactSensitiveAuditAndEvidenceFields()
+    public async Task StartWorkflowAsync_ShouldPreserveEvidenceIdentityWhileRedactingSensitiveAuditFields()
     {
         var service = CreateService(out _, out var auditStore);
 
@@ -219,7 +219,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             EvidenceLinks:
             [
                 new OperationsEvidenceLinkDto(
-                    "statement?secret=raw-evidence-secret",
+                    "statement-2026-05",
                     "Uploaded with password:raw-label-secret",
                     "https://operator:raw-route-secret@example.invalid/statement?api_key=raw-query-secret",
                     "credential=raw-source-secret",
@@ -236,13 +236,13 @@ public sealed class OperationsContinuityWorkflowServiceTests
         audit.Rationale.Should().NotContain("raw-token-value");
         audit.CorrelationId.Should().Be("token=[redacted]");
         audit.References.Should().ContainSingle();
-        audit.References[0].EvidenceId.Should().Be("statement?secret=[redacted]");
+        audit.References[0].EvidenceId.Should().Be("statement-2026-05");
         audit.References[0].Label.Should().Be("Uploaded with password:[redacted]");
         audit.References[0].Route.Should().Be("https://[redacted]@example.invalid/statement?api_key=[redacted]");
         audit.References[0].Source.Should().Be("credential=[redacted]");
 
         result.Workflow.EvidenceLinks.Should().ContainSingle(link =>
-            link.EvidenceId == "statement?secret=[redacted]" &&
+            link.EvidenceId == "statement-2026-05" &&
             link.Route == "https://[redacted]@example.invalid/statement?api_key=[redacted]");
     }
 

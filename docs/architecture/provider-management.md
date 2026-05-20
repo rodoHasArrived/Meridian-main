@@ -280,6 +280,7 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 **Key behaviors:**
 
 - Tracks all active subscriptions (depth and trades) in concurrent dictionaries
+- Returns existing per-symbol subscription IDs for duplicate requests so the active provider is not subscribed twice for the same stream
 - On failover: connects new provider, re-subscribes all active symbols, then disconnects the old provider
 - On connect failure: iterates backup providers until one succeeds
 - Thread-safe switching via `SemaphoreSlim`
@@ -728,3 +729,4 @@ export TIINGO__TOKEN=your-token
 - Added secret-safe `WebSocketConnectionDiagnostics` and explicit streaming lifecycle states to `WebSocketConnectionManager`.
 - Added `ProviderDataQualityValidator` for provider-boundary trade and quote checks.
 - Routed Alpaca streaming trade and quote messages through the boundary validator before collector ingress.
+- Hardened `FailoverAwareMarketDataClient` so duplicate per-symbol trade/depth subscription requests return the existing subscription ID instead of creating duplicate upstream provider subscriptions.

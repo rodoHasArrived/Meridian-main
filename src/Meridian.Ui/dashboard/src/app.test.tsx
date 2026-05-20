@@ -177,6 +177,44 @@ describe("App", () => {
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
   });
 
+  it("renders build, environment, data-source, and provider trust in the masthead", () => {
+    mockWorkstationData({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "data",
+        commandCount: 7
+      },
+      dataOperations: {
+        metrics: [],
+        providers: [
+          {
+            provider: "Alpaca",
+            status: "Degraded",
+            capability: "paper",
+            latency: "timeout",
+            note: "Credential check failed"
+          }
+        ],
+        backfills: [],
+        exports: []
+      },
+      usingDevelopmentFixtures: true,
+      loading: false
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/data/providers"] });
+
+    const strip = screen.getByRole("region", { name: "Workstation build, mode, data source, and provider posture" });
+    expect(within(strip).getByLabelText("Build 0.1.0. Browser workstation bundle version.")).toHaveTextContent("Buildv0.1.0");
+    expect(within(strip).getByLabelText("Mode Paper. Session Ops Desk is operating in paper mode.")).toHaveTextContent("ModePaper");
+    expect(within(strip).getByLabelText("Data source Demo fixtures. No-host fixture payloads are visible; do not treat this as live operational readiness.")).toHaveTextContent("SourceDemo fixtures");
+    expect(within(strip).getByRole("link", {
+      name: "Providers 1 degraded. 1 provider degraded; open Data provider posture before trading decisions. Open provider posture."
+    })).toHaveAttribute("href", "/data/providers");
+  });
+
   it("renders an informative startup status while workstation bootstrap is loading", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
