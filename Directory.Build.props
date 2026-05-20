@@ -61,7 +61,7 @@
     </MeridianGlobalNoWarn>
   </ItemGroup>
   <PropertyGroup>
-    <NoWarn>$(NoWarn);@(MeridianGlobalNoWarn)</NoWarn>
+    <NoWarn>$(NoWarn);@(MeridianGlobalNoWarn->'%(Identity)')</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <MeridianNuGetAuditSuppression Include="https://github.com/advisories/GHSA-xhg6-9j5j-w4vf">

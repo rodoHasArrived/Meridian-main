@@ -53,8 +53,8 @@ def main() -> int:
     failures.extend(advisory_failures)
 
     no_warn_values = [node.text or "" for node in root.findall(".//PropertyGroup/NoWarn")]
-    if not any("@(MeridianGlobalNoWarn)" in value for value in no_warn_values):
-        failures.append("NoWarn must include @(MeridianGlobalNoWarn) to keep inventory authoritative.")
+    if not any("MeridianGlobalNoWarn" in value for value in no_warn_values):
+        failures.append("NoWarn must include the MeridianGlobalNoWarn item list to keep inventory authoritative.")
 
     audit_values = [node.attrib.get("Include", "") for node in root.findall(".//ItemGroup/NuGetAuditSuppress")]
     if not any("@(MeridianNuGetAuditSuppression)" in value for value in audit_values):
