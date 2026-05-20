@@ -124,14 +124,23 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
-            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            if (ContainsRestrictedBrokerRoutingMetadata(request.Metadata))
+            if (ContainsRestrictedBrokerRoutingMetadata(request.Metadata)
+                && !HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
-                return Results.BadRequest(new OrderResult(false, null, "Order metadata contains restricted broker routing fields."));
+                return Results.Json(
+                    new OrderResult
+                    {
+                        Success = false,
+                        OrderId = request.ClientOrderId ?? string.Empty,
+                        ErrorMessage = "Order metadata contains restricted broker routing fields that require ManageOrders permission.",
+                    },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
             }
 
             var oms = context.RequestServices.GetService<IOrderManager>();
