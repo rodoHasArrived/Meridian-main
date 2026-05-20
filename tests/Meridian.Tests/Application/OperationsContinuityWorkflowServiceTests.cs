@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
@@ -140,6 +141,26 @@ public sealed class OperationsContinuityWorkflowServiceTests
         workflow.SetApprovalState(OperationsApprovalStateDto.Approved, DateTimeOffset.UtcNow);
 
         derivation.Derive(workflow).Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
+    }
+
+
+    [Fact]
+    public void Derive_ShouldUseDeterministicHighestActiveStageOrdering()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var workflow = OperationsContinuityWorkflow.Start(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            DateTimeOffset.UtcNow);
+
+        workflow.ReplaceGate(workflow.BrokerIngestGate.WithStatus(OperationsGateStatusDto.InProgress));
+        workflow.ReplaceGate(workflow.SecurityMasterGate.WithStatus(OperationsGateStatusDto.InProgress));
+        workflow.ReplaceGate(workflow.LedgerPostingGate.WithStatus(OperationsGateStatusDto.InProgress));
+
+        derivation.Derive(workflow).Should().Be(OperationsWorkflowStatusDto.LedgerPostingDraft);
     }
 
     [Fact]
@@ -1296,5 +1317,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         public Task<IReadOnlyList<OperationsWorkflowAuditDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default)
             => _inner.GetTimelineAsync(workflowId, ct);
+    }
+
+    [Fact]
+    public void OperationsContractEnums_ShouldSerializeAsStableStrings()
+    {
+        JsonSerializer.Serialize(OperationsWorkflowStatusDto.Blocked).Should().Be("\"Blocked\"");
+        JsonSerializer.Serialize(OperationsGateStatusDto.ReviewRequired).Should().Be("\"ReviewRequired\"");
+        JsonSerializer.Serialize(OperationsGateKeyDto.Reconciliation).Should().Be("\"Reconciliation\"");
+        JsonSerializer.Serialize(OperationsIssueCodeDto.ReconciliationCriticalBreaksOpen)
+            .Should().Be("\"ReconciliationCriticalBreaksOpen\"");
     }
 }
