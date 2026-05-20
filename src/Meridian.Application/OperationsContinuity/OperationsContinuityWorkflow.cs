@@ -721,8 +721,44 @@ public sealed class OperationsContinuityWorkflow
         return null;
     }
 
-    public OperationsWorkflowBlockerDto? GetSubmitForApprovalTransitionBlocker()
+    public OperationsWorkflowBlockerDto? GetSubmitForApprovalTransitionBlocker(OperationsSubmitApprovalRequestDto request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Reviewer) ||
+            string.IsNullOrWhiteSpace(request.Rationale) ||
+            string.IsNullOrWhiteSpace(request.ReportPackId))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "APPROVAL_SUBMISSION_METADATA_REQUIRED",
+                "Approval submission requires reviewer, rationale, and linked report pack metadata.",
+                OperationsGateKeyDto.Approval,
+                "Error",
+                []);
+        }
+
+        if (BrokerIngestGate.Status != OperationsGateStatusDto.Passed ||
+            SecurityMasterGate.Status != OperationsGateStatusDto.Passed ||
+            LedgerPostingGate.Status != OperationsGateStatusDto.Passed)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
+                "Broker intake, Security Master, and ledger posting gates must pass before approval submission.",
+                null,
+                "Critical",
+                []);
+        }
+
+        if (ReconciliationGate.Status is not OperationsGateStatusDto.Passed and not OperationsGateStatusDto.ReviewRequired)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_RUN_REQUIRED",
+                "Approval submission requires a completed reconciliation run with no open critical breaks.",
+                OperationsGateKeyDto.Reconciliation,
+                "Critical",
+                []);
+        }
+
         if (ReconciliationGate.Status == OperationsGateStatusDto.Blocked ||
             BreakCases.Any(static item => !IsClosedBreakStatus(item.Status) &&
                 string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase)))

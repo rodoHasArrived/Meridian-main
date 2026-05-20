@@ -49,6 +49,8 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
   const [isSaving, setIsSaving] = useState(false);
 
   const provider = selectedProvider ? providers[selectedProvider] : null;
+  const dialogTitleId = selectedProvider ? `provider-credential-${selectedProvider}-title` : undefined;
+  const dialogDescriptionId = selectedProvider ? `provider-credential-${selectedProvider}-description` : undefined;
 
   const handleSelectProvider = (providerName: string) => {
     setSelectedProvider(providerName);
@@ -144,10 +146,14 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
           {/* Credential form */}
           {provider && selectedProvider && (
             <Dialog open={!!selectedProvider} onOpenChange={() => setSelectedProvider(null)}>
-              <DialogContent className="max-w-md">
+              <DialogContent
+                className="max-w-md"
+                aria-labelledby={dialogTitleId}
+                aria-describedby={dialogDescriptionId}
+              >
                 <DialogHeader>
-                  <DialogTitle>{provider.name} Credentials</DialogTitle>
-                  <DialogDescription>{provider.description}</DialogDescription>
+                  <DialogTitle id={dialogTitleId}>{provider.name} Credentials</DialogTitle>
+                  <DialogDescription id={dialogDescriptionId}>{provider.description}</DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
@@ -186,6 +192,8 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
                             {field.type === "password" && (
                               <button
                                 type="button"
+                                aria-label={`${showPasswords[field.name] ? "Hide" : "Show"} ${field.label}`}
+                                aria-pressed={showPasswords[field.name] ?? false}
                                 onClick={() =>
                                   setShowPasswords({
                                     ...showPasswords,
@@ -195,9 +203,9 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                               >
                                 {showPasswords[field.name] ? (
-                                  <EyeOff className="h-4 w-4" />
+                                  <EyeOff className="h-4 w-4" aria-hidden="true" />
                                 ) : (
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-4 w-4" aria-hidden="true" />
                                 )}
                               </button>
                             )}

@@ -131,13 +131,15 @@ function AlpacaCredentialField({
         placeholder={field.placeholder}
         leadingIcon={leadingIcon}
         disabled={field.disabled}
-        title={field.disabledReason ?? undefined}
         error={field.error}
         aria-describedby={field.describedBy}
       />
       <span
         id={field.helpId}
-        className={cn("text-[11px] leading-4", field.error ? "text-danger" : "text-muted-foreground")}
+        className={cn(
+          "text-[11px] leading-4",
+          field.error ? "text-danger" : field.disabledReason ? "text-warning" : "text-muted-foreground"
+        )}
       >
         {field.helpText}
       </span>
@@ -525,7 +527,6 @@ export function SettingsScreen({
                     <label
                       key={option.id}
                       htmlFor={option.id}
-                      title={option.disabledReason ?? undefined}
                       className={cn(
                         "relative grid min-h-[4.75rem] cursor-pointer gap-1 rounded-md border px-3 py-2 transition-colors",
                         option.isSelected ? environmentOptionClass[option.tone].selected : environmentOptionClass[option.tone].idle,
@@ -539,10 +540,14 @@ export function SettingsScreen({
                         value={option.value}
                         checked={option.isSelected}
                         disabled={option.disabled}
-                        title={option.disabledReason ?? undefined}
                         onChange={() => alpacaForm.setEnvironment(option.value)}
                         aria-label={option.ariaLabel}
-                        aria-describedby={`${option.descriptionId} ${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
+                        aria-describedby={cn(
+                          option.descriptionId,
+                          alpacaForm.fieldHelpIds.environment,
+                          option.disabledReasonId,
+                          alpacaForm.formPanelId
+                        )}
                         className="peer sr-only"
                       />
                       <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" aria-hidden="true" />
@@ -564,12 +569,16 @@ export function SettingsScreen({
                 <span id={alpacaForm.fieldHelpIds.environment} className="text-[11px] leading-4 text-muted-foreground">
                   {alpacaForm.environmentHelpText}
                 </span>
+                {alpacaForm.environmentOptions[0]?.disabledReason && alpacaForm.environmentOptions[0]?.disabledReasonId ? (
+                  <span id={alpacaForm.environmentOptions[0].disabledReasonId} className="text-[11px] leading-4 text-warning">
+                    {alpacaForm.environmentOptions[0].disabledReason}
+                  </span>
+                ) : null}
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
               <label
                 htmlFor={alpacaForm.liveAcknowledgement.id}
-                title={alpacaForm.liveAcknowledgement.disabledReason ?? undefined}
                 className={cn(
                   "flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-sm text-live-env",
                   alpacaForm.liveAcknowledgement.disabled && "opacity-60"
@@ -580,11 +589,14 @@ export function SettingsScreen({
                   type="checkbox"
                   checked={alpacaForm.liveAcknowledgement.checked}
                   disabled={alpacaForm.liveAcknowledgement.disabled}
-                  title={alpacaForm.liveAcknowledgement.disabledReason ?? undefined}
                   required={alpacaForm.liveAcknowledgement.required}
                   onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
-                  aria-describedby={`${alpacaForm.liveAcknowledgement.descriptionId} ${alpacaForm.formPanelId}`}
+                  aria-describedby={cn(
+                    alpacaForm.liveAcknowledgement.descriptionId,
+                    alpacaForm.liveAcknowledgement.disabledReasonId,
+                    alpacaForm.formPanelId
+                  )}
                   className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
                 />
                 <span className="min-w-0">
@@ -592,6 +604,14 @@ export function SettingsScreen({
                   <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
                     {alpacaForm.liveAcknowledgement.detail}
                   </span>
+                  {alpacaForm.liveAcknowledgement.disabledReason && alpacaForm.liveAcknowledgement.disabledReasonId ? (
+                    <span
+                      id={alpacaForm.liveAcknowledgement.disabledReasonId}
+                      className="mt-1 block text-xs leading-5 text-warning"
+                    >
+                      {alpacaForm.liveAcknowledgement.disabledReason}
+                    </span>
+                  ) : null}
                 </span>
               </label>
             ) : null}

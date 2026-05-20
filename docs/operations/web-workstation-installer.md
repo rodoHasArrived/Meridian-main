@@ -30,6 +30,13 @@ Each installer run is upgrade-aware:
 - backs up the current `%LOCALAPPDATA%\Meridian` state to
   `%LOCALAPPDATA%\Meridian\backups\install-<timestamp>\`
 - preserves the active config and resolved data root instead of recreating them
+- clears stale `%LOCALAPPDATA%\Meridian\service\web-workstation-runtime.json` state when the
+  tracked PID is no longer running
+- archives superseded side-by-side install roots under
+  `%LOCALAPPDATA%\Meridian\archive\old-installs\install-<timestamp>\install-roots\`
+- archives matched legacy app-data roots under
+  `%LOCALAPPDATA%\Meridian\archive\old-installs\install-<timestamp>\app-data\`
+- removes Desktop and Start Menu shortcuts that still point at those archived installs
 - removes stale Desktop or Start Menu shortcuts that still point at missing older installs
 - skips file replacement when the installed host and workstation bundle already match the latest
   published output, which avoids unnecessary downtime under low disk pressure
@@ -52,6 +59,10 @@ Each installer run is upgrade-aware:
 .\build\scripts\install\install-web-workstation.ps1 -NoStartMenuShortcut
 .\build\scripts\install\install.ps1 -Mode WebWorkstation -NoStartMenuShortcut
 
+# Preserve older side-by-side installs temporarily during troubleshooting.
+.\build\scripts\install\install-web-workstation.ps1 -SkipLegacyInstallCleanup
+.\build\scripts\install\install.ps1 -Mode WebWorkstation -SkipLegacyInstallCleanup
+
 # Install ARM64 host binaries.
 .\build\scripts\install\install-web-workstation.ps1 -RuntimeIdentifier win-arm64
 .\build\scripts\install\install.ps1 -Mode WebWorkstation -WebRuntimeIdentifier win-arm64
@@ -63,6 +74,7 @@ Defaults:
 - app data root: `%LOCALAPPDATA%\Meridian`
 - config path: `%LOCALAPPDATA%\Meridian\appsettings.json`
 - backup root: `%LOCALAPPDATA%\Meridian\backups`
+- archive root: `%LOCALAPPDATA%\Meridian\archive\old-installs`
 - install manifest: `%LOCALAPPDATA%\Meridian\service\web-workstation-install-manifest.json`
 - first-run data source: `Synthetic`
 - workstation URL: `http://localhost:8080/workstation/`
@@ -71,7 +83,16 @@ The host serves static workstation files from its working directory at `wwwroot/
 installer therefore copies `src/Meridian.Ui/wwwroot/workstation` into the install root after the
 dashboard build completes. Persistent runtime state stays under `%LOCALAPPDATA%\Meridian`; the
 installer removes empty legacy `data/` and `artifacts/` placeholders from the install root so the
-installed app directory remains binary-focused.
+installed app directory remains binary-focused. Desktop shortcut creation prefers the first
+existing user desktop root reported by Windows, `%USERPROFILE%\Desktop`, or `%OneDrive%\Desktop`
+so redirected-desktop setups do not silently lose the active launcher.
+
+The intended steady state after each upgrade is:
+
+- one authoritative install root: `%LOCALAPPDATA%\Programs\Meridian Web Workstation`
+- one persistent app-data root: `%LOCALAPPDATA%\Meridian`
+- archived superseded installs and matched legacy app-data roots retained under
+  `%LOCALAPPDATA%\Meridian\archive\old-installs\`
 
 ## Smoke Test
 
@@ -95,6 +116,6 @@ when `src/Meridian.Ui/wwwroot/workstation` already contains the bundle you inten
   stop stale Vite preview processes and rerun the installer.
 - If restore or publish fails because `C:` is low on space, clear generated build output and NuGet
   caches before retrying.
-- If the installer reports stale shortcuts, inspect the Desktop or Start Menu entries that pointed
-  at missing side-by-side installs before recreating manual launchers.
+- If the installer reports archived installs or removed shortcuts, inspect the install manifest for
+  the exact archived paths before deleting the retained backup data.
 - Use `-PlanOnly` first when changing install paths or ports.

@@ -41,6 +41,12 @@ param(
 
     [switch]$NoStartMenuShortcut,
 
+    [switch]$SkipLegacyInstallCleanup,
+
+    [string]$DesktopShortcutRoot = "",
+
+    [string]$StartMenuShortcutDirectory = "",
+
     [switch]$LaunchAfterInstall,
 
     [switch]$PlanOnly
@@ -66,6 +72,69 @@ function Write-Warn {
 function Get-FullPathForNewItem {
     param([Parameter(Mandatory)][string]$Path)
     return [System.IO.Path]::GetFullPath($Path)
+}
+
+function Get-DistinctFullPaths {
+    param([string[]]$Paths)
+
+    $results = New-Object System.Collections.Generic.List[string]
+    $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($path in $Paths) {
+        if ([string]::IsNullOrWhiteSpace($path)) {
+            continue
+        }
+
+        try {
+            $fullPath = [System.IO.Path]::GetFullPath($path)
+        }
+        catch {
+            continue
+        }
+
+        if ($seen.Add($fullPath)) {
+            $results.Add($fullPath) | Out-Null
+        }
+    }
+
+    return $results.ToArray()
+}
+
+function Get-DesktopShortcutRoots {
+    param([string]$PreferredRoot)
+
+    if (-not [string]::IsNullOrWhiteSpace($PreferredRoot)) {
+        return @(Get-FullPathForNewItem -Path $PreferredRoot)
+    }
+
+    $candidates = @(
+        [Environment]::GetFolderPath("DesktopDirectory")
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
+        $candidates += Join-Path $env:USERPROFILE "Desktop"
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($env:OneDrive)) {
+        $candidates += Join-Path $env:OneDrive "Desktop"
+    }
+
+    return Get-DistinctFullPaths -Paths $candidates
+}
+
+function Get-PreferredExistingPath {
+    param([string[]]$CandidatePaths)
+
+    foreach ($candidatePath in $CandidatePaths) {
+        if (Test-Path -LiteralPath $candidatePath) {
+            return [System.IO.Path]::GetFullPath($candidatePath)
+        }
+    }
+
+    if ($CandidatePaths.Count -gt 0) {
+        return [System.IO.Path]::GetFullPath($CandidatePaths[0])
+    }
+
+    return $null
 }
 
 function Get-RepoRoot {
@@ -117,6 +186,22 @@ function Copy-DirectoryContents {
 
 function Get-InstallTimestamp {
     return Get-Date -Format "yyyyMMdd-HHmmss"
+}
+
+function Read-JsonFile {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+
+    try {
+        return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    }
+    catch {
+        Write-Warn "Ignoring unreadable JSON file at ${Path}: $($_.Exception.Message)"
+        return $null
+    }
 }
 
 function Get-DirectoryFileIndex {
@@ -277,7 +362,7 @@ function Get-MeridianShortcutRecords {
         }
 
         Get-ChildItem -LiteralPath $root -Filter "*.lnk" -File -ErrorAction SilentlyContinue | Where-Object {
-            $_.Name -like "Meridian Web Workstation*.lnk" -or $_.Name -eq "Stop Meridian Web Workstation.lnk"
+            $_.Name -like "Meridian Web Workstation*.lnk" -or $_.Name -like "Stop Meridian Web Workstation*.lnk"
         } | ForEach-Object {
             $fullPath = [System.IO.Path]::GetFullPath($_.FullName)
             if ($seen.Add($fullPath)) {
@@ -287,6 +372,33 @@ function Get-MeridianShortcutRecords {
     }
 
     return $records.ToArray()
+}
+
+function Test-ShortcutTargetsInstallRoot {
+    param(
+        [Parameter(Mandatory)]$ShortcutRecord,
+        [Parameter(Mandatory)][string]$InstallRootPath
+    )
+
+    $fullInstallRoot = [System.IO.Path]::GetFullPath($InstallRootPath)
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$ShortcutRecord.workingDirectory)) {
+        try {
+            $fullWorkingDirectory = [System.IO.Path]::GetFullPath([string]$ShortcutRecord.workingDirectory)
+            if ($fullWorkingDirectory.StartsWith($fullInstallRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+                return $true
+            }
+        }
+        catch {
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$ShortcutRecord.arguments) -and
+        ([string]$ShortcutRecord.arguments).IndexOf($fullInstallRoot, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+        return $true
+    }
+
+    return $false
 }
 
 function Backup-AppDataRoot {
@@ -313,6 +425,74 @@ function Backup-AppDataRoot {
         path = $backupPath
         copiedItems = $copiedItems.ToArray()
     }
+}
+
+function Get-LegacyAppDataCandidates {
+    param(
+        [Parameter(Mandatory)][string]$ActiveAppDataRootPath,
+        [string[]]$LegacyInstallRoots = @()
+    )
+
+    $appDataParentPath = Split-Path -Parent $ActiveAppDataRootPath
+    if (-not (Test-Path -LiteralPath $appDataParentPath)) {
+        return @()
+    }
+
+    $legacyInstallLookup = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($legacyInstallRoot in $LegacyInstallRoots) {
+        if (-not [string]::IsNullOrWhiteSpace($legacyInstallRoot)) {
+            $legacyInstallLookup.Add([System.IO.Path]::GetFullPath($legacyInstallRoot)) | Out-Null
+        }
+    }
+
+    $candidates = New-Object System.Collections.Generic.List[object]
+    Get-ChildItem -LiteralPath $appDataParentPath -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -like "Meridian*" -and
+        -not [string]::Equals($_.FullName, $ActiveAppDataRootPath, [System.StringComparison]::OrdinalIgnoreCase)
+    } | ForEach-Object {
+        $manifestPath = Join-Path $_.FullName "service\web-workstation-install-manifest.json"
+        $runtimePath = Join-Path $_.FullName "service\web-workstation-runtime.json"
+        $hasKnownLayout = (Test-Path -LiteralPath $manifestPath) -or
+            (Test-Path -LiteralPath (Join-Path $_.FullName "appsettings.json")) -or
+            (Test-Path -LiteralPath (Join-Path $_.FullName "data")) -or
+            (Test-Path -LiteralPath (Join-Path $_.FullName "service")) -or
+            (Test-Path -LiteralPath (Join-Path $_.FullName "backups")) -or
+            (Test-Path -LiteralPath (Join-Path $_.FullName "archive"))
+
+        if (-not $hasKnownLayout) {
+            return
+        }
+
+        $installManifest = Read-JsonFile -Path $manifestPath
+        $linkedInstallRoot = $null
+        if ($installManifest -and -not [string]::IsNullOrWhiteSpace([string]$installManifest.installRoot)) {
+            try {
+                $linkedInstallRoot = [System.IO.Path]::GetFullPath([string]$installManifest.installRoot)
+            }
+            catch {
+                $linkedInstallRoot = $null
+            }
+        }
+
+        $classification = if ($linkedInstallRoot -and $legacyInstallLookup.Contains($linkedInstallRoot)) {
+            "old-app-data"
+        }
+        else {
+            "needs-review"
+        }
+
+        $candidates.Add([pscustomobject]@{
+                path = $_.FullName
+                classification = $classification
+                linkedInstallRoot = $linkedInstallRoot
+                manifestPath = if (Test-Path -LiteralPath $manifestPath) { $manifestPath } else { $null }
+                runtimePath = if (Test-Path -LiteralPath $runtimePath) { $runtimePath } else { $null }
+                sizeMb = Get-FileSizeMegabytes -Path $_.FullName
+                lastWriteTime = $_.LastWriteTime
+            }) | Out-Null
+    }
+
+    return $candidates.ToArray()
 }
 
 function Read-RuntimeState {
@@ -358,6 +538,36 @@ function Get-TrackedRuntimeProcess {
     }
 }
 
+function Clear-StaleRuntimeState {
+    param(
+        [Parameter(Mandatory)][string]$RuntimePath
+    )
+
+    $runtime = Read-RuntimeState -RuntimePath $RuntimePath
+    if ($null -eq $runtime) {
+        return [pscustomobject]@{
+            removed = $false
+            reason = "runtime-state-not-found"
+        }
+    }
+
+    $trackedProcess = Get-TrackedRuntimeProcess -Runtime $runtime
+    if ($null -ne $trackedProcess) {
+        return [pscustomobject]@{
+            removed = $false
+            reason = "tracked-process-active"
+            processId = $runtime.processId
+        }
+    }
+
+    Remove-RuntimeStateFile -RuntimePath $RuntimePath
+    return [pscustomobject]@{
+        removed = $true
+        reason = "tracked-process-not-running"
+        processId = $runtime.processId
+    }
+}
+
 function Test-TrackedRuntimeProcessMatches {
     param(
         $Runtime,
@@ -397,6 +607,18 @@ function Stop-TrackedMeridianHost {
             attempted = $false
             stopped = $false
             reason = "runtime-state-not-found"
+        }
+    }
+
+    $trackedProcess = Get-TrackedRuntimeProcess -Runtime $runtime
+    if ($null -eq $trackedProcess) {
+        Remove-RuntimeStateFile -RuntimePath $RuntimePath
+        return [pscustomobject]@{
+            attempted = $false
+            stopped = $false
+            processId = $runtime.processId
+            reason = "tracked-process-not-running"
+            removedStaleRuntimeState = $true
         }
     }
 
@@ -447,6 +669,58 @@ function Stop-TrackedMeridianHost {
     }
 }
 
+function Get-MeridianProcessesForInstallRoot {
+    param(
+        [Parameter(Mandatory)][string]$InstallRootPath
+    )
+
+    $fullInstallRoot = [System.IO.Path]::GetFullPath($InstallRootPath)
+    return @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.ProcessName -like "Meridian*" -and
+            $_.Path -and
+            $_.Path.StartsWith($fullInstallRoot, [System.StringComparison]::OrdinalIgnoreCase)
+        })
+}
+
+function Stop-MeridianProcessesForInstallRoot {
+    param(
+        [Parameter(Mandatory)][string]$InstallRootPath,
+        [string[]]$RuntimePaths = @()
+    )
+
+    $results = New-Object System.Collections.Generic.List[object]
+
+    foreach ($runtimePath in (Get-DistinctFullPaths -Paths $RuntimePaths)) {
+        if (-not (Test-Path -LiteralPath $runtimePath)) {
+            continue
+        }
+
+        $stopResult = Stop-TrackedMeridianHost -RuntimePath $runtimePath -InstallRootPath $InstallRootPath
+        if ($stopResult.attempted) {
+            $results.Add([pscustomobject]@{
+                    method = "runtime-state"
+                    processId = $stopResult.processId
+                    graceful = $stopResult.graceful
+                    port = $stopResult.port
+                    stopped = $stopResult.stopped
+                }) | Out-Null
+        }
+    }
+
+    foreach ($process in (Get-MeridianProcessesForInstallRoot -InstallRootPath $InstallRootPath)) {
+        Stop-Process -Id $process.Id -Force
+        $results.Add([pscustomobject]@{
+                method = "path-match-force-stop"
+                processId = $process.Id
+                graceful = $false
+                port = $null
+                stopped = $true
+            }) | Out-Null
+    }
+
+    return $results.ToArray()
+}
+
 function Remove-StaleShortcut {
     param(
         [Parameter(Mandatory)]$ShortcutRecord
@@ -458,6 +732,51 @@ function Remove-StaleShortcut {
     }
 
     return $false
+}
+
+function Get-ArchiveDestinationPath {
+    param(
+        [Parameter(Mandatory)][string]$ArchiveRunRoot,
+        [Parameter(Mandatory)][string]$Bucket,
+        [Parameter(Mandatory)][string]$LeafName
+    )
+
+    $bucketRoot = Join-Path $ArchiveRunRoot $Bucket
+    New-Item -ItemType Directory -Path $bucketRoot -Force | Out-Null
+
+    $destinationPath = Join-Path $bucketRoot $LeafName
+    if (-not (Test-Path -LiteralPath $destinationPath)) {
+        return $destinationPath
+    }
+
+    $suffix = 2
+    do {
+        $destinationPath = Join-Path $bucketRoot ("{0}-{1}" -f $LeafName, $suffix)
+        $suffix++
+    } while (Test-Path -LiteralPath $destinationPath)
+
+    return $destinationPath
+}
+
+function Move-PathToArchive {
+    param(
+        [Parameter(Mandatory)][string]$SourcePath,
+        [Parameter(Mandatory)][string]$ArchiveRunRoot,
+        [Parameter(Mandatory)][string]$Bucket
+    )
+
+    if (-not (Test-Path -LiteralPath $SourcePath)) {
+        return $null
+    }
+
+    $destinationPath = Get-ArchiveDestinationPath -ArchiveRunRoot $ArchiveRunRoot -Bucket $Bucket -LeafName (Split-Path -Leaf $SourcePath)
+    Move-Item -LiteralPath $SourcePath -Destination $destinationPath
+
+    return [pscustomobject]@{
+        sourcePath = $SourcePath
+        destinationPath = $destinationPath
+        bucket = $Bucket
+    }
 }
 
 function Remove-EmptyDirectoryTree {
@@ -895,8 +1214,15 @@ $installedExePath = Join-Path $installRootPath "Meridian.exe"
 $iconSource = Join-Path $repoRoot "src\Meridian\app.ico"
 $iconPath = Join-Path $installRootPath "app.ico"
 $targetBundle = Join-Path $installRootPath "wwwroot\workstation"
-$desktopShortcutPath = Join-Path ([Environment]::GetFolderPath("DesktopDirectory")) "Meridian Web Workstation.lnk"
-$startMenuDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Meridian"
+$desktopShortcutRoots = Get-DesktopShortcutRoots -PreferredRoot $DesktopShortcutRoot
+$desktopShortcutRoot = Get-PreferredExistingPath -CandidatePaths $desktopShortcutRoots
+$desktopShortcutPath = if ($desktopShortcutRoot) { Join-Path $desktopShortcutRoot "Meridian Web Workstation.lnk" } else { $null }
+$startMenuDir = if (-not [string]::IsNullOrWhiteSpace($StartMenuShortcutDirectory)) {
+    Get-FullPathForNewItem -Path $StartMenuShortcutDirectory
+}
+else {
+    Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Meridian"
+}
 $startMenuShortcutPath = Join-Path $startMenuDir "Meridian Web Workstation.lnk"
 $startMenuStopShortcutPath = Join-Path $startMenuDir "Stop Meridian Web Workstation.lnk"
 
@@ -917,18 +1243,38 @@ if (Test-Path -LiteralPath $installParentPath) {
         }
 }
 
-$desktopShortcutRecord = Get-ShortcutRecord -ShortcutPath $desktopShortcutPath
+$legacyInstallRootPaths = @($legacyInstallCandidates | ForEach-Object { $_.path })
+$legacyAppDataCandidates = if ($legacyInstallRootPaths.Count -gt 0) {
+    Get-LegacyAppDataCandidates -ActiveAppDataRootPath $appDataRootPath -LegacyInstallRoots $legacyInstallRootPaths
+}
+else {
+    @()
+}
+$desktopShortcutRecord = if ($desktopShortcutPath) { Get-ShortcutRecord -ShortcutPath $desktopShortcutPath } else { $null }
 $startMenuShortcutRecord = Get-ShortcutRecord -ShortcutPath $startMenuShortcutPath
 $startMenuStopShortcutRecord = Get-ShortcutRecord -ShortcutPath $startMenuStopShortcutPath
-$additionalShortcutRecords = Get-MeridianShortcutRecords -Roots @(
-    [Environment]::GetFolderPath("DesktopDirectory"),
-    $startMenuDir
-) -KnownShortcutPaths @(
+$shortcutSearchRoots = @()
+$shortcutSearchRoots += $desktopShortcutRoots
+$shortcutSearchRoots += $startMenuDir
+$additionalShortcutRecords = Get-MeridianShortcutRecords -Roots $shortcutSearchRoots -KnownShortcutPaths @(
     $desktopShortcutPath,
     $startMenuShortcutPath,
     $startMenuStopShortcutPath
 )
-$shortcutRecords = @($desktopShortcutRecord, $startMenuShortcutRecord, $startMenuStopShortcutRecord) + $additionalShortcutRecords
+$shortcutRecords = @($desktopShortcutRecord, $startMenuShortcutRecord, $startMenuStopShortcutRecord) |
+    Where-Object { $null -ne $_ }
+$shortcutRecords = $shortcutRecords + $additionalShortcutRecords
+$legacyShortcutRecords = @(
+    $shortcutRecords | Where-Object {
+        foreach ($legacyInstallRootPath in $legacyInstallRootPaths) {
+            if (Test-ShortcutTargetsInstallRoot -ShortcutRecord $_ -InstallRootPath $legacyInstallRootPath) {
+                return $true
+            }
+        }
+
+        return $false
+    }
+)
 $existingRuntime = Read-RuntimeState -RuntimePath $runtimePath
 $trackedProcess = Get-TrackedRuntimeProcess -Runtime $existingRuntime
 $runningInstallPath = if ($trackedProcess -and $trackedProcess.Path) { Split-Path -Parent $trackedProcess.Path } else { $null }
@@ -936,6 +1282,9 @@ $discoverySnapshot = [ordered]@{
     generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
     targetInstallRoot = $installRootPath
     appDataRoot = $appDataRootPath
+    desktopShortcutRoot = $desktopShortcutRoot
+    desktopShortcutRoots = $desktopShortcutRoots
+    startMenuShortcutDirectory = $startMenuDir
     runtimeIdentifier = $RuntimeIdentifier
     installCandidates = @(
         if (Test-Path -LiteralPath $installRootPath) {
@@ -947,7 +1296,9 @@ $discoverySnapshot = [ordered]@{
             }
         }
     ) + $legacyInstallCandidates
+    legacyAppDataCandidates = $legacyAppDataCandidates
     shortcuts = $shortcutRecords
+    legacyShortcuts = $legacyShortcutRecords
     runtime = if ($existingRuntime) {
         [pscustomobject]@{
             processId = $existingRuntime.processId
@@ -979,6 +1330,12 @@ Write-Host "  Runtime:         $RuntimeIdentifier"
 Write-Host "  Workstation URL: http://localhost:$Port/workstation/"
 if ($legacyInstallCandidates.Count -gt 0) {
     Write-Host "  Legacy installs: $($legacyInstallCandidates.Count)"
+}
+if ($legacyAppDataCandidates.Count -gt 0) {
+    Write-Host "  Legacy app data: $($legacyAppDataCandidates.Count)"
+}
+if ($legacyShortcutRecords.Count -gt 0) {
+    Write-Host "  Legacy shortcuts: $($legacyShortcutRecords.Count)"
 }
 if (($shortcutRecords | Where-Object { $_.classification -eq 'stale-link' }).Count -gt 0) {
     Write-Host "  Stale shortcuts: $(($shortcutRecords | Where-Object { $_.classification -eq 'stale-link' }).Count)"
@@ -1096,9 +1453,26 @@ Assert-RequiredPath -Path $publishExePath -Description "Published Meridian.exe"
 $hostCopySkipped = Test-DirectoryContentsMatch -Source $hostSourceRoot -Destination $installRootPath
 $bundleCopySkipped = Test-DirectoryContentsMatch -Source $workstationAssetSource -Destination $targetBundle
 $staleShortcutRemovals = New-Object System.Collections.Generic.List[string]
+$legacyShortcutRemovals = New-Object System.Collections.Generic.List[string]
+$archivedLegacyInstallRoots = New-Object System.Collections.Generic.List[object]
+$archivedLegacyAppDataRoots = New-Object System.Collections.Generic.List[object]
+$legacyProcessStops = New-Object System.Collections.Generic.List[object]
+$legacyCleanupFailures = New-Object System.Collections.Generic.List[object]
+$legacyArchiveRunRoot = $null
 $installCleanupRemovals = New-Object System.Collections.Generic.List[string]
+$script:runtimeStateCleanup = $null
 $script:installRootDataMigration = $null
 $script:stopResult = $null
+
+Invoke-Step -Name "Clear stale Meridian runtime state" -Action {
+    $script:runtimeStateCleanup = Clear-StaleRuntimeState -RuntimePath $runtimePath
+    if ($script:runtimeStateCleanup.removed) {
+        Write-Info "Removed stale Meridian runtime state for PID $($script:runtimeStateCleanup.processId)."
+    }
+    else {
+        Write-Info "No stale runtime state cleanup was required ($($script:runtimeStateCleanup.reason))."
+    }
+}
 
 if (-not $hostCopySkipped -or -not $bundleCopySkipped) {
     Invoke-Step -Name "Stop tracked Meridian host before file replacement" -Action {
@@ -1154,9 +1528,71 @@ Invoke-Step -Name "Remove stale Meridian shortcuts" -Action {
     }
 }
 
+if (-not $SkipLegacyInstallCleanup -and $legacyInstallCandidates.Count -gt 0) {
+    Invoke-Step -Name "Archive superseded Meridian installs" -Action {
+        foreach ($legacyInstallCandidate in $legacyInstallCandidates) {
+            try {
+                $matchedAppDataCandidates = @(
+                    $legacyAppDataCandidates | Where-Object {
+                        $_.classification -eq "old-app-data" -and
+                        $_.linkedInstallRoot -and
+                        [string]::Equals([string]$_.linkedInstallRoot, [string]$legacyInstallCandidate.path, [System.StringComparison]::OrdinalIgnoreCase)
+                    }
+                )
+
+                $runtimePaths = @($matchedAppDataCandidates | ForEach-Object { $_.runtimePath })
+                foreach ($stopResult in (Stop-MeridianProcessesForInstallRoot -InstallRootPath $legacyInstallCandidate.path -RuntimePaths $runtimePaths)) {
+                    $legacyProcessStops.Add($stopResult) | Out-Null
+                }
+
+                if (-not $legacyArchiveRunRoot) {
+                    $legacyArchiveRunRoot = Join-Path $archiveRootPath ("install-" + (Get-InstallTimestamp))
+                    New-Item -ItemType Directory -Path $legacyArchiveRunRoot -Force | Out-Null
+                }
+
+                $archivedInstallRoot = Move-PathToArchive -SourcePath $legacyInstallCandidate.path -ArchiveRunRoot $legacyArchiveRunRoot -Bucket "install-roots"
+                if ($archivedInstallRoot) {
+                    $archivedLegacyInstallRoots.Add($archivedInstallRoot) | Out-Null
+                }
+
+                foreach ($matchedAppDataCandidate in $matchedAppDataCandidates) {
+                    $archivedAppDataRoot = Move-PathToArchive -SourcePath $matchedAppDataCandidate.path -ArchiveRunRoot $legacyArchiveRunRoot -Bucket "app-data"
+                    if ($archivedAppDataRoot) {
+                        $archivedLegacyAppDataRoots.Add($archivedAppDataRoot) | Out-Null
+                    }
+                }
+
+                foreach ($legacyShortcutRecord in @(
+                        $shortcutRecords | Where-Object {
+                            Test-ShortcutTargetsInstallRoot -ShortcutRecord $_ -InstallRootPath $legacyInstallCandidate.path
+                        }
+                    )) {
+                    if (Test-Path -LiteralPath $legacyShortcutRecord.shortcutPath) {
+                        Remove-Item -LiteralPath $legacyShortcutRecord.shortcutPath -Force
+                        $legacyShortcutRemovals.Add($legacyShortcutRecord.shortcutPath) | Out-Null
+                    }
+                }
+            }
+            catch {
+                Write-Warn "Failed to archive superseded install $($legacyInstallCandidate.path): $($_.Exception.Message)"
+                $legacyCleanupFailures.Add([pscustomobject]@{
+                        path = $legacyInstallCandidate.path
+                        error = $_.Exception.Message
+                    }) | Out-Null
+            }
+        }
+    }
+}
+
 if (-not $NoDesktopShortcut) {
-    Invoke-Step -Name "Create Desktop shortcut" -Action {
-        New-AppShortcut -ShortcutPath $desktopShortcutPath -LauncherPath $launcherPath -InstallRootPath $installRootPath -IconPath $iconPath
+    if ($desktopShortcutPath) {
+        Invoke-Step -Name "Create Desktop shortcut" -Action {
+            New-Item -ItemType Directory -Path $desktopShortcutRoot -Force | Out-Null
+            New-AppShortcut -ShortcutPath $desktopShortcutPath -LauncherPath $launcherPath -InstallRootPath $installRootPath -IconPath $iconPath
+        }
+    }
+    else {
+        Write-Warn "No usable Desktop shortcut root was found; skipping Desktop shortcut creation."
     }
 }
 
@@ -1210,7 +1646,14 @@ $installManifest = [ordered]@{
     actions = [ordered]@{
         hostCopySkipped = $hostCopySkipped
         bundleCopySkipped = $bundleCopySkipped
+        runtimeStateCleanup = $script:runtimeStateCleanup
         stoppedTrackedHost = $script:stopResult
+        legacyArchiveRoot = $legacyArchiveRunRoot
+        legacyProcessStops = $legacyProcessStops.ToArray()
+        archivedLegacyInstallRoots = $archivedLegacyInstallRoots.ToArray()
+        archivedLegacyAppDataRoots = $archivedLegacyAppDataRoots.ToArray()
+        legacyShortcutsRemoved = $legacyShortcutRemovals.ToArray()
+        legacyCleanupFailures = $legacyCleanupFailures.ToArray()
         installRootDataMigration = $script:installRootDataMigration
         staleShortcutsRemoved = $staleShortcutRemovals.ToArray()
         emptyInstallDirectoriesRemoved = $installCleanupRemovals.ToArray()
@@ -1241,8 +1684,14 @@ Write-Host "  Launch script:   $launcherPath"
 Write-Host "  Workstation URL: http://localhost:$Port/workstation/"
 Write-Host "  Backup snapshot: $($script:backupResult.path)"
 Write-Host "  Install report:  $installManifestPath"
+if ($archivedLegacyInstallRoots.Count -gt 0) {
+    Write-Host "  Archived installs: $($archivedLegacyInstallRoots.Count)"
+}
+if ($archivedLegacyAppDataRoots.Count -gt 0) {
+    Write-Host "  Archived app data: $($archivedLegacyAppDataRoots.Count)"
+}
 if (-not $NoDesktopShortcut) {
-    Write-Host "  Desktop link:    $desktopShortcutPath"
+    Write-Host "  Desktop link:    $(if ($desktopShortcutPath) { $desktopShortcutPath } else { '[skipped]' })"
 }
 if (-not $NoStartMenuShortcut) {
     Write-Host "  Start Menu link: $startMenuShortcutPath"

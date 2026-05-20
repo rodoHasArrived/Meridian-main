@@ -79,6 +79,8 @@ describe("buildRiskControlPanelViewModel", () => {
     });
 
     expect(vm.loading).toBe(true);
+    expect(vm.panelAriaLabel).toBe("Trading risk controls");
+    expect(vm.panelAriaBusy).toBe(true);
     expect(vm.emptyRowsText).toBe("Loading risk rules...");
     expect(vm.refreshAction).toMatchObject({
       label: "Refreshing",

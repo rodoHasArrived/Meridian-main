@@ -15,7 +15,13 @@ export function RiskControlPanel() {
   const vm = useRiskControlPanelViewModel();
 
   return (
-    <Card data-testid="risk-control-panel" className="panel-surface">
+    <Card
+      data-testid="risk-control-panel"
+      role="region"
+      aria-label={vm.panelAriaLabel}
+      aria-busy={vm.panelAriaBusy}
+      className="panel-surface"
+    >
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>

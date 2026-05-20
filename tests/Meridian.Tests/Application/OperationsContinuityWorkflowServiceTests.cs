@@ -291,6 +291,74 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task SubmitForApprovalAsync_ShouldRejectMissingSubmissionMetadataWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran expected-vs-actual reconciliation",
+            BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
+            reconciled.Workflow!.Version,
+            "ops-user",
+            ReportPackReady: true,
+            ReportPackId: "report-pack-1",
+            Rationale: "Report pack is ready"));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            posture.Workflow!.Version,
+            "ops-user",
+            Reviewer: "",
+            Rationale: "",
+            ReportPackId: ""));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "APPROVAL_SUBMISSION_METADATA_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task SubmitForApprovalAsync_ShouldRejectBeforePrerequisiteGatesPassWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var posture = await service.RefreshGatePostureAsync(start.Workflow!.WorkflowId, new OperationsGatePostureRequestDto(
+            start.Workflow.Version,
+            "ops-user",
+            ReportPackReady: true,
+            ReportPackId: "report-pack-early",
+            Rationale: "Report pack was uploaded before gates completed"));
+        var timelineBefore = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+
+        var result = await service.SubmitForApprovalAsync(start.Workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            posture.Workflow!.Version,
+            "ops-user",
+            "reviewer",
+            "Submit early approval",
+            "report-pack-early"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED" &&
+            blocker.Gate == null);
+        var timelineAfter = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task BuildLedgerDraftAsync_ShouldBlockBeforeSecurityMasterResolution()
     {
         var service = CreateService(out _, out _);

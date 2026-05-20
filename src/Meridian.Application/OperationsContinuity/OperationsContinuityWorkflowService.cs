@@ -739,7 +739,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks),
             eventType: "approval-submitted",
             gate: OperationsGateKeyDto.Approval,
-            precondition: static workflow => workflow.GetSubmitForApprovalTransitionBlocker(),
+            precondition: workflow => workflow.GetSubmitForApprovalTransitionBlocker(request),
             command: (workflow, evidence, now) =>
             {
                 workflow.SubmitForApproval(request, evidence, now);

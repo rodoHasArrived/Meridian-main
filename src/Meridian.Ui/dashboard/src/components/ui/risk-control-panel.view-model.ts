@@ -22,6 +22,8 @@ export interface RuleViolationTimelineItem {
 }
 
 export interface RiskControlPanelViewModel {
+  panelAriaLabel: string;
+  panelAriaBusy: boolean;
   overallState: RiskRuleStatus["state"];
   overallSummary: string;
   loading: boolean;
@@ -253,6 +255,8 @@ export function buildRiskControlPanelViewModel(
   const command = buildRiskControlCommandState(commandState);
   if (statuses.length === 0) {
     return {
+      panelAriaLabel: "Trading risk controls",
+      panelAriaBusy: commandState.loading || commandState.saving,
       overallState: "Observe",
       overallSummary: "Risk runtime status is unavailable.",
       loading: commandState.loading,
@@ -299,6 +303,8 @@ export function buildRiskControlPanelViewModel(
     })));
 
   return {
+    panelAriaLabel: "Trading risk controls",
+    panelAriaBusy: commandState.loading || commandState.saving,
     overallState: selected.state,
     overallSummary: selected.summary,
     loading: commandState.loading,

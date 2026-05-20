@@ -172,6 +172,13 @@ hash. Broker import is intentionally separate from normalization. Ledger draftin
 separate from posting: validation can mark a journal preview ready, but reconciliation requires the
 explicit `ledger/post` command with a durable ledger batch reference.
 
+Approval submission is also guarded by the application service and aggregate, not by workstation
+clients. The `approval/submit` command now requires reviewer, rationale, and report-pack metadata,
+and it refuses submission until broker intake, Security Master, and ledger posting gates have
+passed and reconciliation has reached a completed or reviewable posture. Rejected approval
+submissions return structured blockers and do not append audit records or mutate the workflow
+snapshot.
+
 The reconciliation command can carry Security Master coverage issue counts, Security Master
 accounting issue counts, expected-event counts, and journal-preview counts directly from
 reconciliation output. `OperationsContinuityWorkflow` applies those counts to the Security Master

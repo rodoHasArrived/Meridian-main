@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Component, lazy, Suspense, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
@@ -319,8 +319,9 @@ function AppShell() {
             {usingDevelopmentFixtures ? <DevelopmentFixtureNotice refreshing={loading} onRetry={refresh} /> : null}
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
-              <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
-                <Routes>
+              <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
+                <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
+                  <Routes>
                   <Route path="/" element={<OverviewScreen data={overview} session={session} trading={trading} portfolio={portfolio} />} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
@@ -388,9 +389,10 @@ function AppShell() {
                   <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="*" element={<Navigate to="/trading" replace />} />
-                </Routes>
-              </Suspense>
+                    <Route path="*" element={<NotFoundScreen />} />
+                  </Routes>
+                </Suspense>
+              </RouteErrorBoundary>
             ) : null}
           </div>
         </main>
@@ -586,6 +588,94 @@ function WorkflowContinuityDock({
           />
         ))}
       </div>
+    </section>
+  );
+}
+
+class RouteErrorBoundary extends Component<
+  { children: ReactNode; routeKey: string },
+  { hasError: boolean; routeKey: string }
+> {
+  constructor(props: { children: ReactNode; routeKey: string }) {
+    super(props);
+    this.state = { hasError: false, routeKey: props.routeKey };
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  static getDerivedStateFromProps(
+    props: { routeKey: string },
+    state: { hasError: boolean; routeKey: string }
+  ): { hasError: boolean; routeKey: string } | null {
+    if (props.routeKey === state.routeKey) {
+      return null;
+    }
+
+    return { hasError: false, routeKey: props.routeKey };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Meridian workstation route failed to render.", error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <RouteRecoveryPanel
+          title="Workbench route failed"
+          detail="Meridian could not render this route. Return to Trading or retry after refreshing live data."
+          actionLabel="Open Trading"
+          actionHref="/trading"
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+function NotFoundScreen() {
+  return (
+    <RouteRecoveryPanel
+      title="Workbench route not found"
+      detail="The requested workstation route is not available in this Meridian build."
+      actionLabel="Open Trading"
+      actionHref="/trading"
+    />
+  );
+}
+
+function RouteRecoveryPanel({
+  title,
+  detail,
+  actionLabel,
+  actionHref
+}: {
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionHref: string;
+}) {
+  return (
+    <section
+      role="alert"
+      aria-labelledby="route-recovery-title"
+      aria-describedby="route-recovery-detail"
+      className="panel-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div>
+        <span className="eyebrow-label">Route recovery</span>
+        <h2 id="route-recovery-title" className="mt-1 text-base font-semibold text-foreground">{title}</h2>
+        <p id="route-recovery-detail" className="mt-1 text-sm text-muted-foreground">{detail}</p>
+      </div>
+      <Button asChild variant="default" size="sm" className="shrink-0">
+        <Link to={actionHref}>
+          <span>{actionLabel}</span>
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </Button>
     </section>
   );
 }

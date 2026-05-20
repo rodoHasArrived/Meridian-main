@@ -57,6 +57,7 @@ describe("RiskControlPanel", () => {
     render(<RiskControlPanel />);
 
     await screen.findByText("PositionLimit");
+    expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
     expect(screen.getByText("OrderRateThrottle")).toBeInTheDocument();
     expect(screen.getByText(/Rule violation timeline/i)).toBeInTheDocument();
 
