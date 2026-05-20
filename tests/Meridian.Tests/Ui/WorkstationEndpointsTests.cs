@@ -294,6 +294,49 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityReopenRoute_ShouldRequireGovernedAdminPermission()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ManageDirectLending);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/workstation/operations/continuity/{Guid.NewGuid()}/reopen",
+            new OperationsReopenWorkflowRequestDto(
+                1,
+                "spoofed-user",
+                "Reopen workflow",
+                "incident-123",
+                IsGovernedAdmin: true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuitySecurityMasterOverrideApprovalRoute_ShouldRequireOverrideApprovalPermission()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ManageDirectLending);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/workstation/operations/continuity/{Guid.NewGuid()}/security-master/overrides/override-1/approve",
+            new OperationsSecurityMasterOverrideApprovalRequestDto(
+                1,
+                "spoofed-user",
+                "override-1",
+                "approve override",
+                "policy-1",
+                DateTimeOffset.UtcNow.AddDays(1)),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldAdvanceToClosed()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
