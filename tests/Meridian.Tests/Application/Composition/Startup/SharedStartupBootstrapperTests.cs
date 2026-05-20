@@ -74,7 +74,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         FakeDashboardServer? server = null;
         var orchestrator = new HostModeOrchestrator(
             _log,
-            (configPath, port) =>
+            (configPath, port, _) =>
             {
                 server = new FakeDashboardServer(configPath, port, cts);
                 return server;
@@ -90,7 +90,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         server.StartCallCount.Should().Be(1);
         server.StopCallCount.Should().Be(1);
         server.DisposeCallCount.Should().Be(1);
-        server.StopCancellationToken.CanBeCanceled.Should().BeFalse();
+        server.StopCancellationToken.CanBeCanceled.Should().BeTrue();
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         FakeDashboardServer? server = null;
         var orchestrator = new HostModeOrchestrator(
             _log,
-            (configPath, port) =>
+            (configPath, port, _) =>
             {
                 server = new FakeDashboardServer(configPath, port);
                 return server;
@@ -122,6 +122,38 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         exitCode.Should().Be(0);
         server.Should().NotBeNull();
         server!.StopCallCount.Should().Be(1);
+        server.DisposeCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RunAsync_WorkstationMode_RemainsAliveUntilLifecycleShutdown()
+    {
+        var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var cliArgs = CliArguments.Parse(["--mode", "workstation"]);
+        var deployment = DeploymentContext.ForWorkstation("test.json", port: 4321);
+        await using var configService = new ConfigurationService(_log);
+
+        FakeDashboardServer? server = null;
+        var orchestrator = new HostModeOrchestrator(
+            _log,
+            (configPath, port, lifecycle) =>
+            {
+                server = new FakeDashboardServer(configPath, port, lifecycle: lifecycle);
+                return server;
+            });
+
+        var runTask = orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment);
+
+        await Task.Delay(200);
+        runTask.IsCompleted.Should().BeFalse("workstation mode should serve the browser workstation until the lifecycle requests shutdown");
+
+        server.Should().NotBeNull();
+        await server!.Lifecycle!.RequestShutdownAsync("test-shutdown");
+
+        var exitCode = await runTask;
+        exitCode.Should().Be(0);
+        server.StartCallCount.Should().Be(1);
+        server.StopCallCount.Should().Be(1);
         server.DisposeCallCount.Should().Be(1);
     }
 
@@ -149,15 +181,21 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     {
         private readonly CancellationTokenSource? _cts;
 
-        public FakeDashboardServer(string configPath, int port, CancellationTokenSource? cts = null)
+        public FakeDashboardServer(
+            string configPath,
+            int port,
+            CancellationTokenSource? cts = null,
+            IApplicationLifecycleCoordinator? lifecycle = null)
         {
             ConfigPath = configPath;
             Port = port;
             _cts = cts;
+            Lifecycle = lifecycle;
         }
 
         public string ConfigPath { get; }
         public int Port { get; }
+        public IApplicationLifecycleCoordinator? Lifecycle { get; }
         public int StartCallCount { get; private set; }
         public int StopCallCount { get; private set; }
         public int DisposeCallCount { get; private set; }

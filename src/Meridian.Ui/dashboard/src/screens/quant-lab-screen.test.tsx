@@ -61,6 +61,29 @@ const noEvidenceSuccessfulRun: QuantRunResponse = {
   runtimeParameters: []
 };
 
+const successfulRunWithTrades: QuantRunResponse = {
+  ...noEvidenceSuccessfulRun,
+  consoleOutput: "",
+  trades: [
+    {
+      timestamp: "2026-01-02T14:31:00Z",
+      symbol: "SPY",
+      side: "buy",
+      quantity: 10,
+      price: 512.35,
+      commission: 1.25
+    },
+    {
+      timestamp: "2026-01-02T15:45:00Z",
+      symbol: "SPY",
+      side: "sell",
+      quantity: 10,
+      price: 514.1,
+      commission: 1.25
+    }
+  ]
+};
+
 const failedRun: QuantRunResponse = {
   success: false,
   elapsedMs: 0,
@@ -125,6 +148,8 @@ describe("QuantLabScreen", () => {
 
     await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
+    const metricsTable = screen.getByRole("table", { name: "Quant Lab metrics" });
+    expect(metricsTable).toHaveTextContent(/Metrics emitted by the Quant Lab script run/i);
     expect(screen.getByText("answer")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
     const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });
@@ -172,6 +197,31 @@ describe("QuantLabScreen", () => {
     expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
     const emptyEvidenceTitle = screen.getByText("Run completed without runtime evidence");
     expect(emptyEvidenceTitle.closest('[role="status"]')).toHaveTextContent(/Add Print, PrintMetric, or plot calls/i);
+  });
+
+  it("renders returned trades as selectable dense rows with a linked detail inspector", async () => {
+    vi.spyOn(api, "runQuantScript").mockResolvedValue(successfulRunWithTrades);
+
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    await user.click(screen.getByRole("button", { name: /Run script/i }));
+
+    expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
+    const buyRow = screen.getByRole("row", { name: /select spy buy trade/i });
+    const sellRow = screen.getByRole("row", { name: /select spy sell trade/i });
+
+    expect(buyRow).toHaveAttribute("aria-controls", "quant-lab-selected-trade-detail");
+    expect(buyRow).toHaveAttribute("aria-expanded", "true");
+    expect(sellRow).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: /spy buy trade detail/i })).toHaveTextContent("Net cash impact -$5,124.75");
+
+    await user.click(sellRow);
+
+    expect(sellRow).toHaveAttribute("aria-expanded", "true");
+    expect(buyRow).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: /spy sell trade detail/i })).toHaveTextContent("Net cash impact +$5,139.75");
   });
 
   it("surfaces compilation errors when the script fails", async () => {

@@ -7,7 +7,8 @@ namespace Meridian.Application.Commands;
 
 /// <summary>
 /// Handles configuration setup CLI commands:
-/// --wizard, --auto-config, --detect-providers, --generate-config, --generate-config-schema
+/// --setup, --first-run, --quickstart, --wizard, --auto-config, --detect-providers,
+/// --generate-config, --generate-config-schema
 /// </summary>
 internal sealed class ConfigCommands : ICliCommand
 {
@@ -24,7 +25,7 @@ internal sealed class ConfigCommands : ICliCommand
     {
         return CliArguments.HasFlag(args, "--wizard") ||
             CliArguments.HasFlag(args, "--auto-config") ||
-            CliArguments.HasFlag(args, "--quickstart") ||
+            IsQuickstartAlias(args) ||
             CliArguments.HasFlag(args, "--detect-providers") ||
             CliArguments.HasFlag(args, "--generate-config") ||
             CliArguments.HasFlag(args, "--generate-config-schema") ||
@@ -48,7 +49,7 @@ internal sealed class ConfigCommands : ICliCommand
             return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
         }
 
-        if (CliArguments.HasFlag(args, "--quickstart"))
+        if (IsQuickstartAlias(args))
         {
             _log.Information("Running quickstart setup...");
             var result = await _configService.RunQuickstartAsync(ct);
@@ -103,6 +104,11 @@ internal sealed class ConfigCommands : ICliCommand
 
         return CliResult.Ok();
     }
+
+    private static bool IsQuickstartAlias(string[] args)
+        => CliArguments.HasFlag(args, "--quickstart") ||
+            CliArguments.HasFlag(args, "--setup") ||
+            CliArguments.HasFlag(args, "--first-run");
 
     private async Task<CliResult> RunApplyPreset(string[] args, CancellationToken ct = default)
     {

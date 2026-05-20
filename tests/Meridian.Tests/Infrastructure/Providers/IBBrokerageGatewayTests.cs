@@ -62,9 +62,14 @@ public sealed class IBBrokerageGatewayTests
     [Fact]
     public async Task ConnectAsync_WithNativeClient_PrimesNextValidId()
     {
+        var nextValidIdRequests = 0;
         var client = new FakeIbBrokerageClient
         {
-            OnRequestNextValidId = c => c.RaiseNextValidId(1100)
+            OnRequestNextValidId = c =>
+            {
+                nextValidIdRequests++;
+                c.RaiseNextValidId(1100 + nextValidIdRequests);
+            }
         };
 
         await using var sut = CreateSut(client);
@@ -73,6 +78,43 @@ public sealed class IBBrokerageGatewayTests
 
         sut.IsConnected.Should().BeTrue();
         client.IsConnected.Should().BeTrue();
+        nextValidIdRequests.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_AfterReconnect_RehydratesSessionAndAllowsOrderLifecycleToContinue()
+    {
+        var nextValidId = 8999;
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(Interlocked.Increment(ref nextValidId)),
+            OnPlaceOrder = (c, orderId, request) =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    orderId, request.Symbol, "STK", request.Side == OrderSide.Buy ? "BUY" : "SELL", "LMT",
+                    request.Quantity, 0m, request.LimitPrice is decimal limit ? (double)limit : null,
+                    null, "Submitted", request.ClientOrderId, "DU123456", null, null, request.Metadata, DateTimeOffset.UtcNow));
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        await sut.DisconnectAsync();
+        await sut.ConnectAsync();
+
+        var report = await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 3m,
+            LimitPrice = 190m,
+            ClientOrderId = "reconnect-order"
+        });
+
+        report.OrderId.Should().Be("reconnect-order");
+        report.OrderStatus.Should().Be(OrderStatus.Accepted);
+        report.GatewayOrderId.Should().Be("9001");
     }
 
 #if !IBAPI
@@ -207,7 +249,7 @@ public sealed class IBBrokerageGatewayTests
             OnCancelOrder = (c, orderId) =>
             {
                 c.RaiseOrderStatus(new IBOrderStatusUpdate(
-                    orderId, "Cancelled", 0m, 1m, 0d, 0d, 0L, 1, null, DateTimeOffset.UtcNow));
+                    orderId, "Cancelled", 0m, 1m, 0d, 0d, 0L, 1, null, null, DateTimeOffset.UtcNow));
             }
         };
 
@@ -257,7 +299,7 @@ public sealed class IBBrokerageGatewayTests
         }, cts.Token);
 
         client.RaiseExecution(new IBExecutionUpdate(
-            5001, "SPY", "BOT", 10m, 511.25d, 10m, 511.25d, "0001", "DU123456", "SMART", 42L, DateTimeOffset.UtcNow));
+            5001, "SPY", "BOT", 10m, 511.25d, 10m, 511.25d, "0001", "DU123456", "SMART", 42L, null, DateTimeOffset.UtcNow));
 
         var report = await ReadUntilAsync(sut.StreamExecutionReportsAsync(cts.Token), r => r.ReportType == ExecutionReportType.Fill, cts.Token);
 

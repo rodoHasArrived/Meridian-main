@@ -1,8 +1,8 @@
 # Agent Skills
 
 This directory indexes Meridian's AI skill surfaces. The current project-scoped workflow is
-centered on repo-local Codex skills under `.codex/skills/`, while `.claude/skills/` holds the
-portable mirrored skill packages for hosts that consume Claude-style Agent Skills.
+centered on repo-local Codex skills under `.codex/skills/`, while `.agents/skills/` and
+`.claude/skills/` hold portable mirrored skill packages for Agent Skills-compatible hosts.
 Shared skill policy, cross-provider safety rules, and alignment checks live in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
@@ -41,11 +41,19 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Produce scenario-first Meridian tests |
 
-The shared Codex grounding file is [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md).
+Shared grounding files:
+
+- [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md)
+- [`.agents/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills/_shared/project-context.md)
+- [`.claude/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/_shared/project-context.md)
 
 ---
 
 ## Available Portable Skills
+
+Portable packages are mirrored under [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills)
+for Agent Skills-compatible hosts and [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills)
+for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes.
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |
@@ -73,6 +81,7 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 | [`../navigation/README.md`](../navigation/README.md) | Repo navigation workflow |
 | [`../agents/README.md`](../agents/README.md) | Agent catalog |
 | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skills and their maintenance rules |
+| [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills) | Host-neutral portable Agent Skills packages |
 
 ---
 
@@ -87,4 +96,4 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-05-19_

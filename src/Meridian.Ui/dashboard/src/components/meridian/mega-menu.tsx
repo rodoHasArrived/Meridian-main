@@ -7,6 +7,7 @@ import {
   type MegaMenuFocusBoundary
 } from "@/components/meridian/mega-menu.view-model";
 import { cn } from "@/lib/utils";
+import type { AppShellOperatingScopeInput } from "@/app-shell.view-model";
 import type { WorkspaceKey } from "@/types";
 
 const WORKSPACE_ICONS: Record<WorkspaceKey, typeof RadioTower> = {
@@ -23,12 +24,16 @@ const WORKSPACE_ICONS: Record<WorkspaceKey, typeof RadioTower> = {
  * Masthead workspace mega menu. The view model owns open state, active route state,
  * labels, and key-command decisions; this view owns DOM refs, focus movement, and markup.
  */
-export function MegaMenu() {
+interface MegaMenuProps {
+  operatingContextScope?: AppShellOperatingScopeInput | null;
+}
+
+export function MegaMenu({ operatingContextScope = null }: MegaMenuProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const { pathname } = useLocation();
-  const vm = useMegaMenuViewModel(pathname);
+  const { pathname, search } = useLocation();
+  const vm = useMegaMenuViewModel(pathname, search, operatingContextScope);
 
   const closeMenu = useCallback(() => {
     vm.closeMenu();
@@ -166,6 +171,11 @@ export function MegaMenu() {
 
           <div className="mega-menu-footer">
             <span className="mega-menu-footer-label">{vm.footerLabel}</span>
+            {vm.operatingScopeLabel ? (
+              <span className="mega-menu-footer-scope" aria-label={vm.operatingScopeAriaLabel ?? undefined}>
+                {vm.operatingScopeLabel}
+              </span>
+            ) : null}
             <span className="mega-menu-footer-hint" aria-label="Open command palette with Control K">
               <span className="mega-menu-footer-hint-label">Command palette</span>
               <span className="mega-menu-footer-shortcut">{vm.footerShortcut}</span>

@@ -1,4 +1,9 @@
 import type {
+  CoveredCallChainPreview,
+  CoveredCallRunResult,
+  CoveredCallRunSummary
+} from "../types/covered-call";
+import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   CorporateAction,
@@ -9,6 +14,8 @@ import type {
   HistoricalBarsResponse,
   OrderBookResponse,
   OperatorInbox,
+  OperationsContinuityWorkflow,
+  OperationsContinuityWorkflowSummary,
   OperatorOverridesDto,
   PaperSessionDetail,
   PaperSessionReplayVerification,
@@ -27,6 +34,10 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   SessionInfo,
+  StrategyDesignDocument,
+  StrategyDesignDraftSummary,
+  StrategyDesignFieldCatalogItem,
+  StrategyDesignTemplate,
   SymbolRecord,
   SymbolStatistics,
   SystemOverviewResponse,
@@ -39,6 +50,7 @@ import type {
   WorkflowPresetLibrary
 } from "../types";
 import {
+  COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
@@ -47,6 +59,7 @@ import {
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionStatusEndpoint
@@ -1081,6 +1094,29 @@ const fixtureSecurityMasterEntries: SecurityMasterEntry[] = [
       assetFamily: "Software",
       issuerType: "Corporate"
     }
+  },
+  {
+    securityId: "sec-dev-004",
+    displayName: "Meridian 5.875% 2031 Corporate Bond",
+    status: "Active",
+    classification: {
+      assetClass: "Fixed Income",
+      subType: "Corporate Bond",
+      primaryIdentifierKind: "CUSIP",
+      primaryIdentifierValue: "589999AB4",
+      matchedIdentifierKind: "ISIN",
+      matchedIdentifierValue: "US589999AB47",
+      matchedProvider: "Reference fixture"
+    },
+    economicDefinition: {
+      currency: "USD",
+      version: 1,
+      effectiveFrom: "2025-12-15",
+      effectiveTo: null,
+      subType: "Corporate Bond",
+      assetFamily: "Credit",
+      issuerType: "Corporate"
+    }
   }
 ];
 
@@ -1190,6 +1226,49 @@ const fixtureSecurityIdentities: Record<string, SecurityIdentityDrillIn> = {
       }
     ],
     aliases: []
+  },
+  "sec-dev-004": {
+    securityId: "sec-dev-004",
+    displayName: "Meridian 5.875% 2031 Corporate Bond",
+    assetClass: "Fixed Income",
+    status: "Active",
+    version: 1,
+    effectiveFrom: "2025-12-15",
+    effectiveTo: null,
+    identifiers: [
+      {
+        kind: "CUSIP",
+        value: "589999AB4",
+        isPrimary: true,
+        validFrom: "2025-12-15",
+        validTo: null,
+        provider: "Reference fixture"
+      },
+      {
+        kind: "ISIN",
+        value: "US589999AB47",
+        isPrimary: false,
+        validFrom: "2025-12-15",
+        validTo: null,
+        provider: "Reference fixture"
+      }
+    ],
+    aliases: [
+      {
+        aliasId: "alias-dev-004",
+        securityId: "sec-dev-004",
+        aliasKind: "ProviderSymbol",
+        aliasValue: "MERIDIAN 5.875 12/31",
+        provider: "Bloomberg",
+        scope: "Operations",
+        reason: "Cash-flow/factor schedule fixture",
+        createdBy: "dashboard-dev",
+        createdAt: "2026-05-14T16:00:00Z",
+        validFrom: "2025-12-15",
+        validTo: null,
+        isEnabled: true
+      }
+    ]
   }
 };
 
@@ -1262,6 +1341,134 @@ const fixtureQuantParameters: QuantParametersResponse = {
   ]
 };
 
+const fixtureStrategyDesignerDocument: StrategyDesignDocument = {
+  documentId: "strategy-designer-fixture-1",
+  name: "Quality momentum rotation",
+  description: "No-host Strategy Designer sample that combines quality, momentum, and risk filters.",
+  version: "1.0",
+  datasetReference: "fixture://strategy-designer/quality-momentum",
+  universe: ["AAPL", "MSFT", "NVDA", "QQQ"],
+  cells: [
+    {
+      cellId: "universe",
+      label: "Liquid equity universe",
+      kind: "universe",
+      purpose: "Seed the candidate universe with liquid large-cap equities.",
+      source: "Provider historical bars / security master",
+      fieldRefs: ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
+      parameters: { minimumDollarVolume: "25000000" },
+      disabledReason: null
+    },
+    {
+      cellId: "momentum-score",
+      label: "Momentum score",
+      kind: "score",
+      purpose: "Rank candidates by medium-term momentum adjusted for volatility.",
+      source: "Meridian factor library",
+      fieldRefs: ["MOMENTUM_63D", "VOLATILITY_20D"],
+      parameters: { lookback: "63" },
+      disabledReason: null
+    },
+    {
+      cellId: "risk-gate",
+      label: "Risk gate",
+      kind: "gate",
+      purpose: "Reject symbols with drawdown or concentration risk beyond the paper-trading limit.",
+      source: "Risk policy fixture",
+      fieldRefs: ["MAX_DRAWDOWN_90D", "PORTFOLIO_WEIGHT"],
+      parameters: { maxWeight: "0.15" },
+      disabledReason: null
+    }
+  ],
+  transitions: [
+    {
+      transitionId: "universe-to-score",
+      fromCellId: "universe",
+      toCellId: "momentum-score",
+      kind: "filter",
+      condition: "avgDollarVolume20d >= 25000000",
+      maxIterations: null,
+      rationale: "Keep low-liquidity symbols out of the scoring pass."
+    },
+    {
+      transitionId: "score-to-risk",
+      fromCellId: "momentum-score",
+      toCellId: "risk-gate",
+      kind: "gate",
+      condition: "scorePercentile >= 0.80",
+      maxIterations: 1,
+      rationale: "Only top-ranked candidates continue to risk review."
+    }
+  ],
+  metadata: {
+    evidenceLane: "browser-screenshot",
+    fixture: "true"
+  },
+  createdAt: "2026-05-15T15:00:00Z",
+  updatedAt: "2026-05-15T15:00:00Z"
+};
+
+const fixtureStrategyDesignerFieldCatalog: StrategyDesignFieldCatalogItem[] = [
+  {
+    fieldId: "PRICE",
+    label: "Price",
+    source: "Provider historical bars / live quotes",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Canonical last or close price resolved through Meridian providers.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["close", "last", "bar.close"]
+  },
+  {
+    fieldId: "MOMENTUM_63D",
+    label: "63-day momentum",
+    source: "Provider historical bars",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Return over the last 63 trading sessions.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["return", "trend"]
+  },
+  {
+    fieldId: "AMX_PRIVATE_SCORE",
+    label: "AMX private score",
+    source: "External research upload",
+    dataSet: "research-import",
+    typeName: "decimal",
+    description: "Analyst model extension field kept disabled until provenance is attached.",
+    isEnabled: false,
+    disabledReason: "No Meridian canonical source",
+    synonyms: ["analyst", "custom", "amx"]
+  }
+];
+
+const fixtureStrategyDesignerTemplates: StrategyDesignTemplate[] = [
+  {
+    templateId: "quality-momentum-rotation",
+    name: "Quality momentum rotation",
+    description: "Rank liquid equities by momentum, quality, and volatility before risk-gate review.",
+    category: "Equity rotation",
+    sourcePrototype: "Strategy Designer fixture",
+    tags: ["momentum", "quality", "risk-gate"],
+    document: fixtureStrategyDesignerDocument
+  }
+];
+
+const fixtureStrategyDesignerDrafts: StrategyDesignDraftSummary[] = [
+  {
+    documentId: fixtureStrategyDesignerDocument.documentId,
+    name: fixtureStrategyDesignerDocument.name,
+    version: fixtureStrategyDesignerDocument.version,
+    datasetReference: fixtureStrategyDesignerDocument.datasetReference,
+    cellCount: fixtureStrategyDesignerDocument.cells.length,
+    transitionCount: fixtureStrategyDesignerDocument.transitions.length,
+    updatedAt: fixtureStrategyDesignerDocument.updatedAt,
+    validationSummary: "Fixture draft passes no-host validation."
+  }
+];
+
 const fixtureSecurityConflicts: SecurityMasterConflict[] = [
   {
     conflictId: "conflict-dev-001",
@@ -1286,6 +1493,176 @@ const fixtureTradingParameters: TradingParameters = {
   tradingHoursUtc: "13:30–20:00",
   circuitBreakerThresholdPct: 20,
   asOf: "2026-04-28T18:15:00Z"
+};
+
+const fixtureCoveredCallRuns: CoveredCallRunSummary[] = [
+  {
+    runId: "covered-call-dev-1",
+    underlyingSymbol: "SPY",
+    from: "2025-05-01",
+    to: "2026-05-01",
+    label: "SPY overwrite fixture",
+    status: "Completed",
+    startedAt: "2026-05-08T15:00:00Z",
+    endedAt: "2026-05-08T15:02:30Z",
+    cagr: 0.083,
+    sharpeRatio: 1.18,
+    winRate: 0.64
+  }
+];
+
+const fixtureCoveredCallChainPreview: CoveredCallChainPreview = {
+  underlyingSymbol: "SPY",
+  asOf: "2026-05-08",
+  underlyingPrice: 512.46,
+  totalContractsScanned: 4,
+  filtersPassed: 2,
+  candidates: [
+    {
+      strike: 515,
+      expiration: "2026-06-19",
+      daysToExpiration: 42,
+      bid: 4.35,
+      ask: 4.55,
+      delta: 0.31,
+      impliedVolatility: 0.187,
+      openInterest: 1840,
+      volume: 312,
+      meetsAllFilters: true,
+      rejectReason: null
+    },
+    {
+      strike: 520,
+      expiration: "2026-06-19",
+      daysToExpiration: 42,
+      bid: 3.05,
+      ask: 3.25,
+      delta: 0.24,
+      impliedVolatility: 0.181,
+      openInterest: 1264,
+      volume: 206,
+      meetsAllFilters: true,
+      rejectReason: null
+    },
+    {
+      strike: 525,
+      expiration: "2026-07-17",
+      daysToExpiration: 70,
+      bid: 3.4,
+      ask: 3.9,
+      delta: 0.21,
+      impliedVolatility: null,
+      openInterest: 428,
+      volume: 64,
+      meetsAllFilters: false,
+      rejectReason: "Open interest below minimum"
+    },
+    {
+      strike: 510,
+      expiration: "2026-06-19",
+      daysToExpiration: 42,
+      bid: 7.1,
+      ask: 7.8,
+      delta: 0.43,
+      impliedVolatility: 0.205,
+      openInterest: 2240,
+      volume: 402,
+      meetsAllFilters: false,
+      rejectReason: "Delta above maximum"
+    }
+  ]
+};
+
+const fixtureCoveredCallResults: Record<string, CoveredCallRunResult> = {
+  "covered-call-dev-1": {
+    runId: "covered-call-dev-1",
+    underlyingSymbol: "SPY",
+    from: "2025-05-01",
+    to: "2026-05-01",
+    label: "SPY overwrite fixture",
+    metrics: {
+      cagr: 0.083,
+      annualizedVolatility: 0.142,
+      sharpeRatio: 1.18,
+      sortinoRatio: 1.42,
+      calmarRatio: 1.93,
+      maxDrawdownPct: -0.043,
+      winRate: 0.64,
+      assignmentRate: 0.08,
+      averageHoldingDays: 23,
+      totalOptionTrades: 14,
+      assignedTrades: 1,
+      totalPremiumCollected: 4280,
+      totalOptionPnl: 2760,
+      upCapture: 0.58,
+      downCapture: 0.72,
+      monthlyVar1Pct: -0.036,
+      monthlyVar5Pct: -0.024,
+      monthlyCVar5Pct: -0.031,
+      returnSkewness: -0.18,
+      returnKurtosis: 3.2,
+      annualizedTurnover: 5.4
+    },
+    equityCurve: [
+      { date: "2025-05-01", strategyEquity: 100000, underlyingEquity: 100000 },
+      { date: "2025-08-01", strategyEquity: 102750, underlyingEquity: 103200 },
+      { date: "2025-11-01", strategyEquity: 106100, underlyingEquity: 108450 },
+      { date: "2026-02-01", strategyEquity: 108250, underlyingEquity: 110700 },
+      { date: "2026-05-01", strategyEquity: 111020, underlyingEquity: 113400 }
+    ],
+    trades: [
+      {
+        strike: 515,
+        expiration: "2025-06-20",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2025-05-02",
+        entryCredit: 4.35,
+        exitDate: "2025-06-14",
+        exitDebit: 1.2,
+        exitReason: "TakeProfit",
+        entryImpliedVolatility: 0.187,
+        netPnlPerContract: 315,
+        totalNetPnl: 315,
+        holdingDays: 43,
+        isWin: true,
+        wasAssigned: false
+      },
+      {
+        strike: 522,
+        expiration: "2025-09-19",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2025-08-05",
+        entryCredit: 3.1,
+        exitDate: "2025-09-19",
+        exitDebit: 0,
+        exitReason: "Expired",
+        entryImpliedVolatility: 0.174,
+        netPnlPerContract: 310,
+        totalNetPnl: 310,
+        holdingDays: 45,
+        isWin: true,
+        wasAssigned: false
+      }
+    ],
+    openPositionsAtEnd: [
+      {
+        positionId: "covered-call-dev-open-1",
+        strike: 530,
+        expiration: "2026-06-19",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2026-04-20",
+        entryCredit: 3.85,
+        markToClose: 1.55,
+        currentDelta: 0.24,
+        currentDte: 49,
+        unrealisedPnl: 230,
+        premiumCaptured: 0.597
+      }
+    ]
+  }
 };
 
 const fixtureOperatorOverrides: Record<string, OperatorOverridesDto> = {
@@ -1336,6 +1713,184 @@ const fixtureSymbolStatistics: SymbolStatistics = {
   totalEventsLast24h: fixtureSymbolRecords.reduce((total, symbol) => total + symbol.eventCount, 0)
 };
 
+const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
+  workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+  fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+  periodId: "2026-05",
+  securityMasterSnapshotId: "9f2f0d07-f8d3-4d6e-a2f1-3116286de3d4",
+  brokerSource: "alpaca-paper",
+  status: "LedgerPostingDraft",
+  version: 4,
+  createdAtUtc: "2026-05-08T14:00:00Z",
+  updatedAtUtc: "2026-05-08T15:10:00Z",
+  brokerIntakeState: "Complete",
+  securityMasterState: "Complete",
+  ledgerPostingState: "Drafted",
+  reconciliationState: "Pending",
+  approvalState: "Pending",
+  gates: [
+    {
+      gateKey: "BrokerIngest",
+      displayName: "Broker intake",
+      status: "Passed",
+      isRequired: true,
+      description: "Broker activity has been imported and normalized.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: "2026-05-08T14:20:00Z",
+      completedBy: "ops-user"
+    },
+    {
+      gateKey: "SecurityMaster",
+      displayName: "Security Master",
+      status: "Passed",
+      isRequired: true,
+      description: "External instruments are mapped to canonical Security Master records.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: "2026-05-08T14:40:00Z",
+      completedBy: "ops-user"
+    },
+    {
+      gateKey: "LedgerPosting",
+      displayName: "Ledger posting",
+      status: "Blocked",
+      isRequired: true,
+      description: "Balanced journal preview must be validated before posting.",
+      blockers: [
+        {
+          code: "LEDGER_VALIDATION_REQUIRED",
+          message: "Ledger posting requires a balanced and validated journal draft.",
+          gate: "LedgerPosting",
+          severity: "Critical",
+          evidenceLinks: []
+        }
+      ],
+      nextActions: [
+        {
+          code: "RESOLVE_LEDGERPOSTING_BLOCKERS",
+          label: "Resolve Ledger Posting blockers",
+          route: "/workstation/accounting",
+          gate: "LedgerPosting"
+        }
+      ],
+      completedAtUtc: null,
+      completedBy: null
+    },
+    {
+      gateKey: "Reconciliation",
+      displayName: "Reconciliation",
+      status: "NotStarted",
+      isRequired: true,
+      description: "Expected broker activity must match posted ledger entries.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: null,
+      completedBy: null
+    },
+    {
+      gateKey: "Approval",
+      displayName: "Approval",
+      status: "NotStarted",
+      isRequired: true,
+      description: "Operations lead approval closes the workflow.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: null,
+      completedBy: null
+    }
+  ],
+  timeline: [
+    {
+      auditId: "cdb9449e-7402-48b7-9acf-8568b7363e16",
+      occurredAtUtc: "2026-05-08T14:00:00Z",
+      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      periodId: "2026-05",
+      eventType: "workflow-started",
+      fromState: "NotStarted",
+      toState: "CollectingBrokerData",
+      gate: "BrokerIngest",
+      fromGateStatus: "NotStarted",
+      toGateStatus: "InProgress",
+      actor: "ops-user",
+      rationale: "Open monthly close lane.",
+      correlationId: "dev-continuity",
+      references: [],
+      previousHash: null,
+      currentHash: "devhash-started"
+    },
+    {
+      auditId: "2fb7a2f4-6301-4958-b3d1-76ca78390ad8",
+      occurredAtUtc: "2026-05-08T15:10:00Z",
+      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      periodId: "2026-05",
+      eventType: "ledger-draft-blocked",
+      fromState: "LedgerPostingDraft",
+      toState: "Blocked",
+      gate: "LedgerPosting",
+      fromGateStatus: "InProgress",
+      toGateStatus: "Blocked",
+      actor: "ops-user",
+      rationale: "Journal validation is still required.",
+      correlationId: "dev-continuity",
+      references: [],
+      previousHash: "devhash-started",
+      currentHash: "devhash-ledger"
+    }
+  ],
+  breakCases: [],
+  ledgerPreview: {
+    previewId: "ledger-preview-dev",
+    status: "Drafted",
+    ledgerBatchId: null,
+    generatedAtUtc: "2026-05-08T15:00:00Z",
+    evidenceLinks: []
+  },
+  approvals: [],
+  reportPackReadiness: {
+    isReady: false,
+    reportPackId: null,
+    blockingReason: "Close workflow has unresolved ledger blockers.",
+    evidenceLinks: []
+  },
+  evidenceLinks: [],
+  blockers: [
+    {
+      code: "LEDGER_VALIDATION_REQUIRED",
+      message: "Ledger posting requires a balanced and validated journal draft.",
+      gate: "LedgerPosting",
+      severity: "Critical",
+      evidenceLinks: []
+    }
+  ],
+  nextActions: [
+    {
+      code: "RESOLVE_LEDGERPOSTING_BLOCKERS",
+      label: "Resolve Ledger Posting blockers",
+      route: "/workstation/accounting",
+      gate: "LedgerPosting"
+    }
+  ]
+};
+
+const fixtureOperationsContinuityWorkflows: OperationsContinuityWorkflowSummary[] = [
+  {
+    workflowId: fixtureOperationsContinuityWorkflow.workflowId,
+    fundAccountId: fixtureOperationsContinuityWorkflow.fundAccountId,
+    periodId: fixtureOperationsContinuityWorkflow.periodId,
+    securityMasterSnapshotId: fixtureOperationsContinuityWorkflow.securityMasterSnapshotId,
+    brokerSource: fixtureOperationsContinuityWorkflow.brokerSource,
+    status: fixtureOperationsContinuityWorkflow.status,
+    version: fixtureOperationsContinuityWorkflow.version,
+    createdAtUtc: fixtureOperationsContinuityWorkflow.createdAtUtc,
+    updatedAtUtc: fixtureOperationsContinuityWorkflow.updatedAtUtc,
+    gates: fixtureOperationsContinuityWorkflow.gates,
+    nextActions: fixtureOperationsContinuityWorkflow.nextActions
+  }
+];
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
@@ -1347,6 +1902,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
   [WORKSTATION_API_ENDPOINTS.workflowPresets]: fixtureWorkflowPresetLibrary,
+  [WORKSTATION_API_ENDPOINTS.operationsContinuity]: fixtureOperationsContinuityWorkflows,
   [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,
   [EXECUTION_API_ENDPOINTS.audit]: fixtureExecutionAudit,
   [EXECUTION_API_ENDPOINTS.controls]: fixtureExecutionControls,
@@ -1364,6 +1920,11 @@ const fixtures = {
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
+  [STRATEGY_DESIGNER_API_ENDPOINTS.templates]: fixtureStrategyDesignerTemplates,
+  [STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog]: fixtureStrategyDesignerFieldCatalog,
+  [STRATEGY_DESIGNER_API_ENDPOINTS.drafts]: fixtureStrategyDesignerDrafts,
+  [COVERED_CALL_API_ENDPOINTS.runs]: fixtureCoveredCallRuns,
+  [COVERED_CALL_API_ENDPOINTS.chainPreview]: fixtureCoveredCallChainPreview,
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [SYMBOL_API_ENDPOINTS.symbols]: fixtureSymbolRecords,
   [SYMBOL_API_ENDPOINTS.statistics]: fixtureSymbolStatistics
@@ -1375,6 +1936,13 @@ type DynamicFixturePattern = {
 };
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  {
+    pattern: apiRoutePattern(COVERED_CALL_API_ENDPOINTS.runs, "/[^/]+/result"),
+    resolve: (cleanPath) => {
+      const runId = readDecodedPathSegment(cleanPath, 1);
+      return runId ? fixtureCoveredCallResults[runId] : undefined;
+    }
+  },
   {
     pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.workstationSecurities),
     resolve: (_cleanPath, path) => {
@@ -1395,8 +1963,20 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
       return securityId ? fixtureSecurityIdentities[securityId] : undefined;
     }
   },
-  { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/corporate-actions"), resolve: () => fixtureCorporateActions },
-  { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/trading-parameters"), resolve: () => fixtureTradingParameters },
+  {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/corporate-actions"),
+    resolve: (cleanPath) => {
+      const securityId = cleanPath.split("/").at(-2);
+      return securityId ? fixtureCorporateActions.filter((action) => action.securityId === securityId) : fixtureCorporateActions;
+    }
+  },
+  {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/trading-parameters"),
+    resolve: (cleanPath) => {
+      const securityId = cleanPath.split("/").at(-2) ?? fixtureTradingParameters.securityId;
+      return { ...fixtureTradingParameters, securityId };
+    }
+  },
   {
     pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/operator-overrides"),
     resolve: (cleanPath) => {
@@ -1426,8 +2006,10 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
       return runId ? fixturePromotionEvaluations[runId] : undefined;
     }
   },
+  { pattern: apiRoutePattern(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, "/[^/]+"), resolve: () => fixtureStrategyDesignerDocument },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
-  { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification }
+  { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification },
+  { pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.operationsContinuity, "/[^/]+"), resolve: () => fixtureOperationsContinuityWorkflow }
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {

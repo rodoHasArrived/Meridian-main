@@ -13,7 +13,7 @@ This document is the master index for AI guidance in the Meridian repository. It
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
-| Portable skills | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
+| Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
@@ -54,10 +54,13 @@ Validate AI catalog consistency with:
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
-The checker inventories root assistant entrypoints, Codex and Claude configuration, Copilot
-instructions, agents, skills, prompts, AI workflow files, `docs/ai/`, MCP prompt/resource/tool
-surfaces, and stale canonical GitHub documentation links. Its Markdown and JSON reports are safe to
-share because they use a portable repository identity instead of local absolute paths.
+The checker inventories root assistant entrypoints, Codex and Claude configuration, Agent
+Skills-compatible packages, Copilot instructions, agents, skills, prompts, AI workflow files,
+`docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant entrypoints for
+Cursor, Windsurf, Continue, Cline, Roo, and Gemini if they are introduced, and stale canonical
+GitHub documentation links. It also flags active AI docs that still point at retired GitHub
+Actions workflow paths. Its Markdown and JSON reports are safe to share because they use a portable
+repository identity instead of local absolute paths.
 
 ### Tier 2: Navigation and Routing
 
@@ -85,7 +88,7 @@ Located mainly in `docs/ai/claude/`.
 | Resource | Purpose |
 | --- | --- |
 | [`agents/README.md`](agents/README.md) | GitHub and Claude agent overview, including navigation agents |
-| [`skills/README.md`](skills/README.md) | Portable Agent Skills overview |
+| [`skills/README.md`](skills/README.md) | Portable Agent Skills overview for `.agents/skills/` and `.claude/skills/` |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
 | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skill catalog |
 
@@ -108,7 +111,7 @@ Located mainly in `docs/ai/claude/`.
 | Cross-provider AI workflow | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) |
 | Repo orientation | [`generated/repo-navigation.json`](generated/repo-navigation.json) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
-| Portable skill catalog | [`skills/README.md`](skills/README.md) |
+| Portable skill catalog | [`skills/README.md`](skills/README.md), [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills) |
 | Codex skill catalog | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) |
 | Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
@@ -124,6 +127,25 @@ Located mainly in `docs/ai/claude/`.
 5. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json) and [`generated/repo-navigation.md`](generated/repo-navigation.md) if routing truth changed.
 6. Cross-link related resources when the new file changes workflow or ownership.
 
+### Optional IDE Or Provider Surfaces
+
+`build/scripts/docs/check-ai-inventory.py` watches common assistant entrypoints that are not
+currently supported by tracked files: Cursor, Windsurf, Continue, Cline, Roo, and Gemini. If one of
+those files is added, document the exact entrypoint in this index and
+[`assistant-workflow-contract.md`](assistant-workflow-contract.md) instead of relying on a
+tool-specific rule file to carry shared Meridian policy.
+
 ---
 
-_Last Updated: 2026-04-29_
+_Last Updated: 2026-05-20_
+
+## Drift failure remediation
+
+1. Run TODO scan and validation:
+   - `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json`
+   - `python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/`
+2. For missing IDs, add a new entry in `docs/source/todo-registry.json` and update the TODO comment with `TODO-ID` and `OWNER` metadata.
+3. Run AI contract drift check:
+   - `python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
+4. If drift exists, copy canonical policy content into each mirror path and rerun checks.
+

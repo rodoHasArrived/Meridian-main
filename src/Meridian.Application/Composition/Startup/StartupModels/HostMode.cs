@@ -11,6 +11,11 @@ public enum HostMode : byte
     Command,
 
     /// <summary>
+    /// Browser workstation host: embedded HTTP UI/API server only, with provider collection deferred.
+    /// </summary>
+    Workstation,
+
+    /// <summary>
     /// Desktop host: embedded HTTP UI server plus the data collector running side-by-side.
     /// </summary>
     Desktop,

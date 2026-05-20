@@ -1,6 +1,14 @@
 # Meridian Pilot Workflow
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **meridian pilot workflow** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the meridian pilot workflow workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Golden-path productization filter for the active Waves 2-4 operator-readiness path
 
 ---
@@ -8,9 +16,10 @@
 ## Purpose
 
 This document defines the one pilot workflow Meridian should optimize first. It does not replace
-the canonical roadmap in [`../status/ROADMAP.md`](../status/ROADMAP.md). It is the release filter
-for deciding whether new code, UI, providers, reports, or documentation improve the product path
-that matters most.
+the canonical roadmap in [`../status/ROADMAP.md`](../status/ROADMAP.md) or the consolidated
+planning interpretation in [`current-direction-and-status.md`](current-direction-and-status.md). It
+is the release filter for deciding whether new code, UI, providers, reports, or documentation
+improve the product path that matters most.
 
 The product emphasis is:
 

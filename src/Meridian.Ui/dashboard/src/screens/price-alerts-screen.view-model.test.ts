@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPriceAlertConditionHelpText,
+  buildPriceAlertFormFields,
+  buildPriceAlertFieldHelpText,
   buildPriceAlertListSection,
   buildPriceAlertMetrics,
   buildPriceAlertSubmitAction,
+  buildPriceAlertSubmitFeedback,
   buildPriceAlertTriggerSection,
   DEFAULT_PRICE_ALERT_FORM,
   formatPriceAlertPrice,
@@ -133,6 +137,100 @@ describe("price alert presentation state", () => {
     expect(action.ariaLabel).toContain("unavailable");
   });
 
+  it("keeps untouched invalid fields described by helper text only", () => {
+    const validation = validatePriceAlertForm(DEFAULT_PRICE_ALERT_FORM);
+    const fields = buildPriceAlertFormFields({
+      validation,
+      validationVisible: { symbol: false, threshold: false }
+    });
+
+    expect(fields.symbol.invalid).toBe(false);
+    expect(fields.symbol.errorText).toBeNull();
+    expect(fields.symbol.describedBy).toBe("price-alert-symbol-help");
+    expect(fields.symbol.errorMessageId).toBeUndefined();
+    expect(fields.threshold.invalid).toBe(false);
+    expect(fields.threshold.describedBy).toBe("price-alert-threshold-help");
+  });
+
+  it("links visible field validation errors through stable error message ids", () => {
+    const validation = validatePriceAlertForm({
+      ...DEFAULT_PRICE_ALERT_FORM,
+      symbol: "bad symbol!",
+      threshold: "-1"
+    });
+    const fields = buildPriceAlertFormFields({
+      validation,
+      validationVisible: { symbol: true, threshold: true }
+    });
+
+    expect(fields.symbol.invalid).toBe(true);
+    expect(fields.symbol.errorText).toBe("Use 1-16 letters, digits, or . / : _ -");
+    expect(fields.symbol.describedBy).toBe("price-alert-symbol-help price-alert-symbol-error");
+    expect(fields.symbol.errorMessageId).toBe("price-alert-symbol-error");
+    expect(fields.threshold.invalid).toBe(true);
+    expect(fields.threshold.errorText).toBe("Threshold must be greater than 0.");
+    expect(fields.threshold.describedBy).toBe("price-alert-threshold-help price-alert-threshold-error");
+    expect(fields.threshold.errorMessageId).toBe("price-alert-threshold-error");
+  });
+
+  it("builds a live-quote handoff after creating an alert", () => {
+    const feedback = buildPriceAlertSubmitFeedback({
+      symbol: "BRK/B",
+      condition: "above",
+      field: "last",
+      threshold: 300,
+      note: null
+    });
+
+    expect(feedback.text).toBe("Alert set: BRK/B last ≥ 300");
+    expect(feedback.action).toEqual({
+      label: "Open live quotes",
+      href: "/data/quotes?symbol=BRK%2FB",
+      ariaLabel: "Open live quotes for BRK/B after creating price alert"
+    });
+  });
+
+  it("derives condition and field helper text for the alert form", () => {
+    expect(buildPriceAlertConditionHelpText("crosses-up")).toBe(
+      "Fires once when price rises through the threshold."
+    );
+    expect(buildPriceAlertFieldHelpText("mid")).toBe("Field: bid-ask midpoint.");
+  });
+
+  it("keeps condition, field, and note field semantics in the view model", () => {
+    const fields = buildPriceAlertFormFields({
+      validation: validatePriceAlertForm({ ...DEFAULT_PRICE_ALERT_FORM, symbol: "AAPL", threshold: "200" }),
+      validationVisible: { symbol: false, threshold: false },
+      condition: "crosses-down",
+      field: "ask"
+    });
+
+    expect(fields.condition).toMatchObject({
+      id: "price-alert-condition",
+      label: "Condition",
+      helperId: "price-alert-condition-help",
+      helperText: "Fires once when price falls through the threshold.",
+      describedBy: "price-alert-condition-help"
+    });
+    expect(fields.field).toMatchObject({
+      id: "price-alert-field",
+      label: "Price field",
+      helperId: "price-alert-field-help",
+      helperText: "Field: best ask price.",
+      describedBy: "price-alert-field-help",
+      ariaLabel: "Price field"
+    });
+    expect(fields.note).toMatchObject({
+      id: "price-alert-note",
+      label: "Note (optional)",
+      helperId: "price-alert-note-help",
+      helperText: "Optional operator context, up to 120 characters.",
+      describedBy: "price-alert-note-help",
+      placeholder: "e.g. Watch for earnings call",
+      maxLength: 120
+    });
+  });
+
   it("maps alert service counters to design-system metric snapshots", () => {
     const metrics = buildPriceAlertMetrics({
       enabledCount: 2,
@@ -160,6 +258,18 @@ describe("price alert presentation state", () => {
     expect(section.rows[0].primaryAction.id).toBe("snooze");
     expect(section.rows[2].primaryAction.id).toBe("reset");
     expect(section.rows[0].rowAriaLabel).toContain("AAPL price alert");
+  });
+
+  it("offers a live-quotes handoff when no alerts are configured", () => {
+    const section = buildPriceAlertListSection([], 0);
+
+    expect(section.hasRows).toBe(false);
+    expect(section.emptyText).toContain("Set price alert");
+    expect(section.emptyAction).toEqual({
+      label: "Open live quotes",
+      href: "/data/quotes",
+      ariaLabel: "Open live quotes to choose a symbol for a price alert"
+    });
   });
 
   it("derives trigger rows with acknowledgement action state", () => {
@@ -211,6 +321,30 @@ describe("price alert presentation state", () => {
       kind: "alert",
       ariaLabel: "Re-enable MSFT alert"
     }));
+  });
+
+  it("marks destructive alert deletion as confirmation pending before removal", () => {
+    const section = buildPriceAlertListSection([
+      buildAlert({ id: "a-1", symbol: "AAPL" }),
+      buildAlert({ id: "a-2", symbol: "MSFT" })
+    ], 2, "a-1", "a-2");
+
+    expect(section.rows[0].deleteAction).toEqual({
+      id: "delete",
+      label: "Delete",
+      ariaLabel: "Delete AAPL alert"
+    });
+    expect(section.rows[1].deleteAction).toEqual({
+      id: "delete",
+      label: "Confirm delete",
+      ariaLabel: "Confirm delete MSFT alert. This removes it from this browser."
+    });
+    expect(section.rows[1].deleteConfirmationStatusId).toBe("price-alert-delete-a-2-status");
+    expect(section.rows[1].deleteConfirmationStatus).toBe(
+      "Delete confirmation pending for MSFT. Confirm delete removes it from this browser."
+    );
+    expect(section.rows[0].deleteConfirmationStatus).toBeNull();
+    expect(section.rows[1].rowAriaLabel).toContain("Delete confirmation pending.");
   });
 });
 

@@ -22,8 +22,6 @@
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Settings.Configuration" />
 
-    <!-- Serialization -->
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

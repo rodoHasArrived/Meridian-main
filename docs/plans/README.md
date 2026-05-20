@@ -1,8 +1,16 @@
 # Plans
 
-**Last Reviewed:** 2026-05-13
+**Last Reviewed:** 2026-05-20
 
-This directory contains current Meridian execution plans, blueprints, and target-state packages. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **README** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the README workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+This directory contains current Meridian execution plans, blueprints, and target-state packages. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
 
 Active planning direction:
 
@@ -10,7 +18,28 @@ Active planning direction:
 - New operator UI work belongs in the browser workstation under `src/Meridian.Ui/dashboard/`.
 - Retained WPF work is limited to shared contracts, regression fixes, compatibility evidence, and retained desktop support.
 - Top-level operator navigation remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; legacy `Research`, `Data Operations`, and `Governance` names are compatibility or planning shorthand.
+- No mobile-specific product lane is active; responsive browser validation is allowed only for the browser workstation.
 - Completed, superseded, or historical plans belong under `archive/docs/`, not this active folder.
+
+## 2026-05-18 Review Result
+
+All active plan and roadmap files in this directory were reviewed for their current role. The
+consolidated current-direction document is now the first planning stop; the classification below
+remains the source of truth for detailed follow-up: core Wave 2-4 operator-readiness plans come
+first, later-wave productization follows, UFL target-state packages remain reference designs, and
+technical/optional tracks must not compete with the core operator-ready path unless a current
+roadmap decision pulls them forward.
+
+2026-05-19 follow-up: release/distribution cleanup remains technical support work. Publish-size
+investigation, generated-output ignore rules, and TODO-scan cache hygiene do not change the current
+plan-file classification or move W2-W4 wave status.
+
+2026-05-19 browser-workstation follow-up: provider setup now exposes provider-routing connection,
+binding, credential-source, environment, warning, and trust-snapshot refresh state in Data and
+Settings; Strategy Designer route actions now separate browser-openable GET evidence from
+reference-only POST backtest/validation mutations; and Reporting export commands now abort
+superseded profile exports. These are operator-safety and routing-support deltas, not plan
+reclassification or wave exits.
 
 ## Core Operator-Ready Path
 
@@ -18,6 +47,7 @@ These are the active documents for Waves 2-4 and the current short-horizon execu
 
 | Document | Current role |
 | --- | --- |
+| [current-direction-and-status.md](current-direction-and-status.md) | Single consolidated planning entry point for current direction, project status, and document roles |
 | [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for Waves 2-4 and trust-gate maintenance |
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for Waves 2-4 |

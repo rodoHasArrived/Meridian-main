@@ -23,6 +23,7 @@ This directory contains setup guides, comparison tables, and usage instructions 
 | [Interactive Brokers Setup](interactive-brokers-setup.md) | IB TWS / Gateway configuration |
 | [IB Free Equity Reference](interactive-brokers-free-equity-reference.md) | IB free equity data availability reference |
 | [Security Master Guide](security-master-guide.md) | Event-sourced golden record for securities across 14 asset classes |
+| [Provider Credential Management](../operations/provider-credential-management.md) | Encrypted local credential storage and Provider Connection Center routes |
 
 ### Selection And Inventory
 
@@ -80,5 +81,6 @@ This directory contains setup guides, comparison tables, and usage instructions 
 ## Related
 
 - [Environment Variables Reference](../reference/environment-variables.md) - Credential and configuration reference
+- [Provider Credential Management](../operations/provider-credential-management.md) - Encrypted credential store and compatibility-route behavior
 - [Provider Implementation Guide](../development/provider-implementation.md) - Adding new providers
 - [Historical Data Providers Evaluation](../evaluations/historical-data-providers-evaluation.md) - Evaluation and tradeoff notes

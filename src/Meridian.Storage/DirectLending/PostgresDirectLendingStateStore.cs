@@ -1,6 +1,7 @@
 using System.Data;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
+using Meridian.Storage.Ledger;
 using Npgsql;
 
 namespace Meridian.Storage.DirectLending;
@@ -10,10 +11,14 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly DirectLendingOptions _options;
+    private readonly ITransactionalLedgerJournalStore? _ledgerJournalStore;
 
-    public PostgresDirectLendingStateStore(DirectLendingOptions options)
+    public PostgresDirectLendingStateStore(
+        DirectLendingOptions options,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _options = options;
+        _ledgerJournalStore = ledgerJournalStore as ITransactionalLedgerJournalStore;
     }
 
     public async Task<LoanContractDetailDto?> LoadContractProjectionAsync(Guid loanId, CancellationToken ct = default)
@@ -266,6 +271,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         JsonDocument payload,
         DirectLendingEventWriteMetadata metadata,
         DirectLendingPersistenceBatch? persistenceBatch,
+        IReadOnlyList<LedgerJournalEntryWrite>? ledgerJournalEntries,
         Guid eventId,
         CancellationToken ct = default)
     {
@@ -285,9 +291,32 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await UpsertNormalizedProjectionAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
         await PersistBatchArtifactsAsync(connection, transaction, loanId, eventId, persistenceBatch, ct).ConfigureAwait(false);
+        await AppendLedgerJournalEntriesAsync(connection, transaction, ledgerJournalEntries, ct).ConfigureAwait(false);
         await MaybeInsertSnapshotAsync(connection, transaction, loanId, nextVersion, contract, servicing, forceSnapshot: false, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task AppendLedgerJournalEntriesAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        IReadOnlyList<LedgerJournalEntryWrite>? ledgerJournalEntries,
+        CancellationToken ct)
+    {
+        if (ledgerJournalEntries is null || ledgerJournalEntries.Count == 0)
+        {
+            return;
+        }
+
+        if (_ledgerJournalStore is null)
+        {
+            throw new InvalidOperationException("Direct lending ledger postings require an ITransactionalLedgerJournalStore registration.");
+        }
+
+        foreach (var entry in ledgerJournalEntries)
+        {
+            await _ledgerJournalStore.AppendAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        }
     }
 
     private async Task UpsertStateAsync(

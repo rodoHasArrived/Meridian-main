@@ -32,6 +32,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private readonly StreamingFailoverService _failoverService;
     private readonly string _ruleId;
     private readonly SemaphoreSlim _switchLock = new(1, 1);
+    private readonly CancellationTokenSource _cts = new();
 
     private volatile IMarketDataClient _activeClient;
     private volatile string _activeProviderId;
@@ -99,6 +100,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        if (_depthSubIds.TryGetValue(cfg.Symbol, out var existingId))
+            return existingId;
+
         try
         {
             var id = _activeClient.SubscribeMarketDepth(cfg);
@@ -141,6 +147,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public int SubscribeTrades(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        if (_tradeSubIds.TryGetValue(cfg.Symbol, out var existingId))
+            return existingId;
+
         try
         {
             var id = _activeClient.SubscribeTrades(cfg);
@@ -194,6 +205,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public async ValueTask DisposeAsync()
     {
+        _cts.Cancel();
+        _cts.Dispose();
+
         _failoverService.OnFailoverTriggered -= HandleFailoverTriggered;
         _failoverService.OnFailoverRecovered -= HandleFailoverRecovered;
 
@@ -230,8 +244,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
         try
         {
-            await SwitchProviderAsync(evt.ToProviderId, CancellationToken.None);
+            await SwitchProviderAsync(evt.ToProviderId, _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to execute failover switch from {From} to {To} for rule {RuleId}",
@@ -246,8 +261,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
         try
         {
-            await SwitchProviderAsync(evt.ToProviderId, CancellationToken.None);
+            await SwitchProviderAsync(evt.ToProviderId, _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to execute recovery switch from {From} to {To} for rule {RuleId}",

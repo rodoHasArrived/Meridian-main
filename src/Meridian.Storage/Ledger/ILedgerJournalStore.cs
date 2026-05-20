@@ -1,6 +1,7 @@
 using Meridian.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
@@ -38,6 +39,15 @@ public interface ILedgerJournalStore
     Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);
 }
 
+public interface ITransactionalLedgerJournalStore : ILedgerJournalStore
+{
+    Task AppendAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct = default);
+}
+
 public sealed record LedgerJournalEntryWrite(
     JournalEntry Entry,
     Guid AggregateId,
@@ -50,7 +60,9 @@ public sealed record LedgerJournalEntryWrite(
     string? RuleId = null,
     string? RuleVersion = null,
     Guid? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,
@@ -66,7 +78,9 @@ public sealed record LedgerJournalEntryRecord(
     string? RuleId = null,
     string? RuleVersion = null,
     Guid? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
 
 public sealed record LedgerAccountingPeriod(
     Guid PeriodId,

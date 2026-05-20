@@ -5,27 +5,53 @@ title = "Meridian gitleaks configuration"
 useDefault = true
 
 # ---------------------------------------------------------------------------
-# Global allowlist
+# Path-bound allowlists
 #
-# Findings whose secret value contains any of the stopwords below are
-# suppressed.  Every entry here is a deliberately fake placeholder used
-# exclusively in unit-test source files or public documentation examples.
-# None of these strings represent real credentials.
+# Every exception must be scoped to the exact fixture or documentation file
+# that owns the placeholder. Avoid stopword-only global suppressions because
+# they can hide real credentials in unrelated source files.
 # ---------------------------------------------------------------------------
 [[allowlists]]
-id          = "placeholder-credentials"
-description = "Placeholder and test-only credential strings used in unit tests and documentation"
+id          = "docs-api-reference-placeholder"
+description = "Public documentation placeholder API key"
+condition   = "AND"
+paths       = [
+    '''docs/reference/api-reference\.md''',
+]
 stopwords   = [
-    # docs/reference/api-reference.md – documentation curl example
     "your-api-key",
+]
 
-    # tests/…/Config/ConfigValidationPipelineTests.cs – fake Alpaca secrets
+[[allowlists]]
+id          = "config-validation-test-placeholders"
+description = "Config validation tests use deliberately fake Alpaca credentials"
+condition   = "AND"
+paths       = [
+    '''tests/Meridian\.Tests/Config/ConfigValidationPipelineTests\.cs''',
+]
+stopwords   = [
     "VALIDSECRET",
     "VALIDKEYID",
+]
 
-    # tests/…/Providers/PolygonMarketDataClientTests.cs
+[[allowlists]]
+id          = "polygon-client-test-placeholder"
+description = "Polygon client tests use a deliberately fake API key"
+condition   = "AND"
+paths       = [
+    '''tests/Meridian\.Tests/Providers/PolygonMarketDataClientTests\.cs''',
+]
+stopwords   = [
     "valid_environment_api_key",
+]
 
-    # tests/…/Providers/PolygonSubscriptionTests.cs
+[[allowlists]]
+id          = "polygon-subscription-test-placeholder"
+description = "Polygon subscription tests use a deliberately fake API key"
+condition   = "AND"
+paths       = [
+    '''tests/Meridian\.Tests/Providers/PolygonSubscriptionTests\.cs''',
+]
+stopwords   = [
     "valid_polygon_api_key",
 ]

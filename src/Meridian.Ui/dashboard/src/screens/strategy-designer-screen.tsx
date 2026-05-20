@@ -1,576 +1,674 @@
-import { useId, useState } from "react";
-import { GripVertical, LayoutGrid, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   useStrategyDesignerViewModel,
   type ParticipationSliceViewModel,
   type ParticipationViewModel,
   type PayoffChartViewModel,
-  type StrategyCanvasLegViewModel,
+  type StrategyBuilderCellDetailViewModel,
+  type StrategyBuilderCellKind,
+  type StrategyBuilderCellViewModel,
+  type StrategyBuilderFieldCatalogItem,
+  type StrategyBuilderTemplate,
+  type StrategyBuilderTransitionViewModel,
+  type StrategyBuilderWorkbenchViewModel,
   type StrategyDesignerViewModel,
-  type StrategyLeg,
-  type StrategyLegPaletteEntry
+  type StrategyLegDetailFieldViewModel
 } from "@/screens/strategy-designer-screen.view-model";
 
-const PALETTE_DRAG_TYPE = "application/x-meridian-strategy-leg-kind";
-const LEG_DRAG_TYPE = "application/x-meridian-strategy-leg-id";
+function cellKindBadgeVariant(kind: StrategyBuilderCellKind): "default" | "outline" | "success" | "warning" | "danger" | "research" {
+  switch (kind) {
+    case "governance":       return "warning";
+    case "code":             return "research";
+    case "state":            return "default";
+    case "concurrent":       return "success";
+    case "universe-builder": return "success";
+    case "trade":            return "danger";
+    case "options-payoff":   return "warning";
+    default:                 return "outline";
+  }
+}
+
+function CellKindIcon({ kind }: { kind: StrategyBuilderCellKind }) {
+  switch (kind) {
+    case "state":            return <CircleDot className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "concurrent":       return <Network className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "universe-builder": return <Layers className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "trade":            return <ArrowRightLeft className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    default:                 return null;
+  }
+}
 
 export function StrategyDesignerScreen() {
   const vm = useStrategyDesignerViewModel();
-  const [dropActive, setDropActive] = useState(false);
 
   return (
     <div className="space-y-6" data-testid="strategy-designer-screen">
-      <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <LayoutGrid className="h-5 w-5 text-primary" />
-            Visual Strategy Designer
-          </CardTitle>
-          <CardDescription>
-            Compose multi-leg strategies by dragging blocks onto the canvas. Payoff and participation visualizations update live as you tune strikes, premiums, and direction.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <SpotPriceField vm={vm} />
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={vm.loadSample}
-                disabled={vm.loadSampleCommand.disabled}
-                disabledReason={vm.loadSampleCommand.disabledReason}
-                aria-label={vm.loadSampleCommand.ariaLabel}
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                <span className="ml-1.5">{vm.loadSampleCommand.label}</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={vm.clearCanvas}
-                disabled={vm.clearCanvasCommand.disabled}
-                disabledReason={vm.clearCanvasCommand.disabledReason}
-                aria-label={vm.clearCanvasCommand.ariaLabel}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-                <span className="ml-1.5">{vm.clearCanvasCommand.label}</span>
-              </Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {vm.metrics.map((metric) => (
-              <MetricCard
-                key={metric.id}
-                id={metric.id}
-                label={metric.label}
-                value={metric.value}
-                delta={metric.detail}
-                tone={metric.tone}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <WorkbenchHero vm={vm.workbench} />
 
-      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-        <PalettePanel palette={vm.palette} onAdd={vm.addLegFromPalette} />
-        <CanvasPanel vm={vm} dropActive={dropActive} setDropActive={setDropActive} />
+      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+        <FieldCatalogPanel vm={vm.workbench} />
+        <CellCanvasPanel vm={vm.workbench} />
+        <InspectorPanel vm={vm.workbench} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} />
-        <ParticipationCard participation={vm.participation} />
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <TemplateGallery vm={vm.workbench} />
+        <BacktestProofPanel vm={vm.workbench} />
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <TransitionMap transitions={vm.workbench.transitions} />
+        <OptionsPayoffPanel vm={vm} />
       </div>
     </div>
   );
 }
 
-interface SpotPriceFieldProps {
-  vm: StrategyDesignerViewModel;
-}
-
-function SpotPriceField({ vm }: SpotPriceFieldProps) {
-  const id = useId();
-
+function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
   return (
-    <label htmlFor={id} className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-      <span>{vm.spotPriceField.label}</span>
-      <Input
-        id={id}
-        type="number"
-        step={vm.spotPriceField.step}
-        min={vm.spotPriceField.min}
-        inputMode={vm.spotPriceField.inputMode}
-        value={vm.spotPriceField.value}
-        onChange={(event) => vm.updateSpotPriceDraft(event.target.value)}
-        onBlur={(event) => vm.commitSpotPriceDraft(event.target.value)}
-        className="w-32"
-        aria-label={vm.spotPriceField.ariaLabel}
-      />
-    </label>
+    <section className="space-y-4" aria-labelledby="strategy-builder-title">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Strategy workspace</div>
+          <h1 id="strategy-builder-title" className="flex items-center gap-2 text-2xl font-semibold tracking-normal text-foreground">
+            <Workflow className="h-6 w-6 text-primary" aria-hidden="true" />
+            Strategy Builder Workbench
+          </h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+            {vm.document.name} · {vm.document.datasetReference} · {vm.document.universe.join(", ")}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" variant="outline" aria-label="Save strategy design draft">
+            <Save className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">Save draft</span>
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            aria-label={vm.backtest.runCommand.ariaLabel}
+            disabled={vm.backtest.runCommand.disabled}
+            disabledReason={vm.backtest.runCommand.disabledReason}
+          >
+            <PlayCircle className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
+          </Button>
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {vm.metrics.map((metric) => (
+          <MetricCard
+            key={metric.id}
+            id={metric.id}
+            label={metric.label}
+            value={metric.value}
+            delta={metric.detail}
+            tone={metric.tone}
+          />
+        ))}
+      </div>
+      <div className="sr-only" aria-live="polite">
+        {vm.liveRegionMessage}
+      </div>
+    </section>
   );
 }
 
-interface PalettePanelProps {
-  palette: StrategyLegPaletteEntry[];
-  onAdd: (kind: StrategyLegPaletteEntry["kind"]) => void;
+function FieldCatalogPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+  return (
+    <Card data-testid="strategy-builder-field-catalog">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Database className="h-4 w-4 text-primary" aria-hidden="true" />
+          Field catalog
+        </CardTitle>
+        <CardDescription>AMX-style vocabulary mapped to Meridian canonical data.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <label className="relative block" htmlFor={vm.fieldSearchState.inputId}>
+          <span className="sr-only">{vm.fieldSearchState.label}</span>
+          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <Input
+            id={vm.fieldSearchState.inputId}
+            value={vm.fieldSearch}
+            onChange={(event) => vm.setFieldSearch(event.target.value)}
+            className="pl-9"
+            placeholder={vm.fieldSearchState.placeholder}
+            aria-label={vm.fieldSearchState.ariaLabel}
+            aria-describedby={vm.fieldSearchState.describedBy}
+          />
+        </label>
+        <p id={vm.fieldSearchState.helperId} className="text-xs leading-5 text-muted-foreground">
+          {vm.fieldSearchState.helperText}
+        </p>
+        <p
+          id="strategy-builder-field-catalog-search-status"
+          role="status"
+          aria-live="polite"
+          className="text-xs leading-5 text-muted-foreground"
+        >
+          {vm.fieldSearchState.resultCountText}
+        </p>
+        <div className="space-y-2" role="list" aria-label={vm.fieldSearchState.resultsLabel}>
+          {vm.filteredFields.length > 0 ? vm.filteredFields.map((field) => (
+            <FieldCatalogItem key={field.fieldId} field={field} />
+          )) : (
+            <FieldCatalogEmptyState state={vm.fieldSearchState.emptyState} />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
-function PalettePanel({ palette, onAdd }: PalettePanelProps) {
+function FieldCatalogEmptyState({ state }: { state: StrategyBuilderWorkbenchViewModel["fieldSearchState"]["emptyState"] }) {
+  if (!state) return null;
+
   return (
-    <Card data-testid="strategy-designer-palette">
-      <CardHeader>
-        <CardTitle className="text-base">Block palette</CardTitle>
-        <CardDescription>Drag onto the canvas, or click to append.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {palette.map((entry) => (
-          <button
-            key={entry.kind}
-            type="button"
-            draggable
-            onDragStart={(event) => {
-              event.dataTransfer.setData(PALETTE_DRAG_TYPE, entry.kind);
-              event.dataTransfer.effectAllowed = "copy";
-            }}
-            onClick={() => onAdd(entry.kind)}
-            className={cn(
-              "group flex w-full items-start gap-3 rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-left",
-              "transition-colors hover:border-primary/50 hover:bg-primary/10",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            )}
-            aria-label={`Add ${entry.label} block`}
-          >
-            <GripVertical
-              className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary"
-              aria-hidden="true"
-            />
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">{entry.label}</span>
-                <Badge variant="outline" className="ml-auto">
-                  {entry.badge}
-                </Badge>
-              </div>
-              <p className="text-xs leading-5 text-muted-foreground">{entry.description}</p>
+    <div
+      role="status"
+      aria-label={state.ariaLabel}
+      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
+    >
+      <div className="font-semibold text-foreground">{state.title}</div>
+      <p className="mt-1 leading-6">{state.description}</p>
+    </div>
+  );
+}
+
+function FieldCatalogItem({ field }: { field: StrategyBuilderFieldCatalogItem }) {
+  return (
+    <div
+      role="listitem"
+      className={cn(
+        "rounded-md border border-border/70 bg-secondary/20 px-3 py-2",
+        !field.isEnabled && "border-warning/50 bg-warning/10"
+      )}
+    >
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="break-words font-mono text-xs font-semibold text-foreground">{field.fieldId}</span>
+            <Badge variant={field.isEnabled ? "success" : "warning"} dot>
+              {field.isEnabled ? "Mapped" : "Disabled"}
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs font-medium text-foreground">{field.label}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{field.source}</p>
+          {!field.isEnabled && field.disabledReason ? (
+            <p className="mt-1 text-xs leading-5 text-warning" data-testid={`field-disabled-${field.fieldId}`}>
+              {field.disabledReason}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+  const columns: DenseDataTableColumn<StrategyBuilderCellViewModel>[] = [
+    {
+      id: "cell",
+      label: "Cell",
+      render: (row) => (
+        <div className="min-w-0">
+          <div className="font-medium text-foreground">{row.label}</div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <CellKindIcon kind={row.kind} />
+            <Badge variant={cellKindBadgeVariant(row.kind)}>{row.kind}</Badge>
+            <span className="font-mono text-xs text-muted-foreground">{row.cellId}</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "purpose",
+      label: "Purpose",
+      render: (row) => <Badge variant="outline">{row.purpose}</Badge>
+    },
+    {
+      id: "fields",
+      label: "Fields",
+      render: (row) => (
+        <div className="flex flex-wrap gap-1">
+          {row.fieldChips.map((field) => (
+            <div key={field.fieldId} className="flex flex-col gap-1">
+              <Badge variant={field.isEnabled ? "outline" : "warning"}>
+                {field.fieldId}
+              </Badge>
+              {field.disabledReason ? (
+                <span className="text-[10px] leading-4 text-warning">{field.disabledReason}</span>
+              ) : null}
             </div>
-          </button>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => (
+        <Badge variant={row.status === "ready" ? "success" : row.status === "warning" ? "warning" : "danger"} dot>
+          {row.statusLabel}
+        </Badge>
+      )
+    }
+  ];
+
+  return (
+    <Card data-testid="strategy-builder-canvas">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FlaskConical className="h-4 w-4 text-primary" aria-hidden="true" />
+          Cell canvas
+        </CardTitle>
+        <CardDescription>{vm.validationSummary}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <DenseDataTable
+          rows={vm.cells}
+          columns={columns}
+          getRowId={(row) => row.cellId}
+          getRowSelectAriaLabel={(row) => row.selectButtonAriaLabel}
+          getRowAriaControls={(row) => row.detailPanelId}
+          getRowAriaExpanded={(row) => row.isSelected}
+          onRowSelect={(row) => vm.selectCell(row.cellId)}
+          selectedRowId={vm.selectedCellId}
+          emptyText="No cells are in the current strategy design."
+          ariaLabel="Strategy Builder cells"
+          caption="Strategy Builder cells"
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+function InspectorPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+  return (
+    <Card data-testid="strategy-builder-inspector">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+          Inspector
+        </CardTitle>
+        <CardDescription>{vm.selectedCellDetail?.title ?? "No cell selected"}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <CellDetail detail={vm.selectedCellDetail} />
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Validation</h3>
+          <div className="mt-2 space-y-2" role="list" aria-label="Strategy Builder validation messages">
+            {vm.validationMessages.length === 0 ? (
+              <p className="text-sm text-success">Ready for preview and backtest.</p>
+            ) : (
+              vm.validationMessages.map((message) => (
+                <div key={`${message.code}-${message.targetId}`} role="listitem" className="rounded-md border border-border/70 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={message.severity === "error" ? "danger" : "warning"} dot>
+                      {message.severity}
+                    </Badge>
+                    <span className="font-mono text-xs text-muted-foreground">{message.code}</span>
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{message.message}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CellDetail({ detail }: { detail: StrategyBuilderCellDetailViewModel | null }) {
+  if (!detail) {
+    return <p className="text-sm text-muted-foreground">No selected cell.</p>;
+  }
+
+  return (
+    <section
+      id={detail.id}
+      className="row-detail-panel"
+      role="region"
+      aria-label={detail.ariaLabel}
+      data-testid="strategy-builder-selected-cell-detail"
+    >
+      <div className="head">
+        <span>{detail.eyebrow}</span>
+      </div>
+      <div className="body space-y-3">
+        <div>
+          <h3 className="break-words text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.description}</p>
+        </div>
+        <pre className="max-h-28 overflow-auto rounded-md border border-border/70 bg-secondary/25 p-2 text-xs text-muted-foreground">
+          {detail.source}
+        </pre>
+        <dl className="grid gap-2">
+          {detail.fields.map((field) => (
+            <StrategyDetailField key={field.id} field={field} />
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function StrategyDetailField({ field }: { field: StrategyLegDetailFieldViewModel }) {
+  return (
+    <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
+      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+      <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
+    </div>
+  );
+}
+
+function TemplateGallery({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+  return (
+    <Card data-testid="strategy-builder-template-gallery">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+          Template gallery
+        </CardTitle>
+        <CardDescription>Prototype concepts rebuilt as Meridian design templates.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3 md:grid-cols-3">
+        {vm.templates.map((template) => (
+          <TemplateCard key={template.templateId} template={template} onLoad={vm.loadTemplate} />
         ))}
       </CardContent>
     </Card>
   );
 }
 
-interface CanvasPanelProps {
-  vm: StrategyDesignerViewModel;
-  dropActive: boolean;
-  setDropActive: (active: boolean) => void;
+function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate; onLoad: (templateId: string) => void }) {
+  return (
+    <article className="rounded-md border border-border/70 bg-secondary/20 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="break-words text-sm font-semibold text-foreground">{template.name}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{template.category}</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onLoad(template.templateId)}
+          aria-label={template.loadCommand.ariaLabel}
+        >
+          {template.loadCommand.label}
+        </Button>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">{template.description}</p>
+      <div className="mt-3 flex flex-wrap gap-1">
+        {template.tags.map((tag) => (
+          <Badge key={tag} variant="outline">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    </article>
+  );
 }
 
-function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (
-      event.dataTransfer.types.includes(PALETTE_DRAG_TYPE) ||
-      event.dataTransfer.types.includes(LEG_DRAG_TYPE)
-    ) {
-      event.preventDefault();
-      event.dataTransfer.dropEffect = event.dataTransfer.types.includes(PALETTE_DRAG_TYPE) ? "copy" : "move";
-      setDropActive(true);
-    }
-  };
-
-  const handleDragLeave = () => {
-    setDropActive(false);
-  };
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setDropActive(false);
-    const kind = event.dataTransfer.getData(PALETTE_DRAG_TYPE);
-    if (kind) {
-      vm.addLegFromPalette(kind as StrategyLegPaletteEntry["kind"]);
-    }
-  };
-
+function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
   return (
-    <Card data-testid="strategy-designer-canvas">
+    <Card data-testid="strategy-builder-backtest-proof">
       <CardHeader>
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <CardTitle className="text-base">{vm.canvasTitle}</CardTitle>
-            <CardDescription>Reorder legs by dragging; click to select and tune parameters.</CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => vm.addLegFromPalette("long-call")}
-            disabled={vm.addLongCallCommand.disabled}
-            disabledReason={vm.addLongCallCommand.disabledReason}
-            aria-label={vm.addLongCallCommand.ariaLabel}
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{vm.addLongCallCommand.label}</span>
-          </Button>
-        </div>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <PlayCircle className="h-4 w-4 text-primary" aria-hidden="true" />
+          Backtest proof
+        </CardTitle>
+        <CardDescription>{vm.backtest.proofSummary}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div
-          role="list"
-          aria-label="Strategy legs canvas"
-          data-drop-active={dropActive ? "true" : "false"}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={cn(
-            "min-h-[260px] space-y-2 rounded-md border-2 border-dashed border-border/70 bg-secondary/15 p-3 transition-colors",
-            dropActive && "border-primary/60 bg-primary/10"
-          )}
-        >
-          {vm.legs.length === 0 ? (
-            <div className="flex h-full min-h-[220px] items-center justify-center text-center text-sm text-muted-foreground">
-              {vm.emptyStateMessage}
-            </div>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-md border border-border/70 p-3">
+            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Dataset fingerprint</div>
+            <div className="mt-1 break-words font-mono text-xs text-foreground">{vm.backtest.datasetFingerprint}</div>
+          </div>
+          <div className="rounded-md border border-border/70 p-3">
+            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Execution mode</div>
+            <div className="mt-1 text-sm font-medium text-foreground">Backtest only</div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {vm.backtest.routeActions.map((action) => action.isBrowserNavigable ? (
+            <a
+              key={action.id}
+              href={action.href}
+              aria-label={action.ariaLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{action.method}</span>
+              <span>{action.label}</span>
+              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {action.interactionLabel}
+              </span>
+            </a>
           ) : (
-            vm.canvasLegs.map((leg) => (
-              <CanvasLeg
-                key={leg.id}
-                leg={leg}
-                onSelect={() => vm.selectLeg(leg.id)}
-                onRemove={() => vm.removeLeg(leg.id)}
-                onUpdate={(patch) => vm.updateLeg(leg.id, patch)}
-                onReorder={(sourceId) => vm.reorderLeg(sourceId, leg.id)}
-              />
-            ))
-          )}
+            <div
+              key={action.id}
+              role="group"
+              aria-label={action.ariaLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground"
+            >
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{action.method}</span>
+              <span>{action.label}</span>
+              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {action.interactionLabel}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="space-y-2" role="list" aria-label="Strategy Builder run trace">
+          {vm.trace.map((step) => (
+            <div
+              key={step.stepId}
+              role="listitem"
+              className={cn(
+                "rounded-md border border-border/70 px-3 py-2",
+                step.isSelectedCell && "border-primary/60 bg-primary/10"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <Badge variant={step.status === "blocked" ? "danger" : step.status === "warning" ? "warning" : "success"} dot>
+                  {step.status}
+                </Badge>
+                <span className="text-sm font-medium text-foreground">{step.label}</span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
   );
 }
 
-interface CanvasLegProps {
-  leg: StrategyCanvasLegViewModel;
-  onSelect: () => void;
-  onRemove: () => void;
-  onUpdate: (patch: Partial<Pick<StrategyLeg, "quantity" | "strike" | "premium" | "direction">>) => void;
-  onReorder: (sourceLegId: string) => void;
+function TransitionMap({ transitions }: { transitions: StrategyBuilderTransitionViewModel[] }) {
+  return (
+    <Card data-testid="strategy-builder-transition-map">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <GitBranch className="h-4 w-4 text-primary" aria-hidden="true" />
+          Transition map
+        </CardTitle>
+        <CardDescription>{transitions.length} transition{transitions.length === 1 ? "" : "s"}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {transitions.map((transition) => (
+          <div key={transition.transitionId} className="rounded-md border border-border/70 px-3 py-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={transition.status === "blocked" ? "danger" : transition.status === "warning" ? "warning" : "outline"} dot>
+                {transition.statusLabel}
+              </Badge>
+              <span className="break-words text-sm font-medium text-foreground">{transition.label}</span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{transition.detail}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
 }
 
-function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegProps) {
+function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
   return (
-    <div
-      role="listitem"
-      aria-label={leg.containerAriaLabel}
-      data-leg-id={leg.id}
-      data-selected={leg.isSelected ? "true" : "false"}
-      onClick={(event) => {
-        if (isInteractiveCanvasTarget(event.target)) return;
-        onSelect();
-      }}
-      onDragOver={(event) => {
-        if (event.dataTransfer.types.includes(LEG_DRAG_TYPE)) {
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-        }
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const sourceId = event.dataTransfer.getData(LEG_DRAG_TYPE);
-        if (sourceId && sourceId !== leg.id) {
-          onReorder(sourceId);
-        }
-      }}
-      className={cn(
-        "flex flex-col gap-2 rounded-md border border-border/70 bg-card px-3 py-2 transition-colors",
-        "focus-within:border-primary/60",
-        leg.isSelected && "border-primary/60 ring-1 ring-primary/40"
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className="cursor-grab text-muted-foreground"
-          draggable
-          onDragStart={(event) => {
-            event.dataTransfer.setData(LEG_DRAG_TYPE, leg.id);
-            event.dataTransfer.effectAllowed = "move";
-          }}
-          aria-hidden="true"
-        >
-          <GripVertical className="h-4 w-4" />
-        </span>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{leg.label}</span>
-            <Badge variant={leg.directionTone} dot>
-              {leg.direction}
-            </Badge>
-            <Badge variant="outline">{leg.instrument}</Badge>
+    <Card data-testid="strategy-designer-options-payoff-panel">
+      <CardHeader>
+        <CardTitle className="text-base">Options payoff template</CardTitle>
+        <CardDescription>{vm.payoff.caption}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" variant="outline" onClick={vm.loadSample} aria-label={vm.loadSampleCommand.ariaLabel}>
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{vm.loadSampleCommand.label}</span>
+          </Button>
+          <Button
+            type="button"
+            variant={vm.clearCanvasCommand.confirmationPending ? "secondary" : "outline"}
+            onClick={vm.clearCanvas}
+            disabled={vm.clearCanvasCommand.disabled}
+            disabledReason={vm.clearCanvasCommand.disabledReason}
+            aria-label={vm.clearCanvasCommand.ariaLabel}
+          >
+            {vm.clearCanvasCommand.label}
+          </Button>
+          <div className="ml-auto grid min-w-[11rem] gap-1">
+            <label
+              htmlFor={vm.spotPriceField.id}
+              className="text-xs uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              {vm.spotPriceField.label}
+            </label>
+            <Input
+              id={vm.spotPriceField.id}
+              type="number"
+              step={vm.spotPriceField.step}
+              min={vm.spotPriceField.min}
+              inputMode={vm.spotPriceField.inputMode}
+              value={vm.spotPriceField.value}
+              error={vm.spotPriceField.invalid}
+              onChange={(event) => vm.updateSpotPriceDraft(event.target.value)}
+              onBlur={(event) => vm.commitSpotPriceDraft(event.target.value)}
+              className="w-full"
+              aria-label={vm.spotPriceField.ariaLabel}
+              aria-describedby={vm.spotPriceField.describedBy}
+              aria-errormessage={vm.spotPriceField.feedbackMessage ? vm.spotPriceField.feedbackId : undefined}
+            />
+            <p id={vm.spotPriceField.helperId} className="text-xs normal-case leading-5 tracking-normal text-muted-foreground">
+              {vm.spotPriceField.helperText}
+            </p>
+            {vm.spotPriceField.feedbackMessage ? (
+              <p
+                id={vm.spotPriceField.feedbackId}
+                role="status"
+                className="text-xs normal-case leading-5 tracking-normal text-warning"
+              >
+                {vm.spotPriceField.feedbackMessage}
+              </p>
+            ) : null}
           </div>
         </div>
-        <Button
-          type="button"
-          variant={leg.isSelected ? "secondary" : "ghost"}
-          size="sm"
-          onClick={onSelect}
-          aria-pressed={leg.isSelected}
-          aria-label={leg.selectButtonAriaLabel}
-        >
-          {leg.selectButtonLabel}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={(event) => {
-            event.stopPropagation();
-            onRemove();
-          }}
-          aria-label={leg.removeButtonAriaLabel}
-        >
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
-        </Button>
-      </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <LegField
-          label="Direction"
-          control={
-            <Select
-              value={leg.direction}
-              onChange={(event) => onUpdate({ direction: event.target.value as "Long" | "Short" })}
-              aria-label={leg.directionAriaLabel}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <option value="Long">Long</option>
-              <option value="Short">Short</option>
-            </Select>
-          }
-        />
-        <LegField
-          label="Quantity"
-          control={
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              value={leg.quantity}
-              onChange={(event) =>
-                onUpdate({ quantity: Number.parseFloat(event.target.value) })
-              }
-              aria-label={leg.quantityAriaLabel}
-              onClick={(event) => event.stopPropagation()}
-            />
-          }
-        />
-        <LegField
-          label={leg.strikeFieldLabel}
-          control={
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              value={leg.strike}
-              onChange={(event) =>
-                onUpdate({ strike: Number.parseFloat(event.target.value) })
-              }
-              aria-label={leg.strikeAriaLabel}
-              onClick={(event) => event.stopPropagation()}
-            />
-          }
-        />
-        {leg.isOption ? (
-          <LegField
-            label="Premium"
-            control={
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                value={leg.premium}
-                onChange={(event) =>
-                  onUpdate({ premium: Number.parseFloat(event.target.value) })
-                }
-                aria-label={leg.premiumAriaLabel}
-                onClick={(event) => event.stopPropagation()}
-              />
-            }
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} />
+          <ParticipationCard participation={vm.participation} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PayoffCard({ payoff, legCount }: { payoff: PayoffChartViewModel; legCount: number }) {
+  return (
+    <div data-testid="strategy-designer-payoff">
+      {payoff.isEmpty ? (
+        <div className="flex h-[220px] items-center justify-center rounded-md border border-dashed border-border/70 text-sm text-muted-foreground">
+          Add a leg to render the payoff curve.
+        </div>
+      ) : (
+        <svg viewBox={`0 0 ${payoff.width} ${payoff.height}`} role="img" aria-label={payoff.ariaLabel} className="w-full max-w-full">
+          <rect
+            x={payoff.paddingLeft}
+            y={payoff.paddingTop}
+            width={payoff.width - payoff.paddingLeft - payoff.paddingRight}
+            height={payoff.height - payoff.paddingTop - payoff.paddingBottom}
+            fill="transparent"
+            stroke="hsl(var(--border))"
+            strokeOpacity={0.4}
           />
-        ) : (
-          <LegField label="Premium" control={<Input value="—" disabled aria-label={leg.premiumUnavailableAriaLabel} />} />
-        )}
-      </div>
+          {payoff.zeroLineY !== null && (
+            <line
+              x1={payoff.paddingLeft}
+              x2={payoff.width - payoff.paddingRight}
+              y1={payoff.zeroLineY}
+              y2={payoff.zeroLineY}
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray="4 4"
+              strokeOpacity={0.6}
+            />
+          )}
+          {payoff.spotLineX !== null && (
+            <line
+              x1={payoff.spotLineX}
+              x2={payoff.spotLineX}
+              y1={payoff.paddingTop}
+              y2={payoff.height - payoff.paddingBottom}
+              stroke="hsl(var(--primary))"
+              strokeDasharray="2 4"
+              strokeOpacity={0.6}
+            />
+          )}
+          <polyline
+            points={payoff.points.map((p) => `${p.x},${p.y}`).join(" ")}
+            fill="none"
+            stroke="hsl(var(--primary))"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            data-testid="strategy-designer-payoff-polyline"
+          />
+        </svg>
+      )}
+      <p className="mt-2 text-xs text-muted-foreground" data-testid="strategy-designer-payoff-legcount">
+        Sampled across {legCount} leg{legCount === 1 ? "" : "s"}.
+      </p>
     </div>
   );
 }
 
-function isInteractiveCanvasTarget(target: EventTarget): boolean {
-  if (!(target instanceof Element)) return false;
-  return target.closest("a,button,input,select,textarea,[role='button'],[role='link']") !== null;
-}
-
-function LegField({ label, control }: { label: string; control: React.ReactNode }) {
-  const id = useId();
+function ParticipationCard({ participation }: { participation: ParticipationViewModel }) {
   return (
-    <label htmlFor={id} className="flex flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-      {label}
-      <span className="block normal-case tracking-normal">
-        {control}
-      </span>
-    </label>
-  );
-}
-
-interface PayoffCardProps {
-  payoff: PayoffChartViewModel;
-  legCount: number;
-}
-
-function PayoffCard({ payoff, legCount }: PayoffCardProps) {
-  return (
-    <Card data-testid="strategy-designer-payoff">
-      <CardHeader>
-        <CardTitle className="text-base">Payoff at expiry</CardTitle>
-        <CardDescription>{payoff.caption}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {payoff.isEmpty ? (
-          <div className="flex h-[220px] items-center justify-center rounded-md border border-dashed border-border/70 text-sm text-muted-foreground">
-            Add a leg to render the payoff curve.
-          </div>
-        ) : (
-          <svg
-            viewBox={`0 0 ${payoff.width} ${payoff.height}`}
-            role="img"
-            aria-label={payoff.ariaLabel}
-            className="w-full max-w-full"
-          >
-            <rect
-              x={payoff.paddingLeft}
-              y={payoff.paddingTop}
-              width={payoff.width - payoff.paddingLeft - payoff.paddingRight}
-              height={payoff.height - payoff.paddingTop - payoff.paddingBottom}
-              fill="transparent"
-              stroke="hsl(var(--border))"
-              strokeOpacity={0.4}
-            />
-            {payoff.zeroLineY !== null && (
-              <line
-                x1={payoff.paddingLeft}
-                x2={payoff.width - payoff.paddingRight}
-                y1={payoff.zeroLineY}
-                y2={payoff.zeroLineY}
-                stroke="hsl(var(--muted-foreground))"
-                strokeDasharray="4 4"
-                strokeOpacity={0.6}
-              />
-            )}
-            {payoff.spotLineX !== null && (
-              <line
-                x1={payoff.spotLineX}
-                x2={payoff.spotLineX}
-                y1={payoff.paddingTop}
-                y2={payoff.height - payoff.paddingBottom}
-                stroke="hsl(var(--primary))"
-                strokeDasharray="2 4"
-                strokeOpacity={0.6}
-              />
-            )}
-            <polyline
-              points={payoff.points.map((p) => `${p.x},${p.y}`).join(" ")}
-              fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth={1.75}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              data-testid="strategy-designer-payoff-polyline"
-            />
-            <text
-              x={payoff.paddingLeft}
-              y={payoff.height - 8}
-              fontSize={10}
-              fill="hsl(var(--muted-foreground))"
-            >
-              {payoff.axisLabels.minPrice}
-            </text>
-            <text
-              x={payoff.width - payoff.paddingRight}
-              y={payoff.height - 8}
-              fontSize={10}
-              fill="hsl(var(--muted-foreground))"
-              textAnchor="end"
-            >
-              {payoff.axisLabels.maxPrice}
-            </text>
-            <text
-              x={payoff.paddingLeft - 6}
-              y={payoff.paddingTop + 10}
-              fontSize={10}
-              fill="hsl(var(--muted-foreground))"
-              textAnchor="end"
-            >
-              {payoff.axisLabels.maxPnl}
-            </text>
-            <text
-              x={payoff.paddingLeft - 6}
-              y={payoff.height - payoff.paddingBottom - 2}
-              fontSize={10}
-              fill="hsl(var(--muted-foreground))"
-              textAnchor="end"
-            >
-              {payoff.axisLabels.minPnl}
-            </text>
-          </svg>
-        )}
-        <p className="mt-2 text-xs text-muted-foreground" data-testid="strategy-designer-payoff-legcount">
-          Sampled across {legCount} leg{legCount === 1 ? "" : "s"} · spot reference {payoff.axisLabels.minPrice} → {payoff.axisLabels.maxPrice}
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface ParticipationCardProps {
-  participation: ParticipationViewModel;
-}
-
-function ParticipationCard({ participation }: ParticipationCardProps) {
-  return (
-    <Card data-testid="strategy-designer-participation">
-      <CardHeader>
-        <CardTitle className="text-base">Participation by leg</CardTitle>
-        <CardDescription>
-          {participation.isEmpty
-            ? "Add legs to see how each contributes to total notional exposure."
-            : `Total notional ${participation.totalNotionalLabel} · ${participation.netDirectionLabel}`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {participation.isEmpty ? (
-          <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-border/70 text-sm text-muted-foreground">
-            Awaiting first leg.
-          </div>
-        ) : (
-          <ul className="space-y-2" data-testid="strategy-designer-participation-list">
-            {participation.slices.map((slice) => (
-              <ParticipationRow key={slice.legId} slice={slice} />
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+    <div data-testid="strategy-designer-participation">
+      {participation.isEmpty ? (
+        <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-border/70 text-sm text-muted-foreground">
+          Awaiting first leg.
+        </div>
+      ) : (
+        <ul className="space-y-2" data-testid="strategy-designer-participation-list">
+          {participation.slices.map((slice) => (
+            <ParticipationRow key={slice.legId} slice={slice} />
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
 function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
-  const toneClass = slice.tone === "long" ? "bg-success" : "bg-warning";
   return (
     <li className="space-y-1">
       <div className="flex items-center justify-between gap-2 text-sm">
@@ -582,12 +680,9 @@ function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
         </div>
         <span className="font-mono text-xs text-muted-foreground">{slice.sharePercent}</span>
       </div>
-      <div
-        className="h-2 w-full overflow-hidden rounded-full bg-secondary/40"
-        role="presentation"
-      >
+      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/40" role="presentation">
         <div
-          className={cn("h-full rounded-full", toneClass)}
+          className={cn("h-full rounded-full", slice.tone === "long" ? "bg-success" : "bg-warning")}
           style={{ width: slice.barWidth }}
           data-testid={`participation-bar-${slice.legId}`}
         />

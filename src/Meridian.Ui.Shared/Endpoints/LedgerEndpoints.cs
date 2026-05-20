@@ -19,6 +19,11 @@ public static class LedgerEndpoints
             AccountingBasisKindDto? accountingBasis,
             HttpContext context) =>
         {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -36,6 +41,11 @@ public static class LedgerEndpoints
 
         app.MapGet(UiApiRoutes.LedgerBookById, async (Guid ledgerBookId, HttpContext context) =>
         {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -54,6 +64,11 @@ public static class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerBooks, async (CreateLedgerBookRequest request, HttpContext context) =>
         {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -73,6 +88,7 @@ public static class LedgerEndpoints
         .WithName("CreateLedgerBook")
         .Produces<LedgerBookDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -85,6 +101,11 @@ public static class LedgerEndpoints
             AccountingBasisKindDto? accountingBasis,
             HttpContext context) =>
         {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -110,6 +131,11 @@ public static class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerPeriods, async (CreateLedgerPeriodRequest request, HttpContext context) =>
         {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -129,6 +155,7 @@ public static class LedgerEndpoints
         .WithName("CreateLedgerPeriod")
         .Produces<LedgerPeriodDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -151,6 +178,7 @@ public static class LedgerEndpoints
 
             try
             {
+                var trustedRequest = request with { ClosedBy = actor };
                 var result = await service
                     .ClosePeriodAsync(
                         periodId,
@@ -170,6 +198,8 @@ public static class LedgerEndpoints
         .WithName("CloseLedgerPeriod")
         .Produces<LedgerPeriodCloseResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -180,6 +210,24 @@ public static class LedgerEndpoints
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static bool HasLedgerReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending);
+
+    private static bool HasLedgerMutationPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending);
+
+    private static bool HasLedgerClosePermission(HttpContext context)
+        => HasLedgerMutationPermission(context);
+
+    private static bool TryResolveActor(HttpContext context, out string actor)
+        => EndpointAuthorization.TryResolveActor(context, out actor);
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch

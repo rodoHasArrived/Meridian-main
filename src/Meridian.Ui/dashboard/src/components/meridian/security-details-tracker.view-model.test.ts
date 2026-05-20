@@ -120,6 +120,23 @@ describe("buildLotsTrackerViewModel", () => {
     const vm = buildVm();
 
     expect(vm.addCommand.disabled).toBe(false);
+    expect(vm.formLabel).toBe("Add purchase lot for AAPL");
+    expect(vm.draftStatus).toEqual({
+      id: "security-lots-aapl-draft-status",
+      role: "status",
+      tone: "success",
+      text: "Lot draft is ready to add."
+    });
+    expect(vm.draftFields.quantity).toMatchObject({
+      id: "security-lots-aapl-draft-quantity",
+      label: "Quantity",
+      type: "number",
+      step: "any",
+      placeholder: "100",
+      invalid: false,
+      errorText: null,
+      describedBy: "security-lots-aapl-draft-quantity-help"
+    });
     expect(vm.metrics.map((metric) => [metric.id, metric.value])).toEqual([
       ["quantity", "150"],
       ["average-cost", "185.68 USD"],
@@ -166,6 +183,51 @@ describe("buildLotsTrackerViewModel", () => {
       disabled: true,
       disabledReason: "Quantity must be a non-zero number."
     });
+    expect(vm.draftStatus).toMatchObject({
+      role: "status",
+      tone: "warning",
+      text: "Add lot unavailable: Quantity must be a non-zero number."
+    });
+    expect(vm.draftFields.quantity).toMatchObject({
+      invalid: true,
+      errorText: "Quantity must be a non-zero number.",
+      errorId: "security-lots-aapl-draft-quantity-error",
+      describedBy: "security-lots-aapl-draft-quantity-help security-lots-aapl-draft-quantity-error"
+    });
+    expect(vm.draftFields.price.invalid).toBe(false);
+  });
+
+  it("keeps all add-lot draft field labels, helpers, and validation ids in the view model", () => {
+    const vm = buildVm({
+      draft: {
+        tradeDate: "",
+        quantity: "",
+        price: "0",
+        fees: "abc",
+        note: ""
+      }
+    });
+
+    expect(Object.keys(vm.draftFields)).toEqual(["tradeDate", "quantity", "price", "fees", "note"]);
+    expect(vm.draftFields.tradeDate).toMatchObject({
+      id: "security-lots-aapl-draft-trade-date",
+      label: "Trade date",
+      helperText: "Required for lot chronology and selected-lot evidence.",
+      errorText: "Trade date is required."
+    });
+    expect(vm.draftFields.price).toMatchObject({
+      errorText: "Price must be greater than zero.",
+      describedBy: "security-lots-aapl-draft-price-help security-lots-aapl-draft-price-error"
+    });
+    expect(vm.draftFields.fees).toMatchObject({
+      errorText: "Fees must be a number.",
+      describedBy: "security-lots-aapl-draft-fees-help security-lots-aapl-draft-fees-error"
+    });
+    expect(vm.draftFields.note).toMatchObject({
+      invalid: false,
+      errorText: null,
+      describedBy: "security-lots-aapl-draft-note-help"
+    });
   });
 
   it("falls back to the first row and exposes an accessible empty state", () => {
@@ -177,6 +239,23 @@ describe("buildLotsTrackerViewModel", () => {
     expect(empty.rows).toEqual([]);
     expect(empty.selectedDetail).toBeNull();
     expect(empty.emptyText).toBe("No lots recorded yet. Add a lot above to start tracking cost basis.");
+  });
+
+  it("projects pending lot removal as a row-owned confirmation action", () => {
+    const vm = buildVm({ pendingRemoveLotId: "lot-aapl-2" });
+
+    expect(vm.rows[1]).toMatchObject({
+      lotId: "lot-aapl-2",
+      removeLabel: "Confirm remove",
+      removeAriaLabel: "Confirm remove AAPL lot from 2026-04-15. This deletes the local cost-basis lot.",
+      removeConfirmationPending: true
+    });
+    expect(vm.rows[1]?.ariaLabel).toContain("Remove confirmation pending.");
+    expect(vm.rows[0]).toMatchObject({
+      removeLabel: "Remove",
+      removeAriaLabel: "Remove AAPL lot from 2026-04-01",
+      removeConfirmationPending: false
+    });
   });
 });
 
@@ -241,6 +320,60 @@ describe("buildSecurityDetailsViewModel", () => {
       value: "Apple Inc.",
       displayValue: "Apple Inc.",
       isOverridden: true
+    });
+  });
+
+  it("projects sync status, hidden override copy, and field command disabled reasons", () => {
+    const vm = buildSecurityDetailsVm({
+      assetClass: "Equity",
+      overrides: {
+        issuer: "Apple Inc.",
+        couponRate: "5.25"
+      }
+    });
+    const loading = buildSecurityDetailsViewModel({
+      entry: securityEntry,
+      identity: securityIdentity,
+      tradingParameters: null,
+      overrides: {
+        issuer: "Apple Inc.",
+        couponRate: "5.25"
+      },
+      editingKey: "issuer",
+      serverStatus: "loading",
+      serverErrorText: "Timeout",
+      updatedBy: "ops",
+      updatedAt: "2026-05-19T09:00:00Z"
+    });
+    const issuer = loading.groups.flatMap((group) => group.fields).find((field) => field.key === "issuer");
+
+    expect(vm.hiddenOverridesLabel).toBe("1 hidden override");
+    expect(loading.syncStatus).toMatchObject({
+      label: "Loading from server",
+      className: "border-primary/35 bg-primary/10 text-primary"
+    });
+    expect(loading.serverError).toMatchObject({
+      text: "Timeout",
+      ariaLabel: "Security override sync warning: Timeout"
+    });
+    expect(loading.updatedLabel).toBe("last edit by ops @ 2026-05-19T09:00:00Z");
+    expect(issuer).toMatchObject({
+      isEditing: true,
+      editCommand: {
+        disabled: true,
+        disabledReason: "Security overrides are still loading from the server."
+      },
+      saveCommand: {
+        ariaLabel: "Save Issuer",
+        disabled: true,
+        disabledReason: "Security overrides are still loading from the server."
+      },
+      editor: {
+        id: "security-detail-sec-1-issuer-editor",
+        describedBy: "security-detail-sec-1-issuer-editor-help",
+        disabled: true,
+        helperText: "Enter a value to override the server field, or leave it blank to clear the override."
+      }
     });
   });
 });

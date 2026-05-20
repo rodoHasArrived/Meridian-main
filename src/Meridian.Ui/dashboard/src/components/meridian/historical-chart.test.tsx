@@ -243,8 +243,8 @@ describe("HistoricalChartCard", () => {
     await waitFor(() => expect(getBarsSpy).toHaveBeenCalled());
     expect(screen.queryByTestId("historical-chart-compare-legend")).toBeNull();
 
-    const input = screen.getByPlaceholderText(/Compare with/i);
-    await user.type(input, "msft");
+    const compareInput = screen.getByPlaceholderText(/Compare with/i);
+    await user.type(compareInput, "msft");
     await user.click(screen.getByTestId("historical-chart-compare-submit"));
 
     await waitFor(() =>
@@ -275,11 +275,31 @@ describe("HistoricalChartCard", () => {
     render(<HistoricalChartCard symbol="AAPL" />);
     await waitFor(() => expect(getBarsSpy).toHaveBeenCalled());
 
-    const input = screen.getByPlaceholderText(/Compare with/i);
-    await user.type(input, "AAPL");
+    const duplicateInput = screen.getByPlaceholderText(/Compare with/i);
+    await user.type(duplicateInput, "AAPL");
     await user.click(screen.getByTestId("historical-chart-compare-submit"));
 
-    const alert = await screen.findByTestId("historical-chart-compare-error");
+    const alert = await screen.findByTestId("historical-chart-compare-feedback");
     expect(alert).toHaveTextContent(/base symbol/i);
+    expect(alert).toHaveAttribute("role", "alert");
+    expect(duplicateInput).toHaveAttribute("aria-invalid", "true");
+    expect(duplicateInput).toHaveAttribute("aria-errormessage", "historical-chart-compare-feedback");
+    expect(duplicateInput).toHaveAttribute("aria-describedby", "historical-chart-compare-feedback");
+  });
+
+  it("links compare helper state to the input before validation errors", async () => {
+    render(<HistoricalChartCard symbol="AAPL" />);
+    await waitFor(() => expect(getBarsSpy).toHaveBeenCalled());
+
+    const helperInput = screen.getByPlaceholderText(/Compare with/i);
+    const feedback = screen.getByTestId("historical-chart-compare-feedback");
+
+    expect(helperInput).not.toHaveAttribute("aria-invalid");
+    expect(helperInput).not.toHaveAttribute("aria-errormessage");
+    expect(helperInput).toHaveAttribute("aria-describedby", "historical-chart-compare-feedback");
+    expect(feedback).not.toHaveAttribute("role");
+    expect(feedback).not.toHaveAttribute("aria-live");
+    expect(feedback).toHaveClass("sr-only");
+    expect(feedback).toHaveTextContent("0 of 3 comparison symbols active.");
   });
 });

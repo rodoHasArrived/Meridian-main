@@ -80,6 +80,18 @@ Security Master and schedule-heavy reference-data workflows must follow the refe
 - **Asset-class visibility:** Hide irrelevant asset-class fields visually, but preserve the underlying override and correction state so later classification fixes do not discard operator work.
 - **Safety and accessibility:** Live-like or destructive actions require explicit confirmation or disabled reasons until a real backing workflow exists. Every selection, empty, loading, failed, and recoverable state must be keyboard-accessible and surfaced through view-model-owned copy.
 
+The first production-aligned slice is the browser Security Master schedules module at
+`/workstation/accounting/security-master`: command deck, searchable master list, persistent
+selected-security detail frame, dense schedule table, selected event detail, controls, validation,
+notes, and audit evidence. Keep this implementation dashboard-local and fixture-backed until a
+shared schedule API is intentionally designed.
+
+Rollout should be workflow-led rather than cosmetic. Wave 1 is Security Master schedules in
+Accounting. Wave 2 can migrate Accounting reconciliation, Data reference coverage, and Portfolio
+ledger/position evidence screens where dense master-detail review already improves review speed.
+Wave 3 can reach Reporting, Strategy, and Trading only where schedule or evidence workflows exist.
+Do not restyle unrelated screens solely for visual uniformity.
+
 The reusable component contract lives in [`../ui/components.md`](../ui/components.md#security-master-master-detail-pattern). Product planning for this lane lives in [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
 
 ### Key Control: Unified Event Stream

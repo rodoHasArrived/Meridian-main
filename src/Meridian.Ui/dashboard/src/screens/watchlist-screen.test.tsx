@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { ApiError } from "@/lib/api-errors";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
@@ -191,15 +192,21 @@ describe("WatchlistScreen", () => {
   });
 
   it("surfaces an inline warning when the live-quote feed errors", async () => {
-    vi.mocked(api.getLiveQuotesSnapshot).mockRejectedValueOnce(new Error("collector offline"));
+    vi.mocked(api.getLiveQuotesSnapshot).mockRejectedValueOnce(new ApiError({
+      path: "/api/data/quotes-snapshot?symbols=MSFT,AAPL",
+      status: 503,
+      title: "Service unavailable",
+      detail: "collector offline"
+    }));
 
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     await waitForAsyncEffects();
 
-    await waitFor(() => {
-      expect(screen.getByRole("alert")).toHaveTextContent(/collector offline/i);
-    });
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/collector offline/i);
+    expect(within(alert).getByText("Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.")).toBeInTheDocument();
+    expect(within(alert).getByText("Service unavailable")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open provider setup from watchlist live-quotes/i })).toHaveAttribute(
       "href",
       "/settings#alpaca-provider-setup"
@@ -278,14 +285,36 @@ describe("WatchlistScreen", () => {
   });
 
   it("keeps starter pack symbols visible when quick-add fails", async () => {
-    vi.mocked(api.bulkAddSymbols).mockRejectedValueOnce(new Error("Provider offline"));
+    vi.mocked(api.bulkAddSymbols).mockRejectedValueOnce(new ApiError({
+      path: "/api/symbols/bulk",
+      status: 503,
+      title: "Provider offline",
+      detail: "Starter pack request could not reach the configured provider.",
+      validationIssues: [
+        {
+          field: "provider",
+          label: "provider",
+          messages: ["Reconnect provider credentials before retrying the starter pack."]
+        }
+      ]
+    }));
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Add Risk pulse starter pack: TLT, GLD, USO, VIXY/i }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Provider offline");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Starter pack request could not reach the configured provider.");
+    expect(within(alert).getByText("Endpoint returned 503 for /api/symbols/bulk.")).toBeInTheDocument();
+    expect(within(alert).getByText("Provider offline")).toBeInTheDocument();
+    expect(within(alert).getByText("provider: Reconnect provider credentials before retrying the starter pack.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Add symbol")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Add symbol")).toHaveAttribute("aria-errormessage", "add-symbol-feedback");
+    expect(screen.getByLabelText("Add symbol")).toHaveAttribute(
+      "aria-describedby",
+      "add-symbol-feedback add-symbol-help"
+    );
     expect(screen.getByRole("link", { name: /Open provider setup from watchlist starter-pack-exception/i })).toHaveAttribute(
       "href",
       "/settings#alpaca-provider-setup"
@@ -295,14 +324,32 @@ describe("WatchlistScreen", () => {
   });
 
   it("keeps the visible rows and reports remove failures", async () => {
-    vi.mocked(api.removeSymbol).mockRejectedValueOnce(new Error("Symbol remove failed"));
+    vi.mocked(api.removeSymbol).mockRejectedValueOnce(new ApiError({
+      path: "/api/symbols/MSFT",
+      status: 409,
+      title: "Watchlist removal blocked",
+      detail: "MSFT cannot be removed while reconciliation is still pending.",
+      validationIssues: [
+        {
+          field: "symbol",
+          label: "symbol",
+          messages: ["Resolve the pending reconciliation break before removing this symbol."]
+        }
+      ]
+    }));
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+    expect(api.removeSymbol).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Symbol remove failed");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("MSFT cannot be removed while reconciliation is still pending.");
+    expect(within(alert).getByText("Endpoint returned 409 for /api/symbols/MSFT.")).toBeInTheDocument();
+    expect(within(alert).getByText("Watchlist removal blocked")).toBeInTheDocument();
+    expect(within(alert).getByText("symbol: Resolve the pending reconciliation break before removing this symbol.")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();
     expect(api.getSymbols).toHaveBeenCalledTimes(1);
   });
@@ -314,10 +361,27 @@ describe("WatchlistScreen", () => {
 
     await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not remove MSFT.");
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();
     expect(api.getSymbols).toHaveBeenCalledTimes(1);
+  });
+
+  it("requires two clicks before removing a configured watchlist symbol", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+
+    expect(api.removeSymbol).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveAccessibleName(/Remove confirmation pending/i);
+
+    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
+
+    await waitFor(() => expect(api.removeSymbol).toHaveBeenCalledWith("MSFT"));
   });
 
   it("selects watchlist rows with the shared dense-table keyboard command", async () => {

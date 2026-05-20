@@ -212,6 +212,33 @@ export interface ExecutionControlSnapshot {
   asOf: string;
 }
 
+export interface RiskRuleStatus {
+  ruleName: string;
+  state: "Healthy" | "Observe" | "Constrained";
+  summary: string;
+  isBreached: boolean;
+  threshold: string;
+  currentValue: string;
+  asOf: string;
+  recentViolations: string[];
+}
+
+export interface RiskRuleConfig {
+  ruleName: string;
+  defaultMaxPositionSize: number | null;
+  symbolPositionLimits: Record<string, number> | null;
+  maxDrawdownPercent: number | null;
+  maxOrdersPerMinute: number | null;
+}
+
+export interface RiskRuleConfigUpdateRequest {
+  defaultMaxPositionSize?: number | null;
+  symbolPositionLimits?: Record<string, number | null> | null;
+  maxDrawdownPercent?: number | null;
+  maxOrdersPerMinute?: number | null;
+  reason?: string | null;
+}
+
 export type OperatorWorkItemKind =
   | "PaperReplay"
   | "PromotionReview"
@@ -316,6 +343,154 @@ export interface WorkflowPresetSaveRequest {
   actionId?: string | null;
   tags?: string[] | null;
   isPinned: boolean;
+}
+
+export type OperationsWorkflowStatus =
+  | "NotStarted"
+  | "CollectingBrokerData"
+  | "SecurityMasterValidation"
+  | "LedgerPostingDraft"
+  | "ReconciliationActive"
+  | "ApprovalPending"
+  | "ReadyForClose"
+  | "Closed"
+  | "Blocked";
+
+export type OperationsGateStatus = "NotStarted" | "InProgress" | "Passed" | "ReviewRequired" | "Blocked";
+export type OperationsGateKey = "BrokerIngest" | "SecurityMaster" | "LedgerPosting" | "Reconciliation" | "Approval";
+export type OperationsBrokerIntakeState = "Pending" | "Imported" | "Normalized" | "MatchedToInternalRun" | "Complete";
+export type OperationsSecurityMasterState = "Pending" | "ResolvedAllInstruments" | "OverridesRequested" | "OverridesApproved" | "Complete";
+export type OperationsLedgerPostingState = "Pending" | "Drafted" | "Validated" | "Posted" | "Complete";
+export type OperationsReconciliationState = "Pending" | "AutoMatched" | "ExceptionsOpen" | "InReview" | "Cleared" | "Complete";
+export type OperationsApprovalState = "Pending" | "Submitted" | "ReviewerAssigned" | "Approved" | "Rejected";
+
+export interface OperationsEvidenceLink {
+  evidenceId: string;
+  label: string;
+  route: string | null;
+  source: string | null;
+  capturedAtUtc: string | null;
+}
+
+export interface OperationsWorkflowBlocker {
+  code: string;
+  message: string;
+  gate: OperationsGateKey | null;
+  severity: string;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsNextAction {
+  code: string;
+  label: string;
+  route: string | null;
+  gate: OperationsGateKey | null;
+}
+
+export interface OperationsGate {
+  gateKey: OperationsGateKey;
+  displayName: string;
+  status: OperationsGateStatus;
+  isRequired: boolean;
+  description: string;
+  blockers: OperationsWorkflowBlocker[];
+  nextActions: OperationsNextAction[];
+  completedAtUtc: string | null;
+  completedBy: string | null;
+}
+
+export interface OperationsContinuityWorkflowSummary {
+  workflowId: string;
+  fundAccountId: string;
+  periodId: string;
+  securityMasterSnapshotId: string | null;
+  brokerSource: string;
+  status: OperationsWorkflowStatus;
+  version: number;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  gates: OperationsGate[];
+  nextActions: OperationsNextAction[];
+}
+
+export interface OperationsTimelineEntry {
+  auditId: string;
+  occurredAtUtc: string;
+  workflowId: string;
+  fundAccountId: string;
+  periodId: string;
+  eventType: string;
+  fromState: OperationsWorkflowStatus;
+  toState: OperationsWorkflowStatus;
+  gate: OperationsGateKey | null;
+  fromGateStatus: OperationsGateStatus | null;
+  toGateStatus: OperationsGateStatus | null;
+  actor: string;
+  rationale: string | null;
+  correlationId: string | null;
+  references: OperationsEvidenceLink[];
+  previousHash: string | null;
+  currentHash: string;
+}
+
+export interface OperationsBreakCase {
+  breakId: string;
+  checkId: string;
+  category: string;
+  severity: string;
+  status: string;
+  owner: string | null;
+  dueDate: string | null;
+  expectedSource: string | null;
+  actualSource: string | null;
+  expectedAmount: number | null;
+  actualAmount: number | null;
+  variance: number | null;
+  securityId: string | null;
+  symbol: string | null;
+  suggestedAction: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsApproval {
+  approvalId: string;
+  status: OperationsApprovalState;
+  operator: string | null;
+  reviewer: string | null;
+  rationale: string | null;
+  submittedAtUtc: string | null;
+  decidedAtUtc: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsLedgerPreview {
+  previewId: string;
+  status: string;
+  ledgerBatchId: string | null;
+  generatedAtUtc: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsReportPackReadiness {
+  isReady: boolean;
+  reportPackId: string | null;
+  blockingReason: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsContinuityWorkflow extends OperationsContinuityWorkflowSummary {
+  brokerIntakeState: OperationsBrokerIntakeState;
+  securityMasterState: OperationsSecurityMasterState;
+  ledgerPostingState: OperationsLedgerPostingState;
+  reconciliationState: OperationsReconciliationState;
+  approvalState: OperationsApprovalState;
+  timeline: OperationsTimelineEntry[];
+  breakCases: OperationsBreakCase[];
+  ledgerPreview: OperationsLedgerPreview | null;
+  approvals: OperationsApproval[];
+  reportPackReadiness: OperationsReportPackReadiness;
+  evidenceLinks: OperationsEvidenceLink[];
+  blockers: OperationsWorkflowBlocker[];
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
@@ -564,6 +739,66 @@ export interface AlpacaBrokerageConnectionRequest {
   keyId: string;
   secretKey: string;
   environment: "paper" | "live";
+}
+
+export type ProviderConnectionCapability = "Data" | "Brokerage" | "DataAndBrokerage";
+export type ProviderCredentialState = "NotRequired" | "Missing" | "Partial" | "Configured" | "Verified" | "Invalid";
+export type ProviderCredentialSource =
+  | "None"
+  | "LocalEncryptedStore"
+  | "Environment"
+  | "ExternalVaultReference"
+  | "NotRequired";
+export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
+export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
+
+export interface ProviderConnectionRow {
+  providerId: string;
+  displayName: string;
+  capability: ProviderConnectionCapability;
+  credentialState: ProviderCredentialState;
+  credentialSource: ProviderCredentialSource;
+  verificationState: ProviderVerificationState;
+  health: ProviderContinuityHealth;
+  fallbackActive: boolean;
+  lastVerifiedAt: string | null;
+  lastSuccessfulAt: string | null;
+  lastFailureAt: string | null;
+  lastError: string | null;
+  maskedKeyPreview: string | null;
+  environment: string | null;
+  externalAccountId: string | null;
+  affectedWorkflows: string[];
+  recommendedAction: string;
+  actionHref: string;
+}
+
+export interface ProviderCredentialUpsertRequest {
+  credentials: Record<string, string | null | undefined>;
+  environment?: string | null;
+  requestedBy?: string | null;
+}
+
+export interface ProviderCredentialMutationResult {
+  providerId: string;
+  credentialState: ProviderCredentialState;
+  credentialSource: ProviderCredentialSource;
+  verificationState: ProviderVerificationState;
+  health: ProviderContinuityHealth;
+  maskedKeyPreview: string | null;
+  environment: string | null;
+  warnings: string[];
+}
+
+export interface ProviderCredentialVerificationResult {
+  providerId: string;
+  success: boolean;
+  verificationState: ProviderVerificationState;
+  health: ProviderContinuityHealth;
+  lastVerifiedAt: string | null;
+  lastError: string | null;
+  externalAccountId: string | null;
+  warnings: string[];
 }
 
 export interface BrokerageHouseholdAccount {
@@ -1347,6 +1582,7 @@ export interface ProviderSetupRequest {
   apiSecret: string | null;
   endpoint: string | null;
   capabilities: string[];
+  environment?: string | null;
 }
 
 export interface ProviderSetupResult {
@@ -1355,6 +1591,109 @@ export interface ProviderSetupResult {
   providerName: string;
   message: string;
   error: string | null;
+  connectionId?: string | null;
+  bindingIds?: string[] | null;
+  credentialState?: ProviderCredentialState | null;
+  credentialSource?: ProviderCredentialSource | null;
+  credentialReference?: string | null;
+  environment?: string | null;
+  warnings?: string[] | null;
+}
+
+export interface ProviderRouteScope {
+  workspace?: string | null;
+  fundProfileId?: string | null;
+  entityId?: string | null;
+  sleeveId?: string | null;
+  vehicleId?: string | null;
+  accountId?: string | null;
+}
+
+export interface ProviderRoutingConnection {
+  connectionId: string;
+  providerFamilyId: string;
+  displayName: string;
+  connectionType: string;
+  connectionMode: string;
+  enabled: boolean;
+  credentialReference: string | null;
+  institutionId: string | null;
+  externalAccountId: string | null;
+  scope: ProviderRouteScope | null;
+  tags: string[];
+  description: string | null;
+  productionReady: boolean;
+}
+
+export interface ProviderRoutingBinding {
+  bindingId: string;
+  capability: string;
+  connectionId: string;
+  target: ProviderRouteScope | null;
+  priority: number;
+  enabled: boolean;
+  failoverConnectionIds: string[];
+  safetyModeOverride: string | null;
+  notes: string | null;
+}
+
+export interface ProviderRoutingTrustSnapshot {
+  connectionId: string;
+  providerFamilyId: string;
+  score: number;
+  isHealthy: boolean;
+  healthStatus: string;
+  isProductionReady: boolean;
+  isCertificationFresh: boolean;
+  signals: string[];
+  decision?: unknown;
+}
+
+export interface ProviderRoutePreviewRequest {
+  capability: string;
+  workspace?: string | null;
+  fundProfileId?: string | null;
+  entityId?: string | null;
+  sleeveId?: string | null;
+  vehicleId?: string | null;
+  accountId?: string | null;
+  securityId?: string | null;
+  symbol?: string | null;
+  market?: string | null;
+  assetClass?: string | null;
+  requireProductionReady?: boolean;
+}
+
+export interface ProviderRoutePreviewCandidate {
+  connectionId: string;
+  providerFamilyId: string;
+  isHealthy: boolean;
+  scopeRank: number;
+  priority: number;
+  reasonCodes: string[];
+  fallbackConnectionIds: string[];
+  policyGate: string | null;
+  compositeScore: number;
+  healthScore: number;
+  latencyScore: number;
+  dataQualityScore: number;
+  coverageScore: number;
+  policyGateScore: number;
+}
+
+export interface ProviderRoutePreviewResponse {
+  capability: string;
+  isRoutable: boolean;
+  selectedConnectionId: string | null;
+  selectedProviderFamilyId: string | null;
+  safetyMode: string;
+  requiresManualApproval: boolean;
+  reasonCodes: string[];
+  skippedCandidates: string[];
+  fallbackConnectionIds: string[];
+  policyGate: string | null;
+  candidates: ProviderRoutePreviewCandidate[];
+  rankedAlternatives?: ProviderRoutePreviewCandidate[] | null;
 }
 
 // --- Backfill mutation types ---
@@ -1660,8 +1999,6 @@ export interface HistoricalBarsResponse {
   bars: HistoricalBarPoint[];
 }
 
-// --- Quant Lab ---
-
 export type QuantPlotKind =
   | "Line"
   | "MultiLine"
@@ -1766,4 +2103,228 @@ export interface QuantTemplatesResponse {
 export interface QuantRunRequest {
   source: string;
   parameters: Record<string, string | number | boolean | null>;
+}
+
+// --- Strategy Designer ---
+
+export interface StrategyDesignDocument {
+  documentId: string;
+  name: string;
+  description: string;
+  version: string;
+  datasetReference: string;
+  universe: string[];
+  cells: StrategyDesignCell[];
+  transitions: StrategyDesignTransition[];
+  metadata?: Record<string, string> | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StrategyDesignCell {
+  cellId: string;
+  label: string;
+  kind: string;
+  purpose: string;
+  source: string;
+  fieldRefs: string[];
+  parameters?: Record<string, string> | null;
+  disabledReason?: string | null;
+}
+
+export interface StrategyDesignTransition {
+  transitionId: string;
+  fromCellId: string;
+  toCellId: string;
+  kind: string;
+  condition: string;
+  maxIterations?: number | null;
+  rationale?: string | null;
+}
+
+export interface StrategyDesignFieldCatalogItem {
+  fieldId: string;
+  label: string;
+  source: string;
+  dataSet: string;
+  typeName: string;
+  description: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  synonyms: string[];
+}
+
+export interface StrategyDesignTemplate {
+  templateId: string;
+  name: string;
+  description: string;
+  category: string;
+  sourcePrototype: string;
+  tags: string[];
+  document: StrategyDesignDocument;
+}
+
+export interface StrategyDesignValidationMessage {
+  code: string;
+  severity: string;
+  targetId: string;
+  message: string;
+}
+
+export interface StrategyDesignValidationResult {
+  isValid: boolean;
+  summary: string;
+  messages: StrategyDesignValidationMessage[];
+}
+
+export interface StrategyDesignDraftSummary {
+  documentId: string;
+  name: string;
+  version: string;
+  datasetReference: string;
+  cellCount: number;
+  transitionCount: number;
+  updatedAt: string;
+  validationSummary: string;
+}
+
+export interface StrategyDesignDraftSaveRequest {
+  document: StrategyDesignDocument;
+}
+
+export interface StrategyDesignDraftSaveResponse {
+  document: StrategyDesignDocument;
+  summary: StrategyDesignDraftSummary;
+  validation: StrategyDesignValidationResult;
+  trace: StrategyDesignRunTraceEntry[];
+}
+
+export interface StrategyDesignCompiledScript {
+  source: string;
+  datasetFingerprint: string;
+  fieldRefs: string[];
+  disabledFieldRefs: string[];
+}
+
+export interface StrategyDesignPreviewRow {
+  rowId: string;
+  cellId: string;
+  label: string;
+  purpose: string;
+  status: string;
+  fieldRefs: string[];
+  detail: string;
+}
+
+export interface StrategyDesignRunTraceEntry {
+  stepId: string;
+  label: string;
+  status: string;
+  detail: string;
+  cellId?: string | null;
+  occurredAt?: string | null;
+}
+
+export interface StrategyDesignPreviewResult {
+  validation: StrategyDesignValidationResult;
+  compiled: StrategyDesignCompiledScript;
+  rows: StrategyDesignPreviewRow[];
+  trace: StrategyDesignRunTraceEntry[];
+}
+
+export interface StrategyDesignRunBacktestRequest {
+  document: StrategyDesignDocument;
+  parameters?: Record<string, string> | null;
+}
+
+export interface StrategyDesignRunBacktestResponse {
+  success: boolean;
+  runId: string | null;
+  strategyId: string;
+  strategyName: string;
+  validation: StrategyDesignValidationResult;
+  compiled: StrategyDesignCompiledScript;
+  trace: StrategyDesignRunTraceEntry[];
+  previewRows: StrategyDesignPreviewRow[];
+  metrics: Record<string, string>;
+  runtimeError: string | null;
+  promotionCandidatePath: string | null;
+  reviewPacketPath: string | null;
+}
+
+// --- Quant Notebook ---
+
+export type CellKind = "code" | "markdown";
+export type CellExecutionState = "idle" | "running" | "done" | "error" | "stale";
+
+export interface CellExecutionContext {
+  symbol?: string;
+  from?: string;
+  to?: string;
+  interval?: DataFetchRequest["interval"];
+}
+
+export interface CellOutput {
+  kind: "console" | "metric" | "signal" | "error";
+  text: string;
+  tone?: "default" | "success" | "warning" | "danger";
+  timestamp?: string;
+}
+
+export interface NotebookCell {
+  id: string;
+  ordinal: number;
+  kind: CellKind;
+  source: string;
+  state: CellExecutionState;
+  statusText: string;
+  collapsed: boolean;
+  output: CellOutput[];
+}
+
+export interface CellSnippet {
+  id: string;
+  label: string;
+  description: string;
+  kind: CellKind;
+  source: string;
+}
+
+export interface CellExecuteRequest {
+  cellId: string;
+  source: string;
+  context: CellExecutionContext;
+}
+
+export interface CellExecuteResult {
+  cellId: string;
+  success: boolean;
+  output: CellOutput[];
+  elapsedMs: number;
+  errorMessage: string | null;
+}
+
+export interface PriceBar {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface DataFetchRequest {
+  symbol: string;
+  from: string;
+  to: string;
+  interval: "daily" | "hourly" | "minute";
+}
+
+export interface DataFetchResult {
+  symbol: string;
+  from: string;
+  to: string;
+  interval: DataFetchRequest["interval"];
+  bars: PriceBar[];
+  rowCount: number;
 }

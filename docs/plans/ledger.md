@@ -2,11 +2,19 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **ledger** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the ledger workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active execution roadmap; F# period management, PostgreSQL ledger persistence, ledger
-book/period APIs, period-close inbox routing, run-ledger drill-ins, and the first governed
-trial-balance report-pack artifact slice are complete. Accrual-to-ledger posting and
-ledger-specific reporting endpoints remain open.
+book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins, and
+the first governed trial-balance report-pack artifact slice are complete. Accrual-to-ledger posting
+and ledger-specific reporting endpoints remain open.
 
 ## Overview
 
@@ -83,8 +91,10 @@ null. The dashboard treats a missing or non-route-only ledger artifact ref as a 
 | `Migrations/V_ledger_001__journal_entries.sql` | `ledger.journal_entries` and `ledger.journal_legs` with aggregate, period, command, and correlation lineage |
 | `Migrations/V_ledger_002__accounting_periods.sql` | `ledger.accounting_periods` plus `period_close_events` audit history and optimistic versioning |
 | `Migrations/V_ledger_003__ledger_books.sql` | `ledger.ledger_books`, fund-structure scope, and book-scoped accounting periods |
+| `Migrations/V_ledger_006__journal_posting_kind.sql` | `posting_kind` columns for originating vs. adjustment journal writes |
 | `ILedgerJournalStore.cs` | Journal, period, close-event, and ledger-book persistence contract |
 | `PostgresLedgerJournalStore.cs` | Npgsql implementation using serializable transactions and optimistic period version guards |
+| `LedgerPeriodPostingGuard.cs` | Central posting-date and period-status guard for durable ledger writes |
 | `LedgerJournalStoreOptions.cs` | Connection string, schema name, and period-locking configuration |
 | `LedgerStoreExtensions.cs` | DI registration for `ILedgerJournalStore` and `ILedgerBookService` |
 | `PostgresLedgerBookService.cs` | Book creation/listing, period creation/listing, period-close summaries, and operator-inbox work-item propagation |
@@ -101,6 +111,12 @@ Journal entries and journal legs now preserve `accounting_basis`, `accounting_po
 `source_journal_entry_id`. Appends validate that a journal entry's basis matches the ledger book
 owning the target period. Parallel basis books are unique by fund profile, fund-structure node, and
 basis, enabling independent close/report workflows for the same fund node.
+
+Journal entries and journal legs also preserve `posting_kind`, currently `Originating` or
+`Adjustment`. The durable append path validates the journal timestamp against the selected period
+and applies period status controls before insert: open periods accept both posting kinds,
+soft-closed periods accept only adjustments, and hard-closed periods reject all postings. This keeps
+closed-period discipline centralized in the ledger store instead of relying on endpoint or UI code.
 
 `Meridian.Application.Ledger` contains the v1 accounting-policy service and basis projection
 adapter. It resolves active policies by basis, effective date, optional fund node, instrument, and
@@ -222,7 +238,7 @@ restarts and supports audit replay.
 - [x] `LedgerJournalStoreOptions` — connection string, schema name, enable-period-locking flag
 - [x] `LedgerStoreExtensions` — `AddLedgerJournalStore(string connStr)` DI helper
 - [x] Store and migration tests — options defaults, DI registration, unbalanced-entry rejection,
-  and migration shape checks
+  period posting-kind guards, and migration shape checks
 
 Validation evidence: `tests/Meridian.Tests/Storage/LedgerJournalStoreTests.cs`.
 

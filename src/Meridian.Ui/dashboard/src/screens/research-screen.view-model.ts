@@ -32,6 +32,8 @@ export const RESEARCH_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-d
 export const RESEARCH_COMPARISON_DETAIL_PANEL_ID = "strategy-run-comparison-selected-detail";
 export const RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
 export const RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID = "plottool-selected-study-detail";
+export const RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID = "strategy-run-diff-selected-position-detail";
+export const RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID = "strategy-run-diff-selected-parameter-detail";
 
 export interface ResearchRunLibraryState {
   loadingState: ResearchLoadingState;
@@ -161,10 +163,22 @@ export interface ResearchPromotionSessionState {
 
 export interface ResearchPromotionCashFormState {
   inputId: string;
+  inputHelpId: string;
   label: string;
   value: string;
   min: number;
   step: number;
+  inputDisabled: boolean;
+  inputDisabledReason: string | null;
+  inputDisabledReasonId: string | null;
+  inputDescribedBy: string;
+  acknowledgementId: string;
+  acknowledgementLabel: string;
+  acknowledgementChecked: boolean;
+  acknowledgementDisabled: boolean;
+  acknowledgementDisabledReason: string | null;
+  acknowledgementDisabledReasonId: string | null;
+  acknowledgementDescribedBy: string | undefined;
   helpText: string;
   errorText: string | null;
   describedBy: string;
@@ -172,6 +186,10 @@ export interface ResearchPromotionCashFormState {
   disabledReason: string | null;
   submitLabel: string;
   submitAriaLabel: string;
+  cancelLabel: string;
+  cancelAriaLabel: string;
+  cancelDisabled: boolean;
+  cancelDisabledReason: string | null;
 }
 
 export interface ResearchPlotToolTab {
@@ -298,11 +316,18 @@ export interface ResearchDiffChangeRow {
   key: string;
   symbolText: string;
   changeTypeText: string;
+  baseQuantityText: string;
+  targetQuantityText: string;
   quantityText: string;
+  basePnlText: string;
+  targetPnlText: string;
   pnlText: string;
   text: string;
   badgeVariant: ResearchDiffBadgeVariant;
   ariaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  detailExpanded: boolean;
 }
 
 export interface ResearchParameterChangeRow {
@@ -311,6 +336,22 @@ export interface ResearchParameterChangeRow {
   targetValueText: string;
   valueText: string;
   ariaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  detailExpanded: boolean;
+}
+
+export interface ResearchDiffDetailState {
+  id: string;
+  panelId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ResearchDiffBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
 }
 
 export interface ResearchDiffMetricRow {
@@ -329,6 +370,14 @@ export interface ResearchDiffPanelState {
   metrics: ResearchDiffMetricRow[];
   positionChanges: ResearchDiffChangeRow[];
   parameterChanges: ResearchParameterChangeRow[];
+  positionTable: ResearchResultTableState<ResearchDiffChangeRow>;
+  parameterTable: ResearchResultTableState<ResearchParameterChangeRow>;
+  selectedPositionKey: string | null;
+  selectedParameterKey: string | null;
+  selectedPositionDetailPanelId: string;
+  selectedParameterDetailPanelId: string;
+  selectedPositionDetail: ResearchDiffDetailState | null;
+  selectedParameterDetail: ResearchDiffDetailState | null;
   positionSectionLabel: string;
   parameterSectionLabel: string;
   positionListLabel: string;
@@ -416,6 +465,11 @@ export interface ResearchPlotWorkspaceState {
   statusBadgeLabel: string;
   statusBadgeVariant: ResearchComparisonBadgeVariant;
   expression: string;
+  notebookToolbarAriaLabel: string;
+  notebookToolbarItems: ResearchToolbarItem[];
+  studyTableEmptyText: string;
+  studyTableCaption: string;
+  selectedStudyEmptyText: string;
   toolbarPills: string[];
   metaItems: string[];
   xAxisLabel: string;
@@ -432,6 +486,13 @@ export interface ResearchPlotWorkspaceState {
   consoleBody: string;
   overlayTitle: string;
   overlayItems: string[];
+}
+
+export interface ResearchToolbarItem {
+  id: string;
+  label: string;
+  value?: string;
+  active?: boolean;
 }
 
 export interface ResearchPlotStatisticsState {
@@ -622,6 +683,8 @@ export function useResearchRunLibraryViewModel(
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
   const [selectedComparisonRowId, setSelectedComparisonRowId] = useState<string | null>(null);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
+  const [selectedDiffPositionKey, setSelectedDiffPositionKey] = useState<string | null>(null);
+  const [selectedDiffParameterKey, setSelectedDiffParameterKey] = useState<string | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [selectedPromotionHistoryId, setSelectedPromotionHistoryId] = useState<string | null>(null);
   const [comparisonLoaded, setComparisonLoaded] = useState(false);
@@ -636,8 +699,10 @@ export function useResearchRunLibraryViewModel(
   const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
   const [promoteError, setPromoteError] = useState<string | null>(null);
   const [promotionInitialCashInput, setPromotionInitialCashInput] = useState("100000");
+  const [promotionAcknowledged, setPromotionAcknowledged] = useState(false);
   const runScopedCommandRequestId = useRef(0);
   const promotionRequestId = useRef(0);
+  const promotionCreateInFlightRef = useRef(false);
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -653,6 +718,8 @@ export function useResearchRunLibraryViewModel(
       comparison,
       selectedComparisonRowId,
       runDiff,
+      selectedDiffPositionKey,
+      selectedDiffParameterKey,
       promotionHistory,
       selectedPromotionHistoryId,
       comparisonLoaded,
@@ -666,7 +733,8 @@ export function useResearchRunLibraryViewModel(
       promotionEval,
       promotionSession,
       promoteError,
-      promotionInitialCashInput
+      promotionInitialCashInput,
+      promotionAcknowledged
     }),
     [
       actionError,
@@ -678,6 +746,8 @@ export function useResearchRunLibraryViewModel(
       selectedPromotionHistoryId,
       promotionHistoryLoaded,
       runDiff,
+      selectedDiffPositionKey,
+      selectedDiffParameterKey,
       runDiffLoaded,
       metrics,
       data?.plotTool,
@@ -691,18 +761,22 @@ export function useResearchRunLibraryViewModel(
       promotionEval,
       promotionSession,
       promoteError,
-      promotionInitialCashInput
+      promotionInitialCashInput,
+      promotionAcknowledged
     ]
   );
 
   const toggleRun = useCallback((runId: string) => {
     runScopedCommandRequestId.current += 1;
     promotionRequestId.current += 1;
+    promotionCreateInFlightRef.current = false;
     setInspectedRunId(runId);
     setSelectedIds((current) => toggleRunSelection(current, runId));
     setComparison([]);
     setSelectedComparisonRowId(null);
     setRunDiff(null);
+    setSelectedDiffPositionKey(null);
+    setSelectedDiffParameterKey(null);
     setComparisonLoaded(false);
     setRunDiffLoaded(false);
     setPromoteState("idle");
@@ -710,6 +784,7 @@ export function useResearchRunLibraryViewModel(
     setPromotionSession(null);
     setPromoteError(null);
     setPromotionInitialCashInput("100000");
+    setPromotionAcknowledged(false);
     setActionError(null);
     setActiveCommand((current) => current === "history" ? current : null);
   }, []);
@@ -745,11 +820,11 @@ export function useResearchRunLibraryViewModel(
   const selectPlotToolViewForKey = useCallback((key: string) => {
     const nextView = nextPlotToolViewForKey(activePlotToolView, key);
     if (!nextView) {
-      return false;
+      return null;
     }
 
     setActivePlotToolView(nextView);
-    return true;
+    return plotToolTabIdForView(nextView);
   }, [activePlotToolView]);
 
   const loadPromotionHistory = useCallback(async () => {
@@ -791,6 +866,8 @@ export function useResearchRunLibraryViewModel(
       setComparison(rows);
       setSelectedComparisonRowId(rows[0]?.runId ?? null);
       setRunDiff(null);
+      setSelectedDiffPositionKey(null);
+      setSelectedDiffParameterKey(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
     } catch (err) {
@@ -827,6 +904,8 @@ export function useResearchRunLibraryViewModel(
       setRunDiff(result);
       setComparison([]);
       setSelectedComparisonRowId(null);
+      setSelectedDiffPositionKey(null);
+      setSelectedDiffParameterKey(null);
       setRunDiffLoaded(true);
       setComparisonLoaded(false);
     } catch (err) {
@@ -847,11 +926,13 @@ export function useResearchRunLibraryViewModel(
     if (!run) return;
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
+    promotionCreateInFlightRef.current = false;
     setPromoteState("evaluating");
     setPromoteError(null);
     setPromotionEval(null);
     setPromotionSession(null);
     setPromotionInitialCashInput("100000");
+    setPromotionAcknowledged(false);
     try {
       const result = await services.evaluatePromotion(run.id);
       if (promotionRequestId.current !== requestId) {
@@ -871,6 +952,10 @@ export function useResearchRunLibraryViewModel(
   }, [services, state.selectedRuns]);
 
   const confirmPromotion = useCallback(async () => {
+    if (promotionCreateInFlightRef.current || promoteState === "creating") {
+      return;
+    }
+
     const run = state.selectedRuns[0];
     if (!run || !promotionEval?.isEligible) return;
     const initialCash = parsePromotionInitialCashInput(promotionInitialCashInput);
@@ -878,9 +963,14 @@ export function useResearchRunLibraryViewModel(
       setPromoteError("Enter initial cash of at least $1,000 before starting a paper session.");
       return;
     }
+    if (!promotionAcknowledged) {
+      setPromoteError("Acknowledge the evaluated gates and paper-capital impact before starting a paper session.");
+      return;
+    }
 
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
+    promotionCreateInFlightRef.current = true;
     setPromoteState("creating");
     setPromoteError(null);
     try {
@@ -898,16 +988,43 @@ export function useResearchRunLibraryViewModel(
 
       setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
       setPromoteState("evaluated");
+    } finally {
+      if (promotionRequestId.current === requestId) {
+        promotionCreateInFlightRef.current = false;
+      }
     }
-  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput]);
+  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput, promotionAcknowledged, promoteState]);
 
   const cancelPromotion = useCallback(() => {
+    if (promotionCreateInFlightRef.current || promoteState === "creating") {
+      return;
+    }
+
     promotionRequestId.current += 1;
+    promotionCreateInFlightRef.current = false;
     setPromoteState("idle");
     setPromotionEval(null);
     setPromotionSession(null);
     setPromoteError(null);
     setPromotionInitialCashInput("100000");
+    setPromotionAcknowledged(false);
+  }, [promoteState]);
+
+  const updatePromotionInitialCash = useCallback((value: string) => {
+    if (promotionCreateInFlightRef.current) {
+      return;
+    }
+
+    setPromotionInitialCashInput(value);
+    setPromotionAcknowledged(false);
+  }, []);
+
+  const updatePromotionAcknowledgement = useCallback((checked: boolean) => {
+    if (promotionCreateInFlightRef.current) {
+      return;
+    }
+
+    setPromotionAcknowledged(checked);
   }, []);
 
   return {
@@ -928,8 +1045,11 @@ export function useResearchRunLibraryViewModel(
     openRunDetailById,
     selectComparisonRow: setSelectedComparisonRowId,
     selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
+    selectDiffPositionChange: setSelectedDiffPositionKey,
+    selectDiffParameterChange: setSelectedDiffParameterKey,
     selectPlotStudy: setSelectedPlotStudyId,
-    setPromotionInitialCash: setPromotionInitialCashInput
+    setPromotionInitialCash: updatePromotionInitialCash,
+    setPromotionAcknowledgement: updatePromotionAcknowledgement
   };
 }
 
@@ -943,6 +1063,8 @@ export function buildResearchRunLibraryState({
   comparison,
   selectedComparisonRowId = null,
   runDiff,
+  selectedDiffPositionKey = null,
+  selectedDiffParameterKey = null,
   promotionHistory,
   selectedPromotionHistoryId = null,
   comparisonLoaded = false,
@@ -956,7 +1078,8 @@ export function buildResearchRunLibraryState({
   promotionEval = null,
   promotionSession = null,
   promoteError = null,
-  promotionInitialCashInput = "100000"
+  promotionInitialCashInput = "100000",
+  promotionAcknowledged = false
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
@@ -967,6 +1090,8 @@ export function buildResearchRunLibraryState({
   comparison: RunComparisonRow[];
   selectedComparisonRowId?: string | null;
   runDiff: RunDiff | null;
+  selectedDiffPositionKey?: string | null;
+  selectedDiffParameterKey?: string | null;
   promotionHistory: PromotionRecord[];
   selectedPromotionHistoryId?: string | null;
   comparisonLoaded?: boolean;
@@ -981,6 +1106,7 @@ export function buildResearchRunLibraryState({
   promotionSession?: PaperSessionSummary | null;
   promoteError?: string | null;
   promotionInitialCashInput?: string;
+  promotionAcknowledged?: boolean;
 }): ResearchRunLibraryState {
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
@@ -998,7 +1124,8 @@ export function buildResearchRunLibraryState({
   const promotionCashForm = buildPromotionCashForm({
     input: promotionInitialCashInput,
     eligible: promotionEval?.isEligible === true,
-    promoteState
+    promoteState,
+    acknowledged: promotionAcknowledged
   });
   const promotionPanel = buildPromotionPanelState({
     promoteState,
@@ -1015,7 +1142,10 @@ export function buildResearchRunLibraryState({
   const selectedComparisonRow = resolvedComparisonRowId
     ? comparisonTable.rows.find((row) => row.runId === resolvedComparisonRowId) ?? null
     : null;
-  const diffPanel = buildDiffPanel(runDiff);
+  const diffPanel = buildDiffPanel(runDiff, {
+    selectedPositionKey: selectedDiffPositionKey,
+    selectedParameterKey: selectedDiffParameterKey
+  });
   const resolvedPromotionHistoryId = resolveSelectedPromotionHistoryId(promotionHistory, selectedPromotionHistoryId);
   const selectedPromotionHistory = resolvedPromotionHistoryId
     ? promotionHistory.find((record) => record.promotionId === resolvedPromotionHistoryId) ?? null
@@ -1034,6 +1164,14 @@ export function buildResearchRunLibraryState({
   const resolvedPlotStudyId = resolveSelectedPlotStudyId(basePlotTool.studies, selectedPlotStudyId);
   const plotTool: ResearchPlotToolState = {
     ...basePlotTool,
+    workspace: {
+      ...basePlotTool.workspace,
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: buildPlotNotebookToolbarItems(basePlotTool.studies, resolvedPlotStudyId),
+      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
+      selectedStudyEmptyText: "No PlotTool study is selected."
+    },
     studies: buildPlotStudyRows(basePlotTool.studies, resolvedPlotStudyId)
   };
   const selectedPlotStudy = resolvedPlotStudyId
@@ -1168,7 +1306,7 @@ export function buildPromotionPanelState({
     statusLive: evaluation?.titleTone === "danger" ? "assertive" : "polite",
     evaluation,
     sessionCreated,
-    showCashForm: promoteState === "evaluated" && promotionEval?.isEligible === true,
+    showCashForm: (promoteState === "evaluated" || promoteState === "creating") && promotionEval?.isEligible === true,
     showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
   };
 }
@@ -1310,11 +1448,13 @@ export function buildPromotionEvaluationState(
 export function buildPromotionCashForm({
   input,
   eligible,
-  promoteState
+  promoteState,
+  acknowledged = false
 }: {
   input: string;
   eligible: boolean;
   promoteState: PromoteState;
+  acknowledged?: boolean;
 }): ResearchPromotionCashFormState {
   const normalizedInput = input.trim();
   const parsed = parsePromotionInitialCashInput(input);
@@ -1327,23 +1467,54 @@ export function buildPromotionCashForm({
     eligible,
     promoteState,
     parsed,
-    normalizedInput
+    normalizedInput,
+    acknowledged
   });
   const helpText = errorText ?? disabledReason ?? "Minimum $1,000. Use whole-dollar paper capital.";
+  const inputDisabledReason = isCreating ? "Paper-session creation is already running; wait before changing capital." : null;
+  const acknowledgementDisabledReason = isCreating
+    ? "Paper-session creation is already running; wait before changing acknowledgement."
+    : null;
+  const cancelDisabledReason = isCreating
+    ? "Paper-session creation is already running; wait for the session result before closing setup."
+    : null;
+  const inputHelpId = "promote-initial-cash-help";
+  const inputDisabledReasonId = inputDisabledReason ? "promote-initial-cash-disabled-reason" : null;
+  const acknowledgementDisabledReasonId = acknowledgementDisabledReason
+    ? "promote-paper-session-acknowledgement-disabled-reason"
+    : null;
 
   return {
     inputId: "promote-initial-cash",
+    inputHelpId,
     label: "Initial cash ($)",
     value: input,
     min: 1000,
     step: 1000,
+    inputDisabled: isCreating,
+    inputDisabledReason,
+    inputDisabledReasonId,
+    inputDescribedBy: [inputHelpId, inputDisabledReasonId].filter(Boolean).join(" "),
+    acknowledgementId: "promote-paper-session-acknowledgement",
+    acknowledgementLabel: "I reviewed the promotion gates and paper-capital impact.",
+    acknowledgementChecked: acknowledged,
+    acknowledgementDisabled: isCreating,
+    acknowledgementDisabledReason,
+    acknowledgementDisabledReasonId,
+    acknowledgementDescribedBy: acknowledgementDisabledReasonId ?? undefined,
     helpText,
     errorText,
-    describedBy: "promote-initial-cash-help",
-    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && !isCreating,
+    describedBy: inputHelpId,
+    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && acknowledged && !isCreating,
     disabledReason,
     submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
-    submitAriaLabel: "Start paper session from selected strategy run"
+    submitAriaLabel: disabledReason
+      ? `Start paper session unavailable: ${disabledReason}`
+      : "Start paper session from selected strategy run",
+    cancelLabel: "Cancel",
+    cancelAriaLabel: cancelDisabledReason ?? "Cancel paper promotion setup",
+    cancelDisabled: isCreating,
+    cancelDisabledReason
   };
 }
 
@@ -1351,12 +1522,14 @@ function buildPromotionCashFormDisabledReason({
   eligible,
   promoteState,
   parsed,
-  normalizedInput
+  normalizedInput,
+  acknowledged
 }: {
   eligible: boolean;
   promoteState: PromoteState;
   parsed: number | null;
   normalizedInput: string;
+  acknowledged: boolean;
 }): string | null {
   if (promoteState === "creating") {
     return "Paper-session creation is already running.";
@@ -1376,6 +1549,10 @@ function buildPromotionCashFormDisabledReason({
 
   if (parsed === null) {
     return "Enter at least $1,000 in whole-dollar paper capital.";
+  }
+
+  if (!acknowledged) {
+    return "Acknowledge the evaluated gates and paper-capital impact before starting a paper session.";
   }
 
   return null;
@@ -1422,6 +1599,10 @@ export function buildPlotToolTabs(activeView: ResearchPlotToolView): ResearchPlo
       ariaLabel: tab.label
     };
   });
+}
+
+export function plotToolTabIdForView(view: ResearchPlotToolView): string {
+  return `plottool-${view}-tab`;
 }
 
 export function nextPlotToolViewForKey(
@@ -1573,23 +1754,24 @@ export function buildPlotToolState({
     { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
   ];
   const sampleRows = plotToolSampleRows;
+  const studyRows: ResearchPlotStudyItem[] = runs.map((run, index) => ({
+    id: run.id,
+    title: formatText(run.strategyName),
+    subtitle: `${formatText(run.dataset)} · ${formatText(run.window)} · ${formatText(run.engine)}`,
+    statusText: formatText(run.status),
+    statusBadgeLabel: formatText(run.mode).toUpperCase(),
+    statusBadgeVariant: badgeVariantForMode(run.mode),
+    metricText: `${formatText(run.pnl)} · Sharpe ${formatText(run.sharpe)}`,
+    noteText: formatOptionalNotes(run.notes),
+    isActive: activeRun ? run.id === activeRun.id : index === 0,
+    detailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
+    detailExpanded: false,
+    ariaLabel: `${formatText(run.strategyName)} PlotTool study. ${formatText(run.status)} ${formatText(run.mode)}. ${formatText(run.pnl)} and Sharpe ${formatText(run.sharpe)}.`,
+    rowSelectAriaLabel: `Inspect ${formatText(run.strategyName)} PlotTool study detail`
+  }));
 
   return {
-    studies: runs.map((run, index) => ({
-      id: run.id,
-      title: formatText(run.strategyName),
-      subtitle: `${formatText(run.dataset)} · ${formatText(run.window)} · ${formatText(run.engine)}`,
-      statusText: formatText(run.status),
-      statusBadgeLabel: formatText(run.mode).toUpperCase(),
-      statusBadgeVariant: badgeVariantForMode(run.mode),
-      metricText: `${formatText(run.pnl)} · Sharpe ${formatText(run.sharpe)}`,
-      noteText: formatOptionalNotes(run.notes),
-      isActive: activeRun ? run.id === activeRun.id : index === 0,
-      detailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
-      detailExpanded: false,
-      ariaLabel: `${formatText(run.strategyName)} PlotTool study. ${formatText(run.status)} ${formatText(run.mode)}. ${formatText(run.pnl)} and Sharpe ${formatText(run.sharpe)}.`,
-      rowSelectAriaLabel: `Inspect ${formatText(run.strategyName)} PlotTool study detail`
-    })),
+    studies: studyRows,
     workspace: {
       eyebrow: "Strategy Lane · PlotTool",
       title: `${chartStudyLabel} workstation`,
@@ -1603,6 +1785,11 @@ export function buildPlotToolState({
         companionName ? "Pair overlay" : "Single study",
         runDiff ? "Diff linked" : "0d lag"
       ],
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: buildPlotNotebookToolbarItems(studyRows, activeRun?.id ?? runs[0]?.id ?? null),
+      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
+      selectedStudyEmptyText: "No PlotTool study is selected.",
       metaItems: [
         datasetName,
         `${observationCount.toLocaleString()} obs`,
@@ -1818,6 +2005,21 @@ export function buildPlotStudyDetail(study: ResearchPlotStudyItem): ResearchPlot
   };
 }
 
+export function buildPlotNotebookToolbarItems(
+  studies: ResearchPlotStudyItem[],
+  selectedStudyId: string | null = resolveSelectedPlotStudyId(studies, null)
+): ResearchToolbarItem[] {
+  const selectedStudy = selectedStudyId
+    ? studies.find((study) => study.id === selectedStudyId) ?? null
+    : null;
+
+  return [
+    { id: "count", label: "Notebook set", value: `${studies.length} retained` },
+    { id: "selected", label: "Selected", value: selectedStudy ? formatText(selectedStudy.title) : "None", active: selectedStudy !== null },
+    { id: "lane", label: "Lane", value: "Strategy" }
+  ];
+}
+
 function resolveSelectedPlotStudyId(
   studies: ResearchPlotStudyItem[],
   selectedStudyId: string | null
@@ -1937,7 +2139,13 @@ export function buildComparisonDetail(
   };
 }
 
-export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState {
+export function buildDiffPanel(
+  runDiff: RunDiff | null,
+  options: {
+    selectedPositionKey?: string | null;
+    selectedParameterKey?: string | null;
+  } = {}
+): ResearchDiffPanelState {
   if (!runDiff) {
     return {
       title: "Position & parameter diff",
@@ -1947,6 +2155,24 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
       metrics: [],
       positionChanges: [],
       parameterChanges: [],
+      positionTable: {
+        rows: [],
+        hasRows: false,
+        caption: "Position changes returned by the Strategy diff command.",
+        emptyText: "No position diff result is available."
+      },
+      parameterTable: {
+        rows: [],
+        hasRows: false,
+        caption: "Parameter changes returned by the Strategy diff command.",
+        emptyText: "No parameter diff result is available."
+      },
+      selectedPositionKey: null,
+      selectedParameterKey: null,
+      selectedPositionDetailPanelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+      selectedParameterDetailPanelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+      selectedPositionDetail: null,
+      selectedParameterDetail: null,
       positionSectionLabel: "Position changes",
       parameterSectionLabel: "Parameter changes",
       positionListLabel: "No position diff rows",
@@ -1962,8 +2188,24 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
     ...runDiff.addedPositions,
     ...runDiff.removedPositions,
     ...runDiff.modifiedPositions
-  ].map(buildPositionDiffRow);
-  const parameterChanges = runDiff.parameterChanges.map(buildParameterDiffRow);
+  ].map((item) => buildPositionDiffRow(item, options.selectedPositionKey));
+  const parameterChanges = runDiff.parameterChanges.map((item) => buildParameterDiffRow(item, options.selectedParameterKey));
+  const selectedPositionKey = resolveSelectedDiffKey(positionChanges, options.selectedPositionKey);
+  const selectedParameterKey = resolveSelectedDiffKey(parameterChanges, options.selectedParameterKey);
+  const selectedPositionRows = positionChanges.map((row) => ({
+    ...row,
+    detailExpanded: row.key === selectedPositionKey
+  }));
+  const selectedParameterRows = parameterChanges.map((row) => ({
+    ...row,
+    detailExpanded: row.key === selectedParameterKey
+  }));
+  const selectedPosition = selectedPositionKey
+    ? selectedPositionRows.find((row) => row.key === selectedPositionKey) ?? null
+    : null;
+  const selectedParameter = selectedParameterKey
+    ? selectedParameterRows.find((row) => row.key === selectedParameterKey) ?? null
+    : null;
 
   return {
     title: "Position & parameter diff",
@@ -1971,8 +2213,26 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
     ariaLabel: `Strategy run diff for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}`,
     summaryLabel: "Run diff metric summary",
     metrics: buildDiffMetricRows(runDiff.metrics),
-    positionChanges,
-    parameterChanges,
+    positionChanges: selectedPositionRows,
+    parameterChanges: selectedParameterRows,
+    positionTable: {
+      rows: selectedPositionRows,
+      hasRows: selectedPositionRows.length > 0,
+      caption: "Position changes returned by the Strategy diff command. Select a row to inspect base and target exposure.",
+      emptyText: "No position changes returned for this diff."
+    },
+    parameterTable: {
+      rows: selectedParameterRows,
+      hasRows: selectedParameterRows.length > 0,
+      caption: "Parameter changes returned by the Strategy diff command. Select a row to inspect base and target values.",
+      emptyText: "No parameter changes returned for this diff."
+    },
+    selectedPositionKey,
+    selectedParameterKey,
+    selectedPositionDetailPanelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+    selectedParameterDetailPanelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+    selectedPositionDetail: selectedPosition ? buildPositionDiffDetail(selectedPosition) : null,
+    selectedParameterDetail: selectedParameter ? buildParameterDiffDetail(selectedParameter) : null,
     positionSectionLabel: `${positionChanges.length} position ${positionChanges.length === 1 ? "change" : "changes"} returned`,
     parameterSectionLabel: `${parameterChanges.length} parameter ${parameterChanges.length === 1 ? "change" : "changes"} returned`,
     positionListLabel: "Position diff rows",
@@ -2014,27 +2274,45 @@ function buildDiffMetricRows(metrics: MetricsDiff): ResearchDiffMetricRow[] {
   ];
 }
 
-function buildPositionDiffRow(item: PositionDiffEntry): ResearchDiffChangeRow {
+function buildPositionDiffRow(
+  item: PositionDiffEntry,
+  selectedKey: string | null | undefined = null
+): ResearchDiffChangeRow {
   const symbolText = formatText(item.symbol);
   const changeTypeText = formatText(item.changeType);
+  const key = `${symbolText}-${changeTypeText}`;
   const quantityDelta = item.targetQuantity - item.baseQuantity;
   const pnlDelta = item.targetPnl - item.basePnl;
+  const baseQuantityText = formatCount(item.baseQuantity);
+  const targetQuantityText = formatCount(item.targetQuantity);
   const quantityText = `Qty ${formatSignedCount(quantityDelta)}`;
+  const basePnlText = formatMoney(item.basePnl);
+  const targetPnlText = formatMoney(item.targetPnl);
   const pnlText = `P&L ${formatMoney(pnlDelta, true)}`;
 
   return {
-    key: `${symbolText}-${changeTypeText}`,
+    key,
     symbolText,
     changeTypeText,
+    baseQuantityText,
+    targetQuantityText,
     quantityText,
+    basePnlText,
+    targetPnlText,
     pnlText,
     text: `${symbolText} ${changeTypeText}`,
     badgeVariant: badgeVariantForPositionChange(item.changeType),
-    ariaLabel: `${symbolText} ${changeTypeText}. ${quantityText}. ${pnlText}.`
+    ariaLabel: `${symbolText} ${changeTypeText}. ${quantityText}. ${pnlText}.`,
+    rowSelectAriaLabel: `Inspect ${symbolText} ${changeTypeText.toLowerCase()} position diff`,
+    detailPanelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+    detailExpanded: key === selectedKey
   };
 }
 
-function buildParameterDiffRow(item: ParameterDiff): ResearchParameterChangeRow {
+function buildParameterDiffRow(
+  item: ParameterDiff,
+  selectedKey: string | null | undefined = null
+): ResearchParameterChangeRow {
   const key = formatText(item.key);
   const baseValueText = formatText(item.baseValue);
   const targetValueText = formatText(item.targetValue);
@@ -2045,7 +2323,62 @@ function buildParameterDiffRow(item: ParameterDiff): ResearchParameterChangeRow 
     baseValueText,
     targetValueText,
     valueText,
-    ariaLabel: `${key} changed from ${baseValueText} to ${targetValueText}.`
+    ariaLabel: `${key} changed from ${baseValueText} to ${targetValueText}.`,
+    rowSelectAriaLabel: `Inspect ${key} parameter diff`,
+    detailPanelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+    detailExpanded: key === selectedKey
+  };
+}
+
+function resolveSelectedDiffKey<T extends { key: string }>(
+  rows: T[],
+  selectedKey: string | null | undefined
+): string | null {
+  if (selectedKey && rows.some((row) => row.key === selectedKey)) {
+    return selectedKey;
+  }
+
+  return rows[0]?.key ?? null;
+}
+
+function buildPositionDiffDetail(row: ResearchDiffChangeRow): ResearchDiffDetailState {
+  return {
+    id: row.key,
+    panelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+    ariaLabel: `Selected position diff detail for ${row.symbolText}`,
+    eyebrow: "Selected position",
+    title: row.symbolText,
+    subtitle: row.changeTypeText,
+    description: `${row.symbolText} ${row.changeTypeText.toLowerCase()} between the base and target Strategy runs.`,
+    statusLabel: row.changeTypeText,
+    statusVariant: row.badgeVariant,
+    fields: [
+      { label: "Base quantity", value: row.baseQuantityText },
+      { label: "Target quantity", value: row.targetQuantityText },
+      { label: "Quantity delta", value: row.quantityText },
+      { label: "Base P&L", value: row.basePnlText },
+      { label: "Target P&L", value: row.targetPnlText },
+      { label: "P&L delta", value: row.pnlText }
+    ]
+  };
+}
+
+function buildParameterDiffDetail(row: ResearchParameterChangeRow): ResearchDiffDetailState {
+  return {
+    id: row.key,
+    panelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+    ariaLabel: `Selected parameter diff detail for ${row.key}`,
+    eyebrow: "Selected parameter",
+    title: row.key,
+    subtitle: row.valueText,
+    description: `${row.key} changed between the base and target Strategy runs.`,
+    statusLabel: "Changed",
+    statusVariant: "warning",
+    fields: [
+      { label: "Base value", value: row.baseValueText },
+      { label: "Target value", value: row.targetValueText },
+      { label: "Delta", value: row.valueText }
+    ]
   };
 }
 
@@ -2381,6 +2714,14 @@ function formatSignedCount(value: number | null | undefined): string {
 
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toLocaleString()}`;
+}
+
+function formatCount(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  return value.toLocaleString();
 }
 
 function formatSignedPercent(value: number | null | undefined): string {

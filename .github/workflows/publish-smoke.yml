@@ -1,0 +1,86 @@
+name: Publish Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Project to publish.
+        required: true
+        type: choice
+        default: collector
+        options:
+          - collector
+          - desktop
+          - web-workstation
+      runtime:
+        description: Windows runtime identifier.
+        required: true
+        type: choice
+        default: win-x64
+        options:
+          - win-x64
+          - win-arm64
+      version:
+        description: Version stamped into the publish output.
+        required: true
+        default: 1.0.0-smoke
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  publish:
+    name: verify-release (publish ${{ inputs.project }} ${{ inputs.runtime }})
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-publish-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-publish-
+            ${{ runner.os }}-nuget-
+
+      - name: Run publish script
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/publish/publish.ps1 `
+            -Platform '${{ inputs.runtime }}' `
+            -Project '${{ inputs.project }}' `
+            -Version '${{ inputs.version }}' `
+            -Configuration Release `
+            -OutputDir artifacts/publish/publish-smoke `
+            -OutputRetentionDays 0 `
+            -OutputRetainLatest 0
+
+      - name: Upload publish artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}
+          path: artifacts/publish/publish-smoke/
+          if-no-files-found: error
+          retention-days: 14

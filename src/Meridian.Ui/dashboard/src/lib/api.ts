@@ -4,8 +4,14 @@ import type {
   BackfillTriggerResult,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
+  CellExecuteRequest,
+  CellExecuteResult,
+  CellExecutionContext,
+  CellOutput,
   BrokerageHouseholdPortfolio,
   CorporateAction,
+  DataFetchRequest,
+  DataFetchResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
   EvidenceCompleteness,
@@ -25,14 +31,28 @@ import type {
   MetricSnapshot,
   NetSymbolPosition,
   OperatorInbox,
+  OperationsContinuityWorkflow,
+  OperationsContinuityWorkflowSummary,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
   PaperSessionDetail,
   PaperSessionReplayVerification,
+  ProviderConnectionRow,
+  ProviderCredentialMutationResult,
+  ProviderCredentialUpsertRequest,
+  ProviderCredentialVerificationResult,
+  ProviderRoutePreviewRequest,
+  ProviderRoutePreviewResponse,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
+  RiskRuleConfig,
+  RiskRuleConfigUpdateRequest,
+  RiskRuleStatus,
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
   ResolveReconciliationBreakRequest,
@@ -54,6 +74,16 @@ import type {
   SystemOverviewResponse,
   ReplayFileRecord,
   ReplayStatus,
+  StrategyDesignDocument,
+  StrategyDesignDraftSaveRequest,
+  StrategyDesignDraftSaveResponse,
+  StrategyDesignDraftSummary,
+  StrategyDesignFieldCatalogItem,
+  StrategyDesignPreviewResult,
+  StrategyDesignRunBacktestRequest,
+  StrategyDesignRunBacktestResponse,
+  StrategyDesignTemplate,
+  StrategyDesignValidationResult,
   TradingActionResult,
   TradingOperatorReadiness,
   TradingParameters,
@@ -71,6 +101,7 @@ import {
   EXPORT_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUALITY_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
@@ -78,6 +109,7 @@ import {
   REPLAY_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
@@ -89,6 +121,8 @@ import {
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
+  riskRuleConfigEndpoint,
+  riskRuleStatusEndpoint,
   historicalBarsEndpoint,
   marketDataOrderbookEndpoint,
   marketDataQuoteEndpoint,
@@ -97,6 +131,8 @@ import {
   portfolioHouseholdEndpoint,
   portfolioSymbolExposureEndpoint,
   promotionEvaluateEndpoint,
+  providerCredentialEndpoint,
+  providerVerifyEndpoint,
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
@@ -117,6 +153,7 @@ import {
   securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
+  strategyDesignerDraftEndpoint,
   strategyRunsEndpoint,
   symbolArchiveEndpoint,
   symbolRemoveEndpoint,
@@ -126,6 +163,8 @@ import {
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationOperationsContinuityDetailEndpoint,
+  workstationOperationsContinuityEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
@@ -141,6 +180,7 @@ import {
   workstationRunReviewPacketEndpoint,
   workstationRunSweepsEndpoint,
   workstationRunTimelineEndpoint,
+  RISK_API_ENDPOINTS,
   workstationSecurityMasterEconomicDefinitionEndpoint,
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
@@ -152,6 +192,7 @@ import {
   workstationWorkflowPresetPinEndpoint,
   workstationWorkflowPresetUsedEndpoint
 } from "@/lib/workstation-endpoints";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 
@@ -184,7 +225,7 @@ async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promis
       return fixture;
     }
 
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   if (response.headers?.get?.(developmentFixtureHeader) === "true") {
@@ -221,10 +262,18 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
+}
+
+export function apiGetJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  return getJson<T>(path, options);
+}
+
+export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+  return postJson<T>(path, body, options);
 }
 
 async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
@@ -239,7 +288,7 @@ async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptio
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -257,7 +306,7 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -273,7 +322,7 @@ async function deleteJson<T>(path: string, options: ApiRequestOptions = {}): Pro
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -328,9 +377,8 @@ async function readResponseSuccessBody(response: Response): Promise<string> {
   }
 }
 
-async function buildRequestFailureMessage(path: string, response: Response): Promise<string> {
-  const detail = formatErrorDetail(await readResponseErrorBody(response));
-  return `Request failed for ${path} (${response.status})${detail ? ` - ${detail}` : ""}`;
+async function buildApiError(path: string, response: Response) {
+  return createApiErrorFromResponseBody(path, response.status, await readResponseErrorBody(response));
 }
 
 async function readResponseErrorBody(response: Response): Promise<string> {
@@ -339,57 +387,6 @@ async function readResponseErrorBody(response: Response): Promise<string> {
   } catch {
     return "";
   }
-}
-
-function formatErrorDetail(body: string): string {
-  const trimmed = body.trim();
-  if (!trimmed) {
-    return "";
-  }
-
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-    if (isRecord(parsed)) {
-      const detail = readString(parsed.detail) ?? readString(parsed.message) ?? readString(parsed.title);
-      const validationErrors = formatValidationErrors(parsed.errors);
-      if (detail && validationErrors) {
-        return `${detail} ${validationErrors}`;
-      }
-      if (validationErrors) {
-        return validationErrors;
-      }
-      if (detail) {
-        return detail;
-      }
-    }
-  } catch {
-    // Plain-text error bodies are already useful operator diagnostics.
-  }
-
-  return trimmed;
-}
-
-function formatValidationErrors(value: unknown): string {
-  if (!isRecord(value)) {
-    return "";
-  }
-
-  return Object.entries(value)
-    .flatMap(([field, messages]) => formatValidationErrorField(field, messages))
-    .join("; ");
-}
-
-function formatValidationErrorField(field: string, messages: unknown): string[] {
-  const label = field.trim() || "request";
-  if (Array.isArray(messages)) {
-    return messages
-      .map(readString)
-      .filter((message): message is string => message !== null)
-      .map((message) => `${label}: ${message}`);
-  }
-
-  const message = readString(messages);
-  return message ? [`${label}: ${message}`] : [];
 }
 
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
@@ -440,6 +437,17 @@ export function getWorkflowLibrary(options: ApiRequestOptions = {}) {
 
 export function getWorkflowPresets(options: ApiRequestOptions = {}) {
   return getJson<WorkflowPresetLibrary>(WORKSTATION_API_ENDPOINTS.workflowPresets, options);
+}
+
+export function getOperationsContinuityWorkflows(
+  filters: { fundAccountId?: string; periodId?: string; status?: string } = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<OperationsContinuityWorkflowSummary[]>(workstationOperationsContinuityEndpoint(filters), options);
+}
+
+export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
 }
 
 export function getEvidenceSubjects(options: ApiRequestOptions = {}) {
@@ -507,8 +515,8 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
-export function runAnalysisExport(profileId: string) {
-  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId });
+export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
+  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId }, options);
 }
 
 // --- Promotion workflow ---
@@ -597,12 +605,28 @@ export function getExecutionControls() {
   return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
 }
 
+export function getRiskRules() {
+  return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
+}
+
+export function getRiskRuleStatus(ruleName: string) {
+  return getJson<RiskRuleStatus>(riskRuleStatusEndpoint(ruleName));
+}
+
+export function getRiskRuleConfig(ruleName: string) {
+  return getJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName));
+}
+
 export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
   return postJson<ExecutionManualOverride>(EXECUTION_API_ENDPOINTS.manualOverrides, request);
 }
 
 export function clearExecutionManualOverride(overrideId: string) {
   return postJson<TradingActionResult>(executionManualOverrideClearEndpoint(overrideId));
+}
+
+export function updateRiskRuleConfig(ruleName: string, request: RiskRuleConfigUpdateRequest) {
+  return putJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName), request);
 }
 
 // --- Strategy lifecycle ---
@@ -872,6 +896,22 @@ export function previewBackfill(request: BackfillTriggerRequest) {
 
 export function setupProvider(request: import("@/types").ProviderSetupRequest) {
   return postJson<import("@/types").ProviderSetupResult>(PROVIDER_API_ENDPOINTS.configure, request);
+}
+
+export function getProviderRoutingConnections(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingConnection[]>(PROVIDER_ROUTING_API_ENDPOINTS.connections, options);
+}
+
+export function getProviderRoutingBindings(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingBinding[]>(PROVIDER_ROUTING_API_ENDPOINTS.bindings, options);
+}
+
+export function getProviderRoutingTrustSnapshots(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingTrustSnapshot[]>(PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots, options);
+}
+
+export function previewProviderRoute(request: ProviderRoutePreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<ProviderRoutePreviewResponse>(PROVIDER_ROUTING_API_ENDPOINTS.preview, request, options);
 }
 
 export function removeProvider(providerId: string) {
@@ -1154,12 +1194,35 @@ export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {
   return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"), options);
 }
 
-export function connectAlpacaConnection(request: AlpacaBrokerageConnectionRequest) {
-  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("alpaca"), request);
+export function getProviderConnections(options: ApiRequestOptions = {}) {
+  return getJson<ProviderConnectionRow[]>(PROVIDER_API_ENDPOINTS.connections, options);
 }
 
-export function revokeAlpacaConnection() {
-  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"));
+export function putProviderCredentials(
+  providerId: string,
+  request: ProviderCredentialUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return putJson<ProviderCredentialMutationResult>(providerCredentialEndpoint(providerId), request, options);
+}
+
+export function verifyProviderConnection(providerId: string, options: ApiRequestOptions = {}) {
+  return postJson<ProviderCredentialVerificationResult>(providerVerifyEndpoint(providerId), undefined, options);
+}
+
+export function deleteProviderCredentials(providerId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<ProviderCredentialMutationResult>(providerCredentialEndpoint(providerId), options);
+}
+
+export function connectAlpacaConnection(
+  request: AlpacaBrokerageConnectionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("alpaca"), request, options);
+}
+
+export function revokeAlpacaConnection(options: ApiRequestOptions = {}) {
+  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"), options);
 }
 
 export function getBrokerageHouseholdPortfolio(provider = "alpaca", options: ApiRequestOptions = {}) {
@@ -1207,6 +1270,40 @@ export function getHistoricalBars(symbol: string, request: HistoricalBarsRequest
   return getJson<import("@/types").HistoricalBarsResponse>(historicalBarsEndpoint(symbol, request), options);
 }
 
+// --- Strategy Designer ---
+
+export function getStrategyDesignerTemplates(options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignTemplate[]>(STRATEGY_DESIGNER_API_ENDPOINTS.templates, options);
+}
+
+export function getStrategyDesignerFieldCatalog(options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignFieldCatalogItem[]>(STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog, options);
+}
+
+export function getStrategyDesignerDrafts(options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignDraftSummary[]>(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, options);
+}
+
+export function getStrategyDesignerDraft(documentId: string, options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignDocument>(strategyDesignerDraftEndpoint(documentId), options);
+}
+
+export function saveStrategyDesignerDraft(request: StrategyDesignDraftSaveRequest, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignDraftSaveResponse>(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, request, options);
+}
+
+export function validateStrategyDesignerDocument(document: StrategyDesignDocument, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignValidationResult>(STRATEGY_DESIGNER_API_ENDPOINTS.validate, document, options);
+}
+
+export function previewStrategyDesignerDocument(document: StrategyDesignDocument, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignPreviewResult>(STRATEGY_DESIGNER_API_ENDPOINTS.preview, document, options);
+}
+
+export function runStrategyDesignerBacktest(request: StrategyDesignRunBacktestRequest, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignRunBacktestResponse>(STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest, request, options);
+}
+
 // --- Quant Lab ---
 
 export function getQuantTemplates() {
@@ -1219,4 +1316,97 @@ export function extractQuantParameters(source: string) {
 
 export function runQuantScript(request: import("@/types").QuantRunRequest) {
   return postJson<import("@/types").QuantRunResponse>(QUANT_API_ENDPOINTS.run, request);
+}
+
+export async function executeCell(request: CellExecuteRequest): Promise<CellExecuteResult> {
+  const response = await runQuantScript({
+    source: request.source,
+    parameters: quantContextToParameters(request.context)
+  });
+
+  return mapQuantRunResponseToCellResult(request.cellId, response);
+}
+
+export async function fetchQuantData(request: DataFetchRequest, options: ApiRequestOptions = {}): Promise<DataFetchResult> {
+  const intervalMinutes = quantDataIntervalMinutes(request.interval);
+  const response = await getHistoricalBars(request.symbol, {
+    intervalMinutes,
+    from: request.from,
+    to: request.to
+  }, options);
+  const bars = response.bars.map((bar) => ({
+    timestamp: bar.start,
+    open: bar.open,
+    high: bar.high,
+    low: bar.low,
+    close: bar.close,
+    volume: bar.volume
+  }));
+
+  return {
+    symbol: response.symbol || request.symbol.trim().toUpperCase(),
+    from: response.from ?? request.from,
+    to: response.to ?? request.to,
+    interval: request.interval,
+    bars,
+    rowCount: response.totalBars || bars.length
+  };
+}
+
+function quantContextToParameters(context: CellExecutionContext): Record<string, string | number | boolean | null> {
+  return {
+    symbol: context.symbol ?? null,
+    from: context.from ?? null,
+    to: context.to ?? null,
+    interval: context.interval ?? null
+  };
+}
+
+function mapQuantRunResponseToCellResult(
+  cellId: string,
+  response: import("@/types").QuantRunResponse
+): CellExecuteResult {
+  const output: CellOutput[] = [];
+
+  for (const line of response.consoleOutput.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
+    output.push({ kind: "console", text: line, tone: "default" });
+  }
+
+  for (const metric of response.metrics) {
+    output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
+  }
+
+  for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {
+    output.push({
+      kind: "error",
+      text: diagnostic.line > 0
+        ? `${diagnostic.severity}: ${diagnostic.message} (${diagnostic.line}:${diagnostic.column})`
+        : `${diagnostic.severity}: ${diagnostic.message}`,
+      tone: diagnostic.severity.toLowerCase() === "warning" ? "warning" : "danger"
+    });
+  }
+
+  if (response.runtimeError) {
+    output.push({ kind: "error", text: response.runtimeError, tone: "danger" });
+  }
+
+  return {
+    cellId,
+    success: response.success,
+    output,
+    elapsedMs: response.elapsedMs,
+    errorMessage: response.runtimeError ?? response.compilationErrors[0]?.message ?? null
+  };
+}
+
+function quantDataIntervalMinutes(interval: DataFetchRequest["interval"]): number {
+  switch (interval) {
+    case "minute":
+      return 1;
+    case "hourly":
+      return 60;
+    case "daily":
+    default:
+      return 1440;
+  }
 }

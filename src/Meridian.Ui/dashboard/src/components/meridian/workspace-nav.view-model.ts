@@ -1,4 +1,10 @@
-import { isWorkspacePathActive, WORKSPACES, workspacePath } from "@/lib/workspace";
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  summarizeOperatingScopeForRoute,
+  type AppShellOperatingScopeInput
+} from "@/app-shell.view-model";
+import { isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -38,6 +44,8 @@ export interface WorkspaceNavViewModel {
   modelEyebrow: string;
   modelDescription: string;
   currentWorkspace: WorkspaceNavCurrentWorkspaceViewModel;
+  operatingScopeLabel: string | null;
+  operatingScopeAriaLabel: string | null;
   navEyebrow: string;
   deliveryEyebrow: string;
   deliveryTitle: string;
@@ -51,64 +59,76 @@ export type WorkspaceNavStatusTone = "live" | "review" | "paper" | "preview" | "
 
 const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: string }[]>> = {
   trading: [
-    { label: "Orders", route: "/trading/orders" },
-    { label: "Positions", route: "/trading/positions" },
-    { label: "Risk", route: "/trading/risk" },
-    { label: "Readiness", route: "/trading/readiness" }
+    { label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders },
+    { label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions },
+    { label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk },
+    { label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness }
   ],
   portfolio: [
-    { label: "Attribution", route: "/portfolio/attribution" },
-    { label: "Brokerage sync", route: "/portfolio/brokerage-sync" }
+    { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
+    { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync }
   ],
   accounting: [
-    { label: "Ledger", route: "/accounting" },
-    { label: "Reconciliation", route: "/accounting/reconciliation" },
-    { label: "Security Master", route: "/accounting/security-master" },
-    { label: "Approvals", route: "/accounting/approvals" }
+    { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
+    { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accounting },
+    { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
+    { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
+    { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals }
   ],
   reporting: [
-    { label: "Report packs", route: "/reporting/report-packs" },
-    { label: "Evidence", route: "/reporting/evidence" },
-    { label: "Exports", route: "/reporting/exports" }
+    { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
+    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },
+    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports }
   ],
   strategy: [
-    { label: "Designer", route: "/strategy/designer" },
-    { label: "Promotions", route: "/strategy/promotions" },
-    { label: "Research", route: "/strategy/research" },
-    { label: "Quant Lab", route: "/strategy/quant-lab" }
+    { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner },
+    { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
+    { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
+    { label: "Research", route: WORKSTATION_ROUTE_CATALOG.strategyResearch },
+    { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab }
   ],
   data: [
-    { label: "Watchlist", route: "/data/watchlist" },
-    { label: "Live quotes", route: "/data/quotes" },
-    { label: "Price alerts", route: "/data/alerts" },
-    { label: "Backfill queues", route: "/data/backfills" }
+    { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist },
+    { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
+    { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
+    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills }
   ],
   settings: [
-    { label: "Preferences", route: "/settings/preferences" },
-    { label: "Integrations", route: "/settings/integrations" }
+    { label: "Preferences", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
+    { label: "Integrations", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations }
   ]
 };
 
 export function buildWorkspaceNavViewModel(
   pathname: string,
-  workspaces: WorkspaceSummary[] = WORKSPACES
+  workspaces: WorkspaceSummary[] = WORKSPACES,
+  search = "",
+  operatingContextScope: AppShellOperatingScopeInput | null = null
 ): WorkspaceNavViewModel {
   const currentWorkspace =
     workspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? workspaces[0];
+  const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
 
   const items = workspaces.map<WorkspaceNavItemViewModel>((workspace) => {
     const active = isWorkspacePathActive(pathname, workspace.key);
     const statusTone = workspaceStatusTone(workspace.status);
+    const workspaceCanonicalRoute = workspacePath(workspace.key);
+    const workspaceRoute = appendOperatingScopeToRoute(workspaceCanonicalRoute, operatingScope);
+    const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
     const rawSubRoutes = WORKSPACE_SUBROUTES[workspace.key] ?? [];
     const subItems: WorkspaceNavSubItemViewModel[] = active
       ? rawSubRoutes.map((sub) => {
           const subActive = isSubRouteActive(pathname, sub.route);
+          const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
+          const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
           return {
             label: sub.label,
-            route: sub.route,
+            route: subRoute,
             active: subActive,
             ariaCurrent: subActive ? "page" : undefined,
-            ariaLabel: subActive ? `${sub.label}, current page` : `Open ${sub.label}`
+            ariaLabel: subActive
+              ? `${sub.label}, current page${formatPreservedScopeAriaSuffix(subScopeSummary)}`
+              : `Open ${sub.label}${formatPreservedScopeAriaSuffix(subScopeSummary)}`
           };
         })
       : [];
@@ -119,15 +139,16 @@ export function buildWorkspaceNavViewModel(
       description: workspace.description,
       statusLabel: active ? `${workspace.status} · Current` : workspace.status,
       statusTone,
-      route: workspacePath(workspace.key),
+      route: workspaceRoute,
       active,
       ariaCurrent: active ? "page" : undefined,
       ariaLabel: active
-        ? `${workspace.label} workspace, current route, ${workspace.status}`
-        : `Open ${workspace.label} workspace, ${workspace.status}`,
+        ? `${workspace.label} workspace, current route, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
+        : `Open ${workspace.label} workspace, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       subItems
     };
   });
+  const currentRoute = appendOperatingScopeToRoute(workspacePath(currentWorkspace.key), operatingScope);
 
   return {
     brandTitle: "Meridian",
@@ -140,10 +161,12 @@ export function buildWorkspaceNavViewModel(
       description: currentWorkspace.description,
       statusLabel: `${currentWorkspace.status} posture`,
       statusTone: workspaceStatusTone(currentWorkspace.status),
-      route: workspacePath(currentWorkspace.key),
-      routeAriaLabel: `Canonical route ${workspacePath(currentWorkspace.key)}`,
+      route: currentRoute,
+      routeAriaLabel: operatingScope.hasScope ? `Scoped route ${currentRoute}` : `Canonical route ${currentRoute}`,
       ariaLabel: `Current workspace: ${currentWorkspace.label}, ${currentWorkspace.status} posture`
     },
+    operatingScopeLabel: operatingScope.hasScope ? operatingScope.summary : null,
+    operatingScopeAriaLabel: operatingScope.hasScope ? `Navigation preserves operating scope: ${operatingScope.summary}` : null,
     navEyebrow: "Workspaces",
     deliveryEyebrow: "Shell controls",
     deliveryTitle: "Palette-first routing",
@@ -174,4 +197,8 @@ function workspaceStatusTone(status: string): WorkspaceNavStatusTone {
     default:
       return "review";
   }
+}
+
+function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
+  return scopeSummary ? `, preserving ${scopeSummary}` : "";
 }

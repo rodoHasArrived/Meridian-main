@@ -140,22 +140,8 @@ public static class BrokerageConnectionEndpoints
         => Results.StatusCode(StatusCodes.Status403Forbidden);
 
     private static bool HasViewBrokeragePermission(HttpContext context)
-        => TryGetPermissions(context, out var permissions)
-           && permissions.HasFlag(UserPermission.ViewTrades);
+        => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);
 
     private static bool HasManageCredentialsPermission(HttpContext context)
-        => TryGetPermissions(context, out var permissions)
-           && permissions.HasFlag(UserPermission.ManageCredentials);
-
-    private static bool TryGetPermissions(HttpContext context, out UserPermission permissions)
-    {
-        permissions = UserPermission.None;
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission current)
-        {
-            permissions = current;
-            return true;
-        }
-
-        return false;
-    }
+        => EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials);
 }

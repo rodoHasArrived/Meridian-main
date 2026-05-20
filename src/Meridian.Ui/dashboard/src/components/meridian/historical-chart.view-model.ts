@@ -287,9 +287,18 @@ export interface HistoricalChartViewModel {
   compareInputId: string;
   compareInputLabel: string;
   compareInputPlaceholder: string;
+  compareInputDescribedBy: string;
+  compareInputInvalid: boolean;
+  compareFeedbackId: string;
+  compareFeedbackMessage: string;
+  compareFeedbackRole: "alert" | undefined;
+  compareFeedbackAriaLive: "assertive" | undefined;
   compareSubmitDisabled: boolean;
   compareSubmitDisabledReason: string | null;
   compareSubmitAriaLabel: string;
+  compareFormLabel: string;
+  compareChipsListLabel: string;
+  compareClearAriaLabel: string;
   compareChips: CompareChipViewModel[];
   compareErrorMessage: string | null;
   statTiles: HistoricalChartStatTile[];
@@ -655,6 +664,10 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     : compareSymbols.length >= COMPARE_SYMBOL_LIMIT
       ? `Limited to ${COMPARE_SYMBOL_LIMIT} symbols`
       : null;
+  const compareFeedbackId = "historical-chart-compare-feedback";
+  const compareInputInvalid = compareErrorMessage !== null;
+  const compareFeedbackMessage = compareErrorMessage
+    ?? `${compareSymbols.length} of ${COMPARE_SYMBOL_LIMIT} comparison symbols active.`;
 
   return {
     eyebrow: "Historical price",
@@ -694,11 +707,20 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     compareInputId: "historical-chart-compare-input",
     compareInputLabel: "Add a symbol to overlay on the chart",
     compareInputPlaceholder: "Compare with…",
+    compareInputDescribedBy: compareFeedbackId,
+    compareInputInvalid,
+    compareFeedbackId,
+    compareFeedbackMessage,
+    compareFeedbackRole: compareInputInvalid ? "alert" : undefined,
+    compareFeedbackAriaLive: compareInputInvalid ? "assertive" : undefined,
     compareSubmitDisabled: compareSubmitDisabledReason !== null,
     compareSubmitDisabledReason,
     compareSubmitAriaLabel: trimmedCompareInput
       ? `Compare ${trimmedCompareInput} against ${symbol || "selected symbol"}`
       : "Compare another symbol",
+    compareFormLabel: `Compare additional symbols against ${symbol || "selected symbol"}`,
+    compareChipsListLabel: `Active comparison symbols for ${symbol || "selected symbol"}`,
+    compareClearAriaLabel: `Clear all comparison symbols for ${symbol || "selected symbol"}`,
     compareChips,
     compareErrorMessage,
     statTiles: [

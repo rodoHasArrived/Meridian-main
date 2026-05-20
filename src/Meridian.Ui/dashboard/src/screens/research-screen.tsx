@@ -1,6 +1,9 @@
+import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { QuantNotebook } from "@/components/meridian/quant-notebook";
+import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +13,9 @@ import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type {
   ResearchComparisonTableRow,
+  ResearchDiffChangeRow,
+  ResearchDiffDetailState,
+  ResearchParameterChangeRow,
   ResearchPlotLegendItem,
   ResearchPlotMomentRow,
   ResearchPlotSampleRow,
@@ -91,6 +97,55 @@ const plotToolMomentColumns: DenseDataTableColumn<ResearchPlotMomentRow>[] = [
   }
 ];
 
+const diffPositionColumns: DenseDataTableColumn<ResearchDiffChangeRow>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.symbolText
+  },
+  {
+    id: "change",
+    label: "Change",
+    render: (row) => <Badge variant={row.badgeVariant}>{row.changeTypeText}</Badge>
+  },
+  {
+    id: "quantity",
+    label: "Qty delta",
+    align: "right",
+    className: "font-mono",
+    render: (row) => row.quantityText
+  },
+  {
+    id: "pnl",
+    label: "P&L delta",
+    align: "right",
+    className: "font-mono",
+    render: (row) => row.pnlText
+  }
+];
+
+const diffParameterColumns: DenseDataTableColumn<ResearchParameterChangeRow>[] = [
+  {
+    id: "parameter",
+    label: "Parameter",
+    className: "font-mono font-semibold text-foreground",
+    render: (row) => row.key
+  },
+  {
+    id: "base",
+    label: "Base",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.baseValueText
+  },
+  {
+    id: "target",
+    label: "Target",
+    className: "font-mono",
+    render: (row) => row.targetValueText
+  }
+];
+
 const plotToolObservationColumns: DenseDataTableColumn<ResearchPlotSampleRow>[] = [
   {
     id: "date",
@@ -126,6 +181,7 @@ const plotToolObservationColumns: DenseDataTableColumn<ResearchPlotSampleRow>[] 
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
   const navigate = useNavigate();
+  const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   if (!data) {
     return (
@@ -158,7 +214,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     );
   }
 
-  const runColumns: DenseDataTableColumn<ResearchRunTableRow>[] = [
+  const runColumns = useMemo<DenseDataTableColumn<ResearchRunTableRow>[]>(() => [
     {
       id: "compare",
       label: "",
@@ -211,9 +267,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       label: "Updated",
       render: (run) => <span className="font-mono text-xs text-muted-foreground">{run.lastUpdatedText}</span>
     }
-  ];
+  ], [vm]);
 
-  const promotionHistoryColumns: DenseDataTableColumn<ResearchPromotionHistoryRow>[] = [
+  const promotionHistoryColumns = useMemo<DenseDataTableColumn<ResearchPromotionHistoryRow>[]>(() => [
     {
       id: "strategy",
       label: "Strategy",
@@ -242,9 +298,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       label: "Promoted",
       render: (record) => <span className="font-mono text-xs">{record.promotedAtText}</span>
     }
-  ];
+  ], []);
 
-  const comparisonColumns: DenseDataTableColumn<ResearchComparisonTableRow>[] = [
+  const comparisonColumns = useMemo<DenseDataTableColumn<ResearchComparisonTableRow>[]>(() => [
     {
       id: "strategy",
       label: "Strategy",
@@ -297,7 +353,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       className: "font-mono",
       render: (row) => row.fillCountText
     }
-  ];
+  ], []);
 
   return (
     <div className="space-y-8">
@@ -322,8 +378,10 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 aria-label="PlotTool views"
                 className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1"
                 onKeyDown={(event) => {
-                  if (vm.selectPlotToolViewForKey(event.key)) {
+                  const focusTargetTabId = vm.selectPlotToolViewForKey(event.key);
+                  if (focusTargetTabId) {
                     event.preventDefault();
+                    plotToolTabRefs.current[focusTargetTabId]?.focus();
                   }
                 }}
               >
@@ -338,6 +396,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     aria-label={tab.ariaLabel}
                     tabIndex={tab.tabIndex}
                     id={tab.tabId}
+                    ref={(node) => {
+                      plotToolTabRefs.current[tab.tabId] = node;
+                    }}
                     onClick={() => vm.selectPlotToolView(tab.id)}
                   >
                     {tab.label}
@@ -487,15 +548,17 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       step={vm.promotionCashForm.step}
                       value={vm.promotionCashForm.value}
                       onChange={(e) => vm.setPromotionInitialCash(e.target.value)}
+                      disabled={vm.promotionCashForm.inputDisabled}
+                      title={vm.promotionCashForm.inputDisabledReason ?? undefined}
                       aria-invalid={vm.promotionCashForm.errorText ? "true" : "false"}
-                      aria-describedby={vm.promotionCashForm.describedBy}
+                      aria-describedby={vm.promotionCashForm.inputDescribedBy}
                       className={cn(
                         "w-44 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                         vm.promotionCashForm.errorText ? "border-danger/50 text-danger" : "border-border text-foreground"
                       )}
                     />
                     <p
-                      id={vm.promotionCashForm.describedBy}
+                      id={vm.promotionCashForm.inputHelpId}
                       className={cn(
                         "max-w-56 text-[11px] leading-4",
                         vm.promotionCashForm.errorText ? "text-danger" : "text-muted-foreground"
@@ -503,7 +566,41 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     >
                       {vm.promotionCashForm.helpText}
                     </p>
+                    {vm.promotionCashForm.inputDisabledReason ? (
+                      <p
+                        id={vm.promotionCashForm.inputDisabledReasonId ?? undefined}
+                        className="max-w-56 rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                      >
+                        {vm.promotionCashForm.inputDisabledReason}
+                      </p>
+                    ) : null}
                   </div>
+                  <label
+                    htmlFor={vm.promotionCashForm.acknowledgementId}
+                    className="flex max-w-sm items-start gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-2 text-xs leading-5 text-muted-foreground"
+                  >
+                    <input
+                      id={vm.promotionCashForm.acknowledgementId}
+                      type="checkbox"
+                      checked={vm.promotionCashForm.acknowledgementChecked}
+                      onChange={(e) => vm.setPromotionAcknowledgement(e.target.checked)}
+                      disabled={vm.promotionCashForm.acknowledgementDisabled}
+                      title={vm.promotionCashForm.acknowledgementDisabledReason ?? undefined}
+                      aria-describedby={vm.promotionCashForm.acknowledgementDescribedBy}
+                      className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    />
+                    <span className="grid gap-1">
+                      <span>{vm.promotionCashForm.acknowledgementLabel}</span>
+                      {vm.promotionCashForm.acknowledgementDisabledReason ? (
+                        <span
+                          id={vm.promotionCashForm.acknowledgementDisabledReasonId ?? undefined}
+                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                        >
+                          {vm.promotionCashForm.acknowledgementDisabledReason}
+                        </span>
+                      ) : null}
+                    </span>
+                  </label>
                   <Button
                     type="submit"
                     size="sm"
@@ -513,7 +610,17 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   >
                     {vm.promotionCashForm.submitLabel}
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={vm.cancelPromotion}>Cancel</Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={vm.cancelPromotion}
+                    disabled={vm.promotionCashForm.cancelDisabled}
+                    disabledReason={vm.promotionCashForm.cancelDisabledReason}
+                    aria-label={vm.promotionCashForm.cancelAriaLabel}
+                  >
+                    {vm.promotionCashForm.cancelLabel}
+                  </Button>
                 </form>
               )}
               {vm.promotionPanel.showIneligibleDismiss && (
@@ -667,7 +774,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 ))}
               </section>
             )}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 2xl:grid-cols-2">
               <section aria-label={vm.diffPanel.positionSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold">Position changes</div>
@@ -675,24 +782,27 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     {vm.diffPanel.positionChanges.length} rows
                   </Badge>
                 </div>
-                <ul aria-label={vm.diffPanel.positionListLabel} className="mt-3 space-y-2 text-sm">
-                  {vm.diffPanel.hasPositionChanges ? vm.diffPanel.positionChanges.map((item) => (
-                    <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-mono font-semibold">{item.symbolText}</span>
-                        <Badge variant={item.badgeVariant}>{item.changeTypeText}</Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground">
-                        <span>{item.quantityText}</span>
-                        <span>{item.pnlText}</span>
-                      </div>
-                    </li>
-                  )) : (
-                    <li className="rounded-md border border-dashed border-border/70 bg-background/35 px-3 py-3 text-muted-foreground">
-                      {vm.diffPanel.positionEmptyText}
-                    </li>
-                  )}
-                </ul>
+                <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+                  <DenseDataTable
+                    columns={diffPositionColumns}
+                    rows={vm.diffPanel.positionTable.rows}
+                    getRowId={(row) => row.key}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.detailExpanded}
+                    selectedRowId={vm.diffPanel.selectedPositionKey}
+                    onRowSelect={(row) => vm.selectDiffPositionChange(row.key)}
+                    emptyText={vm.diffPanel.positionTable.emptyText}
+                    ariaLabel={vm.diffPanel.positionListLabel}
+                    caption={vm.diffPanel.positionTable.caption}
+                  />
+                  <ResearchDiffDetailPanel
+                    id={vm.diffPanel.selectedPositionDetailPanelId}
+                    detail={vm.diffPanel.selectedPositionDetail}
+                    emptyText={vm.diffPanel.positionEmptyText}
+                  />
+                </div>
               </section>
               <section aria-label={vm.diffPanel.parameterSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -701,18 +811,27 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     {vm.diffPanel.parameterChanges.length} rows
                   </Badge>
                 </div>
-                <ul aria-label={vm.diffPanel.parameterListLabel} className="mt-3 space-y-2 text-sm">
-                  {vm.diffPanel.hasParameterChanges ? vm.diffPanel.parameterChanges.map((item) => (
-                    <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2 font-mono">
-                      <div className="text-foreground">{item.key}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{item.valueText}</div>
-                    </li>
-                  )) : (
-                    <li className="rounded-md border border-dashed border-border/70 bg-background/35 px-3 py-3 text-muted-foreground">
-                      {vm.diffPanel.parameterEmptyText}
-                    </li>
-                  )}
-                </ul>
+                <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+                  <DenseDataTable
+                    columns={diffParameterColumns}
+                    rows={vm.diffPanel.parameterTable.rows}
+                    getRowId={(row) => row.key}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.detailExpanded}
+                    selectedRowId={vm.diffPanel.selectedParameterKey}
+                    onRowSelect={(row) => vm.selectDiffParameterChange(row.key)}
+                    emptyText={vm.diffPanel.parameterTable.emptyText}
+                    ariaLabel={vm.diffPanel.parameterListLabel}
+                    caption={vm.diffPanel.parameterTable.caption}
+                  />
+                  <ResearchDiffDetailPanel
+                    id={vm.diffPanel.selectedParameterDetailPanelId}
+                    detail={vm.diffPanel.selectedParameterDetail}
+                    emptyText={vm.diffPanel.parameterEmptyText}
+                  />
+                </div>
               </section>
             </div>
           </CardContent>
@@ -825,6 +944,42 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   );
 }
 
+function ResearchDiffDetailPanel({
+  id,
+  detail,
+  emptyText
+}: {
+  id: string;
+  detail: ResearchDiffDetailState | null;
+  emptyText: string;
+}) {
+  if (!detail) {
+    return (
+      <div
+        id={id}
+        role="status"
+        className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+      >
+        {emptyText}
+      </div>
+    );
+  }
+
+  return (
+    <div id={detail.panelId} className="min-w-0">
+      <EntitySummary
+        eyebrow={detail.eyebrow}
+        title={detail.title}
+        subtitle={detail.subtitle}
+        description={detail.description}
+        fields={detail.fields}
+        ariaLabel={detail.ariaLabel}
+        status={<Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>}
+      />
+    </div>
+  );
+}
+
 function PlotToolWorkspacePanel({
   vm,
   studies,
@@ -840,6 +995,7 @@ function PlotToolWorkspacePanel({
   studyDetailPanelId: string;
   onStudySelect: (id: string) => void;
 }) {
+  const notebookVm = useQuantNotebookViewModel();
   const studyColumns: DenseDataTableColumn<ResearchPlotStudyItem>[] = [
     {
       id: "study",
@@ -896,12 +1052,8 @@ function PlotToolWorkspacePanel({
           </CardHeader>
           <CardContent className="space-y-3">
             <ToolbarStrip
-              ariaLabel="Strategy notebook filters"
-              items={[
-                { id: "count", label: "Notebook set", value: `${studies.length} retained`, active: true },
-                { id: "active", label: "Primary", value: studies.find((study) => study.isActive)?.title ?? "None" },
-                { id: "lane", label: "Lane", value: "Strategy" }
-              ]}
+              ariaLabel={vm.notebookToolbarAriaLabel}
+              items={vm.notebookToolbarItems}
             />
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.85fr)]">
               <DenseDataTable
@@ -914,14 +1066,14 @@ function PlotToolWorkspacePanel({
                 getRowAriaExpanded={(study) => study.detailExpanded}
                 onRowSelect={(study) => onStudySelect(study.id)}
                 selectedRowId={selectedStudyId}
-                emptyText="No retained PlotTool studies are available."
+                emptyText={vm.studyTableEmptyText}
                 ariaLabel="Strategy notebooks"
-                caption="Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail."
+                caption={vm.studyTableCaption}
               />
               <SelectedPlotStudyDetail
                 id={studyDetailPanelId}
                 detail={selectedStudyDetail}
-                emptyText="No PlotTool study is selected."
+                emptyText={vm.selectedStudyEmptyText}
               />
             </div>
           </CardContent>
@@ -943,45 +1095,49 @@ function PlotToolWorkspacePanel({
         </Card>
       </div>
 
-      <Card className="border-border/70 bg-background/35">
-        <CardHeader className="pb-3">
-          <ToolbarStrip
-            ariaLabel="PlotTool workspace controls"
-            items={vm.toolbarPills.map((pill, index) => ({
-              id: `plot-pill-${index}`,
-              label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
-              value: pill,
-              active: index === 0
-            }))}
-          />
-          <div className="space-y-2">
-            <div className="eyebrow-label">Scatter / residual view</div>
-            <CardTitle>{vm.title}</CardTitle>
-            <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="plottool-chart-shell">
-            <PlotToolScatterChart
-              chart={vm.scatterChart}
+      <div className="space-y-4">
+        <Card className="border-border/70 bg-background/35">
+          <CardHeader className="pb-3">
+            <ToolbarStrip
+              ariaLabel="PlotTool workspace controls"
+              items={vm.toolbarPills.map((pill, index) => ({
+                id: `plot-pill-${index}`,
+                label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
+                value: pill,
+                active: index === 0
+              }))}
             />
-          </div>
-          <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
-            {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
-            <div>
-              <div className="eyebrow-label">{vm.focusPoint.label}</div>
-              <div className="mt-1 font-mono text-sm text-foreground">
-                {vm.focusPoint.xValueText}
-                <span className="px-2 text-muted-foreground">/</span>
-                {vm.focusPoint.yValueText}
-              </div>
+            <div className="space-y-2">
+              <div className="eyebrow-label">Scatter / residual view</div>
+              <CardTitle>{vm.title}</CardTitle>
+              <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
             </div>
-            <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="plottool-chart-shell">
+              <PlotToolScatterChart
+                chart={vm.scatterChart}
+              />
+            </div>
+            <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
+              {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
+              <div>
+                <div className="eyebrow-label">{vm.focusPoint.label}</div>
+                <div className="mt-1 font-mono text-sm text-foreground">
+                  {vm.focusPoint.xValueText}
+                  <span className="px-2 text-muted-foreground">/</span>
+                  {vm.focusPoint.yValueText}
+                </div>
+              </div>
+              <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <QuantNotebook vm={notebookVm} studyChips={vm.toolbarPills} />
+      </div>
 
       <div className="space-y-4">
         <Card className="border-border/70 bg-background/35">
@@ -1327,4 +1483,3 @@ function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | 
 
   return undefined;
 }
-

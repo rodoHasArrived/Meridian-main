@@ -97,14 +97,23 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
           inputId={vm.compareInputId}
           inputLabel={vm.compareInputLabel}
           inputPlaceholder={vm.compareInputPlaceholder}
+          inputDescribedBy={vm.compareInputDescribedBy}
+          inputInvalid={vm.compareInputInvalid}
           value={vm.compareInput}
           onChange={vm.setCompareInput}
           onSubmit={vm.submitCompareSymbol}
           submitDisabled={vm.compareSubmitDisabled}
           submitDisabledReason={vm.compareSubmitDisabledReason}
           submitAriaLabel={vm.compareSubmitAriaLabel}
+          formLabel={vm.compareFormLabel}
+          chipsListLabel={vm.compareChipsListLabel}
+          clearAriaLabel={vm.compareClearAriaLabel}
           chips={vm.compareChips}
-          errorMessage={vm.compareErrorMessage}
+          feedbackId={vm.compareFeedbackId}
+          feedbackMessage={vm.compareFeedbackMessage}
+          feedbackRole={vm.compareFeedbackRole}
+          feedbackAriaLive={vm.compareFeedbackAriaLive}
+          hasError={vm.compareErrorMessage !== null}
           onClearAll={vm.clearCompareSymbols}
         />
       </CardHeader>
@@ -139,14 +148,23 @@ interface CompareControlProps {
   inputId: string;
   inputLabel: string;
   inputPlaceholder: string;
+  inputDescribedBy: string;
+  inputInvalid: boolean;
   value: string;
   onChange: (next: string) => void;
   onSubmit: (event?: { preventDefault?: () => void }) => void;
   submitDisabled: boolean;
   submitDisabledReason: string | null;
   submitAriaLabel: string;
+  formLabel: string;
+  chipsListLabel: string;
+  clearAriaLabel: string;
   chips: CompareChipViewModel[];
-  errorMessage: string | null;
+  feedbackId: string;
+  feedbackMessage: string;
+  feedbackRole: "alert" | undefined;
+  feedbackAriaLive: "assertive" | undefined;
+  hasError: boolean;
   onClearAll: () => void;
 }
 
@@ -154,14 +172,23 @@ function CompareControl({
   inputId,
   inputLabel,
   inputPlaceholder,
+  inputDescribedBy,
+  inputInvalid,
   value,
   onChange,
   onSubmit,
   submitDisabled,
   submitDisabledReason,
   submitAriaLabel,
+  formLabel,
+  chipsListLabel,
+  clearAriaLabel,
   chips,
-  errorMessage,
+  feedbackId,
+  feedbackMessage,
+  feedbackRole,
+  feedbackAriaLive,
+  hasError,
   onClearAll
 }: CompareControlProps) {
   return (
@@ -172,7 +199,7 @@ function CompareControl({
           onSubmit(event);
         }}
         className="flex flex-col gap-2 sm:flex-row sm:items-center"
-        aria-label="Compare additional symbols"
+        aria-label={formLabel}
       >
         <label htmlFor={inputId} className="sr-only">{inputLabel}</label>
         <Input
@@ -182,6 +209,9 @@ function CompareControl({
           onChange={(event) => onChange(event.target.value)}
           autoComplete="off"
           spellCheck={false}
+          aria-invalid={inputInvalid ? "true" : undefined}
+          aria-describedby={inputDescribedBy}
+          aria-errormessage={inputInvalid ? feedbackId : undefined}
           className="sm:max-w-[200px]"
         />
         <div className="flex items-center gap-2">
@@ -202,7 +232,7 @@ function CompareControl({
               size="sm"
               variant="outline"
               onClick={onClearAll}
-              aria-label="Clear all comparison symbols"
+              aria-label={clearAriaLabel}
               data-testid="historical-chart-compare-clear"
             >
               Clear
@@ -210,17 +240,21 @@ function CompareControl({
           ) : null}
         </div>
       </form>
+      <p
+        id={feedbackId}
+        role={feedbackRole}
+        aria-live={feedbackAriaLive}
+        className={cn(hasError ? "text-xs text-danger" : "sr-only")}
+        data-testid="historical-chart-compare-feedback"
+      >
+        {feedbackMessage}
+      </p>
       {chips.length > 0 ? (
-        <ul aria-label="Active comparison symbols" className="flex flex-wrap gap-1.5">
+        <ul aria-label={chipsListLabel} className="flex flex-wrap gap-1.5">
           {chips.map((chip) => (
             <CompareChip key={chip.symbol} chip={chip} />
           ))}
         </ul>
-      ) : null}
-      {errorMessage ? (
-        <p role="alert" className="text-xs text-danger" data-testid="historical-chart-compare-error">
-          {errorMessage}
-        </p>
       ) : null}
     </div>
   );

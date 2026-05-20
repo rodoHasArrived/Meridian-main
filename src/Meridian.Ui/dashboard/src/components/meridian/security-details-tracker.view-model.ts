@@ -33,6 +33,12 @@ export interface SecurityDetailFieldViewModel {
   displayValue: string;
   isOverridden: boolean;
   overrideValue: string | undefined;
+  isEditing: boolean;
+  editCommand: SecurityDetailCommandViewModel;
+  clearCommand: SecurityDetailCommandViewModel | null;
+  saveCommand: SecurityDetailCommandViewModel;
+  cancelCommand: SecurityDetailCommandViewModel;
+  editor: SecurityDetailEditorViewModel;
 }
 
 export interface SecurityDetailGroupViewModel {
@@ -47,6 +53,11 @@ export interface SecurityDetailsViewModel {
   groups: SecurityDetailGroupViewModel[];
   overrideCount: number;
   hiddenOverrideCount: number;
+  syncStatus: SecurityDetailsSyncStatusViewModel | null;
+  hiddenOverridesLabel: string | null;
+  hiddenOverridesTitle: string | null;
+  updatedLabel: string | null;
+  serverError: SecurityDetailsServerErrorViewModel | null;
 }
 
 export interface BuildSecurityDetailsViewModelInput {
@@ -54,6 +65,42 @@ export interface BuildSecurityDetailsViewModelInput {
   identity: SecurityIdentityDrillIn | null;
   tradingParameters: TradingParameters | null;
   overrides: Record<string, string>;
+  editingKey?: string | null;
+  serverStatus?: SecurityDetailsServerStatus;
+  serverErrorText?: string | null;
+  updatedBy?: string | null;
+  updatedAt?: string | null;
+}
+
+export type SecurityDetailsServerStatus = "idle" | "loading" | "synced" | "offline" | "saving" | "error";
+
+export interface SecurityDetailCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface SecurityDetailEditorViewModel {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  describedBy: string;
+  helperId: string;
+  helperText: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface SecurityDetailsSyncStatusViewModel {
+  label: string;
+  ariaLabel: string;
+  className: "border-success/35 bg-success/10 text-success" | "border-primary/35 bg-primary/10 text-primary" | "border-warning/35 bg-warning/10 text-warning";
+}
+
+export interface SecurityDetailsServerErrorViewModel {
+  text: string;
+  ariaLabel: string;
 }
 
 const RATING_OPTIONS = [
@@ -247,30 +294,57 @@ export function buildSecurityDetailsViewModel({
   entry,
   identity,
   tradingParameters,
-  overrides
+  overrides,
+  editingKey = null,
+  serverStatus = "idle",
+  serverErrorText = null,
+  updatedBy = null,
+  updatedAt = null
 }: BuildSecurityDetailsViewModelInput): SecurityDetailsViewModel {
   const ctx: SecurityDetailContext = { entry, identity, tradingParameters };
   const assetClass = resolveAssetClass(ctx, overrides);
   const assetClassVisibilityKey = normalizeAssetClass(assetClass);
   const visibleKeys = new Set<string>();
+  const securityId = identity?.securityId ?? entry?.securityId ?? "selected";
   const groups = SECURITY_DETAIL_GROUPS
     .map((group) => {
       const visibleFields = group.fields
         .filter((field) => isFieldVisible(group, field, assetClassVisibilityKey))
-        .map((field) => buildSecurityDetailFieldViewModel(field, ctx, overrides));
+        .map((field) => buildSecurityDetailFieldViewModel({
+          field,
+          ctx,
+          overrides,
+          securityId,
+          editingKey,
+          serverStatus
+        }));
       for (const field of visibleFields) {
         visibleKeys.add(field.key);
       }
       return { id: group.id, title: group.title, fields: visibleFields };
     })
     .filter((group) => group.fields.length > 0);
+  const overrideCount = Object.keys(overrides).length;
+  const hiddenOverrideCount = Object.keys(overrides).filter((key) => !visibleKeys.has(key)).length;
 
   return {
     assetClass,
     assetClassVisibilityKey,
     groups,
-    overrideCount: Object.keys(overrides).length,
-    hiddenOverrideCount: Object.keys(overrides).filter((key) => !visibleKeys.has(key)).length
+    overrideCount,
+    hiddenOverrideCount,
+    syncStatus: buildSecurityDetailsSyncStatus(serverStatus),
+    hiddenOverridesLabel: hiddenOverrideCount > 0
+      ? `${hiddenOverrideCount} hidden override${hiddenOverrideCount === 1 ? "" : "s"}`
+      : null,
+    hiddenOverridesTitle: hiddenOverrideCount > 0
+      ? `${hiddenOverrideCount} override${hiddenOverrideCount === 1 ? "" : "s"} belong to fields hidden for this security type.`
+      : null,
+    updatedLabel: updatedBy && updatedAt ? `last edit by ${updatedBy} @ ${updatedAt}` : null,
+    serverError: serverErrorText ? {
+      text: serverErrorText,
+      ariaLabel: `Security override sync warning: ${serverErrorText}`
+    } : null
   };
 }
 
@@ -312,15 +386,27 @@ function isFieldVisible(group: SecurityDetailGroupDef, field: SecurityDetailFiel
   return TRADING_ASSET_VISIBLE_FIELDS.has(field.key);
 }
 
-function buildSecurityDetailFieldViewModel(
-  field: SecurityDetailFieldDef,
-  ctx: SecurityDetailContext,
-  overrides: Record<string, string>
-): SecurityDetailFieldViewModel {
+function buildSecurityDetailFieldViewModel({
+  field,
+  ctx,
+  overrides,
+  securityId,
+  editingKey,
+  serverStatus
+}: {
+  field: SecurityDetailFieldDef;
+  ctx: SecurityDetailContext;
+  overrides: Record<string, string>;
+  securityId: string;
+  editingKey: string | null;
+  serverStatus: SecurityDetailsServerStatus;
+}): SecurityDetailFieldViewModel {
   const derived = field.derive?.(ctx) ?? null;
   const override = overrides[field.key];
   const isOverridden = override !== undefined && override !== "";
+  const isEditing = editingKey === field.key;
   const value = isOverridden ? override : (derived ?? "");
+  const syncDisabledReason = buildOverrideSyncDisabledReason(serverStatus);
   return {
     def: field,
     key: field.key,
@@ -328,8 +414,90 @@ function buildSecurityDetailFieldViewModel(
     value,
     displayValue: value === "" ? "—" : (field.format ? field.format(value) : value),
     isOverridden,
-    overrideValue: override
+    overrideValue: override,
+    isEditing,
+    editCommand: {
+      label: "Edit",
+      ariaLabel: `Edit ${field.label}`,
+      disabled: syncDisabledReason !== null,
+      disabledReason: syncDisabledReason
+    },
+    clearCommand: isOverridden ? {
+      label: "Clear",
+      ariaLabel: `Clear override for ${field.label}`,
+      disabled: syncDisabledReason !== null,
+      disabledReason: syncDisabledReason
+    } : null,
+    saveCommand: {
+      label: "Save",
+      ariaLabel: `Save ${field.label}`,
+      disabled: syncDisabledReason !== null,
+      disabledReason: syncDisabledReason
+    },
+    cancelCommand: {
+      label: "Cancel",
+      ariaLabel: `Cancel editing ${field.label}`,
+      disabled: false,
+      disabledReason: null
+    },
+    editor: buildSecurityDetailEditor(field, securityId, syncDisabledReason)
   };
+}
+
+function buildSecurityDetailEditor(
+  field: SecurityDetailFieldDef,
+  securityId: string,
+  syncDisabledReason: string | null
+): SecurityDetailEditorViewModel {
+  const id = `security-detail-${stableDomId(securityId)}-${stableDomId(field.key)}-editor`;
+  const helperId = `${id}-help`;
+  return {
+    id,
+    label: field.label,
+    ariaLabel: `${field.label} override value`,
+    describedBy: helperId,
+    helperId,
+    helperText: "Enter a value to override the server field, or leave it blank to clear the override.",
+    disabled: syncDisabledReason !== null,
+    disabledReason: syncDisabledReason
+  };
+}
+
+function buildSecurityDetailsSyncStatus(status: SecurityDetailsServerStatus): SecurityDetailsSyncStatusViewModel | null {
+  if (status === "idle") {
+    return null;
+  }
+
+  const label =
+    status === "loading" ? "Loading from server"
+    : status === "saving" ? "Saving"
+    : status === "synced" ? "Synced"
+    : status === "offline" ? "Offline (local only)"
+    : "Error";
+  const className =
+    status === "synced"
+      ? "border-success/35 bg-success/10 text-success"
+      : status === "saving" || status === "loading"
+        ? "border-primary/35 bg-primary/10 text-primary"
+        : "border-warning/35 bg-warning/10 text-warning";
+
+  return {
+    label,
+    ariaLabel: `Security override sync status: ${label}`,
+    className
+  };
+}
+
+function buildOverrideSyncDisabledReason(status: SecurityDetailsServerStatus): string | null {
+  if (status === "loading") {
+    return "Security overrides are still loading from the server.";
+  }
+
+  if (status === "saving") {
+    return "Security overrides are saving; wait for the current edit to finish.";
+  }
+
+  return null;
 }
 
 export interface SecurityLot {
@@ -364,9 +532,11 @@ export interface LotsTrackerRowViewModel {
   feesLabel: string;
   costLabel: string;
   noteLabel: string;
+  removeLabel: string;
   ariaLabel: string;
   selectAriaLabel: string;
   removeAriaLabel: string;
+  removeConfirmationPending: boolean;
   detailPanelId: string;
   selected: boolean;
   expanded: boolean;
@@ -391,9 +561,38 @@ export interface LotsTrackerAddCommandViewModel {
   disabledReason: string | null;
 }
 
+export type LotsTrackerDraftFieldKey = "tradeDate" | "quantity" | "price" | "fees" | "note";
+
+export interface LotsTrackerDraftFieldViewModel {
+  key: LotsTrackerDraftFieldKey;
+  id: string;
+  label: string;
+  type: "date" | "number" | "text";
+  step?: string;
+  placeholder?: string;
+  helperId: string;
+  helperText: string;
+  errorId: string;
+  errorText: string | null;
+  invalid: boolean;
+  describedBy: string;
+}
+
+export type LotsTrackerDraftFieldsViewModel = Record<LotsTrackerDraftFieldKey, LotsTrackerDraftFieldViewModel>;
+
+export interface LotsTrackerDraftStatusViewModel {
+  id: string;
+  role: "status";
+  tone: "neutral" | "success" | "warning";
+  text: string;
+}
+
 export interface LotsTrackerViewModel {
   title: string;
   description: string;
+  formLabel: string;
+  draftFields: LotsTrackerDraftFieldsViewModel;
+  draftStatus: LotsTrackerDraftStatusViewModel;
   addCommand: LotsTrackerAddCommandViewModel;
   metrics: LotsTrackerMetricViewModel[];
   rows: LotsTrackerRowViewModel[];
@@ -411,6 +610,7 @@ export interface BuildLotsTrackerViewModelInput {
   marketPriceOverride: number | null;
   draft: LotDraftInput;
   selectedLotId: string | null;
+  pendingRemoveLotId?: string | null;
 }
 
 export function buildLotsTrackerViewModel({
@@ -419,18 +619,30 @@ export function buildLotsTrackerViewModel({
   lots,
   marketPriceOverride,
   draft,
-  selectedLotId
+  selectedLotId,
+  pendingRemoveLotId = null
 }: BuildLotsTrackerViewModelInput): LotsTrackerViewModel {
   const selectedLot = lots.find((lot) => lot.lotId === selectedLotId) ?? lots[0] ?? null;
   const resolvedSelectedLotId = selectedLot?.lotId ?? null;
   const detailPanelId = `security-lots-detail-${stableDomId(securityId)}`;
   const total = buildLotTotals(lots, marketPriceOverride);
-  const rows = lots.map((lot) => buildLotRow(lot, currency, securityId, detailPanelId, lot.lotId === resolvedSelectedLotId));
+  const addCommand = buildAddCommand(draft);
+  const rows = lots.map((lot) => buildLotRow(
+    lot,
+    currency,
+    securityId,
+    detailPanelId,
+    lot.lotId === resolvedSelectedLotId,
+    lot.lotId === pendingRemoveLotId
+  ));
 
   return {
     title: "Lots tracker",
     description: `Record purchase lots for ${securityId} to track quantity, cost basis, and unrealised P/L. Lots are stored locally per security.`,
-    addCommand: buildAddCommand(draft),
+    formLabel: `Add purchase lot for ${securityId}`,
+    draftFields: buildLotsDraftFields(securityId, draft),
+    draftStatus: buildLotsDraftStatus(securityId, addCommand.disabledReason),
+    addCommand,
     metrics: [
       { id: "quantity", label: "Total quantity", value: formatNumber(total.qty) },
       { id: "average-cost", label: "Average cost", value: formatCurrency(total.avgCost, currency) },
@@ -448,6 +660,134 @@ export function buildLotsTrackerViewModel({
     tableLabel: `Lots for ${securityId}`,
     tableCaption: `Recorded purchase lots for ${securityId}`,
     emptyText: "No lots recorded yet. Add a lot above to start tracking cost basis."
+  };
+}
+
+function buildLotsDraftFields(securityId: string, draft: LotDraftInput): LotsTrackerDraftFieldsViewModel {
+  const prefix = `security-lots-${stableDomId(securityId)}-draft`;
+  const tradeDateError = draft.tradeDate.trim() === "" ? "Trade date is required." : null;
+  const quantity = parseDraftNumber(draft.quantity);
+  const quantityError =
+    draft.quantity.trim() === ""
+      ? "Quantity is required."
+      : quantity === null || quantity === 0
+        ? "Quantity must be a non-zero number."
+        : null;
+  const price = parseDraftNumber(draft.price);
+  const priceError =
+    draft.price.trim() === ""
+      ? "Price is required."
+      : price === null || price <= 0
+        ? "Price must be greater than zero."
+        : null;
+  const fees = draft.fees.trim() === "" ? 0 : parseDraftNumber(draft.fees);
+  const feesError = fees === null ? "Fees must be a number." : null;
+
+  return {
+    tradeDate: buildDraftField({
+      key: "tradeDate",
+      prefix,
+      label: "Trade date",
+      type: "date",
+      helperText: "Required for lot chronology and selected-lot evidence.",
+      errorText: tradeDateError
+    }),
+    quantity: buildDraftField({
+      key: "quantity",
+      prefix,
+      label: "Quantity",
+      type: "number",
+      step: "any",
+      placeholder: "100",
+      helperText: "Use positive quantity for long lots and negative quantity for short lots.",
+      errorText: quantityError
+    }),
+    price: buildDraftField({
+      key: "price",
+      prefix,
+      label: "Price",
+      type: "number",
+      step: "any",
+      placeholder: "0.00",
+      helperText: "Execution price per unit; must be greater than zero.",
+      errorText: priceError
+    }),
+    fees: buildDraftField({
+      key: "fees",
+      prefix,
+      label: "Fees",
+      type: "number",
+      step: "any",
+      placeholder: "0.00",
+      helperText: "Optional fees are included in total cost basis.",
+      errorText: feesError
+    }),
+    note: buildDraftField({
+      key: "note",
+      prefix,
+      label: "Note",
+      type: "text",
+      placeholder: "Broker, strategy, etc.",
+      helperText: "Optional desk context shown in the selected-lot detail panel.",
+      errorText: null
+    })
+  };
+}
+
+function buildDraftField({
+  key,
+  prefix,
+  label,
+  type,
+  step,
+  placeholder,
+  helperText,
+  errorText
+}: {
+  key: LotsTrackerDraftFieldKey;
+  prefix: string;
+  label: string;
+  type: LotsTrackerDraftFieldViewModel["type"];
+  step?: string;
+  placeholder?: string;
+  helperText: string;
+  errorText: string | null;
+}): LotsTrackerDraftFieldViewModel {
+  const id = `${prefix}-${kebabCase(key)}`;
+  const helperId = `${id}-help`;
+  const errorId = `${id}-error`;
+  return {
+    key,
+    id,
+    label,
+    type,
+    step,
+    placeholder,
+    helperId,
+    helperText,
+    errorId,
+    errorText,
+    invalid: errorText !== null,
+    describedBy: [helperId, errorText ? errorId : null].filter(Boolean).join(" ")
+  };
+}
+
+function buildLotsDraftStatus(securityId: string, disabledReason: string | null): LotsTrackerDraftStatusViewModel {
+  const id = `security-lots-${stableDomId(securityId)}-draft-status`;
+  if (!disabledReason) {
+    return {
+      id,
+      role: "status",
+      tone: "success",
+      text: "Lot draft is ready to add."
+    };
+  }
+
+  return {
+    id,
+    role: "status",
+    tone: "warning",
+    text: `Add lot unavailable: ${disabledReason}`
   };
 }
 
@@ -483,10 +823,12 @@ function buildLotRow(
   currency: string | null,
   securityId: string,
   detailPanelId: string,
-  selected: boolean
+  selected: boolean,
+  removeConfirmationPending: boolean
 ): LotsTrackerRowViewModel {
   const cost = calculateLotCost(lot);
   const noteLabel = lot.note.trim() || "-";
+  const removeLabel = removeConfirmationPending ? "Confirm remove" : "Remove";
   return {
     lotId: lot.lotId,
     tradeDateLabel: lot.tradeDate,
@@ -495,9 +837,13 @@ function buildLotRow(
     feesLabel: formatCurrency(lot.fees, currency),
     costLabel: formatCurrency(cost, currency),
     noteLabel,
-    ariaLabel: `${securityId} lot from ${lot.tradeDate}, quantity ${formatNumber(lot.quantity)}, cost ${formatCurrency(cost, currency)}`,
-    selectAriaLabel: `Inspect ${securityId} lot from ${lot.tradeDate}`,
-    removeAriaLabel: `Remove ${securityId} lot from ${lot.tradeDate}`,
+    removeLabel,
+    ariaLabel: `${securityId} lot from ${lot.tradeDate}, quantity ${formatNumber(lot.quantity)}, cost ${formatCurrency(cost, currency)}${removeConfirmationPending ? ". Remove confirmation pending." : ""}`,
+    selectAriaLabel: `Inspect ${securityId} lot from ${lot.tradeDate}${removeConfirmationPending ? ". Remove confirmation pending." : ""}`,
+    removeAriaLabel: removeConfirmationPending
+      ? `Confirm remove ${securityId} lot from ${lot.tradeDate}. This deletes the local cost-basis lot.`
+      : `Remove ${securityId} lot from ${lot.tradeDate}`,
+    removeConfirmationPending,
     detailPanelId,
     selected,
     expanded: selected
@@ -575,4 +921,8 @@ export function formatCurrency(value: number, currency: string | null): string {
 
 function stableDomId(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "selected";
+}
+
+function kebabCase(value: string): string {
+  return value.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }

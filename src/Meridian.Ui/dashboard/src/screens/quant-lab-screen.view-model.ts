@@ -4,6 +4,7 @@ import type {
   QuantDiagnostic,
   QuantParameter,
   QuantRunResponse,
+  QuantTrade,
   QuantTemplate
 } from "@/types";
 
@@ -103,6 +104,56 @@ export interface QuantDiagnosticSectionState {
   tone: "danger" | "warning";
 }
 
+export interface QuantMetricRowViewModel {
+  id: string;
+  label: string;
+  value: string;
+  ariaLabel: string;
+}
+
+export interface QuantTradeRowViewModel {
+  id: string;
+  timestamp: string;
+  symbol: string;
+  side: string;
+  quantity: string;
+  price: string;
+  notional: string;
+  commission: string;
+  ariaLabel: string;
+}
+
+export interface QuantTradeDetailField {
+  label: string;
+  value: string;
+}
+
+export interface QuantTradeDetailViewModel {
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "default";
+  fields: QuantTradeDetailField[];
+}
+
+export interface QuantTradeLedgerState {
+  title: string;
+  description: string;
+  tableLabel: string;
+  tableCaption: string;
+  emptyText: string;
+  detailPanelId: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  rows: QuantTradeRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: QuantTradeDetailViewModel | null;
+  hasTrades: boolean;
+}
+
 export interface QuantRunResultPanelState {
   phase: QuantRunState["phase"];
   tone: "success" | "danger" | "default";
@@ -114,6 +165,10 @@ export interface QuantRunResultPanelState {
   statusBadgeLabel: string;
   runtimeSummary: string;
   metricsLabel: string;
+  metricsTableLabel: string;
+  metricsTableCaption: string;
+  metricsEmptyText: string;
+  metricRows: QuantMetricRowViewModel[];
   consoleLabel: string;
   plotsLabel: string;
   plotsDescription: string;
@@ -124,6 +179,7 @@ export interface QuantRunResultPanelState {
   hasMetrics: boolean;
   hasConsoleOutput: boolean;
   hasPlots: boolean;
+  hasTrades: boolean;
   hasEvidence: boolean;
   evidenceEmptyTitle: string;
   evidenceEmptyDetail: string;
@@ -146,6 +202,7 @@ export interface QuantLabScreenViewModel {
   parameterRows: QuantParameterRow[];
   parameterPanel: QuantParameterPanelState;
   parameterPhase: QuantParameterPhase;
+  tradeLedger: QuantTradeLedgerState;
   toolbarItems: QuantLabToolbarItem[];
   runCommand: QuantCommandState;
   runStatusAnnouncement: string;
@@ -153,6 +210,7 @@ export interface QuantLabScreenViewModel {
   loadTemplate: (template: QuantTemplate) => void;
   updateParameter: (name: string, value: string) => void;
   resetParameter: (name: string) => void;
+  selectTradeRow: (rowId: string) => void;
 }
 
 export interface QuantLabServices {
@@ -169,6 +227,9 @@ const defaultQuantLabServices: QuantLabServices = {
   runScript: (request) => api.runQuantScript(request)
 };
 
+export const QUANT_TRADE_DETAIL_PANEL_ID = "quant-lab-selected-trade-detail";
+const EMPTY_QUANT_TRADES: QuantTrade[] = [];
+
 export function useQuantLabScreenViewModel(
   services: QuantLabServices = defaultQuantLabServices
 ): QuantLabScreenViewModel {
@@ -180,6 +241,7 @@ export function useQuantLabScreenViewModel(
   const [detectedParams, setDetectedParams] = useState<QuantParameter[]>([]);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
   const [parameterPhase, setParameterPhase] = useState<QuantParameterPhase>("idle");
+  const [selectedTradeRowId, setSelectedTradeRowId] = useState<string | null>(null);
   const sourceRef = useRef(DEFAULT_QUANT_SOURCE);
 
   const updateSource = useCallback((nextSource: string) => {
@@ -261,9 +323,11 @@ export function useQuantLabScreenViewModel(
       submittedSource,
       sourceChangedSinceRun: false
     });
+    setSelectedTradeRowId(null);
     try {
       const parameters = buildQuantParameters(detectedParams, paramValues);
       const result = await services.runScript({ source: submittedSource, parameters });
+      const tradeRows = buildQuantTradeRows(result.trades);
       setRun({
         phase: "ready",
         result,
@@ -271,6 +335,7 @@ export function useQuantLabScreenViewModel(
         submittedSource,
         sourceChangedSinceRun: sourceRef.current !== submittedSource
       });
+      setSelectedTradeRowId(tradeRows[0]?.id ?? null);
     } catch (err) {
       setRun({
         phase: "error",
@@ -279,6 +344,7 @@ export function useQuantLabScreenViewModel(
         submittedSource,
         sourceChangedSinceRun: sourceRef.current !== submittedSource
       });
+      setSelectedTradeRowId(null);
     }
   }, [detectedParams, paramValues, services, source]);
 
@@ -288,6 +354,7 @@ export function useQuantLabScreenViewModel(
     setDetectedParams([]);
     setParamValues({});
     setParameterPhase("extracting");
+    setSelectedTradeRowId(null);
   }, [updateSource]);
 
   const updateParameter = useCallback((name: string, value: string) => {
@@ -312,10 +379,26 @@ export function useQuantLabScreenViewModel(
     () => detectedParams.map((parameter) => buildParameterRow(parameter, paramValues)),
     [detectedParams, paramValues]
   );
+  const runTrades = run.result?.trades ?? EMPTY_QUANT_TRADES;
+  const tradeRows = useMemo(() => buildQuantTradeRows(runTrades), [runTrades]);
+
+  useEffect(() => {
+    setSelectedTradeRowId((current) => {
+      if (current && tradeRows.some((row) => row.id === current)) {
+        return current;
+      }
+
+      return tradeRows[0]?.id ?? null;
+    });
+  }, [tradeRows]);
 
   const runCommand = buildRunCommandState(source, run.phase, run.sourceChangedSinceRun === true);
   const templatesPanel = buildTemplatePanelState(templatesPhase, templatesError);
   const parameterPanel = buildParameterPanelState(parameterPhase, parameterRows.length, source.trim().length > 0);
+  const tradeLedger = useMemo(
+    () => buildQuantTradeLedgerState(runTrades, selectedTradeRowId),
+    [runTrades, selectedTradeRowId]
+  );
 
   return {
     source,
@@ -331,13 +414,15 @@ export function useQuantLabScreenViewModel(
     parameterRows,
     parameterPanel,
     parameterPhase,
+    tradeLedger,
     toolbarItems: buildToolbarItems(source, templates.length, parameterRows.length, run, parameterPhase),
     runCommand,
     runStatusAnnouncement: buildRunStatusAnnouncement(run),
     runScript: runScriptCommand,
     loadTemplate,
     updateParameter,
-    resetParameter
+    resetParameter,
+    selectTradeRow: setSelectedTradeRowId
   };
 }
 
@@ -608,6 +693,95 @@ function stableQuantParameterId(name: string): string {
   return normalized || "parameter";
 }
 
+export function buildQuantTradeRows(trades: readonly QuantTrade[]): QuantTradeRowViewModel[] {
+  return trades.map((trade, index) => {
+    const id = buildQuantTradeRowId(trade, index);
+    const quantity = formatQuantQuantity(trade.quantity);
+    const price = formatQuantMoney(trade.price);
+    const commission = formatQuantMoney(trade.commission);
+    const notional = formatQuantMoney(Math.abs(trade.quantity * trade.price));
+    const side = formatQuantTradeSide(trade.side);
+    const timestamp = formatQuantTradeTimestamp(trade.timestamp);
+
+    return {
+      id,
+      timestamp,
+      symbol: trade.symbol,
+      side,
+      quantity,
+      price,
+      notional,
+      commission,
+      ariaLabel: `Select ${trade.symbol} ${side.toLowerCase()} trade at ${timestamp}, ${quantity} shares at ${price}`
+    };
+  });
+}
+
+export function buildQuantTradeLedgerState(
+  trades: readonly QuantTrade[],
+  selectedRowId: string | null
+): QuantTradeLedgerState {
+  const rows = buildQuantTradeRows(trades);
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? rows[0] ?? null;
+  const selectedTrade = selectedRow ? trades[rows.indexOf(selectedRow)] ?? null : null;
+
+  return {
+    title: rows.length > 0 ? `Trade ledger - ${rows.length}` : "Trade ledger",
+    description: rows.length > 0
+      ? "Executed trades emitted by the script run. Select a row to inspect notional and commission evidence."
+      : "Executed trades emitted by the script run appear here when the strategy records fills.",
+    tableLabel: "Quant Lab trade ledger",
+    tableCaption: "Select a Quant Lab trade to inspect timestamp, side, notional, and commission evidence.",
+    emptyText: "No trades returned by this run.",
+    detailPanelId: QUANT_TRADE_DETAIL_PANEL_ID,
+    detailEmptyTitle: "No trade selected",
+    detailEmptyText: rows.length > 0
+      ? "Select a trade row to inspect execution evidence."
+      : "This run did not return trades.",
+    rows,
+    selectedRowId: selectedRow?.id ?? null,
+    selectedDetail: selectedTrade && selectedRow ? buildQuantTradeDetail(selectedTrade, selectedRow) : null,
+    hasTrades: rows.length > 0
+  };
+}
+
+export function buildQuantTradeRowId(trade: QuantTrade, index: number): string {
+  const raw = `${trade.timestamp}-${trade.symbol}-${trade.side}-${index}`;
+  const stable = raw.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `quant-trade-${stable || index.toString()}`;
+}
+
+function buildQuantTradeDetail(
+  trade: QuantTrade,
+  row: QuantTradeRowViewModel
+): QuantTradeDetailViewModel {
+  const signedQuantity = trade.side.toLowerCase().includes("sell") ? -Math.abs(trade.quantity) : Math.abs(trade.quantity);
+  const grossNotional = Math.abs(trade.quantity * trade.price);
+  const netCashImpact = trade.side.toLowerCase().includes("sell")
+    ? grossNotional - trade.commission
+    : -(grossNotional + trade.commission);
+
+  return {
+    ariaLabel: `${trade.symbol} ${row.side.toLowerCase()} trade detail`,
+    eyebrow: "Selected trade",
+    title: `${trade.symbol} ${row.side}`,
+    subtitle: `${row.timestamp} - ${row.quantity} @ ${row.price}`,
+    description: `Net cash impact ${formatSignedQuantMoney(netCashImpact)} after ${row.commission} commission.`,
+    statusLabel: row.side.toLowerCase().includes("buy") ? "BUY" : row.side.toLowerCase().includes("sell") ? "SELL" : "TRADE",
+    statusTone: row.side.toLowerCase().includes("buy") ? "success" : row.side.toLowerCase().includes("sell") ? "warning" : "default",
+    fields: [
+      { label: "Symbol", value: trade.symbol },
+      { label: "Side", value: row.side },
+      { label: "Timestamp", value: row.timestamp },
+      { label: "Quantity", value: formatSignedQuantQuantity(signedQuantity) },
+      { label: "Price", value: row.price },
+      { label: "Gross notional", value: row.notional },
+      { label: "Commission", value: row.commission },
+      { label: "Net cash", value: formatSignedQuantMoney(netCashImpact) }
+    ]
+  };
+}
+
 export function inputTypeForQuantParameter(typeName: string): "number" | "checkbox" | "text" {
   switch (typeName) {
     case "int":
@@ -704,6 +878,10 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       statusBadgeLabel: "IDLE",
       runtimeSummary: "Run state, parameters, and template availability are tracked before execution.",
       metricsLabel: "Metrics",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: "Metrics emitted by the Quant Lab script run.",
+      metricsEmptyText: "No metrics returned by this run.",
+      metricRows: [],
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "No plots returned yet.",
@@ -712,6 +890,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       hasMetrics: false,
       hasConsoleOutput: false,
       hasPlots: false,
+      hasTrades: false,
       hasEvidence: false,
       evidenceEmptyTitle: "No runtime evidence yet",
       evidenceEmptyDetail: "Run a script to see emitted metrics, console output, diagnostics, and plots.",
@@ -733,6 +912,10 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       statusBadgeLabel: "RUN",
       runtimeSummary: "Quant Lab is compiling the current script and waiting for runtime evidence.",
       metricsLabel: "Metrics",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: "Metrics emitted by the Quant Lab script run.",
+      metricsEmptyText: "Metrics will appear after the run completes.",
+      metricRows: [],
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "Plots will render after the run completes.",
@@ -741,6 +924,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       hasMetrics: false,
       hasConsoleOutput: false,
       hasPlots: false,
+      hasTrades: false,
       hasEvidence: false,
       evidenceEmptyTitle: "Waiting for runtime evidence",
       evidenceEmptyDetail: "Runtime output will appear after the script finishes compiling and executing.",
@@ -762,6 +946,10 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       statusBadgeLabel: "ERR",
       runtimeSummary: "Quant Lab could not complete the script run.",
       metricsLabel: "Metrics",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: "Metrics emitted by the Quant Lab script run.",
+      metricsEmptyText: "No metrics returned because the run failed.",
+      metricRows: [],
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "No plots returned because the run failed.",
@@ -770,6 +958,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       hasMetrics: false,
       hasConsoleOutput: false,
       hasPlots: false,
+      hasTrades: false,
       hasEvidence: false,
       evidenceEmptyTitle: "No runtime evidence returned",
       evidenceEmptyDetail: "The run failed before Meridian received metrics, console output, diagnostics, or plots.",
@@ -780,14 +969,16 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
   }
 
   const hasMetrics = result.metrics.length > 0;
+  const metricRows = buildQuantMetricRows(result.metrics);
   const consoleLines = result.consoleOutput.split("\n");
   const hasConsoleOutput = consoleLines.some((line) => line.length > 0);
   const plotCount = result.plots.length;
+  const tradeCount = result.trades.length;
   const diagnosticSections = [
     { id: "compilation", label: "Compilation errors", entries: result.compilationErrors, tone: "danger" as const },
     { id: "runtime", label: "Runtime diagnostics", entries: result.runtimeDiagnostics, tone: "warning" as const }
   ].filter((section) => section.entries.length > 0);
-  const hasEvidence = hasMetrics || hasConsoleOutput || plotCount > 0 || diagnosticSections.length > 0;
+  const hasEvidence = hasMetrics || hasConsoleOutput || plotCount > 0 || tradeCount > 0 || diagnosticSections.length > 0;
 
   return {
     phase: run.phase,
@@ -807,7 +998,11 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     statusLabel: result.success ? "Completed successfully" : "Completed with errors",
     statusBadgeLabel: result.success ? "OK" : "ERR",
     runtimeSummary: `Compiled in ${formatWholeNumber(result.compileTimeMs)} ms · executed in ${formatWholeNumber(result.elapsedMs)} ms · peak ${formatWholeNumber(result.peakMemoryBytes / 1024)} KB`,
-    metricsLabel: hasMetrics ? `Metrics · ${result.metrics.length}` : "Metrics",
+    metricsLabel: hasMetrics ? `Metrics - ${metricRows.length}` : "Metrics",
+    metricsTableLabel: "Quant Lab metrics",
+    metricsTableCaption: "Metrics emitted by the Quant Lab script run. Values are script-defined evidence and may include ratios, counters, or formatted text.",
+    metricsEmptyText: result.success ? "No metrics returned by this run." : "No metrics returned because the run finished with errors.",
+    metricRows,
     consoleLabel: hasConsoleOutput ? "Console output" : "Console",
     plotsLabel: "Plots",
     plotsDescription: `${plotCount} chart${plotCount === 1 ? "" : "s"} returned by this run.`,
@@ -816,6 +1011,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     hasMetrics,
     hasConsoleOutput,
     hasPlots: plotCount > 0,
+    hasTrades: tradeCount > 0,
     hasEvidence,
     evidenceEmptyTitle: result.success ? "Run completed without runtime evidence" : "No runtime evidence returned",
     evidenceEmptyDetail: result.success
@@ -825,6 +1021,26 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     evidenceEmptyTone: result.success ? "warning" : "danger",
     diagnosticSections
   };
+}
+
+export function buildQuantMetricRows(
+  metrics: readonly QuantRunResponse["metrics"][number][]
+): QuantMetricRowViewModel[] {
+  return metrics.map((metric, index) => {
+    const label = metric.label.trim() || `Metric ${index + 1}`;
+    const value = metric.value.trim() || "Not reported";
+    return {
+      id: buildQuantMetricRowId(label, index),
+      label,
+      value,
+      ariaLabel: `${label}: ${value}`
+    };
+  });
+}
+
+export function buildQuantMetricRowId(label: string, index: number): string {
+  const stable = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `quant-metric-${stable || index.toString()}`;
 }
 
 export function buildToolbarItems(
@@ -863,4 +1079,48 @@ export function buildToolbarItems(
 
 function formatWholeNumber(value: number): string {
   return Number.isFinite(value) ? value.toFixed(0) : "0";
+}
+
+function formatQuantTradeTimestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value || "Unknown time";
+  }
+
+  return date.toISOString().replace(".000Z", "Z");
+}
+
+function formatQuantTradeSide(value: string): string {
+  const normalized = value.trim();
+  if (!normalized) return "Trade";
+  return normalized.slice(0, 1).toUpperCase() + normalized.slice(1).toLowerCase();
+}
+
+function formatQuantMoney(value: number): string {
+  if (!Number.isFinite(value)) return "$0.00";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+function formatSignedQuantMoney(value: number): string {
+  if (!Number.isFinite(value)) return "$0.00";
+  const prefix = value > 0 ? "+" : value < 0 ? "-" : "";
+  return `${prefix}${formatQuantMoney(Math.abs(value))}`;
+}
+
+function formatQuantQuantity(value: number): string {
+  if (!Number.isFinite(value)) return "0";
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 4
+  }).format(Math.abs(value));
+}
+
+function formatSignedQuantQuantity(value: number): string {
+  if (!Number.isFinite(value)) return "0";
+  const prefix = value > 0 ? "+" : value < 0 ? "-" : "";
+  return `${prefix}${formatQuantQuantity(value)}`;
 }

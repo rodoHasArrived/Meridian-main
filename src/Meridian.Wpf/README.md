@@ -1,3 +1,13 @@
+---
+id: meridian-wpf-retained
+title: Meridian WPF (Retained Scope)
+layer: wpf_retained
+state: retained_support
+canonical_path: src/Meridian.Wpf
+architecture_boundary: retained-desktop-shell-and-compatibility
+roadmap_anchor: W4-governance-productization
+---
+
 # Meridian - WPF Desktop Application
 
 This is the WPF (.NET 10) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.

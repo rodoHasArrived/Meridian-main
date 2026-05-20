@@ -6,6 +6,7 @@ using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -18,6 +19,7 @@ public static class BackfillValidationEndpoints
     public static void MapBackfillValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Backfill Validation");
+        var logger = app.Logger;
 
         // GET /api/backfill/validation — comprehensive validation report for all symbols
         group.MapGet(UiApiRoutes.BackfillValidation, async (
@@ -95,7 +97,8 @@ public static class BackfillValidationEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Backfill validation failed: {ex.Message}");
+                logger.LogError(ex, "Backfill validation report failed");
+                return Results.Problem("Backfill validation failed.");
             }
         })
         .WithName("GetBackfillValidation")
@@ -154,7 +157,8 @@ public static class BackfillValidationEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Backfill validation for {symbol} failed: {ex.Message}");
+                logger.LogError(ex, "Backfill validation failed for symbol {Symbol}", symbol);
+                return Results.Problem("Backfill validation failed for the requested symbol.");
             }
         })
         .WithName("GetBackfillValidationBySymbol")

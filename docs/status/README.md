@@ -1,9 +1,9 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-05-13
+**Last Reviewed:** 2026-05-20
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to evidence-backed investment operations across cockpit hardening, shared-model continuity, accounting, reconciliation, and governed report productization
 
-This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
+This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/current-direction-and-status.md](../plans/current-direction-and-status.md) for the consolidated planning interpretation and [../plans/README.md](../plans/README.md) for the detailed active blueprint set.
 
 ## What Lives Here
 
@@ -59,6 +59,12 @@ Machine-readable sidecars that remain active in this folder:
 
 For dashboard purpose, required evidence inputs, `.md` + `.json` output paths, blocker triage, and stale-evidence handling guidance, see [Documentation Automation - Status Dashboard Evidence Surfaces](../development/documentation-automation.md#status-dashboard-evidence-surfaces).
 
+The golden-path pilot dashboard is generated as validation evidence, not hand-authored status
+prose. Run `PilotAcceptanceHarnessTests`, then
+`build/scripts/docs/generate-pilot-readiness-dashboard.py` to emit
+`artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md` and its JSON sidecar; the
+`Golden Path Validation` workflow uploads those files as `pilot-acceptance-evidence`.
+
 ## Archived Snapshots
 
 These dated snapshots remain useful for history, but they no longer act as active status guidance:
@@ -68,17 +74,18 @@ These dated snapshots remain useful for history, but they no longer act as activ
 
 ## Recommended Reading Order
 
-1. [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md)
-2. [ROADMAP.md](ROADMAP.md)
-3. [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md)
-4. [production-status.md](production-status.md)
-5. [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
-6. [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
-7. [../plans/README.md](../plans/README.md)
-8. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
-9. [provider-validation-matrix.md](provider-validation-matrix.md)
-10. [contract-compatibility-matrix.md](contract-compatibility-matrix.md)
-11. [IMPROVEMENTS.md](IMPROVEMENTS.md)
+1. [../plans/current-direction-and-status.md](../plans/current-direction-and-status.md)
+2. [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md)
+3. [ROADMAP.md](ROADMAP.md)
+4. [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md)
+5. [production-status.md](production-status.md)
+6. [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
+7. [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
+8. [../plans/README.md](../plans/README.md)
+9. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+10. [provider-validation-matrix.md](provider-validation-matrix.md)
+11. [contract-compatibility-matrix.md](contract-compatibility-matrix.md)
+12. [IMPROVEMENTS.md](IMPROVEMENTS.md)
 
 ## Contributor Checklist (Required Headings)
 
@@ -94,19 +101,22 @@ When authoring or editing these doc categories, include the required section hea
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
 - **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
-- **Workstation state:** The web dashboard is the active operator UI lane, now with support evidence for Overview Today panel, Price Alerts, Strategy Designer, full-console readiness checkpoints, and Meridian Design System reference workbench/tokenized-color work; retained WPF remains support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, shared-model continuity, durable reconciliation, and governed-report acceptance still remain
-- **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
+- **Workstation state:** The web dashboard is the active operator UI lane, now with support evidence for Overview Today panel, Price Alerts, Strategy Designer route-action safety for GET versus POST backend actions, Covered Call, Quant Notebook helpers, Trading Recent Fills detail state, full-console readiness checkpoints, provider-routing refresh posture in Settings/Data, abort-backed Reporting exports, and Meridian Design System reference workbench/tokenized-color work; retained WPF remains support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, shared-model continuity, durable reconciliation, and governed-report acceptance still remain
+- **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it, with operations-continuity close-lane APIs now available as support evidence for broker intake, Security Master resolution, ledger posting, reconciliation, approval, close, and governed reopen
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
-- **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans
+- **Documentation state:** Status and plan navigation now starts with the consolidated current-direction document, then the canonical roadmap, production-status posture, and subordinate execution plans; generated TODO scans should exclude repo-local diagnostic tool caches rather than treating `.tools/.store` package documentation as project work
 - **Archive state:** Deprecated prior release checklists, UI notes, and dated snapshots should live under `archive/docs/` and stay out of the active status tree
 - **DK program state:** Active implementation window (2026-04-20 to 2026-06-26) with weekly dashboard updates and subsystem milestones
 
 ## Related Documentation
 
 - [Plans Overview](../plans/README.md)
+- [Current Direction and Status](../plans/current-direction-and-status.md)
 - [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
 - [Backtest Studio Unification Blueprint](../plans/backtest-studio-unification-blueprint.md)
 - [Architecture Overview](../architecture/overview.md)
 - [Main Documentation Index](../README.md)
+
+- [`workstation-governance-state-model.md`](workstation-governance-state-model.md): canonical workstation governance state model, transition table, and v1 additive compatibility expectations.

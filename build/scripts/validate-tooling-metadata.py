@@ -16,7 +16,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_JSON = REPO_ROOT / "package.json"
-MAKEFILE = REPO_ROOT / "Makefile"
+MAKEFILES = [REPO_ROOT / "Makefile", *sorted((REPO_ROOT / "make").glob("*.mk"))]
 DEPENDABOT = REPO_ROOT / ".github" / "dependabot.yml"
 
 
@@ -31,10 +31,15 @@ def load_package_paths() -> list[str]:
     return paths
 
 
-def load_makefile_paths() -> list[str]:
-    text = MAKEFILE.read_text()
-    matches = re.findall(r"(?:^|[\s@])(node|python3)\s+([^\s\\]+)", text, flags=re.MULTILINE)
-    return [path for _tool, path in matches if "/" in path and not path.startswith("$(")]
+def load_makefile_paths() -> list[tuple[str, str]]:
+    paths: list[tuple[str, str]] = []
+    for makefile in MAKEFILES:
+        text = makefile.read_text()
+        matches = re.findall(r"(?:^|[\s@])(node|python3)\s+([^\s\\]+)", text, flags=re.MULTILINE)
+        for _tool, path in matches:
+            if "/" in path and not path.startswith("$("):
+                paths.append((makefile.relative_to(REPO_ROOT).as_posix(), path))
+    return paths
 
 
 def load_dependabot_directories() -> list[str]:
@@ -61,7 +66,8 @@ def validate_paths(paths: list[str], label: str, expect_dir: bool = False) -> li
 def main() -> int:
     errors: list[str] = []
     errors.extend(validate_paths(load_package_paths(), "package.json scripts"))
-    errors.extend(validate_paths(load_makefile_paths(), "Makefile command"))
+    for source, rel_path in load_makefile_paths():
+        errors.extend(validate_paths([rel_path], f"Makefile command ({source})"))
     errors.extend(validate_paths(load_dependabot_directories(), ".github/dependabot.yml", expect_dir=True))
 
     if errors:

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -356,7 +356,19 @@ export interface TradingOrderRow {
 
 export interface TradingFillRow {
   id: string;
+  fillId: string;
+  orderId: string;
+  symbol: string;
+  side: string;
+  quantity: string;
+  price: string;
+  venue: string;
+  timestamp: string;
   cells: string[];
+  isSelected: boolean;
+  detailPanelId: string;
+  ariaExpanded: boolean;
+  selectAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -377,8 +389,10 @@ export interface TradingBlotterViewModel {
   fillRows: TradingFillRow[];
   selectedPosition: TradingBlotterDetail | null;
   selectedOrder: TradingBlotterDetail | null;
+  selectedFill: TradingBlotterDetail | null;
   selectedPositionRowId: string | null;
   selectedOrderRowId: string | null;
+  selectedFillRowId: string | null;
   hasPositions: boolean;
   hasOpenOrders: boolean;
   hasFills: boolean;
@@ -387,13 +401,16 @@ export interface TradingBlotterViewModel {
   fillsTableLabel: string;
   positionDetailId: string;
   orderDetailId: string;
+  fillDetailId: string;
   positionEmptyText: string;
   orderEmptyText: string;
   fillEmptyText: string;
   cancelAllDisabled: boolean;
+  cancelAllDisabledReason: string | null;
   cancelAllAriaLabel: string;
   selectPosition: (id: string) => void;
   selectOrder: (id: string) => void;
+  selectFill: (id: string) => void;
 }
 
 export interface TradingReadinessSummaryRow {
@@ -455,6 +472,9 @@ export interface TradingReadinessState {
   evidenceAction: TradingReadinessEvidenceAction;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
+  refreshBusyLabel: string | null;
+  refreshDisabled: boolean;
+  refreshDisabledReason: string | null;
   statusAnnouncement: string;
 }
 
@@ -480,20 +500,24 @@ const visibleWorkItemLimit = 4;
 const visibleWarningLimit = 3;
 const tradingPositionDetailId = "trading-position-detail";
 const tradingOrderDetailId = "trading-order-detail";
+const tradingFillDetailId = "trading-fill-detail";
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
 
   return useMemo(
     () => buildTradingBlotterViewModel({
       data,
       selectedPositionId,
       selectedOrderId,
+      selectedFillId,
       selectPosition: setSelectedPositionId,
-      selectOrder: setSelectedOrderId
+      selectOrder: setSelectedOrderId,
+      selectFill: setSelectedFillId
     }),
-    [data, selectedOrderId, selectedPositionId]
+    [data, selectedFillId, selectedOrderId, selectedPositionId]
   );
 }
 
@@ -501,26 +525,32 @@ export function buildTradingBlotterViewModel({
   data,
   selectedPositionId = null,
   selectedOrderId = null,
+  selectedFillId = null,
   selectPosition = () => {},
-  selectOrder = () => {}
+  selectOrder = () => {},
+  selectFill = () => {}
 }: {
   data: TradingWorkspaceResponse | null;
   selectedPositionId?: string | null;
   selectedOrderId?: string | null;
+  selectedFillId?: string | null;
   selectPosition?: (id: string) => void;
   selectOrder?: (id: string) => void;
+  selectFill?: (id: string) => void;
 }): TradingBlotterViewModel {
   const positions = data?.positions ?? [];
   const orders = data?.openOrders ?? [];
   const fills = data?.fills ?? [];
   const effectivePositionId = resolveSelectedId(positions, selectedPositionId, positionRowId);
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
+  const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
   const positionRows = positions.map((position, index) => buildPositionRow(position, index, effectivePositionId));
   const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId));
-  const fillRows = fills.map(buildFillRow);
+  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId));
   const selectedPositionRow = positionRows.find((row) => row.id === effectivePositionId) ?? null;
   const selectedOrderRow = orderRows.find((row) => row.id === effectiveOrderId) ?? null;
+  const selectedFillRow = fillRows.find((row) => row.id === effectiveFillId) ?? null;
 
   return {
     positionRows,
@@ -528,8 +558,10 @@ export function buildTradingBlotterViewModel({
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
     selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
+    selectedFill: selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null,
     selectedPositionRowId: effectivePositionId,
     selectedOrderRowId: effectiveOrderId,
+    selectedFillRowId: effectiveFillId,
     hasPositions: positionRows.length > 0,
     hasOpenOrders: orderRows.length > 0,
     hasFills: fillRows.length > 0,
@@ -538,13 +570,16 @@ export function buildTradingBlotterViewModel({
     fillsTableLabel: "Recent fills evidence",
     positionDetailId: tradingPositionDetailId,
     orderDetailId: tradingOrderDetailId,
+    fillDetailId: tradingFillDetailId,
     positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
     orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
     fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
     cancelAllDisabled: orderRows.length === 0,
+    cancelAllDisabledReason: orderRows.length === 0 ? "No open orders require cancellation." : null,
     cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
     selectPosition,
-    selectOrder
+    selectOrder,
+    selectFill
   };
 }
 
@@ -657,6 +692,9 @@ export function buildTradingReadinessState({
     },
     refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh readiness",
     refreshAriaLabel: refreshing ? "Refreshing trading readiness" : "Refresh trading readiness",
+    refreshBusyLabel: refreshing ? "Refreshing readiness..." : null,
+    refreshDisabled: refreshing,
+    refreshDisabledReason: refreshing ? "Trading readiness refresh is already running." : null,
     statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText })
   };
 }
@@ -695,7 +733,7 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
 
   return {
     label: "Fix provider setup",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: `Open provider setup for ${item.label}`,
     detail: "Review provider credentials and connection status in Settings."
   };
@@ -879,9 +917,24 @@ function buildOrderRow(
   };
 }
 
-function buildFillRow(fill: TradingFill): TradingFillRow {
+function buildFillRow(
+  fill: TradingFill,
+  index: number,
+  selectedId: string | null
+): TradingFillRow {
+  const id = fillRowId(fill, index);
+  const isSelected = id === selectedId;
+
   return {
-    id: fill.fillId,
+    id,
+    fillId: fill.fillId,
+    orderId: fill.orderId,
+    symbol: fill.symbol,
+    side: fill.side,
+    quantity: fill.quantity,
+    price: fill.price,
+    venue: fill.venue,
+    timestamp: fill.timestamp,
     cells: [
       fill.fillId,
       fill.orderId,
@@ -892,6 +945,10 @@ function buildFillRow(fill: TradingFill): TradingFillRow {
       fill.venue,
       fill.timestamp
     ],
+    isSelected,
+    detailPanelId: tradingFillDetailId,
+    ariaExpanded: isSelected,
+    selectAriaLabel: `Inspect fill ${fill.fillId}`,
     ariaLabel: `${fill.fillId}, ${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
   };
 }
@@ -947,12 +1004,38 @@ function buildOrderDetail(row: TradingOrderRow, provider: string | null): Tradin
   };
 }
 
+function buildFillDetail(row: TradingFillRow, provider: string | null): TradingBlotterDetail {
+  return {
+    id: "selected-fill",
+    title: row.fillId,
+    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
+    statusLabel: "Fill evidence",
+    statusTone: "success",
+    ariaLabel: `Fill detail for ${row.fillId}`,
+    detail: `${row.symbol} fill posted at ${row.price} on ${row.venue}. ${provider ? `${provider} supplied the execution adapter context.` : "Execution adapter context unavailable."}`,
+    fields: [
+      { label: "Order", value: row.orderId, tone: "muted" },
+      { label: "Symbol", value: row.symbol, tone: "default" },
+      { label: "Side", value: row.side, tone: row.side === "Buy" ? "success" : "warning" },
+      { label: "Quantity", value: row.quantity, tone: "default" },
+      { label: "Price", value: row.price, tone: "default" },
+      { label: "Venue", value: row.venue, tone: "muted" },
+      { label: "Timestamp", value: row.timestamp, tone: "muted" },
+      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
+    ]
+  };
+}
+
 function positionRowId(position: TradingPosition, index: number): string {
   return `${position.symbol.toLowerCase()}-${position.side.toLowerCase()}-${index}`;
 }
 
 function orderRowId(order: TradingOrder, index: number): string {
   return `${order.orderId.toLowerCase()}-${index}`;
+}
+
+function fillRowId(fill: TradingFill, index: number): string {
+  return fill.fillId || `fill-${index}`;
 }
 
 function pnlTextTone(value: string): TradingDataTone {
@@ -1024,6 +1107,9 @@ export interface ExecutionEvidenceState {
   controlsEmptyText: string;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
+  refreshBusyLabel: string | null;
+  refreshDisabled: boolean;
+  refreshDisabledReason: string | null;
   statusAnnouncement: string;
 }
 
@@ -1129,6 +1215,9 @@ export function buildExecutionEvidenceState({
     controlsEmptyText: loading ? "Loading execution controls snapshot..." : "Snapshot unavailable.",
     refreshButtonLabel: loading ? "Refreshing..." : "Refresh evidence",
     refreshAriaLabel: loading ? "Refreshing execution evidence" : "Refresh execution audit and controls evidence",
+    refreshBusyLabel: loading ? "Refreshing evidence..." : null,
+    refreshDisabled: loading,
+    refreshDisabledReason: loading ? "Execution evidence refresh is already running." : null,
     statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText })
   };
 }
@@ -1292,6 +1381,23 @@ export interface PaperSessionRow {
   closeDisabledReason: string | null;
 }
 
+export interface PaperSessionFormFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  field: PaperSessionField;
+  value: string;
+  type: "text" | "number";
+  placeholder?: string;
+  autoComplete: string;
+  describedBy: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  invalid: boolean;
+  min?: number;
+  step?: number;
+}
+
 export interface PaperSessionFieldRow {
   label: string;
   value: string;
@@ -1337,11 +1443,15 @@ export interface PaperSessionState {
   selectedSessionLabel: string | null;
   formPanelId: string;
   formDescriptionId: string;
+  strategyIdField: PaperSessionFormFieldState;
+  initialCashField: PaperSessionFormFieldState;
   formRequirementText: string;
   toggleCreateButtonLabel: string;
   toggleCreateButtonAriaLabel: string;
   toggleCreateButtonDisabledReason: string | null;
   createButtonLabel: string;
+  createButtonBusy: boolean;
+  createButtonBusyLabel: string | null;
   cancelCreateButtonLabel: string;
   createButtonAriaLabel: string;
   canSubmitCreate: boolean;
@@ -1581,6 +1691,9 @@ export function buildPaperSessionState({
   const busyReason = buildPaperSessionBusyReason(busyCommand);
   const canSubmitCreate = !isBusy && validationError === null;
   const canCloseCreateForm = !isBusy;
+  const formPanelId = "paper-session-create-form";
+  const formDescriptionId = "paper-session-create-requirements";
+  const fieldDisabledReason = isBusy ? busyReason : null;
 
   return {
     sessions,
@@ -1600,13 +1713,44 @@ export function buildPaperSessionState({
       ? "Loading paper sessions."
       : "No paper sessions active. Create one above to start tracking execution.",
     selectedSessionLabel: selectedSessionId ? `Selected session: ${selectedSessionId}` : null,
-    formPanelId: "paper-session-create-form",
-    formDescriptionId: "paper-session-create-requirements",
-    formRequirementText: validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
+    formPanelId,
+    formDescriptionId,
+    strategyIdField: {
+      id: "paper-session-strategy-id",
+      label: "Strategy ID",
+      ariaLabel: "Strategy ID",
+      field: "strategyId",
+      value: form.strategyId,
+      type: "text",
+      placeholder: "my-strategy-01",
+      autoComplete: "off",
+      describedBy: formDescriptionId,
+      disabled: isBusy,
+      disabledReason: fieldDisabledReason,
+      invalid: false
+    },
+    initialCashField: {
+      id: "paper-session-initial-cash",
+      label: "Initial cash ($)",
+      ariaLabel: "Initial cash ($)",
+      field: "initialCash",
+      value: form.initialCash,
+      type: "number",
+      autoComplete: "off",
+      describedBy: formDescriptionId,
+      disabled: isBusy,
+      disabledReason: fieldDisabledReason,
+      invalid: validationError !== null,
+      min: 1000,
+      step: 1000
+    },
+    formRequirementText: busyReason ?? validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
     toggleCreateButtonLabel: showCreateForm ? "Close form" : "New session",
     toggleCreateButtonAriaLabel: showCreateForm ? "Close paper session creation form" : "Open paper session creation form",
     toggleCreateButtonDisabledReason: isBusy && !showCreateForm ? busyReason : null,
-    createButtonLabel: busyCommand?.kind === "creating" ? "Creating..." : "Create session",
+    createButtonLabel: busyCommand?.kind === "creating" ? "Creating…" : "Create session",
+    createButtonBusy: busyCommand?.kind === "creating",
+    createButtonBusyLabel: busyCommand?.kind === "creating" ? "Creating…" : null,
     cancelCreateButtonLabel: "Cancel",
     createButtonAriaLabel: busyCommand?.kind === "creating" ? "Creating paper session" : "Create paper session",
     canSubmitCreate,
@@ -1673,9 +1817,9 @@ function buildPaperSessionRows({
       isActive: session.isActive,
       isSelected: selectedSessionId === session.sessionId,
       ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatUsdValue(session.initialCash)} initial cash`,
-      restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring..." : "Restore",
-      verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying..." : "Verify replay",
-      closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing..." : "Close",
+      restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring…" : "Restore",
+      verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying…" : "Verify replay",
+      closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing…" : "Close",
       restoreAriaLabel: rowBusy && busyCommand?.kind === "restoring"
         ? `Restoring paper session ${session.sessionId}`
         : `Restore paper session ${session.sessionId}`,
@@ -2414,6 +2558,8 @@ export interface StrategyLifecycleControlsState {
   stopButtonLabel: string;
   pauseAriaLabel: string;
   stopAriaLabel: string;
+  pauseDisabledReason: string | null;
+  stopDisabledReason: string | null;
   pauseAction: TradingConfirmAction | null;
   stopAction: TradingConfirmAction | null;
 }
@@ -2455,6 +2601,7 @@ export function useStrategyLifecycleControlsViewModel({
 export function buildStrategyLifecycleControlsState(strategyId: string): StrategyLifecycleControlsState {
   const strategyIdValue = strategyId.trim();
   const hasStrategyId = strategyIdValue.length > 0;
+  const missingStrategyReason = "Enter a registered strategy ID before using lifecycle actions.";
   const pauseAction: TradingConfirmAction | null = hasStrategyId
     ? { kind: "pause-strategy", strategyId: strategyIdValue }
     : null;
@@ -2491,6 +2638,8 @@ export function buildStrategyLifecycleControlsState(strategyId: string): Strateg
     stopAriaLabel: hasStrategyId
       ? `Open stop confirmation for strategy ${strategyIdValue}`
       : "Enter a strategy ID before stopping a strategy",
+    pauseDisabledReason: hasStrategyId ? null : missingStrategyReason,
+    stopDisabledReason: hasStrategyId ? null : missingStrategyReason,
     pauseAction,
     stopAction
   };
@@ -2882,6 +3031,15 @@ export interface OrderTicketControls {
   limitPrice: OrderTicketFieldControl | null;
 }
 
+export interface OrderTicketAcknowledgementState {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface OrderTicketState {
   form: OrderSubmitRequest;
   open: boolean;
@@ -2900,6 +3058,13 @@ export interface OrderTicketState {
   openButtonLabel: string;
   submitButtonLabel: string;
   submitAriaLabel: string;
+  submitDisabledReason: string | null;
+  submitBusy: boolean;
+  submitBusyLabel: string | null;
+  closeButtonLabel: string;
+  closeAriaLabel: string;
+  closeDisabledReason: string | null;
+  acknowledgement: OrderTicketAcknowledgementState;
   requirementText: string;
   successText: string | null;
   statusAnnouncement: string;
@@ -2911,6 +3076,7 @@ export interface BuildOrderTicketStateOptions {
   phase: OrderTicketPhase;
   orderId: string | null;
   errorText: string | null;
+  acknowledged?: boolean;
 }
 
 export const emptyOrderTicketForm: OrderSubmitRequest = {
@@ -2941,10 +3107,12 @@ export function useOrderTicketViewModel({
   const [phase, setPhase] = useState<OrderTicketPhase>("idle");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const submittingRef = useRef(false);
 
   const state = useMemo(
-    () => buildOrderTicketState({ form, open, phase, orderId, errorText }),
-    [errorText, form, open, orderId, phase]
+    () => buildOrderTicketState({ form, open, phase, orderId, errorText, acknowledged }),
+    [acknowledged, errorText, form, open, orderId, phase]
   );
 
   const preview = useMemo(
@@ -2972,6 +3140,7 @@ export function useOrderTicketViewModel({
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
+    setAcknowledged(false);
   }, [phase]);
 
   const toggleTicket = useCallback(() => {
@@ -2988,6 +3157,7 @@ export function useOrderTicketViewModel({
     setPhase((current) => current === "submitted" ? "idle" : current);
     setOrderId(null);
     setErrorText(null);
+    setAcknowledged(false);
   }, []);
 
   const normalizeSymbol = useCallback(() => {
@@ -2998,6 +3168,10 @@ export function useOrderTicketViewModel({
   }, []);
 
   const submitOrderTicket = useCallback(async () => {
+    if (phase === "submitting" || submittingRef.current) {
+      return;
+    }
+
     const validationError = validateOrderTicketForm(form);
     if (validationError) {
       setPhase("error");
@@ -3006,6 +3180,14 @@ export function useOrderTicketViewModel({
       return;
     }
 
+    if (!acknowledged) {
+      setPhase("error");
+      setOrderId(null);
+      setErrorText("Review the order preview and acknowledge before submitting.");
+      return;
+    }
+
+    submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
     setErrorText(null);
@@ -3017,6 +3199,7 @@ export function useOrderTicketViewModel({
         setOrderId(result.orderId);
         setErrorText(null);
         setOpen(false);
+        setAcknowledged(false);
         setForm(emptyOrderTicketForm);
         await onOrderAccepted?.();
         return;
@@ -3027,8 +3210,10 @@ export function useOrderTicketViewModel({
     } catch (err) {
       setPhase("error");
       setErrorText(toErrorMessage(err, "Order submission failed."));
+    } finally {
+      submittingRef.current = false;
     }
-  }, [form, onOrderAccepted, services]);
+  }, [acknowledged, form, onOrderAccepted, phase, services]);
 
   return {
     ...state,
@@ -3038,6 +3223,7 @@ export function useOrderTicketViewModel({
     toggleTicket,
     updateField,
     normalizeSymbol,
+    setAcknowledged,
     submitOrder: submitOrderTicket
   };
 }
@@ -3047,7 +3233,8 @@ export function buildOrderTicketState({
   open,
   phase,
   orderId,
-  errorText
+  errorText,
+  acknowledged = false
 }: BuildOrderTicketStateOptions): OrderTicketState {
   const validationError = validateOrderTicketForm(form);
   const requiresLimitPrice = orderTypeRequiresPrice(form.type);
@@ -3056,6 +3243,9 @@ export function buildOrderTicketState({
     : null;
   const invalidField = getOrderTicketInvalidField(form);
   const requirementId = "order-ticket-requirements";
+  const acknowledgement = buildOrderTicketAcknowledgementState(acknowledged, phase, validationError);
+  const submitDisabledReason = buildOrderTicketSubmitDisabledReason(phase, validationError, acknowledgement);
+  const closeDisabledReason = phase === "submitting" ? "Order submission is in progress." : null;
 
   return {
     form,
@@ -3065,7 +3255,7 @@ export function buildOrderTicketState({
     errorText,
     validationError,
     invalidField,
-    canSubmit: phase !== "submitting" && validationError === null,
+    canSubmit: submitDisabledReason === null,
     canClose: phase !== "submitting",
     requiresLimitPrice,
     priceLabel: `${form.type} price`,
@@ -3073,8 +3263,15 @@ export function buildOrderTicketState({
     requirementId,
     controls: buildOrderTicketControls(form, invalidField, requirementId),
     openButtonLabel: open ? "Close order ticket" : "New order",
-    submitButtonLabel: phase === "submitting" ? "Submitting..." : "Submit order",
+    submitButtonLabel: phase === "submitting" ? "Submitting…" : "Submit order",
     submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
+    submitDisabledReason,
+    submitBusy: phase === "submitting",
+    submitBusyLabel: phase === "submitting" ? "Submitting…" : null,
+    closeButtonLabel: "Cancel",
+    closeAriaLabel: closeDisabledReason ?? "Close order ticket without submitting",
+    closeDisabledReason,
+    acknowledgement,
     requirementText: buildOrderRequirementText(form, phase, validationError),
     successText,
     statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId })
@@ -3245,6 +3442,47 @@ function buildOrderRequirementText(
     ? ` at ${form.limitPrice}`
     : "";
   return `${form.side} ${form.quantity} ${symbol} ${form.type.toLowerCase()}${priceText}.`;
+}
+
+function buildOrderTicketAcknowledgementState(
+  acknowledged: boolean,
+  phase: OrderTicketPhase,
+  validationError: string | null
+): OrderTicketAcknowledgementState {
+  const disabledReason = phase === "submitting"
+    ? "Order submission is already running."
+    : validationError
+      ? "Complete valid order fields before acknowledging the preview."
+      : null;
+
+  return {
+    id: "order-ticket-review-acknowledgement",
+    label: "I reviewed the order preview and risk warnings",
+    description: "Submit stays locked until the preview, position impact, and risk warnings have been reviewed.",
+    checked: acknowledged,
+    disabled: disabledReason !== null,
+    disabledReason
+  };
+}
+
+function buildOrderTicketSubmitDisabledReason(
+  phase: OrderTicketPhase,
+  validationError: string | null,
+  acknowledgement: OrderTicketAcknowledgementState
+): string | null {
+  if (phase === "submitting") {
+    return "Order submission is already running.";
+  }
+
+  if (validationError) {
+    return validationError;
+  }
+
+  if (!acknowledgement.checked) {
+    return "Review the order preview and acknowledge before submitting.";
+  }
+
+  return null;
 }
 
 function buildOrderTicketStatusAnnouncement({

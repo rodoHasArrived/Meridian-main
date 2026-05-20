@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
-import { normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   DataOperationsProviderRecord,
@@ -44,6 +44,7 @@ export interface ReadinessConsoleRow {
   value: string;
   detail: string;
   meta: string;
+  createdAtLabel?: string | null;
   level: ReadinessConsoleLevel;
   ariaLabel: string;
   statusAriaLabel: string;
@@ -81,6 +82,19 @@ export interface ReadinessConsoleSelectedWorkItemDetail {
   action: ReadinessConsoleRowAction | null;
 }
 
+export interface ReadinessConsoleSelectedEvidenceDetail {
+  id: string;
+  title: string;
+  statusLabel: string;
+  statusAriaLabel: string;
+  detail: string;
+  meta: string;
+  level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  fields: ReadinessConsoleDetailField[];
+  action: ReadinessConsoleRowAction | null;
+}
+
 export interface ReadinessConsoleRecoveryState {
   title: string;
   detail: string;
@@ -106,7 +120,13 @@ export interface ReadinessConsolePanel {
   emptyText: string;
   ariaLabel: string;
   listLabel: string;
+  tableLabel: string;
+  detailLabel: string;
+  detailPanelId: string;
+  selectedRowId: string | null;
+  selectedDetail: ReadinessConsoleSelectedEvidenceDetail | null;
   rows: ReadinessConsoleRow[];
+  selectRow: (id: string) => void;
 }
 
 export interface ReadinessConsoleRowAction {
@@ -173,7 +193,9 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   inboxLoading: boolean;
   inboxError: string | null;
   selectedWorkItemId?: string | null;
+  selectedPanelRowIds?: Partial<Record<ReadinessConsolePanelId, string>>;
   selectWorkItem?: (id: string) => void;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
   refreshInbox?: () => Promise<void>;
 }
 
@@ -185,6 +207,9 @@ const defaultServices: OperatorReadinessConsoleServices = {
   getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options)
 };
 
+const REPORT_PACKS_ROUTE = WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
+const PROVIDER_SETUP_ROUTE = WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
+
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
   services: OperatorReadinessConsoleServices = defaultServices
@@ -193,6 +218,7 @@ export function useOperatorReadinessConsoleViewModel(
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
+  const [selectedPanelRowIds, setSelectedPanelRowIds] = useState<Partial<Record<ReadinessConsolePanelId, string>>>({});
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const inboxAbortRef = useRef<AbortController | null>(null);
@@ -200,6 +226,12 @@ export function useOperatorReadinessConsoleViewModel(
   const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
   const selectWorkItem = useCallback((id: string) => {
     setSelectedWorkItemId(id);
+  }, []);
+  const selectPanelRow = useCallback((panelId: ReadinessConsolePanelId, rowId: string) => {
+    setSelectedPanelRowIds((current) => current[panelId] === rowId ? current : {
+      ...current,
+      [panelId]: rowId
+    });
   }, []);
 
   useEffect(() => {
@@ -261,10 +293,12 @@ export function useOperatorReadinessConsoleViewModel(
       inboxLoading,
       inboxError,
       selectedWorkItemId,
+      selectedPanelRowIds,
       selectWorkItem,
+      selectPanelRow,
       refreshInbox
     }),
-    [inboxError, inboxLoading, operatorInbox, payload, selectedWorkItemId, selectWorkItem, refreshInbox]
+    [inboxError, inboxLoading, operatorInbox, payload, selectedPanelRowIds, selectedWorkItemId, selectPanelRow, selectWorkItem, refreshInbox]
   );
 }
 
@@ -278,7 +312,9 @@ export function buildOperatorReadinessConsoleState({
   inboxLoading,
   inboxError,
   selectedWorkItemId,
+  selectedPanelRowIds,
   selectWorkItem,
+  selectPanelRow,
   refreshInbox
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = trading?.readiness ?? null;
@@ -298,7 +334,7 @@ export function buildOperatorReadinessConsoleState({
     workItems: prioritizedWorkItems
   }), "cockpit-gates");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
-  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, selectedWorkItemId ?? null);
+  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, prioritizedWorkItems, selectedWorkItemId ?? null);
   const nextAction = buildNextAction({
     checkpointGates,
     workItemRows,
@@ -327,7 +363,7 @@ export function buildOperatorReadinessConsoleState({
     ? formatReadinessStatusValue(readiness.overallStatus)
     : "Awaiting readiness payload";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
-  const asOf = operatorInbox?.asOf ?? readiness?.asOf ?? "Unavailable";
+  const asOf = formatReadinessUtcMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
 
   return {
     title: "Operator Readiness Console",
@@ -382,7 +418,9 @@ export function buildOperatorReadinessConsoleState({
       providerTrustRows,
       reconciliationRows,
       promotionRows,
-      reportPackFacts
+      reportPackFacts,
+      selectedPanelRowIds: selectedPanelRowIds ?? {},
+      selectPanelRow
     }),
     workItems: workItemRows,
     workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
@@ -423,7 +461,12 @@ function withApiSourcePresentation(sources: ReadinessConsoleApiSourceBase[]): Re
 function withRowPresentation(rows: ReadinessConsoleRowBase[], collectionId: string): ReadinessConsoleRow[] {
   return rows.map((row) => ({
     ...row,
-    ariaLabel: `${row.label}: ${row.value}. ${row.detail} ${row.meta}`,
+    ariaLabel: [
+      `${row.label}: ${row.value}.`,
+      row.detail,
+      row.meta,
+      row.createdAtLabel ? `Created ${row.createdAtLabel}` : null
+    ].filter(Boolean).join(" "),
     statusAriaLabel: `${row.label} status ${row.value}`,
     detailId: `readiness-row-${slugifyId(collectionId)}-${slugifyId(row.id)}-detail`
   }));
@@ -435,7 +478,9 @@ function buildConsolePanels({
   providerTrustRows,
   reconciliationRows,
   promotionRows,
-  reportPackFacts
+  reportPackFacts,
+  selectedPanelRowIds,
+  selectPanelRow
 }: {
   latestRuns: ReadinessConsoleRow[];
   activeSessionFacts: ReadinessConsoleRow[];
@@ -443,43 +488,57 @@ function buildConsolePanels({
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
   reportPackFacts: ReadinessConsoleRow[];
+  selectedPanelRowIds: Partial<Record<ReadinessConsolePanelId, string>>;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
 }): ReadinessConsolePanel[] {
   return [
     buildConsolePanel({
       id: "latest-runs",
       title: "Latest runs",
       emptyText: "No Strategy runs loaded.",
-      rows: latestRuns
+      rows: latestRuns,
+      selectedRowId: selectedPanelRowIds["latest-runs"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "active-paper-session",
       title: "Active paper session",
       emptyText: "No active paper session loaded.",
-      rows: activeSessionFacts
+      rows: activeSessionFacts,
+      selectedRowId: selectedPanelRowIds["active-paper-session"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "provider-trust",
       title: "Provider trust",
       emptyText: "No provider trust rows loaded.",
-      rows: providerTrustRows
+      rows: providerTrustRows,
+      selectedRowId: selectedPanelRowIds["provider-trust"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "reconciliation-breaks",
       title: "Reconciliation breaks",
       emptyText: "No open or in-review reconciliation breaks.",
-      rows: reconciliationRows
+      rows: reconciliationRows,
+      selectedRowId: selectedPanelRowIds["reconciliation-breaks"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "promotion-blockers",
       title: "Promotion blockers",
       emptyText: "No promotion blockers surfaced by readiness.",
-      rows: promotionRows
+      rows: promotionRows,
+      selectedRowId: selectedPanelRowIds["promotion-blockers"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "reporting-report-packs",
       title: "Reporting report packs",
       emptyText: "No reporting readiness payload loaded.",
-      rows: reportPackFacts
+      rows: reportPackFacts,
+      selectedRowId: selectedPanelRowIds["reporting-report-packs"] ?? null,
+      selectPanelRow
     })
   ];
 }
@@ -488,20 +547,67 @@ function buildConsolePanel({
   id,
   title,
   emptyText,
-  rows
+  rows,
+  selectedRowId,
+  selectPanelRow
 }: {
   id: ReadinessConsolePanelId;
   title: string;
   emptyText: string;
   rows: ReadinessConsoleRow[];
+  selectedRowId: string | null;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
 }): ReadinessConsolePanel {
+  const detailPanelId = `operator-readiness-${id}-evidence-detail`;
+  const selectedDetail = buildSelectedEvidenceDetail(rows, selectedRowId, title);
+
   return {
     id,
     title,
     emptyText,
     ariaLabel: `${title} readiness evidence`,
     listLabel: `${title} rows`,
-    rows
+    tableLabel: `${title} readiness evidence table`,
+    detailLabel: `Selected ${title.toLowerCase()} evidence detail`,
+    detailPanelId,
+    selectedRowId: selectedDetail?.id ?? null,
+    selectedDetail,
+    rows,
+    selectRow: (rowId: string) => {
+      selectPanelRow?.(id, rowId);
+    }
+  };
+}
+
+function buildSelectedEvidenceDetail(
+  rows: ReadinessConsoleRow[],
+  selectedRowId: string | null,
+  panelTitle: string
+): ReadinessConsoleSelectedEvidenceDetail | null {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? rows[0];
+  const actionRoute = selectedRow.action?.route ?? "No route action";
+
+  return {
+    id: selectedRow.id,
+    title: selectedRow.label,
+    statusLabel: selectedRow.value,
+    statusAriaLabel: selectedRow.statusAriaLabel,
+    detail: selectedRow.detail,
+    meta: selectedRow.meta,
+    level: selectedRow.level,
+    ariaLabel: `Selected ${panelTitle.toLowerCase()} evidence: ${selectedRow.label}`,
+    fields: [
+      { label: "Evidence ID", value: selectedRow.id },
+      { label: "Attention", value: formatLevelText(selectedRow.level) },
+      ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      { label: "Route", value: actionRoute },
+      { label: "Evidence", value: selectedRow.meta }
+    ],
+    action: selectedRow.action ?? null
   };
 }
 
@@ -543,7 +649,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
       label: "Paper portfolio value",
       value: session.portfolioValue === null || session.portfolioValue === undefined ? "Unavailable" : formatCurrency(session.portfolioValue),
       detail: `Initial cash ${formatCurrency(session.initialCash)}`,
-      meta: `Created ${session.createdAt}`,
+      meta: `Created ${formatReadinessUtcMinute(session.createdAt, "timestamp unavailable")}`,
       level: session.portfolioValue === null || session.portfolioValue === undefined ? "review" : "ready"
     },
     {
@@ -677,7 +783,7 @@ function buildPromotionRows(
 
   workItems
     .filter((item) => item.kind === "PromotionReview")
-    .forEach((item) => rows.push(buildWorkItemRow(item, false)));
+    .forEach((item) => rows.push(buildWorkItemRow(item, true)));
 
   return dedupeRows(rows).slice(0, 6);
 }
@@ -763,7 +869,7 @@ function buildCockpitGateRows({
       gate: gateById.get("session"),
       action: {
         label: "Open Trading cockpit",
-        route: "/trading",
+        route: WORKSTATION_ROUTE_CATALOG.trading,
         ariaLabel: "Open Trading cockpit for paper session readiness",
         variant: "outline"
       }
@@ -780,7 +886,7 @@ function buildCockpitGateRows({
       gate: gateById.get("replay"),
       action: {
         label: "Open replay evidence",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         ariaLabel: "Open replay evidence for paper readiness",
         variant: replay?.isConsistent ? "outline" : "secondary"
       }
@@ -799,7 +905,7 @@ function buildCockpitGateRows({
       gate: gateById.get("audit-controls"),
       action: {
         label: "Open execution controls",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         ariaLabel: "Open execution-control evidence for paper readiness",
         variant: controls?.circuitBreakerOpen ? "secondary" : "outline"
       }
@@ -816,7 +922,7 @@ function buildCockpitGateRows({
       gate: gateById.get("promotion"),
       action: {
         label: "Open promotion review",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         ariaLabel: "Open promotion review trace for paper readiness",
         variant: promotion?.requiresReview ? "secondary" : "outline"
       }
@@ -832,7 +938,7 @@ function buildCockpitGateRows({
       fallbackLevel: brokerageRow?.level ?? "review",
       action: {
         label: "Open brokerage sync",
-        route: "/portfolio/brokerage-sync",
+        route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
         ariaLabel: "Open brokerage sync for paper readiness",
         variant: brokerageRow?.level === "blocked" ? "secondary" : "outline"
       }
@@ -848,7 +954,7 @@ function buildCockpitGateRows({
       fallbackLevel: reconciliationRows.some((row) => row.level === "blocked") ? "blocked" : reconciliationRows.length > 0 ? "review" : "ready",
       action: {
         label: "Open break queue",
-        route: "/accounting/reconciliation",
+        route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         ariaLabel: "Open reconciliation break queue for paper readiness",
         variant: reconciliationRows.some((row) => row.level === "blocked") ? "secondary" : "outline"
       }
@@ -864,7 +970,7 @@ function buildCockpitGateRows({
       fallbackLevel: reportPackReviewCount === 0 ? "ready" : "review",
       action: {
         label: "Open report packs",
-        route: "/reporting",
+        route: REPORT_PACKS_ROUTE,
         ariaLabel: "Open report packs for paper readiness",
         variant: "outline"
       }
@@ -884,7 +990,7 @@ function buildCockpitGateRows({
         ? buildWorkItemAction(workItems[0])
         : {
             label: "Open Trading cockpit",
-            route: "/trading",
+            route: WORKSTATION_ROUTE_CATALOG.trading,
             ariaLabel: "Open Trading cockpit after operator work items settle",
             variant: "outline"
           }
@@ -972,22 +1078,44 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
+  const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
+  const signoffSummary = buildSignoffSummary(item);
 
   return {
     id: item.workItemId,
     label: item.label,
     value: item.tone,
     detail: item.detail,
-    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" - ") || item.kind,
+    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference, signoffSummary].filter(Boolean).join(" - ") || item.kind,
+    createdAtLabel,
     level: levelFromTone(item.tone),
     action
   };
 }
 
+function buildSignoffSummary(item: OperatorWorkItem): string | null {
+  const role = item.requiredSignoffRole?.trim();
+  const status = item.signoffStatus?.trim();
+  if (!role && !status) {
+    return null;
+  }
+
+  if (role && status) {
+    return `${role} sign-off ${status}`;
+  }
+
+  return role ? `${role} sign-off` : `Sign-off ${status}`;
+}
+
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const route = normalizeLocalWorkstationRoute(item.targetRoute)
-    ?? routeFromWorkItemTarget(item)
-    ?? fallbackRouteForWorkItemKind(item.kind);
+  const normalizedRoute = item.kind === "BrokerageSync"
+    ? PROVIDER_SETUP_ROUTE
+    : normalizeLocalWorkstationRoute(item.targetRoute)
+      ?? routeFromWorkItemTarget(item)
+      ?? fallbackRouteForWorkItemKind(item.kind);
+  const route = item.kind === "ReportPackApproval" && normalizedRoute === WORKSTATION_ROUTE_CATALOG.reporting
+    ? REPORT_PACKS_ROUTE
+    : normalizedRoute;
   if (!route) {
     return null;
   }
@@ -1009,35 +1137,37 @@ function routeFromWorkItemTarget(item: OperatorWorkItem): string | null {
   return workflowTargetPath(item.targetPageTag, item.workspace);
 }
 
-function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function fallbackRouteForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
     case "PromotionReview":
     case "ExecutionControl":
-      return "/trading/readiness";
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
     case "BrokerageSync":
-      return "/portfolio/brokerage-sync";
+      return PROVIDER_SETUP_ROUTE;
     case "SecurityMasterCoverage":
-      return "/accounting/security-master";
+      return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
     case "ReconciliationBreak":
-      return "/accounting/reconciliation";
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
     case "LedgerPeriodClose":
-      return "/accounting/reconciliation";
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
     case "ReportPackApproval":
-      return "/reporting";
+      return REPORT_PACKS_ROUTE;
     case "ProviderTrustGate":
-      return "/data";
+      return WORKSTATION_ROUTE_CATALOG.data;
+    default:
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   }
 }
 
-function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function actionLabelForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
       return "Open replay evidence";
     case "PromotionReview":
       return "Open promotion review";
     case "BrokerageSync":
-      return "Open brokerage sync";
+      return "Fix provider setup";
     case "SecurityMasterCoverage":
       return "Open Security Master";
     case "ReconciliationBreak":
@@ -1050,6 +1180,8 @@ function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
       return "Open provider trust";
     case "ExecutionControl":
       return "Open execution controls";
+    default:
+      return "Open operator item";
   }
 }
 
@@ -1099,10 +1231,10 @@ function buildWorkItemsEmptyText(
 }
 
 function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): ReadinessConsoleRowAction {
-  const nextActionRoute = nextAction.route ?? "/trading/readiness";
+  const nextActionRoute = nextAction.route ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   return {
     label: nextAction.level === "ready" ? "Open Trading cockpit" : nextAction.label,
-    route: nextAction.level === "ready" ? "/trading" : nextActionRoute,
+    route: nextAction.level === "ready" ? WORKSTATION_ROUTE_CATALOG.trading : nextActionRoute,
     ariaLabel: nextAction.level === "ready"
       ? "Open Trading cockpit from empty operator inbox"
       : `${nextAction.actionAriaLabel} from empty operator inbox`,
@@ -1112,6 +1244,7 @@ function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): Read
 
 function buildSelectedWorkItemDetail(
   rows: ReadinessConsoleRow[],
+  workItems: OperatorWorkItem[],
   selectedWorkItemId: string | null
 ): ReadinessConsoleSelectedWorkItemDetail | null {
   if (rows.length === 0) {
@@ -1120,6 +1253,7 @@ function buildSelectedWorkItemDetail(
 
   const selectedRow = rows.find((row) => row.id === selectedWorkItemId) ?? rows[0];
   const actionRoute = selectedRow.action?.route ?? "No route action";
+  const selectedWorkItem = workItems.find((item) => item.workItemId === selectedRow.id) ?? null;
 
   return {
     id: selectedRow.id,
@@ -1133,6 +1267,10 @@ function buildSelectedWorkItemDetail(
     fields: [
       { label: "Work item ID", value: selectedRow.id },
       { label: "Attention", value: formatLevelText(selectedRow.level) },
+      ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      ...(selectedWorkItem?.requiredSignoffRole ? [{ label: "Required sign-off role", value: selectedWorkItem.requiredSignoffRole }] : []),
+      ...(selectedWorkItem?.signoffStatus ? [{ label: "Sign-off status", value: selectedWorkItem.signoffStatus }] : []),
+      ...(selectedWorkItem?.toleranceProfileId ? [{ label: "Tolerance profile", value: selectedWorkItem.toleranceProfileId }] : []),
       { label: "Route", value: actionRoute },
       { label: "Evidence", value: selectedRow.meta }
     ],
@@ -1187,7 +1325,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: row.action?.label ?? "Review item",
-        route: row.action?.route ?? "/trading/readiness",
+        route: row.action?.route ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         sourcePriority: 0,
         index
       })),
@@ -1201,13 +1339,13 @@ function buildNextAction({
       })),
     ...reconciliationRows.map((row, index) => nextActionCandidateFromRow(row, {
       label: "Open break queue",
-      route: "/accounting/reconciliation",
+      route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
       sourcePriority: 2,
       index
     })),
     ...promotionRows.map((row, index) => nextActionCandidateFromRow(row, {
       label: "Open promotion review",
-      route: "/trading/readiness",
+      route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
       sourcePriority: 3,
       index
     })),
@@ -1215,7 +1353,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open provider trust",
-        route: "/data",
+        route: WORKSTATION_ROUTE_CATALOG.data,
         sourcePriority: 4,
         index
       })),
@@ -1223,7 +1361,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open report packs",
-        route: "/reporting",
+        route: REPORT_PACKS_ROUTE,
         sourcePriority: 5,
         index
       })),
@@ -1231,7 +1369,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open Trading cockpit",
-        route: "/trading",
+        route: WORKSTATION_ROUTE_CATALOG.trading,
         sourcePriority: 6,
         index
       }))
@@ -1254,7 +1392,7 @@ function buildNextAction({
     detail: "The visible readiness queue is settled. Continue monitoring the paper cockpit and latest workstation evidence.",
     meta: "Operator inbox and readiness evidence are clear",
     label: "Open Trading cockpit",
-    route: "/trading",
+    route: WORKSTATION_ROUTE_CATALOG.trading,
     level: "ready" as ReadinessConsoleLevel,
     disabledReason: null,
     sourcePriority: 99,
@@ -1715,6 +1853,25 @@ function formatCurrency(value: number): string {
     maximumFractionDigits: 2
   });
 }
+
+function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return fallback;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function toErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message.trim()) {

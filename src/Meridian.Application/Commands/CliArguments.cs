@@ -91,7 +91,9 @@ public sealed record CliArguments
             SimulateFeed = HasFlag(args, "--simulate-feed"),
             Backfill = HasFlag(args, "--backfill"),
             DryRun = HasFlag(args, "--dry-run") || HasFlag(args, "--check-config"),
-            Quickstart = HasFlag(args, "--quickstart"),
+            Quickstart = HasFlag(args, "--quickstart") ||
+                HasFlag(args, "--setup") ||
+                HasFlag(args, "--first-run"),
             Offline = HasFlag(args, "--offline") || HasFlag(args, "--check-config"),
             ValidateConfig = HasFlag(args, "--validate-config"),
             ValidateSchemas = HasFlag(args, "--validate-schemas"),

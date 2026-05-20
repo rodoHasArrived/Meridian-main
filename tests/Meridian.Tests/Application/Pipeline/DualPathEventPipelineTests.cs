@@ -204,7 +204,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task TryPublishTrade_WhenBufferFull_ReturnsFalse()
+    public async Task TryPublishTrade_WhenBufferFull_FallsBackToSlowPath()
     {
         // Fill the ring buffer completely (consumers disabled so they cannot race to drain it)
         await using var tinyPipeline = new DualPathEventPipeline(_slowPath, _symbolTable, ringBufferCapacity: 2, batchDrainSize: 1, startConsumers: false);
@@ -215,10 +215,14 @@ public class DualPathEventPipelineTests : IAsyncLifetime
         tinyPipeline.TryPublishTrade(in raw);
         tinyPipeline.TryPublishTrade(in raw);
 
-        // Buffer should now be full — next write should fail
+        // Buffer should now be full — next write should fall back to the slow path
         var result = tinyPipeline.TryPublishTrade(in raw);
-        result.Should().BeFalse();
-        tinyPipeline.HotTradeDropped.Should().BeGreaterThanOrEqualTo(1);
+        result.Should().BeTrue();
+        tinyPipeline.HotTradeFallbacks.Should().Be(1);
+
+        await tinyPipeline.DisposeAsync();
+        await WaitForEventsAsync(_sink, expectedCount: 3, timeout: TimeSpan.FromSeconds(5));
+        _sink.ReceivedEvents.Should().HaveCount(3);
     }
 
     #endregion
@@ -323,6 +327,13 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         while (_pipeline.HotQuoteConsumed < expected && sw.Elapsed < timeout)
+            await Task.Delay(5);
+    }
+
+    private static async Task WaitForEventsAsync(MockStorageSink sink, int expectedCount, TimeSpan timeout)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sink.ReceivedEvents.Count < expectedCount && sw.Elapsed < timeout)
             await Task.Delay(5);
     }
 

@@ -211,7 +211,7 @@ public sealed class PaperTradingGatewayTests
         }
 
         public Task<SecurityDetailDto?> GetByIdentifierAsync(
-            SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default)
+            SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             if (_securityId is null)
                 return Task.FromResult<SecurityDetailDto?>(null);

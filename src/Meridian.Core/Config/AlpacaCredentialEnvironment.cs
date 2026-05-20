@@ -38,7 +38,20 @@ public static class AlpacaCredentialEnvironment
 
     public static string NormalizeTradingEnvironment(string? value)
     {
-        if (string.Equals(value?.Trim(), LiveEnvironment, StringComparison.OrdinalIgnoreCase))
+        var trimmed = value?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return PaperEnvironment;
+        }
+
+        if (trimmed.Contains("paper-api.alpaca.markets", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, PaperEnvironment, StringComparison.OrdinalIgnoreCase))
+        {
+            return PaperEnvironment;
+        }
+
+        if (trimmed.Contains("api.alpaca.markets", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, LiveEnvironment, StringComparison.OrdinalIgnoreCase))
         {
             return LiveEnvironment;
         }

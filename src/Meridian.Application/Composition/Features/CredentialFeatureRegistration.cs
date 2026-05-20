@@ -19,6 +19,13 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
             return new CredentialTestingService(config.DataRoot);
         });
 
+        services.AddSingleton<IProviderCredentialStore>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var config = configStore.Load();
+            return new FileProviderCredentialStore(config.DataRoot);
+        });
+
         services.AddSingleton<OAuthTokenRefreshService>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();

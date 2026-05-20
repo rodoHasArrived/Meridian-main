@@ -2,10 +2,18 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **fund management pr sequenced roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the fund management pr sequenced roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
-> **UI lane refresh (2026-05-12):** Browser workstation references in this
+> **UI lane refresh (2026-05-18):** Browser workstation references in this
 > roadmap are active again. New operator-facing governance, accounting,
 > reporting, and portfolio workflows should be shared-contract-first and
 > visible through `src/Meridian.Ui/dashboard/`; WPF remains retained support,

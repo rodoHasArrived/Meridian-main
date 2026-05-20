@@ -5,8 +5,19 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import type { ApiRequestOptions } from "@/lib/api";
-import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  type AppShellOperatingScopeState
+} from "@/app-shell.view-model";
+import {
+  evidenceWorkbenchPath,
+  normalizeLocalWorkstationRoute,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath
+} from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceEdge,
@@ -31,6 +42,74 @@ export interface EvidenceNodeGroupViewModel {
   readyCount: number;
   reviewCount: number;
   nodes: EvidenceNode[];
+  rows: EvidenceNodeRowViewModel[];
+  tableLabel: string;
+  summaryLabel: string;
+  detailPanelId: string;
+  hasRows: boolean;
+  defaultSelectedNodeId: string | null;
+  emptyTitle: string;
+  emptyDetail: string;
+}
+
+export interface EvidenceNodeRowViewModel {
+  id: string;
+  evidenceId: string;
+  kindLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  sourceSystem: string;
+  summary: string;
+  freshnessLabel: string;
+  freshnessTone: EvidenceStatusTone;
+  artifactCountLabel: string;
+  workItemCountLabel: string;
+  subjectLabel: string;
+  ariaLabel: string;
+  selectAriaLabel: string;
+  artifactRows: EvidenceNodeArtifactRowViewModel[];
+  workItemRows: EvidenceNodeWorkItemRowViewModel[];
+  fields: EvidenceLineageDetailFieldViewModel[];
+}
+
+export interface EvidenceNodeArtifactRowViewModel {
+  id: string;
+  kind: string;
+  target: string;
+  generatedLabel: string;
+  retainedLabel: string;
+  hashLabel: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceNodeWorkItemRowViewModel {
+  id: string;
+  label: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceNodeDetailViewModel {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  freshnessLabel: string;
+  freshnessTone: EvidenceStatusTone;
+  ariaLabel: string;
+  fields: EvidenceLineageDetailFieldViewModel[];
+  artifactRows: EvidenceNodeArtifactRowViewModel[];
+  artifactEmptyText: string;
+  workItemRows: EvidenceNodeWorkItemRowViewModel[];
+  workItemEmptyText: string;
+}
+
+export interface EvidenceNodeSelectionViewModel {
+  selectedRowId: string | null;
+  selectedDetail: EvidenceNodeDetailViewModel | null;
+  selectRow: (rowId: string) => void;
 }
 
 export interface EvidenceLineageRowViewModel {
@@ -108,6 +187,11 @@ export interface EvidenceWorkbenchCommandState {
   disabledReason: string | null;
 }
 
+export interface EvidenceWorkbenchErrorState {
+  summary: string;
+  details: string[];
+}
+
 export interface EvidenceExportResultViewModel {
   title: string;
   manifestPath: string;
@@ -123,7 +207,7 @@ export interface EvidenceWorkbenchViewModel {
   title: string;
   subtitle: string;
   loading: boolean;
-  error: string | null;
+  error: EvidenceWorkbenchErrorState | null;
   showSubjectPicker: boolean;
   hasSelection: boolean;
   hasPacket: boolean;
@@ -191,12 +275,13 @@ export function useEvidenceWorkbenchViewModel(
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
   const [exportResult, setExportResult] = useState<EvidencePacketExportResponse | null>(null);
   const [validateBusy, setValidateBusy] = useState(false);
   const [validationResult, setValidationResult] = useState<EvidenceCompleteness | null>(null);
   const [reloadRevision, setReloadRevision] = useState(0);
+  const operatingScope = useMemo(() => buildOperatingScopeFromSearch(search), [search]);
   const requestRevisionRef = useRef(0);
   const validateCommandRevisionRef = useRef(0);
   const exportCommandRevisionRef = useRef(0);
@@ -239,7 +324,7 @@ export function useEvidenceWorkbenchViewModel(
         }
       } catch (loadError) {
         if (requestRevisionRef.current === revision && !isAbortError(loadError)) {
-          setError(loadError instanceof Error ? loadError.message : "Evidence workbench failed to load.");
+          setError(buildEvidenceWorkbenchError(loadError, "Evidence workbench failed to load."));
         }
       } finally {
         if (loadAbortRef.current === controller) {
@@ -284,7 +369,7 @@ export function useEvidenceWorkbenchViewModel(
       }
     } catch (exportError) {
       if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision && !isAbortError(exportError)) {
-        setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
+        setError(buildEvidenceWorkbenchError(exportError, "Evidence manifest export failed."));
       }
     } finally {
       if (exportAbortRef.current === controller) {
@@ -317,7 +402,7 @@ export function useEvidenceWorkbenchViewModel(
       }
     } catch (validateError) {
       if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision && !isAbortError(validateError)) {
-        setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
+        setError(buildEvidenceWorkbenchError(validateError, "Evidence validation failed."));
       }
     } finally {
       if (validateAbortRef.current === controller) {
@@ -340,6 +425,7 @@ export function useEvidenceWorkbenchViewModel(
   return buildEvidenceWorkbenchViewModel({
     selectedSubjectKind,
     selectedSubjectId,
+    operatingScope,
     loading,
     error,
     subjects,
@@ -357,8 +443,9 @@ export function useEvidenceWorkbenchViewModel(
 export function buildEvidenceWorkbenchViewModel(input: {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  operatingScope?: AppShellOperatingScopeState | null;
   loading: boolean;
-  error: string | null;
+  error: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
   exportBusy: boolean;
@@ -369,10 +456,11 @@ export function buildEvidenceWorkbenchViewModel(input: {
   exportManifest: () => Promise<void>;
   validatePacket: () => Promise<void>;
 }): EvidenceWorkbenchViewModel {
+  const operatingScope = input.operatingScope ?? buildOperatingScopeFromSearch("");
   const completeness = input.validationResult ?? input.packet?.completeness ?? null;
   const hasSelection = Boolean(input.selectedSubjectKind && input.selectedSubjectId);
   const subject = input.packet?.subject ?? null;
-  const sourceWorkflowHref = resolveSourceWorkflowHref(subject);
+  const sourceWorkflowHref = resolveSourceWorkflowHref(subject, operatingScope);
   const subjectLabel = subject?.label ?? "selected evidence subject";
   const reloadCommand = buildReloadCommand(
     input.loading,
@@ -395,6 +483,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subject,
     selectedSubjectKind: input.selectedSubjectKind,
     selectedSubjectId: input.selectedSubjectId,
+    operatingScope,
     exportBusy: input.exportBusy,
     validateBusy: input.validateBusy
   });
@@ -424,7 +513,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subjectEmptyTitle: "No evidence subjects returned",
     subjectEmptyDetail: "Readiness, reconciliation, report-pack, and provider evidence will appear here after the workstation APIs publish packet subjects.",
     subjectEmptyActionLabel: "Open readiness console",
-    subjectEmptyActionHref: "/trading/readiness",
+    subjectEmptyActionHref: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     subjectEmptyActionAriaLabel: "Open readiness console to review upstream evidence sources",
     subjects: input.subjects,
     packet: input.packet,
@@ -452,11 +541,15 @@ export function buildEvidenceWorkbenchViewModel(input: {
     validateBusy: input.validateBusy,
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
-      evidenceWorkbenchPath(subject.subjectKind, subject.subjectId),
+      appendOperatingScopeToRoute(evidenceWorkbenchPath(subject.subjectKind, subject.subjectId), operatingScope),
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
   };
+}
+
+function buildEvidenceWorkbenchError(error: unknown, fallback: string): EvidenceWorkbenchErrorState {
+  return describeApiError(error, fallback);
 }
 
 function isAbortError(error: unknown): boolean {
@@ -546,13 +639,120 @@ export function groupNodes(nodes: EvidenceNode[]): EvidenceNodeGroupViewModel[] 
     groups.set(groupId, [...(groups.get(groupId) ?? []), node]);
   }
 
-  return Array.from(groups.entries()).map(([id, groupNodesForId]) => ({
+  return Array.from(groups.entries()).map(([id, groupNodesForId]) => {
+    const label = formatKind(id);
+    const rows = groupNodesForId.map(buildEvidenceNodeRow);
+    return {
+      id,
+      label,
+      readyCount: groupNodesForId.filter((node) => node.status === "Ready").length,
+      reviewCount: groupNodesForId.filter((node) => node.status !== "Ready").length,
+      nodes: groupNodesForId,
+      rows,
+      tableLabel: `${label} evidence nodes`,
+      summaryLabel: `${rows.length} ${rows.length === 1 ? "node" : "nodes"}; select a row to inspect retained artifacts, freshness, and work items.`,
+      detailPanelId: `evidence-node-${slugifyId(id)}-selected-detail`,
+      hasRows: rows.length > 0,
+      defaultSelectedNodeId: rows[0]?.id ?? null,
+      emptyTitle: `No ${label.toLowerCase()} evidence nodes`,
+      emptyDetail: "This packet did not return evidence nodes for this lifecycle group."
+    };
+  });
+}
+
+export function useEvidenceNodeSelectionViewModel(
+  group: EvidenceNodeGroupViewModel
+): EvidenceNodeSelectionViewModel {
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(group.defaultSelectedNodeId);
+
+  useEffect(() => {
+    setSelectedRowId(group.defaultSelectedNodeId);
+  }, [group.defaultSelectedNodeId]);
+
+  const selectedRow = useMemo(
+    () => group.rows.find((row) => row.id === selectedRowId) ?? group.rows[0] ?? null,
+    [group.rows, selectedRowId]
+  );
+
+  return {
+    selectedRowId: selectedRow?.id ?? null,
+    selectedDetail: selectedRow ? buildEvidenceNodeDetail(selectedRow) : null,
+    selectRow: setSelectedRowId
+  };
+}
+
+export function buildEvidenceNodeDetail(row: EvidenceNodeRowViewModel): EvidenceNodeDetailViewModel {
+  return {
+    id: row.id,
+    eyebrow: "Selected evidence node",
+    title: row.kindLabel,
+    subtitle: row.evidenceId,
+    description: row.summary,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    freshnessLabel: row.freshnessLabel,
+    freshnessTone: row.freshnessTone,
+    ariaLabel: `Selected evidence node: ${row.kindLabel}`,
+    fields: row.fields,
+    artifactRows: row.artifactRows,
+    artifactEmptyText: "No retained artifact references are attached to this node.",
+    workItemRows: row.workItemRows,
+    workItemEmptyText: "No related operator work items are attached to this node."
+  };
+}
+
+function buildEvidenceNodeRow(node: EvidenceNode): EvidenceNodeRowViewModel {
+  const kindLabel = formatKind(node.kind);
+  const statusLabel = formatStatus(node.status);
+  const statusTone = mapStatusTone(node.status);
+  const freshness = buildFreshnessLabel(node);
+  const artifactRows = node.artifactRefs.map(buildEvidenceArtifactRow);
+  const workItemRows = Array.from(new Set(node.relatedWorkItemIds.filter(Boolean))).map((id) => ({
     id,
-    label: formatKind(id),
-    readyCount: groupNodesForId.filter((node) => node.status === "Ready").length,
-    reviewCount: groupNodesForId.filter((node) => node.status !== "Ready").length,
-    nodes: groupNodesForId
+    label: id,
+    ariaLabel: `Related work item ${id}`
   }));
+  const subjectLabel = node.subject.label;
+
+  return {
+    id: node.evidenceId,
+    evidenceId: node.evidenceId,
+    kindLabel,
+    statusLabel,
+    statusTone,
+    sourceSystem: node.sourceSystem || "Unknown source",
+    summary: node.summary || "No summary was returned for this evidence node.",
+    freshnessLabel: freshness.label,
+    freshnessTone: freshness.tone,
+    artifactCountLabel: formatCount(node.artifactRefs.length, "artifact"),
+    workItemCountLabel: formatCount(workItemRows.length, "work item"),
+    subjectLabel,
+    ariaLabel: `${kindLabel} evidence node for ${subjectLabel}. ${statusLabel}. ${freshness.label}.`,
+    selectAriaLabel: `Inspect evidence node ${kindLabel} ${node.evidenceId}`,
+    artifactRows,
+    workItemRows,
+    fields: [
+      { label: "Evidence ID", value: node.evidenceId },
+      { label: "Subject", value: `${node.subject.subjectKind}/${node.subject.subjectId}` },
+      { label: "Source", value: node.sourceSystem || "Unknown source" },
+      { label: "Status", value: statusLabel },
+      { label: "Freshness", value: freshness.label },
+      ...(node.freshness.reason ? [{ label: "Freshness reason", value: node.freshness.reason }] : [])
+    ]
+  };
+}
+
+function buildEvidenceArtifactRow(artifact: EvidenceNode["artifactRefs"][number]): EvidenceNodeArtifactRowViewModel {
+  const target = artifact.path ?? artifact.route ?? artifact.artifactId;
+  return {
+    id: artifact.artifactId,
+    kind: formatKind(artifact.kind),
+    target,
+    generatedLabel: formatDate(artifact.generatedAt),
+    retainedLabel: artifact.retained ? "Retained" : "Transient",
+    hashLabel: artifact.hash ?? "No hash",
+    ariaLabel: `${formatKind(artifact.kind)} artifact ${artifact.artifactId}, ${artifact.retained ? "retained" : "transient"}`
+  };
 }
 
 export function buildEvidencePacketActions(input: {
@@ -560,6 +760,7 @@ export function buildEvidencePacketActions(input: {
   subject: EvidenceSubject | null;
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  operatingScope: AppShellOperatingScopeState;
   exportBusy: boolean;
   validateBusy: boolean;
 }): EvidencePacketActionViewModel[] {
@@ -568,8 +769,8 @@ export function buildEvidencePacketActions(input: {
     const subjectKind = input.subject?.subjectKind ?? input.selectedSubjectKind;
     const subjectId = input.subject?.subjectId ?? input.selectedSubjectId;
     const href = action.targetPageTag === "EvidenceWorkbench" && subjectKind && subjectId
-      ? evidenceWorkbenchPath(subjectKind, subjectId)
-      : workflowTargetPath(action.targetPageTag, input.subject?.workspace);
+      ? appendOperatingScopeToRoute(evidenceWorkbenchPath(subjectKind, subjectId), input.operatingScope)
+      : appendOperatingScopeToRoute(workflowTargetPath(action.targetPageTag, input.subject?.workspace), input.operatingScope);
     const subjectLabel = input.subject?.label ?? "selected evidence subject";
     const command = buildActionCommand(control, subjectLabel, input.exportBusy, input.validateBusy, Boolean(subjectKind && subjectId));
 
@@ -792,13 +993,49 @@ function formatRelationship(value: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {
-  const directRoute = normalizeLocalWorkstationRoute(subject?.route);
-  if (directRoute) {
-    return directRoute;
+function buildFreshnessLabel(node: EvidenceNode): { label: string; tone: EvidenceStatusTone } {
+  if (!node.freshness.asOf) {
+    return { label: "No as-of timestamp", tone: node.status === "Ready" ? "muted" : mapStatusTone(node.status) };
   }
 
-  return subject ? workflowTargetPath(subject.pageTag, subject.workspace) : null;
+  const asOfLabel = formatDate(node.freshness.asOf);
+  if (node.freshness.isStale || node.status === "Stale") {
+    return { label: `Stale as of ${asOfLabel}`, tone: "warning" };
+  }
+
+  if (node.status === "Blocked" || node.status === "Missing") {
+    return { label: asOfLabel, tone: "danger" };
+  }
+
+  if (node.status === "Ready") {
+    return { label: `Fresh as of ${asOfLabel}`, tone: "success" };
+  }
+
+  return { label: asOfLabel, tone: "muted" };
+}
+
+function formatCount(count: number, singular: string) {
+  return count === 1 ? `1 ${singular}` : `${count} ${singular}s`;
+}
+
+function slugifyId(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "group";
+}
+
+function resolveSourceWorkflowHref(
+  subject: EvidenceSubject | null,
+  operatingScope: AppShellOperatingScopeState
+) {
+  const directRoute = normalizeLocalWorkstationRoute(subject?.route);
+  if (directRoute) {
+    return appendOperatingScopeToRoute(directRoute, operatingScope);
+  }
+
+  return subject ? appendOperatingScopeToRoute(workflowTargetPath(subject.pageTag, subject.workspace), operatingScope) : null;
 }
 
 function formatDate(value: string) {

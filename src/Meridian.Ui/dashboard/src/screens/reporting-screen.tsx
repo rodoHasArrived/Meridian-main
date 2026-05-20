@@ -197,52 +197,48 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                   aria-label={vm.workflowTaskPanel.actionListLabel}
                   className="mt-2 grid gap-2 sm:grid-cols-2"
                 >
-                  {vm.workflowTaskPanel.actions.map((action) => {
-                    const taskActionDescriptionId = `reporting-task-action-${action.profileId}-${action.id}-status`;
-
-                    return (
-                      <div
-                        key={action.id}
-                        role="listitem"
-                        className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
-                      >
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Button
-                            asChild={action.method === "GET" && !action.isDisabled}
-                            disabled={action.isDisabled}
-                            busy={action.isRunning}
-                            busyLabel={action.busyLabel}
-                            disabledReason={action.disabledReason}
-                            size="sm"
-                            variant={action.variant}
-                            aria-label={action.ariaLabel}
-                            aria-describedby={taskActionDescriptionId}
-                            onClick={
-                              action.method === "POST" && vm.selectedProfile
-                                ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
-                                : undefined
-                            }
-                          >
-                            {action.isDisabled ? (
-                              action.label
-                            ) : action.method === "POST" ? (
-                              action.label
-                            ) : (
-                              <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
-                                {action.label}
-                              </a>
-                            )}
-                          </Button>
-                          <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
-                            {action.statusBadgeLabel}
-                          </Badge>
-                        </div>
-                        <p id={taskActionDescriptionId} className="mt-2 text-xs leading-5 text-muted-foreground">
-                          {action.descriptionText}
-                        </p>
+                  {vm.workflowTaskPanel.actions.map((action) => (
+                    <div
+                      key={action.id}
+                      role="listitem"
+                      className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          asChild={action.method === "GET" && !action.isDisabled}
+                          disabled={action.isDisabled}
+                          busy={action.isRunning}
+                          busyLabel={action.busyLabel}
+                          disabledReason={action.disabledReason}
+                          size="sm"
+                          variant={action.variant}
+                          aria-label={action.ariaLabel}
+                          aria-describedby={action.describedById}
+                          onClick={
+                            action.method === "POST" && vm.selectedProfile
+                              ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                              : undefined
+                          }
+                        >
+                          {action.isDisabled ? (
+                            action.label
+                          ) : action.method === "POST" ? (
+                            action.label
+                          ) : (
+                            <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                              {action.label}
+                            </a>
+                          )}
+                        </Button>
+                        <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                          {action.statusBadgeLabel}
+                        </Badge>
                       </div>
-                    );
-                  })}
+                      <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {action.descriptionText}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p

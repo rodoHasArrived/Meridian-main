@@ -7,7 +7,10 @@
     Features enhanced debugging output, progress tracking, and Windows toast notifications.
 
 .PARAMETER Mode
-    Installation mode: Docker, Native, Desktop, Check, Uninstall, UninstallDesktop, or Help
+    Installation mode: Docker, Native, Desktop, WebWorkstation, Check, Uninstall, UninstallDesktop, or Help
+
+.PARAMETER Help
+    Show command usage without starting an install workflow
 
 .PARAMETER DetailedOutput
     Enable verbose logging output
@@ -35,6 +38,21 @@
 
 .PARAMETER EnableReadyToRun
     Enable ReadyToRun compilation for Desktop mode for release-oriented packaging
+
+.PARAMETER WebInstallRoot
+    Custom install root for WebWorkstation mode
+
+.PARAMETER WebAppDataRoot
+    Custom app data root for WebWorkstation mode
+
+.PARAMETER WebPort
+    Local host port for WebWorkstation mode
+
+.PARAMETER WebRuntimeIdentifier
+    Runtime identifier for WebWorkstation mode: win-x64 or win-arm64
+
+.PARAMETER SkipLegacyInstallCleanup
+    Keep older WebWorkstation side-by-side install roots instead of archiving them
 
 .EXAMPLE
     .\install.ps1
@@ -65,6 +83,10 @@
     Build Desktop App with ReadyToRun enabled for release packaging
 
 .EXAMPLE
+    .\install.ps1 -Mode WebWorkstation
+    Install the browser workstation as a local Windows app
+
+.EXAMPLE
     .\install.ps1 -Mode Native -NoNotify
     Native .NET installation without notifications
 
@@ -75,8 +97,10 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("Docker", "Native", "Desktop", "Check", "Uninstall", "UninstallDesktop", "Help")]
+    [ValidateSet("Docker", "Native", "Desktop", "WebWorkstation", "Check", "Uninstall", "UninstallDesktop", "Help")]
     [string]$Mode = "",
+
+    [switch]$Help,
 
     [switch]$DetailedOutput,
 
@@ -95,7 +119,35 @@ param(
 
     [switch]$DisableReadyToRun,
 
-    [switch]$EnableReadyToRun
+    [switch]$EnableReadyToRun,
+
+    [string]$WebInstallRoot = "",
+
+    [string]$WebAppDataRoot = "",
+
+    [ValidateRange(1, 65535)]
+    [int]$WebPort = 8080,
+
+    [ValidateSet("win-x64", "win-arm64")]
+    [string]$WebRuntimeIdentifier = "win-x64",
+
+    [switch]$SkipDashboardBuild,
+
+    [switch]$SkipNpmInstall,
+
+    [switch]$SkipHostPublish,
+
+    [switch]$EnableTrimmedPublish,
+
+    [switch]$NoDesktopShortcut,
+
+    [switch]$NoStartMenuShortcut,
+
+    [switch]$SkipLegacyInstallCleanup,
+
+    [switch]$LaunchAfterInstall,
+
+    [switch]$PlanOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -437,11 +489,13 @@ function Show-Header {
 function Show-Help {
     Show-Header
     Write-Host "Usage: .\install.ps1 [-Mode <mode>] [options]"
+    Write-Host "       .\install.ps1 -Help"
     Write-Host ""
     Write-Host "Modes:" -ForegroundColor Yellow
     Write-Host "  Docker           Install using Docker (recommended for production)"
     Write-Host "  Native           Install using native .NET SDK (CLI)"
     Write-Host "  Desktop          Build and install Windows Desktop App (WPF)"
+    Write-Host "  WebWorkstation   Install browser workstation as a local Windows app"
     Write-Host "  Check            Check prerequisites only"
     Write-Host "  Uninstall        Remove Docker containers and images"
     Write-Host "  UninstallDesktop Remove Windows Desktop App"
@@ -459,6 +513,21 @@ function Show-Help {
     Write-Host "  -EnableReadyToRun    Enable ReadyToRun for release-oriented packaging"
     Write-Host "  -NoTrustCert         Skip automatic certificate trust prompt"
     Write-Host ""
+    Write-Host "WebWorkstation Mode Options:" -ForegroundColor Yellow
+    Write-Host "  -WebInstallRoot <path>       Override installed app root"
+    Write-Host "  -WebAppDataRoot <path>       Override app data and config root"
+    Write-Host "  -WebPort <port>              Local host port (default: 8080)"
+    Write-Host "  -WebRuntimeIdentifier <rid>  win-x64 (default) or win-arm64"
+    Write-Host "  -SkipDashboardBuild          Reuse existing built workstation assets"
+    Write-Host "  -SkipNpmInstall              Skip npm install before build"
+    Write-Host "  -SkipHostPublish             Reuse existing published local host"
+    Write-Host "  -EnableTrimmedPublish        Enable trimmed host publish"
+    Write-Host "  -NoDesktopShortcut           Do not create a Desktop shortcut"
+    Write-Host "  -NoStartMenuShortcut         Do not create a Start Menu shortcut"
+    Write-Host "  -SkipLegacyInstallCleanup    Keep older side-by-side installs"
+    Write-Host "  -LaunchAfterInstall          Launch after installation completes"
+    Write-Host "  -PlanOnly                    Print install plan without changing files"
+    Write-Host ""
     Write-Host "Examples:" -ForegroundColor Yellow
     Write-Host "  .\install.ps1                                  # Interactive installation"
     Write-Host "  .\install.ps1 -Mode Docker                     # Quick Docker installation"
@@ -469,6 +538,8 @@ function Show-Help {
     Write-Host "  .\install.ps1 -Mode Desktop -DisableReadyToRun # Lower-disk local publish"
     Write-Host "  .\install.ps1 -Mode Desktop -EnableReadyToRun  # Release-style publish"
     Write-Host "  .\install.ps1 -Mode Desktop -AutoInstallPrereqs # Auto-install .NET SDK etc."
+    Write-Host "  .\install.ps1 -Mode WebWorkstation             # Local browser workstation install"
+    Write-Host "  .\install.ps1 -Mode WebWorkstation -PlanOnly   # Preview browser workstation install"
     Write-Host "  .\install.ps1 -Mode UninstallDesktop           # Uninstall Desktop App"
     Write-Host ""
     Write-Host "Environment Variables (Desktop Mode):" -ForegroundColor Yellow
@@ -722,6 +793,49 @@ function Install-Native {
     }
     finally {
         Pop-Location
+    }
+}
+
+function Install-WebWorkstation {
+    Write-Info "Installing browser workstation..."
+
+    $webInstaller = Join-Path $ScriptDir "install-web-workstation.ps1"
+    if (-not (Test-Path -LiteralPath $webInstaller)) {
+        Write-Error "Web workstation installer was not found: $webInstaller"
+        return
+    }
+
+    $webParameters = @{
+        Port = $script:WebPort
+        RuntimeIdentifier = $script:WebRuntimeIdentifier
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($script:WebInstallRoot)) {
+        $webParameters.InstallRoot = $script:WebInstallRoot
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($script:WebAppDataRoot)) {
+        $webParameters.AppDataRoot = $script:WebAppDataRoot
+    }
+
+    if ($script:SkipDashboardBuild) { $webParameters.SkipDashboardBuild = $true }
+    if ($script:SkipNpmInstall) { $webParameters.SkipNpmInstall = $true }
+    if ($script:SkipHostPublish) { $webParameters.SkipHostPublish = $true }
+    if ($script:EnableTrimmedPublish) { $webParameters.EnableTrimmedPublish = $true }
+    if ($script:NoDesktopShortcut) { $webParameters.NoDesktopShortcut = $true }
+    if ($script:NoStartMenuShortcut) { $webParameters.NoStartMenuShortcut = $true }
+    if ($script:SkipLegacyInstallCleanup) { $webParameters.SkipLegacyInstallCleanup = $true }
+    if ($script:LaunchAfterInstall) { $webParameters.LaunchAfterInstall = $true }
+    if ($script:PlanOnly) { $webParameters.PlanOnly = $true }
+
+    $global:LASTEXITCODE = 0
+    & $webInstaller @webParameters
+    $webSucceeded = $?
+    $lastExitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
+    $webExitCode = if ($lastExitCodeVariable -and $lastExitCodeVariable.Value -is [int]) { [int]$lastExitCodeVariable.Value } else { 0 }
+
+    if (-not $webSucceeded -or $webExitCode -ne 0) {
+        throw "Web workstation installer failed with exit code $webExitCode"
     }
 }
 
@@ -1178,9 +1292,9 @@ function Install-Desktop {
         Write-Host ""
         if ($installedSuccessfully) {
             Write-Host "  Status:       " -ForegroundColor White -NoNewline
-            Write-Host "INSTALLED - Available in Start Menu" -ForegroundColor Green
+            Write-Host "INSTALLED - Available in Start Menu and Desktop shortcut" -ForegroundColor Green
             Write-Host ""
-            Write-Host "  Launch:       Search for 'Meridian' in Start Menu" -ForegroundColor Gray
+            Write-Host "  Launch:       Open the 'Meridian' Desktop shortcut or search Start Menu" -ForegroundColor Gray
         }
         else {
             Write-Host "  To install manually:" -ForegroundColor Yellow
@@ -1192,7 +1306,7 @@ function Install-Desktop {
         }
         Write-Host ""
         Write-Host "  Guidance:     " -ForegroundColor White -NoNewline
-        Write-Host "docs/guides/msix-packaging.md" -ForegroundColor Gray
+        Write-Host "docs/operations/msix-packaging.md" -ForegroundColor Gray
         Write-Host ""
         Write-Host "  Build logs:   " -ForegroundColor White -NoNewline
         Write-Host $diagnosticLogDir -ForegroundColor Gray
@@ -1259,14 +1373,15 @@ function Show-InteractiveMenu {
     Write-Host "  1) Docker (recommended for production)"
     Write-Host "  2) Native .NET SDK (CLI application)"
     Write-Host "  3) Windows Desktop App (WinUI 3 - recommended for Windows)"
-    Write-Host "  4) Windows Desktop App (ARM64)"
-    Write-Host "  5) Check prerequisites only"
-    Write-Host "  6) Uninstall Docker containers"
-    Write-Host "  7) Uninstall Desktop App"
-    Write-Host "  8) Exit"
+    Write-Host "  4) Browser Workstation (local Windows app)"
+    Write-Host "  5) Windows Desktop App (ARM64)"
+    Write-Host "  6) Check prerequisites only"
+    Write-Host "  7) Uninstall Docker containers"
+    Write-Host "  8) Uninstall Desktop App"
+    Write-Host "  9) Exit"
     Write-Host ""
 
-    $choice = Read-Host "Enter choice [1-8]"
+    $choice = Read-Host "Enter choice [1-9]"
 
     switch ($choice) {
         "1" { Install-Docker }
@@ -1275,17 +1390,18 @@ function Show-InteractiveMenu {
             $script:Architecture = "x64"
             Install-Desktop
         }
-        "4" {
+        "4" { Install-WebWorkstation }
+        "5" {
             $script:Architecture = "ARM64"
             Install-Desktop
         }
-        "5" {
+        "6" {
             Test-Prerequisites | Out-Null
             Show-Prerequisites-Suggestions
         }
-        "6" { Uninstall-Docker }
-        "7" { Uninstall-DesktopApp }
-        "8" {
+        "7" { Uninstall-Docker }
+        "8" { Uninstall-DesktopApp }
+        "9" {
             Write-Host "Exiting..."
             exit 0
         }
@@ -1297,6 +1413,11 @@ function Show-InteractiveMenu {
 }
 
 # Main
+if ($Help) {
+    Show-Help
+    exit 0
+}
+
 switch ($Mode) {
     "Docker" {
         Show-Header
@@ -1311,6 +1432,10 @@ switch ($Mode) {
     "Desktop" {
         Show-Header
         Install-Desktop
+    }
+    "WebWorkstation" {
+        Show-Header
+        Install-WebWorkstation
     }
     "Check" {
         Show-Header

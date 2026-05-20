@@ -64,7 +64,7 @@ public sealed class WorkspacePageViewModelTests : IDisposable
     public async Task LoadAsync_SetsActiveWorkspaceName_WhenActiveExists()
     {
         var service = await CreateServiceAsync();
-        var workspace = service.Workspaces.First(item => item.Id == "research");
+        var workspace = service.Workspaces.First(item => item.Id == "strategy");
         await service.ActivateWorkspaceAsync(workspace.Id);
 
         WpfTestThread.Run(async () =>

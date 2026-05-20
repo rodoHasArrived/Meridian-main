@@ -155,6 +155,13 @@
       "waitForText": "Strategy Lane"
     },
     {
+      "id": "W05D",
+      "name": "web-strategy-designer",
+      "path": "/strategy/designer",
+      "docLabel": "Strategy — Designer",
+      "waitForText": "Strategy Builder Workbench"
+    },
+    {
       "id": "W06",
       "name": "web-data-workspace",
       "path": "/data",

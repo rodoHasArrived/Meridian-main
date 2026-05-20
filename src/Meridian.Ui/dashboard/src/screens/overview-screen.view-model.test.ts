@@ -1,18 +1,21 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildOverviewActivityDetail,
   buildOverviewActivityRows,
   buildOverviewBriefingItems,
+  buildOverviewPortfolioPanel,
   buildOverviewPriorityRoutes,
   buildOverviewRefreshCommand,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
   buildOverviewValueBlockers,
   buildOverviewWorkspaceLinks,
+  useOverviewActivitySelectionViewModel,
   useOverviewStatusViewModel,
   type OverviewRefreshFetcher
 } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
@@ -34,6 +37,33 @@ const session: SessionInfo = {
   environment: "paper",
   activeWorkspace: "trading",
   commandCount: 9
+};
+
+const tradingWorkspace: TradingWorkspaceResponse = {
+  metrics: [],
+  positions: [],
+  openOrders: [],
+  fills: [],
+  risk: {
+    state: "Healthy",
+    summary: "Paper account is inside guardrails.",
+    netExposure: "$0",
+    grossExposure: "$0",
+    var95: "$0",
+    maxDrawdown: "0%",
+    buyingPowerUsed: "0%",
+    activeGuardrails: []
+  },
+  brokerage: {
+    provider: "Alpaca",
+    account: "Paper",
+    environment: "paper",
+    connection: "Connected",
+    lastHeartbeat: "2026-04-28T18:15:00Z",
+    orderIngress: "Ready",
+    fillFeed: "Ready",
+    notes: "Ready for paper orders."
+  }
 };
 
 describe("overview-screen view model", () => {
@@ -362,6 +392,20 @@ describe("overview-screen view model", () => {
     expect(state.valueBlockerSummary).toBe("No immediate readiness blockers detected. Continue with the priority routes below.");
   });
 
+  it("projects route-backed portfolio empty-state actions", () => {
+    expect(buildOverviewPortfolioPanel(null, null).emptyAction).toEqual({
+      href: "/settings#alpaca-provider-setup",
+      label: "Connect provider",
+      ariaLabel: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
+    });
+
+    expect(buildOverviewPortfolioPanel(tradingWorkspace, null).emptyAction).toEqual({
+      href: "/trading",
+      label: "Open trading cockpit",
+      ariaLabel: "Open Trading cockpit from the empty portfolio positions panel"
+    });
+  });
+
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {
     const rows = buildOverviewActivityRows([
       {
@@ -399,6 +443,74 @@ describe("overview-screen view model", () => {
       timestampLabel: "Apr 28, 18:15 UTC"
     });
     expect(rows[1].ariaLabel).toBe("Error event from Unknown source at Apr 28, 18:15 UTC: Storage verification failed.");
+    expect(rows[1]).toMatchObject({
+      selectAriaLabel: "Inspect Error event from Unknown source at Apr 28, 18:15 UTC: Storage verification failed.",
+      detailPanelId: "overview-activity-selected-detail",
+      expanded: false
+    });
+  });
+
+  it("builds selected activity details from event rows", () => {
+    const rows = buildOverviewActivityRows([
+      {
+        id: "evt-2",
+        type: "error",
+        message: "Storage verification failed.",
+        source: " ",
+        timestamp: "2026-04-28T18:15:00Z"
+      }
+    ]);
+
+    expect(buildOverviewActivityDetail(rows[0])).toEqual({
+      eyebrow: "Error event",
+      title: "Storage verification failed.",
+      subtitle: "Unknown source",
+      description: "Error evidence needs triage before the related workflow can be trusted.",
+      badgeLabel: "ERR",
+      badgeVariant: "danger",
+      ariaLabel: "Selected recent activity detail for Error event from Unknown source",
+      fields: [
+        { label: "Source", value: "Unknown source" },
+        { label: "Timestamp", value: "Apr 28, 18:15 UTC" },
+        { label: "Severity", value: "Error" },
+        { label: "Event ID", value: "evt-2" }
+      ]
+    });
+    expect(buildOverviewActivityDetail(null)).toBeNull();
+  });
+
+  it("keeps recent activity selection in the view model", () => {
+    const rows = buildOverviewActivityRows([
+      {
+        id: "evt-1",
+        type: "warning",
+        message: "Brokerage sync delayed.",
+        source: "Provider health",
+        timestamp: "2026-04-28T18:15:00Z"
+      },
+      {
+        id: "evt-2",
+        type: "info",
+        message: "Backfill completed.",
+        source: "Data",
+        timestamp: "2026-04-28T18:20:00Z"
+      }
+    ]);
+
+    const { result } = renderHook(() => useOverviewActivitySelectionViewModel(rows));
+
+    expect(result.current.selectedRowId).toBe("evt-1");
+    expect(result.current.rows[0].expanded).toBe(true);
+    expect(result.current.selectedDetail?.title).toBe("Brokerage sync delayed.");
+    expect(result.current.tableLabel).toBe("2 recent system events");
+
+    act(() => {
+      result.current.selectActivity("evt-2");
+    });
+
+    expect(result.current.selectedRowId).toBe("evt-2");
+    expect(result.current.rows[1].expanded).toBe(true);
+    expect(result.current.selectedDetail?.title).toBe("Backfill completed.");
   });
 
   it("derives healthy status banner semantics as a polite status region", () => {
