@@ -82,6 +82,13 @@ def validate_file(path: Path) -> int:
     print(f"{path} passed enum validation")
     return 0
 
+
+def _extract_front_matter(text: str) -> tuple[dict[str, Any], str]:
+    if yaml is None:
+        raise ReadmeContractError("PyYAML is required for README front matter validation")
+    if not text.startswith("---\n"):
+        raise ReadmeContractError("front matter opening marker '---' is missing")
+
     closing = text.find("\n---\n", 4)
     if closing == -1:
         raise ReadmeContractError("front matter closing marker '---' is missing")
