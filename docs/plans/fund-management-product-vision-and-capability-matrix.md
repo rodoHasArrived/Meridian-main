@@ -269,12 +269,14 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 ### Wave A: close Wave 2 cockpit acceptance evidence
 
+0. Complete **Synthetic enablement baseline** before provider Wave A completion claims: deterministic fixtures, replay utilities, and fault-injection hooks used by the acceptance harness.
 1. Keep DK1 provider-trust parity, explainability, calibration, and operator sign-off visible in the trading readiness lane.
 2. Prove paper-session create, restore, replay, audit/control, and promotion-review continuity through repo-backed operator scenarios.
 3. Keep WPF Trading, Trading Hours, OrderBook, Research, Data Operations, Provider Health, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first staging, and StrategyRuns recovery surfaces as consumers of shared readiness/calendar/depth/run/provider/diagnostics/history/log/symbol-state contracts, not separate acceptance models.
 
 **Exit criteria**
 
+- Deterministic harness readiness is complete and documented (fixtures + replay utilities + fault-injection hooks), and harness parity checks pass for the provider set targeted by Wave A.
 - `Backtest -> Paper` can be exercised as one auditable operator path.
 - Replay, signed DK1 trust posture, promotion checklist state, and operator work items are visible from the shared readiness contract and initial operator-inbox endpoint, with route-aware account-scoped WPF shell queue-button routing for the primary work item.
 - The WPF shell supports the workflow without introducing shell-local readiness semantics.
@@ -293,6 +295,7 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 ### Wave C: productize governance and fund operations
 
+0. Finish **Synthetic template modernization** (post-baseline) so template evolution does not block Wave A provider completion.
 1. Extend the delivered file-backed reconciliation break queue and calibration-summary rollups into calibrated, durable casework.
 2. Turn governed report packs from generated artifacts into reviewed, approved, and publishable outputs with provenance.
 3. Connect account/entity, cash-flow, multi-ledger, reconciliation, and reporting views through the shared Fund Operations projection path, keeping Fund Accounts on shared account/provider-route/balance-history/shared-data evidence.
@@ -307,5 +310,6 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 - Keep **contract-first sequencing**: merge shared DTO/read-model slices before dependent UI surfaces.
 - Treat **WPF + shared endpoint parity** as a release gate for each wave.
+- Treat **harness parity checks** as a hard gate before broad provider-wave rollout beyond Wave A pilot scope.
 - Maintain **evidence and auditability** by preserving replay/export/diagnostics support in every phase.
 - Run a **monthly roadmap reconciliation** between this matrix, the implementation backlog, the DK readiness dashboard, and the PR-sequenced roadmap to avoid phase drift.
