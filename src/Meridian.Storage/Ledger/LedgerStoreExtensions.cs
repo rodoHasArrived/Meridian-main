@@ -16,7 +16,10 @@ public static class LedgerStoreExtensions
         }
 
         services.AddSingleton(new LedgerJournalStoreOptions { ConnectionString = connStr });
-        services.AddSingleton<ILedgerJournalStore, PostgresLedgerJournalStore>();
+        services.AddSingleton<PostgresLedgerJournalStore>();
+        services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<LedgerMigrationRunner>();
         services.AddSingleton<ILedgerBookService>(sp =>
             new PostgresLedgerBookService(
                 sp.GetRequiredService<ILedgerJournalStore>(),

@@ -253,6 +253,66 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
+
+    [Theory]
+    [InlineData("ibkr", "DU-7001")]
+    [InlineData("robinhood", "RH-9001")]
+    [InlineData("stocksharp", "SS-3001")]
+    public async Task Scenario_BrokerageSyncDegradedSecurityCoverage_ProjectsProviderSpecificReadinessClaims(
+        string providerId,
+        string externalAccountId)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: false);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    $"BRK-{providerId.ToUpperInvariant()}",
+                    $"{providerId} Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests",
+                    Institution: providerId,
+                    LedgerReference: "BROKERAGE-CASH"),
+                cts.Token);
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto(providerId, externalAccountId, "ops-review"),
+                cts.Token);
+            var latest = await fundAccountService.GetLatestSyncHistoryAsync(fundAccountId, "brokerage-sync", cts.Token);
+            var readiness = await fundAccountService.GetReadinessAsync(fundAccountId, cts.Token);
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Degraded);
+            latest.Should().NotBeNull();
+            latest!.Status.Should().Be(AccountSyncStatusDto.Degraded);
+            latest.ProviderId.Should().Be(providerId);
+            latest.ExternalAccountId.Should().Be(externalAccountId);
+            latest.SecurityMissingCount.Should().BeGreaterThan(0);
+            readiness.Should().NotBeNull();
+            readiness!.Issues.Should().Contain(issue =>
+                issue.Code == "account.security_master.coverage_missing"
+                && issue.ProviderId == providerId
+                && issue.ExternalAccountId == externalAccountId);
+            readiness.Issues.Should().NotContain(issue => issue.Code == "account.sync.failed");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     [Fact]
     public async Task Scenario_LinkedFundAccount_BrokerageStatusUsesStatusDtoBeforeLegacyProjectionExists()
     {

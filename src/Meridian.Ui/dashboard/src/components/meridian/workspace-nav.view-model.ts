@@ -69,6 +69,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync }
   ],
   accounting: [
+    { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accounting },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },

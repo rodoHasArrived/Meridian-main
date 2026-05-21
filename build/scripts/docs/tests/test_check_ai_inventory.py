@@ -187,6 +187,42 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
+    def test_check_catalog_drift_reports_missing_workflow_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md")
+            write(
+                root / "docs" / "prompts" / "automation-prompts.md",
+                "Use `.github/workflows/prompt-generation.yml` to regenerate prompts.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "missing-workflow-reference"
+                    and finding.name == "prompt-generation.yml"
+                    and finding.path == "docs/prompts/automation-prompts.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_allows_existing_workflow_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md")
+            write(root / ".github" / "workflows" / "ci.yml")
+            write(
+                root / "docs" / "prompts" / "automation-prompts.md",
+                "Use `.github/workflows/ci.yml` for the active CI workflow.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "missing-workflow-reference" for finding in findings))
+
     def test_check_catalog_drift_passes_when_optional_assistant_surface_is_documented(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

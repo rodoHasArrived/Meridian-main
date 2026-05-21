@@ -1,8 +1,9 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Component, lazy, Suspense, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
   Bell,
+  ChevronDown,
   GitBranch,
   LoaderCircle,
   Menu,
@@ -20,7 +21,9 @@ import {
   removeOperatingScopeFromSearch,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkflowContinuityViewModel,
+  type AppShellWorkflowContinuityDisclosurePanel,
   type AppShellOperatingScopeInput,
+  type AppShellTrustStripState,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
@@ -48,6 +51,7 @@ const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-
 const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((module) => ({ default: module.GovernanceScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
+const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
 const OverviewScreen = lazy(() => import("@/screens/overview-screen").then((module) => ({ default: module.OverviewScreen })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
@@ -176,6 +180,7 @@ function AppShell() {
     error,
     workflowError,
     workspaceErrors,
+    usingDevelopmentFixtures,
     payload: {
       session,
       overview,
@@ -273,6 +278,8 @@ function AppShell() {
           <span className="workstation-search-kbd" aria-hidden="true">{shell.commandPaletteTrigger.shortcutLabel}</span>
         </button>
 
+        <WorkstationTrustStrip viewModel={shell.trustStrip} />
+
         <div className="workstation-actions">
           <PriceAlertsBell />
           {session ? (
@@ -316,8 +323,9 @@ function AppShell() {
             {usingDevelopmentFixtures ? <DevelopmentFixtureNotice refreshing={loading} onRetry={refresh} /> : null}
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
-              <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
-                <Routes>
+              <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
+                <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
+                  <Routes>
                   <Route path="/" element={<OverviewScreen data={overview} session={session} trading={trading} portfolio={portfolio} />} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
@@ -339,6 +347,7 @@ function AppShell() {
                       brokeragePortfolio={brokeragePortfolio}
                     />
                   )} />
+                  <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
@@ -354,7 +363,13 @@ function AppShell() {
                   <Route path="/data/*" element={(
                     <DataOperationsScreen
                       data={dataOperations}
+                      providerConnections={providerConnections}
+                      providerRoutingConnections={providerRoutingConnections}
+                      providerRoutingBindings={providerRoutingBindings}
+                      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+                      providerRoutingRefreshing={providerRoutingRefreshing}
                       onProviderSetupConfigured={refreshProviderRouting}
+                      onProviderRoutingRefresh={refreshProviderRouting}
                     />
                   )} />
                   <Route path="/settings/*" element={(
@@ -384,9 +399,10 @@ function AppShell() {
                   <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="*" element={<Navigate to="/trading" replace />} />
-                </Routes>
-              </Suspense>
+                    <Route path="*" element={<NotFoundScreen />} />
+                  </Routes>
+                </Suspense>
+              </RouteErrorBoundary>
             ) : null}
           </div>
         </main>
@@ -567,7 +583,139 @@ function WorkflowContinuityDock({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
+
+      <div
+        className="workflow-continuity-support"
+        role="group"
+        aria-label={viewModel.disclosure.label}
+      >
+        <p className="workflow-continuity-support-summary">{viewModel.disclosure.summary}</p>
+        {viewModel.disclosure.panels.map((panel) => (
+          <WorkflowContinuityDisclosurePanel
+            key={panel.id}
+            panel={panel}
+            viewModel={viewModel}
+          />
+        ))}
+      </div>
     </section>
+  );
+}
+
+class RouteErrorBoundary extends Component<
+  { children: ReactNode; routeKey: string },
+  { hasError: boolean; routeKey: string }
+> {
+  constructor(props: { children: ReactNode; routeKey: string }) {
+    super(props);
+    this.state = { hasError: false, routeKey: props.routeKey };
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  static getDerivedStateFromProps(
+    props: { routeKey: string },
+    state: { hasError: boolean; routeKey: string }
+  ): { hasError: boolean; routeKey: string } | null {
+    if (props.routeKey === state.routeKey) {
+      return null;
+    }
+
+    return { hasError: false, routeKey: props.routeKey };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Meridian workstation route failed to render.", error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <RouteRecoveryPanel
+          title="Workbench route failed"
+          detail="Meridian could not render this route. Return to Trading or retry after refreshing live data."
+          actionLabel="Open Trading"
+          actionHref="/trading"
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+function NotFoundScreen() {
+  return (
+    <RouteRecoveryPanel
+      title="Workbench route not found"
+      detail="The requested workstation route is not available in this Meridian build."
+      actionLabel="Open Trading"
+      actionHref="/trading"
+    />
+  );
+}
+
+function RouteRecoveryPanel({
+  title,
+  detail,
+  actionLabel,
+  actionHref
+}: {
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionHref: string;
+}) {
+  return (
+    <section
+      role="alert"
+      aria-labelledby="route-recovery-title"
+      aria-describedby="route-recovery-detail"
+      className="panel-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div>
+        <span className="eyebrow-label">Route recovery</span>
+        <h2 id="route-recovery-title" className="mt-1 text-base font-semibold text-foreground">{title}</h2>
+        <p id="route-recovery-detail" className="mt-1 text-sm text-muted-foreground">{detail}</p>
+      </div>
+      <Button asChild variant="default" size="sm" className="shrink-0">
+        <Link to={actionHref}>
+          <span>{actionLabel}</span>
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </Button>
+    </section>
+  );
+}
+
+function WorkflowContinuityDisclosurePanel({
+  panel,
+  viewModel
+}: {
+  panel: AppShellWorkflowContinuityDisclosurePanel;
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <details className="workflow-continuity-disclosure" open={panel.defaultExpanded}>
+      <summary aria-label={panel.ariaLabel}>
+        <span className="workflow-continuity-disclosure-copy">
+          <span>{panel.label}</span>
+          <span>{panel.summary}</span>
+        </span>
+        <ChevronDown className="workflow-continuity-disclosure-icon h-3.5 w-3.5" aria-hidden="true" />
+      </summary>
+      <div className="workflow-continuity-disclosure-body">
+        {panel.id === "linked-context" ? (
+          <LinkedContextPanel viewModel={viewModel} />
+        ) : panel.id === "operator-focus" ? (
+          <OperatorFocusPanel viewModel={viewModel} />
+        ) : (
+          <EvidenceTimelinePanel viewModel={viewModel} />
+        )}
+      </div>
+    </details>
   );
 }
 
@@ -602,6 +750,149 @@ function DecisionBriefPanel({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
+    </section>
+  );
+}
+
+function OperatorFocusPanel({
+  viewModel
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <section className="workflow-continuity-focus" aria-label={viewModel.operatorFocusLabel}>
+      <div className="workflow-continuity-focus-head">
+        <span className="eyebrow-label">{viewModel.operatorFocusLabel}</span>
+        <p className="workflow-continuity-focus-summary">{viewModel.operatorFocusSummary}</p>
+      </div>
+      {viewModel.operatorFocusItems.length > 0 ? (
+        <ul className="workflow-continuity-focus-list" aria-label={viewModel.operatorFocusItemsLabel}>
+          {viewModel.operatorFocusItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={item.route}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "workflow-continuity-focus-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  `workflow-continuity-focus-item-${item.tone}`
+                )}
+              >
+                <span className="workflow-continuity-focus-route">{item.workspaceLabel}</span>
+                <span className="workflow-continuity-focus-copy">
+                  <span className="workflow-continuity-focus-title">{item.label}</span>
+                  <span className="workflow-continuity-focus-detail">{item.detail}</span>
+                  <span className="workflow-continuity-focus-action">{item.actionLabel}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="workflow-continuity-focus-empty">{viewModel.operatorFocusEmptyText}</p>
+      )}
+      {viewModel.operatorFocusOverflowLabel ? (
+        <span className="workflow-continuity-focus-overflow">{viewModel.operatorFocusOverflowLabel}</span>
+      ) : null}
+    </section>
+  );
+}
+
+function LinkedContextPanel({
+  viewModel
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <section className="workflow-continuity-linked" aria-label={viewModel.linkedContextLabel}>
+      <div className="workflow-continuity-linked-head">
+        <span className="eyebrow-label">{viewModel.linkedContextLabel}</span>
+        <p className="workflow-continuity-linked-summary">{viewModel.linkedContextSummary}</p>
+        <span className={cn(
+          "workflow-continuity-linked-posture",
+          `workflow-continuity-linked-posture-${viewModel.linkedContextPostureTone}`
+        )}>
+          {viewModel.linkedContextPostureLabel}
+        </span>
+        {viewModel.linkedContextPrimaryActionHref && viewModel.linkedContextPrimaryActionLabel ? (
+          <Button asChild variant="outline" size="sm" className="workflow-continuity-linked-primary">
+            <Link
+              to={viewModel.linkedContextPrimaryActionHref}
+              aria-label={viewModel.linkedContextPrimaryActionAriaLabel ?? viewModel.linkedContextPrimaryActionLabel}
+            >
+              <span>{viewModel.linkedContextPrimaryActionLabel}</span>
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Button>
+        ) : null}
+      </div>
+      {viewModel.linkedContextItems.length > 0 ? (
+        <ul className="workflow-continuity-linked-list" aria-label={viewModel.linkedContextItemsLabel}>
+          {viewModel.linkedContextItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={item.route}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "workflow-continuity-linked-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  `workflow-continuity-linked-item-${item.tone}`
+                )}
+              >
+                <span className="workflow-continuity-linked-route">{item.workspaceLabel}</span>
+                <span className="workflow-continuity-linked-copy">
+                  <span>{item.label}</span>
+                  <span>{item.detail}</span>
+                </span>
+                <span className="workflow-continuity-linked-status">{item.statusLabel}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="workflow-continuity-linked-empty">{viewModel.linkedContextEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceTimelinePanel({
+  viewModel
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <section className="workflow-continuity-evidence" aria-label={viewModel.evidenceTimelineLabel}>
+      <div className="workflow-continuity-evidence-head">
+        <span className="eyebrow-label">{viewModel.evidenceTimelineLabel}</span>
+        <p className="workflow-continuity-evidence-summary">{viewModel.evidenceTimelineSummary}</p>
+      </div>
+      {viewModel.evidenceTimelineItems.length > 0 ? (
+        <ul className="workflow-continuity-evidence-list" aria-label={viewModel.evidenceTimelineItemsLabel}>
+          {viewModel.evidenceTimelineItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={item.route}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "workflow-continuity-evidence-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  `workflow-continuity-evidence-item-${item.tone}`
+                )}
+              >
+                <span className="workflow-continuity-evidence-route">{item.workspaceLabel}</span>
+                <span className="workflow-continuity-evidence-copy">
+                  <span>{item.label}</span>
+                  <span>{item.detail}</span>
+                </span>
+                <time dateTime={item.timestampIso}>{item.timestampLabel}</time>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="workflow-continuity-evidence-empty">{viewModel.evidenceTimelineEmptyText}</p>
+      )}
+      {viewModel.evidenceTimelineOverflowLabel ? (
+        <span className="workflow-continuity-evidence-overflow">{viewModel.evidenceTimelineOverflowLabel}</span>
+      ) : null}
     </section>
   );
 }
@@ -712,6 +1003,48 @@ function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShell
   const compactLeft = compactOperatingScope(left);
   const compactRight = compactOperatingScope(right);
   return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
+}
+
+function WorkstationTrustStrip({
+  viewModel
+}: {
+  viewModel: AppShellTrustStripState;
+}) {
+  return (
+    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
+      {viewModel.items.map((item) => {
+        const content = (
+          <>
+            <span className="workstation-trust-label">{item.label}</span>
+            <span className="workstation-trust-value">{item.value}</span>
+            <span className="sr-only">
+              {item.detail}
+              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
+            </span>
+          </>
+        );
+
+        return item.href ? (
+          <Link
+            key={item.id}
+            to={item.href}
+            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
+            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
+          >
+            {content}
+          </Link>
+        ) : (
+          <span
+            key={item.id}
+            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
+            aria-label={item.ariaLabel}
+          >
+            {content}
+          </span>
+        );
+      })}
+    </section>
+  );
 }
 
 function PriceAlertsBell() {

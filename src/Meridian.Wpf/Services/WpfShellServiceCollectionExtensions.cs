@@ -41,7 +41,6 @@ public static class WpfShellServiceCollectionExtensions
             sp.GetRequiredService<WorkspaceShellContextService>(),
             sp.GetService<WorkstationWorkflowSummaryService>(),
             sp.GetService<Meridian.Strategies.Services.PromotionService>()));
-        services.AddTransient<TradingWorkspaceShellPresentationService>();
         services.AddMeridianWpfFeatureModules();
         AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.GovernanceWorkspaceShellStateProvider));
         AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.GovernanceWorkspaceShellViewModel));

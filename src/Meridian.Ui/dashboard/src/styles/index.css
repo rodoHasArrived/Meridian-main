@@ -388,7 +388,7 @@
   .workstation-masthead {
     display: grid;
     min-height: 48px;
-    grid-template-columns: 192px minmax(240px, 1fr) auto;
+    grid-template-columns: 192px minmax(220px, 1fr) minmax(320px, auto) auto;
     gap: 0.75rem;
     align-items: center;
     padding: 0 1rem;
@@ -525,6 +525,73 @@
     gap: 0.625rem;
     min-width: 0;
     color: var(--fg-muted);
+  }
+
+  .workstation-trust-strip {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .workstation-trust-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    min-width: 0;
+    min-height: 1.625rem;
+    padding: 0 0.45rem;
+    border: 1px solid var(--state-muted-bd);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.625rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  a.workstation-trust-item:hover,
+  a.workstation-trust-item:focus-visible {
+    border-color: var(--accent);
+    color: #ffffff;
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px rgba(92, 200, 255, 0.28);
+  }
+
+  .workstation-trust-label {
+    color: var(--fg-muted);
+    text-transform: uppercase;
+  }
+
+  .workstation-trust-value {
+    max-width: 8.5rem;
+    overflow: hidden;
+    color: #eff7ff;
+    font-weight: 600;
+    text-overflow: ellipsis;
+  }
+
+  .workstation-trust-item-ready {
+    border-color: var(--state-healthy-bd);
+    background: var(--state-healthy-bg);
+  }
+
+  .workstation-trust-item-review {
+    border-color: var(--state-warn-bd);
+    background: var(--state-warn-bg);
+  }
+
+  .workstation-trust-item-blocked {
+    border-color: var(--state-danger-bd);
+    background: var(--state-danger-bg);
+  }
+
+  .workstation-trust-item-pending {
+    border-color: var(--state-pending-bd);
+    background: var(--state-pending-bg);
   }
 
   .workstation-session-card {
@@ -789,6 +856,91 @@
     border-bottom: 1px solid rgba(31, 52, 76, 0.95);
     background: rgba(8, 16, 26, 0.74);
     padding: 0.625rem 1rem;
+  }
+
+  .workflow-continuity-support {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.625rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-support-summary {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
+
+  .workflow-continuity-disclosure {
+    min-width: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: rgba(8, 16, 26, 0.52);
+  }
+
+  .workflow-continuity-disclosure[open] {
+    background: rgba(10, 22, 34, 0.72);
+  }
+
+  .workflow-continuity-disclosure summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 3.25rem;
+    padding: 0.625rem 0.75rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .workflow-continuity-disclosure summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .workflow-continuity-disclosure summary:focus-visible {
+    outline: 2px solid rgba(42, 178, 212, 0.45);
+    outline-offset: 2px;
+  }
+
+  .workflow-continuity-disclosure-copy {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-disclosure-copy span:first-child {
+    overflow: hidden;
+    color: #f6fbff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-disclosure-copy span:last-child {
+    overflow: hidden;
+    color: var(--fg-muted);
+    font-size: 0.625rem;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-disclosure-icon {
+    color: var(--fg-muted);
+    transition: transform 160ms ease;
+  }
+
+  .workflow-continuity-disclosure[open] .workflow-continuity-disclosure-icon {
+    transform: rotate(180deg);
+  }
+
+  .workflow-continuity-disclosure-body {
+    padding: 0 0.625rem 0.625rem;
   }
 
   .workflow-continuity-context {
@@ -2361,6 +2513,10 @@
     padding: 0.625rem 0.75rem;
   }
 
+  .workflow-continuity-support {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .workflow-continuity-decision,
   .workflow-continuity-steps {
     grid-column: auto;
@@ -2406,6 +2562,11 @@
 
   .workstation-actions {
     justify-content: flex-start;
+  }
+
+  .workstation-trust-strip {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .workstation-search-kbd {

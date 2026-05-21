@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.3 | **Last Updated:** 2026-05-19
+**Version:** 3.5 | **Last Updated:** 2026-05-20
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -280,6 +280,7 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 **Key behaviors:**
 
 - Tracks all active subscriptions (depth and trades) in concurrent dictionaries
+- Returns existing per-symbol subscription IDs for duplicate requests so the active provider is not subscribed twice for the same stream
 - On failover: connects new provider, re-subscribes all active symbols, then disconnects the old provider
 - On connect failure: iterates backup providers until one succeeds
 - Thread-safe switching via `SemaphoreSlim`
@@ -290,6 +291,63 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 **Location:** `src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs`
 
 Singleton that holds the runtime `StreamingFailoverService` instance, allowing API endpoint handlers to query failover state without direct project references.
+
+---
+
+## Streaming Lifecycle Diagnostics
+
+`WebSocketConnectionManager` owns the shared raw-WebSocket lifecycle used by streaming providers that derive from `WebSocketProviderBase`.
+It now exposes a secret-safe `WebSocketConnectionDiagnostics` snapshot for health surfaces, logs, and tests.
+
+The snapshot includes:
+
+- Provider name
+- Lifecycle state: `Configured`, `Connecting`, `Connected`, `Degraded`, `Reconnecting`, `Disconnecting`, `Disconnected`, or `Failed`
+- Current `ClientWebSocket` state
+- Reconnect attempt count and latest reconnect attempt timestamp
+- Last connected, disconnected, and message timestamps
+- Current connection age and idle duration
+- Last error message
+
+The diagnostics record intentionally excludes endpoint URIs, headers, credentials, account IDs, and payload data. Provider-specific code should use this snapshot for operator status and diagnostic exports instead of logging connection internals directly.
+
+---
+
+## Subscription Recovery Diagnostics
+
+`SubscriptionManager` is the shared subscription ledger used by streaming provider bases and provider test doubles.
+It records enough metadata for reconnect, failover, and diagnostic flows to explain active subscription posture without logging payloads or secrets.
+
+Tracked subscription fields include:
+
+- Subscription ID
+- Normalized symbol and subscription kind
+- Created timestamp
+- Status: `Active`, `Recovering`, or `Failed`
+- Last accepted message timestamp
+- Last subscription-specific error
+- Recovery attempt count
+- Optional source of request, such as a watchlist, strategy run, or workspace flow
+
+Existing providers can keep using `Subscribe(...)` when they need independent subscription IDs for separate callers. Reconnect and failover code should prefer `SubscribeOrGetExisting(...)` when duplicate upstream subscriptions are unsafe. `ValidateSubscriptionRequest(...)` returns normalized fields, duplicate detection, the existing subscription ID when present, and a non-secret failure reason for missing symbol/kind inputs.
+
+`GetSnapshot()` now includes total, failed, and recovering subscription counts for health surfaces. `GetStaleSubscriptions(...)` identifies active streams whose last accepted message is older than the caller's threshold so provider diagnostics can distinguish connected-but-stale streams from fully failed connections.
+
+---
+
+## Provider Boundary Data Validation
+
+Streaming adapters should validate normalized provider messages before they enter collectors or the event pipeline. `ProviderDataQualityValidator` provides the shared boundary validator for common market-data invariants:
+
+- Required symbol and timestamp
+- Timestamp not beyond the configured future-skew window
+- Non-negative trade prices and sizes
+- Non-negative quote prices and sizes
+- No crossed BBO quotes unless a provider-specific adapter has documented and explicitly handled that condition
+
+Validation failures return `ProviderDataQualityIssue` records with severity, provider name, field path, entity context, message, and suggested recovery. Adapters must not silently discard invalid provider data; they should reject or flag it with structured log context and avoid high-frequency per-tick success logging.
+
+Alpaca streaming now applies this validator to trade and quote messages after provider-specific JSON parsing and before forwarding to `TradeDataCollector` or `QuoteCollector`.
 
 ---
 
@@ -638,6 +696,7 @@ export TIINGO__TOKEN=your-token
    - Implement `IProviderModule` for custom DI registration.
 
 5. **Close the loop on data quality**
+   - Validate streaming adapter inputs with `ProviderDataQualityValidator` before collector ingress.
    - Use `DataGapAnalyzer` to detect missing data periods.
    - Trigger `DataGapRepair` for automated gap filling.
    - Score quality with `DataQualityMonitor` and emit metrics.
@@ -686,3 +745,16 @@ export TIINGO__TOKEN=your-token
   `/api/provider-routing/trust-snapshots`, and `/api/provider-routing/preview` endpoint mappings.
 - Seeded provider-routing connections and bindings from setup so configured providers are visible
   to route previews and trust snapshots immediately.
+
+## Migration Notes (v3.3 -> v3.4)
+
+- Added secret-safe `WebSocketConnectionDiagnostics` and explicit streaming lifecycle states to `WebSocketConnectionManager`.
+- Added `ProviderDataQualityValidator` for provider-boundary trade and quote checks.
+- Routed Alpaca streaming trade and quote messages through the boundary validator before collector ingress.
+- Hardened `FailoverAwareMarketDataClient` so duplicate per-symbol trade/depth subscription requests return the existing subscription ID instead of creating duplicate upstream provider subscriptions.
+
+## Migration Notes (v3.4 -> v3.5)
+
+- Extended `SubscriptionManager` with subscription status, last-message timestamps, last-error text, recovery-attempt counts, and optional request-source metadata.
+- Added `ValidateSubscriptionRequest(...)`, `SubscribeOrGetExisting(...)`, `RecordMessageReceived(...)`, `RecordSubscriptionError(...)`, `RecordRecoveryAttempt(...)`, and `GetStaleSubscriptions(...)` for reconnect/failover-safe subscription supervision.
+- Kept the existing `Subscribe(...)` behavior intact for providers that intentionally maintain separate per-caller subscription IDs.

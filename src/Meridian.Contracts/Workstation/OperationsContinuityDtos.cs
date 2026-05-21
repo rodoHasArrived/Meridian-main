@@ -97,6 +97,277 @@ public enum OperationsApprovalStateDto : byte
     Rejected = 4
 }
 
+/// <summary>
+/// Single source-of-truth contract matrix for Operations Continuity workflow status/state/code surfaces.
+/// </summary>
+public static class OperationsWorkflowContractMatrix
+{
+    public static IReadOnlyList<OperationsWorkflowStatusDto> OverallStatuses { get; } =
+    [
+        OperationsWorkflowStatusDto.NotStarted,
+        OperationsWorkflowStatusDto.CollectingBrokerData,
+        OperationsWorkflowStatusDto.SecurityMasterValidation,
+        OperationsWorkflowStatusDto.LedgerPostingDraft,
+        OperationsWorkflowStatusDto.ReconciliationActive,
+        OperationsWorkflowStatusDto.ApprovalPending,
+        OperationsWorkflowStatusDto.ReadyForClose,
+        OperationsWorkflowStatusDto.Closed,
+        OperationsWorkflowStatusDto.Blocked
+    ];
+
+    public static IReadOnlyList<OperationsGateStatusDto> GateStatuses { get; } =
+    [
+        OperationsGateStatusDto.NotStarted,
+        OperationsGateStatusDto.InProgress,
+        OperationsGateStatusDto.Passed,
+        OperationsGateStatusDto.ReviewRequired,
+        OperationsGateStatusDto.Blocked
+    ];
+
+    public static IReadOnlyList<OperationsBrokerIntakeStateDto> BrokerSubStates { get; } =
+    [
+        OperationsBrokerIntakeStateDto.Pending,
+        OperationsBrokerIntakeStateDto.Imported,
+        OperationsBrokerIntakeStateDto.Normalized,
+        OperationsBrokerIntakeStateDto.MatchedToInternalRun,
+        OperationsBrokerIntakeStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsSecurityMasterStateDto> SecurityMasterSubStates { get; } =
+    [
+        OperationsSecurityMasterStateDto.Pending,
+        OperationsSecurityMasterStateDto.ResolvedAllInstruments,
+        OperationsSecurityMasterStateDto.OverridesRequested,
+        OperationsSecurityMasterStateDto.OverridesApproved,
+        OperationsSecurityMasterStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsLedgerPostingStateDto> LedgerSubStates { get; } =
+    [
+        OperationsLedgerPostingStateDto.Pending,
+        OperationsLedgerPostingStateDto.Drafted,
+        OperationsLedgerPostingStateDto.Validated,
+        OperationsLedgerPostingStateDto.Posted,
+        OperationsLedgerPostingStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsReconciliationStateDto> ReconciliationSubStates { get; } =
+    [
+        OperationsReconciliationStateDto.Pending,
+        OperationsReconciliationStateDto.AutoMatched,
+        OperationsReconciliationStateDto.ExceptionsOpen,
+        OperationsReconciliationStateDto.InReview,
+        OperationsReconciliationStateDto.Cleared,
+        OperationsReconciliationStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsApprovalStateDto> ApprovalSubStates { get; } =
+    [
+        OperationsApprovalStateDto.Pending,
+        OperationsApprovalStateDto.Submitted,
+        OperationsApprovalStateDto.ReviewerAssigned,
+        OperationsApprovalStateDto.Approved,
+        OperationsApprovalStateDto.Rejected
+    ];
+
+    public static IReadOnlySet<string> BlockerCodes { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "ACTOR_REQUIRED",
+        "APPROVAL_DECISION_REQUIRED",
+        "APPROVAL_METADATA_REQUIRED",
+        "APPROVAL_REQUIRED",
+        "APPROVAL_SUBMISSION_METADATA_REQUIRED",
+        "APPROVAL_SUBMISSION_REQUIRED",
+        "BROKER_IMPORT_ALREADY_RECORDED",
+        "BROKER_IMPORT_GATE_NOT_READY",
+        "BROKER_IMPORT_REQUIRED",
+        "BROKER_INTAKE_REQUIRED",
+        "BROKER_NORMALIZATION_REQUIRED",
+        "BROKER_DUPLICATE_TRANSACTION",
+        "BROKER_OUT_OF_PERIOD_ROWS",
+        "BROKER_PARSE_FAILED",
+        "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+        "BROKER_SCHEMA_INCOMPATIBLE",
+        "BROKER_SECURITY_UNRESOLVED",
+        "BROKER_STATEMENT_MISSING",
+        "BROKER_SYNC_STALE",
+        "BROKER_TRANSACTION_TYPE_UNKNOWN",
+        "FUND_ACCOUNT_REQUIRED",
+        "LEDGER_ACCOUNT_MAPPING_MISSING",
+        "LEDGER_BATCH_ID_REQUIRED",
+        "LEDGER_DRAFT_IMBALANCED",
+        "LEDGER_DRAFT_REQUIRED",
+        "LEDGER_DUPLICATE_POSTING_CANDIDATE",
+        "LEDGER_IDEMPOTENCY_KEY_MISSING",
+        "LEDGER_JOURNAL_ACCOUNT_NAME_REQUIRED",
+        "LEDGER_JOURNAL_ACCOUNT_TYPE_INVALID",
+        "LEDGER_JOURNAL_AGGREGATE_ID_REQUIRED",
+        "LEDGER_JOURNAL_APPEND_REJECTED",
+        "LEDGER_JOURNAL_CANDIDATE_INVALID",
+        "LEDGER_JOURNAL_CANDIDATE_REQUIRED",
+        "LEDGER_JOURNAL_DESCRIPTION_REQUIRED",
+        "LEDGER_JOURNAL_LINES_REQUIRED",
+        "LEDGER_JOURNAL_PERIOD_ID_REQUIRED",
+        "LEDGER_JOURNAL_STORE_UNAVAILABLE",
+        "LEDGER_JOURNAL_TIMESTAMP_REQUIRED",
+        "LEDGER_PERIOD_CLOSED",
+        "LEDGER_POSTING_KIND_REQUIRED",
+        "LEDGER_POSTING_REQUIRED",
+        "LEDGER_PREVIEW_ID_REQUIRED",
+        "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
+        "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_JOURNAL_PROVENANCE_MISSING",
+        "LEDGER_SOURCE_ACTIVITY_DUPLICATE",
+        "LEDGER_VALIDATED_JOURNAL_REQUIRED",
+        "LEDGER_VALIDATION_REQUIRED",
+        "OPERATIONS_CONTINUITY_WORKFLOW_ALREADY_EXISTS",
+        "OPERATIONS_GATES_NOT_PASSED",
+        "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
+        "PERIOD_REQUIRED",
+        "RECONCILIATION_ACTUAL_FEED_ACTIVITY_MISSING_EXPECTED_EVENT",
+        "RECONCILIATION_BREAK_NOT_FOUND",
+        "RECONCILIATION_BREAK_RATIONALE_REQUIRED",
+        "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+        "RECONCILIATION_EVIDENCE_MISSING",
+        "RECONCILIATION_EXPECTED_ACCRUAL_MISSING_ACTUAL",
+        "RECONCILIATION_EXTERNAL_EVIDENCE_MISSING_LEDGER_POSTING",
+        "RECONCILIATION_FACTOR_PAYDOWN_MISMATCH",
+        "RECONCILIATION_LEDGER_POSTING_MISSING_EXTERNAL_EVIDENCE",
+        "RECONCILIATION_PRINCIPAL_INCOME_CLASSIFICATION_MISMATCH",
+        "RECONCILIATION_RUN_NOT_FOUND",
+        "RECONCILIATION_RUN_REQUIRED",
+        "RECONCILIATION_UNASSIGNED_OWNER",
+        "REJECTION_METADATA_REQUIRED",
+        "REOPEN_GOVERNANCE_METADATA_REQUIRED",
+        "REPORT_PACK_ID_MISMATCH",
+        "REPORT_PACK_NOT_READY",
+        "REPORT_PACK_REQUIRED",
+        "SECURITY_MASTER_RESOLUTION_REQUIRED",
+        "ACCRUAL_ACTUAL_EVENT_MISSING",
+        "ACCRUAL_AMOUNT_MISMATCH",
+        "ACCRUAL_CLASSIFICATION_MISMATCH",
+        "ACCRUAL_DAY_COUNT_MISSING",
+        "ACCRUAL_DUPLICATE_RECOGNITION",
+        "ACCRUAL_EXPECTED_EVENT_MISSING",
+        "ACCRUAL_EXTERNAL_EVIDENCE_MISSING",
+        "ACCRUAL_FACTOR_PAYDOWN_MISMATCH",
+        "ACCRUAL_FACTOR_STALE",
+        "ACCRUAL_LEDGER_POSTING_MISSING",
+        "ACCRUAL_RATE_RESET_MISSING",
+        "ACCRUAL_TIMING_MISMATCH",
+        "FACTOR_PAYDOWN_AMOUNT_MISMATCH",
+        "FACTOR_PAYDOWN_CLASSIFICATION_MISMATCH",
+        "FACTOR_PAYDOWN_EXTERNAL_CASH_MISSING",
+        "FACTOR_PAYDOWN_LEDGER_MISSING",
+        "FACTOR_REDUCTION_UNRECONCILED",
+        "FACTOR_SCHEDULE_MISSING",
+        "FACTOR_STALE",
+        "SECURITY_ACCOUNTING_RULE_MISSING",
+        "SECURITY_SCHEDULE_MISSING",
+        "SM_ACCOUNTING_CLASSIFICATION_MISSING",
+        "SM_ACCOUNTING_TERMS_INCOMPLETE",
+        "SM_ACCRUAL_CASH_FLOW_TERMS_MISSING",
+        "SM_COUPON_TERMS_MISSING",
+        "SM_DAY_COUNT_MISSING",
+        "SM_DIVIDEND_TERMS_MISSING",
+        "SM_FACTOR_SCHEDULE_MISSING",
+        "SM_IDENTIFIER_CONFLICT",
+        "SM_PROVENANCE_INCOMPLETE",
+        "SM_PAYMENT_FREQUENCY_MISSING",
+        "SM_RATE_RESET_TERMS_MISSING",
+        "SM_RATE_RESET_SCHEDULE_MISSING",
+        "SM_INSTRUMENT_UNRESOLVED",
+        "SM_OVERRIDE_APPROVAL_METADATA_REQUIRED",
+        "SM_OVERRIDE_APPROVAL_REQUIRED",
+        "SM_OVERRIDE_ID_MISMATCH",
+        "SM_OVERRIDE_REQUEST_REQUIRED",
+        "SM_RECON_SECURITY_UNRESOLVED",
+        "SM_UNAPPROVED_OVERRIDE",
+        "SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT",
+        "SM_VALUATION_SOURCE_MISSING",
+        "WORKFLOW_CLOSED",
+        "WORKFLOW_ID_REQUIRED",
+        "WORKFLOW_NOT_CLOSED",
+        "WORKFLOW_VERSION_MISMATCH"
+    };
+
+    public static IReadOnlySet<string> IssueCodes { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+        "BROKER_SECURITY_UNRESOLVED",
+        "BROKER_STATEMENT_MISSING",
+        "BROKER_SYNC_STALE",
+        "BROKER_TRANSACTION_TYPE_UNKNOWN",
+        "SM_INSTRUMENT_UNRESOLVED",
+        "SM_ACCOUNTING_TERMS_INCOMPLETE",
+        "SM_ACCOUNTING_CLASSIFICATION_MISSING",
+        "SM_ACCRUAL_CASH_FLOW_TERMS_MISSING",
+        "SM_COUPON_TERMS_MISSING",
+        "SM_DAY_COUNT_MISSING",
+        "SM_DIVIDEND_TERMS_MISSING",
+        "SM_FACTOR_SCHEDULE_MISSING",
+        "SM_IDENTIFIER_CONFLICT",
+        "SM_PROVENANCE_INCOMPLETE",
+        "SM_PAYMENT_FREQUENCY_MISSING",
+        "SM_RATE_RESET_TERMS_MISSING",
+        "SM_RATE_RESET_SCHEDULE_MISSING",
+        "SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT",
+        "SM_VALUATION_SOURCE_MISSING",
+        "SM_RECON_SECURITY_UNRESOLVED",
+        "SECURITY_ACCOUNTING_RULE_MISSING",
+        "SECURITY_SCHEDULE_MISSING",
+        "ACCRUAL_ACTUAL_EVENT_MISSING",
+        "ACCRUAL_AMOUNT_MISMATCH",
+        "ACCRUAL_CLASSIFICATION_MISMATCH",
+        "ACCRUAL_DAY_COUNT_MISSING",
+        "ACCRUAL_DUPLICATE_RECOGNITION",
+        "ACCRUAL_EXPECTED_EVENT_MISSING",
+        "ACCRUAL_EXTERNAL_EVIDENCE_MISSING",
+        "ACCRUAL_FACTOR_PAYDOWN_MISMATCH",
+        "ACCRUAL_FACTOR_STALE",
+        "ACCRUAL_LEDGER_POSTING_MISSING",
+        "ACCRUAL_RATE_RESET_MISSING",
+        "ACCRUAL_TIMING_MISMATCH",
+        "FACTOR_PAYDOWN_AMOUNT_MISMATCH",
+        "FACTOR_PAYDOWN_CLASSIFICATION_MISMATCH",
+        "FACTOR_PAYDOWN_EXTERNAL_CASH_MISSING",
+        "FACTOR_PAYDOWN_LEDGER_MISSING",
+        "FACTOR_REDUCTION_UNRECONCILED",
+        "FACTOR_SCHEDULE_MISSING",
+        "FACTOR_STALE",
+        "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
+        "LEDGER_DRAFT_IMBALANCED",
+        "LEDGER_PERIOD_CLOSED",
+        "LEDGER_DUPLICATE_POSTING_CANDIDATE",
+        "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+        "REPORT_PACK_NOT_READY",
+        "APPROVAL_REQUIRED"
+    };
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<OperationsIssueCodeDto>))]
+public enum OperationsIssueCodeDto : byte
+{
+    Unknown = 0,
+    WorkflowAlreadyExists = 1,
+    VersionMismatch = 2,
+    BrokerSourceMissing = 3,
+    BrokerImportFailed = 4,
+    SecurityCoverageMissing = 5,
+    SecurityAccountingClassificationMissing = 6,
+    LedgerPreviewUnavailable = 7,
+    LedgerDraftUnbalanced = 8,
+    LedgerPostingValidationFailed = 9,
+    ReconciliationBreaksOpen = 10,
+    ReconciliationCriticalBreaksOpen = 11,
+    ApprovalReviewerMissing = 12,
+    ApprovalRejected = 13,
+    ReportPackMissing = 14,
+    ReportPackNotReady = 15,
+    GovernanceApprovalRequired = 16
+}
+
 public sealed record OperationsStartWorkflowRequestDto(
     Guid FundAccountId,
     string PeriodId,
@@ -112,7 +383,8 @@ public sealed record OperationsTransitionRequestDto(
     string Actor,
     string? Rationale = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<string>? EvidenceReferenceIds = null);
 
 public sealed record OperationsSecurityMasterOverrideApprovalRequestDto(
     long ExpectedVersion,
@@ -238,7 +510,16 @@ public sealed record OperationsReconciliationRunRequestDto(
     string? Rationale = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsBreakCaseDto>? BreakCases = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    int? SecurityCoverageIssueCount = null,
+    int? SecurityAccountingIssueCount = null,
+    int? ExpectedAccountingEventCount = null,
+    int? ExpectedJournalPreviewCount = null,
+    string? SourceRunId = null,
+    string? ReconciliationRunId = null,
+    Guid? BankEntityId = null,
+    decimal? AmountTolerance = null,
+    int? MaxAsOfDriftMinutes = null);
 
 public sealed record OperationsResolveBreakCaseRequestDto(
     long ExpectedVersion,
@@ -298,7 +579,8 @@ public sealed record OperationsTransitionResultDto(
     string? ErrorMessage,
     OperationsContinuityWorkflowDto? Workflow,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    long? NewVersion = null);
 
 public sealed record OperationsContinuityWorkflowSummaryDto(
     Guid WorkflowId,
@@ -433,7 +715,8 @@ public sealed record OperationsWorkflowBlockerDto(
     string Message,
     OperationsGateKeyDto? Gate,
     string Severity,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    OperationsIssueCodeDto? IssueCode = null);
 
 public sealed record OperationsNextActionDto(
     string Code,

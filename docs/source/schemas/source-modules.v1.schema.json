@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.source-modules.v1",
+  "type": "object",
+  "required": ["schema", "modules"],
+  "properties": {
+    "schema": {
+      "type": "object",
+      "required": ["id", "version", "minimum_renderer_version"],
+      "properties": {
+        "id": { "const": "meridian.source-modules" },
+        "version": { "type": "string", "pattern": "^1\\." },
+        "minimum_renderer_version": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path", "name", "layer", "status", "owner_lane", "purpose", "readme", "roadmap_items", "validation", "last_reviewed"],
+        "properties": {
+          "id": { "type": "string" },
+          "path": { "type": "string" },
+          "name": { "type": "string" },
+          "layer": { "type": "string" },
+          "status": { "type": "string" },
+          "owner_lane": { "type": "string" },
+          "purpose": { "type": "string" },
+          "readme": { "type": "string" },
+          "roadmap_items": { "type": "array", "items": { "type": "string" } },
+          "stage_gates": { "type": "array", "items": { "type": "string" } },
+          "validation": { "type": "array", "items": { "type": "string" } },
+          "diagrams": { "type": "array", "items": { "type": "string" } },
+          "todos": { "type": "array", "items": { "type": "string" } },
+          "last_reviewed": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

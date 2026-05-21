@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.QuantScript.Compilation;
@@ -141,6 +142,65 @@ public sealed class StrategyDesignerWorkstationEndpointsTests
         stored.ParameterSet.Should().ContainKey("datasetFingerprint");
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_StrategyEngineDefinitions_ShouldExposeCoveredCallAndDesignerDefinitions()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var definitions = await client.GetFromJsonAsync<StrategyEngineDefinition[]>(
+            "/api/workstation/strategy/engine/definitions",
+            ServerJsonOptions);
+
+        definitions.Should().NotBeNull();
+        definitions.Should().Contain(definition =>
+            definition.StrategyId == "covered-call" &&
+            definition.UiMetadata!["route"] == "/workstation/strategy/covered-call");
+        definitions.Should().Contain(definition =>
+            definition.StrategyId == "options-payoff" &&
+            definition.Type == StrategyEngineStrategyType.VisualDesigner);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StrategyEngineValidateRun_ShouldBlockMissingDataBeforeRun()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/strategy/engine/validate-run",
+            new
+            {
+                runRequest = new
+                {
+                    strategyId = "covered-call",
+                    strategyVersion = "1",
+                    parameters = new Dictionary<string, string>
+                    {
+                        ["underlying"] = "SPY",
+                        ["daysToExpiration"] = "30",
+                        ["targetDelta"] = "0.30",
+                        ["contracts"] = "1",
+                        ["maxAssignmentRisk"] = "0.25"
+                    },
+                    universe = new[] { "SPY" },
+                    from = "2026-01-01T00:00:00Z",
+                    to = "2026-02-01T00:00:00Z",
+                    dataSource = "fixture",
+                    mode = "Backtest"
+                },
+                dataAvailability = Array.Empty<StrategyEngineDataAvailability>()
+            },
+            ServerJsonOptions);
+        var validation = await response.Content.ReadFromJsonAsync<StrategyEngineValidationResult>(ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        validation.Should().NotBeNull();
+        validation!.IsValid.Should().BeFalse();
+        validation.Findings.Should().Contain(finding => finding.Code == "dependency-missing");
+        validation.Evidence.EvidenceRoute.Should().Be("/workstation/reporting/evidence");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ManageStrategies)
@@ -152,6 +212,8 @@ public sealed class StrategyDesignerWorkstationEndpointsTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
         builder.Services.AddSingleton<StrategyDesignService>();
+        builder.Services.AddSingleton<StrategyEngineRegistry>();
+        builder.Services.AddSingleton<StrategyEngineValidationService>();
         builder.Services.AddSingleton<IStrategyDesignRepository>(_ => new JsonlStrategyDesignRepository(
             Path.Combine(Path.GetTempPath(), "meridian-tests", "strategy-designer-endpoints", Guid.NewGuid().ToString("N")),
             NullLogger<JsonlStrategyDesignRepository>.Instance));

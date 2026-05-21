@@ -1,4 +1,5 @@
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.SecurityMaster;
 using System.Collections.Frozen;
 
 namespace Meridian.Application.SecurityMaster;
@@ -64,28 +65,9 @@ public static class SecurityKindMapping
         };
 
     private static readonly FrozenDictionary<string, string> CanonicalAssetClassLookup =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["Equity"] = "Equity",
-                ["Option"] = "Option",
-                ["Future"] = "Future",
-                ["Bond"] = "Bond",
-                ["FxSpot"] = "FxSpot",
-                ["Deposit"] = "Deposit",
-                ["MoneyMarketFund"] = "MoneyMarketFund",
-                ["CertificateOfDeposit"] = "CertificateOfDeposit",
-                ["CommercialPaper"] = "CommercialPaper",
-                ["TreasuryBill"] = "TreasuryBill",
-                ["Repo"] = "Repo",
-                ["CashSweep"] = "CashSweep",
-                ["OtherSecurity"] = "OtherSecurity",
-                ["Swap"] = "Swap",
-                ["DirectLoan"] = "DirectLoan",
-                ["Commodity"] = "Commodity",
-                ["CryptoCurrency"] = "CryptoCurrency",
-                ["Cfd"] = "Cfd",
-                ["Warrant"] = "Warrant",
-            }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        SecurityAssetClassCatalog.AssetClasses
+            .ToDictionary(static assetClass => assetClass, static assetClass => assetClass, StringComparer.OrdinalIgnoreCase)
+            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Returns the canonical security master asset-class string for the given

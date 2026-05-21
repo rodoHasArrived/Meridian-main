@@ -27,6 +27,7 @@ public static class SecurityMasterEndpoints
             return;
 
         var group = app.MapGroup(string.Empty).WithTags("SecurityMaster");
+        group.AddEndpointFilter(RequireViewSecurityMasterPermission);
 
         /// <summary>
         /// Retrieves a security detail by its internal UUID. Returns full economic definition including terms, identifiers, and status.
@@ -80,7 +81,8 @@ public static class SecurityMasterEndpoints
                     request.IdentifierKind,
                     request.IdentifierValue,
                     request.Provider,
-                    ct)
+                    ct,
+                    request.AsOfUtc)
                 .ConfigureAwait(false);
 
             if (detail is null)
@@ -155,9 +157,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterCreate, async (
             CreateSecurityRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
@@ -178,9 +185,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAmend, async (
             AmendSecurityTermsRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
@@ -201,9 +213,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterDeactivate, async (
             DeactivateSecurityRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             await service.DeactivateAsync(request, ct).ConfigureAwait(false);
             return Results.NoContent();
         })
@@ -224,9 +241,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAliasesUpsert, async (
             UpsertSecurityAliasRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
             return Results.Json(alias, jsonOptions);
         })
@@ -588,25 +610,47 @@ public static class SecurityMasterEndpoints
         return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
     }
 
+    private static ValueTask<object?> RequireViewSecurityMasterPermission(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        if (!EndpointAuthorization.TryGetPermissions(context.HttpContext, out _))
+        {
+            return ValueTask.FromResult<object?>(Results.Unauthorized());
+        }
+
+        if (EndpointAuthorization.HasAnyPermission(
+                context.HttpContext,
+                UserPermission.ViewSecurityMaster,
+                UserPermission.ModifySecurityMaster))
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
+    }
+
     private static bool HasModifySecurityMasterPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
 
     private static string ResolveActor(HttpContext context)
     {
-        if (context.User.Identity?.IsAuthenticated == true &&
-            !string.IsNullOrWhiteSpace(context.User.Identity.Name))
-        {
-            return context.User.Identity.Name!;
-        }
-
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
-            currentUser is string username &&
-            !string.IsNullOrWhiteSpace(username))
+        if (EndpointAuthorization.TryResolveActor(context, out var username))
         {
             return username;
         }
 
-        return "operator";
+        throw new BadHttpRequestException("Authenticated actor is required for Security Master mutations.", StatusCodes.Status401Unauthorized);
+    }
+
+    private static IResult? RequireSecurityMasterMutationPermission(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            return Results.Unauthorized();
+
+        return (permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster
+            ? Results.Forbid()
+            : null;
     }
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

@@ -52,4 +52,44 @@ describe("api-errors", () => {
       details: ["Endpoint returned 503 for /api/export/analysis."]
     });
   });
+
+  it("maps unauthenticated responses to a session recovery summary", () => {
+    const error = createApiErrorFromResponseBody(
+      "/api/workstation/session",
+      401,
+      JSON.stringify({
+        title: "Unauthorized",
+        detail: "The workstation session token expired."
+      })
+    );
+
+    expect(describeApiError(error, "Session request failed.")).toEqual({
+      summary: "Session expired or Meridian sign-in is required.",
+      details: [
+        "Endpoint returned 401 for /api/workstation/session.",
+        "Unauthorized",
+        "The workstation session token expired."
+      ]
+    });
+  });
+
+  it("maps forbidden responses to a role permission summary", () => {
+    const error = createApiErrorFromResponseBody(
+      "/api/workstation/trading",
+      403,
+      JSON.stringify({
+        title: "Forbidden",
+        detail: "The active role cannot read trading readiness."
+      })
+    );
+
+    expect(describeApiError(error, "Trading request failed.")).toEqual({
+      summary: "Permission denied for this Meridian role.",
+      details: [
+        "Endpoint returned 403 for /api/workstation/trading.",
+        "Forbidden",
+        "The active role cannot read trading readiness."
+      ]
+    });
+  });
 });

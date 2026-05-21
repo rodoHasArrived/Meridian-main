@@ -46,6 +46,10 @@ describe("DenseDataTable", () => {
     expect(selectedRow).toHaveAttribute("aria-expanded", "true");
     expect(selectedRow).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("table", { name: "Test table" })).toHaveAccessibleDescription(
+      "Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row."
+    );
 
     await user.click(screen.getByRole("row", { name: "Select MSFT" }));
     expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
@@ -56,6 +60,44 @@ describe("DenseDataTable", () => {
 
     await user.keyboard(" ");
     expect(onRowSelect).toHaveBeenLastCalledWith(rows[0]);
+  });
+
+  it("moves master-detail row focus and selection with arrow, home, and end keys", async () => {
+    const user = userEvent.setup();
+    const onRowSelect = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowSelectAriaLabel={(row) => `Select ${row.symbol}`}
+        onRowSelect={onRowSelect}
+        selectedRowId="aapl"
+        emptyText="No rows"
+        ariaLabel="Keyboard table"
+      />
+    );
+
+    const firstRow = screen.getByRole("row", { name: "Select AAPL" });
+    const secondRow = screen.getByRole("row", { name: "Select MSFT" });
+
+    firstRow.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
+    expect(secondRow).toHaveFocus();
+
+    await user.keyboard("{Home}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[0]);
+    expect(firstRow).toHaveFocus();
+
+    await user.keyboard("{End}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
+    expect(secondRow).toHaveFocus();
+
+    await user.keyboard("{ArrowUp}");
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[0]);
+    expect(firstRow).toHaveFocus();
   });
 
   it("does not hijack interactive controls inside selectable rows", async () => {

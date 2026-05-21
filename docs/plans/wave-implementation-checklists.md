@@ -1,6 +1,14 @@
 # Meridian Wave Implementation Checklists
 
-**Last Reviewed:** 2026-05-19  
+**Last Reviewed:** 2026-05-20  
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **wave implementation checklists** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the wave implementation checklists workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Purpose:** Plain-language, implementation-ready checklists for what must be finished before each wave can be marked complete.
 
 Use this together with:
@@ -55,6 +63,11 @@ Use this together with:
 
 ### Completion Checklist
 
+- [ ] **Synthetic harness enablement baseline is complete before Wave A provider completion.**
+  - [ ] Deterministic fixtures are versioned and used by the acceptance harness.
+  - [ ] Replay utilities are available for repeatable restore/replay verification flows.
+  - [ ] Fault-injection hooks exist for provider-path resilience scenarios in the same harness lane.
+
 - [ ] **Trading readiness endpoint reports accurate state.**
   - [ ] Validate `GET /api/workstation/trading/readiness` for expected readiness fields.
   - [ ] Confirm the endpoint reflects current trust, replay, and promotion posture.
@@ -84,6 +97,11 @@ Use this together with:
   - [ ] Check `TrustedData`, `PaperPromotion`, and `PaperSession` gate states.
   - [ ] For any non-green gate, add explicit blocker text and owner.
   - [ ] Link blockers to concrete follow-up tasks and evidence expectations.
+
+- [ ] **Harness parity checks pass before broad provider wave rollout.**
+  - [ ] Run parity checks comparing deterministic harness outputs across the Wave A provider target set.
+  - [ ] Block broad rollout when parity mismatches are unresolved.
+  - [ ] Record parity evidence links and owners for any temporary exceptions.
 
 ---
 

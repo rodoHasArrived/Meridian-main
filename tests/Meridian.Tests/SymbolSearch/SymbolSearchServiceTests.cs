@@ -117,6 +117,39 @@ public class SymbolSearchServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SearchAsync_DeduplicatesCaseAndWhitespaceVariants_ForStableProviderParity()
+    {
+        var providerA = new Mock<ISymbolSearchProvider>();
+        providerA.Setup(p => p.Name).Returns("openfigi");
+        providerA.Setup(p => p.Priority).Returns(1);
+        providerA.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        providerA.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSFT", "Microsoft Corp", "NASDAQ", "Equity", "US", "USD", "openfigi", 95)
+            ]);
+
+        var providerB = new Mock<ISymbolSearchProvider>();
+        providerB.Setup(p => p.Name).Returns("finnhub");
+        providerB.Setup(p => p.Priority).Returns(2);
+        providerB.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        providerB.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", "finnhub", 90)
+            ]);
+
+        _service = new SymbolSearchService(
+            [providerA.Object, providerB.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().HaveCount(1, "symbol casing/spacing variants should collapse to one deterministic result");
+        result.Results[0].Symbol.Should().Be("MSFT");
+        result.Results[0].Source.Should().Be("openfigi", "highest-score canonical row should win deterministic merge");
+    }
+
+    [Fact]
     public async Task SearchAsync_WithSpecificProvider_QueriesOnlyThatProvider()
     {
         // Arrange

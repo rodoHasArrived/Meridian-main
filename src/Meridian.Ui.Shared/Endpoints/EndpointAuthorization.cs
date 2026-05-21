@@ -7,13 +7,13 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// Centralized authorization helpers for workstation endpoints that rely on
 /// LoginSessionMiddleware session data instead of ad hoc caller-supplied fields.
 /// </summary>
-internal static class EndpointAuthorization
+public static class EndpointAuthorization
 {
-    internal static bool HasPermission(HttpContext context, UserPermission required)
+    public static bool HasPermission(HttpContext context, UserPermission required)
         => TryGetPermissions(context, out var permissions) &&
            (permissions & required) == required;
 
-    internal static bool HasAnyPermission(HttpContext context, params UserPermission[] required)
+    public static bool HasAnyPermission(HttpContext context, params UserPermission[] required)
     {
         if (!TryGetPermissions(context, out var permissions))
         {
@@ -31,7 +31,7 @@ internal static class EndpointAuthorization
         return false;
     }
 
-    internal static bool TryGetPermissions(HttpContext context, out UserPermission permissions)
+    public static bool TryGetPermissions(HttpContext context, out UserPermission permissions)
     {
         if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var rawPermissions) &&
             rawPermissions is UserPermission currentPermissions)
@@ -51,7 +51,7 @@ internal static class EndpointAuthorization
         return false;
     }
 
-    internal static bool TryResolveActor(HttpContext context, out string actor)
+    public static bool TryResolveActor(HttpContext context, out string actor)
     {
         if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
             currentUser is string username &&
@@ -72,7 +72,7 @@ internal static class EndpointAuthorization
         return false;
     }
 
-    internal static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> Require(
+    public static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> Require(
         UserPermission permission)
         => (context, next) =>
         {
@@ -82,6 +82,23 @@ internal static class EndpointAuthorization
             }
 
             if (HasPermission(context.HttpContext, permission))
+            {
+                return next(context);
+            }
+
+            return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
+        };
+
+    public static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireAny(
+        params UserPermission[] permissions)
+        => (context, next) =>
+        {
+            if (!TryGetPermissions(context.HttpContext, out _))
+            {
+                return ValueTask.FromResult<object?>(Results.Unauthorized());
+            }
+
+            if (HasAnyPermission(context.HttpContext, permissions))
             {
                 return next(context);
             }

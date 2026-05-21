@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-05-19
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared workflow command-palette commands with grouped/hash-aware browser sections, browser query-string route focus for subject/symbol handoffs, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench support backed by shared evidence packet/graph APIs, live quote/order-book/watchlist market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, historical price charts, paper-first Alpaca connection verification plus provider-setup validation handoffs, read-only Robinhood brokerage aggregation support, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh/retry state, UFL/reference-data projection endpoints, browser focus-management and Overview status/refresh hardening, Overview Today panel, `/data/alerts` Price Alerts, `/strategy/designer` Strategy Designer, `/strategy/covered-call` chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills dense detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, Reporting report-pack actions and endpoint-link safety, Quant Lab plot view-model extraction, crash-safe shared UI persistence, simplified browser rail/header chrome, retained WPF shell support evidence including the Data shell feature module, neutral demo-data fixture semantics with seeded AAPL market-data fixtures, stronger desktop workflow automation evidence, and hardened WPF screenshot/manual evidence capture
+**Last Updated:** 2026-05-21
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared Strategy Engine definitions/validate-run support, shared workflow command-palette commands with grouped/hash-aware browser sections, browser query-string route focus for subject/symbol handoffs, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench support backed by shared evidence packet/graph APIs, live quote/order-book/watchlist market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, historical price charts, paper-first Alpaca connection verification plus provider-setup validation handoffs, read-only Robinhood brokerage aggregation support, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh/retry state, UFL/reference-data projection endpoints, browser focus-management and Overview status/refresh hardening, Overview Today panel, `/data/alerts` Price Alerts, `/strategy/designer` Strategy Designer, `/strategy/covered-call` chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills dense detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, Reporting report-pack actions and endpoint-link safety, Quant Lab plot view-model extraction, crash-safe shared UI persistence, simplified browser rail/header chrome, retained WPF shell support evidence including the Data shell feature module, neutral demo-data fixture semantics with seeded AAPL market-data fixtures, stronger desktop workflow automation evidence, hardened WPF screenshot/manual evidence capture, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls
 
 This document is the shortest stakeholder summary of Meridian's current roadmap. For the consolidated planning entry point, start with [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md). [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -38,6 +38,14 @@ DTOs, and an in-flight Security Master validation-gate/snapshot slice. These sho
 support evidence; durable close casework, report publication controls, full Evidence Vault, and
 live-readiness remain open.
 
+2026-05-19 late follow-up: the operations-continuity close lane now has shared contracts,
+application services, hash-chained audit history, optional transactional ledger/audit/workflow
+commit support, and workstation API routes for broker import/normalization, Security Master
+resolution/override approval, ledger draft/validate/post, reconciliation, approval, close, and
+governed reopen. Treat this as partial close-workflow support evidence only; external statement
+acceptance, generalized durable casework, report publication controls, browser/operator acceptance,
+and live-readiness remain open.
+
 2026-05-19 browser-workstation evidence also adds support rather than a readiness exit:
 provider-setup results and Settings refresh now expose provider-routing connection, binding,
 credential-source, environment, warning, and trust-snapshot posture; Strategy Designer backend
@@ -45,6 +53,23 @@ actions distinguish browser-openable GET routes from reference-only POST validat
 run-backtest mutations; and Reporting export commands now abort superseded profile exports before
 late results can update the active profile state. These reduce operator confusion but do not close
 cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness.
+
+2026-05-20 support evidence adds security, accessibility, and installer hardening without changing
+the wave order: brokerage order placement now has a fail-closed gate, ledger and promotion write
+routes require explicit authorization, execution metadata is sanitized before API/audit exposure,
+CI includes CodeQL/gitleaks hardening, the web workstation installer repairs invalid preserved
+provider configs and archives legacy installs, browser API failures now distinguish expired-session
+and forbidden-role recovery, disabled field reasons are exposed through accessible support text,
+and Security Master accounting now treats MBS, ABS, loan, and amortizing-loan instruments as
+factor-schedule fixed-income families. These are trust and operability improvements, not W2-W4
+exit evidence.
+
+2026-05-21 support evidence adds Strategy Engine pre-run definitions and validation for Covered
+Call and visual-designer flows, an additive workstation continuity payload profile for
+ledger/reconciliation/strategy read models, a canonical provider capability matrix, and structured
+roadmap/source registries with stale-doc/hash validation. These strengthen shared-contract and
+documentation governance, but they are not Backtest Studio, cockpit, close/report, or live-readiness
+exit evidence.
 
 ---
 
@@ -130,6 +155,12 @@ The new brokerage/account-sync support should be used the same way: it gives the
 ### 3. Wave 4: Productize governance and fund-operations on top of the delivered Security Master baseline
 
 Security Master is already the delivered baseline, and Fund Accounts now has an initial stateful operator brief for fund context, account queues, provider route evidence, shared-data gaps, balance-evidence snapshot posture, and ready-for-reconciliation posture. Reconciliation breaks now carry seeded exception route, tolerance profile, tolerance band, required sign-off role, and sign-off status metadata, with `/api/workstation/reconciliation/calibration-summary` rolling those items into profile-level Ready/ReviewRequired/Blocked posture; browser Accounting also projects a shared dense-table detail queue with keyboard-selectable expanded rows, fixture-backed no-host break-queue coverage, and no-run guidance so operators can inspect loaded reconciliation rows without JSX-local state. The latest support evidence adds UFL/reference-data projections across the expanded asset-class set plus browser search-result selection, identity drill-ins, details/lots tracking, and server-side operator overrides. The opportunity is turning those support surfaces into deeper account/entity, multi-ledger, cash-flow, calibrated reconciliation, and reporting workflows.
+
+The new operations-continuity workflow gives that Wave 4 path a shared account-period close-lane
+API with explicit broker, Security Master, ledger, reconciliation, approval, close, and reopen
+gates. The next step is proving that seam as an operator-owned browser workflow with external
+statement/custodian inputs, durable casework, governed publication controls, and calibration
+sign-off rather than treating endpoint coverage as completion.
 
 ### 4. DK1 / Wave 1: Keep the closed provider-confidence and checkpoint-evidence gate synchronized
 

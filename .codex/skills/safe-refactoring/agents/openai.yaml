@@ -1,0 +1,4 @@
+interface:
+  display_name: "Safe Refactoring"
+  short_description: "Refactor Meridian code without behavior drift"
+  default_prompt: "Use $safe-refactoring to plan and execute this Meridian refactor incrementally while preserving behavior and tests."

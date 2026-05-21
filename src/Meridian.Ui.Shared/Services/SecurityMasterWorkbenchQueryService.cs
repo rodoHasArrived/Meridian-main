@@ -19,6 +19,7 @@ namespace Meridian.Application.SecurityMaster;
 public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkbenchQueryService
 {
     private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
+    private readonly ISecurityValidationService _validationService;
     private readonly ISecurityMasterConflictService _conflictService;
     private readonly ISecurityMasterIngestStatusService _ingestStatusService;
     private readonly IStrategyRepository _strategyRepository;
@@ -29,6 +30,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
+        ISecurityValidationService validationService,
         ISecurityMasterConflictService conflictService,
         ISecurityMasterIngestStatusService ingestStatusService,
         IStrategyRepository strategyRepository,
@@ -38,6 +40,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         IReconciliationRunService? reconciliationRunService = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         _conflictService = conflictService ?? throw new ArgumentNullException(nameof(conflictService));
         _ingestStatusService = ingestStatusService ?? throw new ArgumentNullException(nameof(ingestStatusService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -60,6 +63,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var tradingTask = _queryService.GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct);
         var corporateActionsTask = _queryService.GetCorporateActionsAsync(securityId, ct);
         var conflictsTask = _conflictService.GetOpenConflictsAsync(ct);
+        var validationTask = _validationService.ValidateSecurityAsync(securityId, ct);
 
         await Task.WhenAll(
             detailTask,
@@ -67,7 +71,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             economicTask,
             tradingTask,
             corporateActionsTask,
-            conflictsTask).ConfigureAwait(false);
+            conflictsTask,
+            validationTask).ConfigureAwait(false);
 
         var detail = await detailTask.ConfigureAwait(false);
         if (detail is null)
@@ -89,15 +94,20 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static conflict => conflict.DetectedAt)
             .ToArray();
+        var validationReport = await validationTask.ConfigureAwait(false);
 
         var winningSource = ParseWinningSource(economic?.Provenance);
         var downstreamImpact = await BuildDownstreamImpactAsync(detail, fundProfileId, ct).ConfigureAwait(false);
         var assessments = selectedConflicts
             .Select(conflict => AssessConflict(conflict, detail, economic, trading, winningSource, downstreamImpact))
             .ToArray();
-        var trustPosture = BuildTrustPosture(economic, trading, corporateActions, assessments, winningSource);
+        var trustPosture = BuildTrustPosture(economic, trading, corporateActions, assessments, winningSource, validationReport);
         var provenanceCandidates = BuildProvenanceCandidates(detail, winningSource, assessments);
-        var recommendedActions = BuildRecommendedActions(detail, trustPosture, assessments, downstreamImpact);
+        var recommendedActions = BuildRecommendedActions(detail, trustPosture, assessments, downstreamImpact, validationReport);
+        var identifierSummary = BuildIdentifierSummary(detail);
+        var schemaCompatibility = BuildSchemaCompatibility(detail, economic);
+        var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource);
+        var lotModel = BuildLotModel(detail, economic, trading);
 
         return new SecurityMasterTrustSnapshotDto(
             SecurityId: detail.SecurityId,
@@ -124,7 +134,14 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             RecommendedActions: recommendedActions,
             History: history,
             CorporateActions: corporateActions,
-            RetrievedAtUtc: DateTimeOffset.UtcNow);
+            RetrievedAtUtc: DateTimeOffset.UtcNow)
+        {
+            ValidationReport = validationReport,
+            IdentifierSummary = identifierSummary,
+            SchemaCompatibility = schemaCompatibility,
+            ScheduleSummary = scheduleSummary,
+            LotModel = lotModel
+        };
     }
 
     public async Task<BulkResolveSecurityMasterConflictsResult> BulkResolveConflictsAsync(
@@ -355,14 +372,22 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
         var reconciliationRunCount = 0;
         var reconciliationExposureCount = 0;
+        var reconciliationUnavailableRunCount = 0;
         if (_reconciliationRunService is not null)
         {
             foreach (var run in relatedRuns)
             {
                 ct.ThrowIfCancellationRequested();
 
-                var detailResult = await _reconciliationRunService.GetLatestForRunAsync(run.RunId, ct).ConfigureAwait(false)
-                    ?? await _reconciliationRunService.RunAsync(new ReconciliationRunRequest(run.RunId), ct).ConfigureAwait(false);
+                var detailResult = await _reconciliationRunService
+                    .GetLatestForRunAsync(run.RunId, ct)
+                    .ConfigureAwait(false);
+                if (detailResult is null)
+                {
+                    reconciliationUnavailableRunCount++;
+                    continue;
+                }
+
                 if (detailResult?.SecurityCoverageIssues is null)
                 {
                     continue;
@@ -400,7 +425,23 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             portfolioExposureCount,
             ledgerExposureCount,
             reconciliationExposureCount,
-            reportPackExposureCount);
+            reportPackExposureCount,
+            reconciliationUnavailableRunCount);
+
+        var overallSummary = BuildImpactSummary(
+            relatedRuns.Count,
+            portfolioExposureCount,
+            ledgerExposureCount,
+            reconciliationExposureCount,
+            reportPackExposureCount,
+            reconciliationUnavailableRunCount);
+        var reconciliationExposureSummary = reconciliationExposureCount == 0
+            ? reconciliationUnavailableRunCount == 0
+                ? "No scoped reconciliation exposure detected."
+                : $"Reconciliation impact has not been materialized for {reconciliationUnavailableRunCount} scoped run(s)."
+            : reconciliationUnavailableRunCount == 0
+                ? $"{reconciliationExposureCount} reconciliation issue(s) across {reconciliationRunCount} run(s) reference this security."
+                : $"{reconciliationExposureCount} reconciliation issue(s) across {reconciliationRunCount} run(s) reference this security. Reconciliation impact is still unavailable for {reconciliationUnavailableRunCount} scoped run(s).";
 
         var links = new List<SecurityMasterImpactLinkDto>(4);
         if (portfolioExposureCount > 0)
@@ -447,16 +488,14 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             FundProfileId: normalizedFundProfileId,
             IsScoped: true,
             Severity: severity,
-            Summary: BuildImpactSummary(relatedRuns.Count, portfolioExposureCount, ledgerExposureCount, reconciliationExposureCount, reportPackExposureCount),
+            Summary: overallSummary,
             PortfolioExposureSummary: portfolioExposureCount == 0
                 ? "No scoped portfolio exposure detected."
                 : $"{portfolioExposureCount} position(s) across {portfolioRunCount} run(s) reference this security.",
             LedgerExposureSummary: ledgerExposureCount == 0
                 ? "No scoped ledger exposure detected."
                 : $"{ledgerExposureCount} ledger line(s) across {ledgerRunCount} run(s) reference this security.",
-            ReconciliationExposureSummary: reconciliationExposureCount == 0
-                ? "No scoped reconciliation exposure detected."
-                : $"{reconciliationExposureCount} reconciliation issue(s) across {reconciliationRunCount} run(s) reference this security.",
+            ReconciliationExposureSummary: reconciliationExposureSummary,
             ReportPackExposureSummary: reportPackExposureCount == 0
                 ? "No scoped report-pack exposure detected."
                 : $"{reportPackExposureCount} report-pack row(s) reference this security.",
@@ -653,10 +692,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         TradingParametersDto? trading,
         IReadOnlyList<CorporateActionDto> corporateActions,
         IReadOnlyList<SecurityMasterConflictAssessmentDto> assessments,
-        WinningSourceInfo? winningSource)
+        WinningSourceInfo? winningSource,
+        SecurityValidationReportDto validationReport)
     {
         var missingTradingFields = GetMissingTradingParameterFields(economic?.AssetClass, trading);
         var openConflictCount = assessments.Count;
+        var blockingValidationCount = validationReport.CriticalIssueCount + validationReport.ErrorIssueCount;
+        var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count - blockingValidationCount);
         var upcomingCorporateActions = corporateActions
             .Where(action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow))
             .OrderBy(static action => action.ExDate)
@@ -664,26 +706,46 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ToArray();
         var corporateActionsTrusted = upcomingCorporateActions.Length == 0;
 
-        var tone = openConflictCount > 0
+        var tone = openConflictCount > 0 || blockingValidationCount > 0
             ? SecurityMasterTrustTone.Blocked
-            : missingTradingFields.Count > 0 || !corporateActionsTrusted
+            : missingTradingFields.Count > 0 || !corporateActionsTrusted || advisoryValidationCount > 0
                 ? SecurityMasterTrustTone.Review
                 : SecurityMasterTrustTone.Trusted;
 
         var trustScore = Math.Clamp(
             100
             - (openConflictCount * 25)
+            - (blockingValidationCount * 12)
+            - (advisoryValidationCount * 3)
             - (missingTradingFields.Count * 10)
             - (upcomingCorporateActions.Length > 0 ? 10 : 0),
             0,
             100);
 
+        var summaryParts = new List<string>(3);
+        if (openConflictCount > 0)
+        {
+            summaryParts.Add($"{openConflictCount} open conflict{(openConflictCount == 1 ? string.Empty : "s")}");
+        }
+
+        if (blockingValidationCount > 0)
+        {
+            summaryParts.Add($"{blockingValidationCount} blocking validation issue{(blockingValidationCount == 1 ? string.Empty : "s")}");
+        }
+
+        if (advisoryValidationCount > 0)
+        {
+            summaryParts.Add($"{advisoryValidationCount} advisory validation issue{(advisoryValidationCount == 1 ? string.Empty : "s")}");
+        }
+
         var summary = tone switch
         {
-            SecurityMasterTrustTone.Blocked =>
-                $"Trust is blocked by {openConflictCount} open conflict{(openConflictCount == 1 ? string.Empty : "s")}.",
+            SecurityMasterTrustTone.Blocked when summaryParts.Count > 0 =>
+                $"Trust is blocked by {string.Join(" and ", summaryParts)}.",
             SecurityMasterTrustTone.Review when missingTradingFields.Count > 0 =>
                 $"Golden copy is stable, but trading readiness is incomplete: {string.Join(", ", missingTradingFields)}.",
+            SecurityMasterTrustTone.Review when advisoryValidationCount > 0 =>
+                $"Golden copy is stable, but validation still reports {advisoryValidationCount} advisory issue{(advisoryValidationCount == 1 ? string.Empty : "s")}.",
             SecurityMasterTrustTone.Review =>
                 "Golden copy is stable, but upcoming corporate actions still require operator review.",
             SecurityMasterTrustTone.Trusted =>
@@ -760,7 +822,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         SecurityDetailDto detail,
         SecurityMasterTrustPostureDto trustPosture,
         IReadOnlyList<SecurityMasterConflictAssessmentDto> assessments,
-        SecurityMasterDownstreamImpactDto downstreamImpact)
+        SecurityMasterDownstreamImpactDto downstreamImpact,
+        SecurityValidationReportDto validationReport)
     {
         var actions = new List<SecurityMasterRecommendedActionDto>();
         var selectedConflict = assessments.FirstOrDefault(static assessment =>
@@ -832,11 +895,250 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         actions.Add(new SecurityMasterRecommendedActionDto(
             Kind: SecurityMasterRecommendedActionKind.EditSelectedSecurity,
             Title: "Edit selected security",
-            Detail: "Make a governed amendment to the golden copy after completing triage.",
+            Detail: validationReport.HasBlockingIssues
+                ? $"Resolve {validationReport.CriticalIssueCount + validationReport.ErrorIssueCount} blocking validation issue(s) before downstream workflows consume the golden copy."
+                : validationReport.Issues.Count > 0
+                    ? $"Review {validationReport.Issues.Count} advisory validation issue(s) before promoting the selected security."
+                    : "Make a governed amendment to the golden copy after completing triage.",
             IsPrimary: false,
             IsEnabled: true));
 
         return actions;
+    }
+
+    private static SecurityMasterIdentifierSummaryDto BuildIdentifierSummary(SecurityDetailDto detail)
+    {
+        var evaluatedAtUtc = DateTimeOffset.UtcNow;
+        var activeIdentifiers = detail.Identifiers
+            .Where(identifier => IsIdentifierActive(identifier.ValidFrom, identifier.ValidTo, evaluatedAtUtc))
+            .ToArray();
+        var activeAliases = detail.Aliases
+            .Where(alias => alias.IsEnabled && IsIdentifierActive(alias.ValidFrom, alias.ValidTo, evaluatedAtUtc))
+            .ToArray();
+        var primaryIdentifier = activeIdentifiers.FirstOrDefault(static identifier => identifier.IsPrimary)
+            ?? activeIdentifiers.FirstOrDefault();
+
+        var providerMappings = new List<SecurityMasterProviderSymbolMappingDto>();
+        providerMappings.AddRange(activeIdentifiers
+            .Where(static identifier =>
+                identifier.Kind == SecurityIdentifierKind.ProviderSymbol ||
+                !string.IsNullOrWhiteSpace(identifier.Provider))
+            .Select(identifier => new SecurityMasterProviderSymbolMappingDto(
+                MappingSource: "Identifier",
+                MappingKind: identifier.Kind.ToString(),
+                Value: identifier.Value,
+                NormalizedValue: SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier),
+                Provider: identifier.Provider,
+                NormalizedProvider: SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier),
+                IsPrimary: identifier.IsPrimary,
+                IsEnabled: true,
+                ValidFrom: identifier.ValidFrom,
+                ValidTo: identifier.ValidTo,
+                IsActive: true)));
+        providerMappings.AddRange(activeAliases
+            .Where(static alias => !string.IsNullOrWhiteSpace(alias.Provider))
+            .Select(alias => new SecurityMasterProviderSymbolMappingDto(
+                MappingSource: "Alias",
+                MappingKind: alias.AliasKind,
+                Value: alias.AliasValue,
+                NormalizedValue: NormalizeAliasValue(alias),
+                Provider: alias.Provider,
+                NormalizedProvider: SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider),
+                IsPrimary: false,
+                IsEnabled: alias.IsEnabled,
+                ValidFrom: alias.ValidFrom,
+                ValidTo: alias.ValidTo,
+                IsActive: true)));
+
+        var distinctProviderCount = providerMappings
+            .Select(mapping => mapping.NormalizedProvider)
+            .Where(static provider => !string.IsNullOrWhiteSpace(provider))
+            .Distinct(StringComparer.Ordinal)
+            .Count();
+
+        var summary = $"{activeIdentifiers.Length} active identifier(s), {activeAliases.Length} active alias(es), {providerMappings.Count} provider mapping(s).";
+
+        return new SecurityMasterIdentifierSummaryDto(
+            PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
+            PrimaryIdentifierValue: primaryIdentifier?.Value,
+            ActiveIdentifierCount: activeIdentifiers.Length,
+            ActiveAliasCount: activeAliases.Length,
+            ProviderMappingCount: providerMappings.Count,
+            DistinctProviderCount: distinctProviderCount,
+            HasPrimaryIdentifier: primaryIdentifier is not null,
+            HasProviderMappings: providerMappings.Count > 0,
+            Summary: summary,
+            ProviderMappings: providerMappings
+                .OrderBy(mapping => mapping.MappingSource, StringComparer.Ordinal)
+                .ThenBy(mapping => mapping.MappingKind, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(mapping => mapping.NormalizedProvider, StringComparer.Ordinal)
+                .ThenBy(mapping => mapping.NormalizedValue, StringComparer.Ordinal)
+                .ToArray());
+    }
+
+    private static SecurityMasterSchemaCompatibilityDto BuildSchemaCompatibility(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic)
+    {
+        var legacySchemaVersion = TryGetSchemaVersion(detail.AssetSpecificTerms) ?? SecurityMasterSchemaVersions.LegacyAssetSpecificTerms;
+        var economicSchemaVersion = economic is null ? 0 : TryGetSchemaVersion(economic.EconomicTerms) ?? SecurityMasterSchemaVersions.EconomicTerms;
+        var hasLegacyTerms = HasJsonContent(detail.AssetSpecificTerms);
+        var hasEconomicTerms = economic is not null && HasJsonContent(economic.EconomicTerms);
+        var hasClassificationPayload = economic is not null && HasJsonContent(economic.Classification);
+        var hasSupportedLegacySchema = !hasLegacyTerms || legacySchemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms;
+        var hasSupportedEconomicSchema = !hasEconomicTerms || economicSchemaVersion == SecurityMasterSchemaVersions.EconomicTerms;
+
+        string summary;
+        if (!hasSupportedLegacySchema && !hasSupportedEconomicSchema)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} and economic schema v{economicSchemaVersion} differ from the supported workstation versions v{SecurityMasterSchemaVersions.LegacyAssetSpecificTerms}/v{SecurityMasterSchemaVersions.EconomicTerms}; compatibility review is required.";
+        }
+        else if (!hasSupportedLegacySchema)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} differs from supported workstation schema v{SecurityMasterSchemaVersions.LegacyAssetSpecificTerms}; compatibility review is required.";
+        }
+        else if (!hasSupportedEconomicSchema)
+        {
+            summary = $"Economic schema v{economicSchemaVersion} differs from supported workstation schema v{SecurityMasterSchemaVersions.EconomicTerms}; compatibility review is required.";
+        }
+        else if (hasLegacyTerms && hasEconomicTerms)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} and economic schema v{economicSchemaVersion} are both available for compatibility-safe projections.";
+        }
+        else if (hasLegacyTerms)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} remains the authoritative workstation projection payload.";
+        }
+        else if (hasEconomicTerms)
+        {
+            summary = $"Economic schema v{economicSchemaVersion} is available without a legacy asset-specific payload.";
+        }
+        else
+        {
+            summary = "No structured schema payloads were rebuilt for the selected security.";
+        }
+
+        return new SecurityMasterSchemaCompatibilityDto(
+            AssetClass: detail.AssetClass,
+            LegacyAssetSpecificTermsSchemaVersion: legacySchemaVersion,
+            EconomicTermsSchemaVersion: economicSchemaVersion,
+            HasLegacyAssetSpecificTerms: hasLegacyTerms,
+            HasEconomicTerms: hasEconomicTerms,
+            HasClassificationPayload: hasClassificationPayload,
+            Summary: summary);
+    }
+
+    private static SecurityMasterScheduleSummaryDto BuildScheduleSummary(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic,
+        IReadOnlyList<CorporateActionDto> corporateActions,
+        WinningSourceInfo? winningSource)
+    {
+        var assetCapability = GetAssetCapability(detail.AssetClass);
+        var economicTerms = economic?.EconomicTerms;
+        var supportsFactorHistory = economicTerms.HasValue && TryGetPropertyCaseInsensitive(economicTerms.Value, "structuredProduct", out _);
+        var supportsCashflowSchedule =
+            supportsFactorHistory
+            || economicTerms.HasValue && (
+                TryGetPropertyCaseInsensitive(economicTerms.Value, "coupon", out _)
+                || TryGetPropertyCaseInsensitive(economicTerms.Value, "payment", out _)
+                || TryGetPropertyCaseInsensitive(economicTerms.Value, "redemption", out _)
+                || TryGetPropertyCaseInsensitive(economicTerms.Value, "call", out _))
+            || assetCapability.SupportsCashflowScheduleByDefault;
+
+        var currentFactor = TryGetNestedJsonDecimal(economicTerms, "structuredProduct", "factor");
+        var currentFactorDate = TryGetNestedJsonDateOnly(economicTerms, "structuredProduct", "factorDate");
+        var maturityDate = TryGetNestedJsonDateOnly(economicTerms, "maturity", "maturityDate");
+        var firstCallDate = TryGetNestedJsonDateOnly(economicTerms, "call", "firstCallDate");
+        var nextCorporateAction = corporateActions
+            .Where(static action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .OrderBy(static action => action.ExDate)
+            .Select(static action => (DateOnly?)action.ExDate)
+            .FirstOrDefault();
+        var nextLifecycleDate = new[] { nextCorporateAction, firstCallDate, maturityDate }
+            .Where(static value => value.HasValue)
+            .Select(static value => value!.Value)
+            .OrderBy(static value => value)
+            .Cast<DateOnly?>()
+            .FirstOrDefault();
+
+        var sourceSummary = winningSource is null
+            ? "Schedule source metadata unavailable."
+            : string.IsNullOrWhiteSpace(winningSource.SourceRecordId)
+                ? $"Schedules follow {winningSource.SourceSystem} as of {winningSource.AsOf?.UtcDateTime:yyyy-MM-dd HH:mm 'UTC'}."
+                : $"Schedules follow {winningSource.SourceSystem} record {winningSource.SourceRecordId} as of {winningSource.AsOf?.UtcDateTime:yyyy-MM-dd HH:mm 'UTC'}.";
+
+        string summary;
+        if (!supportsCashflowSchedule && !supportsFactorHistory)
+        {
+            summary = "Selected security does not expose cash-flow or factor schedule terms in the current projection.";
+        }
+        else if (supportsFactorHistory && currentFactor.HasValue)
+        {
+            summary = currentFactorDate.HasValue
+                ? $"Factor-aware cash-flow support is available. Current factor {currentFactor.Value:0.########} as of {currentFactorDate.Value:yyyy-MM-dd}."
+                : $"Factor-aware cash-flow support is available. Current factor {currentFactor.Value:0.########}.";
+        }
+        else if (supportsCashflowSchedule)
+        {
+            summary = nextLifecycleDate.HasValue
+                ? $"Cash-flow schedule support is available. Next lifecycle date {nextLifecycleDate.Value:yyyy-MM-dd}."
+                : "Cash-flow schedule support is available from the current economic terms.";
+        }
+        else
+        {
+            summary = "Factor history is available without a projected cash-flow schedule.";
+        }
+
+        return new SecurityMasterScheduleSummaryDto(
+            SupportsCashflowSchedule: supportsCashflowSchedule,
+            SupportsFactorHistory: supportsFactorHistory,
+            HasEconomicScheduleTerms: economicTerms.HasValue && HasJsonContent(economicTerms.Value),
+            CurrentFactor: currentFactor,
+            CurrentFactorDate: currentFactorDate,
+            NextLifecycleDate: nextLifecycleDate,
+            SourceSummary: sourceSummary,
+            Summary: summary);
+    }
+
+    private static SecurityMasterLotModelDto BuildLotModel(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic,
+        TradingParametersDto? trading)
+    {
+        var assetCapability = GetAssetCapability(detail.AssetClass);
+        var economicTerms = economic?.EconomicTerms;
+        var hasStructuredFactor = TryGetNestedJsonDecimal(economicTerms, "structuredProduct", "factor").HasValue;
+        var multiplier =
+            trading?.ContractMultiplier
+            ?? TryGetJsonDecimal(detail.AssetSpecificTerms, "multiplier")
+            ?? TryGetNestedJsonDecimal(economicTerms, "contract", "multiplier");
+        var lotSize = trading?.LotSize ?? TryGetJsonDecimal(detail.CommonTerms, "lotSize");
+
+        var quantityModel =
+            hasStructuredFactor ? "FactorAdjustedFace" :
+            assetCapability.UsesFaceValueLots ? "FaceValue" :
+            multiplier is > 0m ? "ContractUnits" :
+            "Units";
+
+        var summary = quantityModel switch
+        {
+            "FactorAdjustedFace" => $"Lots should reconcile by current face using factor-adjusted exposure{FormatLotSizeSuffix(lotSize)}.",
+            "FaceValue" => $"Lots should reconcile by face/par exposure{FormatLotSizeSuffix(lotSize)}.",
+            "ContractUnits" => multiplier is > 0m
+                ? $"Lots should reconcile in contract units with multiplier {multiplier:0.########}{FormatLotSizeSuffix(lotSize)}."
+                : $"Lots should reconcile in contract units{FormatLotSizeSuffix(lotSize)}.",
+            _ => $"Lots should reconcile in whole or fractional units{FormatLotSizeSuffix(lotSize)}."
+        };
+
+        return new SecurityMasterLotModelDto(
+            QuantityModel: quantityModel,
+            LotSize: lotSize,
+            ContractMultiplier: multiplier,
+            UsesFaceValue: assetCapability.UsesFaceValueLots,
+            SupportsFactorAdjustedExposure: hasStructuredFactor,
+            RequiresResolvedSecurityId: true,
+            Summary: summary);
     }
 
     private static int GetImpactLinkOrder(SecurityMasterImpactLinkDto link)
@@ -853,7 +1155,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         int portfolioExposureCount,
         int ledgerExposureCount,
         int reconciliationExposureCount,
-        int reportPackExposureCount)
+        int reportPackExposureCount,
+        int reconciliationUnavailableRunCount)
     {
         if (reconciliationExposureCount > 0 || reportPackExposureCount > 0)
         {
@@ -868,6 +1171,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         if (portfolioExposureCount > 0)
         {
             return SecurityMasterImpactSeverity.Low;
+        }
+
+        if (reconciliationUnavailableRunCount > 0)
+        {
+            return SecurityMasterImpactSeverity.Unknown;
         }
 
         return SecurityMasterImpactSeverity.None;
@@ -909,20 +1217,35 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         int portfolioExposureCount,
         int ledgerExposureCount,
         int reconciliationExposureCount,
-        int reportPackExposureCount)
+        int reportPackExposureCount,
+        int reconciliationUnavailableRunCount)
     {
         if (portfolioExposureCount == 0 &&
             ledgerExposureCount == 0 &&
             reconciliationExposureCount == 0 &&
             reportPackExposureCount == 0)
         {
+            if (reconciliationUnavailableRunCount > 0)
+            {
+                return $"Reconciliation impact has not been materialized for {reconciliationUnavailableRunCount} of {matchedRunCount} scoped run(s).";
+            }
+
             return $"No downstream exposure detected across {matchedRunCount} scoped run(s).";
         }
 
-        return string.Create(
+        var summary = string.Create(
             CultureInfo.InvariantCulture,
             $"{matchedRunCount} scoped run(s) checked • " +
             $"portfolio {portfolioExposureCount}, ledger {ledgerExposureCount}, reconciliation {reconciliationExposureCount}, report pack {reportPackExposureCount}.");
+
+        if (reconciliationUnavailableRunCount > 0)
+        {
+            summary += string.Create(
+                CultureInfo.InvariantCulture,
+                $" Reconciliation impact still needs refresh for {reconciliationUnavailableRunCount} scoped run(s).");
+        }
+
+        return summary;
     }
 
     private static string BuildConflictImpactSummary(
@@ -1229,12 +1552,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var identifiers = new HashSet<string>(StringComparer.Ordinal);
         foreach (var identifier in detail.Identifiers)
         {
-            identifiers.Add(NormalizeComparableString(identifier.Value));
+            identifiers.Add(NormalizeComparableString(SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier)));
         }
 
         foreach (var alias in detail.Aliases.Where(static alias => alias.IsEnabled))
         {
-            identifiers.Add(NormalizeComparableString(alias.AliasValue));
+            identifiers.Add(NormalizeComparableString(SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue)));
         }
 
         identifiers.Add(NormalizeComparableString(detail.DisplayName));
@@ -1356,10 +1679,97 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return null;
     }
 
+    private static decimal? TryGetJsonDecimal(JsonElement element, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(element, propertyName, out var property))
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var decimalValue))
+        {
+            return decimalValue;
+        }
+
+        if (property.ValueKind == JsonValueKind.String
+            && decimal.TryParse(property.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static decimal? TryGetNestedJsonDecimal(JsonElement? element, string objectName, string propertyName)
+    {
+        if (!element.HasValue
+            || !TryGetPropertyCaseInsensitive(element.Value, objectName, out var nested)
+            || nested.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        return TryGetJsonDecimal(nested, propertyName);
+    }
+
+    private static DateOnly? TryGetNestedJsonDateOnly(JsonElement? element, string objectName, string propertyName)
+    {
+        if (!element.HasValue
+            || !TryGetPropertyCaseInsensitive(element.Value, objectName, out var nested)
+            || nested.ValueKind != JsonValueKind.Object
+            || !TryGetPropertyCaseInsensitive(nested, propertyName, out var property)
+            || property.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return DateOnly.TryParse(property.GetString(), out var parsed) ? parsed : null;
+    }
+
     private static string? FormatNullableDecimal(decimal? value)
         => value.HasValue
             ? value.Value.ToString(CultureInfo.InvariantCulture)
             : null;
+
+    private static string FormatLotSizeSuffix(decimal? lotSize)
+        => lotSize is > 0m
+            ? $" (lot size {lotSize:0.########})"
+            : string.Empty;
+
+    private static SecurityAssetClassDescriptor GetAssetCapability(string assetClass)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass);
+
+    private static bool IsIdentifierActive(DateTimeOffset validFrom, DateTimeOffset? validTo, DateTimeOffset asOf)
+        => validFrom <= asOf && (!validTo.HasValue || validTo.Value > asOf);
+
+    private static string NormalizeAliasValue(SecurityAliasDto alias)
+        => SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue);
+
+    private static int? TryGetSchemaVersion(JsonElement element)
+    {
+        if (!TryGetPropertyCaseInsensitive(element, "schemaVersion", out var property))
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out var numericVersion))
+        {
+            return numericVersion;
+        }
+
+        return property.ValueKind == JsonValueKind.String && int.TryParse(property.GetString(), out var parsedVersion)
+            ? parsedVersion
+            : null;
+    }
+
+    private static bool HasJsonContent(JsonElement element)
+        => element.ValueKind switch
+        {
+            JsonValueKind.Object => element.EnumerateObject().Any(),
+            JsonValueKind.Array => element.GetArrayLength() > 0,
+            JsonValueKind.Null or JsonValueKind.Undefined => false,
+            _ => true
+        };
 
     private sealed record SecurityWorkbenchContext(
         SecurityDetailDto Detail,

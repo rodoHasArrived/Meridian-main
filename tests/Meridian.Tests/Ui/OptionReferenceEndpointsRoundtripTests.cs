@@ -24,7 +24,7 @@ public sealed class OptionReferenceEndpointsRoundtripTests
         var projectionStore = new InMemoryProjectionStore();
         var optionService = new OptionProjectionService(projectionStore);
 
-        await using var app = await CreateAppAsync(optionService);
+        await using var app = await CreateAppAsync(optionService, UserPermission.ModifySecurityMaster);
         var client = app.GetTestClient();
         var snapshot = CreateSnapshot("TST", new DateOnly(2026, 12, 19));
 
@@ -44,7 +44,34 @@ public sealed class OptionReferenceEndpointsRoundtripTests
         linkage!.UnderlyingSymbol.Should().Be("TST");
     }
 
-    private static async Task<WebApplication> CreateAppAsync(OptionProjectionService optionService)
+
+    [Fact]
+    public async Task ChainImport_WithoutPermissions_ReturnsForbidden()
+    {
+        var projectionStore = new InMemoryProjectionStore();
+        var optionService = new OptionProjectionService(projectionStore);
+
+        await using var app = await CreateAppAsync(optionService);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync("/api/reference-data/options/chains/import", CreateSnapshot("TST", new DateOnly(2026, 12, 19)));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task ChainImport_WithViewOnlyPermission_ReturnsForbidden()
+    {
+        var projectionStore = new InMemoryProjectionStore();
+        var optionService = new OptionProjectionService(projectionStore);
+
+        await using var app = await CreateAppAsync(optionService, UserPermission.ViewSecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync("/api/reference-data/options/chains/import", CreateSnapshot("TST", new DateOnly(2026, 12, 19)));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(OptionProjectionService optionService, UserPermission? permissions = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -57,8 +84,12 @@ public sealed class OptionReferenceEndpointsRoundtripTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
-            await next();
+            if (permissions.HasValue)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
+            }
+
+            await next().ConfigureAwait(false);
         });
         var json = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         app.MapOptionReferenceEndpoints(json);

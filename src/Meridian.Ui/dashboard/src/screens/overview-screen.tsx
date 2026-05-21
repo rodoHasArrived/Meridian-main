@@ -131,7 +131,7 @@ const todayMoverColumns: DenseDataTableColumn<TodayMoverRow>[] = [
     id: "side",
     label: "Side",
     render: (row) => (
-      <Badge variant={row.side === "Long" ? "outline" : "warning"} className="text-[10px]">
+      <Badge variant={row.sideBadgeVariant} className="text-[10px]">
         {row.side}
       </Badge>
     )
@@ -170,7 +170,7 @@ const todayOrderColumns: DenseDataTableColumn<TodayOrderRow>[] = [
     id: "side",
     label: "Side",
     render: (row) => (
-      <Badge variant={row.side === "Buy" ? "success" : "warning"} className="text-[10px]">
+      <Badge variant={row.sideBadgeVariant} className="text-[10px]">
         {row.side}
       </Badge>
     )
@@ -192,8 +192,11 @@ const todayOrderColumns: DenseDataTableColumn<TodayOrderRow>[] = [
   {
     id: "status",
     label: "Status",
-    className: "font-mono text-muted-foreground",
-    render: (row) => row.status
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} aria-label={row.statusAriaLabel} dot>
+        {row.status}
+      </Badge>
+    )
   },
   {
     id: "submitted",
@@ -214,7 +217,7 @@ const todayFillColumns: DenseDataTableColumn<TodayFillRow>[] = [
     id: "side",
     label: "Side",
     render: (row) => (
-      <Badge variant={row.side === "Buy" ? "success" : "warning"} className="text-[10px]">
+      <Badge variant={row.sideBadgeVariant} className="text-[10px]">
         {row.side}
       </Badge>
     )
@@ -238,6 +241,15 @@ const todayFillColumns: DenseDataTableColumn<TodayFillRow>[] = [
     label: "Venue",
     className: "font-mono text-muted-foreground",
     render: (row) => row.venue
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} aria-label={row.statusAriaLabel} dot>
+        {row.statusLabel}
+      </Badge>
+    )
   },
   {
     id: "time",
@@ -877,6 +889,7 @@ function TodayOrdersCard({ panel }: { panel: TodayPanelViewModel }) {
               rows={panel.orders}
               getRowId={(row) => row.key}
               getRowAriaLabel={(row) => row.ariaLabel}
+              getRowClassName={(row) => row.rowClassName}
               emptyText={panel.ordersEmptyMessage}
               ariaLabel={panel.ordersTableLabel}
               caption={panel.ordersTableCaption}
@@ -924,6 +937,7 @@ function TodayFillsCard({ panel }: { panel: TodayPanelViewModel }) {
               rows={panel.fills}
               getRowId={(row) => row.key}
               getRowAriaLabel={(row) => row.ariaLabel}
+              getRowClassName={(row) => row.rowClassName}
               emptyText={panel.fillsEmptyMessage}
               ariaLabel={panel.fillsTableLabel}
               caption={panel.fillsTableCaption}

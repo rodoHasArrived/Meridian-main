@@ -69,6 +69,15 @@ describe("app shell view model", () => {
       linkedContextEmptyText: "Portfolio-aware context links will appear after workstation payloads load.",
       linkedContextItems: []
     });
+    expect(state.workflowContinuity.disclosure).toMatchObject({
+      label: "Supporting workflow evidence",
+      summary: "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+    });
+    expect(state.workflowContinuity.disclosure.panels.map((panel) => [panel.id, panel.defaultExpanded])).toEqual([
+      ["linked-context", false],
+      ["operator-focus", false],
+      ["evidence-timeline", false]
+    ]);
     expect(state.statusPanel).toMatchObject({
       id: "workstation-shell-status-loading",
       titleId: "workstation-shell-status-loading-title",
@@ -103,6 +112,108 @@ describe("app shell view model", () => {
       documentTitle: "Trading Workstation - Meridian",
       targetElementId: null,
       fallbackElementId: "workbench-content"
+    });
+  });
+
+  it("builds a shell trust strip from session, fixture, and provider posture", () => {
+    const state = buildAppShellViewState({
+      pathname: "/data/providers",
+      loading: false,
+      error: null,
+      workspaceErrors: { reporting: "Report-pack preview failed." },
+      usingDevelopmentFixtures: true,
+      payload: {
+        ...sessionPayload,
+        dataOperations: {
+          metrics: [],
+          providers: [
+            {
+              provider: "Alpaca",
+              status: "Warning",
+              capability: "paper",
+              latency: "120 ms",
+              note: "Heartbeat delayed"
+            }
+          ],
+          backfills: [],
+          exports: []
+        }
+      }
+    });
+
+    expect(state.trustStrip).toMatchObject({
+      ariaLabel: "Workstation build, mode, data source, and provider posture",
+      items: [
+        {
+          id: "build",
+          label: "Build",
+          value: "v0.1.0",
+          tone: "ready"
+        },
+        {
+          id: "mode",
+          label: "Mode",
+          value: "Paper",
+          tone: "ready"
+        },
+        {
+          id: "source",
+          label: "Source",
+          value: "Demo fixtures",
+          tone: "pending",
+          detail: "No-host fixture payloads are visible; do not treat this as live operational readiness.",
+          href: "/settings#backend-capability-coverage",
+          actionLabel: "Open diagnostics"
+        },
+        {
+          id: "providers",
+          label: "Providers",
+          value: "1 warning",
+          tone: "review",
+          detail: "1 provider warning; review provider trust before relying on fresh data.",
+          href: "/data/providers",
+          actionLabel: "Open provider posture"
+        }
+      ]
+    });
+  });
+
+  it("routes shell trust strip failures to diagnostics and live readiness", () => {
+    const state = buildAppShellViewState({
+      pathname: "/trading",
+      loading: false,
+      error: "Bootstrap failed.",
+      workspaceErrors: {
+        data: "Provider posture timed out."
+      },
+      payload: {
+        ...emptyPayload,
+        session: {
+          displayName: "Live Desk",
+          role: "Trader",
+          environment: "live",
+          activeWorkspace: "trading",
+          commandCount: 12
+        }
+      }
+    });
+
+    expect(state.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Live",
+      tone: "blocked",
+      href: "/trading/readiness",
+      actionLabel: "Review readiness"
+    });
+    expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "Partial host",
+      tone: "review",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Open diagnostics"
+    });
+    expect(state.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
+      value: "Pending",
+      href: "/data/providers",
+      actionLabel: "Open provider posture"
     });
   });
 
@@ -658,6 +769,20 @@ describe("app shell view model", () => {
 
     expect(state.workflowContinuity.operatorFocusSummary)
       .toBe("4 focus items across workspaces: 2 blocked and 2 review.");
+    expect(state.workflowContinuity.disclosure.panels).toContainEqual({
+      id: "operator-focus",
+      label: "Operator focus",
+      summary: "3 focus items",
+      ariaLabel: "Expand operator focus. 3 focus items loaded.",
+      defaultExpanded: true
+    });
+    expect(state.workflowContinuity.disclosure.panels).toContainEqual({
+      id: "evidence-timeline",
+      label: "Evidence timeline",
+      summary: "2 evidence events",
+      ariaLabel: "Expand evidence timeline. 2 evidence events loaded.",
+      defaultExpanded: true
+    });
     expect(state.workflowContinuity.operatorFocusOverflowLabel).toBe("+1 more focus item");
     expect(state.workflowContinuity.operatorFocusItems.map((item) => [
       item.label,

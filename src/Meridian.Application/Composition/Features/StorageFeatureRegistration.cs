@@ -16,14 +16,17 @@ using Meridian.Application.Futures;
 using Meridian.Application.FxSpot;
 using Meridian.Application.MoneyMarketFunds;
 using Meridian.Application.Options;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Domain;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
+using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -51,9 +54,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
     {
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
+        LedgerStartup.EnsureEnvironmentDefaults();
 
         var securityMasterOptions = CreateSecurityMasterOptions();
         var directLendingOptions = CreateDirectLendingOptions();
+        var ledgerOptions = CreateLedgerOptions();
 
         services.TryAddSingleton(_ => AssetClassValidatorRegistry.CreateDefault());
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
@@ -102,6 +107,24 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Position snapshot store — files land under {StorageRoot}/portfolios/ so the
         // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
         services.AddSingleton<IPositionSnapshotStore, JsonlPositionSnapshotStore>();
+
+        if (LedgerStartup.IsConfigured())
+        {
+            services.AddSingleton(ledgerOptions);
+            services.AddSingleton<PostgresLedgerJournalStore>();
+            services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<LedgerMigrationRunner>();
+            services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+            services.AddSingleton<PostgresOperationsContinuityStore>();
+            services.AddSingleton<IOperationsContinuityRepository>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            services.AddSingleton<IOperationsWorkflowAuditStore>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            services.AddSingleton<IOperationsContinuityTransactionalCommitStore>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            services.AddSingleton<ILedgerBookService>(sp =>
+                new PostgresLedgerBookService(
+                    sp.GetRequiredService<ILedgerJournalStore>(),
+                    sp.GetService<IOperatorInboxService>()));
+        }
 
         // Analysis export service for data export operations
         services.AddSingleton<AnalysisExportService>(sp =>
@@ -282,6 +305,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             OutboxBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_BATCH_SIZE", 50),
             OutboxPollIntervalSeconds = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_POLL_SECONDS", 5),
             ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250)
+        };
+
+    private static LedgerJournalStoreOptions CreateLedgerOptions()
+        => new()
+        {
+            ConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
+            SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
+            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true)
         };
 
     private static int ParseInt(string name, int defaultValue)

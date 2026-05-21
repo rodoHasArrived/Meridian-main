@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.OperationsContinuity;
@@ -23,6 +24,27 @@ public interface IOperationsWorkflowAuditStore
     Task<OperationsWorkflowAuditDto> AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);
     Task<IReadOnlyList<OperationsWorkflowAuditDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default);
 }
+
+public interface IOperationsContinuityTransactionalCommitStore
+{
+    Task<OperationsContinuityTransactionalCommitResult> CommitLedgerPostingAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        LedgerJournalEntryWrite journalEntry,
+        CancellationToken ct = default);
+}
+
+public interface IOperationsContinuityWorkflowStartCommitStore
+{
+    Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowStartAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        CancellationToken ct = default);
+}
+
+public sealed record OperationsContinuityTransactionalCommitResult(
+    OperationsContinuityWorkflow Workflow,
+    OperationsWorkflowAuditDto Audit);
 
 public sealed record OperationsWorkflowAuditDraft(
     Guid WorkflowId,

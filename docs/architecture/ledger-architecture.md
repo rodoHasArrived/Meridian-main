@@ -108,7 +108,9 @@ not just an identity lookup. The first production slice lives in
 Security Master terms, accounting rules, positions, optional factor schedules, and optional actual
 cash activity.
 
-The current supported event set is intentionally narrow:
+The shared DTO enum reserves the broader expected-event vocabulary needed for accrual reversal,
+premium/discount, maturity, call, dividend, and FX events. The current generated event set is still
+intentionally narrow:
 
 | Security Master input | Expected event | Journal preview |
 |-----------------------|----------------|-----------------|
@@ -123,17 +125,28 @@ operator-approved workflow. Previews are balanced before they are exposed to rec
 consumers.
 
 Factor paydowns are calculated at par. A factor reduction from `1.00` to `0.97` on `100,000` par
-generates a `3,000` principal expectation regardless of carrying or sale price. The reconciliation
-issue set flags missing schedules, missing coupon/day-count/payment terms, missing accounting
-classification, missing actual cash, amount mismatches, and principal/income classification
-mismatches.
+generates a `3,000` principal expectation regardless of carrying or sale price. Factor-based
+securities are treated as schedule-dependent when the Security Master terms explicitly require a
+factor schedule, carry a current factor below `1.00`, or report current face below original face.
+The supported factor-based fixed-income family now includes bonds, mortgage-backed securities,
+asset-backed securities, and loan/amortizing-loan instruments, so MBS/ABS principal reductions use
+the same par-based expectation path rather than falling into the unsupported-instrument posture.
+The reconciliation issue set flags missing schedules, missing coupon/day-count/payment terms,
+missing accounting classification, missing actual cash, amount mismatches, and principal/income
+classification mismatches.
 
-`ReconciliationRunService` integrates the accounting-event result through an optional
-`ISecurityMasterAccountingEventSourceAdapter`. Existing runs continue to reconcile portfolio,
-ledger, bank, and statement inputs when no adapter is available. When an adapter supplies Security
-Master accounting inputs, the run detail carries expected accounting events, accrual calculations,
-balanced journal previews, and structured Security Master accounting issues alongside the existing
-matches, breaks, coverage issues, and classification map.
+`ReconciliationRunService` integrates the accounting-event result through
+`ISecurityMasterAccountingEventSourceAdapter`. The workstation service graph registers
+`SecurityMasterAccountingEventSourceAdapter`, which builds accounting-event inputs from resolved
+portfolio positions first and falls back to resolved ledger trial-balance lines when positions are
+not available. The adapter loads the current Security Master economic definition for each resolved
+security id, maps coupon/accrual/maturity/factor terms into `SecurityMasterAccountingSecurity`, and
+preserves the fund-account scope as the accounting-event account id. Existing runs continue to
+reconcile portfolio, ledger, bank, and statement inputs when no Security Master query service or no
+resolved economic definitions are available. When the adapter supplies Security Master accounting
+inputs, the run detail carries expected accounting events, accrual calculations, balanced journal
+previews, and structured Security Master accounting issues alongside the existing matches, breaks,
+coverage issues, and classification map.
 
 ## Operations continuity workflow
 
@@ -149,8 +162,10 @@ The implemented continuity slice provides:
 | Component | Responsibility |
 |-----------|----------------|
 | `OperationsContinuityWorkflowService` | Command-driven workflow transitions, optimistic version checks, audit writes, DTO projection |
-| `IOperationsContinuityRepository` | Workflow snapshot persistence; the workstation host registers a file-backed implementation under the workstation data root |
+| `IOperationsContinuityRepository` | Workflow snapshot persistence; file-backed by default, or PostgreSQL-backed through `PostgresOperationsContinuityStore` when `MERIDIAN_LEDGER_CONNECTION_STRING` is configured |
 | `IOperationsWorkflowAuditStore` | Append-only audit timeline with previous/current SHA-256 hash chaining |
+| `PostgresOperationsContinuityStore` | PostgreSQL implementation of `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, and `IOperationsContinuityTransactionalCommitStore`; successful ledger posts share the ledger journal transaction |
+| `IOperationsContinuityTransactionalCommitStore` | Strict-atomicity commit seam for successful ledger posting: append journal, append workflow audit, and save workflow snapshot in one persistence boundary |
 | `OperationsStatusDerivationService` | Deterministic server-side overall status derivation from gate/sub-state posture |
 | `Meridian.Contracts.Workstation` operations DTOs | Shared browser/WPF read and command contracts |
 
@@ -160,10 +175,51 @@ hash. Broker import is intentionally separate from normalization. Ledger draftin
 separate from posting: validation can mark a journal preview ready, but reconciliation requires the
 explicit `ledger/post` command with a durable ledger batch reference.
 
+Approval submission is also guarded by the application service and aggregate, not by workstation
+clients. The `approval/submit` command now requires reviewer, rationale, and report-pack metadata,
+and it refuses submission until broker intake, Security Master, and ledger posting gates have
+passed and reconciliation has reached a completed or reviewable posture. Rejected approval
+submissions return structured blockers and do not append audit records or mutate the workflow
+snapshot.
+Once a report pack is marked ready through gate posture, submit, approve, and close commands must
+reference that same report-pack id; mismatches return `REPORT_PACK_ID_MISMATCH` without appending
+an audit event or mutating the workflow snapshot.
+When gate posture reports that a report pack exists but is not ready, the aggregate projects a
+`REPORT_PACK_NOT_READY` blocker onto the Approval gate with the linked evidence. That keeps
+approval and close guidance server-derived for both browser and retained WPF clients.
+
+The reconciliation command can carry Security Master coverage issue counts, Security Master
+accounting issue counts, expected-event counts, and journal-preview counts directly from
+reconciliation output. `OperationsContinuityWorkflow` applies those counts to the Security Master
+gate during the reconciliation transition, so unresolved Security Master coverage or
+accounting-term problems block the close lane without requiring UI-side status derivation.
+`OperationsContinuityReconciliationBridge` also preserves the underlying Security Master coverage
+and accounting issue rows as workflow break cases, using stable issue codes such as
+`SM_RECON_SECURITY_UNRESOLVED`, `ACCRUAL_AMOUNT_MISMATCH`, and
+`FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and retained WPF clients the same
+server-authored blocker detail behind the aggregate counts.
+The shared `OperationsWorkflowContractMatrix` also publishes the production blocker and issue code
+vocabulary for broker intake, Security Master accounting coverage, accrual reconciliation, factor
+paydowns, ledger posting, reconciliation evidence, approval, and close blockers. Security Master
+accounting event generation distinguishes a missing factor schedule from a stale prior-period
+factor source so the continuity gate can route factor-paydown remediation without UI-side
+classification.
+
 For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
-`LedgerJournalEntryWrite` and awaits `ILedgerJournalStore.AppendAsync` before the ledger posting
-gate is marked passed or the workflow audit event is written. If the store is not registered, or the
+`LedgerJournalEntryWrite`. When an `IOperationsContinuityTransactionalCommitStore` is registered,
+the service commits the journal append, workflow audit append, and workflow snapshot save through
+that single commit seam. Production hosts enable the PostgreSQL path with
+`MERIDIAN_LEDGER_CONNECTION_STRING`; `LedgerStartup` runs ledger migrations and registers
+`PostgresOperationsContinuityStore` for workflow snapshots, audit timeline reads, and transactional
+ledger-post commits. The same store commits workflow start by inserting the initial snapshot and
+first audit event in one PostgreSQL transaction, which preserves the audit table's workflow foreign
+key without weakening file-backed audit-first behavior. The live integration fixture
+`OperationsContinuityPostgresRoundTripTests` can use either `MERIDIAN_LEDGER_CONNECTION_STRING` or
+Testcontainers PostgreSQL to prove the workflow snapshot, audit hash chain, and durable journal
+append round-trip through one migrated schema. When the transactional store is not registered, the workstation file-backed
+mode keeps the split persistence path: await `ILedgerJournalStore.AppendAsync`, append audit, then
+save the workflow snapshot. If no ledger store or transactional commit store is registered, or the
 candidate is missing or invalid, the command returns a structured validation failure and does not
 advance the workflow. Requests that fail posting posture checks such as closed period, duplicate
 candidate, missing batch id, or missing posting kind still update the workflow to a blocked ledger
@@ -174,6 +230,9 @@ governed Security Master override approval, ledger draft, ledger validation, led
 reconciliation run, break resolution, approval submit, approval approve/reject, close, and governed
 reopen. Posting is blocked without Security Master resolution or approved override, a validated
 journal draft, an open period posture, a posting kind, and a non-duplicate posting candidate.
+Once a workflow is closed, mutation commands are rejected before command-specific preconditions are
+evaluated; only the governed reopen command can transition the workflow back into active
+reconciliation.
 
 ---
 
@@ -253,7 +312,7 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `POST /api/workstation/operations/continuity/{workflowId}/security-master/overrides/{overrideId}/approve` | Requires override approver, rationale, policy, expiration, and audit metadata |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/draft` | Creates a ledger journal preview without committing it |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/validate` | Validates balanced journal draft and period posture |
-| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Appends a supplied journal candidate through `ILedgerJournalStore`, then marks the validated ledger gate posted with a durable batch reference before reconciliation |
+| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Appends a supplied journal candidate through the ledger journal store, then marks the validated ledger gate posted with a durable batch reference; with PostgreSQL Operations Continuity enabled, the journal append, audit append, and workflow snapshot save share one transaction |
 | `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/run` | Runs expected-vs-actual reconciliation after ledger posting |
 | `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/breaks/{breakId}/resolve` | Resolves or dismisses a break with rationale and evidence |
 | `POST /api/workstation/operations/continuity/{workflowId}/approval/submit` | Submits a clean workflow for reviewer approval with report-pack evidence |
@@ -273,6 +332,7 @@ These endpoints are implemented in `WorkstationEndpoints.cs` and map to route co
 | Service | Lifetime | Notes |
 |---------|----------|-------|
 | `ProjectLedgerBook` | Singleton | Keyed ledger namespace for the host process |
+| `PostgresOperationsContinuityStore` | Singleton when `MERIDIAN_LEDGER_CONNECTION_STRING` is set | PostgreSQL workflow snapshot/audit store and transactional ledger-post commit store |
 
 `LedgerReadService` is registered separately by UI host startup (it depends on `Meridian.Strategies` types that are not available to `Meridian.Application`):
 

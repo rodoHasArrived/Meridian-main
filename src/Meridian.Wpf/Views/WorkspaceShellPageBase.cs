@@ -249,3 +249,14 @@ public class GovernanceWorkspaceShellPageBase : WorkspaceShellPageBase<Governanc
     {
     }
 }
+
+public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWorkspaceShellStateProvider, Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel>
+{
+    protected SettingsWorkspaceShellPageBase(
+        NavigationService navigationService,
+        SettingsWorkspaceShellStateProvider stateProvider,
+        Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel viewModel)
+        : base(navigationService, stateProvider, viewModel)
+    {
+    }
+}

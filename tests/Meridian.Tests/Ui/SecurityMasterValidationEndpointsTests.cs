@@ -67,14 +67,90 @@ public sealed class SecurityMasterValidationEndpointsTests
             && issue.Severity == SecurityValidationSeverityDto.Critical);
     }
 
-    private static async Task<WebApplication> CreateAppAsync(ISecurityValidationService validationService)
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_ValidationRoute_ReturnsForbidden_WhenUserLacksSecurityMasterReadPermission()
+    {
+        var securityId = Guid.NewGuid();
+        var validationService = Substitute.For<ISecurityValidationService>();
+
+        await using var app = await CreateAppAsync(validationService, UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync($"/api/security-master/{securityId}/validation");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await validationService.DidNotReceiveWithAnyArgs().ValidateSecurityAsync(default, default);
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_ResolveRoute_ForwardsRequestedAsOfTimestamp()
+    {
+        var securityId = Guid.NewGuid();
+        var asOfUtc = new DateTimeOffset(2026, 5, 20, 13, 45, 0, TimeSpan.Zero);
+        var validationService = Substitute.For<ISecurityValidationService>();
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(
+                SecurityIdentifierKind.Cusip,
+                "037833100",
+                "Bloomberg",
+                Arg.Any<CancellationToken>(),
+                asOfUtc)
+            .Returns(Task.FromResult<SecurityDetailDto?>(new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                Currency: "USD",
+                CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Apple Inc.", currency = "USD" }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(new { schemaVersion = 1, classification = "Common" }),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Cusip,
+                        "037833100",
+                        true,
+                        asOfUtc.AddDays(-1),
+                        null,
+                        "Bloomberg")
+                ],
+                Aliases: [],
+                Version: 4,
+                EffectiveFrom: asOfUtc.AddDays(-10),
+                EffectiveTo: null)));
+
+        await using var app = await CreateAppAsync(validationService, queryService: queryService);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/security-master/resolve",
+            new ResolveSecurityRequest(
+                SecurityIdentifierKind.Cusip,
+                "037833100",
+                "Bloomberg",
+                asOfUtc,
+                ActiveOnly: false));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await queryService.Received(1).GetByIdentifierAsync(
+            SecurityIdentifierKind.Cusip,
+            "037833100",
+            "Bloomberg",
+            Arg.Any<CancellationToken>(),
+            asOfUtc);
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        ISecurityValidationService validationService,
+        UserPermission permissions = UserPermission.ModifySecurityMaster,
+        ContractsSecurityMasterQueryService? queryService = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
-        builder.Services.AddSingleton(Substitute.For<ContractsSecurityMasterQueryService>());
+        builder.Services.AddSingleton(queryService ?? Substitute.For<ContractsSecurityMasterQueryService>());
         builder.Services.AddSingleton(validationService);
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterService>());
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterConflictService>());
@@ -85,7 +161,7 @@ public sealed class SecurityMasterValidationEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });
         app.MapSecurityMasterEndpoints(new JsonSerializerOptions

@@ -68,6 +68,26 @@ public sealed class SwapProjectionServiceTests
     }
 
     [Fact]
+    public async Task GetBySwapTypeAsync_HydratesLegsFromSecurityProjection()
+    {
+        var id = Guid.NewGuid();
+        var termsJson = System.Text.Json.JsonDocument.Parse(
+            """{"legs":[{"legType":"Fixed","currency":"USD","fixedRate":0.041},{"legType":"Float","currency":"USD","index":"SOFR"}]}""")
+            .RootElement;
+        _projStore.GetBySwapTypeAsync("InterestRate", Arg.Any<CancellationToken>())
+            .Returns([BuildRow(id)]);
+        _smStore.GetProjectionAsync(id, Arg.Any<CancellationToken>())
+            .Returns(MakeProjection(id, "Swap", termsJson));
+
+        var results = await CreateSut().GetBySwapTypeAsync("InterestRate");
+
+        results.Should().ContainSingle();
+        results[0].Legs.Should().HaveCount(2);
+        results[0].Legs[0].FixedRate.Should().BeApproximately(0.041m, 0.0001m);
+        results[0].Legs[1].Index.Should().Be("SOFR");
+    }
+
+    [Fact]
     public async Task GetMaturingBeforeAsync_DelegatesToStore()
     {
         var cutoff = new DateOnly(2026, 12, 31);
@@ -77,6 +97,26 @@ public sealed class SwapProjectionServiceTests
         var results = await CreateSut().GetMaturingBeforeAsync(cutoff);
 
         results.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetMaturingBeforeAsync_HydratesLegsFromSecurityProjection()
+    {
+        var id = Guid.NewGuid();
+        var cutoff = new DateOnly(2026, 12, 31);
+        var termsJson = System.Text.Json.JsonDocument.Parse(
+            """{"legs":[{"legType":"Float","currency":"USD","index":"SOFR"}]}""")
+            .RootElement;
+        _projStore.GetMaturingBeforeAsync(cutoff, Arg.Any<CancellationToken>())
+            .Returns([BuildRow(id)]);
+        _smStore.GetProjectionAsync(id, Arg.Any<CancellationToken>())
+            .Returns(MakeProjection(id, "Swap", termsJson));
+
+        var results = await CreateSut().GetMaturingBeforeAsync(cutoff);
+
+        results.Should().ContainSingle();
+        results[0].Legs.Should().ContainSingle();
+        results[0].Legs[0].Index.Should().Be("SOFR");
     }
 
     private static SecurityProjectionRecord MakeProjection(Guid id, string assetClass,

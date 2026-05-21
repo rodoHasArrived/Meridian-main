@@ -28,7 +28,10 @@ public sealed class LedgerJournalStoreTests
 
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<LedgerJournalStoreOptions>().ConnectionString.Should().Be(connectionString);
-        provider.GetRequiredService<ILedgerJournalStore>().Should().BeOfType<PostgresLedgerJournalStore>();
+        var journalStore = provider.GetRequiredService<ILedgerJournalStore>();
+        journalStore.Should().BeOfType<PostgresLedgerJournalStore>();
+        provider.GetRequiredService<ITransactionalLedgerJournalStore>().Should().BeSameAs(journalStore);
+        provider.GetRequiredService<LedgerMigrationRunner>().Should().NotBeNull();
         provider.GetRequiredService<ILedgerBookService>().Should().BeOfType<PostgresLedgerBookService>();
     }
 
@@ -250,6 +253,20 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("ck_journal_legs_adjustment_approval_metadata");
         sql.Should().Contain("ix_journal_entries_adjustment_approval_id");
         sql.Should().Contain("ix_journal_entries_period_adjustment_approval_status");
+    }
+
+    [Fact]
+    public void LedgerOperationsContinuityMigration_DefinesWorkflowSnapshotAndAuditTables()
+    {
+        var sql = ReadMigration("V_ledger_008__operations_continuity.sql");
+
+        sql.Should().Contain("create table if not exists __SCHEMA__.operations_continuity_workflows");
+        sql.Should().Contain("workflow_json jsonb not null");
+        sql.Should().Contain("derived_status text not null");
+        sql.Should().Contain("create table if not exists __SCHEMA__.operations_continuity_audit");
+        sql.Should().Contain("audit_json jsonb not null");
+        sql.Should().Contain("ux_operations_continuity_audit_previous_hash");
+        sql.Should().Contain("ux_operations_continuity_open_workflow");
     }
 
     private static LedgerJournalEntryWrite BuildBalancedJournalWrite(

@@ -178,12 +178,12 @@ describe("QuantNotebook", () => {
     const source = screen.getByLabelText("Cell 1 source");
     expect(source).toHaveAttribute("placeholder", "## Section 1\n\nNarrative, hypothesis, or analysis notes.");
     expect(source).toBeDisabled();
-    expect(source).toHaveAttribute("title", "Cell 1 is running; wait before editing the source.");
     expect(source).toHaveAttribute("aria-describedby", "quant-notebook-cell-1-source-disabled-reason");
     expect(screen.getByText("Cell 1 is running; wait before editing the source.")).toHaveAttribute(
       "id",
       "quant-notebook-cell-1-source-disabled-reason"
     );
+    expect(source).toHaveAccessibleDescription("Cell 1 is running; wait before editing the source.");
     expect(source).toHaveAttribute("spellcheck", "true");
   });
 

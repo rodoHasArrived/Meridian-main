@@ -1,0 +1,46 @@
+{
+  "generator": {
+    "name": "build/scripts/docs/render-source-docs.py",
+    "version": "1.0.0"
+  },
+  "inputs": [
+    {
+      "path": "docs/source/data/diagram-index.yml",
+      "sha256": "ddd1a118b402f72c6e03419e0967649263c65614d288f9ab0734734eb81c28a6"
+    },
+    {
+      "path": "docs/source/data/source-modules.yml",
+      "sha256": "0bd5ee150803271ac75fac457d39b2a33e6335eea732fa5eb10b0f4a24576fb9"
+    },
+    {
+      "path": "docs/source/data/source-readme-coverage.yml",
+      "sha256": "3322ca3d46eb577c71d76aad740253390a9a94d7c6c6771113b2b1d444b59c18"
+    },
+    {
+      "path": "docs/source/data/source-readme-ignore.yml",
+      "sha256": "ef3b4d1c0d95f0ac51c92b566ad803f9912515fe9520f3d9b5d7fdd0f8c9a030"
+    },
+    {
+      "path": "docs/source/data/source-todos.yml",
+      "sha256": "9786e80c04c6da00ce5624b4d30982fbe62171fe842738b3b44deebee9b1f48a"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "docs/source/generated/source-module-index.md",
+      "sha256": "e1d315e1e8db2e9851eb7fcafdb0144d92dbf79205aec991f30e1fa51e0f387c"
+    },
+    {
+      "path": "docs/source/generated/source-roadmap-traceability.md",
+      "sha256": "e5de3c72115204075f646a050f8ec898a9b7d0efdf0d9b139624e1c028db251a"
+    },
+    {
+      "path": "docs/source/generated/source-todo-checklist.md",
+      "sha256": "f8fad759bbf19d157c77e8a2adba62ea5b332cb129ce300a09d820e1783b9359"
+    }
+  ],
+  "schema": {
+    "id": "meridian.generated-manifest",
+    "version": "1.0.0"
+  }
+}

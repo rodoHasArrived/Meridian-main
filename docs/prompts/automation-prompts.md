@@ -9,8 +9,8 @@ automation guidance is not scattered across the repo.
 | --- | --- |
 | `.github/prompts/*.prompt.yml` | Copilot prompt files for common maintenance, provider, review, test, performance, and WPF tasks |
 | `.github/prompts/README.md` | Prompt usage guide and prompt catalog |
-| `.github/workflows/prompt-generation.yml` | Prompt generation workflow |
-| `build/scripts/docs/generate-prompts.py` | Prompt-generation helper |
+| `build/scripts/docs/generate-prompts.py` | Current local prompt-generation helper |
+| `docs/archive/workflows/legacy-github-actions-2026-05-18.md` | Archive note for retired prompt-generation workflow automation |
 | `docs/ai/prompts/README.md` | AI docs index for prompt usage |
 | `scripts/ai/*.sh` | AI maintenance routing scripts |
 
@@ -27,6 +27,7 @@ automation guidance is not scattered across the repo.
 - `optimize-performance`
 - `project-context`
 - `provider-implementation-guide`
+- `runtime-observability-diagnostics`
 - `simulate-user-panel*`
 - `troubleshoot-issue`
 - `workflow-results-code-quality`

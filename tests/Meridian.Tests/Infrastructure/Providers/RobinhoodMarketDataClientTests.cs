@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.Infrastructure.Resilience;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -155,6 +156,53 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
 
         await act.Should().NotThrowAsync();
         publisher.Published.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PollBatchAsync_WhenQuoteIsCrossed_RejectsQuoteAndTracksDiagnostics()
+    {
+        var payload = """
+            {
+              "results": [
+                {
+                  "symbol": "AAPL",
+                  "bid_price": "185.55",
+                  "bid_size": 100,
+                  "ask_price": "185.50",
+                  "ask_size": 100,
+                  "updated_at": "2026-05-20T12:00:00Z"
+                }
+              ]
+            }
+            """;
+        var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent(payload)), out var publisher);
+
+        await InvokePollBatchAsync(sut, ["AAPL"]);
+
+        publisher.Published.Should().BeEmpty("crossed quotes must be rejected at the provider boundary");
+        var diagnostics = sut.GetDiagnosticsSnapshot();
+        diagnostics.ProviderId.Should().Be("robinhood-live");
+        diagnostics.LastSuccessfulApiCallAt.Should().NotBeNull();
+        diagnostics.DataQualityRejections.Should().Be(1);
+        diagnostics.LastError.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task PollBatchAsync_WhenUnauthorized_ReportsRedactedCredentialFailure()
+    {
+        const string secretToken = "super-secret-token";
+        var sut = CreateSut(
+            new StubHttpHandler(HttpStatusCode.Unauthorized, new StringContent("{\"detail\":\"unauthorized\"}")),
+            out _,
+            accessToken: secretToken);
+
+        await InvokePollBatchAsync(sut, ["AAPL"]);
+
+        var diagnostics = sut.GetDiagnosticsSnapshot();
+        diagnostics.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Failed);
+        diagnostics.LastError.Should().Contain("Unauthorized");
+        diagnostics.LastError.Should().NotContain(secretToken);
+        diagnostics.LastPollAttemptAt.Should().NotBeNull();
     }
 
     [Fact]

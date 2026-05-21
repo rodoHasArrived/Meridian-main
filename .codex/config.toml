@@ -1,3 +1,6 @@
-sandbox_mode = "danger-full-access"
+# Repository-local Codex defaults must fail closed. Individual operators can
+# override these settings in their user profile when a task genuinely needs
+# broader filesystem access or unattended execution.
+sandbox_mode = "workspace-write"
 
 approval_policy = "never"

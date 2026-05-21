@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-05-19
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio/Reporting/Settings/Data task panels plus Portfolio brokerage-sync next actions, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, the browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection and Watchlist no-quote/empty-state copy, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, browser Security Master search-result selection, identity drill-ins, details/lots/operator-override support, UFL/reference-data projection endpoints, paper-first Alpaca connection verification plus provider-setup next-validation handoffs, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, simplified browser rail/header chrome, and demo-data fixture semantics with seeded market-data demo paths
+**Last Updated:** 2026-05-21
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, gated Quant Lab support slices, shared Strategy Engine pre-run validation, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio/Reporting/Settings/Data task panels plus Portfolio brokerage-sync next actions, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, the browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection and Watchlist no-quote/empty-state copy, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, browser Security Master search-result selection, identity drill-ins, details/lots/operator-override support, UFL/reference-data projection endpoints, paper-first Alpaca connection verification plus provider-setup next-validation handoffs, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, simplified browser rail/header chrome, demo-data fixture semantics with seeded market-data demo paths, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls
 
 ---
 
@@ -9,7 +9,7 @@
 
 Meridian's target end state is a self-hosted evidence-backed investment operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
-`Data` establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, Security Master print-packet readiness, UFL/reference-data projections across the expanded asset-class set, live quote/order-book/watchlist/Price Alerts market context with recent-trade detail inspection, provider-setup validation handoffs, and operator-visible sign-off posture. `Strategy` turns that data into reviewed runs, comparisons, visual strategy design, Covered Call chain/run/trade evidence review, and gated Quant Lab/Quant Notebook support evidence with testable plot-rendering and cell/data-fetch state, `Trading` promotes approved runs into paper workflows with market context, staged order-ticket support, selectable fill-detail review, and full-console readiness checkpoint gates whose BrokerageSync blockers route to provider setup repair, `Portfolio` and `Accounting` review the resulting positions, brokerage account posture, household rollups, ledger, cash-flow, performance, Security Master search-result drill-ins, details/lots/operator overrides, and reconciliation evidence with a browser detail queue for loaded runs, `Reporting` turns the governed evidence set into retained report packs and now hosts the first Evidence Workbench for packet completeness, graph lineage, validation, and manifest export, and `Settings` keeps capability coverage and paper-first credential checks reproducible.
+`Data` establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, Security Master print-packet readiness, UFL/reference-data projections across the expanded asset-class set, live quote/order-book/watchlist/Price Alerts market context with recent-trade detail inspection, provider-setup validation handoffs, and operator-visible sign-off posture. `Strategy` turns that data into reviewed runs, comparisons, visual strategy design, Covered Call chain/run/trade evidence review, Strategy Engine pre-run definitions/validation, and gated Quant Lab/Quant Notebook support evidence with testable plot-rendering and cell/data-fetch state, `Trading` promotes approved runs into paper workflows with market context, staged order-ticket support, selectable fill-detail review, and full-console readiness checkpoint gates whose BrokerageSync blockers route to provider setup repair, `Portfolio` and `Accounting` review the resulting positions, brokerage account posture, household rollups, ledger, cash-flow, performance, Security Master search-result drill-ins, details/lots/operator overrides, and reconciliation evidence with a browser detail queue for loaded runs, `Reporting` turns the governed evidence set into retained report packs and now hosts the first Evidence Workbench for packet completeness, graph lineage, validation, and manifest export, and `Settings` keeps capability coverage and paper-first credential checks reproducible.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context. Commercially, Meridian should become the system of record for investment decision evidence. New operator UI delivery should prove that continuity in the web dashboard, while retained WPF surfaces remain compatibility and support evidence.
 
@@ -31,6 +31,30 @@ separates browser-openable GET route evidence from reference-only POST validatio
 run-backtest commands; and Reporting export actions now abort superseded profile exports. These are
 the right direction for an explainable workstation, but report-pack lifecycle, Backtest Studio, and
 live-readiness acceptance remain open.
+
+Current operations-continuity evidence narrows the close path without completing it: the shared
+account-period workflow now models broker import/normalization, Security Master resolution and
+override approval, ledger draft/validate/post, reconciliation, approval, close, governed reopen,
+and hash-chained audit timeline inspection through workstation API routes. The target close
+workflow still needs browser/operator acceptance, external statement/custodian intake, durable
+generalized casework, report publication controls, and operator-approved calibration.
+
+Current May 20 support evidence narrows the safety and operability path without completing it:
+order placement now has fail-closed validation/sign-off gates, ledger and promotion writes require
+explicit endpoint authorization, execution metadata is sanitized before exposure, the web
+workstation installer can repair invalid provider configs during upgrade, and browser forms now
+surface expired-session, forbidden-role, and disabled-field states in accessible text. Security
+Master accounting also recognizes MBS, ABS, loan, and amortizing-loan instruments as
+factor-schedule fixed-income support evidence. The target product still needs accepted cockpit,
+close, report-pack, Evidence Vault, provenance, and live-readiness workflows.
+
+Current May 21 support evidence narrows the strategy and documentation-control path without
+completing it: Strategy Engine definitions and validate-run endpoints can block missing data or bad
+parameters before a run becomes durable evidence; continuity payload compatibility guards protect
+shared ledger/reconciliation/strategy read models; the provider capability matrix names adapter
+owners and next actions; and roadmap/source registries make generated status and module docs
+deterministic. The target product still needs accepted strategy-to-ledger lineage, Backtest Studio,
+close, report-pack, Evidence Vault, provenance, and live-readiness workflows.
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).
@@ -75,7 +99,7 @@ Portfolio is where operators inspect account posture, positions, exposure, attri
 
 ### Accounting
 
-Accounting is where operators review ledger outcomes, cash-flow questions, trial-balance posture, reconciliation breaks, browser reconciliation detail-queue state, calibration-summary posture, and sign-off casework.
+Accounting is where operators review ledger outcomes, cash-flow questions, trial-balance posture, reconciliation breaks, browser reconciliation detail-queue state, calibration-summary posture, operations-continuity close gates, and sign-off casework.
 
 ### Reporting
 
@@ -136,7 +160,7 @@ Current WPF evidence now includes RunCashFlow empty-state guidance for selected-
 
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 
-Deepen governance and fund-operations workflows on top of the delivered Security Master baseline using shared contracts, read models, and export seams.
+Deepen governance and fund-operations workflows on top of the delivered Security Master baseline using shared contracts, read models, operations-continuity close-lane APIs, and export seams.
 
 Waves 1-4 define **core operator-readiness**.
 

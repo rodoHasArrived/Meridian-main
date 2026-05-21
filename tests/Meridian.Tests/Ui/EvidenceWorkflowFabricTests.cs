@@ -396,6 +396,41 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestRead_RejectsDotSegmentSubjectTraversal()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject("report-pack", "current");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "node-1", "analysis-export", EvidenceStatusDto.Ready)],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export"));
+        var generatedFileName = Uri.UnescapeDataString(response.ManifestRoute.Split('/')[^1]);
+        var validManifest = await store.TryOpenManifestAsync("report-pack", "current", generatedFileName);
+        validManifest.Should().NotBeNull();
+        await validManifest!.Content.DisposeAsync();
+
+        var evidenceRoot = Path.Combine(root, "workstation", "evidence");
+        Directory.CreateDirectory(evidenceRoot);
+        var escapedManifestPath = Path.Combine(evidenceRoot, "secret-manifest.json");
+        await File.WriteAllTextAsync(escapedManifestPath, """{"schemaVersion":1}""");
+
+        var subjectIdTraversal = await store.TryOpenManifestAsync("report-pack", "..", "secret-manifest.json");
+        var subjectKindTraversal = await store.TryOpenManifestAsync("..", "report-pack", "secret-manifest.json");
+        var encodedSeparatorTraversal = await store.TryOpenManifestAsync("report-pack", "current/..", "secret-manifest.json");
+
+        subjectIdTraversal.Should().BeNull();
+        subjectKindTraversal.Should().BeNull();
+        encodedSeparatorTraversal.Should().BeNull();
+    }
+
+    [Fact]
     public async Task FileEvidenceArtifactStore_DuringLedgerManifestExport_PreservesRouteOnlyArtifactRefs()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));

@@ -483,7 +483,7 @@ export interface TradingReadinessViewModel extends TradingReadinessState {
 }
 
 export interface TradingReadinessServices {
-  getTradingReadiness: (options?: ApiRequestOptions) => Promise<TradingOperatorReadiness | null>;
+  getTradingReadiness: (options?: ApiRequestOptions & { fundAccountId?: string }) => Promise<TradingOperatorReadiness | null>;
 }
 
 export interface BuildTradingReadinessStateOptions {
@@ -585,9 +585,11 @@ export function buildTradingBlotterViewModel({
 
 export function useTradingReadinessViewModel({
   initialReadiness,
+  fundAccountId,
   services = defaultTradingReadinessServices
 }: {
   initialReadiness: TradingOperatorReadiness | null;
+  fundAccountId?: string;
   services?: TradingReadinessServices;
 }): TradingReadinessViewModel {
   const [readiness, setReadiness] = useState<TradingOperatorReadiness | null>(initialReadiness);
@@ -621,7 +623,7 @@ export function useTradingReadinessViewModel({
     setErrorText(null);
 
     try {
-      const nextReadiness = await services.getTradingReadiness({ signal: controller.signal });
+      const nextReadiness = await services.getTradingReadiness({ signal: controller.signal, fundAccountId });
       if (readinessRevisionRef.current === revision) {
         setReadiness(nextReadiness);
       }
@@ -637,7 +639,7 @@ export function useTradingReadinessViewModel({
         setRefreshing(false);
       }
     }
-  }, [services]);
+  }, [fundAccountId, services]);
 
   const state = useMemo(
     () => buildTradingReadinessState({ readiness, refreshing, errorText }),
@@ -727,16 +729,62 @@ function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingRe
 }
 
 function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingReadinessWorkItemAction | null {
-  if (item.kind !== "BrokerageSync") {
-    return null;
-  }
+  switch (item.kind) {
+    case "BrokerageSync":
+      return {
+        label: "Fix provider setup",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        ariaLabel: `Open provider setup for ${item.label}`,
+        detail: "Review provider credentials and connection status in Settings."
+      };
 
-  return {
-    label: "Fix provider setup",
-    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
-    ariaLabel: `Open provider setup for ${item.label}`,
-    detail: "Review provider credentials and connection status in Settings."
-  };
+    case "PaperReplay":
+      return {
+        label: "Verify replay",
+        href: `${WORKSTATION_ROUTE_CATALOG.trading}#session-replay-panel`,
+        ariaLabel: `Open session replay panel for ${item.label}`,
+        detail: "Verify replay consistency in the Trading cockpit."
+      };
+
+    case "ExecutionControl":
+      return {
+        label: "Review risk controls",
+        href: WORKSTATION_ROUTE_CATALOG.tradingRisk,
+        ariaLabel: `Open risk controls for ${item.label}`,
+        detail: "Review execution guardrails and circuit-breaker state in Trading."
+      };
+
+    case "PromotionReview": {
+      const href = item.runId
+        ? `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`
+        : `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
+      return {
+        label: "Open promotion gate",
+        href,
+        ariaLabel: `Open promotion gate panel for ${item.label}`,
+        detail: "Complete the promotion approval checklist in the Trading cockpit."
+      };
+    }
+
+    case "SecurityMasterCoverage":
+      return {
+        label: "Open security master",
+        href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
+        ariaLabel: `Open security master for ${item.label}`,
+        detail: "Review missing security coverage in Accounting."
+      };
+
+    case "ReconciliationBreak":
+      return {
+        label: "Open reconciliation",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        ariaLabel: `Open reconciliation break queue for ${item.label}`,
+        detail: "Review open reconciliation breaks in Accounting."
+      };
+
+    default:
+      return null;
+  }
 }
 
 function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessWarningRow[] {
@@ -3938,6 +3986,7 @@ export interface PromotionGateForm {
   rejectionReason: string;
   reviewNotes: string;
   manualOverrideId: string;
+  approvalChecklist: string[];
 }
 
 export type PromotionGatePhase = "idle" | "evaluating" | "approving" | "rejecting";
@@ -4047,8 +4096,16 @@ export const emptyPromotionGateForm: PromotionGateForm = {
   approvalReason: "",
   rejectionReason: "",
   reviewNotes: "",
-  manualOverrideId: ""
+  manualOverrideId: "",
+  approvalChecklist: []
 };
+
+export const paperPromotionApprovalChecklist: string[] = [
+  "DK1_TRUST_PACKET_REVIEWED",
+  "RUN_LINEAGE_REVIEWED",
+  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
+  "RISK_CONTROLS_REVIEWED"
+];
 
 const defaultPromotionServices: PromotionGateServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
@@ -4126,6 +4183,7 @@ export function usePromotionGateViewModel(
 
     if (field === "runId") {
       setEvaluation(null);
+      setForm((current) => ({ ...current, approvalChecklist: [] }));
     }
   }, []);
 
@@ -4155,6 +4213,10 @@ export function usePromotionGateViewModel(
       }
 
       setEvaluation(result);
+      setForm((current) => ({
+        ...current,
+        approvalChecklist: result.isEligible ? paperPromotionApprovalChecklist : []
+      }));
     } catch (err) {
       if (isCurrentCommandRevision(commandRevision)) {
         setErrorText(toErrorMessage(err, "Evaluation failed."));
@@ -4639,6 +4701,10 @@ export function validatePromotionApproval(
     return "Run id, operator, and approval reason are required.";
   }
 
+  if (trimmedForm.approvalChecklist.length === 0) {
+    return "Approval checklist must be completed before promoting. Evaluate gate checks to populate the checklist.";
+  }
+
   return null;
 }
 
@@ -4658,6 +4724,7 @@ export function buildPromotionApprovalRequest(form: PromotionGateForm): ApproveP
     runId: trimmedForm.runId,
     approvedBy: trimmedForm.approvedBy,
     approvalReason: trimmedForm.approvalReason,
+    approvalChecklist: trimmedForm.approvalChecklist.length > 0 ? trimmedForm.approvalChecklist : undefined,
     reviewNotes: trimmedForm.reviewNotes || undefined,
     manualOverrideId: trimmedForm.manualOverrideId || undefined
   };
@@ -4681,7 +4748,8 @@ function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
     approvalReason: form.approvalReason.trim(),
     rejectionReason: form.rejectionReason.trim(),
     reviewNotes: form.reviewNotes.trim(),
-    manualOverrideId: form.manualOverrideId.trim()
+    manualOverrideId: form.manualOverrideId.trim(),
+    approvalChecklist: form.approvalChecklist
   };
 }
 

@@ -12,6 +12,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   workflowSummary: "/api/workstation/workflow-summary",
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
+  operationsContinuity: "/api/workstation/operations/continuity",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
@@ -81,6 +82,11 @@ export const STRATEGY_DESIGNER_API_ENDPOINTS = {
   validate: "/api/workstation/strategy/designer/validate",
   preview: "/api/workstation/strategy/designer/preview",
   runBacktest: "/api/workstation/strategy/designer/run-backtest"
+} as const;
+
+export const STRATEGY_ENGINE_API_ENDPOINTS = {
+  definitions: "/api/workstation/strategy/engine/definitions",
+  validateRun: "/api/workstation/strategy/engine/validate-run"
 } as const;
 
 export const SECURITY_MASTER_API_ENDPOINTS = {
@@ -180,6 +186,12 @@ export function providerVerifyEndpoint(providerId: string): string {
   return `/api/providers/${pathSegment(providerId, "providerId")}/verify`;
 }
 
+export function workstationTradingReadinessEndpoint(fundAccountId?: string): string {
+  return fundAccountId
+    ? `${WORKSTATION_API_ENDPOINTS.tradingReadiness}${queryString({ fundAccountId })}`
+    : WORKSTATION_API_ENDPOINTS.tradingReadiness;
+}
+
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
@@ -219,6 +231,30 @@ export function workstationWorkflowPresetPinEndpoint(presetId: string): string {
 
 export function workstationWorkflowPresetUsedEndpoint(presetId: string): string {
   return `${workstationWorkflowPresetEndpoint(presetId)}/used`;
+}
+
+export function workstationOperationsContinuityEndpoint(options: {
+  fundAccountId?: string;
+  periodId?: string;
+  status?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}${queryString(options)}`;
+}
+
+export function workstationOperationsContinuityDetailEndpoint(workflowId: string): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}/${pathSegment(workflowId, "workflowId")}`;
+}
+
+export function workstationOperationsContinuityTimelineEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/timeline`;
+}
+
+export function workstationOperationsContinuityBreaksEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/breaks`;
+}
+
+export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
 }
 
 export function workstationRunLedgerEndpoint(runId: string): string {

@@ -123,7 +123,7 @@ public sealed class StrategyRunWorkspaceService
     public Task<IReadOnlyList<RunComparisonDto>> CompareRunsAsync(
         IEnumerable<string> runIds,
         CancellationToken ct = default) =>
-        _readService.GetRunComparisonDtosAsync(runIds, ct);
+        _readService.GetRunComparisonDtosAsync(runIds, ct: ct);
 
     public Task<RunCashFlowSummary?> GetCashFlowAsync(
         string runId,

@@ -4,7 +4,7 @@
 **Owner:** Core Team
 **Reviewed:** 2026-05-18
 
-Meridian is developed from `C:\Dev\Meridian-main`.
+Meridian is developed from `D:\Meridian-main`.
 
 ## Prerequisites
 

@@ -222,6 +222,182 @@ public sealed class SecurityValidationServiceTests
         }
     }
 
+    [Fact]
+    public void Scenario_InvalidCusip_ProducesStructuredIdentifierFormatIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "03783310X", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_FORMAT_INVALID"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("CUSIP", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Scenario_InvalidOccOptionSymbol_ProducesStructuredIdentifierFormatIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Option",
+            [CreateIdentifier(SecurityIdentifierKind.OccOptionSymbol, "AAPL240621X00150000", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_FORMAT_INVALID"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("OccOptionSymbol", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Scenario_IdentifierEffectiveWindowEndsBeforeItBegins_ProducesDateRangeIssue()
+    {
+        var validFrom = new DateTimeOffset(2026, 5, 20, 0, 0, 0, TimeSpan.Zero);
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Bond",
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Cusip,
+                    "037833100",
+                    true,
+                    validFrom,
+                    validFrom.AddDays(-1))
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_EFFECTIVE_WINDOW_INVALID"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("expires on or before", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Scenario_OccOptionSymbolOnBond_ProducesAssetClassMismatchWarning()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Bond",
+            [CreateIdentifier(SecurityIdentifierKind.OccOptionSymbol, "AAPL240621C00150000", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_OCC_SYMBOL_ASSET_CLASS_MISMATCH"
+            && issue.Severity == SecurityValidationSeverityDto.Warning);
+    }
+
+    [Fact]
+    public void Scenario_NonCanonicalIsinFormatting_ProducesNormalizationWarning()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Isin, "us-0378331005", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_NORMALIZATION_RECOMMENDED"
+            && issue.Severity == SecurityValidationSeverityDto.Warning
+            && issue.Message.Contains("US0378331005", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_MissingAssetSpecificSchemaVersion_ProducesCompatibilityWarning()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Ticker, "AAPL", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                classification = "Common",
+                accountingClassification = "TradingAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_ASSET_SPECIFIC_SCHEMA_VERSION_MISSING"
+            && issue.Severity == SecurityValidationSeverityDto.Warning
+            && issue.AffectedFields.Contains("assetSpecificTerms.schemaVersion"));
+    }
+
+    [Fact]
+    public void Scenario_UnsupportedAssetSpecificSchemaVersion_ProducesCompatibilityError()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Bond",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 7,
+                maturity = "2030-01-01",
+                accountingClassification = "TradingAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_ASSET_SPECIFIC_SCHEMA_VERSION_UNSUPPORTED"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("schemaVersion '7'", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_PrimaryIdentifierProjectionMismatch_ProducesActionableError()
+    {
+        var activePrimaryIdentifier = CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true);
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [activePrimaryIdentifier]) with
+        {
+            PrimaryIdentifierKind = SecurityIdentifierKind.Ticker.ToString(),
+            PrimaryIdentifierValue = "AAPL"
+        };
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_PRIMARY_IDENTIFIER_PROJECTION_MISMATCH"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.AffectedFields.Contains("primaryIdentifierKind")
+            && issue.AffectedFields.Contains("primaryIdentifierValue"));
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,
@@ -244,6 +420,7 @@ public sealed class SecurityValidationServiceTests
             }),
             AssetSpecificTerms: assetSpecificTerms ?? JsonSerializer.SerializeToElement(new
             {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
                 classification = "Common",
                 valuationProfile = new { pricingSource = "TestMarks" },
                 accountingClassification = "TradingAsset"

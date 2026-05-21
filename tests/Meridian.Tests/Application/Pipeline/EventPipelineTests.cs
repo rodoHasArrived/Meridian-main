@@ -349,6 +349,38 @@ public class EventPipelineTests : IAsyncLifetime
         releaseConsumer.TrySetResult(true);
     }
 
+    [Fact]
+    public async Task TryPublish_WhenQueueFull_WaitMode_ReturnsFalseWithoutEvictingQueuedEvents()
+    {
+        var releaseConsumer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var sink = new BlockingStorageSink(releaseConsumer.Task);
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 2,
+            batchSize: 1,
+            fullMode: BoundedChannelFullMode.Wait,
+            enablePeriodicFlush: false);
+
+        pipeline.TryPublish(CreateTradeEvent("FIRST")).Should().BeTrue();
+        await sink.WaitForFirstBlockAsync(TimeSpan.FromSeconds(2));
+
+        pipeline.TryPublish(CreateTradeEvent("SECOND")).Should().BeTrue();
+        pipeline.TryPublish(CreateTradeEvent("THIRD")).Should().BeTrue();
+
+        pipeline.TryPublish(CreateTradeEvent("DROPPED")).Should().BeFalse();
+        pipeline.DroppedCount.Should().Be(1);
+        pipeline.QueueFullMode.Should().Be(BoundedChannelFullMode.Wait);
+        pipeline.GetStatistics().QueueFullMode.Should().Be(BoundedChannelFullMode.Wait);
+
+        releaseConsumer.TrySetResult(true);
+        await pipeline.FlushAsync();
+
+        sink.ReceivedEvents.Select(static evt => evt.Symbol)
+            .Should().ContainInOrder("FIRST", "SECOND", "THIRD");
+        sink.ReceivedEvents.Select(static evt => evt.Symbol)
+            .Should().NotContain("DROPPED");
+    }
+
     #endregion
 
     #region Flush Tests
@@ -571,6 +603,32 @@ public class EventPipelineTests : IAsyncLifetime
             async () => await pipeline.PublishAsync(CreateTradeEvent("AAPL"), cts.Token));
 
         // Cleanup
+        releaseConsumer.TrySetResult(true);
+    }
+
+    [Fact]
+    public async Task PublishAsync_UpdatesQueueStatisticsWhenAsyncPublishersFillTheQueue()
+    {
+        var releaseConsumer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var sink = new BlockingStorageSink(releaseConsumer.Task);
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 128,
+            fullMode: BoundedChannelFullMode.Wait,
+            enablePeriodicFlush: false);
+
+        await pipeline.PublishAsync(CreateTradeEvent("FIRST"));
+        await sink.WaitForFirstBlockAsync(TimeSpan.FromSeconds(2));
+
+        for (var i = 0; i < 63; i++)
+        {
+            await pipeline.PublishAsync(CreateTradeEvent($"SYM{i}"));
+        }
+
+        var stats = pipeline.GetStatistics();
+        stats.PublishedCount.Should().Be(64);
+        stats.PeakQueueSize.Should().BeGreaterThan(0);
+
         releaseConsumer.TrySetResult(true);
     }
 
@@ -846,6 +904,8 @@ internal sealed class BlockingStorageSink : IStorageSink
     private readonly Task _releaseSignal;
     private readonly TaskCompletionSource<bool> _firstBlockReached =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly List<MarketEvent> _receivedEvents = new();
+    private readonly object _lock = new();
     private int _receivedCount;
 
     public BlockingStorageSink(Task releaseSignal)
@@ -863,11 +923,26 @@ internal sealed class BlockingStorageSink : IStorageSink
 
     public int ReceivedCount => Volatile.Read(ref _receivedCount);
 
+    public IReadOnlyList<MarketEvent> ReceivedEvents
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _receivedEvents.ToList();
+            }
+        }
+    }
+
     public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
         // Signal that the consumer has arrived
         _firstBlockReached.TrySetResult(true);
         Interlocked.Increment(ref _receivedCount);
+        lock (_lock)
+        {
+            _receivedEvents.Add(evt);
+        }
 
         // Block until released or cancelled
         await _releaseSignal.WaitAsync(ct).ConfigureAwait(false);

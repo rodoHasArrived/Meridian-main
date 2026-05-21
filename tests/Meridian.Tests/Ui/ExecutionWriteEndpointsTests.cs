@@ -295,6 +295,39 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionByKey_WithBrokerSuppliedAccountMetadata_StripsServerOwnedRoutingKeys()
+    {
+        var position = CreateRobinhoodOptionPosition("opt-close") with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "option",
+                ["option_instrument_url"] = "https://api.robinhood.com/options/instruments/opt-close/",
+                ["broker_account_id"] = "attacker-controlled-account",
+                ["account_id"] = "attacker-ledger-account",
+                ["manualOverrideId"] = "forged-override"
+            }
+        };
+        var gateway = new RecordingBrokerageGateway(position);
+
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.Metadata.Should().NotBeNull();
+        request.Metadata!.Should().NotContainKey("broker_account_id");
+        request.Metadata.Should().NotContainKey("account_id");
+        request.Metadata.Should().NotContainKey("manualOverrideId");
+        request.Metadata["asset_class"].Should().Be("option");
+        request.Metadata["option_instrument_url"].Should().Be("https://api.robinhood.com/options/instruments/opt-close/");
+    }
+
+    [Fact]
     public async Task UpsizePositionByKey_WithBrokerOptionPosition_UsesOpenPositionEffect()
     {
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
@@ -406,6 +439,57 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_WithClientAssetClassRoutingMetadata_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["asset_class"] = "treasury"
+                }
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadAsync<OrderResult>(response);
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("server-side");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenActorMissing_ReturnsUnauthorizedAndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            currentUser: null);
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task UpdateExecutionCircuitBreaker_WhenUserLacksManageOrders_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(
@@ -421,6 +505,26 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task CreateExecutionSession_WhenUserLacksExecuteTrades_ReturnsForbidden()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateExecutionSession_WhenUserLacksExecuteTrades_ReturnsForbidden));
+        await using var app = await CreateAppAsync(
+            services => RegisterSessionServices(services, artifacts.RootPath),
+            currentUserPermissions: UserPermission.ViewTrades);
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-session",
+                StrategyName: "Session Strategy",
+                InitialCash: 125_000m,
+                Symbols: ["AAPL"])));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task SubmitOrder_WhenProductionRoutingEnabledButValidationArtifactsMissing_Returns403()
     {
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
@@ -430,6 +534,13 @@ public sealed class ExecutionWriteEndpointsTests
             services.AddSingleton(new BrokerageConfiguration
             {
                 Gateway = "alpaca",
+                LiveExecutionEnabled = true,
+                ReadOnlyPhaseEnabled = true,
+                PaperTradingPhaseEnabled = true,
+                ProductionRoutingPhaseEnabled = true,
+                ReadOnlyVerificationPassed = true,
+                PaperLifecycleTestsPassed = true,
+                ReplayEvidencePassed = true,
                 BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["alpaca"] = new() { ProductionOrderRoutingEnabled = true }
@@ -460,6 +571,36 @@ public sealed class ExecutionWriteEndpointsTests
         result.ErrorMessage.Should().Contain("validation artifact");
         gateway.SubmittedRequests.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task ClosePositionAction_WhenProductionRoutingDisabled_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "robinhood",
+                BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["robinhood"] = new() { ProductionOrderRoutingEnabled = false }
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("Production order routing is disabled");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
 
     [Fact]
     public async Task PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit()
@@ -753,6 +894,41 @@ public sealed class ExecutionWriteEndpointsTests
         approveResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task PromotionApprove_WhenActorMissing_ReturnsUnauthorized()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterPromotionServices(services),
+            currentUserPermissions: UserPermission.ManageStrategies,
+            currentUser: null);
+        var client = app.GetTestClient();
+
+        var approveResponse = await client.PostAsync(
+            "/api/promotion/approve",
+            JsonContent(new PromotionApprovalRequest(
+                RunId: "run-backtest-01",
+                ApprovedBy: "forged-actor",
+                ApprovalReason: "Attempted approval without a trusted session actor.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task PromotionEvaluate_WhenUserLacksStrategyReadPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterPromotionServices(services),
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        var evaluateResponse = await client.GetAsync("/api/promotion/evaluate/run-backtest-01");
+        var historyResponse = await client.GetAsync("/api/promotion/history");
+
+        evaluateResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
@@ -777,7 +953,8 @@ public sealed class ExecutionWriteEndpointsTests
         services.AddSingleton<IOrderManager>(sp =>
             new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),
-                NullLogger<OrderManagementSystem>.Instance));
+                NullLogger<OrderManagementSystem>.Instance,
+                brokerageConfiguration: sp.GetService<BrokerageConfiguration>()));
     }
 
     private static void RegisterSessionServices(IServiceCollection services, string rootPath)
@@ -829,7 +1006,7 @@ public sealed class ExecutionWriteEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
-        string currentUser = "ops-user")
+        string? currentUser = "ops-user")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -841,7 +1018,11 @@ public sealed class ExecutionWriteEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = currentUser;
+            if (!string.IsNullOrWhiteSpace(currentUser))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = currentUser;
+            }
+
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
             await next();
         });

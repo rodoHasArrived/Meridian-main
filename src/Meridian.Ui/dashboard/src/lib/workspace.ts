@@ -62,6 +62,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioAttribution: "/portfolio/attribution",
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
   accounting: "/accounting",
+  accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingLedger: "/accounting/ledger",
   accountingReconciliation: "/accounting/reconciliation",
   accountingSecurityMaster: "/accounting/security-master",
@@ -108,6 +109,8 @@ const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
 const PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
   AccountPortfolio: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   AccountingShell: WORKSTATION_ROUTE_CATALOG.accounting,
+  OperationsContinuity: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+  OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
   Backtest: WORKSTATION_ROUTE_CATALOG.strategy,
   Backfill: WORKSTATION_ROUTE_CATALOG.dataBackfills,
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,

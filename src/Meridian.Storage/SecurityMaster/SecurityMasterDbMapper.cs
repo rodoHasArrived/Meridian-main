@@ -23,9 +23,18 @@ public static class SecurityMasterDbMapper
             record.Currency,
             record.CommonTerms,
             record.AssetSpecificTerms,
-            record.Identifiers,
+            NormalizeIdentifiers(record.Identifiers),
             record.Aliases,
             record.Version,
             record.EffectiveFrom,
             record.EffectiveTo);
+
+    private static IReadOnlyList<SecurityIdentifierDto> NormalizeIdentifiers(IReadOnlyList<SecurityIdentifierDto> identifiers)
+        => identifiers
+            .Select(static identifier => identifier with
+            {
+                NormalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier),
+                NormalizedProvider = SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)
+            })
+            .ToArray();
 }

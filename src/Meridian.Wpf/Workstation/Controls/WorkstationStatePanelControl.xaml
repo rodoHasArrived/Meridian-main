@@ -1,0 +1,61 @@
+<UserControl x:Class="Meridian.Wpf.Workstation.Controls.WorkstationStatePanelControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <Border CornerRadius="8"
+            Padding="14"
+            BorderThickness="1"
+            BorderBrush="{StaticResource ConsoleBorderBrush}"
+            Background="{StaticResource PremiumPanelBrush}"
+            AutomationProperties.Name="{Binding ElementName=Root, Path=State.Title}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="{Binding ElementName=Root, Path=State.Glyph}"
+                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                       FontSize="20"
+                       Foreground="{StaticResource InfoColorBrush}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,12,0" />
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding ElementName=Root, Path=State.Title}"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                           TextWrapping="Wrap" />
+                <TextBlock Text="{Binding ElementName=Root, Path=State.Detail}"
+                           Margin="0,4,0,0"
+                           Style="{StaticResource CardDescriptionStyle}"
+                           TextWrapping="Wrap" />
+                <TextBlock Text="{Binding ElementName=Root, Path=State.EvidenceText}"
+                           Margin="0,7,0,0"
+                           FontSize="12"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Column="2"
+                    CornerRadius="10"
+                    Padding="10,7"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="{Binding ElementName=Root, Path=State.ActionText}"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ElementName=Root, Path=State.TargetText}"
+                               Margin="0,4,0,0"
+                               FontSize="11"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

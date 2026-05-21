@@ -16,6 +16,8 @@ on:
       - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
       - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
       - "tests/scripts/test_golden_path_validation_workflow.py"
+      - "tests/scripts/test_generate_dk1_pilot_parity_packet.py"
+      - "tests/scripts/test_prepare_dk1_operator_signoff.py"
   push:
     branches:
       - main
@@ -33,6 +35,8 @@ on:
       - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
       - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
       - "tests/scripts/test_golden_path_validation_workflow.py"
+      - "tests/scripts/test_generate_dk1_pilot_parity_packet.py"
+      - "tests/scripts/test_prepare_dk1_operator_signoff.py"
   workflow_dispatch:
 
 permissions:
@@ -60,6 +64,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v5.2.0
@@ -89,6 +96,11 @@ jobs:
 
       - name: Validate pilot readiness dashboard renderer
         run: python3 -m unittest build/scripts/docs/tests/test_pilot_readiness_dashboard.py
+
+      - name: Validate provider-validation script tests
+        run: |
+          python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
+          python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 
       - name: Generate pilot readiness dashboard
         run: |

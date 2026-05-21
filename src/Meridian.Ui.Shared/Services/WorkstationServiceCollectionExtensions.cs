@@ -73,6 +73,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
         services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<StrategyEngineRegistry>();
+        services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -124,7 +126,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsContinuityRepository>(),
                 sp.GetRequiredService<IOperationsWorkflowAuditStore>(),
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IOperationsContinuityTransactionalCommitStore>()));
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -133,7 +136,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
-        services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter, NullSecurityMasterAccountingEventSourceAdapter>();
+        services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
+            new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
@@ -141,6 +145,10 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
+            new OperationsContinuityReconciliationBridge(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReconciliationRunService>()));
 
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();

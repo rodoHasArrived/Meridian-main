@@ -152,6 +152,16 @@ public sealed class OperationsContinuityWorkflow
                 []);
         }
 
+        if (BrokerIntakeState is OperationsBrokerIntakeStateDto.Imported)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "BROKER_NORMALIZATION_REQUIRED",
+                "Imported broker, custodian, or bank activity must be normalized before Security Master resolution.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Error",
+                []);
+        }
+
         return null;
     }
 
@@ -663,6 +673,12 @@ public sealed class OperationsContinuityWorkflow
             !IsClosedBreakStatus(item.Status) &&
             !string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
         ApplyReconciliationPosture(openCriticalBreaks, openNonCriticalBreaks, evidenceLinks, now, request.Actor);
+        ApplySecurityMasterIssuePosture(
+            request.SecurityCoverageIssueCount,
+            request.SecurityAccountingIssueCount,
+            evidenceLinks,
+            now,
+            request.Actor);
     }
 
     public OperationsWorkflowBlockerDto? ResolveBreakCase(
@@ -715,8 +731,44 @@ public sealed class OperationsContinuityWorkflow
         return null;
     }
 
-    public OperationsWorkflowBlockerDto? GetSubmitForApprovalTransitionBlocker()
+    public OperationsWorkflowBlockerDto? GetSubmitForApprovalTransitionBlocker(OperationsSubmitApprovalRequestDto request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Reviewer) ||
+            string.IsNullOrWhiteSpace(request.Rationale) ||
+            string.IsNullOrWhiteSpace(request.ReportPackId))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "APPROVAL_SUBMISSION_METADATA_REQUIRED",
+                "Approval submission requires reviewer, rationale, and linked report pack metadata.",
+                OperationsGateKeyDto.Approval,
+                "Error",
+                []);
+        }
+
+        if (BrokerIngestGate.Status != OperationsGateStatusDto.Passed ||
+            SecurityMasterGate.Status != OperationsGateStatusDto.Passed ||
+            LedgerPostingGate.Status != OperationsGateStatusDto.Passed)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
+                "Broker intake, Security Master, and ledger posting gates must pass before approval submission.",
+                null,
+                "Critical",
+                []);
+        }
+
+        if (ReconciliationGate.Status is not OperationsGateStatusDto.Passed and not OperationsGateStatusDto.ReviewRequired)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_RUN_REQUIRED",
+                "Approval submission requires a completed reconciliation run with no open critical breaks.",
+                OperationsGateKeyDto.Reconciliation,
+                "Critical",
+                []);
+        }
+
         if (ReconciliationGate.Status == OperationsGateStatusDto.Blocked ||
             BreakCases.Any(static item => !IsClosedBreakStatus(item.Status) &&
                 string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase)))
@@ -737,6 +789,11 @@ public sealed class OperationsContinuityWorkflow
                 OperationsGateKeyDto.Approval,
                 "Error",
                 ReportPackReadiness.EvidenceLinks);
+        }
+
+        if (!IsRequestedReportPackReady(request.ReportPackId))
+        {
+            return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
         return null;
@@ -798,6 +855,11 @@ public sealed class OperationsContinuityWorkflow
                 OperationsGateKeyDto.Approval,
                 "Error",
                 []);
+        }
+
+        if (!IsRequestedReportPackReady(request.ReportPackId))
+        {
+            return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
         return null;
@@ -881,6 +943,11 @@ public sealed class OperationsContinuityWorkflow
                 ReportPackReadiness.EvidenceLinks);
         }
 
+        if (!IsRequestedReportPackReady(request.ReportPackId))
+        {
+            return CreateReportPackMismatchBlocker(request.ReportPackId);
+        }
+
         return null;
     }
 
@@ -889,6 +956,19 @@ public sealed class OperationsContinuityWorkflow
         EnsureUtc(now);
         IsClosed = true;
     }
+
+    private bool IsRequestedReportPackReady(string? reportPackId) =>
+        ReportPackReadiness.IsReady &&
+        !string.IsNullOrWhiteSpace(ReportPackReadiness.ReportPackId) &&
+        string.Equals(ReportPackReadiness.ReportPackId, reportPackId, StringComparison.Ordinal);
+
+    private OperationsWorkflowBlockerDto CreateReportPackMismatchBlocker(string? reportPackId) =>
+        new(
+            "REPORT_PACK_ID_MISMATCH",
+            $"Requested report pack '{reportPackId}' does not match the ready report pack '{ReportPackReadiness.ReportPackId}'.",
+            OperationsGateKeyDto.Approval,
+            "Error",
+            ReportPackReadiness.EvidenceLinks);
 
     public OperationsWorkflowBlockerDto? GetReopenTransitionBlocker(OperationsReopenWorkflowRequestDto request)
     {
@@ -1016,39 +1096,12 @@ public sealed class OperationsContinuityWorkflow
                 NextActionsForGate(OperationsGateKeyDto.BrokerIngest, OperationsGateStatusDto.Blocked));
         }
 
-        if (request.SecurityCoverageIssueCount.HasValue || request.SecurityAccountingIssueCount.HasValue)
-        {
-            var securityBlockers = new List<OperationsWorkflowBlockerDto>();
-            if (request.SecurityCoverageIssueCount.GetValueOrDefault() > 0)
-            {
-                var issueCount = request.SecurityCoverageIssueCount.GetValueOrDefault();
-                securityBlockers.Add(new OperationsWorkflowBlockerDto(
-                    "SM_RECON_SECURITY_UNRESOLVED",
-                    $"{issueCount} Security Master coverage issue(s) remain open.",
-                    OperationsGateKeyDto.SecurityMaster,
-                    "Critical",
-                    evidenceLinks));
-            }
-
-            if (request.SecurityAccountingIssueCount.GetValueOrDefault() > 0)
-            {
-                var issueCount = request.SecurityAccountingIssueCount.GetValueOrDefault();
-                securityBlockers.Add(new OperationsWorkflowBlockerDto(
-                    "SM_ACCOUNTING_TERMS_INCOMPLETE",
-                    $"{issueCount} Security Master accounting issue(s) remain open.",
-                    OperationsGateKeyDto.SecurityMaster,
-                    "Critical",
-                    evidenceLinks));
-            }
-
-            if (securityBlockers.Count > 0)
-            {
-                SecurityMasterGate = SecurityMasterGate.WithStatus(
-                    OperationsGateStatusDto.Blocked,
-                    securityBlockers,
-                    NextActionsForGate(OperationsGateKeyDto.SecurityMaster, OperationsGateStatusDto.Blocked));
-            }
-        }
+        ApplySecurityMasterIssuePosture(
+            request.SecurityCoverageIssueCount,
+            request.SecurityAccountingIssueCount,
+            evidenceLinks,
+            now,
+            request.Actor);
 
         if (request.LedgerPreviewAvailable == true)
         {
@@ -1096,6 +1149,30 @@ public sealed class OperationsContinuityWorkflow
                 request.ReportPackId,
                 request.ReportPackReady == true ? null : "Report pack is not ready for approval or close.",
                 evidenceLinks);
+
+            if (request.ReportPackReady == false)
+            {
+                ApprovalGate = ApprovalGate.WithStatus(
+                    OperationsGateStatusDto.ReviewRequired,
+                    [
+                        new OperationsWorkflowBlockerDto(
+                            "REPORT_PACK_NOT_READY",
+                            "Workflow approval requires a linked ready report pack.",
+                            OperationsGateKeyDto.Approval,
+                            "Error",
+                            evidenceLinks)
+                    ],
+                    NextActionsForGate(OperationsGateKeyDto.Approval, OperationsGateStatusDto.ReviewRequired));
+            }
+            else if (request.ReportPackReady == true &&
+                ApprovalGate.Status == OperationsGateStatusDto.ReviewRequired &&
+                ApprovalGate.Blockers.All(static blocker => blocker.Code == "REPORT_PACK_NOT_READY"))
+            {
+                ApprovalGate = ApprovalGate.WithStatus(
+                    OperationsGateStatusDto.NotStarted,
+                    blockers: [],
+                    nextActions: []);
+            }
         }
     }
 
@@ -1135,6 +1212,56 @@ public sealed class OperationsContinuityWorkflow
             NextActionsForGate(OperationsGateKeyDto.Reconciliation, status),
             completedAtUtc: status == OperationsGateStatusDto.Passed ? now : null,
             completedBy: status == OperationsGateStatusDto.Passed ? actor : null);
+    }
+
+    private void ApplySecurityMasterIssuePosture(
+        int? securityCoverageIssueCount,
+        int? securityAccountingIssueCount,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now,
+        string actor)
+    {
+        if (!securityCoverageIssueCount.HasValue && !securityAccountingIssueCount.HasValue)
+        {
+            return;
+        }
+
+        var securityBlockers = new List<OperationsWorkflowBlockerDto>();
+        if (securityCoverageIssueCount.GetValueOrDefault() > 0)
+        {
+            var issueCount = securityCoverageIssueCount.GetValueOrDefault();
+            securityBlockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_RECON_SECURITY_UNRESOLVED",
+                $"{issueCount} Security Master coverage issue(s) remain open.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (securityAccountingIssueCount.GetValueOrDefault() > 0)
+        {
+            var issueCount = securityAccountingIssueCount.GetValueOrDefault();
+            securityBlockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_ACCOUNTING_TERMS_INCOMPLETE",
+                $"{issueCount} Security Master accounting issue(s) remain open.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (securityBlockers.Count > 0)
+        {
+            SecurityMasterGate = SecurityMasterGate.WithStatus(
+                OperationsGateStatusDto.Blocked,
+                securityBlockers,
+                NextActionsForGate(OperationsGateKeyDto.SecurityMaster, OperationsGateStatusDto.Blocked),
+                completedAtUtc: null,
+                completedBy: null);
+            return;
+        }
+
+        // A zero-count signal from posture/reconciliation requests is caller-supplied metadata.
+        // Do not auto-pass/clear Security Master based only on those request values.
     }
 
     private static List<OperationsWorkflowBlockerDto> BuildSecurityMasterBlockers(

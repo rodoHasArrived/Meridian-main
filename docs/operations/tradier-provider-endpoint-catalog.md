@@ -1,7 +1,10 @@
 # Tradier Endpoint Catalog and Meridian Capability Mapping
 
 **Last updated:** 2026-05-19  
-**Status:** Planning reference for a Tradier provider integration (not yet implemented in Meridian)
+**Status:** Planning reference for a Tradier provider integration. Meridian now has canonical
+mapping utilities and focused reconciliation tests for Tradier-style payload/order/failure
+behavior, but it still does not have a registered Tradier transport, credential adapter, or
+production/paper routing gateway.
 
 This catalog lists Tradier Brokerage API endpoints needed to support Meridian workflows for:
 
@@ -25,29 +28,30 @@ It also maps each endpoint group to Meridian capability lanes and calls out wher
 | --- | --- | --- | --- | --- |
 | Auth bootstrap | `POST /oauth/accesstoken` | Credential acquisition/refresh for provider setup and connection verification | **Unsupported** | Needed before any production control claim; no Tradier credential adapter is registered today. |
 | Account identity/profile | `GET /user/profile` | Account selection + external-account linking metadata | **Unsupported** | Required to bind Tradier account IDs into fund-account brokerage sync posture. |
-| Account balances | `GET /accounts/{account_id}/balances` | Read-only brokerage state (cash, buying power, equity/margin posture) | **Unsupported** | Would feed account-sync health and readiness blockers for missing or stale balances. |
-| Account positions | `GET /accounts/{account_id}/positions` | Read-only position state projection | **Unsupported** | Would back portfolio/account operating-context checks and reconciliation preconditions. |
+| Account balances | `GET /accounts/{account_id}/balances` | Read-only brokerage state (cash, buying power, equity/margin posture) | **Mapper/test support only** | Canonical account/position reconciliation tests cover Tradier-style provider names and fallback posture; no live Tradier balance client is registered. |
+| Account positions | `GET /accounts/{account_id}/positions` | Read-only position state projection | **Mapper/test support only** | Focused tests cover partial-fill divergence and clean reconciliation for Tradier-style position snapshots; no live Tradier position sync adapter is registered. |
 | Account history (fills/activity) | `GET /accounts/{account_id}/history` | Execution and cash activity evidence for reconciliation views | **Unsupported** | Needed for durable execution evidence and accounting break investigation. |
-| Orders list / detail | `GET /accounts/{account_id}/orders`, `GET /accounts/{account_id}/orders/{order_id}` | Read-only order lifecycle projection | **Unsupported** | Needed for order-status verification and operator triage detail. |
-| Place order | `POST /accounts/{account_id}/orders` | Paper order flow (submit order) | **Unsupported** | No Tradier execution gateway seam exists; cannot claim paper-trading flow support. |
-| Modify / cancel order | `PUT /accounts/{account_id}/orders/{order_id}`, `DELETE /accounts/{account_id}/orders/{order_id}` | Paper order flow controls (replace/cancel) | **Unsupported** | Required for operator intervention controls in cockpit workflows. |
-| Quotes | `GET /markets/quotes` | Market context data (quote snapshots for order/readiness context) | **Unsupported** | Needed for quote-aware readiness and execution staging context. |
-| Option chains | `GET /markets/options/chains` (+ expirations/strikes helpers) | Options discovery for chain-driven workflows | **Unsupported** | Required for options strategy surfacing and chain-based validation. |
+| Orders list / detail | `GET /accounts/{account_id}/orders`, `GET /accounts/{account_id}/orders/{order_id}` | Read-only order lifecycle projection | **Mapper/test support only** | `TradierCanonicalMappers` maps external status payloads into Meridian order transitions; no live order-detail client is registered. |
+| Place order | `POST /accounts/{account_id}/orders` | Paper order flow (submit order) | **Mapper/test support only** | Tests cover options lifecycle/reconciliation behavior, but no Tradier execution gateway or paper routing adapter is registered. |
+| Modify / cancel order | `PUT /accounts/{account_id}/orders/{order_id}`, `DELETE /accounts/{account_id}/orders/{order_id}` | Paper order flow controls (replace/cancel) | **Mapper/test support only** | Canonical order transition mapping exists; live replace/cancel transport remains unsupported. |
+| Quotes | `GET /markets/quotes` | Market context data (quote snapshots for order/readiness context) | **Mapper support only** | Equity quote normalization exists in `TradierCanonicalMappers`; no live market-data provider registration is present. |
+| Option chains | `GET /markets/options/chains` (+ expirations/strikes helpers) | Options discovery for chain-driven workflows | **Mapper support only** | Option contract normalization exists; no live chain/expiration/strike client is registered. |
 | Time & sales | `GET /markets/timesales` | Intraday tape context | **Unsupported** | Optional for minimal viability; useful for execution explainability. |
 | Historical bars | `GET /markets/history` | Historical retrieval/backfill provider capability | **Unsupported** | Needed for research continuity and historical evidence paths. |
 
 ## Explicit unsupported / partial feature classification
 
 - **Tradier provider registration:** **Unsupported** (no `Tradier` provider implementation, routing entry, or credential catalog row).
-- **Read-only account state (profile/balances/positions/orders/history):** **Unsupported**.
-- **Paper order flow (submit/replace/cancel):** **Unsupported**.
+- **Read-only account state (profile/balances/positions/orders/history):** **Unsupported as a live adapter**; canonical mapper/test support exists for selected account/position/order scenarios.
+- **Paper order flow (submit/replace/cancel):** **Unsupported as a live adapter**; canonical lifecycle mapping and reconciliation tests exist, but no Tradier gateway is registered.
 - **Production controls and live-readiness gating:** **Unsupported** for Tradier; no brokerage validation path is specific to Tradier.
-- **Market-data options/quotes/historical retrieval:** **Unsupported**.
-- **Partial status:** **None currently** — integration should be treated as zero-coverage until provider and tests are added.
+- **Market-data options/quotes/historical retrieval:** **Unsupported as a provider**; equity and option payload normalization exists only as mapper support.
+- **Partial status:** Canonical mapping and focused reconciliation evidence exist. Treat Tradier as **not operator-enabled** until provider registration, credential flow, transport clients, readiness projection, and gated paper/live controls are implemented.
 
 ## Where this would surface in workstation readiness and operator inbox
 
-When a Tradier adapter is added, the capability posture should project through existing shared readiness/inbox seams:
+When a Tradier adapter is added, the existing mapper/test support should be connected to transport
+clients and capability posture should project through existing shared readiness/inbox seams:
 
 1. **Trading readiness endpoint** (`GET /api/workstation/trading/readiness`) for aggregate readiness status and work-item projection.
 2. **Trading workstation aggregate** (`GET /api/workstation/trading`) which embeds readiness.
@@ -74,4 +78,6 @@ To move from **Unsupported** to **Partial/Supported**, the minimum sequence shou
 4. Add paper order execution seam (submit/cancel/replace) and tests.
 5. Add options + historical market data coverage where required by current web workstation routes.
 
-Until those steps land with executable evidence, Tradier should remain explicitly marked unsupported in readiness narratives and provider matrices.
+Until those steps land with executable evidence, Tradier should remain explicitly marked not
+operator-enabled in readiness narratives and provider matrices, even though canonical mapping and
+reconciliation support exists.

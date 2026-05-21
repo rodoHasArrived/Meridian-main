@@ -112,6 +112,7 @@ export interface SettingsAlpacaEnvironmentOption {
   isSelected: boolean;
   disabled: boolean;
   disabledReason: string | null;
+  disabledReasonId: string | null;
   ariaLabel: string;
   tone: "paper" | "live";
 }
@@ -133,6 +134,7 @@ export interface SettingsAlpacaLiveAcknowledgementState {
   visible: boolean;
   disabled: boolean;
   disabledReason: string | null;
+  disabledReasonId: string | null;
   required: boolean;
   ariaLabel: string;
 }
@@ -175,6 +177,10 @@ const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
   actionTone: "default"
 };
 
+function joinDescribedBy(...parts: Array<string | null | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part)).join(" ");
+}
+
 export function buildAlpacaConnectionCommandState({
   form,
   canClear,
@@ -209,10 +215,16 @@ export function buildAlpacaConnectionCommandState({
     environment: "alpaca-environment-help"
   };
   const editDisabledReason = busy ? "Alpaca credential request is already running." : null;
-  const keyIdHelpText = keyIdError
+  const environmentDisabledReasonId = busy ? "alpaca-environment-disabled-reason" : null;
+  const liveAcknowledgementDisabledReasonId = busy ? "alpaca-live-acknowledgement-disabled-reason" : null;
+  const keyIdHelpText = busy
+    ? editDisabledReason!
+    : keyIdError
     ? "Key ID is required before Meridian can test the Alpaca account."
     : "Stored values remain masked after refresh.";
-  const secretKeyHelpText = secretKeyError
+  const secretKeyHelpText = busy
+    ? editDisabledReason!
+    : secretKeyError
     ? "Secret key is required and is cleared after a connection test."
     : "Secret key is never displayed after submit.";
   const environmentOptions: SettingsAlpacaEnvironmentOption[] = [
@@ -227,6 +239,7 @@ export function buildAlpacaConnectionCommandState({
       isSelected: form.environment === "paper",
       disabled: busy,
       disabledReason: editDisabledReason,
+      disabledReasonId: environmentDisabledReasonId,
       ariaLabel: "Use Alpaca paper endpoint for workstation validation",
       tone: "paper"
     },
@@ -241,6 +254,7 @@ export function buildAlpacaConnectionCommandState({
       isSelected: form.environment === "live",
       disabled: busy,
       disabledReason: editDisabledReason,
+      disabledReasonId: environmentDisabledReasonId,
       ariaLabel: "Use Alpaca live endpoint for production brokerage verification",
       tone: "live"
     }
@@ -337,7 +351,7 @@ export function buildAlpacaConnectionCommandState({
       placeholder: "ALPACA_KEY_ID",
       helpId: fieldHelpIds.keyId,
       helpText: keyIdHelpText,
-      describedBy: `${fieldHelpIds.keyId} ${formPanelId}`,
+      describedBy: joinDescribedBy(fieldHelpIds.keyId, formPanelId),
       error: keyIdError,
       disabled: busy,
       disabledReason: editDisabledReason
@@ -350,7 +364,7 @@ export function buildAlpacaConnectionCommandState({
       placeholder: "ALPACA_SECRET_KEY",
       helpId: fieldHelpIds.secretKey,
       helpText: secretKeyHelpText,
-      describedBy: `${fieldHelpIds.secretKey} ${formPanelId}`,
+      describedBy: joinDescribedBy(fieldHelpIds.secretKey, formPanelId),
       error: secretKeyError,
       disabled: busy,
       disabledReason: editDisabledReason
@@ -394,6 +408,7 @@ export function buildAlpacaConnectionCommandState({
       visible: liveSelected,
       disabled: busy,
       disabledReason: editDisabledReason,
+      disabledReasonId: liveAcknowledgementDisabledReasonId,
       required: liveSelected,
       ariaLabel: "Acknowledge live Alpaca endpoint before testing credentials"
     },

@@ -8,6 +8,7 @@ import type {
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type TodayTone = "default" | "success" | "warning" | "danger";
+export type TodayBadgeVariant = "outline" | "success" | "warning" | "danger";
 
 export interface TodayMetric {
   id: string;
@@ -22,6 +23,7 @@ export interface TodayMoverRow {
   key: string;
   symbol: string;
   side: "Long" | "Short";
+  sideBadgeVariant: TodayBadgeVariant;
   quantity: string;
   markPrice: string;
   dayPnl: string;
@@ -34,10 +36,14 @@ export interface TodayOrderRow {
   key: string;
   symbol: string;
   side: TradingOrder["side"];
+  sideBadgeVariant: TodayBadgeVariant;
   quantity: string;
   type: TradingOrder["type"];
   priceLabel: string;
   status: TradingOrder["status"];
+  statusBadgeVariant: TodayBadgeVariant;
+  statusAriaLabel: string;
+  rowClassName: string | undefined;
   submittedLabel: string;
   ariaLabel: string;
 }
@@ -46,9 +52,14 @@ export interface TodayFillRow {
   key: string;
   symbol: string;
   side: TradingFill["side"];
+  sideBadgeVariant: TodayBadgeVariant;
   quantity: string;
   price: string;
   venue: string;
+  statusLabel: "Filled";
+  statusBadgeVariant: TodayBadgeVariant;
+  statusAriaLabel: string;
+  rowClassName: string | undefined;
   timestampLabel: string;
   ariaLabel: string;
 }
@@ -348,6 +359,7 @@ function buildMovers(positions: TradingPosition[]): TodayMoverRow[] {
         key: pos.positionKey ?? pos.symbol,
         symbol: pos.symbol,
         side: pos.side,
+        sideBadgeVariant: positionSideBadgeVariant(pos.side),
         quantity: pos.quantity,
         markPrice: pos.markPrice,
         dayPnl: pos.dayPnl,
@@ -361,14 +373,19 @@ function buildMovers(positions: TradingPosition[]): TodayMoverRow[] {
 function buildOrders(orders: TradingOrder[]): TodayOrderRow[] {
   return orders.slice(0, PREVIEW_LIMIT).map((order) => {
     const priceLabel = order.type === "Market" ? "Market" : order.limitPrice;
+    const statusBadgeVariant = orderStatusBadgeVariant(order.status);
     return {
       key: order.orderId,
       symbol: order.symbol,
       side: order.side,
+      sideBadgeVariant: tradeSideBadgeVariant(order.side),
       quantity: order.quantity,
       type: order.type,
       priceLabel,
       status: order.status,
+      statusBadgeVariant,
+      statusAriaLabel: `Order status ${order.status}`,
+      rowClassName: orderStatusRowClassName(order.status),
       submittedLabel: order.submittedAt,
       ariaLabel: `${order.side} ${order.quantity} ${order.symbol} ${order.type.toLowerCase()} at ${priceLabel}, ${order.status}, submitted ${order.submittedAt}`
     };
@@ -380,9 +397,14 @@ function buildFills(fills: TradingFill[]): TodayFillRow[] {
     key: fill.fillId,
     symbol: fill.symbol,
     side: fill.side,
+    sideBadgeVariant: tradeSideBadgeVariant(fill.side),
     quantity: fill.quantity,
     price: fill.price,
     venue: fill.venue,
+    statusLabel: "Filled",
+    statusBadgeVariant: "success",
+    statusAriaLabel: `Fill ${fill.fillId} completed`,
+    rowClassName: "bg-success/5",
     timestampLabel: fill.timestamp,
     ariaLabel: `${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
   }));
@@ -464,6 +486,38 @@ function todayRowClassName(tone: TodayTone): string | undefined {
 
   if (tone === "danger") {
     return "bg-danger/5";
+  }
+
+  return undefined;
+}
+
+function positionSideBadgeVariant(side: TradingPosition["side"]): TodayBadgeVariant {
+  return side === "Long" ? "outline" : "warning";
+}
+
+function tradeSideBadgeVariant(side: TradingOrder["side"] | TradingFill["side"]): TodayBadgeVariant {
+  return side === "Buy" ? "success" : "warning";
+}
+
+function orderStatusBadgeVariant(status: TradingOrder["status"]): TodayBadgeVariant {
+  if (status === "Working") {
+    return "success";
+  }
+
+  if (status === "Partially Filled") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
+function orderStatusRowClassName(status: TradingOrder["status"]): string | undefined {
+  if (status === "Working") {
+    return "bg-success/5";
+  }
+
+  if (status === "Partially Filled") {
+    return "bg-warning/5";
   }
 
   return undefined;

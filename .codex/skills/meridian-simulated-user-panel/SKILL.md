@@ -15,7 +15,8 @@ description: >
 Run artifact-driven Meridian product reviews that can behave as a `design_partner`,
 `release_gate`, or `usability_lab` depending on the request.
 
-Read `../_shared/project-context.md` before making claims about current Meridian capabilities.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before making
+claims about current Meridian capabilities.
 Read `references/review-contract.md` before choosing the output shape. Read
 `references/personas.md` before choosing a panel. Read `references/review-modes.md` when the best
 mode or focus area is unclear. Read `references/artifact-bundles.md` when the review depends on
@@ -28,6 +29,28 @@ Use these bundle templates when you need a ready manifest:
 - `assets/bundles/workflow-walkthrough.manifest.json`
 - `assets/bundles/roadmap-review.manifest.json`
 - `assets/bundles/ship-readiness.manifest.json`
+
+## Use When
+
+Use this skill when the user wants structured Meridian product feedback from realistic personas,
+release-gate critique, usability-lab analysis, workflow-fit review, or owner-minded adoption risk.
+
+Trigger examples:
+
+- "Run a simulated user panel on this workstation screen."
+- "Give release-gate feedback from fund operator and compliance personas."
+- "Critique this roadmap direction with realistic users."
+
+## Do Not Use When
+
+Use `meridian-code-review` for code correctness, `meridian-brainstorm` for idea generation without
+a concrete artifact, and `meridian-roadmap-strategist` for final roadmap sequencing.
+
+Non-trigger examples:
+
+- "Review this diff for bugs."
+- "Brainstorm new product ideas."
+- "Update the roadmap document."
 
 ## Mission
 
@@ -88,6 +111,18 @@ Default assumptions:
 6. Synthesize repeated strengths, repeated complaints, disagreements, and owner-priority actions.
 7. End with the shared output contract, even when the user wants a concise answer.
 
+## Handoffs
+
+- Hand off to `meridian-brainstorm` when panel findings imply new opportunity generation.
+- Hand off to `meridian-blueprint` when one owner action needs a technical design.
+- Hand off to `meridian-implementation-assurance` when release-gate findings require implementation, validation, or docs evidence.
+
+## Validation
+
+- Inspect the concrete artifact bundle before simulating reactions.
+- Separate `Verified`, `Inferred`, and `Missing evidence` in every substantive result.
+- Use screenshots, workflow manifests, smoke-test notes, or repo files when available instead of relying on prompt-only impressions.
+
 ## Output Contract
 
 Use these headings unless the user explicitly asks for another format:
@@ -122,6 +157,13 @@ Within `Confidence Notes`, always separate:
 - `Missing evidence`
 
 The stable result shape is defined in `assets/eval-result.schema.json`.
+
+## Output Standards
+
+- Use the review contract headings unless the user requests a shorter artifact.
+- Include persona-specific liked, disliked, risky, improvement, verdict, and rubric details.
+- Group owner actions into `Now`, `Next`, and `Later`.
+- End with confidence notes separating verified evidence, inference, and missing evidence.
 
 ## Quality Bar
 

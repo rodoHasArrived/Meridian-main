@@ -22,9 +22,14 @@ public static class OptionChainEndpoints
             [FromServices] IOptionChainImportService importService,
             CancellationToken ct) =>
         {
-            if (!HasModifySecurityMasterPermission(context))
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
             {
-                return EndpointHelpers.Forbidden();
+                return Results.Forbid();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
             }
 
             var imported = await importService.ImportSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -34,15 +39,20 @@ public static class OptionChainEndpoints
         .Accepts<OptionChainSnapshot>("application/json")
         .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.ReferenceDataOptionChainSnapshot, async (
             [FromQuery] string underlyingSymbol,
             [FromQuery] DateOnly expiryDate,
+            HttpContext context,
             [FromServices] IOptionReferenceService service,
             CancellationToken ct) =>
         {
+            if (!HasViewSecurityMasterPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var snapshot = await service.GetChainSnapshotAsync(underlyingSymbol, expiryDate, ct).ConfigureAwait(false);
             return snapshot is null ? Results.NotFound() : Results.Json(snapshot, jsonOptions);
         })
@@ -53,4 +63,10 @@ public static class OptionChainEndpoints
 
     private static bool HasModifySecurityMasterPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
+
+    private static bool HasViewSecurityMasterPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster);
 }

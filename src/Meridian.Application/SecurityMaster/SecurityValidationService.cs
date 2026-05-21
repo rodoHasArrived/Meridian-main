@@ -24,6 +24,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
         SecurityIdentifierKind.Isin,
         SecurityIdentifierKind.Sedol,
         SecurityIdentifierKind.Figi,
+        SecurityIdentifierKind.OccOptionSymbol,
         SecurityIdentifierKind.InternalCode,
         SecurityIdentifierKind.PermId,
         SecurityIdentifierKind.Bbgid,
@@ -107,6 +108,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
         var issues = new List<SecurityValidationIssueDto>();
 
         issues.AddRange(ValidateCommonRecordShape(record, evaluatedAt));
+        issues.AddRange(ValidateSchemaCompatibility(record));
         issues.AddRange(ValidateIdentifiers(record, universe, evaluatedAt));
         issues.AddRange(ValidateProvenance(record, evaluatedAt));
         issues.AddRange(ValidateValuationAndAccountingMetadata(record));
@@ -184,14 +186,69 @@ public sealed class SecurityValidationService : ISecurityValidationService
         return issues;
     }
 
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateSchemaCompatibility(SecurityProjectionRecord record)
+    {
+        var issues = new List<SecurityValidationIssueDto>();
+        if (!TryGetJsonInt(record.AssetSpecificTerms, "schemaVersion", out var schemaVersion))
+        {
+            issues.Add(record.AssetSpecificTerms.ValueKind == JsonValueKind.Object
+                && !record.AssetSpecificTerms.TryGetProperty("schemaVersion", out _)
+                ? SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_ASSET_SPECIFIC_SCHEMA_VERSION_MISSING",
+                    "Asset-specific schema version is missing",
+                    "Asset-specific Security Master payloads should carry schemaVersion so compatibility adapters can distinguish legacy terms from newer payload families.",
+                    ["assetSpecificTerms.schemaVersion"],
+                    $"Stamp assetSpecificTerms.schemaVersion with {SecurityMasterSchemaVersions.LegacyAssetSpecificTerms} when persisting legacy asset-specific payloads.")
+                : SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_ASSET_SPECIFIC_SCHEMA_VERSION_INVALID",
+                    "Asset-specific schema version is invalid",
+                    "assetSpecificTerms.schemaVersion must be an integer so the workstation can apply compatibility-safe deserialization rules.",
+                    ["assetSpecificTerms.schemaVersion"],
+                    $"Persist assetSpecificTerms.schemaVersion as integer version {SecurityMasterSchemaVersions.LegacyAssetSpecificTerms}."));
+            return issues;
+        }
+
+        if (schemaVersion != SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_ASSET_SPECIFIC_SCHEMA_VERSION_UNSUPPORTED",
+                "Asset-specific schema version is unsupported",
+                $"assetSpecificTerms.schemaVersion '{schemaVersion}' is not supported by the current Security Master compatibility adapter for asset class '{record.AssetClass}'.",
+                ["assetSpecificTerms.schemaVersion", "assetClass"],
+                $"Migrate the payload to schema version {SecurityMasterSchemaVersions.LegacyAssetSpecificTerms} or extend the compatibility adapter before this record is used downstream."));
+        }
+
+        return issues;
+    }
+
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateIdentifiers(
         SecurityProjectionRecord record,
         IReadOnlyList<SecurityProjectionRecord> universe,
         DateTimeOffset evaluatedAtUtc)
     {
         var issues = new List<SecurityValidationIssueDto>();
+        foreach (var identifier in record.Identifiers)
+        {
+            if (identifier.ValidTo is { } validTo && validTo <= identifier.ValidFrom)
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_IDENTIFIER_EFFECTIVE_WINDOW_INVALID",
+                    "Identifier effective-date window is invalid",
+                    $"{identifier.Kind} '{identifier.Value}' expires on or before it becomes effective.",
+                    [$"identifiers.{identifier.Kind}.validFrom", $"identifiers.{identifier.Kind}.validTo"],
+                    "Correct the identifier effective-date range before downstream workflows consume the record."));
+            }
+        }
+
         var activeIdentifiers = record.Identifiers
             .Where(identifier => IsActive(identifier, evaluatedAtUtc))
+            .ToArray();
+        var activePrimaryIdentifiers = activeIdentifiers
+            .Where(static identifier => identifier.IsPrimary)
             .ToArray();
 
         if (activeIdentifiers.Length == 0)
@@ -205,7 +262,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 "Attach a canonical identifier such as ISIN, CUSIP, FIGI, provider symbol, or InternalCode."));
         }
 
-        var primaryCount = activeIdentifiers.Count(static identifier => identifier.IsPrimary);
+        var primaryCount = activePrimaryIdentifiers.Length;
         if (primaryCount == 0)
         {
             issues.Add(SecurityValidationIssueFactory.Create(
@@ -226,6 +283,8 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 ["identifiers.isPrimary"],
                 "Retain exactly one primary identifier and expire or demote the others."));
         }
+
+        issues.AddRange(ValidatePrimaryIdentifierProjection(record, activePrimaryIdentifiers));
 
         var duplicateInRecord = activeIdentifiers
             .GroupBy(static identifier => IdentifierKey(identifier, includeProvider: true), StringComparer.OrdinalIgnoreCase)
@@ -254,9 +313,99 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     [$"identifiers.{identifier.Kind}"],
                     "Set the provider name on the ProviderSymbol identifier."));
             }
+
+            if (identifier.Kind == SecurityIdentifierKind.OccOptionSymbol
+                && !string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(record.AssetClass, "Warrant", StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_OCC_SYMBOL_ASSET_CLASS_MISMATCH",
+                    "OCC option symbol is attached to a non-option security",
+                    $"Identifier '{identifier.Value}' uses OCC option syntax but the record asset class is '{record.AssetClass}'.",
+                    [$"identifiers.{identifier.Kind}", "assetClass"],
+                    "Move the OCC symbol to the listed option or warrant contract, or replace it with the canonical identifier for this asset class."));
+            }
+
+            if (!SecurityIdentifierNormalizer.TryValidateFormat(identifier.Kind, identifier.Value, out var formatMessage))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_IDENTIFIER_FORMAT_INVALID",
+                    "Identifier format is invalid",
+                    $"{identifier.Kind} '{identifier.Value}' is invalid. {formatMessage}",
+                    [$"identifiers.{identifier.Kind}"],
+                    "Correct the identifier value or move the raw vendor token into an alias/provider-mapping field."));
+            }
+
+            var normalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier);
+            if (RequiresCanonicalNormalizationWarning(identifier.Kind)
+                && !string.Equals(identifier.Value, normalizedValue, StringComparison.Ordinal))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_IDENTIFIER_NORMALIZATION_RECOMMENDED",
+                    "Identifier should use its canonical normalized form",
+                    $"{identifier.Kind} '{identifier.Value}' normalizes to '{normalizedValue}'.",
+                    [$"identifiers.{identifier.Kind}"],
+                    "Preserve the raw vendor string in provenance or aliases, but store the canonical comparable code on the active identifier."));
+            }
         }
 
         issues.AddRange(ValidateCrossRecordDuplicates(record, universe, activeIdentifiers, evaluatedAtUtc));
+        return issues;
+    }
+
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidatePrimaryIdentifierProjection(
+        SecurityProjectionRecord record,
+        IReadOnlyList<SecurityIdentifierDto> activePrimaryIdentifiers)
+    {
+        var issues = new List<SecurityValidationIssueDto>();
+        if (string.IsNullOrWhiteSpace(record.PrimaryIdentifierKind)
+            || string.IsNullOrWhiteSpace(record.PrimaryIdentifierValue))
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_PRIMARY_IDENTIFIER_PROJECTION_MISSING",
+                "Projection primary identifier is missing",
+                "The denormalized Security Master projection must carry primary identifier kind and value so search, resolution, and UI summaries remain deterministic.",
+                ["primaryIdentifierKind", "primaryIdentifierValue", "identifiers.isPrimary"],
+                "Rebuild the projection from the winning active primary identifier before downstream workflows consume this record."));
+            return issues;
+        }
+
+        if (activePrimaryIdentifiers.Count != 1)
+        {
+            return issues;
+        }
+
+        var activePrimaryIdentifier = activePrimaryIdentifiers[0];
+        if (!Enum.TryParse<SecurityIdentifierKind>(record.PrimaryIdentifierKind, ignoreCase: true, out var projectionKind))
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_PRIMARY_IDENTIFIER_KIND_INVALID",
+                "Projection primary identifier kind is invalid",
+                $"Projection primary identifier kind '{record.PrimaryIdentifierKind}' is not a supported SecurityIdentifierKind.",
+                ["primaryIdentifierKind"],
+                "Rebuild the projection using a supported primary identifier kind from the active identifier set."));
+            return issues;
+        }
+
+        var projectionNormalizedValue = SecurityIdentifierNormalizer.NormalizeValue(projectionKind, record.PrimaryIdentifierValue);
+        var activeNormalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(activePrimaryIdentifier);
+        if (projectionKind != activePrimaryIdentifier.Kind
+            || !projectionNormalizedValue.Equals(activeNormalizedValue, StringComparison.Ordinal))
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_PRIMARY_IDENTIFIER_PROJECTION_MISMATCH",
+                "Projection primary identifier is out of sync",
+                $"Projection primary identifier '{record.PrimaryIdentifierKind}:{record.PrimaryIdentifierValue}' does not match the active primary identifier '{activePrimaryIdentifier.Kind}:{activePrimaryIdentifier.Value}'.",
+                ["primaryIdentifierKind", "primaryIdentifierValue", "identifiers.isPrimary"],
+                "Rebuild the projection or correct the active primary identifier so identifier resolution and UI summaries stay aligned."));
+        }
+
         return issues;
     }
 
@@ -499,20 +648,46 @@ public sealed class SecurityValidationService : ISecurityValidationService
                && DateTimeOffset.TryParse(property.GetString(), out value);
     }
 
+    private static bool TryGetJsonInt(JsonElement element, string propertyName, out int value)
+    {
+        value = default;
+        if (element.ValueKind != JsonValueKind.Object || !element.TryGetProperty(propertyName, out var property))
+        {
+            return false;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out value))
+        {
+            return true;
+        }
+
+        return property.ValueKind == JsonValueKind.String && int.TryParse(property.GetString(), out value);
+    }
+
     private static bool IsActive(SecurityIdentifierDto identifier, DateTimeOffset asOf)
         => identifier.ValidFrom <= asOf
            && (!identifier.ValidTo.HasValue || identifier.ValidTo.Value > asOf);
 
     private static string IdentifierKey(SecurityIdentifierDto identifier, bool includeProvider)
     {
-        var normalizedValue = identifier.Value.Trim().ToUpperInvariant();
+        var normalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier);
         if (!includeProvider)
         {
             return $"{identifier.Kind}|{normalizedValue}";
         }
 
-        return $"{identifier.Kind}|{normalizedValue}|{identifier.Provider?.Trim().ToUpperInvariant() ?? string.Empty}";
+        return $"{identifier.Kind}|{normalizedValue}|{SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)}";
     }
+
+    private static bool RequiresCanonicalNormalizationWarning(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Isin
+            or SecurityIdentifierKind.Cusip
+            or SecurityIdentifierKind.Sedol
+            or SecurityIdentifierKind.OccOptionSymbol
+            or SecurityIdentifierKind.Lei
+            or SecurityIdentifierKind.Wkn
+            or SecurityIdentifierKind.Valoren
+            or SecurityIdentifierKind.Cik;
 
     private static SecurityValidationReportDto BuildReport(
         Guid? securityId,

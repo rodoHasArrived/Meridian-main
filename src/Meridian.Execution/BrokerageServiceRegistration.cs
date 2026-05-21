@@ -73,6 +73,7 @@ public static class BrokerageServiceRegistration
             var operatorControls = sp.GetService<ExecutionOperatorControlService>();
             var auditTrail = sp.GetService<ExecutionAuditTrailService>();
             var portfolioState = sp.GetService<Meridian.Execution.Models.IPortfolioState>();
+            var brokerageConfiguration = sp.GetRequiredService<BrokerageConfiguration>();
 
             return new OrderManagementSystem(
                 gateway,
@@ -81,7 +82,8 @@ public static class BrokerageServiceRegistration
                 securityMasterGate,
                 operatorControls,
                 auditTrail,
-                portfolioState);
+                portfolioState,
+                brokerageConfiguration: brokerageConfiguration);
         });
 
         return services;

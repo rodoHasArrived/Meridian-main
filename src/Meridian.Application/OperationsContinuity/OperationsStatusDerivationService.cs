@@ -13,6 +13,9 @@ public sealed class OperationsStatusDerivationService : IOperationsStatusDerivat
     {
         ArgumentNullException.ThrowIfNull(workflow);
 
+        // Invariant precedence order (highest to lowest):
+        // Blocked > Closed > ReadyForClose > ReviewRouting > HighestActiveStage > NotStarted.
+        // Keep this explicit ordering deterministic to prevent status drift when new gates/states are added.
         if (workflow.Gates.Any(static gate => gate.Status == OperationsGateStatusDto.Blocked))
         {
             return OperationsWorkflowStatusDto.Blocked;
@@ -31,11 +34,14 @@ public sealed class OperationsStatusDerivationService : IOperationsStatusDerivat
 
         if (workflow.Gates.Any(static gate => gate.Status == OperationsGateStatusDto.ReviewRequired))
         {
+            // Review-required routes to reconciliation when reconciliation itself needs review,
+            // otherwise approval is the active review lane.
             return workflow.ReconciliationGate.Status == OperationsGateStatusDto.ReviewRequired
                 ? OperationsWorkflowStatusDto.ReconciliationActive
                 : OperationsWorkflowStatusDto.ApprovalPending;
         }
 
+        // Highest active stage ordering (later stage wins): Approval > Reconciliation > Ledger > Security > Broker.
         if (workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
             workflow.SecurityMasterGate.Status == OperationsGateStatusDto.Passed &&
             workflow.LedgerPostingGate.Status == OperationsGateStatusDto.Passed &&

@@ -111,7 +111,7 @@ public sealed class FundLedgerReadServiceTests
         selectedScoped.Should().NotBeNull();
 
         var consolidatedSlice = summary!.LedgerSlices!.Single(slice => slice.ScopeKind == FundLedgerScope.Consolidated);
-        var entitySlice = summary.LedgerSlices.Single(slice =>
+        var entitySlice = summary.LedgerSlices!.Single(slice =>
             slice.ScopeKind == FundLedgerScope.Entity &&
             string.Equals(slice.ScopeId, context.FirstEntityScopeId, StringComparison.OrdinalIgnoreCase));
         var sleeveSlice = summary.LedgerSlices.Single(slice =>

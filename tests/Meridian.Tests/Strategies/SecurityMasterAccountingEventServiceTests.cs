@@ -70,6 +70,131 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_MortgageBackedFactorPaydown_ShouldUseSecurityMasterFactorSchedule()
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "MBS1",
+                "MortgageBackedSecurity",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: 0m,
+                    CouponType: "Fixed",
+                    DayCountConvention: "ACT/365",
+                    PaymentFrequencyPerYear: 12,
+                    IssueDate: new DateOnly(2025, 1, 1),
+                    MaturityDate: new DateOnly(2035, 1, 1),
+                    AccrualStartDate: new DateOnly(2026, 1, 1),
+                    CurrentFactor: 0.9625m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 96_250m,
+                    RequiresFactorSchedule: true),
+                new SecurityAccountingRule("AvailableForSale", "GAAP")),
+            position: new SecurityMasterAccountingPosition(
+                Symbol: "MBS1",
+                SecurityId: BondSecurityId,
+                AccountId: "acct-1",
+                ParAmount: 100_000m,
+                CarryingPrice: 0.91m),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    PriorFactor: 0.98m,
+                    CurrentFactor: 0.9625m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-1")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().NotContain(issue => issue.Code == "SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT");
+        var factorEvent = result.ExpectedEvents.Single(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+        factorEvent.Symbol.Should().Be("MBS1");
+        factorEvent.PrincipalAmount.Should().Be(1_750m);
+        factorEvent.Provenance.Should().Contain("factor-source:custodian-factor-file");
+    }
+
+    [Fact]
+    public void Generate_FactorBasedSecurityWithoutSchedule_ShouldReturnMissingFactorScheduleIssue()
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(security: new SecurityMasterAccountingSecurity(
+            BondSecurityId,
+            "BOND1",
+            "Bond",
+            "USD",
+            new SecurityFixedIncomeTerms(
+                CouponRate: 0.06m,
+                CouponType: "Fixed",
+                DayCountConvention: "ACT/365",
+                PaymentFrequencyPerYear: 2,
+                IssueDate: new DateOnly(2025, 1, 1),
+                NextCouponDate: new DateOnly(2026, 1, 31),
+                MaturityDate: new DateOnly(2030, 1, 1),
+                AccrualStartDate: new DateOnly(2026, 1, 1),
+                CurrentFactor: 0.97m,
+                OriginalFace: 100_000m,
+                CurrentFace: 97_000m,
+                RequiresFactorSchedule: true),
+            new SecurityAccountingRule("AvailableForSale", "GAAP")));
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "FACTOR_SCHEDULE_MISSING" &&
+            issue.Severity == ReconciliationBreakSeverity.High);
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
+    public void Generate_FactorBasedSecurityWithPriorOnlySchedule_ShouldReturnStaleFactorIssue()
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "MBS1",
+                "MortgageBackedSecurity",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: 0.03m,
+                    CouponType: "Fixed",
+                    DayCountConvention: "ACT/365",
+                    PaymentFrequencyPerYear: 12,
+                    IssueDate: new DateOnly(2025, 1, 1),
+                    MaturityDate: new DateOnly(2035, 1, 1),
+                    AccrualStartDate: new DateOnly(2026, 1, 1),
+                    CurrentFactor: 0.97m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 97_000m,
+                    RequiresFactorSchedule: true),
+                new SecurityAccountingRule("AvailableForSale", "GAAP")),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2025, 12, 15),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.98m,
+                    Source: "prior-month-factor-file")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "FACTOR_STALE" &&
+            issue.Severity == ReconciliationBreakSeverity.High);
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
     public void Generate_MissingTerms_ShouldReturnStructuredPostureIssues()
     {
         var service = new SecurityMasterAccountingEventService();
@@ -192,6 +317,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
 
     private static SecurityMasterAccountingEventRequest CreateRequest(
         SecurityMasterAccountingSecurity? security = null,
+        SecurityMasterAccountingPosition? position = null,
         IReadOnlyList<SecurityFactorScheduleEntry>? factorSchedule = null,
         IReadOnlyList<SecurityActualCashActivity>? actualActivity = null)
     {
@@ -219,7 +345,7 @@ public sealed class SecurityMasterAccountingEventServiceTests
             Securities: [security],
             Positions:
             [
-                new SecurityMasterAccountingPosition(
+                position ?? new SecurityMasterAccountingPosition(
                     Symbol: "BOND1",
                     SecurityId: BondSecurityId,
                     AccountId: "acct-1",

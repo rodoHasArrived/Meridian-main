@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.program-state.v1",
+  "type": "object",
+  "required": ["schema", "program"],
+  "properties": {
+    "schema": { "type": "object" },
+    "program": { "type": "object" }
+  },
+  "additionalProperties": false
+}

@@ -66,8 +66,17 @@ public static class ProviderEndpoints
         .Produces(200);
 
         // Create or update data source
-        group.MapPost(UiApiRoutes.ConfigDataSources, async (ConfigStore store, DataSourceConfigRequest req) =>
+        group.MapPost(UiApiRoutes.ConfigDataSources, async (
+            HttpContext context,
+            ConfigStore store,
+            DataSourceConfigRequest req) =>
         {
+            var authorizationFailure = RequireDataSourceMutationPermission(context, req);
+            if (authorizationFailure is not null)
+            {
+                return authorizationFailure;
+            }
+
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
@@ -105,11 +114,22 @@ public static class ProviderEndpoints
         .WithName("UpsertDataSource")
         .WithDescription("Creates or updates a data source configuration entry.")
         .Produces(200)
-        .Produces(400);
+        .Produces(400)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // Delete data source
-        group.MapDelete(UiApiRoutes.ConfigDataSources + "/{id}", async (ConfigStore store, string id) =>
+        group.MapDelete(UiApiRoutes.ConfigDataSources + "/{id}", async (
+            HttpContext context,
+            ConfigStore store,
+            string id) =>
         {
+            var authorizationFailure = RequireProviderMutationPermission(context);
+            if (authorizationFailure is not null)
+            {
+                return authorizationFailure;
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -123,11 +143,23 @@ public static class ProviderEndpoints
         })
         .WithName("DeleteDataSource")
         .WithDescription("Removes a data source configuration by ID.")
-        .Produces(200);
+        .Produces(200)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // Toggle data source enabled status
-        group.MapPost(UiApiRoutes.ConfigDataSources + "/{id}/toggle", async (ConfigStore store, string id, ToggleRequest req) =>
+        group.MapPost(UiApiRoutes.ConfigDataSources + "/{id}/toggle", async (
+            HttpContext context,
+            ConfigStore store,
+            string id,
+            ToggleRequest req) =>
         {
+            var authorizationFailure = RequireProviderMutationPermission(context);
+            if (authorizationFailure is not null)
+            {
+                return authorizationFailure;
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -147,11 +179,22 @@ public static class ProviderEndpoints
         .WithName("ToggleDataSource")
         .WithDescription("Toggles the enabled/disabled state of a data source.")
         .Produces(200)
-        .Produces(404);
+        .Produces(404)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // Set default data sources
-        group.MapPost(UiApiRoutes.ConfigDataSourcesDefaults, async (ConfigStore store, DefaultSourcesRequest req) =>
+        group.MapPost(UiApiRoutes.ConfigDataSourcesDefaults, async (
+            HttpContext context,
+            ConfigStore store,
+            DefaultSourcesRequest req) =>
         {
+            var authorizationFailure = RequireProviderMutationPermission(context);
+            if (authorizationFailure is not null)
+            {
+                return authorizationFailure;
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
 
@@ -169,11 +212,22 @@ public static class ProviderEndpoints
         })
         .WithName("SetDefaultSources")
         .WithDescription("Sets the default real-time and historical data source IDs.")
-        .Produces(200);
+        .Produces(200)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // Update failover settings
-        group.MapPost(UiApiRoutes.ConfigDataSourcesFailover, async (ConfigStore store, FailoverSettingsRequest req) =>
+        group.MapPost(UiApiRoutes.ConfigDataSourcesFailover, async (
+            HttpContext context,
+            ConfigStore store,
+            FailoverSettingsRequest req) =>
         {
+            var authorizationFailure = RequireProviderMutationPermission(context);
+            if (authorizationFailure is not null)
+            {
+                return authorizationFailure;
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
 
@@ -191,7 +245,9 @@ public static class ProviderEndpoints
         })
         .WithName("UpdateFailoverSettings")
         .WithDescription("Updates automatic failover settings including timeout and enable/disable.")
-        .Produces(200);
+        .Produces(200)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost(UiApiRoutes.ProviderConfigure, async (
             HttpContext context,
@@ -212,6 +268,7 @@ public static class ProviderEndpoints
         .WithDescription("Creates a provider data-source configuration from the browser provider setup form.")
         .Produces<ProviderSetupResult>(200)
         .Produces<ProviderSetupResult>(400)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Provider comparison view
@@ -475,8 +532,17 @@ public static class ProviderEndpoints
         .WithDescription("Alias for /api/config/datasources for backward compatibility.")
         .Produces(200);
 
-        group.MapPost("/api/config/data-sources", async (ConfigStore store, DataSourceConfigRequest req) =>
+        group.MapPost("/api/config/data-sources", async (
+            HttpContext context,
+            ConfigStore store,
+            DataSourceConfigRequest req) =>
         {
+            var authorizationFailure = RequireDataSourceMutationPermission(context, req);
+            if (authorizationFailure is not null)
+            {
+                return authorizationFailure;
+            }
+
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
@@ -515,6 +581,8 @@ public static class ProviderEndpoints
         .WithDescription("Alias for /api/config/datasources POST for backward compatibility.")
         .Produces(200)
         .Produces(400)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
@@ -539,9 +607,9 @@ public static class ProviderEndpoints
 
     private static bool HasProviderSetupPermission(HttpContext context, ProviderSetupRequest request)
     {
-        if (!TryGetCurrentPermissions(context, out var permissions))
+        if (!EndpointAuthorization.TryGetPermissions(context, out var permissions))
         {
-            return true;
+            return false;
         }
 
         var required = UserPermission.ManageProviders;
@@ -553,19 +621,42 @@ public static class ProviderEndpoints
         return (permissions & required) == required;
     }
 
-    private static bool TryGetCurrentPermissions(HttpContext context, out UserPermission permissions)
+    private static IResult? RequireProviderMutationPermission(HttpContext context)
     {
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) &&
-            value is UserPermission current)
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
         {
-            permissions = current;
-            return true;
+            return Results.Unauthorized();
         }
 
-        permissions = default;
-        return false;
+        return EndpointAuthorization.HasPermission(context, UserPermission.ManageProviders)
+            ? null
+            : EndpointHelpers.Forbidden();
+    }
+
+    private static IResult? RequireDataSourceMutationPermission(
+        HttpContext context,
+        DataSourceConfigRequest request)
+    {
+        var authorizationFailure = RequireProviderMutationPermission(context);
+        if (authorizationFailure is not null)
+        {
+            return authorizationFailure;
+        }
+
+        if (HasSubmittedCredentials(request) &&
+            !EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        return null;
     }
 
     private static bool HasSubmittedCredentials(ProviderSetupRequest request)
         => !string.IsNullOrWhiteSpace(request.ApiKey) || !string.IsNullOrWhiteSpace(request.ApiSecret);
+
+    private static bool HasSubmittedCredentials(DataSourceConfigRequest request)
+        => !string.IsNullOrWhiteSpace(request.Alpaca?.KeyId)
+            || !string.IsNullOrWhiteSpace(request.Alpaca?.SecretKey)
+            || !string.IsNullOrWhiteSpace(request.Polygon?.ApiKey);
 }

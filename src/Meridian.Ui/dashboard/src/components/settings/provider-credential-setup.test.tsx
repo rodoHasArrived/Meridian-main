@@ -48,7 +48,7 @@ describe("ProviderCredentialSetup", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /polygon\.io/i }));
-    await user.type(screen.getByLabelText(/api key/i), "demo-key");
+    await user.type(screen.getByLabelText(/api key/i, { selector: "input" }), "demo-key");
     await user.click(screen.getByRole("button", { name: /test connection/i }));
 
     const alert = await screen.findByRole("alert");
@@ -56,6 +56,29 @@ describe("ProviderCredentialSetup", () => {
     expect(within(alert).getByText("Endpoint returned 422 for /api/providers/test.")).toBeInTheDocument();
     expect(within(alert).getByText("Credential verification failed")).toBeInTheDocument();
     expect(within(alert).getByText("apiKey: Verify the key against the active workspace environment.")).toBeInTheDocument();
+  });
+
+  it("names the provider credential dialog and password visibility control", async () => {
+    const user = userEvent.setup();
+    render(
+      <ProviderCredentialSetup
+        providers={providers}
+        onSave={vi.fn().mockResolvedValue(undefined)}
+        onTest={vi.fn().mockResolvedValue(true)}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /polygon\.io/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /polygon\.io credentials/i });
+    expect(dialog).toHaveAccessibleDescription("Realtime and historical market data.");
+
+    const toggle = within(dialog).getByRole("button", { name: /show api key/i });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(toggle);
+
+    expect(within(dialog).getByRole("button", { name: /hide api key/i })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("renders structured save failures without closing the dialog", async () => {
@@ -81,7 +104,7 @@ describe("ProviderCredentialSetup", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /polygon\.io/i }));
-    await user.type(screen.getByLabelText(/api key/i), "demo-key");
+    await user.type(screen.getByLabelText(/api key/i, { selector: "input" }), "demo-key");
     await user.click(screen.getByRole("button", { name: /save credentials/i }));
 
     const alert = await screen.findByRole("alert");

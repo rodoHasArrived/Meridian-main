@@ -89,6 +89,23 @@ explicitly**.
 
 ---
 
+### Source Documentation Instructions
+
+**File:** [`.github/instructions/source-documentation.instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/instructions/source-documentation.instructions.md)
+**Applies to:** `src/**`
+
+7 rules enforced when editing source files:
+
+1. Read the nearest source README before editing
+2. Preserve boundaries in `docs/architecture/module-map.md`
+3. Keep active operator UI work in `src/Meridian.Ui/dashboard/`
+4. Treat `src/Meridian.Wpf/` as retained support unless roadmap scope changes
+5. Link roadmap-affecting work to `docs/roadmap/data/roadmap-items.yml`
+6. Update source READMEs and registries when behavior, validation, diagrams, or TODOs change
+7. Do not hand-edit generated docs under `docs/roadmap/generated/` or `docs/source/generated/`
+
+---
+
 ## Adding New Instructions
 
 1. Create a new `.instructions.md` file in `.github/instructions/`

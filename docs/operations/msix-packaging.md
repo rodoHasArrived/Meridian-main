@@ -14,7 +14,7 @@ The easiest way to build and install the Desktop App:
 # Build for ARM64 devices (Surface Pro X, etc.)
 .\build\scripts\install\install.ps1 -Mode Desktop -Architecture ARM64
 
-# Auto-install .NET SDK 9.0 and other prerequisites
+# Auto-install .NET SDK 10.0 and other prerequisites
 .\build\scripts\install\install.ps1 -Mode Desktop -AutoInstallPrereqs
 
 # Build only (no installation)

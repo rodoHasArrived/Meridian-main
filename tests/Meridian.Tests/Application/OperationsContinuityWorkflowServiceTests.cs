@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
@@ -11,6 +12,65 @@ namespace Meridian.Tests.Application;
 
 public sealed class OperationsContinuityWorkflowServiceTests
 {
+    [Fact]
+    public void OperationsContinuityContractMatrix_ShouldContainAllRequiredStatusesAndCodes_AndBeSerializable()
+    {
+        OperationsWorkflowContractMatrix.OverallStatuses.Should().BeEquivalentTo(Enum.GetValues<OperationsWorkflowStatusDto>());
+        OperationsWorkflowContractMatrix.GateStatuses.Should().BeEquivalentTo(Enum.GetValues<OperationsGateStatusDto>());
+        OperationsWorkflowContractMatrix.BrokerSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsBrokerIntakeStateDto>());
+        OperationsWorkflowContractMatrix.SecurityMasterSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsSecurityMasterStateDto>());
+        OperationsWorkflowContractMatrix.LedgerSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsLedgerPostingStateDto>());
+        OperationsWorkflowContractMatrix.ReconciliationSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsReconciliationStateDto>());
+        OperationsWorkflowContractMatrix.ApprovalSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsApprovalStateDto>());
+
+        OperationsWorkflowContractMatrix.BlockerCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
+        OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
+        OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => OperationsWorkflowContractMatrix.BlockerCodes.Contains(code));
+        OperationsWorkflowContractMatrix.BlockerCodes.Should().Contain([
+            "BROKER_STATEMENT_MISSING",
+            "BROKER_TRANSACTION_TYPE_UNKNOWN",
+            "SM_FACTOR_SCHEDULE_MISSING",
+            "SM_VALUATION_SOURCE_MISSING",
+            "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
+            "RECONCILIATION_EXTERNAL_EVIDENCE_MISSING_LEDGER_POSTING",
+            "APPROVAL_METADATA_REQUIRED",
+            "REPORT_PACK_ID_MISMATCH"
+        ]);
+        OperationsWorkflowContractMatrix.IssueCodes.Should().Contain([
+            "ACCRUAL_DAY_COUNT_MISSING",
+            "ACCRUAL_LEDGER_POSTING_MISSING",
+            "ACCRUAL_EXTERNAL_EVIDENCE_MISSING",
+            "FACTOR_STALE",
+            "FACTOR_PAYDOWN_LEDGER_MISSING",
+            "SECURITY_SCHEDULE_MISSING"
+        ]);
+
+        var sampleBlocker = new OperationsWorkflowBlockerDto(
+            OperationsWorkflowContractMatrix.BlockerCodes.First(),
+            "contract-check",
+            OperationsGateKeyDto.BrokerIngest,
+            "Error",
+            []);
+        var sampleResult = new OperationsTransitionResultDto(
+            true,
+            null,
+            null,
+            null,
+            [sampleBlocker],
+            []);
+
+        var workflowStatusJson = JsonSerializer.Serialize(OperationsWorkflowStatusDto.ReadyForClose);
+        var gateStatusJson = JsonSerializer.Serialize(OperationsGateStatusDto.ReviewRequired);
+        var blockerJson = JsonSerializer.Serialize(sampleBlocker);
+        var transitionJson = JsonSerializer.Serialize(sampleResult);
+
+        workflowStatusJson.Should().Contain("ReadyForClose");
+        gateStatusJson.Should().Contain("ReviewRequired");
+        blockerJson.Should().Contain(sampleBlocker.Code);
+        transitionJson.Should().Contain("Blockers");
+        JsonSerializer.Deserialize<OperationsTransitionResultDto>(transitionJson).Should().NotBeNull();
+    }
+
     [Fact]
     public async Task StartWorkflowAsync_ShouldCreateInitialGatesAndAuditEvent()
     {
@@ -74,6 +134,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task StartWorkflowAsync_ShouldNotPersistWorkflowWhenAuditAppendFails()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new ThrowingAuditStore("workflow-started");
+        var service = new OperationsContinuityWorkflowService(repository, auditStore, derivation);
+
+        var act = () => service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "bank",
+            "ops-user"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Simulated audit append failure.");
+
+        var workflows = await repository.ListAsync();
+        workflows.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Derive_ShouldReturnBlockedWhenAnyGateIsBlocked()
     {
         var derivation = new OperationsStatusDerivationService();
@@ -118,6 +200,26 @@ public sealed class OperationsContinuityWorkflowServiceTests
         workflow.SetApprovalState(OperationsApprovalStateDto.Approved, DateTimeOffset.UtcNow);
 
         derivation.Derive(workflow).Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
+    }
+
+
+    [Fact]
+    public void Derive_ShouldUseDeterministicHighestActiveStageOrdering()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var workflow = OperationsContinuityWorkflow.Start(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            DateTimeOffset.UtcNow);
+
+        workflow.ReplaceGate(workflow.BrokerIngestGate.WithStatus(OperationsGateStatusDto.InProgress));
+        workflow.ReplaceGate(workflow.SecurityMasterGate.WithStatus(OperationsGateStatusDto.InProgress));
+        workflow.ReplaceGate(workflow.LedgerPostingGate.WithStatus(OperationsGateStatusDto.InProgress));
+
+        derivation.Derive(workflow).Should().Be(OperationsWorkflowStatusDto.LedgerPostingDraft);
     }
 
     [Fact]
@@ -182,6 +284,49 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task StartWorkflowAsync_ShouldPreserveEvidenceIdentityWhileRedactingSensitiveAuditFields()
+    {
+        var service = CreateService(out _, out var auditStore);
+
+        var result = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user",
+            Rationale: "Open close lane with api_key=do-not-store and Bearer raw-token-value",
+            CorrelationId: "token=raw-correlation-token",
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    "statement-2026-05",
+                    "Uploaded with password:raw-label-secret",
+                    "https://operator:raw-route-secret@example.invalid/statement?api_key=raw-query-secret",
+                    "credential=raw-source-secret",
+                    DateTimeOffset.UtcNow)
+            ]));
+
+        result.Success.Should().BeTrue();
+
+        var timeline = await auditStore.GetTimelineAsync(result.Workflow!.WorkflowId);
+        var audit = timeline.Single();
+        audit.Rationale.Should().Contain("api_key=[redacted]");
+        audit.Rationale.Should().Contain("Bearer [redacted]");
+        audit.Rationale.Should().NotContain("do-not-store");
+        audit.Rationale.Should().NotContain("raw-token-value");
+        audit.CorrelationId.Should().Be("token=[redacted]");
+        audit.References.Should().ContainSingle();
+        audit.References[0].EvidenceId.Should().Be("statement-2026-05");
+        audit.References[0].Label.Should().Be("Uploaded with password:[redacted]");
+        audit.References[0].Route.Should().Be("https://[redacted]@example.invalid/statement?api_key=[redacted]");
+        audit.References[0].Source.Should().Be("credential=[redacted]");
+
+        result.Workflow.EvidenceLinks.Should().ContainSingle(link =>
+            link.EvidenceId == "statement-2026-05" &&
+            link.Route == "https://[redacted]@example.invalid/statement?api_key=[redacted]");
+    }
+
+    [Fact]
     public async Task WorkflowCommands_ShouldAdvanceThroughApprovalAndClose()
     {
         var service = CreateService(out _, out var auditStore);
@@ -194,8 +339,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
         var workflowId = start.Workflow!.WorkflowId;
 
         var import = await service.ImportBrokerDataAsync(workflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
-        var security = await service.ResolveSecurityMasterMappingsAsync(workflowId, new OperationsSecurityMasterResolveRequestDto(
+        var normalized = await service.NormalizeBrokerTransactionsAsync(workflowId, new OperationsTransitionRequestDto(
             import.Workflow!.Version,
+            "ops-user",
+            "Normalized imported broker activity"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(workflowId, new OperationsSecurityMasterResolveRequestDto(
+            normalized.Workflow!.Version,
             "ops-user",
             "Resolved all instruments"));
         var draft = await service.BuildLedgerDraftAsync(workflowId, new OperationsLedgerDraftRequestDto(
@@ -257,6 +406,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(
             "workflow-started",
             "broker-imported",
+            "broker-transactions-normalized",
             "security-master-resolved",
             "ledger-draft-built",
             "ledger-draft-validated",
@@ -266,6 +416,108 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "approval-submitted",
             "approval-approved",
             "workflow-closed");
+    }
+
+    [Fact]
+    public async Task SubmitForApprovalAsync_ShouldRejectMissingSubmissionMetadataWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran expected-vs-actual reconciliation",
+            BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
+            reconciled.Workflow!.Version,
+            "ops-user",
+            ReportPackReady: true,
+            ReportPackId: "report-pack-1",
+            Rationale: "Report pack is ready"));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            posture.Workflow!.Version,
+            "ops-user",
+            Reviewer: "",
+            Rationale: "",
+            ReportPackId: ""));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "APPROVAL_SUBMISSION_METADATA_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task SubmitForApprovalAsync_ShouldRejectMismatchedReadyReportPackWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran expected-vs-actual reconciliation",
+            BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
+            reconciled.Workflow!.Version,
+            "ops-user",
+            ReportPackReady: true,
+            ReportPackId: "report-pack-ready",
+            Rationale: "Report pack is ready"));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            posture.Workflow!.Version,
+            "ops-user",
+            "reviewer",
+            "Submit approval against a different report pack",
+            "report-pack-different"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REPORT_PACK_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task SubmitForApprovalAsync_ShouldRejectBeforePrerequisiteGatesPassWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var posture = await service.RefreshGatePostureAsync(start.Workflow!.WorkflowId, new OperationsGatePostureRequestDto(
+            start.Workflow.Version,
+            "ops-user",
+            ReportPackReady: true,
+            ReportPackId: "report-pack-early",
+            Rationale: "Report pack was uploaded before gates completed"));
+        var timelineBefore = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+
+        var result = await service.SubmitForApprovalAsync(start.Workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            posture.Workflow!.Version,
+            "ops-user",
+            "reviewer",
+            "Submit early approval",
+            "report-pack-early"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED" &&
+            blocker.Gate == null);
+        var timelineAfter = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]
@@ -319,6 +571,37 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ResolveSecurityMasterMappingsAsync_ShouldRejectBeforeBrokerNormalizationWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var import = await service.ImportBrokerDataAsync(
+            start.Workflow!.WorkflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var timelineBefore = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+
+        var result = await service.ResolveSecurityMasterMappingsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsSecurityMasterResolveRequestDto(
+                import.Workflow!.Version,
+                "ops-user",
+                "Attempted resolution before normalization"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "BROKER_NORMALIZATION_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.BrokerIngest);
+        var timelineAfter = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task ApproveSecurityMasterOverrideAsync_ShouldPermitLedgerDraftWithGovernedMetadata()
     {
         var service = CreateService(out _, out var auditStore);
@@ -329,8 +612,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "custodian",
             "ops-user"));
         var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
         var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(
-            import.Workflow!.Version,
+            normalized.Workflow!.Version,
             "ops-user",
             OverrideRequestCount: 1));
         security.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -357,6 +643,41 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ApproveSecurityMasterOverrideAsync_ShouldRejectMismatchedRouteAndBodyOverrideIds()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(
+            normalized.Workflow!.Version,
+            "ops-user",
+            OverrideRequestCount: 1));
+
+        var result = await service.ApproveSecurityMasterOverrideAsync(
+            start.Workflow.WorkflowId,
+            "override-route",
+            new OperationsSecurityMasterOverrideApprovalRequestDto(
+                security.Workflow!.Version,
+                "ops-user",
+                "override-body",
+                "Temporary mapping approved for month-end close",
+                "policy-sm-override-v1",
+                new DateOnly(2026, 6, 30)));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker => blocker.Code == "SM_OVERRIDE_ID_MISMATCH");
+    }
+
+    [Fact]
     public async Task RunReconciliationAsync_ShouldRequirePostedLedgerEntries()
     {
         var service = CreateService(out _, out _);
@@ -377,7 +698,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         var journalStore = new RecordingLedgerJournalStore();
         var service = CreateService(out _, out var auditStore, journalStore);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
-        var candidate = CreateJournalCandidate(workflow.FundAccountId, workflow.PeriodId);
+        var candidate = CreateJournalCandidate(workflow.FundAccountId);
 
         var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
             workflow.Version,
@@ -389,7 +710,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         result.Success.Should().BeTrue();
         journalStore.Appended.Should().ContainSingle();
-        journalStore.Appended[0].PeriodId.Should().Be(workflow.PeriodId);
+        journalStore.Appended[0].PeriodId.Should().Be(candidate.PeriodId);
         journalStore.Appended[0].AggregateId.Should().Be(workflow.FundAccountId);
         journalStore.Appended[0].Entry.IsBalanced.Should().BeTrue();
         result.Workflow!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Complete);
@@ -410,7 +731,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId, workflow.PeriodId)));
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId)));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("LEDGER_JOURNAL_STORE_UNAVAILABLE");
@@ -439,9 +760,83 @@ public sealed class OperationsContinuityWorkflowServiceTests
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("VALIDATION_FAILED");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH");
-        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_PERIOD_ID_MISMATCH");
         journalStore.Appended.Should().BeEmpty();
 
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldUseTransactionalCommitStoreWhenRegistered()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new InMemoryOperationsWorkflowAuditStore();
+        var journalStore = new RecordingLedgerJournalStore();
+        var commitStore = new RecordingTransactionalCommitStore(repository, auditStore, journalStore);
+        var service = new OperationsContinuityWorkflowService(
+            repository,
+            auditStore,
+            derivation,
+            ledgerJournalStore: null,
+            transactionalCommitStore: commitStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate();
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeTrue();
+        commitStore.CommitCount.Should().Be(1);
+        journalStore.Appended.Should().ContainSingle();
+        result.Workflow!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Complete);
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().Contain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldLeaveWorkflowUnchangedWhenTransactionalCommitFails()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new InMemoryOperationsWorkflowAuditStore();
+        var journalStore = new RecordingLedgerJournalStore();
+        var commitStore = new RecordingTransactionalCommitStore(
+            repository,
+            auditStore,
+            journalStore,
+            throwBeforeCommit: true);
+        var service = new OperationsContinuityWorkflowService(
+            repository,
+            auditStore,
+            derivation,
+            ledgerJournalStore: null,
+            transactionalCommitStore: commitStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate()));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("LEDGER_JOURNAL_APPEND_REJECTED");
+        journalStore.Appended.Should().BeEmpty();
+
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Validated);
+        persisted.LedgerPostingGate.Status.Should().Be(
+            workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.LedgerPosting).Status);
+        persisted.Version.Should().Be(workflow.Version);
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
     }
@@ -462,6 +857,89 @@ public sealed class OperationsContinuityWorkflowServiceTests
         result.Success.Should().BeTrue();
         result.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
         result.Workflow.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_PERIOD_CLOSED");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldFailBeforeSecurityMasterResolution()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+
+        var result = await service.PostLedgerEntriesAsync(start.Workflow!.WorkflowId, new OperationsLedgerPostRequestDto(
+            start.Workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-before-sm",
+            PostingKind: "period-close",
+            PeriodOpen: true));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldFailWhenDraftIsUnbalanced()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-unbalanced",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate() with
+            {
+                Lines =
+                [
+                    new OperationsLedgerJournalLineDto(null, "Cash", nameof(LedgerAccountType.Asset), 100m, 0m),
+                    new OperationsLedgerJournalLineDto(null, "Interest income", nameof(LedgerAccountType.Revenue), 0m, 90m)
+                ]
+            }));
+
+        result.Success.Should().BeFalse();
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_DRAFT_IMBALANCED");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldNotAppendAuditOrMutateWorkflowWhenJournalCandidateIsInvalid()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out var repository, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-invalid-candidate",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate() with
+            {
+                PeriodId = Guid.Empty
+            }));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_JOURNAL_PERIOD_ID_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.LedgerPosting);
+        journalStore.Appended.Should().BeEmpty();
+
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.Version.Should().Be(workflow.Version);
+        persisted.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Validated);
+        persisted.LedgerPostingGate.Status.Should().Be(OperationsGateStatusDto.InProgress);
+
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]
@@ -521,6 +999,95 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task RunReconciliationAsync_ShouldFeedSecurityAccountingIssueCountsIntoGatePosture()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran reconciliation with Security Master accounting-event issues",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 2,
+            ExpectedAccountingEventCount: 3,
+            ExpectedJournalPreviewCount: 1));
+
+        reconciled.Success.Should().BeTrue();
+        reconciled.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
+        reconciled.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster)
+            .Status.Should().Be(OperationsGateStatusDto.Blocked);
+        reconciled.Workflow.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+    }
+
+
+    [Fact]
+    public async Task RunReconciliationAsync_WithSecurityAccountingIssues_ShouldReturnDeterministicSecurityMasterBlockerCode()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var first = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "security master terms missing",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 1,
+            ExpectedAccountingEventCount: 0,
+            ExpectedJournalPreviewCount: 0));
+
+        var second = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            first.Workflow!.Version,
+            "ops-user",
+            "security master terms still missing",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 2,
+            ExpectedAccountingEventCount: 0,
+            ExpectedJournalPreviewCount: 0));
+
+        first.Workflow!.Blockers.Should().ContainSingle(blocker => blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE");
+        second.Workflow!.Blockers.Should().ContainSingle(blocker => blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE");
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_ZeroSecurityIssueCounts_ShouldNotAutoPassSecurityMasterGate()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var initiallyBlocked = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran reconciliation with security-accounting issues",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 1));
+        initiallyBlocked.Success.Should().BeTrue();
+        initiallyBlocked.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
+        initiallyBlocked.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster)
+            .Status.Should().Be(OperationsGateStatusDto.Blocked);
+        initiallyBlocked.Workflow.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+
+        var stillBlocked = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            initiallyBlocked.Workflow!.Version,
+            "ops-user",
+            "Attempt to clear Security Master gate with caller-supplied zero counts",
+            BreakCases: [],
+            SecurityCoverageIssueCount: 0,
+            SecurityAccountingIssueCount: 0));
+
+        stillBlocked.Success.Should().BeTrue();
+        stillBlocked.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster)
+            .Status.Should().Be(OperationsGateStatusDto.Blocked);
+        stillBlocked.Workflow.Blockers.Should().Contain(blocker =>
+            blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+    }
+
+    [Fact]
     public async Task ApproveWorkflowAsync_ShouldRequireApprovalMetadata()
     {
         var service = CreateService(out _, out _);
@@ -535,6 +1102,29 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         result.Success.Should().BeFalse();
         result.Blockers.Should().ContainSingle(blocker => blocker.Code == "APPROVAL_METADATA_REQUIRED");
+    }
+
+    [Fact]
+    public async Task ApproveWorkflowAsync_ShouldRejectMismatchedReadyReportPack()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approve against a different report pack",
+            "report-pack-different"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REPORT_PACK_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]
@@ -598,6 +1188,107 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task CloseWorkflowAsync_ShouldFailWhenCriticalBreakRemainsOpen()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+
+        var reconciliation = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            BreakCases:
+            [
+                new OperationsBreakCaseDto("break-critical", "id", "type", "Critical", "Open", null, null, "summary", "source", 10m, null, 11m, null, "SYM", "action", [])
+            ]));
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            reconciliation.Workflow!.Version,
+            "ops-user",
+            "Close with open critical break",
+            "report-pack-1"));
+
+        close.Success.Should().BeFalse();
+        close.Blockers.Should().Contain(blocker => blocker.Code == "OPERATIONS_GATES_NOT_PASSED");
+    }
+
+    [Fact]
+    public async Task CloseWorkflowAsync_ShouldRejectMismatchedReadyReportPackWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1"));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close using a mismatched report pack",
+            "report-pack-different"));
+
+        close.Success.Should().BeFalse();
+        close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        close.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REPORT_PACK_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task RefreshGatePostureAsync_ShouldRejectClosedWorkflowWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var closed = await CreateClosedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(closed.WorkflowId);
+
+        var result = await service.RefreshGatePostureAsync(closed.WorkflowId, new OperationsGatePostureRequestDto(
+            closed.Version,
+            "ops-user",
+            ReportPackReady: false,
+            Rationale: "Attempt to mutate a closed workflow"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "WORKFLOW_CLOSED" &&
+            blocker.Gate == null);
+
+        var timelineAfter = await auditStore.GetTimelineAsync(closed.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectClosedWorkflowBeforeLedgerPreconditions()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var closed = await CreateClosedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(closed.WorkflowId);
+
+        var result = await service.PostLedgerEntriesAsync(closed.WorkflowId, new OperationsLedgerPostRequestDto(
+            closed.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-after-close",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            Rationale: "Attempt to post after close",
+            JournalCandidate: CreateJournalCandidate()));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "WORKFLOW_CLOSED" &&
+            blocker.Gate == OperationsGateKeyDto.LedgerPosting);
+
+        var timelineAfter = await auditStore.GetTimelineAsync(closed.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task ImportBrokerDataAsync_ShouldRejectRepeatedImportWithoutAppendingAudit()
     {
         var service = CreateService(out _, out var auditStore);
@@ -634,6 +1325,38 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ImportBrokerDataAsync_ShouldLeaveWorkflowUnchangedWhenAuditAppendFails()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new ThrowingAuditStore("broker-imported");
+        var service = new OperationsContinuityWorkflowService(repository, auditStore, derivation);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "bank",
+            "ops-user"));
+        start.Workflow.Should().NotBeNull();
+        var workflow = start.Workflow!;
+
+        var act = () => service.ImportBrokerDataAsync(
+            workflow.WorkflowId,
+            new OperationsTransitionRequestDto(
+                workflow.Version,
+                "ops-user",
+                "Imported custodian statement"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Simulated audit append failure.");
+
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.BrokerIntakeState.Should().Be(OperationsBrokerIntakeStateDto.Pending);
+        persisted.BrokerIngestGate.Status.Should().Be(OperationsGateStatusDto.InProgress);
+    }
+
+    [Fact]
     public async Task FileAuditStore_ShouldAppendJsonlEventsAndMaintainHashChain()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "operations-continuity", Guid.NewGuid().ToString("N"));
@@ -664,6 +1387,26 @@ public sealed class OperationsContinuityWorkflowServiceTests
         File.ReadAllLines(auditPath).Should().HaveCount(2);
     }
 
+    [Fact]
+    public void PostgresAuditAppend_ShouldAcquireWorkflowScopedAdvisoryLockBeforeReadingTailHash()
+    {
+        var source = ReadRepoFile(
+            "src",
+            "Meridian.Application",
+            "OperationsContinuity",
+            "PostgresOperationsContinuityStore.cs");
+        var appendMethodStart = source.IndexOf(
+            "private async Task<OperationsWorkflowAuditDto> AppendAuditAsync",
+            StringComparison.Ordinal);
+
+        appendMethodStart.Should().BeGreaterThanOrEqualTo(0);
+        var appendMethod = source[appendMethodStart..];
+        appendMethod.IndexOf("AcquireWorkflowAuditLockAsync", StringComparison.Ordinal)
+            .Should().BeLessThan(appendMethod.IndexOf("LoadPreviousAuditHashAsync", StringComparison.Ordinal));
+        source.Should().Contain("pg_advisory_xact_lock");
+        source.Should().Contain("CreateWorkflowAuditLockKey");
+    }
+
     private static OperationsContinuityWorkflowService CreateService(
         out InMemoryOperationsContinuityRepository repository,
         out InMemoryOperationsWorkflowAuditStore auditStore,
@@ -690,7 +1433,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "custodian",
             "ops-user"));
         var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
-        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(import.Workflow!.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(start.Workflow.WorkflowId, new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user"));
         var draft = await service.BuildLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "ops-user", "ledger-preview-1", true));
         var validated = await service.ValidateLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
         return validated.Workflow!;
@@ -715,6 +1459,24 @@ public sealed class OperationsContinuityWorkflowServiceTests
         return submitted.Workflow!;
     }
 
+    private static async Task<OperationsContinuityWorkflowDto> CreateClosedWorkflowAsync(
+        OperationsContinuityWorkflowService service)
+    {
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1"));
+        var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close workflow",
+            "report-pack-1"));
+        return closed.Workflow!;
+    }
+
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerPostedWorkflowAsync(
         OperationsContinuityWorkflowService service)
     {
@@ -725,15 +1487,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId, workflow.PeriodId)));
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId)));
         return posted.Workflow!;
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid aggregateId, Guid periodId) =>
+    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null) =>
         new(
             JournalEntryId: null,
-            AggregateId: aggregateId,
-            PeriodId: periodId,
+            AggregateId: aggregateId ?? Guid.NewGuid(),
+            PeriodId: periodId ?? Guid.NewGuid(),
             Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             Description: "Operations continuity month-end posting",
             Lines:
@@ -779,6 +1541,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "Monthly close evidence",
             "corr-1",
             []);
+
+    private static string ReadRepoFile(params string[] pathParts)
+    {
+        var root = FindRepoRoot();
+        return File.ReadAllText(Path.Combine(pathParts.Prepend(root).ToArray()));
+    }
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (Directory.Exists(Path.Combine(directory.FullName, "src", "Meridian.Application")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
+    }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
     {
@@ -856,5 +1640,74 @@ public sealed class OperationsContinuityWorkflowServiceTests
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(book);
         }
+    }
+
+    private sealed class RecordingTransactionalCommitStore : IOperationsContinuityTransactionalCommitStore
+    {
+        private readonly IOperationsContinuityRepository _repository;
+        private readonly IOperationsWorkflowAuditStore _auditStore;
+        private readonly RecordingLedgerJournalStore _journalStore;
+        private readonly bool _throwBeforeCommit;
+
+        public RecordingTransactionalCommitStore(
+            IOperationsContinuityRepository repository,
+            IOperationsWorkflowAuditStore auditStore,
+            RecordingLedgerJournalStore journalStore,
+            bool throwBeforeCommit = false)
+        {
+            _repository = repository;
+            _auditStore = auditStore;
+            _journalStore = journalStore;
+            _throwBeforeCommit = throwBeforeCommit;
+        }
+
+        public int CommitCount { get; private set; }
+
+        public async Task<OperationsContinuityTransactionalCommitResult> CommitLedgerPostingAsync(
+            OperationsContinuityWorkflow workflow,
+            OperationsWorkflowAuditDraft auditDraft,
+            LedgerJournalEntryWrite journalEntry,
+            CancellationToken ct = default)
+        {
+            CommitCount++;
+            if (_throwBeforeCommit)
+            {
+                throw new LedgerValidationException("Simulated transactional commit rejection.");
+            }
+
+            await _journalStore.AppendAsync(journalEntry, ct).ConfigureAwait(false);
+            var audit = await _auditStore.AppendAsync(auditDraft, ct).ConfigureAwait(false);
+            workflow.Touch(audit.OccurredAtUtc);
+            await _repository.SaveAsync(workflow, ct).ConfigureAwait(false);
+            return new OperationsContinuityTransactionalCommitResult(workflow, audit);
+        }
+    }
+
+    private sealed class ThrowingAuditStore(string failEventType) : IOperationsWorkflowAuditStore
+    {
+        private readonly InMemoryOperationsWorkflowAuditStore _inner = new();
+
+        public Task<OperationsWorkflowAuditDto> AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default)
+        {
+            if (string.Equals(draft.EventType, failEventType, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Simulated audit append failure.");
+            }
+
+            return _inner.AppendAsync(draft, ct);
+        }
+
+        public Task<IReadOnlyList<OperationsWorkflowAuditDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default)
+            => _inner.GetTimelineAsync(workflowId, ct);
+    }
+
+    [Fact]
+    public void OperationsContractEnums_ShouldSerializeAsStableStrings()
+    {
+        JsonSerializer.Serialize(OperationsWorkflowStatusDto.Blocked).Should().Be("\"Blocked\"");
+        JsonSerializer.Serialize(OperationsGateStatusDto.ReviewRequired).Should().Be("\"ReviewRequired\"");
+        JsonSerializer.Serialize(OperationsGateKeyDto.Reconciliation).Should().Be("\"Reconciliation\"");
+        JsonSerializer.Serialize(OperationsIssueCodeDto.ReconciliationCriticalBreaksOpen)
+            .Should().Be("\"ReconciliationCriticalBreaksOpen\"");
     }
 }

@@ -1,0 +1,75 @@
+name: Roadmap Source Docs
+
+on:
+  pull_request:
+    paths:
+      - "docs/roadmap/**"
+      - "docs/source/**"
+      - "docs/status/**"
+      - "docs/architecture/**"
+      - "src/**/README.md"
+      - "build/scripts/docs/**"
+      - ".github/workflows/roadmap-source-docs.yml"
+      - ".github/instructions/source-documentation.instructions.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/roadmap/**"
+      - "docs/source/**"
+      - "src/**/README.md"
+      - "build/scripts/docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roadmap-source-docs-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  validate-roadmap-source-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate roadmap registry
+        run: python3 build/scripts/docs/validate-roadmap-registry.py --summary
+
+      - name: Validate source READMEs
+        run: python3 build/scripts/docs/validate-source-readmes.py --summary
+
+      - name: Scan source TODOs
+        run: python3 build/scripts/docs/scan-source-todos.py --summary
+
+      - name: Render roadmap docs
+        run: python3 build/scripts/docs/render-roadmap-docs.py --summary
+
+      - name: Render source docs
+        run: python3 build/scripts/docs/render-source-docs.py --summary
+
+      - name: Render diagrams
+        run: |
+          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
+          python3 build/scripts/docs/render-source-diagrams.py --summary
+
+      - name: Check generated docs are current
+        run: |
+          git diff --exit-code
+
+      - name: Check whitespace
+        run: git diff --check

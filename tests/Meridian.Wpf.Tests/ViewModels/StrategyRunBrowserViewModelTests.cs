@@ -413,10 +413,10 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.CanChooseComparisonRun.Should().BeTrue();
         vm.ComparisonGuidanceText.Should().Be(
             $"Ready to compare {vm.SelectedRun!.StrategyName} against {vm.ComparisonRun!.StrategyName}.");
-        vm.SelectionText.Should().Be("Alpha Strategy vs Beta Strategy");
-        vm.ComparisonHeaderAText.Should().Be("Alpha Strategy (Backtest)");
-        vm.ComparisonHeaderBText.Should().Be("Beta Strategy (Paper)");
-        vm.ComparisonPanelDetail.Should().Contain("Alpha Strategy (Backtest)");
+        vm.SelectionText.Should().Be("Beta Strategy vs Alpha Strategy");
+        vm.ComparisonHeaderAText.Should().Be("Beta Strategy (Paper)");
+        vm.ComparisonHeaderBText.Should().Be("Alpha Strategy (Backtest)");
+        vm.ComparisonPanelDetail.Should().Contain("Beta Strategy (Paper)");
     }
 
     [Fact]

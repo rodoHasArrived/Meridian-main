@@ -3,6 +3,7 @@ import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
@@ -387,6 +388,7 @@ interface SecurityDetailFieldEditorProps {
 function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel }: SecurityDetailFieldEditorProps) {
   const def = field.def;
   const editor = field.editor;
+  const disabledReasonId = `${editor.id}-disabled-reason`;
   const baseClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === "Enter") {
@@ -406,20 +408,24 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
           value={value}
           autoFocus
           disabled={editor.disabled}
-          title={editor.disabledReason ?? undefined}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           aria-label={editor.ariaLabel}
-          aria-describedby={editor.describedBy}
+          aria-describedby={joinDescribedByIds(editor.describedBy, disabledReasonId)}
         >
           <option value="">—</option>
           {def.options.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
         </select>
-        <span id={editor.helperId} className="block text-[11px] leading-4 text-muted-foreground">
-          {editor.helperText}
-        </span>
+        <FieldSupportText
+          helpId={editor.helperId}
+          helpText={editor.helperText}
+          helpClassName="block text-[11px] leading-4"
+          disabledReason={editor.disabledReason}
+          disabledReasonId={disabledReasonId}
+          disabledReasonClassName="block"
+        />
       </span>
     );
   }
@@ -433,17 +439,21 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
         value={value}
         autoFocus
         disabled={editor.disabled}
-        title={editor.disabledReason ?? undefined}
         placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         aria-label={editor.ariaLabel}
-        aria-describedby={editor.describedBy}
+        aria-describedby={joinDescribedByIds(editor.describedBy, disabledReasonId)}
         step={def.kind === "number" ? "any" : undefined}
       />
-      <span id={editor.helperId} className="block text-[11px] leading-4 text-muted-foreground">
-        {editor.helperText}
-      </span>
+      <FieldSupportText
+        helpId={editor.helperId}
+        helpText={editor.helperText}
+        helpClassName="block text-[11px] leading-4"
+        disabledReason={editor.disabledReason}
+        disabledReasonId={disabledReasonId}
+        disabledReasonClassName="block"
+      />
     </span>
   );
 }

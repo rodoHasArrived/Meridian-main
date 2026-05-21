@@ -153,14 +153,34 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
 
     // ── Button state ──────────────────────────────────────────────────────────────────
     private bool _isRefreshEnabled = true;
-    public bool IsRefreshEnabled { get => _isRefreshEnabled; private set => SetProperty(ref _isRefreshEnabled, value); }
+    public bool IsRefreshEnabled
+    {
+        get => _isRefreshEnabled;
+        private set
+        {
+            if (SetProperty(ref _isRefreshEnabled, value))
+            {
+                RefreshCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
     private bool _isDiagnosticsEnabled = true;
-    public bool IsDiagnosticsEnabled { get => _isDiagnosticsEnabled; private set => SetProperty(ref _isDiagnosticsEnabled, value); }
+    public bool IsDiagnosticsEnabled
+    {
+        get => _isDiagnosticsEnabled;
+        private set
+        {
+            if (SetProperty(ref _isDiagnosticsEnabled, value))
+            {
+                GenerateDiagnosticsCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
     // ── Commands ──────────────────────────────────────────────────────────────────────
-    public IRelayCommand RefreshCommand { get; }
-    public IRelayCommand GenerateDiagnosticsCommand { get; }
+    public IAsyncRelayCommand RefreshCommand { get; }
+    public IAsyncRelayCommand GenerateDiagnosticsCommand { get; }
 
     public SystemHealthViewModel(
         SystemHealthService healthService,
@@ -172,8 +192,8 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += OnRefreshTimerTick;
 
-        RefreshCommand = new RelayCommand(() => _ = RefreshAsync());
-        GenerateDiagnosticsCommand = new RelayCommand(() => _ = GenerateDiagnosticsAsync());
+        RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => IsRefreshEnabled);
+        GenerateDiagnosticsCommand = new AsyncRelayCommand(GenerateDiagnosticsAsync, () => IsDiagnosticsEnabled);
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────────────
