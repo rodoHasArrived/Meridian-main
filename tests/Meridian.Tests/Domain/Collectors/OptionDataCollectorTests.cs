@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -50,7 +49,7 @@ public sealed class OptionDataCollectorTests
     [Fact]
     public void OnOptionQuote_StartsCollectorActivityForPublish()
     {
-        using var listener = CreateListener();
+        using var listener = ActivityTestListenerFactory.CreateForMeridianSource();
         var publisher = new ActivityCapturingPublisher();
         var sut = new OptionDataCollector(publisher);
         var quote = CreateOptionQuote("AAPL", 150m, OptionRight.Call);
@@ -358,19 +357,6 @@ public sealed class OptionDataCollectorTests
     #endregion
 
     #region Helpers
-
-    private static ActivityListener CreateListener()
-    {
-        var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == "Meridian",
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData
-        };
-
-        ActivitySource.AddActivityListener(listener);
-        return listener;
-    }
 
     private static OptionContractSpec CreateContract(string underlying, decimal strike, OptionRight right)
     {

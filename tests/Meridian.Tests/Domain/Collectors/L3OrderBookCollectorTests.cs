@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -62,7 +61,7 @@ public class L3OrderBookCollectorTests
     [Fact]
     public void OnOrderAdd_StartsCollectorActivityForPublish()
     {
-        using var listener = CreateListener();
+        using var listener = ActivityTestListenerFactory.CreateForMeridianSource();
         var publisher = new ActivityCapturingPublisher();
         var collector = new L3OrderBookCollector(publisher, requireExplicitSubscription: false);
 
@@ -365,19 +364,6 @@ public class L3OrderBookCollectorTests
         var snap = Published.LastOrDefault(e => e.Type == MarketEventType.L2Snapshot)?.Payload as LOBSnapshot;
         snap.Should().NotBeNull("an L2 snapshot should have been published");
         return snap!;
-    }
-
-    private static ActivityListener CreateListener()
-    {
-        var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source.Name == "Meridian",
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData
-        };
-
-        ActivitySource.AddActivityListener(listener);
-        return listener;
     }
 
 }

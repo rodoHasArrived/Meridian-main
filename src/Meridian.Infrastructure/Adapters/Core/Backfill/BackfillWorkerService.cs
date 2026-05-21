@@ -219,9 +219,9 @@ public sealed class BackfillWorkerService : IDisposable
 
         activity?.SetTag("backfill.job_id", request.JobId);
         activity?.SetTag("backfill.request_id", request.RequestId);
-        var correlationId = activity?.TraceId.ToString() ?? request.RequestId;
+        var loggingCorrelationId = activity?.TraceId.ToString() ?? request.RequestId;
         var requestLog = _log
-            .ForContext("CorrelationId", correlationId)
+            .ForContext("CorrelationId", loggingCorrelationId)
             .ForContext("BackfillJobId", request.JobId)
             .ForContext("BackfillRequestId", request.RequestId)
             .ForContext("Symbol", request.Symbol);
