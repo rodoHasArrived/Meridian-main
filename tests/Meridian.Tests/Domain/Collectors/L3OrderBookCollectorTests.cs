@@ -67,8 +67,10 @@ public class L3OrderBookCollectorTests
 
         collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));
 
-        publisher.TraceIds.Should().ContainSingle(id => !string.IsNullOrWhiteSpace(id));
-        publisher.OperationNames.Should().ContainSingle(name => name == "l3-collector.publish");
+        publisher.TraceIds.Should().HaveCount(2);
+        publisher.TraceIds.Should().OnlyContain(id => !string.IsNullOrWhiteSpace(id));
+        publisher.OperationNames.Should().HaveCount(2);
+        publisher.OperationNames.Should().OnlyContain(name => name == "l3-collector.publish");
     }
 
     [Fact]
