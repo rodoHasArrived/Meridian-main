@@ -28,10 +28,12 @@ This folder contains historical and superseded Meridian documentation that has b
 - [`summaries/provider-failover-hardening.md`](summaries/provider-failover-hardening.md) - Historical provider failover hardening checklist snapshot.
 - [`summaries/provider-test-gap-baseline.md`](summaries/provider-test-gap-baseline.md) - Historical provider test-gap baseline snapshot.
 - [`summaries/provider-test-minimums.md`](summaries/provider-test-minimums.md) - Historical provider minimum test guidance snapshot.
+- [`summaries/performance-todo-2026-05-21.md`](summaries/performance-todo-2026-05-21.md) - Dated benchmark and performance TODO snapshot captured during a container run without .NET 10 SDK availability.
 
 ## Archived Plans
 
 - [`plans/approach-b-plus-v2-implementation-plan.md`](plans/approach-b-plus-v2-implementation-plan.md) - Superseded documentation-system implementation plan; active guidance now lives in structured roadmap/source registries, docs automation, and validation docs.
+- [`plans/approach-b-plus-v2-governance.md`](plans/approach-b-plus-v2-governance.md) - Historical PR0-PR9 governance sequencing contract for the structured docs mesh rollout.
 - [`plans/covered-call-writing-slice-1-blueprint.md`](plans/covered-call-writing-slice-1-blueprint.md) - Superseded Covered Call backtest-slice blueprint; active planning now routes through Strategy Engine support evidence, options roadmap, and Backtest Studio plans.
 
 ## Archived Assessments
