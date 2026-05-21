@@ -11,8 +11,14 @@ public sealed class DenseDataGridControl : DataGrid
     }
 }
 
-public sealed class SearchFilterBarControl : ContentControl;
+public sealed class SearchFilterBarControl : ContentControl
+{
+}
 
-public sealed class KeyValueFactGridControl : DataGrid;
+public sealed class KeyValueFactGridControl : DataGrid
+{
+}
 
-public sealed class ActivityLogGridControl : DataGrid;
+public sealed class ActivityLogGridControl : DataGrid
+{
+}
