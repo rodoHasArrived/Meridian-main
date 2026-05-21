@@ -43,7 +43,7 @@ Use this folder for deep context and implementation rationale. For live prioriti
 | --- | --- | --- |
 | [Windows Desktop Provider Configurability](windows-desktop-provider-configurability-assessment.md) | Provider-settings assessment and phased implementation rationale | Last reviewed 2026-03-19; infrastructure complete, UI workflow still in progress |
 | [Desktop Platform Improvements Guide](desktop-platform-improvements-implementation-guide.md) | Detailed implementation reference for the desktop improvement program | Original six priorities complete; extended follow-up retained in-file |
-| [QuantScriptEnvironment Blueprint Brainstorm](quant-script-blueprint-brainstorm.md) | Product and UX evaluation for QuantScript design decisions | Updated 2026-04-16; companion to `docs/plans/quant-script-environment-blueprint.md` |
+| [QuantScriptEnvironment Blueprint Brainstorm](quant-script-blueprint-brainstorm.md) | Product and UX evaluation for QuantScript design decisions | Updated 2026-04-16; companion to `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 ## Strategy, Proposal, And Market Context Documents
 

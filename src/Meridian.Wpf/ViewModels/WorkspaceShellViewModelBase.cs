@@ -1,8 +1,10 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Commands;
+using Meridian.Wpf.Workstation.ViewModels.Base;
 
 namespace Meridian.Wpf.ViewModels;
 
-public abstract class WorkspaceShellViewModelBase : BindableBase
+public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
 {
     private WorkspaceCommandGroup _commandGroup = new();
 
@@ -16,15 +18,13 @@ public abstract class WorkspaceShellViewModelBase : BindableBase
     public WorkspaceCommandGroup CommandGroup
     {
         get => _commandGroup;
-        set => SetProperty(ref _commandGroup, value);
-    }
-}
-
-public sealed class DataOperationsWorkspaceShellViewModel : WorkspaceShellViewModelBase
-{
-    public DataOperationsWorkspaceShellViewModel()
-        : base(ShellNavigationCatalog.GetWorkspaceShell("data")!)
-    {
+        set
+        {
+            if (SetProperty(ref _commandGroup, value))
+            {
+                CommandDescriptors = WorkspaceCommandAdapters.ToCommandDescriptors(value);
+            }
+        }
     }
 }
 
@@ -56,6 +56,14 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 {
     public ReportingWorkspaceShellViewModel()
         : base(ShellNavigationCatalog.GetWorkspaceShell("reporting")!)
+    {
+    }
+}
+
+public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
+{
+    public DataWorkspaceShellViewModel()
+        : base(ShellNavigationCatalog.GetWorkspaceShell("data")!)
     {
     }
 }

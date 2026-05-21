@@ -1,4 +1,6 @@
 using FluentAssertions;
+using System.Text.Json;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.Banking;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Banking;
@@ -115,12 +117,314 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications!.Should().ContainKey("AAPL");
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
-        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("ISIN");
+        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("Ticker");
         detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
         detail.SecurityClassifications["AAPL"].MatchedIdentifierKind.Should().Be("ISIN");
         detail.SecurityClassifications["AAPL"].MatchedIdentifierValue.Should().Be("US0378331005");
         detail.SecurityClassifications["AAPL"].MatchedProvider.Should().Be("OpenFIGI");
         detail.SecurityClassifications["TSLA"].PrimaryIdentifierKind.Should().Be("Ticker");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithSecurityValidationIssue_ShouldExposeReconciliationCoverageIssue()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-validation-gate"));
+
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL"));
+        lookup.Register("TSLA", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            DisplayName: "Tesla Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "TSLA"));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: new SymbolSecurityValidationGate("TSLA"));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-validation-gate"));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.HasSecurityCoverageIssues.Should().BeTrue();
+        detail.SecurityCoverageIssues.Should().NotBeNullOrEmpty();
+        detail.SecurityCoverageIssues!.Should().Contain(issue =>
+            issue.Symbol == "TSLA"
+            && issue.Code == "SM_ACCOUNTING_CLASSIFICATION_MISSING"
+            && issue.Severity == ReconciliationBreakSeverity.High
+            && issue.Reason.Contains("Security Master validation", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task RunAsync_WithSecurityMasterAccountingEventAdapter_ShouldAttachExpectedEventsToReconciliationDetail()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-accounting"));
+
+        var securityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var accountingRequest = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-accounting",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 2, 1),
+            Securities:
+            [
+                new SecurityMasterAccountingSecurity(
+                    securityId,
+                    "BOND1",
+                    "Bond",
+                    "USD",
+                    new SecurityFixedIncomeTerms(
+                        CouponRate: 0.06m,
+                        CouponType: "Fixed",
+                        DayCountConvention: "ACT/365",
+                        PaymentFrequencyPerYear: 2,
+                        NextCouponDate: new DateOnly(2026, 1, 31),
+                        AccrualStartDate: new DateOnly(2026, 1, 1)),
+                    new SecurityAccountingRule("AvailableForSale", "GAAP"))
+            ],
+            Positions:
+            [
+                new SecurityMasterAccountingPosition(
+                    "BOND1",
+                    securityId,
+                    "acct-1",
+                    100_000m)
+            ],
+            ActualActivity:
+            [
+                new SecurityActualCashActivity(
+                    SourceName: "custodian",
+                    ExternalTransactionId: "coupon-row-1",
+                    AccountId: "acct-1",
+                    SecurityId: securityId,
+                    Symbol: "BOND1",
+                    CashAmount: 3_000m,
+                    PrincipalAmount: 0m,
+                    IncomeAmount: 3_000m,
+                    PayDate: new DateOnly(2026, 1, 31),
+                    Classification: "Income")
+            ]);
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(accountingRequest));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-accounting"));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.ExpectedAccountingEventCount.Should().Be(2);
+        detail.Summary.ExpectedJournalPreviewCount.Should().Be(2);
+        detail.Summary.HasSecurityMasterAccountingIssues.Should().BeFalse();
+        detail.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        detail.ExpectedJournalPreviews.Should().OnlyContain(preview => preview.IsBalanced);
+    }
+
+
+    [Fact]
+    public async Task RunAsync_WithFixedCouponTerms_ShouldGenerateAccrualAndCouponExpectedEvents()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-fixed-coupon"));
+
+        var securityId = Guid.Parse("44444444-3333-3333-3333-333333333333");
+        var request = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-fixed-coupon",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND2", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Positions: [new SecurityMasterAccountingPosition("BOND2", securityId, "acct-1", 100_000m)]);
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-fixed-coupon"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        detail.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.ReceiveCashInterest);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithFactorPaydownAtPar_ShouldProjectExpectedPrincipalAtOnePointZeroFactor()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-factor-par"));
+
+        var securityId = Guid.Parse("55555555-3333-3333-3333-333333333333");
+        var request = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-factor-par",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "MBS1", "MortgageBacked", "USD", new SecurityFixedIncomeTerms(0.03m, "Fixed", "30/360", 12, CurrentFactor: 1.00m, RequiresFactorSchedule: true), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Positions: [new SecurityMasterAccountingPosition("MBS1", securityId, "acct-1", 100_000m)],
+            FactorSchedule: [new SecurityFactorScheduleEntry(securityId, new DateOnly(2026, 1, 15), 1.00m, 0.99m, "test")]);
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-factor-par"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().Contain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 1_000m);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithExpectedActualMismatch_ShouldEmitDeterministicIssueCode()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-sm-mismatch"));
+
+        var securityId = Guid.Parse("66666666-3333-3333-3333-333333333333");
+        var request = new SecurityMasterAccountingEventRequest(
+            RunId: "run-sm-mismatch",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND3", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Positions: [new SecurityMasterAccountingPosition("BOND3", securityId, "acct-1", 100_000m)],
+            ActualActivity: [new SecurityActualCashActivity("custodian", "coupon-row-mismatch", "acct-1", securityId, "BOND3", 1m, 0m, 1m, new DateOnly(2026, 1, 31), "Income")]);
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-mismatch"));
+
+        detail.Should().NotBeNull();
+        detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "ACCRUAL_AMOUNT_MISMATCH");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldBuildInputsFromResolvedPositions()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-accounting"));
+
+        var securityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL fixed income test security",
+            "Bond",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "CorporateBond"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-accounting"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().NotBeNullOrEmpty();
+        detail.ExpectedAccountingEvents!.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.Symbol == "AAPL" &&
+            item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        detail.Summary.SecurityMasterAccountingIssueCount.Should().BeGreaterThan(0);
+        detail.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldUseSecurityMasterFactorScheduleForPaydown()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-factor-schedule"));
+
+        var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed test security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-factor-schedule"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().NotContain("FACTOR_SCHEDULE_MISSING");
+        detail.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.30m &&
+            item.Provenance.Contains("factor-source:custodian-factor-file", StringComparison.Ordinal));
+        detail.ExpectedJournalPreviews.Should().Contain(preview =>
+            preview.IsBalanced &&
+            preview.Lines.Any(line => line.AccountName == "Cash" && line.Debit == 0.30m));
     }
 
     [Fact]
@@ -287,7 +591,10 @@ public sealed class ReconciliationRunServiceTests
         StrategyRunStore store,
         IReconciliationRunRepository repository,
         ISecurityReferenceLookup? securityReferenceLookup,
-        IBankTransactionSource? bankTransactionSource)
+        IBankTransactionSource? bankTransactionSource,
+        ISecurityValidationGateService? securityValidationGate = null,
+        ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null,
+        ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null)
     {
         IStrategyRepository strategyRepository = store;
         var portfolioReadService = securityReferenceLookup is null
@@ -297,8 +604,225 @@ public sealed class ReconciliationRunServiceTests
             ? new LedgerReadService()
             : new LedgerReadService(securityReferenceLookup);
         var runReadService = new StrategyRunReadService(strategyRepository, portfolioReadService, ledgerReadService);
-        return new ReconciliationRunService(runReadService, new ReconciliationProjectionService(), repository, bankTransactionSource);
+        return new ReconciliationRunService(
+            runReadService: runReadService,
+            projectionService: new ReconciliationProjectionService(),
+            repository: repository,
+            bankTransactionSource: bankTransactionSource,
+            securityValidationGate: securityValidationGate,
+            securityMasterAccountingEventService: securityMasterAccountingEventService,
+            securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter);
     }
+
+    private sealed class StaticSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
+    {
+        private readonly SecurityMasterAccountingEventRequest _request;
+
+        public StaticSecurityMasterAccountingEventSourceAdapter(SecurityMasterAccountingEventRequest request)
+        {
+            _request = request;
+        }
+
+        public Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
+            StrategyRunDetail detail,
+            ReconciliationRunRequest request,
+            CancellationToken ct = default)
+        {
+            return Task.FromResult<SecurityMasterAccountingEventRequest?>(_request);
+        }
+    }
+
+    private sealed class StubSecurityMasterQueryService : Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+    {
+        private readonly Dictionary<Guid, SecurityEconomicDefinitionRecord> _definitions = [];
+
+        public void Register(SecurityEconomicDefinitionRecord definition)
+        {
+            _definitions[definition.SecurityId] = definition;
+        }
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(
+            SecurityIdentifierKind identifierKind,
+            string identifierValue,
+            string? provider,
+            CancellationToken ct = default,
+            DateTimeOffset? asOfUtc = null) =>
+            Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+        {
+            _definitions.TryGetValue(securityId, out var definition);
+            return Task.FromResult<SecurityEconomicDefinitionRecord?>(definition);
+        }
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default) =>
+            Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<ConvertibleEquityTermsDto?>(null);
+    }
+
+    private sealed class SymbolSecurityValidationGate(string blockedSymbol) : ISecurityValidationGateService
+    {
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+        {
+            var normalized = symbol.Trim().ToUpperInvariant();
+            IReadOnlyList<SecurityValidationIssueDto> issues = string.Equals(normalized, blockedSymbol, StringComparison.OrdinalIgnoreCase)
+                ?
+                [
+                    new SecurityValidationIssueDto(
+                        SecurityValidationSeverityDto.Error,
+                        "SM_ACCOUNTING_CLASSIFICATION_MISSING",
+                        "Accounting classification is missing",
+                        "The record does not expose an accounting classification for ledger posting and report grouping.",
+                        ["commonTerms.accountingClassification"],
+                        "Attach the ledger/reporting accounting classification.",
+                        [])
+                ]
+                : Array.Empty<SecurityValidationIssueDto>();
+            var report = new SecurityValidationReportDto(
+                SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                Scope: "Security",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: issues.Count > 0,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: issues.Count,
+                Issues: issues);
+
+            return Task.FromResult(new SecurityValidationGateResultDto(
+                workflow,
+                normalized,
+                report.SecurityId,
+                IsResolved: true,
+                IsBlocked: report.HasBlockingIssues,
+                Report: report,
+                Snapshot: null));
+        }
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => ValidateSymbolAsync(symbol ?? securityId.ToString(), workflow, workflowReference, actor, persistSnapshot, ct);
+    }
+
+    private static SecurityEconomicDefinitionRecord CreateEconomicDefinition(
+        Guid securityId,
+        string symbol,
+        string? accountingClassification,
+        decimal? currentFactor = null,
+        IReadOnlyList<FactorScheduleSeed>? factorSchedule = null)
+    {
+        var commonTerms = JsonSerializer.SerializeToElement(new
+        {
+            accountingClassification
+        });
+        var classification = JsonSerializer.SerializeToElement(new
+        {
+            assetClass = "FixedIncome",
+            assetFamily = "FixedIncome",
+            subType = "CorporateBond",
+            typeName = "CorporateBond"
+        });
+        var economicTerms = JsonSerializer.SerializeToElement(new
+        {
+            maturity = new
+            {
+                effectiveDate = "2026-03-01",
+                issueDate = "2026-03-01",
+                maturityDate = "2031-03-01"
+            },
+            coupon = new
+            {
+                couponType = "Fixed",
+                couponRate = 0.06m,
+                paymentFrequency = "SemiAnnual",
+                dayCount = "ACT/365"
+            },
+            accrual = new
+            {
+                accrualStartDate = "2026-03-01",
+                dayCount = "ACT/365"
+            },
+            structuredProduct = currentFactor is null
+                ? null
+                : new
+                {
+                    factor = currentFactor,
+                    factorDate = "2026-03-21",
+                    notionalBalance = 100_000m,
+                    factorSchedule = factorSchedule?.Select(static entry => new
+                    {
+                        asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),
+                        priorFactor = entry.PriorFactor,
+                        currentFactor = entry.CurrentFactor,
+                        source = entry.Source,
+                        evidenceLink = entry.EvidenceLink
+                    }).ToArray()
+                }
+        });
+
+        return new SecurityEconomicDefinitionRecord(
+            securityId,
+            "FixedIncome",
+            "FixedIncome",
+            "CorporateBond",
+            "CorporateBond",
+            IssuerType: null,
+            RiskCountry: null,
+            SecurityStatusDto.Active,
+            $"{symbol} fixed income test security",
+            "USD",
+            classification,
+            commonTerms,
+            economicTerms,
+            JsonSerializer.SerializeToElement(new { source = "test" }),
+            Version: 1,
+            EffectiveFrom: new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    symbol,
+                    IsPrimary: true,
+                    new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero))
+            ],
+            LegacyAssetClass: null,
+            LegacyAssetSpecificTerms: null);
+    }
+
+    private sealed record FactorScheduleSeed(
+        DateOnly AsOfDate,
+        decimal PriorFactor,
+        decimal CurrentFactor,
+        string Source,
+        string? EvidenceLink);
 
     // -----------------------------------------------------------------------
     // Banking integration tests

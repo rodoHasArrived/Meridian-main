@@ -153,9 +153,16 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
         if (snapshots.Count == 0)
             return;
 
+        HashSet<string>? filteredSymbols = null;
+
         // Apply yield-based filtering / ranking for non-classic modes
         if (_yieldCarryMode != YieldCarryMode.ClassicCarry)
+        {
             snapshots = FilterByYield(snapshots);
+            filteredSymbols = snapshots
+                .Select(snapshot => snapshot.Symbol)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        }
 
         if (snapshots.Count < 1)
             return;
@@ -185,6 +192,15 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
         {
             if (instruction.DeltaQuantity != 0)
                 ctx.PlaceMarketOrder(instruction.Symbol, instruction.DeltaQuantity);
+        }
+
+        if (filteredSymbols is not null)
+        {
+            foreach (var position in ctx.Positions)
+            {
+                if (position.Value.Quantity != 0 && !filteredSymbols.Contains(position.Key))
+                    ctx.PlaceMarketOrder(position.Key, -position.Value.Quantity);
+            }
         }
 
         _daysSinceRebalance = 0;

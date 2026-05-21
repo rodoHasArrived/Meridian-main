@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -90,7 +91,8 @@ public sealed class BrokeragePortfolioSyncService
                     DisplayName: account.DisplayName,
                     Status: account.Status,
                     Currency: account.Currency,
-                    RetrievedAt: account.RetrievedAt)));
+                    RetrievedAt: account.RetrievedAt,
+                    AccountKind: InferAccountKind(account.Metadata, account.DisplayName))));
             }
             catch (OperationCanceledException)
             {
@@ -137,7 +139,8 @@ public sealed class BrokeragePortfolioSyncService
             FillCount: 0,
             CashTransactionCount: 0,
             SecurityMissingCount: 0,
-            Warnings: ["Brokerage account is linked, but no sync has been run."]);
+            Warnings: ["Brokerage account is linked, but no sync has been run."],
+            AccountKind: link.AccountKind);
     }
 
     public async Task<WorkstationBrokerageSyncStatusDto> RunSyncAsync(
@@ -152,7 +155,33 @@ public sealed class BrokeragePortfolioSyncService
         var link = await ResolveLinkAsync(fundAccountId, request, ct).ConfigureAwait(false);
         if (link is null)
         {
-            return UnlinkedStatus(fundAccountId, "Run request did not include a provider/account link and the fund account does not expose one.");
+            var requestProviderId = NormalizeProviderId(request.ProviderId);
+            var requestExternalAccountId = NormalizeExternalAccountId(request.ExternalAccountId);
+            if (requestProviderId is not null && requestExternalAccountId is not null)
+            {
+                link = new WorkstationBrokerageAccountLinkDto(
+                    FundAccountId: fundAccountId,
+                    ProviderId: requestProviderId,
+                    ExternalAccountId: requestExternalAccountId,
+                    DisplayName: $"{requestProviderId}:{requestExternalAccountId}",
+                    LinkedAt: attemptedAt,
+                    LinkedBy: request.RequestedBy,
+                    AccountKind: request.AccountKind);
+            }
+        }
+
+        if (link is null)
+        {
+            var status = UnlinkedStatus(fundAccountId, "Run request did not include a provider/account link and the fund account does not expose one.");
+            await RecordSharedSyncHistoryAsync(
+                fundAccountId,
+                link: null,
+                status,
+                attemptedAt,
+                rawPath: null,
+                projectionPath: null,
+                ct).ConfigureAwait(false);
+            return status;
         }
 
         if (!_portfolioAdapters.TryGetValue(link.ProviderId, out var portfolioAdapter)
@@ -164,6 +193,14 @@ public sealed class BrokeragePortfolioSyncService
                 attemptedAt,
                 $"No brokerage sync adapter is registered for provider '{link.ProviderId}'.");
             await PersistFailureProjectionAsync(fundAccountId, link, status, attemptedAt, ct).ConfigureAwait(false);
+            await RecordSharedSyncHistoryAsync(
+                fundAccountId,
+                link,
+                status,
+                attemptedAt,
+                rawPath: null,
+                projectionPath: BuildProjectionPath(fundAccountId),
+                ct).ConfigureAwait(false);
             return status;
         }
 
@@ -238,6 +275,14 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+        await RecordSharedSyncHistoryAsync(
+            fundAccountId,
+            link,
+            projection.Status,
+            attemptedAt,
+            rawPath,
+            projection.ProjectionPath,
+            ct).ConfigureAwait(false);
         await EnrichSharedReadServicesAsync(fundAccountId, attemptedAt, projection, ct).ConfigureAwait(false);
         return projection.Status;
     }
@@ -255,6 +300,218 @@ public sealed class BrokeragePortfolioSyncService
 
     public async Task<WorkstationBrokerageSyncViewDto?> GetViewAsync(Guid fundAccountId, CancellationToken ct = default)
         => await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
+
+    public async Task<WorkstationBrokerageAccountLinkDto?> LinkAccountAsync(
+        Guid fundAccountId,
+        BrokerageAccountLinkRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var account = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        if (account is null
+            || string.IsNullOrWhiteSpace(request.ProviderId)
+            || string.IsNullOrWhiteSpace(request.ExternalAccountId))
+        {
+            return null;
+        }
+
+        var providerId = NormalizeProviderId(request.ProviderId);
+        var externalAccountId = NormalizeExternalAccountId(request.ExternalAccountId);
+        if (providerId is null || externalAccountId is null)
+        {
+            return null;
+        }
+
+        var link = new WorkstationBrokerageAccountLinkDto(
+            FundAccountId: fundAccountId,
+            ProviderId: providerId,
+            ExternalAccountId: externalAccountId,
+            DisplayName: string.IsNullOrWhiteSpace(request.DisplayName)
+                ? account.DisplayName ?? $"{providerId}:{externalAccountId}"
+                : request.DisplayName.Trim(),
+            LinkedAt: DateTimeOffset.UtcNow,
+            LinkedBy: request.LinkedBy,
+            AccountKind: request.AccountKind);
+
+        await WriteJsonAsync(BuildLinkPath(fundAccountId), link, ct).ConfigureAwait(false);
+        return link;
+    }
+
+    public async Task<BrokeragePortfolioPerformanceDto> GetPerformanceAsync(
+        Guid fundAccountId,
+        DateOnly? from,
+        DateOnly? to,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var projection = await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
+        var timeline = await GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
+        var cashEntries = FilterCashTransactions(projection, from, to)
+            .Select(ToCashFlowEntry)
+            .ToArray();
+        var cashByDate = cashEntries
+            .GroupBy(static entry => DateOnly.FromDateTime(entry.PostedAt.UtcDateTime))
+            .ToDictionary(static group => group.Key, static group => group.Sum(entry => entry.Amount));
+        var points = timeline
+            .OrderBy(static snapshot => snapshot.AsOfDate)
+            .Select(snapshot => new BrokeragePortfolioPerformancePointDto(
+                snapshot.AsOfDate,
+                snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m),
+                snapshot.CashBalance,
+                cashByDate.GetValueOrDefault(snapshot.AsOfDate)))
+            .ToArray();
+
+        var warnings = new List<string>();
+        if (projection is null && points.Length == 0)
+        {
+            warnings.Add("No brokerage sync projection exists for this fund account.");
+        }
+
+        if (points.Length < 2)
+        {
+            warnings.Add("At least two balance snapshots are required for cash-adjusted performance.");
+        }
+
+        var beginningEquity = points.Length >= 2 ? points[0].Equity : (decimal?)null;
+        var endingEquity = points.Length >= 2 ? points[^1].Equity : (decimal?)null;
+        var netCashFlow = cashEntries.Sum(static entry => entry.Amount);
+        var cashAdjustedReturn = beginningEquity.HasValue && endingEquity.HasValue
+            ? endingEquity.Value - beginningEquity.Value - netCashFlow
+            : (decimal?)null;
+        var cashAdjustedReturnPercent = cashAdjustedReturn.HasValue && beginningEquity.GetValueOrDefault() != 0m
+            ? cashAdjustedReturn.Value / beginningEquity!.Value
+            : (decimal?)null;
+
+        return new BrokeragePortfolioPerformanceDto(
+            FundAccountId: fundAccountId,
+            ProviderId: projection?.Link.ProviderId,
+            ExternalAccountId: projection?.Link.ExternalAccountId,
+            AccountKind: projection?.Link.AccountKind ?? BrokerageAccountKindDto.Unknown,
+            From: from,
+            To: to,
+            HasSufficientHistory: points.Length >= 2,
+            BeginningEquity: beginningEquity,
+            EndingEquity: endingEquity,
+            NetCashFlow: netCashFlow,
+            CashAdjustedReturn: cashAdjustedReturn,
+            CashAdjustedReturnPercent: cashAdjustedReturnPercent,
+            Points: points,
+            Warnings: warnings);
+    }
+
+    public async Task<BrokerageCashFlowSummaryDto> GetCashFlowAsync(
+        Guid fundAccountId,
+        DateOnly? from,
+        DateOnly? to,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var projection = await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
+        var entries = FilterCashTransactions(projection, from, to)
+            .Select(ToCashFlowEntry)
+            .OrderByDescending(static entry => entry.PostedAt)
+            .ToArray();
+        var currency = projection?.Balance?.Currency
+            ?? entries.Select(static entry => entry.Currency).FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
+            ?? "USD";
+        var warnings = projection is null
+            ? ["No brokerage sync projection exists for this fund account."]
+            : Array.Empty<string>();
+
+        return new BrokerageCashFlowSummaryDto(
+            FundAccountId: fundAccountId,
+            ProviderId: projection?.Link.ProviderId,
+            ExternalAccountId: projection?.Link.ExternalAccountId,
+            AccountKind: projection?.Link.AccountKind ?? BrokerageAccountKindDto.Unknown,
+            From: from,
+            To: to,
+            TotalInflows: entries.Where(static entry => entry.Amount > 0m).Sum(static entry => entry.Amount),
+            TotalOutflows: Math.Abs(entries.Where(static entry => entry.Amount < 0m).Sum(static entry => entry.Amount)),
+            NetCashFlow: entries.Sum(static entry => entry.Amount),
+            Currency: currency,
+            TransactionCount: entries.Length,
+            Entries: entries,
+            Warnings: warnings);
+    }
+
+    public async Task<BrokerageHouseholdPortfolioDto> GetHouseholdAsync(
+        string? providerId = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var providerFilter = NormalizeProviderId(providerId);
+        var projectionRoot = Path.Combine(_options.RootDirectory, "projections");
+        var projections = new List<WorkstationBrokerageSyncViewDto>();
+        if (Directory.Exists(projectionRoot))
+        {
+            foreach (var path in Directory.EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories))
+            {
+                ct.ThrowIfCancellationRequested();
+                var projection = await ReadProjectionFileAsync(path, ct).ConfigureAwait(false);
+                if (projection is not null
+                    && (providerFilter is null || string.Equals(projection.Link.ProviderId, providerFilter, StringComparison.OrdinalIgnoreCase)))
+                {
+                    projections.Add(projection);
+                }
+            }
+        }
+
+        var accounts = projections
+            .OrderBy(static projection => projection.Link.AccountKind)
+            .ThenBy(static projection => projection.Link.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .Select(static projection => new BrokerageHouseholdAccountDto(
+                FundAccountId: projection.FundAccountId,
+                ProviderId: projection.Link.ProviderId,
+                ExternalAccountId: projection.Link.ExternalAccountId,
+                DisplayName: projection.Link.DisplayName,
+                AccountKind: projection.Link.AccountKind,
+                Health: projection.Status.Health,
+                Cash: projection.Balance?.Cash ?? 0m,
+                Equity: projection.Balance?.Equity ?? 0m,
+                BuyingPower: projection.Balance?.BuyingPower ?? 0m,
+                Currency: projection.Balance?.Currency ?? "USD",
+                SyncedAt: projection.SyncedAt,
+                PositionCount: projection.Positions.Count,
+                CashTransactionCount: projection.CashTransactions.Count,
+                Warnings: projection.Status.Warnings))
+            .ToArray();
+        var positions = projections
+            .SelectMany(static projection => projection.Positions.Select(position => new BrokerageHouseholdPositionDto(
+                FundAccountId: projection.FundAccountId,
+                ProviderId: projection.Link.ProviderId,
+                ExternalAccountId: projection.Link.ExternalAccountId,
+                AccountKind: projection.Link.AccountKind,
+                Symbol: position.Symbol,
+                Quantity: position.Quantity,
+                AverageEntryPrice: position.AverageEntryPrice,
+                MarketPrice: position.MarketPrice,
+                MarketValue: position.MarketValue,
+                UnrealizedPnl: position.UnrealizedPnl,
+                AssetClass: position.AssetClass,
+                Security: position.Security,
+                Description: position.Description,
+                PositionId: position.PositionId,
+                Currency: position.Currency)))
+            .OrderBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var currency = accounts.Select(static account => account.Currency).FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value)) ?? "USD";
+
+        return new BrokerageHouseholdPortfolioDto(
+            ProviderId: providerFilter ?? "all",
+            AsOf: DateTimeOffset.UtcNow,
+            TotalCash: accounts.Sum(static account => account.Cash),
+            TotalEquity: accounts.Sum(static account => account.Equity),
+            TotalBuyingPower: accounts.Sum(static account => account.BuyingPower),
+            Currency: currency,
+            Accounts: accounts,
+            Positions: positions,
+            Warnings: projections.Count == 0 ? ["No brokerage sync projections match the requested provider."] : []);
+    }
 
     private async Task<WorkstationBrokerageSyncViewDto> BuildProjectionAsync(
         Guid fundAccountId,
@@ -324,7 +581,8 @@ public sealed class BrokeragePortfolioSyncService
             FillCount: activity?.Fills.Count ?? 0,
             CashTransactionCount: activity?.CashTransactions.Count ?? 0,
             SecurityMissingCount: missingSecurityCount,
-            Warnings: statusWarnings);
+            Warnings: statusWarnings,
+            AccountKind: link.AccountKind);
 
         var projectionPath = BuildProjectionPath(fundAccountId);
         return new WorkstationBrokerageSyncViewDto(
@@ -422,14 +680,175 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
     }
 
+    private async Task RecordSharedSyncHistoryAsync(
+        Guid fundAccountId,
+        WorkstationBrokerageAccountLinkDto? link,
+        WorkstationBrokerageSyncStatusDto status,
+        DateTimeOffset attemptedAt,
+        string? rawPath,
+        string? projectionPath,
+        CancellationToken ct)
+    {
+        var management = _services.GetService<IAccountManagementService>();
+        var fundAccountService = _services.GetService<IFundAccountService>();
+        if (management is null && fundAccountService is null)
+        {
+            return;
+        }
+
+        var syncStatus = status.Health switch
+        {
+            WorkstationBrokerageSyncHealth.Healthy => AccountSyncStatusDto.Succeeded,
+            WorkstationBrokerageSyncHealth.Degraded or WorkstationBrokerageSyncHealth.Stale => AccountSyncStatusDto.Degraded,
+            WorkstationBrokerageSyncHealth.Failed => AccountSyncStatusDto.Failed,
+            WorkstationBrokerageSyncHealth.Unlinked => AccountSyncStatusDto.Failed,
+            _ => AccountSyncStatusDto.Failed
+        };
+        var providerLinkStatus = status.Health switch
+        {
+            WorkstationBrokerageSyncHealth.Healthy => AccountProviderLinkStatusDto.Verified,
+            WorkstationBrokerageSyncHealth.Degraded => AccountProviderLinkStatusDto.Degraded,
+            WorkstationBrokerageSyncHealth.Stale => AccountProviderLinkStatusDto.Linked,
+            WorkstationBrokerageSyncHealth.Unlinked => AccountProviderLinkStatusDto.NotLinked,
+            WorkstationBrokerageSyncHealth.Failed => ClassifyProviderLinkFailure(status.LastError, status.Warnings),
+            _ => AccountProviderLinkStatusDto.SyncFailed
+        };
+        var completedAt = status.LastSuccessfulSyncAt ?? status.LastAttemptedSyncAt ?? attemptedAt;
+        var freshUntil = syncStatus is AccountSyncStatusDto.Succeeded or AccountSyncStatusDto.Degraded
+            ? completedAt.Add(_options.StaleAfter)
+            : (DateTimeOffset?)null;
+
+        var request = new RecordAccountSyncHistoryRequest(
+            AccountId: fundAccountId,
+            Capability: "brokerage-sync",
+            Status: syncStatus,
+            ProviderLinkStatus: providerLinkStatus,
+            ProviderId: link?.ProviderId ?? status.ProviderId,
+            ExternalAccountId: link?.ExternalAccountId ?? status.ExternalAccountId,
+            AttemptedAt: status.LastAttemptedSyncAt ?? attemptedAt,
+            CompletedAt: completedAt,
+            FreshUntil: freshUntil,
+            FailureKind: syncStatus == AccountSyncStatusDto.Failed
+                ? ClassifyFailureKind(status.LastError, status.Warnings)
+                : AccountSyncFailureKindDto.None,
+            FailureMessage: syncStatus == AccountSyncStatusDto.Failed ? status.LastError ?? status.Warnings.FirstOrDefault() : null,
+            CorrelationId: BuildSyncCorrelationId(fundAccountId, link, status, attemptedAt),
+            RequestedBy: link?.LinkedBy,
+            RawEvidencePath: rawPath,
+            ProjectionEvidencePath: projectionPath,
+            SecurityMissingCount: status.SecurityMissingCount,
+            Warnings: status.Warnings);
+
+        try
+        {
+            if (management is not null)
+            {
+                await management.RecordSyncHistoryAsync(request, ct).ConfigureAwait(false);
+                return;
+            }
+
+            await fundAccountService!.RecordSyncHistoryAsync(request, ct).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Brokerage sync history could not be recorded for fund account {FundAccountId}.",
+                fundAccountId);
+        }
+    }
+
+    private static string BuildSyncCorrelationId(
+        Guid fundAccountId,
+        WorkstationBrokerageAccountLinkDto? link,
+        WorkstationBrokerageSyncStatusDto status,
+        DateTimeOffset attemptedAt)
+        => string.Join(
+            "|",
+            "brokerage-sync",
+            fundAccountId.ToString("N"),
+            link?.ProviderId ?? status.ProviderId ?? "unlinked",
+            link?.ExternalAccountId ?? status.ExternalAccountId ?? "unlinked",
+            attemptedAt.UtcDateTime.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    private static AccountProviderLinkStatusDto ClassifyProviderLinkFailure(
+        string? error,
+        IReadOnlyList<string> warnings)
+    {
+        var text = BuildFailureText(error, warnings);
+        if (text.Contains("unauthorized", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("401", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("reauthor", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountProviderLinkStatusDto.Unauthorized;
+        }
+
+        if (text.Contains("credential", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("token", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountProviderLinkStatusDto.Expired;
+        }
+
+        if (text.Contains("unsupported", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("not registered", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountProviderLinkStatusDto.Unsupported;
+        }
+
+        return AccountProviderLinkStatusDto.SyncFailed;
+    }
+
+    private static AccountSyncFailureKindDto ClassifyFailureKind(
+        string? error,
+        IReadOnlyList<string> warnings)
+    {
+        var text = BuildFailureText(error, warnings);
+        if (text.Contains("credential", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("token", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.CredentialMissing;
+        }
+
+        if (text.Contains("unauthorized", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("401", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("403", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.Unauthorized;
+        }
+
+        if (text.Contains("rate", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("429", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.RateLimited;
+        }
+
+        if (text.Contains("timeout", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("timed out", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.Timeout;
+        }
+
+        if (text.Contains("unsupported", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("not registered", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.Unsupported;
+        }
+
+        return AccountSyncFailureKindDto.Unknown;
+    }
+
+    private static string BuildFailureText(string? error, IReadOnlyList<string> warnings)
+        => string.Join(" ", warnings.Prepend(error ?? string.Empty));
+
     private async Task EnrichSharedReadServicesAsync(
         Guid fundAccountId,
         DateTimeOffset attemptedAt,
         WorkstationBrokerageSyncViewDto projection,
         CancellationToken ct)
     {
-        var fundAccountService = _services.GetService<IFundAccountService>();
-        if (fundAccountService is null || projection.Balance is null)
+        if (projection.Balance is null)
         {
             return;
         }
@@ -437,7 +856,7 @@ public sealed class BrokeragePortfolioSyncService
         var asOfDate = DateOnly.FromDateTime(attemptedAt.UtcDateTime);
         var source = $"brokerage-sync:{projection.Link.ProviderId}";
         var externalReference = projection.Link.ExternalAccountId;
-        var latestSnapshot = await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        var latestSnapshot = await GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
         var isDuplicateSnapshot = latestSnapshot is not null
             && latestSnapshot.AsOfDate == asOfDate
             && string.Equals(latestSnapshot.Source, source, StringComparison.OrdinalIgnoreCase)
@@ -451,7 +870,7 @@ public sealed class BrokeragePortfolioSyncService
             return;
         }
 
-        await fundAccountService.RecordBalanceSnapshotAsync(
+        var snapshotRecorded = await RecordBalanceSnapshotAsync(
             new RecordAccountBalanceSnapshotRequest(
                 AccountId: fundAccountId,
                 AsOfDate: asOfDate,
@@ -465,7 +884,12 @@ public sealed class BrokeragePortfolioSyncService
                 ExternalReference: externalReference),
             ct).ConfigureAwait(false);
 
-        await fundAccountService.ReconcileAccountAsync(
+        if (!snapshotRecorded)
+        {
+            return;
+        }
+
+        await ReconcileAccountAsync(
             new ReconcileAccountRequest(
                 fundAccountId,
                 DateOnly.FromDateTime(attemptedAt.UtcDateTime),
@@ -483,6 +907,112 @@ public sealed class BrokeragePortfolioSyncService
 
         await using var stream = File.OpenRead(path);
         return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncViewDto>(stream, JsonOptions, ct).ConfigureAwait(false);
+    }
+
+    private async Task<WorkstationBrokerageSyncViewDto?> ReadProjectionFileAsync(string path, CancellationToken ct)
+    {
+        try
+        {
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncViewDto>(stream, JsonOptions, ct).ConfigureAwait(false);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Skipping unreadable brokerage projection {Path}", path);
+            return null;
+        }
+        catch (IOException ex)
+        {
+            _logger.LogWarning(ex, "Skipping locked brokerage projection {Path}", path);
+            return null;
+        }
+    }
+
+    private async Task<WorkstationBrokerageAccountLinkDto?> LoadLinkAsync(Guid fundAccountId, CancellationToken ct)
+    {
+        var path = BuildLinkPath(fundAccountId);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = File.OpenRead(path);
+        return await JsonSerializer.DeserializeAsync<WorkstationBrokerageAccountLinkDto>(stream, JsonOptions, ct).ConfigureAwait(false);
+    }
+
+    private static IEnumerable<WorkstationBrokerageCashTransactionDto> FilterCashTransactions(
+        WorkstationBrokerageSyncViewDto? projection,
+        DateOnly? from,
+        DateOnly? to)
+    {
+        if (projection is null)
+        {
+            return [];
+        }
+
+        return projection.CashTransactions.Where(transaction =>
+        {
+            var date = DateOnly.FromDateTime(transaction.PostedAt.UtcDateTime);
+            return (!from.HasValue || date >= from.Value)
+                && (!to.HasValue || date <= to.Value);
+        });
+    }
+
+    private static BrokerageCashFlowEntryDto ToCashFlowEntry(WorkstationBrokerageCashTransactionDto transaction)
+        => new(
+            TransactionId: transaction.TransactionId,
+            TransactionType: transaction.TransactionType,
+            Category: CategorizeCashTransaction(transaction.TransactionType, transaction.Description),
+            Amount: transaction.Amount,
+            Currency: transaction.Currency,
+            PostedAt: transaction.PostedAt,
+            Symbol: transaction.Symbol,
+            Description: transaction.Description);
+
+    private static string CategorizeCashTransaction(string transactionType, string? description)
+    {
+        var value = $"{transactionType} {description}".ToUpperInvariant();
+        if (value.Contains("DIV", StringComparison.Ordinal) || value.Contains("DIVIDEND", StringComparison.Ordinal))
+        {
+            return "Dividend";
+        }
+
+        if (value.Contains("INTEREST", StringComparison.Ordinal))
+        {
+            return "Interest";
+        }
+
+        if (value.Contains("FEE", StringComparison.Ordinal) || value.Contains("COMM", StringComparison.Ordinal))
+        {
+            return "Fee";
+        }
+
+        if (value.Contains("DEPOSIT", StringComparison.Ordinal) || value.Contains("ACH_IN", StringComparison.Ordinal))
+        {
+            return "Deposit";
+        }
+
+        if (value.Contains("WITHDRAW", StringComparison.Ordinal) || value.Contains("ACH_OUT", StringComparison.Ordinal))
+        {
+            return "Withdrawal";
+        }
+
+        if (value.Contains("OPTION", StringComparison.Ordinal) || value.Contains("PREMIUM", StringComparison.Ordinal))
+        {
+            return "Option Premium";
+        }
+
+        if (value.Contains("TRADE", StringComparison.Ordinal) || value.Contains("FILL", StringComparison.Ordinal))
+        {
+            return "Trade";
+        }
+
+        if (value.Contains("TRANSFER", StringComparison.Ordinal))
+        {
+            return "Transfer";
+        }
+
+        return "Other";
     }
 
     private WorkstationBrokerageSyncStatusDto RefreshStatus(WorkstationBrokerageSyncStatusDto status)
@@ -517,14 +1047,38 @@ public sealed class BrokeragePortfolioSyncService
         WorkstationBrokerageSyncRunRequestDto? request,
         CancellationToken ct)
     {
+        var requestProviderId = NormalizeProviderId(request?.ProviderId);
+        var requestExternalAccountId = NormalizeExternalAccountId(request?.ExternalAccountId);
+        if (requestProviderId is not null && requestExternalAccountId is not null)
+        {
+            var requestedAccount = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+            return new WorkstationBrokerageAccountLinkDto(
+                FundAccountId: fundAccountId,
+                ProviderId: requestProviderId,
+                ExternalAccountId: requestExternalAccountId,
+                DisplayName: requestedAccount?.DisplayName ?? $"{requestProviderId}:{requestExternalAccountId}",
+                LinkedAt: DateTimeOffset.UtcNow,
+                LinkedBy: request?.RequestedBy,
+                AccountKind: request?.AccountKind ?? BrokerageAccountKindDto.Unknown);
+        }
+
         var account = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
-        var providerId = NormalizeProviderId(request?.ProviderId)
-            ?? NormalizeProviderId(account?.Institution)
+        if (account is null)
+        {
+            return null;
+        }
+
+        var persistedLink = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
+        if (persistedLink is not null)
+        {
+            return persistedLink;
+        }
+
+        var providerId = NormalizeProviderId(account.Institution)
             ?? _options.DefaultProviderId;
-        var externalAccountId = NormalizeExternalAccountId(request?.ExternalAccountId)
-            ?? NormalizeExternalAccountId(account?.CustodianDetails?.SubAccountNumber)
-            ?? NormalizeExternalAccountId(account?.PortfolioId)
-            ?? NormalizeExternalAccountId(account?.AccountCode);
+        var externalAccountId = NormalizeExternalAccountId(account.CustodianDetails?.SubAccountNumber)
+            ?? NormalizeExternalAccountId(account.PortfolioId)
+            ?? NormalizeExternalAccountId(account.AccountCode);
 
         if (string.IsNullOrWhiteSpace(providerId) || string.IsNullOrWhiteSpace(externalAccountId))
         {
@@ -535,20 +1089,90 @@ public sealed class BrokeragePortfolioSyncService
             FundAccountId: fundAccountId,
             ProviderId: providerId,
             ExternalAccountId: externalAccountId,
-            DisplayName: account?.DisplayName ?? $"{providerId}:{externalAccountId}",
+            DisplayName: account.DisplayName ?? $"{providerId}:{externalAccountId}",
             LinkedAt: DateTimeOffset.UtcNow,
-            LinkedBy: request?.RequestedBy);
+            LinkedBy: request?.RequestedBy,
+            AccountKind: request?.AccountKind ?? BrokerageAccountKindDto.Unknown);
+    }
+
+    private async Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceHistoryAsync(
+        Guid fundAccountId,
+        DateOnly? from,
+        DateOnly? to,
+        CancellationToken ct)
+    {
+        if (_services.GetService<IAccountQueryService>() is { } query)
+        {
+            return await query.GetBalanceTimelineAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
+        }
+
+        return [];
+    }
+
+    private async Task<AccountBalanceSnapshotDto?> GetLatestBalanceSnapshotAsync(Guid fundAccountId, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountQueryService>() is { } query)
+        {
+            return await query.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        return null;
+    }
+
+    private async Task<bool> RecordBalanceSnapshotAsync(RecordAccountBalanceSnapshotRequest request, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountManagementService>() is { } management)
+        {
+            await management.RecordBalanceSnapshotAsync(request, ct).ConfigureAwait(false);
+            return true;
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            await fundAccountService.RecordBalanceSnapshotAsync(request, ct).ConfigureAwait(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task ReconcileAccountAsync(ReconcileAccountRequest request, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountManagementService>() is { } management)
+        {
+            await management.ReconcileAccountAsync(request, ct).ConfigureAwait(false);
+            return;
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            await fundAccountService.ReconcileAccountAsync(request, ct).ConfigureAwait(false);
+        }
     }
 
     private async Task<AccountSummaryDto?> ResolveFundAccountAsync(Guid fundAccountId, CancellationToken ct)
     {
-        var fundAccountService = _services.GetService(typeof(IFundAccountService)) as IFundAccountService;
-        if (fundAccountService is null)
+        if (_services.GetService<IAccountQueryService>() is { } query)
         {
-            return null;
+            return await query.GetAccountAsync(fundAccountId, ct).ConfigureAwait(false);
         }
 
-        return await fundAccountService.GetAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.GetAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        return null;
     }
 
     private async Task<WorkstationSecurityReference?> ResolveSecurityAsync(string symbol, CancellationToken ct)
@@ -598,7 +1222,8 @@ public sealed class BrokeragePortfolioSyncService
             FillCount: 0,
             CashTransactionCount: 0,
             SecurityMissingCount: 0,
-            Warnings: [error]);
+            Warnings: [error],
+            AccountKind: link.AccountKind);
 
     private static string? NormalizeProviderId(string? providerId)
     {
@@ -618,6 +1243,9 @@ public sealed class BrokeragePortfolioSyncService
 
     private string BuildProjectionPath(Guid fundAccountId)
         => Path.Combine(_options.RootDirectory, "projections", fundAccountId.ToString("N"), "current.json");
+
+    private string BuildLinkPath(Guid fundAccountId)
+        => Path.Combine(_options.RootDirectory, "links", $"{fundAccountId:N}.json");
 
     private string BuildCursorPath(Guid fundAccountId)
         => Path.Combine(_options.RootDirectory, "cursors", $"{fundAccountId:N}.json");
@@ -641,6 +1269,43 @@ public sealed class BrokeragePortfolioSyncService
     private static bool IsPortablePathSegmentCharacter(char ch)
         => ch >= ' '
             && ch is not '<' and not '>' and not ':' and not '"' and not '/' and not '\\' and not '|' and not '?' and not '*';
+
+    private static BrokerageAccountKindDto InferAccountKind(
+        IReadOnlyDictionary<string, string>? metadata,
+        string displayName)
+    {
+        var value = metadata?.TryGetValue("accountKind", out var accountKind) == true
+            ? accountKind
+            : metadata?.TryGetValue("account_type", out var accountType) == true
+                ? accountType
+                : metadata?.TryGetValue("type", out var type) == true
+                    ? type
+                    : displayName;
+        var normalized = value.Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal);
+
+        if (normalized.Contains("roth", StringComparison.OrdinalIgnoreCase))
+        {
+            return BrokerageAccountKindDto.RothIra;
+        }
+
+        if (normalized.Contains("traditionalira", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("tradira", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("ira", StringComparison.OrdinalIgnoreCase))
+        {
+            return BrokerageAccountKindDto.TraditionalIra;
+        }
+
+        if (normalized.Contains("taxable", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("brokerage", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("individual", StringComparison.OrdinalIgnoreCase))
+        {
+            return BrokerageAccountKindDto.TaxableBrokerage;
+        }
+
+        return BrokerageAccountKindDto.Unknown;
+    }
 
     private static async Task WriteJsonAsync<T>(string path, T value, CancellationToken ct)
     {

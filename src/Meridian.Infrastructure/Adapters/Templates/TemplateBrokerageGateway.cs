@@ -24,27 +24,29 @@ namespace Meridian.Infrastructure.Adapters.Templates;
 /// 7. Add configuration options record if needed
 /// 8. Add tests under tests/Meridian.Tests/Brokerage/
 /// </summary>
-// TODO: Add attributes:
+// TODO(W1-DATA-001): Add attributes:
 // [DataSource("your-broker", "Your Broker Name", DataSourceType.Realtime, DataSourceCategory.Broker,
 //     Priority = 15, Description = "Your broker order execution gateway")]
 // [ImplementsAdr("ADR-001", "Your broker brokerage provider implementation")]
 // [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 // [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 // [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
+[Obsolete("TemplateBrokerageGateway is a scaffold/copy-target and must not be registered or used in production. " +
+          "Copy it to Adapters/{BrokerName}/ and implement all TODO items before use.")]
 public sealed class TemplateBrokerageGateway : IBrokerageGateway
 {
-    // TODO: Add your broker's HTTP client factory, config options, etc.
+    // TODO(W1-DATA-001): Add your broker's HTTP client factory, config options, etc.
     private readonly ILogger<TemplateBrokerageGateway> _logger;
     private readonly Channel<ExecutionReport> _reportChannel;
     private volatile bool _connected;
     private bool _disposed;
 
     // Tracks submitted orders so cancel/modify reports carry the correct symbol and side.
-    // TODO: In a full implementation, prefer querying the broker's API for live order state.
+    // TODO(W1-DATA-001): In a full implementation, prefer querying the broker's API for live order state.
     private readonly Dictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
 
     public TemplateBrokerageGateway(
-        // TODO: Add IHttpClientFactory, options, etc.
+        // TODO(W1-DATA-001): Add IHttpClientFactory, options, etc.
         ILogger<TemplateBrokerageGateway> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -52,15 +54,15 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
             singleReader: false, singleWriter: false);
     }
 
-    // TODO: Change to your broker's ID (lowercase, no spaces)
+    // TODO(W1-DATA-001): Change to your broker's ID (lowercase, no spaces)
     public string GatewayId => "template";
 
     public bool IsConnected => _connected;
 
-    // TODO: Change to your broker's display name
+    // TODO(W1-DATA-001): Change to your broker's display name
     public string BrokerDisplayName => "Template Broker";
 
-    // TODO: Configure capabilities for your broker
+    // TODO(W1-DATA-001): Configure capabilities for your broker
     public BrokerageCapabilities BrokerageCapabilities { get; } =
         BrokerageCapabilities.UsEquity(
             modification: true,
@@ -75,7 +77,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         if (_connected)
             return;
 
-        // TODO: Authenticate with your broker's API
+        // TODO(W1-DATA-001): Authenticate with your broker's API
         // - Validate credentials
         // - Establish WebSocket connection if needed
         // - Fetch initial account state
@@ -87,7 +89,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
 
     public Task DisconnectAsync(CancellationToken ct = default)
     {
-        // TODO: Close WebSocket/API connections
+        // TODO(W1-DATA-001): Close WebSocket/API connections
         _connected = false;
         return Task.CompletedTask;
     }
@@ -98,7 +100,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        // TODO: Translate OrderRequest to your broker's order format and submit
+        // TODO(W1-DATA-001): Translate OrderRequest to your broker's order format and submit
         // Example:
         //   var brokerOrder = MapToBrokerOrder(request);
         //   var response = await _httpClient.PostAsJsonAsync("/orders", brokerOrder, ct);
@@ -131,8 +133,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
         EnsureConnected();
 
-        // TODO: Call your broker's cancel API
-        // TODO: For brokers that return order details on cancel, use the response to populate Symbol/Side.
+        // TODO(W1-DATA-001): Call your broker's cancel API
+        // TODO(W1-DATA-001): For brokers that return order details on cancel, use the response to populate Symbol/Side.
 
         _submittedOrders.TryGetValue(orderId, out var tracked);
 
@@ -157,7 +159,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
         EnsureConnected();
 
-        // TODO: Call your broker's modify/amend API
+        // TODO(W1-DATA-001): Call your broker's modify/amend API
         // Some brokers require cancel-replace instead of in-place modification
 
         _submittedOrders.TryGetValue(orderId, out var tracked);
@@ -190,7 +192,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     {
         EnsureConnected();
 
-        // TODO: Call your broker's account endpoint
+        // TODO(W1-DATA-001): Call your broker's account endpoint
         return Task.FromResult(new AccountInfo
         {
             AccountId = "template-account",
@@ -203,14 +205,14 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
     {
         EnsureConnected();
-        // TODO: Call your broker's positions endpoint
+        // TODO(W1-DATA-001): Call your broker's positions endpoint
         return Task.FromResult<IReadOnlyList<BrokerPosition>>(Array.Empty<BrokerPosition>());
     }
 
     public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
     {
         EnsureConnected();
-        // TODO: Call your broker's open orders endpoint
+        // TODO(W1-DATA-001): Call your broker's open orders endpoint
         return Task.FromResult<IReadOnlyList<BrokerOrder>>(Array.Empty<BrokerOrder>());
     }
 

@@ -53,6 +53,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             {
                 RaisePropertyChanged(nameof(CanOpenSelectedRun));
                 RaisePropertyChanged(nameof(CanCompareRuns));
+                RaiseSelectionPresentationChanged();
                 RaiseComparisonPickerStateChanged();
                 NotifyCommandsChanged();
             }
@@ -72,6 +73,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             if (SetProperty(ref _comparisonRun, value))
             {
                 RaisePropertyChanged(nameof(CanCompareRuns));
+                RaiseSelectionPresentationChanged();
                 RaiseComparisonPickerStateChanged();
                 NotifyCommandsChanged();
             }
@@ -89,6 +91,8 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             {
                 RaisePropertyChanged(nameof(IsComparisonVisible));
                 RaisePropertyChanged(nameof(ComparisonRows));
+                RaisePropertyChanged(nameof(ComparisonPanelDetail));
+                RaisePropertyChanged(nameof(ComparisonPlaceholderText));
             }
         }
     }
@@ -270,6 +274,118 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             return $"Ready to compare {SelectedRun.StrategyName} against {ComparisonRun.StrategyName}.";
         }
     }
+
+    public string SelectionText
+    {
+        get
+        {
+            if (SelectedRun is null)
+            {
+                return "No strategy run selected";
+            }
+
+            if (ComparisonRun is not null &&
+                !string.Equals(SelectedRun.RunId, ComparisonRun.RunId, StringComparison.Ordinal))
+            {
+                return $"{SelectedRun.StrategyName} vs {ComparisonRun.StrategyName}";
+            }
+
+            return SelectedRun.StrategyName;
+        }
+    }
+
+    public string SelectionDetail
+    {
+        get
+        {
+            if (SelectedRun is null)
+            {
+                return "Select a run to stage compare, detail, and inspector surfaces from the retained Strategy lane.";
+            }
+
+            return $"{SelectedRun.Mode} · {SelectedRun.Status} · {SelectedRun.Engine}. {ComparisonGuidanceText}";
+        }
+    }
+
+    public string SelectionContextText
+    {
+        get
+        {
+            if (SelectedRun is null)
+            {
+                return "Strategy lane selection is empty. Refresh or clear filters to repopulate the retained run library.";
+            }
+
+            var scope = !string.IsNullOrWhiteSpace(SelectedRun.FundDisplayName)
+                ? SelectedRun.FundDisplayName
+                : !string.IsNullOrWhiteSpace(SelectedRun.DatasetReference)
+                    ? SelectedRun.DatasetReference
+                    : !string.IsNullOrWhiteSpace(SelectedRun.FeedReference)
+                        ? SelectedRun.FeedReference
+                        : "Unassigned scope";
+            return $"Run {SelectedRun.RunId} · {scope} · Updated {SelectedRun.LastUpdatedAt:g}";
+        }
+    }
+
+    public string SelectedRunPerformanceText
+        => SelectedRun is null
+            ? "Net P&L, return, equity, and fill posture will appear here when a run is selected."
+            : $"{FormatDecimal(SelectedRun.NetPnl, "C2")} net P&L · {FormatDecimal(SelectedRun.TotalReturn, "P2")} return · {FormatDecimal(SelectedRun.FinalEquity, "C2")} final equity · {SelectedRun.FillCount} fills";
+
+    public string SelectedRunEvidenceText
+    {
+        get
+        {
+            if (SelectedRun is null)
+            {
+                return "Portfolio, ledger, audit, and promotion evidence remain attached to the selected run.";
+            }
+
+            var evidence = new List<string>();
+            if (!string.IsNullOrWhiteSpace(SelectedRun.PortfolioId))
+            {
+                evidence.Add($"Portfolio {SelectedRun.PortfolioId}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(SelectedRun.LedgerReference))
+            {
+                evidence.Add($"Ledger {SelectedRun.LedgerReference}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(SelectedRun.AuditReference))
+            {
+                evidence.Add($"Audit {SelectedRun.AuditReference}");
+            }
+
+            if (SelectedRun.Promotion is not null &&
+                SelectedRun.Promotion.State != StrategyRunPromotionState.None)
+            {
+                evidence.Add($"Promotion {SelectedRun.Promotion.State}");
+            }
+
+            return evidence.Count > 0
+                ? string.Join(" · ", evidence)
+                : "Portfolio, ledger, audit, and promotion evidence will appear as the run matures.";
+        }
+    }
+
+    public string ComparisonHeaderAText
+        => SelectedRun is null
+            ? "Primary run"
+            : $"{SelectedRun.StrategyName} ({SelectedRun.Mode})";
+
+    public string ComparisonHeaderBText
+        => ComparisonRun is null
+            ? "Comparison run"
+            : $"{ComparisonRun.StrategyName} ({ComparisonRun.Mode})";
+
+    public string ComparisonPanelDetail
+        => IsComparisonVisible
+            ? $"Detailing shared comparison evidence for {ComparisonHeaderAText} and {ComparisonHeaderBText}."
+            : ComparisonGuidanceText;
+
+    public string ComparisonPlaceholderText
+        => IsComparisonVisible ? string.Empty : ComparisonGuidanceText;
 
     public IAsyncRelayCommand RefreshCommand { get; }
     public IRelayCommand OpenDetailCommand { get; }
@@ -466,6 +582,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         RaisePropertyChanged(nameof(RunScopeText));
         RaisePropertyChanged(nameof(EmptyStateTitle));
         RaisePropertyChanged(nameof(EmptyStateDetail));
+        RaiseSelectionPresentationChanged();
         RaiseComparisonPickerStateChanged();
         ClearRunFiltersCommand.NotifyCanExecuteChanged();
     }
@@ -474,6 +591,19 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     {
         RaisePropertyChanged(nameof(CanChooseComparisonRun));
         RaisePropertyChanged(nameof(ComparisonGuidanceText));
+        RaisePropertyChanged(nameof(ComparisonPanelDetail));
+        RaisePropertyChanged(nameof(ComparisonPlaceholderText));
+    }
+
+    private void RaiseSelectionPresentationChanged()
+    {
+        RaisePropertyChanged(nameof(SelectionText));
+        RaisePropertyChanged(nameof(SelectionDetail));
+        RaisePropertyChanged(nameof(SelectionContextText));
+        RaisePropertyChanged(nameof(SelectedRunPerformanceText));
+        RaisePropertyChanged(nameof(SelectedRunEvidenceText));
+        RaisePropertyChanged(nameof(ComparisonHeaderAText));
+        RaisePropertyChanged(nameof(ComparisonHeaderBText));
     }
 
     private static string FormatRunCount(int count, string qualifier) =>

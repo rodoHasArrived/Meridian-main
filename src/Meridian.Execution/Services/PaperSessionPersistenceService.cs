@@ -66,7 +66,8 @@ public sealed class PaperSessionPersistenceService
             // Reconstruct the ledger from its persisted journal entries so past runs
             // remain queryable by LedgerReadService without a live portfolio.
             var ledgerEntries = await _store.LoadLedgerJournalAsync(record.SessionId, ct).ConfigureAwait(false);
-            var reconstructedLedger = ReconstructLedger(ledgerEntries);
+            var reconstruction = ReconstructLedger(ledgerEntries);
+            var reconstructedLedger = reconstruction.Ledger;
 
             // Load persisted order history.
             var orders = await _store.LoadOrderHistoryAsync(record.SessionId, ct).ConfigureAwait(false);
@@ -83,6 +84,7 @@ public sealed class PaperSessionPersistenceService
                 Symbols = record.Symbols.ToList(),
                 Portfolio = portfolio,
                 ReconstructedLedger = reconstructedLedger,
+                Reconstruction = reconstruction,
             };
             foreach (var fill in fills)
                 session.FillHistory.Add(fill);
@@ -192,31 +194,7 @@ public sealed class PaperSessionPersistenceService
         {
             return null;
         }
-
-        ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
-        if (session.Portfolio is not null)
-        {
-            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
-            portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
-                Cash: session.Portfolio.Cash,
-                PortfolioValue: session.Portfolio.PortfolioValue,
-                UnrealisedPnl: session.Portfolio.UnrealisedPnl,
-                RealisedPnl: session.Portfolio.RealisedPnl,
-                Positions: positions,
-                AsOf: DateTimeOffset.UtcNow);
-        }
-
-        return new PaperSessionDetailDto(
-            Summary: ToSummary(session),
-            Symbols: session.Symbols.ToArray(),
-            Portfolio: portfolioSnapshot,
-            OrderHistory: session.OrderHistory.ToArray(),
-            FillCount: session.FillHistory.Count,
-            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
-            LastFillAt: session.FillHistory.Count > 0
-                ? session.FillHistory.Max(static fill => fill.Timestamp)
-                : null,
-            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory));
+        return BuildSessionDetailDto(sessionId, session);
     }
 
     /// <summary>Returns the portfolio state for a live session, or null.</summary>
@@ -239,6 +217,99 @@ public sealed class PaperSessionPersistenceService
 
         // For active sessions return the live ledger; for closed sessions the reconstructed one.
         return session.Portfolio?.Ledger ?? session.ReconstructedLedger;
+    }
+
+    /// <summary>
+    /// Returns the live mutable <see cref="PaperTradingPortfolio"/> for <paramref name="sessionId"/>.
+    /// Intended for test-harness use-cases that need to inject fills directly.
+    /// Prefer <see cref="RecordPaperFillAsync"/> for production fill recording.
+    /// Returns <see langword="null"/> when the session does not exist or is closed.
+    /// </summary>
+    public PaperTradingPortfolio? GetLivePortfolio(string sessionId)
+    {
+        if (!_sessions.TryGetValue(sessionId, out var session) || !session.IsActive)
+            return null;
+
+        return session.Portfolio;
+    }
+
+    /// <summary>
+    /// Converts a lightweight <see cref="ExecutionFill"/> into an <see cref="ExecutionReport"/>
+    /// and records it against the session via <see cref="RecordFillAsync"/>.
+    /// </summary>
+    public async Task RecordPaperFillAsync(
+        string sessionId,
+        ExecutionFill fill,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(fill);
+
+        var report = new ExecutionReport
+        {
+            OrderId = $"paper-{Guid.NewGuid():N}",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = fill.Symbol,
+            Side = fill.Quantity >= 0m ? OrderSide.Buy : OrderSide.Sell,
+            OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+            OrderQuantity = Math.Abs(fill.Quantity),
+            FilledQuantity = Math.Abs(fill.Quantity),
+            FillPrice = fill.FillPrice,
+            Timestamp = fill.FilledAt
+        };
+
+        await RecordFillAsync(sessionId, report, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Verifies that the current session portfolio matches the replayed fill-log state,
+    /// optionally asserting that at least <paramref name="expectedFillCount"/> fills and
+    /// <paramref name="expectedOrderCount"/> orders were persisted.
+    /// When the counts do not match a mismatch reason is added to the result.
+    /// </summary>
+    public async Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(
+        string sessionId,
+        int? expectedFillCount,
+        int? expectedOrderCount,
+        CancellationToken ct = default)
+    {
+        var result = await VerifyReplayInternalAsync(sessionId, ct).ConfigureAwait(false);
+        if (result is null)
+            return null;
+
+        // If the caller specified expected counts we do an additional assertion pass.
+        if (expectedFillCount.HasValue && result.ComparedFillCount < expectedFillCount.Value)
+        {
+            var reasons = result.MismatchReasons is IList<string> mutable
+                ? mutable
+                : result.MismatchReasons.ToList();
+
+            reasons.Add(
+                $"fill-count-mismatch: expected>={expectedFillCount.Value}, actual={result.ComparedFillCount}");
+
+            result = result with
+            {
+                IsConsistent = false,
+                MismatchReasons = (IReadOnlyList<string>)reasons
+            };
+        }
+
+        if (expectedOrderCount.HasValue && result.ComparedOrderCount < expectedOrderCount.Value)
+        {
+            var reasons = result.MismatchReasons is IList<string> mutable2
+                ? mutable2
+                : result.MismatchReasons.ToList();
+
+            reasons.Add(
+                $"order-count-mismatch: expected>={expectedOrderCount.Value}, actual={result.ComparedOrderCount}");
+
+            result = result with
+            {
+                IsConsistent = false,
+                MismatchReasons = (IReadOnlyList<string>)reasons
+            };
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -270,19 +341,20 @@ public sealed class PaperSessionPersistenceService
     {
         ArgumentNullException.ThrowIfNull(fill);
 
+        PaperSession? activeSession = null;
         if (_sessions.TryGetValue(sessionId, out var session) && session.IsActive)
         {
-            session.Portfolio?.ApplyFill(fill);
-            session.FillHistory.Add(fill);
+            activeSession = session;
+            activeSession.Portfolio?.ApplyFill(fill);
+            activeSession.FillHistory.Add(fill);
         }
 
         if (_store is not null)
         {
             await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
-
-            if (_sessions.TryGetValue(sessionId, out var persistedSession))
+            if (activeSession is not null)
             {
-                await PersistSessionLedgerAsync(persistedSession, ct).ConfigureAwait(false);
+                await PersistSessionLedgerAsync(activeSession, ct).ConfigureAwait(false);
             }
         }
     }
@@ -343,12 +415,17 @@ public sealed class PaperSessionPersistenceService
     public async Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(
         string sessionId,
         CancellationToken ct = default)
+        => await VerifyReplayInternalAsync(sessionId, ct).ConfigureAwait(false);
+
+    private async Task<PaperSessionReplayVerificationDto?> VerifyReplayInternalAsync(
+        string sessionId,
+        CancellationToken ct = default)
     {
-        var detail = GetSession(sessionId);
-        if (detail is null)
+        if (!_sessions.TryGetValue(sessionId, out var session))
         {
             return null;
         }
+        var detail = BuildSessionDetailDto(sessionId, session);
 
         var replayPortfolio = await ReplaySessionAsync(sessionId, ct).ConfigureAwait(false);
         if (replayPortfolio is null)
@@ -367,17 +444,22 @@ public sealed class PaperSessionPersistenceService
             : await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
 
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
-        var comparedFillCount = persistedFills.Count;
+        var currentLedger = GetLedger(sessionId);
+        var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
+        var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
+        var comparedFillCount = _store is null
+            ? detail.FillCount
+            : persistedFills.Count;
         var comparedOrderCount = _store is null
             ? detail.OrderHistory?.Count ?? 0
             : persistedOrders.Count;
         var comparedLedgerEntryCount = _store is null
-            ? 0
+            ? currentLedgerEntryCount
             : persistedLedgerEntries.Count;
-        var persistedLedgerLineCount = persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
-        var currentLedger = GetLedger(sessionId);
-        var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
-        var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
+        var persistedLedgerLineCount = _store is null
+            ? currentLedgerLineCount
+            : persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
+        var reconstruction = session.Reconstruction;
         var lastPersistedFillAt = persistedFills.Count > 0
             ? persistedFills.Max(fill => fill.Timestamp)
             : (DateTimeOffset?)null;
@@ -394,6 +476,12 @@ public sealed class PaperSessionPersistenceService
             CompareLedgerJournal(currentLedger, persistedLedgerEntries, mismatchReasons);
         }
 
+        if (reconstruction.CorruptEntryCount > 0)
+        {
+            mismatchReasons.Add(
+                $"Persisted ledger reconstruction skipped {reconstruction.CorruptEntryCount} corrupt entr{(reconstruction.CorruptEntryCount == 1 ? "y" : "ies")} (IDs: {string.Join(", ", reconstruction.CorruptEntryIds)}).");
+        }
+
         var verificationAudit = await RecordVerificationAuditAsync(
             detail,
             mismatchReasons,
@@ -405,6 +493,7 @@ public sealed class PaperSessionPersistenceService
             persistedLedgerLineCount,
             lastPersistedFillAt,
             lastPersistedOrderUpdateAt,
+            reconstruction,
             replayPortfolio,
             ct).ConfigureAwait(false);
 
@@ -420,6 +509,8 @@ public sealed class PaperSessionPersistenceService
             ComparedFillCount: comparedFillCount,
             ComparedOrderCount: comparedOrderCount,
             ComparedLedgerEntryCount: comparedLedgerEntryCount,
+            CorruptLedgerEntryCount: reconstruction.CorruptEntryCount,
+            CorruptLedgerEntryIds: reconstruction.CorruptEntryIds,
             LastPersistedFillAt: lastPersistedFillAt,
             LastPersistedOrderUpdateAt: lastPersistedOrderUpdateAt,
             VerificationAuditId: verificationAudit?.AuditId);
@@ -436,6 +527,7 @@ public sealed class PaperSessionPersistenceService
         int persistedLedgerLineCount,
         DateTimeOffset? lastPersistedFillAt,
         DateTimeOffset? lastPersistedOrderUpdateAt,
+        LedgerReconstructionResult reconstruction,
         ExecutionPortfolioSnapshotDto replayPortfolio,
         CancellationToken ct)
     {
@@ -459,6 +551,8 @@ public sealed class PaperSessionPersistenceService
             ["lastPersistedFillAt"] = lastPersistedFillAt?.ToString("O") ?? string.Empty,
             ["lastPersistedOrderUpdateAt"] = lastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
             ["mismatchCount"] = mismatchReasons.Count.ToString(),
+            ["corruptLedgerEntryCount"] = reconstruction.CorruptEntryCount.ToString(),
+            ["corruptLedgerEntryIds"] = string.Join(",", reconstruction.CorruptEntryIds),
             ["primaryMismatchReason"] = mismatchReasons.FirstOrDefault() ?? string.Empty
         };
 
@@ -529,15 +623,30 @@ public sealed class PaperSessionPersistenceService
         }
 
         var dtos = SerializeLedgerJournal(ledger, session.SessionId);
-        await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
+        try
+        {
+            await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to persist ledger journal snapshot for paper session {SessionId}; continuing with in-memory ledger state",
+                session.SessionId);
+        }
     }
 
-    private static Meridian.Ledger.Ledger? ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)
+    private LedgerReconstructionResult ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)
     {
         if (dtos.Count == 0)
-            return null;
+            return LedgerReconstructionResult.Empty;
 
         var ledger = new Meridian.Ledger.Ledger();
+        var corruptEntryIds = new List<string>();
         foreach (var dto in dtos)
         {
             try
@@ -562,13 +671,20 @@ public sealed class PaperSessionPersistenceService
 
                 ledger.Post(entry);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Skip corrupt entries — best-effort reconstruction.
+                var accountHint = dto.Lines?.FirstOrDefault()?.Account?.Name ?? "unknown";
+                corruptEntryIds.Add(dto.JournalEntryId.ToString("D"));
+                _logger.LogWarning(
+                    ex,
+                    "Skipping corrupt persisted ledger journal entry {JournalEntryId} (symbol={Symbol}, accountHint={AccountHint}) during paper session reconstruction.",
+                    dto.JournalEntryId,
+                    dto.Symbol ?? "unknown",
+                    accountHint);
             }
         }
 
-        return ledger;
+        return new LedgerReconstructionResult(ledger, corruptEntryIds);
     }
 
     // ------------------------------------------------------------------
@@ -826,6 +942,35 @@ public sealed class PaperSessionPersistenceService
             .Max();
     }
 
+    private PaperSessionDetailDto BuildSessionDetailDto(string sessionId, PaperSession session)
+    {
+        ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
+        if (session.Portfolio is not null)
+        {
+            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
+            portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
+                Cash: session.Portfolio.Cash,
+                PortfolioValue: session.Portfolio.PortfolioValue,
+                UnrealisedPnl: session.Portfolio.UnrealisedPnl,
+                RealisedPnl: session.Portfolio.RealisedPnl,
+                Positions: positions,
+                AsOf: DateTimeOffset.UtcNow);
+        }
+
+        return new PaperSessionDetailDto(
+            Summary: ToSummary(session),
+            Symbols: session.Symbols.ToArray(),
+            Portfolio: portfolioSnapshot,
+            OrderHistory: session.OrderHistory.ToArray(),
+            FillCount: session.FillHistory.Count,
+            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
+            LastFillAt: session.FillHistory.Count > 0
+                ? session.FillHistory.Max(static fill => fill.Timestamp)
+                : null,
+            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory),
+            FillHistory: session.FillHistory.ToArray());
+    }
+
     private sealed class PaperSession
     {
         public required string SessionId { get; init; }
@@ -845,6 +990,7 @@ public sealed class PaperSessionPersistenceService
         /// For active sessions use <c>Portfolio.Ledger</c> instead.
         /// </summary>
         public IReadOnlyLedger? ReconstructedLedger { get; init; }
+        public LedgerReconstructionResult Reconstruction { get; init; } = LedgerReconstructionResult.Empty;
     }
 }
 
@@ -877,7 +1023,8 @@ public sealed record PaperSessionDetailDto(
     int FillCount,
     int LedgerEntryCount,
     DateTimeOffset? LastFillAt,
-    DateTimeOffset? LastOrderUpdatedAt);
+    DateTimeOffset? LastOrderUpdatedAt,
+    IReadOnlyList<ExecutionReport>? FillHistory = null);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(
@@ -886,7 +1033,19 @@ public sealed record ExecutionPortfolioSnapshotDto(
     decimal UnrealisedPnl,
     decimal RealisedPnl,
     IReadOnlyList<ExecutionPosition> Positions,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    /// <summary>Alias for <see cref="Cash"/> using the naming used in operator-facing surfaces.</summary>
+    public decimal CashBalance => Cash;
+}
+
+internal sealed record LedgerReconstructionResult(
+    Meridian.Ledger.Ledger? Ledger,
+    IReadOnlyList<string> CorruptEntryIds)
+{
+    public static LedgerReconstructionResult Empty { get; } = new(null, []);
+    public int CorruptEntryCount => CorruptEntryIds.Count;
+}
 
 /// <summary>
 /// Result of replaying a paper session and comparing the replayed state to the
@@ -904,6 +1063,21 @@ public sealed record PaperSessionReplayVerificationDto(
     int ComparedFillCount,
     int ComparedOrderCount,
     int ComparedLedgerEntryCount,
+    int CorruptLedgerEntryCount,
+    IReadOnlyList<string> CorruptLedgerEntryIds,
     DateTimeOffset? LastPersistedFillAt,
     DateTimeOffset? LastPersistedOrderUpdateAt,
-    string? VerificationAuditId);
+    string? VerificationAuditId)
+{
+    /// <summary>Alias for <see cref="ComparedFillCount"/> using the paper-cockpit acceptance naming.</summary>
+    public int VerifiedFilledCount => ComparedFillCount;
+
+    /// <summary>Alias for <see cref="ComparedOrderCount"/> using the paper-cockpit acceptance naming.</summary>
+    public int VerifiedOrderCount => ComparedOrderCount;
+
+    /// <summary>Alias for <see cref="ComparedLedgerEntryCount"/> using the paper-cockpit acceptance naming.</summary>
+    public int VerifiedLedgerEntriesCount => ComparedLedgerEntryCount;
+
+    /// <summary>Alias for <see cref="VerifiedAt"/> using the paper-cockpit acceptance naming.</summary>
+    public DateTimeOffset LastVerifiedAt => VerifiedAt;
+}

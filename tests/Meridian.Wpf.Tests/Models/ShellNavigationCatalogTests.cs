@@ -122,6 +122,27 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void DataShell_ShouldUseFeatureOwnedWorkspaceShellPage()
+    {
+        var dataShell = ShellNavigationCatalog.GetPage("DataShell");
+
+        dataShell.Should().NotBeNull();
+        dataShell!.PageType.Should().Be(typeof(Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage));
+    }
+
+    [Fact]
+    public void SettingsShell_ShouldUseFeatureOwnedWorkspaceShellPage()
+    {
+        var settingsShell = ShellNavigationCatalog.GetPage("SettingsShell");
+        var settingsDefinition = ShellNavigationCatalog.GetWorkspaceShell("settings");
+
+        settingsShell.Should().NotBeNull();
+        settingsShell!.PageType.Should().Be(typeof(Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellPage));
+        settingsDefinition.Should().NotBeNull();
+        settingsDefinition!.ViewModelType.Should().Be(typeof(Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel));
+    }
+
+    [Fact]
     public void ResolveDefaultPanes_TradingWorkbenchPreset_UsesPresetPanes()
     {
         var panes = ShellNavigationCatalog.ResolveDefaultPanes(new WorkspaceShellState(

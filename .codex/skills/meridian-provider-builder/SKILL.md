@@ -7,7 +7,31 @@ description: Build or extend Meridian market data providers. Use when the user a
 
 Build provider code that fits Meridian's provider contracts, rate-limiting rules, serialization patterns, and DI structure on the first pass.
 
-Read `../_shared/project-context.md` before starting. Read `references/provider-patterns.md` when you need skeletons, file layout, or compliance reminders.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before starting.
+Read `references/provider-patterns.md` when you need skeletons, file layout, or compliance
+reminders.
+
+## Use When
+
+Use this skill when the task is to add, scaffold, or extend a Meridian provider adapter or provider
+support surface.
+
+Trigger examples:
+
+- "Add a new historical provider for FRED."
+- "Extend the Alpaca streaming adapter with reconnect handling."
+- "Build symbol search support for this data vendor."
+
+## Do Not Use When
+
+Use `meridian-blueprint` for provider architecture planning, `meridian-code-review` for auditing an
+existing provider, and `meridian-test-writer` when the only requested work is test coverage.
+
+Non-trigger examples:
+
+- "Design a provider selection architecture."
+- "Review this provider for bugs."
+- "Write tests for the existing provider only."
 
 ## Choose the Provider Type First
 
@@ -24,6 +48,18 @@ Start from the closest template or existing provider in `src/Meridian.Infrastruc
 3. Create the minimum file set: implementation, options, DTO/models if needed, registration/module changes, and tests.
 4. Wire cancellation, logging, serialization, rate limiting, and reconnect behavior before polishing anything else.
 5. Run targeted tests for the new provider or scaffold if the full provider cannot be validated yet.
+
+## Handoffs
+
+- Hand off to `meridian-blueprint` when provider scope affects shared contracts or multi-provider architecture.
+- Hand off to `meridian-test-writer` for broader scenario coverage after the provider scaffold exists.
+- Hand off to `meridian-implementation-assurance` for final provider rollout evidence, docs sync, and AI catalog updates.
+
+## Validation
+
+- Run provider-focused build or tests in the relevant project before broadening.
+- For wire-format behavior, verify against official docs or recorded fixtures before creating mock payloads.
+- For AI/tooling provider skill changes, run Codex skill and inventory checks.
 
 ## Provider Rules
 
@@ -50,3 +86,9 @@ A solid provider task usually includes:
 - Match the file and namespace conventions of neighboring providers.
 - Avoid custom one-off infrastructure when a shared provider helper already exists.
 - If the API shape is uncertain, build a thin, testable adapter seam rather than spreading vendor-specific logic everywhere.
+
+## Output Standards
+
+- State provider type, contracts implemented, and closest existing pattern used.
+- Summarize implementation, configuration, DI, resilience, serialization, and tests.
+- Name any vendor-doc uncertainty or live-credential limitation without asking for secrets in chat.

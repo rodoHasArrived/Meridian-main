@@ -1,9 +1,11 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-05-01
+**Last Reviewed:** 2026-05-21
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
+
+Current local project path: `C:\Dev\Meridian-main`.
 
 ## Platform At A Glance
 
@@ -21,8 +23,13 @@ Meridian's current solution includes:
 - **First local setup:** [Getting Started Guide](getting-started/README.md)
 - **Operator reference:** [Help and FAQ](HELP.md)
 - **Operational procedures:** [Operator Runbook](operations/operator-runbook.md)
-- **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md)
+- **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md), [Developer Quick Guides](developer/README.md), [Design Documentation](design/README.md)
+- **Repository hygiene:** [Cleanup and Maintenance](operations/cleanup-and-maintenance.md), [Disk Space Hygiene](operations/disk-space-hygiene.md)
+- **Prompt and agent guidance:** [Automation Prompts](prompts/automation-prompts.md), [Repo Maintenance Prompts](prompts/repo-maintenance-prompts.md)
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
+- **Structured roadmap registry:** [Roadmap Registry](roadmap/README.md)
+- **Source documentation mesh:** [Source Documentation Mesh](source/README.md)
+- **Consolidated planning entry point:** [Current Direction and Status](plans/current-direction-and-status.md)
 - **Current delivery plan:** [Project Roadmap](status/ROADMAP.md)
 - **Target product narrative:** [Target End Product](status/TARGET_END_PRODUCT.md)
 - **Product-category filter:** [Evidence-Backed Investment Operations Plan](plans/evidence-backed-investment-operations-plan.md)
@@ -35,10 +42,12 @@ Meridian's current solution includes:
 |------|---------|----------|
 | Product | `getting-started/`, `providers/`, `operations/` | Users and operators |
 | Web Operator UI | `plans/`, `status/`, `development/`, `ai/` | Dashboard, API, and workflow contributors |
-| Engineering | `architecture/`, `adr/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `ai/` | Developers and tool authors |
+| Engineering | `architecture/`, `adr/`, `developer/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `design/`, `prompts/`, `ai/` | Developers and tool authors |
 | Governance | `status/`, `plans/`, `evaluations/`, `audits/`, `security/` | Core team and stakeholders |
 
-`generated/` and any file marked as auto-generated should be refreshed by script rather than edited by hand. `docs/_site/` is the built documentation site output.
+`generated/`, `roadmap/generated/`, `source/generated/`, and any file marked as auto-generated
+should be refreshed by script rather than edited by hand. `docs/_site/` is the built documentation
+site output.
 
 ## By Audience
 
@@ -54,9 +63,18 @@ Meridian's current solution includes:
 ### Developers
 
 - [Repository Organization Guide](development/repository-organization-guide.md)
+- [Developer Setup](developer/setup.md)
+- [Build, Test, Run](developer/build-test-run.md)
+- [Publish Standalone EXE](developer/publish-standalone-exe.md)
 - [Repository Rule Set](development/repository-rule-set.md)
+- [Cleanup and Maintenance](operations/cleanup-and-maintenance.md)
+- [Disk Space Hygiene](operations/disk-space-hygiene.md)
 - [Provider Implementation Guide](development/provider-implementation.md)
 - [Desktop Testing Guide](development/desktop-testing-guide.md)
+- [Codex Desktop Workstation Workflow](development/codex-workflow.md)
+- [Modular Desktop Architecture](development/modular-desktop-architecture.md)
+- [Desktop Resource Management](development/desktop-resource-management.md)
+- [Shared Workstation Components](development/shared-workstation-components.md)
 - [Documentation Contribution Guide](development/documentation-contribution-guide.md)
 - [Architecture Overview](architecture/overview.md)
 - [AI Assistant Resources](ai/README.md)
@@ -64,16 +82,21 @@ Meridian's current solution includes:
 ### Architecture and design
 
 - [Architecture Overview](architecture/overview.md)
+- [Project Structure](architecture/project-structure.md)
+- [Module Map](architecture/module-map.md)
 - [Layer Boundaries](architecture/layer-boundaries.md)
 - [Storage Design](architecture/storage-design.md)
 - [Ledger Architecture](architecture/ledger-architecture.md)
 - [Desktop Layers](architecture/desktop-layers.md)
 - [WPF Shell MVVM](architecture/wpf-shell-mvvm.md)
+- [MVVM Guidelines](architecture/mvvm-guidelines.md)
 - [ADRs](adr/README.md)
+- [Design System Usage](design/design-system-usage.md)
 
 ### Status and planning
 
 - [Combined Roadmap](status/ROADMAP_COMBINED.md)
+- [Current Direction and Status](plans/current-direction-and-status.md)
 - [Project Roadmap](status/ROADMAP.md)
 - [Opportunity Scan](status/OPPORTUNITY_SCAN.md)
 - [Target End Product](status/TARGET_END_PRODUCT.md)
@@ -94,22 +117,34 @@ Use these documents together when planning implementation. The active operator-r
 
 Use the documents below to manage that path:
 
-1. [status/ROADMAP_COMBINED.md](status/ROADMAP_COMBINED.md) for the shortest complete roadmap snapshot
-2. [status/ROADMAP.md](status/ROADMAP.md) for the full wave-structured delivery plan
-3. [plans/evidence-backed-investment-operations-plan.md](plans/evidence-backed-investment-operations-plan.md) for the product-category filter and archive rule
-4. [plans/web-ui-development-pivot.md](plans/web-ui-development-pivot.md) for the browser-first operator UI lane and retained desktop policy
-5. [plans/waves-2-4-operator-readiness-addendum.md](plans/waves-2-4-operator-readiness-addendum.md) for owner lanes, dependencies, and wave exit criteria
-6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
-7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
-8. [plans/paper-trading-cockpit-reliability-sprint.md](plans/paper-trading-cockpit-reliability-sprint.md) for Wave 2 replay/session/risk reliability hardening
-9. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for migration context that should be interpreted through the active web pivot
-10. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, reconciliation, and reporting direction
-11. [plans/fund-management-pr-sequenced-roadmap.md](plans/fund-management-pr-sequenced-roadmap.md) for PR-sized governance and fund-ops implementation slices
-12. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
-13. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
-14. [status/kernel-readiness-dashboard.md](status/kernel-readiness-dashboard.md) for DK gate status and operator sign-off posture
-15. [status/production-status.md](status/production-status.md) for current readiness caveats
-16. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+1. [plans/current-direction-and-status.md](plans/current-direction-and-status.md) for the consolidated current direction, status, and plan-file roles
+2. [status/ROADMAP_COMBINED.md](status/ROADMAP_COMBINED.md) for the shortest complete roadmap snapshot
+3. [status/ROADMAP.md](status/ROADMAP.md) for the full wave-structured delivery plan
+4. [plans/evidence-backed-investment-operations-plan.md](plans/evidence-backed-investment-operations-plan.md) for the product-category filter and archive rule
+5. [plans/web-ui-development-pivot.md](plans/web-ui-development-pivot.md) for the browser-first operator UI lane and retained desktop policy
+6. [plans/waves-2-4-operator-readiness-addendum.md](plans/waves-2-4-operator-readiness-addendum.md) for owner lanes, dependencies, and wave exit criteria
+7. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
+8. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for the current provider-confidence evidence gate; the completed Wave 1 blueprint is archived at [../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md)
+9. [plans/paper-trading-cockpit-reliability-sprint.md](plans/paper-trading-cockpit-reliability-sprint.md) for Wave 2 replay/session/risk reliability hardening
+10. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for migration context that should be interpreted through the active web pivot
+11. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, reconciliation, and reporting direction
+12. [plans/fund-management-pr-sequenced-roadmap.md](plans/fund-management-pr-sequenced-roadmap.md) for PR-sized governance and fund-ops implementation slices
+13. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
+14. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
+15. [status/kernel-readiness-dashboard.md](status/kernel-readiness-dashboard.md) for DK gate status and operator sign-off posture
+16. [status/production-status.md](status/production-status.md) for current readiness caveats
+17. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+
+The 2026-05-18 documentation refresh consolidates the active planning entry point and preserves the
+current interpretation: browser workstation first for new operator UI, WPF retained as support,
+Waves 2-4 as the core operator-ready path, Wave 5-6 as later work, and mobile-specific product
+lanes out of scope.
+
+The 2026-05-21 documentation-control refresh adds structured roadmap/source registry guidance to
+the active docs mesh. Roadmap truth now lives in `docs/roadmap/data/*.yml` with generated summaries
+under `docs/roadmap/generated/`, while source module ownership, README coverage, TODOs, diagrams,
+and hash freshness live under `docs/source/`. Use the registry validators and renderers before
+editing generated outputs by hand.
 
 ## Verified Build And Run References
 
@@ -125,6 +160,10 @@ These commands are currently reflected in the repo's code and build scripts:
 - `dotnet run --project src/Meridian/Meridian.csproj -- --validate-config`
 - `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true`
 
+See [developer/build-test-run.md](developer/build-test-run.md) and
+[developer/publish-standalone-exe.md](developer/publish-standalone-exe.md) for
+short current command paths from `C:\Dev\Meridian-main`.
+
 ## Reference
 
 - [API Reference](reference/api-reference.md)
@@ -135,16 +174,19 @@ These commands are currently reflected in the repo's code and build scripts:
 
 ## Archive
 
-Historical and superseded material now lives outside the active docs tree under `archive/docs/`.
+Historical and superseded material consolidated during docs cleanup now lives under `docs/archive/`.
+Older root-level archive links under `archive/docs/` remain valid historical references until those
+records are migrated intentionally.
 
-- [Archive index](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/INDEX.md)
-- [Archive overview](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/README.md)
+- [Docs archive overview](archive/README.md)
 
 ## Maintenance Checklist
 
 When documentation changes in a PR:
 
 1. Update this index if the main navigation or source-of-truth set changes.
-2. Keep `status/ROADMAP*.md`, `status/OPPORTUNITY_SCAN.md`, `status/TARGET_END_PRODUCT.md`, `status/FEATURE_INVENTORY.md`, `plans/evidence-backed-investment-operations-plan.md`, and the relevant blueprint docs aligned.
+2. Keep `plans/current-direction-and-status.md`, `status/ROADMAP*.md`, `status/OPPORTUNITY_SCAN.md`, `status/TARGET_END_PRODUCT.md`, `status/FEATURE_INVENTORY.md`, `plans/evidence-backed-investment-operations-plan.md`, and the relevant blueprint docs aligned.
 3. Prefer updating folder `README.md` files when you add or retire documents.
 4. Avoid editing generated docs by hand unless you are also updating the generator.
+5. Add new prompts to the prompt catalog before creating another parallel prompt folder.
+6. Keep generated artifacts in ignored output folders such as `artifacts/`, `bin/`, `obj/`, `TestResults/`, `coverage/`, and `node_modules/`.

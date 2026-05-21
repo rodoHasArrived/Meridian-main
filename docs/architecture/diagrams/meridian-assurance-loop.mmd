@@ -1,0 +1,12 @@
+flowchart LR
+  DataConfidence["Data confidence"]
+  PaperSession["Paper session readiness"]
+  PromotionReview["Promotion review"]
+  PortfolioLedgerReview["Portfolio ledger review"]
+  GovernedReportPack["Governed report pack"]
+  LiveReadiness["Live readiness"]
+  DataConfidence --> PaperSession
+  PaperSession --> PromotionReview
+  PromotionReview --> PortfolioLedgerReview
+  PortfolioLedgerReview --> GovernedReportPack
+  GovernedReportPack --> LiveReadiness

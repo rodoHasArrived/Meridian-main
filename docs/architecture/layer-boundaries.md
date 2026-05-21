@@ -64,7 +64,7 @@ Meridian (Host/Exe)   →  Application (+ transitive)
    `RS0037` (Banned Symbols) rules that flag `using` statements importing
    forbidden namespaces.
 
-3. **CI Gate**: The `pr-checks.yml` workflow runs `dotnet build` which catches
+3. **CI Gate**: The `ci.yml` workflow runs `dotnet build` which catches
    any project reference violations at compile time.
 
 ## Examples
@@ -112,7 +112,7 @@ If a new cross-layer dependency is needed:
 3. Update the `.csproj` `<ProjectReference>` entries.
 4. Update this document.
 5. Verify with `dotnet build -c Release`.
-6. The `pr-checks.yml` CI workflow will catch any violations on pull request.
+6. The `ci.yml` CI workflow will catch any violations on pull request.
 
 ## BannedReferences.txt
 

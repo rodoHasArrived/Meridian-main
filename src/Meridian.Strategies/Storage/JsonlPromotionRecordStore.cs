@@ -4,6 +4,7 @@ using Meridian.Storage.Archival;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Serialization;
+using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Storage;
@@ -72,7 +73,17 @@ public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
                     PromotionRecordJsonContext.Default.StrategyPromotionRecord);
                 if (record is not null)
                 {
-                    records.Add(record);
+                    if (PromotionService.TryValidatePromotionRecord(record, out var validationError))
+                    {
+                        records.Add(record);
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "Skipping invalid promotion record in {Path}: {ValidationError}",
+                            _options.HistoryPath,
+                            validationError);
+                    }
                 }
             }
             catch (JsonException ex)
@@ -88,6 +99,10 @@ public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
     public async Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(record);
+        if (!PromotionService.TryValidatePromotionRecord(record, out var validationError))
+        {
+            throw new InvalidOperationException(validationError ?? "Promotion record is invalid.");
+        }
 
         Directory.CreateDirectory(_options.RootDirectory);
         var json = JsonSerializer.Serialize(record, PromotionRecordJsonContext.Default.StrategyPromotionRecord);

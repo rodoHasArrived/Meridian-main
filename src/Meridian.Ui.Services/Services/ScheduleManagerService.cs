@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services;
 
@@ -21,7 +23,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<List<BackfillSchedule>?> GetBackfillSchedulesAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<BackfillSchedule>>("/api/backfill/schedules", ct);
+        return await ApiClientService.Instance.GetAsync<List<BackfillSchedule>>(UiApiRoutes.BackfillSchedules, ct);
     }
 
     /// <summary>
@@ -29,7 +31,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<BackfillSchedule?> GetBackfillScheduleAsync(string id, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<BackfillSchedule>($"/api/backfill/schedules/{id}", ct);
+        return await ApiClientService.Instance.GetAsync<BackfillSchedule>(BuildBackfillScheduleRoute(id), ct);
     }
 
     /// <summary>
@@ -37,7 +39,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<BackfillSchedule?> CreateBackfillScheduleAsync(CreateBackfillScheduleRequest request, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<BackfillSchedule>("/api/backfill/schedules", request, ct);
+        return await ApiClientService.Instance.PostAsync<BackfillSchedule>(UiApiRoutes.BackfillSchedules, request, ct);
     }
 
     /// <summary>
@@ -45,7 +47,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<BackfillSchedule?> UpdateBackfillScheduleAsync(string id, UpdateBackfillScheduleRequest request, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<BackfillSchedule>($"/api/backfill/schedules/{id}", request, ct);
+        return await ApiClientService.Instance.PostAsync<BackfillSchedule>(BuildBackfillScheduleRoute(id), request, ct);
     }
 
     /// <summary>
@@ -53,7 +55,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<bool> DeleteBackfillScheduleAsync(string id, CancellationToken ct = default)
     {
-        var response = await ApiClientService.Instance.PostWithResponseAsync<DeleteResponse>($"/api/backfill/schedules/{id}/delete", null, ct);
+        var response = await ApiClientService.Instance.PostWithResponseAsync<DeleteResponse>(BuildBackfillScheduleDeleteRoute(id), null, ct);
         return response.Success;
     }
 
@@ -63,7 +65,7 @@ public sealed class ScheduleManagerService
     public async Task<bool> SetBackfillScheduleEnabledAsync(string id, bool enabled, CancellationToken ct = default)
     {
         var response = await ApiClientService.Instance.PostWithResponseAsync<EnableResponse>(
-            $"/api/backfill/schedules/{id}/{(enabled ? "enable" : "disable")}", null, ct);
+            BuildBackfillScheduleEnabledRoute(id, enabled), null, ct);
         return response.Success;
     }
 
@@ -72,7 +74,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<ScheduleExecutionResult?> RunBackfillScheduleNowAsync(string id, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<ScheduleExecutionResult>($"/api/backfill/schedules/{id}/run", null, ct);
+        return await ApiClientService.Instance.PostAsync<ScheduleExecutionResult>(BuildBackfillScheduleRunRoute(id), null, ct);
     }
 
     /// <summary>
@@ -80,7 +82,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<List<ScheduleExecutionLog>?> GetBackfillExecutionHistoryAsync(string id, int limit = 50, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<ScheduleExecutionLog>>($"/api/backfill/schedules/{id}/history?limit={limit}", ct);
+        return await ApiClientService.Instance.GetAsync<List<ScheduleExecutionLog>>(BuildBackfillScheduleHistoryRoute(id, limit), ct);
     }
 
     /// <summary>
@@ -88,7 +90,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<List<ScheduleTemplate>?> GetBackfillTemplatesAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<ScheduleTemplate>>("/api/backfill/schedules/templates", ct);
+        return await ApiClientService.Instance.GetAsync<List<ScheduleTemplate>>(UiApiRoutes.BackfillSchedulesTemplates, ct);
     }
 
 
@@ -98,7 +100,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<List<MaintenanceSchedule>?> GetMaintenanceSchedulesAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<MaintenanceSchedule>>("/api/maintenance/schedules", ct);
+        return await ApiClientService.Instance.GetAsync<List<MaintenanceSchedule>>(UiApiRoutes.MaintenanceSchedules, ct);
     }
 
     /// <summary>
@@ -106,7 +108,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<MaintenanceSchedule?> CreateMaintenanceScheduleAsync(CreateMaintenanceScheduleRequest request, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<MaintenanceSchedule>("/api/maintenance/schedules", request, ct);
+        return await ApiClientService.Instance.PostAsync<MaintenanceSchedule>(UiApiRoutes.MaintenanceSchedules, request, ct);
     }
 
     /// <summary>
@@ -114,7 +116,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<MaintenanceSchedule?> UpdateMaintenanceScheduleAsync(string id, UpdateMaintenanceScheduleRequest request, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<MaintenanceSchedule>($"/api/maintenance/schedules/{id}", request, ct);
+        return await ApiClientService.Instance.PostAsync<MaintenanceSchedule>(BuildMaintenanceScheduleRoute(id), request, ct);
     }
 
     /// <summary>
@@ -122,7 +124,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<bool> DeleteMaintenanceScheduleAsync(string id, CancellationToken ct = default)
     {
-        var response = await ApiClientService.Instance.PostWithResponseAsync<DeleteResponse>($"/api/maintenance/schedules/{id}/delete", null, ct);
+        var response = await ApiClientService.Instance.PostWithResponseAsync<DeleteResponse>(BuildMaintenanceScheduleDeleteRoute(id), null, ct);
         return response.Success;
     }
 
@@ -132,7 +134,7 @@ public sealed class ScheduleManagerService
     public async Task<bool> SetMaintenanceScheduleEnabledAsync(string id, bool enabled, CancellationToken ct = default)
     {
         var response = await ApiClientService.Instance.PostWithResponseAsync<EnableResponse>(
-            $"/api/maintenance/schedules/{id}/{(enabled ? "enable" : "disable")}", null, ct);
+            BuildMaintenanceScheduleEnabledRoute(id, enabled), null, ct);
         return response.Success;
     }
 
@@ -141,7 +143,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<ScheduleExecutionResult?> RunMaintenanceScheduleNowAsync(string id, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<ScheduleExecutionResult>($"/api/maintenance/schedules/{id}/run", null, ct);
+        return await ApiClientService.Instance.PostAsync<ScheduleExecutionResult>(BuildMaintenanceScheduleRunRoute(id), null, ct);
     }
 
     /// <summary>
@@ -149,7 +151,7 @@ public sealed class ScheduleManagerService
     /// </summary>
     public async Task<List<ScheduleExecutionLog>?> GetMaintenanceExecutionHistoryAsync(string id, int limit = 50, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<ScheduleExecutionLog>>($"/api/maintenance/schedules/{id}/history?limit={limit}", ct);
+        return await ApiClientService.Instance.GetAsync<List<ScheduleExecutionLog>>(BuildMaintenanceScheduleHistoryRoute(id, limit), ct);
     }
 
 
@@ -160,7 +162,7 @@ public sealed class ScheduleManagerService
     public async Task<CronValidationResult?> ValidateCronExpressionAsync(string cronExpression, CancellationToken ct = default)
     {
         return await ApiClientService.Instance.PostAsync<CronValidationResult>(
-            "/api/schedules/cron/validate",
+            UiApiRoutes.SchedulesCronValidate,
             new { expression = cronExpression },
             ct);
     }
@@ -171,10 +173,44 @@ public sealed class ScheduleManagerService
     public async Task<List<DateTime>?> GetNextRunTimesAsync(string cronExpression, int count = 5, CancellationToken ct = default)
     {
         return await ApiClientService.Instance.PostAsync<List<DateTime>>(
-            "/api/schedules/cron/next-runs",
+            UiApiRoutes.SchedulesCronNextRuns,
             new { expression = cronExpression, count },
             ct);
     }
+
+    internal static string BuildBackfillScheduleRoute(string id)
+        => UiApiRoutes.WithParam(UiApiRoutes.BackfillSchedulesById, "id", id);
+
+    internal static string BuildBackfillScheduleDeleteRoute(string id)
+        => UiApiRoutes.WithParam(UiApiRoutes.BackfillSchedulesDelete, "id", id);
+
+    internal static string BuildBackfillScheduleEnabledRoute(string id, bool enabled)
+        => UiApiRoutes.WithParam(enabled ? UiApiRoutes.BackfillSchedulesEnable : UiApiRoutes.BackfillSchedulesDisable, "id", id);
+
+    internal static string BuildBackfillScheduleRunRoute(string id)
+        => UiApiRoutes.WithParam(UiApiRoutes.BackfillSchedulesRun, "id", id);
+
+    internal static string BuildBackfillScheduleHistoryRoute(string id, int limit)
+        => UiApiRoutes.WithQuery(
+            UiApiRoutes.WithParam(UiApiRoutes.BackfillSchedulesHistory, "id", id),
+            string.Create(CultureInfo.InvariantCulture, $"limit={limit}"));
+
+    internal static string BuildMaintenanceScheduleRoute(string id)
+        => UiApiRoutes.WithParam(UiApiRoutes.MaintenanceSchedulesById, "id", id);
+
+    internal static string BuildMaintenanceScheduleDeleteRoute(string id)
+        => UiApiRoutes.WithParam(UiApiRoutes.MaintenanceSchedulesDelete, "id", id);
+
+    internal static string BuildMaintenanceScheduleEnabledRoute(string id, bool enabled)
+        => UiApiRoutes.WithParam(enabled ? UiApiRoutes.MaintenanceSchedulesEnable : UiApiRoutes.MaintenanceSchedulesDisable, "id", id);
+
+    internal static string BuildMaintenanceScheduleRunRoute(string id)
+        => UiApiRoutes.WithParam(UiApiRoutes.MaintenanceSchedulesRun, "id", id);
+
+    internal static string BuildMaintenanceScheduleHistoryRoute(string id, int limit)
+        => UiApiRoutes.WithQuery(
+            UiApiRoutes.WithParam(UiApiRoutes.MaintenanceSchedulesHistory, "id", id),
+            string.Create(CultureInfo.InvariantCulture, $"limit={limit}"));
 
 }
 

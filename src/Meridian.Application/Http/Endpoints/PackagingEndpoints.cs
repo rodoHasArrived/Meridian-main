@@ -245,12 +245,13 @@ public static class PackagingEndpoints
         {
             try
             {
-                var packagesDir = directory ?? Path.Combine(dataRoot, "..", "packages");
+                var packagesDir = Path.GetFullPath(Path.Combine(dataRoot, "..", "packages"));
                 var packagePath = Path.Combine(packagesDir, fileName);
 
                 // Security: ensure the path is within the packages directory
                 var fullPath = Path.GetFullPath(packagePath);
-                var fullPackagesDir = Path.GetFullPath(packagesDir);
+                var fullPackagesDir = packagesDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    + Path.DirectorySeparatorChar;
 
                 if (!fullPath.StartsWith(fullPackagesDir, StringComparison.OrdinalIgnoreCase))
                 {
@@ -281,12 +282,13 @@ public static class PackagingEndpoints
         {
             try
             {
-                var packagesDir = directory ?? Path.Combine(dataRoot, "..", "packages");
+                var packagesDir = Path.GetFullPath(Path.Combine(dataRoot, "..", "packages"));
                 var packagePath = Path.Combine(packagesDir, fileName);
 
                 // Security: ensure the path is within the packages directory
                 var fullPath = Path.GetFullPath(packagePath);
-                var fullPackagesDir = Path.GetFullPath(packagesDir);
+                var fullPackagesDir = packagesDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    + Path.DirectorySeparatorChar;
 
                 if (!fullPath.StartsWith(fullPackagesDir, StringComparison.OrdinalIgnoreCase))
                 {

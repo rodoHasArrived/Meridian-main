@@ -12,8 +12,10 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 - strategy, backtesting, paper validation, and execution workflows,
 - risk, ledger, reconciliation, approval, and governed reporting surfaces,
 - a browser-based operator workstation,
-- retained WPF desktop support for shared contracts, regressions, and existing desktop workflows,
+- an active WPF desktop workstation alongside the browser-based operator workstation,
 - MCP and AI workflow assets for repository navigation and task automation.
+
+Current local project path: `D:\Meridian-main`.
 
 ## Core Working Rules
 
@@ -26,12 +28,17 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 
 ## Current Product Direction
 
-- Active operator UI work belongs in `src/Meridian.Ui/dashboard/`.
+- Start planning work from `docs/plans/current-direction-and-status.md`, then use
+  `docs/plans/README.md` for detailed plan-file roles.
+- Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
   `src/Meridian.Ui.Shared/`.
-- New WPF feature work in `src/Meridian.Wpf/` is paused unless needed for shared contracts,
-  regression fixes, or retained desktop support.
+- Keep browser and desktop workflows backed by shared contracts, read models, and API seams where
+  the product behavior is common.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product
+  surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+  mobile-first workflows. Responsive browser validation may continue for the browser workstation.
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`,
   `Strategy`, `Data`, and `Settings`.
 
@@ -56,7 +63,7 @@ make test
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` - shared UI/API read-model surface
-- `src/Meridian.Wpf/` - retained desktop shell for support, shared contracts, and regressions
+- `src/Meridian.Wpf/` - active Windows desktop shell, workflow automation, and desktop validation lane
 - `src/Meridian.Application/` - orchestration and pipelines
 - `src/Meridian.Infrastructure/` - provider and integration adapters
 - `src/Meridian.Storage/` - WAL, archival, packaging, and durability paths
@@ -107,6 +114,10 @@ make ai-maintenance-full
 
 Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained sources instead:
 
+- `docs/architecture/project-structure.md` for the maintained repository map.
+- `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
+- `docs/developer/build-test-run.md` for current local build, test, and run commands.
+- `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.
 - `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.
 - `docs/generated/repository-structure.md` for the full generated repository tree.

@@ -226,6 +226,119 @@ public sealed class TradingWorkspaceShellViewModelTests
     }
 
     [Fact]
+    public void ResolveOperatorWorkItemActionId_WithLedgerPeriodClose_OpensReconciliation()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "ledger-period-close-1",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "SoftClosed sign-off required",
+            Detail: "Ledger period close requires controller sign-off.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 5, 0, TimeSpan.Zero),
+            TargetRoute: UiApiRoutes.LedgerPeriods,
+            TargetPageTag: "TradingShell");
+
+        var actionId = TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("FundReconciliation");
+    }
+
+
+    [Fact]
+    public void ResolveOperatorWorkItemActionId_WithMalformedRouteAndMissingPageTag_FallsBackToKindDestination()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "reconciliation-break-malformed-route",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Review reconciliation",
+            Detail: "Route payload is malformed.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 10, 0, TimeSpan.Zero),
+            TargetRoute: "not-a-valid-route",
+            TargetPageTag: null);
+
+        var actionId = TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("FundReconciliation");
+    }
+
+    [Fact]
+    public void ResolveOperatorWorkItemActionId_WithMissingRouteAndWorkspaceShellPageTag_UsesSafeFallback()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "unknown-kind-no-route",
+            Kind: (OperatorWorkItemKindDto)999,
+            Label: "Unknown",
+            Detail: "No routing metadata supplied.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 11, 0, TimeSpan.Zero),
+            TargetRoute: null,
+            TargetPageTag: "TradingShell");
+
+        var actionId = TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("NotificationCenter");
+    }
+
+
+    [Fact]
+    public void BuildDeskHeroState_AllClearScenario_ProjectsReadyPostureWithoutQueueDuplication()
+    {
+        var readiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-clear", "Clear Desk", "Paper"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Clear Desk");
+
+        hero.BadgeText.Should().Be("Ready");
+        hero.FocusLabel.Should().Be("Paper oversight");
+        hero.Summary.Should().Contain("paper session");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_MixedSeverityScenario_PrioritizesCriticalQueuePosture()
+    {
+        var readiness = CreateReadiness(
+            workItems:
+            [
+                new OperatorWorkItemDto(
+                    WorkItemId: "promotion-warning-1",
+                    Kind: OperatorWorkItemKindDto.PromotionReview,
+                    Label: "Promotion checklist review",
+                    Detail: "Checklist evidence needs sign-off.",
+                    Tone: OperatorWorkItemToneDto.Warning,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 20, 0, TimeSpan.Zero),
+                    TargetPageTag: "TradingShell"),
+                new OperatorWorkItemDto(
+                    WorkItemId: "replay-critical-1",
+                    Kind: OperatorWorkItemKindDto.PaperReplay,
+                    Label: "Replay stale",
+                    Detail: "Replay verification is stale.",
+                    Tone: OperatorWorkItemToneDto.Critical,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 21, 0, TimeSpan.Zero),
+                    TargetPageTag: "TradingShell")
+            ],
+            overallStatus: TradingAcceptanceGateStatusDto.Blocked,
+            readyForPaperOperation: false);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-mixed", "Mixed Desk", "Paper"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Mixed Desk");
+
+        hero.FocusLabel.Should().Be("Readiness blocked");
+        hero.PrimaryActionId.Should().Be("FundAuditTrail");
+    }
+
+    [Fact]
     public void ExecuteCommandAction_WithNoActiveRun_RaisesAccountPortfolioRequest()
     {
         var viewModel = new TradingWorkspaceShellViewModel();

@@ -22,6 +22,15 @@ export interface WorkspaceHeaderAction {
   ariaLabel: string;
   title: string;
   disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
+export interface WorkspaceHeaderMetaItem {
+  id: string;
+  label: string;
+  value: string;
+  ariaLabel: string;
 }
 
 export interface LiveEnvironmentBanner {
@@ -37,6 +46,7 @@ export interface WorkspaceHeaderViewModel {
   title: string;
   description: string;
   badges: WorkspaceHeaderBadge[];
+  metaItems: WorkspaceHeaderMetaItem[];
   sessionLabel: string;
   sessionRoleLabel: string | null;
   sessionPillAriaLabel: string;
@@ -62,28 +72,16 @@ export function buildWorkspaceHeaderViewModel({
   refreshing = false
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
   const isLiveEnvironment = session?.environment === "live";
-  const environmentBadge = session
-    ? {
-        id: "environment",
-        label: session.environment.toUpperCase(),
-        variant: session.environment,
-        ariaLabel: `${session.environment} environment`
-      }
-    : null;
   const refreshLabel = refreshing ? "Refreshing" : "Refresh";
+  const refreshDisabledReason = refreshing
+    ? `${workspace.label} workspace data is refreshing.`
+    : null;
 
   return {
-    eyebrow: "Meridian workspace",
+    eyebrow: "Workspace",
     title: `${workspace.label} Workstation`,
     description: workspace.description,
     badges: [
-      {
-        id: "workspace",
-        label: workspace.label,
-        variant: "outline",
-        ariaLabel: `${workspace.label} workspace`
-      },
-      ...(environmentBadge ? [environmentBadge] : []),
       {
         id: "workspace-status",
         label: workspace.status,
@@ -91,6 +89,7 @@ export function buildWorkspaceHeaderViewModel({
         ariaLabel: `${workspace.label} workspace status ${workspace.status}`
       }
     ],
+    metaItems: [],
     sessionLabel: session?.displayName ?? "Loading session",
     sessionRoleLabel: session?.role ?? null,
     sessionPillAriaLabel: session
@@ -105,14 +104,18 @@ export function buildWorkspaceHeaderViewModel({
           title: refreshing
             ? `${workspace.label} workspace data is refreshing`
             : `Refresh ${workspace.label} workspace data`,
-          disabled: refreshing
+          disabled: refreshing,
+          disabledReason: refreshDisabledReason,
+          busy: refreshing
         }
       : null,
     commandAction: {
       label: "Open command palette",
       ariaLabel: "Open workspace command palette",
       title: "Open workspace command palette",
-      disabled: false
+      disabled: false,
+      disabledReason: null,
+      busy: false
     },
     liveAnnouncement: refreshing ? `Refreshing ${workspace.label} workspace data.` : "",
     ariaBusy: refreshing,

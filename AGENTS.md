@@ -5,16 +5,23 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
+- `.codex/AGENTS.md` for Codex-specific desktop workstation implementation rules.
+- `docs/architecture/project-structure.md` for the maintained repository map.
+- `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
+- `docs/developer/setup.md`, `docs/developer/build-test-run.md`, and `docs/developer/publish-standalone-exe.md` for current local developer workflows.
+- `docs/prompts/repo-maintenance-prompts.md` and `docs/prompts/automation-prompts.md` for prompt, agent, and automation guidance.
 - `docs/HELP.md` for verified operator and developer CLI workflows.
 - `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
 - `docs/development/build-observability.md` for build diagnostics, metrics, fingerprints, and debug bundles.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
 - `docs/development/desktop-testing-guide.md` for WPF test slices and shell-first regression bundles.
 - `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
-- `docs/plans/web-ui-development-pivot.md` for the active browser-first operator UI pivot.
+- `docs/plans/web-ui-development-pivot.md` for browser workstation delivery history and cross-surface UI rules.
+- `docs/plans/current-direction-and-status.md` for the consolidated current planning interpretation and plan-file roles.
 - `docs/plans/evidence-backed-investment-operations-plan.md` for the active differentiation plan and archive rule.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
+- `docs/operations/provider-degradation-calibration.md` for provider calibration inputs and promotion-gate outputs.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
@@ -26,10 +33,12 @@ Keep it short and prefer the canonical Meridian guidance sources:
 ## Current Direction
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase.
+- The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Position new roadmap and docs work around evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports.
-- New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
-- `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.
-- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the web dashboard and retained desktop shell.
+- `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/` are both active operator UI surfaces.
+- `src/Meridian.Ui/wwwroot/workstation/` remains the built browser workstation asset lane served by the local host.
+- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for both the desktop shell and browser workstation.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or mobile-first workflows; responsive browser validation is allowed only for the browser workstation.
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - Use the narrowest validation command that covers the files changed.
 
@@ -39,7 +48,9 @@ Keep it short and prefer the canonical Meridian guidance sources:
 make help
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 dotnet run --project src/Meridian/Meridian.csproj -- --help diagnostics
+dotnet run --project src/Meridian/Meridian.csproj -- --help runbooks
 dotnet run --project src/Meridian/Meridian.csproj -- --help security-master
+dotnet run --project src/Meridian/Meridian.csproj -- --help statements
 python3 build/python/cli/buildctl.py --help
 ```
 
@@ -87,7 +98,12 @@ dotnet run --project src/Meridian/Meridian.csproj -- --simulate-feed
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --dry-run --offline
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --runbook-list
+dotnet run --project src/Meridian/Meridian.csproj -- --runbook-create "Daily readiness" --runbook-steps readiness:global,replay:latest
+dotnet run --project src/Meridian/Meridian.csproj -- --runbook-run daily-readiness --dry-run
 ```
+
+`--runbook-create` requires `--runbook-steps`; use `--help runbooks` before adding new step kinds.
 
 ## CLI Data Workflows
 
@@ -124,16 +140,31 @@ dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas --strict
 dotnet run --project src/Meridian/Meridian.csproj -- --check-schemas --max-files 100
 dotnet run --project src/Meridian/Meridian.csproj -- --wal-repair --dry-run --output artifacts/wal-repair-report.txt
 dotnet run --project src/Meridian/Meridian.csproj -- --generate-loader python --output ./loaders
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
 ```
 
 `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, `--etl-export`,
 `--etl-roundtrip`, and `--etl-resume`. Use `docs/HELP.md` for the verified local-file ETL
 operator examples and required `--etl-source-kind` / `--etl-source-path` arguments.
 
-TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
-and `--calibrate-provider-degradation`, but their prerequisites are specialized. Use
-`--help security-master` for Security Master details, and verify current operator setup before
-adding short-form examples here.
+`src/Meridian.Application/Commands/StatementCommands.cs` exposes `--statement-validate`,
+`--statement-import`, and `--statement-reconcile`. Use `docs/HELP.md` for the verified local-file
+examples and required `--statement-source-kind` / `--statement-source-path` arguments. Current
+service support is `local`; verify non-local statement adapters before advertising `s3` or `sftp`.
+
+TODO: `docs/HELP.md` also includes `--statement-broker` and `--statement-date` examples, but the
+current dispatcher reaches `StatementCommands` first for statement validate/import flags. Verify the
+intended broker/date workflow before adding those examples here.
+
+TODO: `SecurityMasterCommands` exposes `--security-master-ingest`, but its prerequisites are
+specialized. Use `--help security-master` for Security Master details, and verify current operator
+setup before adding short-form examples here.
+
+`ProviderCalibrationCommand` exposes `--calibrate-provider-degradation`; use
+`docs/operations/provider-degradation-calibration.md` for the incident dataset shape, report output,
+and governance gate before promoting provider-degradation kernel weights.
 
 `--diagnostics` is a standalone CLI flag that prints the configuration summary and runs the quick
 configuration health check. Use the specific flags (`--quick-check`, `--test-connectivity`,
@@ -204,8 +235,11 @@ python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 ```bash
 cd src/Meridian.Ui/dashboard
 npm install
+npm run dev
 npm run test
 npm run build
+npm run preview
+npm run screenshots
 ```
 
 Prefer these dashboard commands for browser-operator UI changes. Broaden to `tests/Meridian.Ui.Tests`
@@ -281,6 +315,11 @@ when the desktop exits.
 
 Named workflow automation is defined in `scripts/dev/desktop-workflows.json`; it defaults to
 fixture mode and writes run artifacts under `artifacts/desktop-workflows/`.
+Workflow artifact retention prunes timestamped run directories older than 14 days or beyond the
+latest 10 runs under each configured output root; it skips non-run folders such as `checkpoints/`.
+Tune per-profile with `screenshots.retention.maxAgeDays` and
+`screenshots.retention.retainLatest`, or set both to `0` for a run that must keep all workflow
+artifacts.
 
 Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 `run-desktop.ps1` when driving an already-open shell against live local services; the runner
@@ -351,26 +390,9 @@ position-blotter route slice with isolated output and writes validation artifact
 operator-inbox route slice with isolated output and writes validation artifacts under
 `artifacts/wpf-validation/operator-inbox-route/`.
 
-TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`,
-but the current `make/desktop.mk` does not define that target. Use
-`pwsh ./scripts/dev/run-desktop.ps1` unless the Make target is restored.
-
 TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`,
 `make desktop-manual`, and `make desktop-screenshots`, but the current `make/desktop.mk` does not
 define those targets. Use the PowerShell scripts directly unless the Make targets are added.
-
-TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`,
-`make build-wpf`, and `make test-desktop-services`; `docs/development/policies/desktop-support-policy.md`
-and `docs/development/wpf-implementation-notes.md` still reference `make build-wpf` or
-`make test-desktop-services`; and `scripts/dev/desktop-dev.ps1` still prints `make build-wpf`,
-`make test-desktop-services`, and `make uwp-xaml-diagnose`. The current `make/*.mk` files do not
-define those targets. Prefer `pwsh ./scripts/dev/desktop-dev.ps1`, `make desktop-build`,
-`make desktop-test`, and `pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
-
-TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current
-`make/*.mk` files do not define that target. Use
-`pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
-builds unless the Make target is restored.
 
 `.github/workflows/refresh-screenshots.yml` refreshes both retained WPF desktop screenshots and
 browser workstation dashboard screenshots. Desktop captures run `screenshot-catalog` plus the
@@ -418,6 +440,7 @@ pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provid
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/build-ibapi-smoke.ps1
+dotnet run --project src/Meridian/Meridian.csproj -- --calibrate-provider-degradation --calibration-input ./incidents-2026-q1.json --candidate-kernel-version kernel-v2 --baseline-kernel-version kernel-v1
 ```
 
 This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet
@@ -527,7 +550,9 @@ migration notes in `docs/status/contract-compatibility-matrix.md`.
 Run `scripts/generate_contract_review_packet.py` before weekly shared-interop reviews when scoped
 contracts change; attach the JSON/Markdown packet and record the owner decision.
 `scripts/dev/cleanup-generated.ps1` previews generated build/test output cleanup by default; add
-`-Execute` only after reviewing the listed untracked directories.
+`-Execute` only after reviewing the listed untracked directories. Add `-IncludeNodeModules` when
+you explicitly want to include repo-local dependency installs such as
+`src/Meridian.Ui/dashboard/node_modules`; the default build-output scan skips dependency trees.
 
 TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet
 implemented and only delegates to `buildctl doctor`. Do not advertise it as a fix workflow until

@@ -10,6 +10,15 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class StrategyRunReadService
 {
+    private const string ContinuityStatusHealthy = "Healthy";
+    private const string ContinuityStatusWarning = "Warning";
+    private const string ContinuityStatusMissing = "Missing";
+    private const string ContinuityStatusUnknown = "Unknown";
+    private const string LedgerCoverageStatusCovered = "Covered";
+    private const string LedgerCoverageStatusMissing = "Missing";
+    private const string CashFlowHealthHealthy = "Healthy";
+    private const string CashFlowHealthMissing = "Missing";
+
     private static readonly IReadOnlyDictionary<string, string> EmptyParameters = new Dictionary<string, string>();
     private static readonly IReadOnlyDictionary<string, StrategyPromotionRecord> EmptyPromotionLookup =
         new Dictionary<string, StrategyPromotionRecord>(StringComparer.Ordinal);
@@ -18,6 +27,7 @@ public sealed class StrategyRunReadService
     private readonly PortfolioReadService _portfolioReadService;
     private readonly LedgerReadService _ledgerReadService;
     private readonly IPromotionRecordStore? _promotionRecordStore;
+    private readonly CashFlowProjectionService? _cashFlowProjectionService;
 
     internal PortfolioReadService PortfolioReadService => _portfolioReadService;
     internal LedgerReadService LedgerReadService => _ledgerReadService;
@@ -26,12 +36,14 @@ public sealed class StrategyRunReadService
         IStrategyRepository repository,
         PortfolioReadService portfolioReadService,
         LedgerReadService ledgerReadService,
-        IPromotionRecordStore? promotionRecordStore = null)
+        IPromotionRecordStore? promotionRecordStore = null,
+        CashFlowProjectionService? cashFlowProjectionService = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _portfolioReadService = portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService));
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
         _promotionRecordStore = promotionRecordStore;
+        _cashFlowProjectionService = cashFlowProjectionService;
     }
 
     public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
@@ -90,6 +102,24 @@ public sealed class StrategyRunReadService
                 NetPnl: run.NetPnl,
                 TotalReturn: run.TotalReturn,
                 FillCount: run.FillCount))
+            .ToArray();
+    }
+
+    public async Task<IReadOnlyList<StrategyRunLineageTimelineEntry>> GetLineageTimelineAsync(
+        StrategyRunHistoryQuery query,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var runs = await GetRunsAsync(query, ct).ConfigureAwait(false);
+
+        return runs
+            .GroupBy(static run => run.Identity?.CanonicalRunKey ?? run.RunId, StringComparer.Ordinal)
+            .SelectMany(BuildLineageTimelineEntries)
+            .OrderBy(static entry => entry.EventTimestamp ?? DateTimeOffset.MinValue)
+            .ThenBy(static entry => entry.CanonicalRunKey, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.RunId, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.EventType)
             .ToArray();
     }
 
@@ -215,6 +245,7 @@ public sealed class StrategyRunReadService
 
     public async Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(
         IEnumerable<string> runIds,
+        bool governanceFirst = false,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(runIds);
@@ -234,6 +265,7 @@ public sealed class StrategyRunReadService
         foreach (var run in runs)
         {
             var metrics = run.Metrics?.Metrics;
+            var continuity = BuildComparisonContinuity(run);
             results.Add(new RunComparisonDto(
                 RunId: run.RunId,
                 ParentRunId: run.ParentRunId,
@@ -267,14 +299,61 @@ public sealed class StrategyRunReadService
                 LastUpdatedAt: GetLastUpdatedAt(run),
                 PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
-                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference)));
+                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
+                ContinuityStatus: continuity.ContinuityStatus,
+                ReconciliationBreakCount: continuity.ReconciliationBreakCount,
+                ReconciliationHighestSeverity: continuity.HighestSeverity,
+                HasLedgerEntryCoverage: continuity.HasLedgerEntryCoverage,
+                LedgerCoverageStatus: continuity.LedgerCoverageStatus,
+                CashFlowHealth: continuity.CashFlowHealth));
         }
 
-        return results
-            .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
-            .ThenBy(static run => run.RunId, StringComparer.Ordinal)
-            .ToArray();
+        var ordered = governanceFirst
+            ? results
+                .OrderByDescending(static run => run.ReconciliationBreakCount)
+                .ThenByDescending(static run => run.ReconciliationHighestSeverity)
+                .ThenBy(static run => run.ContinuityStatus, StringComparer.Ordinal)
+                .ThenByDescending(static run => run.FinalEquity ?? decimal.MinValue)
+                .ThenBy(static run => run.RunId, StringComparer.Ordinal)
+            : results
+                .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
+                .ThenBy(static run => run.RunId, StringComparer.Ordinal);
+
+        return ordered.ToArray();
     }
+
+    private static ComparisonContinuitySignals BuildComparisonContinuity(StrategyRunEntry run)
+    {
+        var hasLedgerReference = !string.IsNullOrWhiteSpace(run.LedgerReference);
+        var ledgerEntryCount = run.Metrics?.Ledger?.Journal?.Count ?? 0;
+        var hasLedgerEntryCoverage = hasLedgerReference && ledgerEntryCount > 0;
+        var cashFlowEntries = run.Metrics?.CashFlows?.Count ?? 0;
+        var hasCashFlowCoverage = cashFlowEntries > 0;
+        var hasAuditTrail = !string.IsNullOrWhiteSpace(run.AuditReference);
+
+        var continuityStatus = (hasLedgerEntryCoverage, hasCashFlowCoverage, hasAuditTrail) switch
+        {
+            (true, true, true) => ContinuityStatusHealthy,
+            (false, false, false) => ContinuityStatusMissing,
+            _ => ContinuityStatusWarning
+        };
+
+        return new ComparisonContinuitySignals(
+            ContinuityStatus: string.IsNullOrWhiteSpace(continuityStatus) ? ContinuityStatusUnknown : continuityStatus,
+            ReconciliationBreakCount: 0,
+            HighestSeverity: ReconciliationBreakSeverity.Info,
+            HasLedgerEntryCoverage: hasLedgerEntryCoverage,
+            LedgerCoverageStatus: hasLedgerEntryCoverage ? LedgerCoverageStatusCovered : LedgerCoverageStatusMissing,
+            CashFlowHealth: hasCashFlowCoverage ? CashFlowHealthHealthy : CashFlowHealthMissing);
+    }
+
+    private sealed record ComparisonContinuitySignals(
+        string ContinuityStatus,
+        int ReconciliationBreakCount,
+        ReconciliationBreakSeverity HighestSeverity,
+        bool HasLedgerEntryCoverage,
+        string LedgerCoverageStatus,
+        string CashFlowHealth);
 
     public async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default)
     {
@@ -386,6 +465,106 @@ public sealed class StrategyRunReadService
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
             AuditReference: run.AuditReference);
     }
+
+    private static IEnumerable<StrategyRunLineageTimelineEntry> BuildLineageTimelineEntries(
+        IGrouping<string, StrategyRunSummary> lineageGroup)
+    {
+        foreach (var run in lineageGroup)
+        {
+            var canonicalRunKey = run.Identity?.CanonicalRunKey ?? run.RunId;
+            var parentCanonicalRunKey = run.Identity?.ParentCanonicalRunKey;
+            var promotionDecision = run.Identity?.PromotionDecision;
+            var replayAuditReference = run.Identity?.ReplayAuditReference;
+            var replayVerifiedAt = run.Identity?.ReplayVerifiedAt;
+            var sourceRunId = run.Identity?.PromotionSourceRunId;
+            var targetRunId = run.Identity?.PromotionTargetRunId;
+
+            yield return new StrategyRunLineageTimelineEntry(
+                CanonicalRunKey: canonicalRunKey,
+                ParentCanonicalRunKey: parentCanonicalRunKey,
+                RunId: run.RunId,
+                StrategyId: run.StrategyId,
+                StrategyName: run.StrategyName,
+                Mode: run.Mode,
+                Status: run.Status,
+                EventTimestamp: run.StartedAt,
+                EventType: StrategyRunLineageEventType.RunStarted,
+                PromotionDecision: promotionDecision,
+                CrossModeTransition: BuildTransitionMetadata(run.Mode, run.Mode, sourceRunId, targetRunId, run.Promotion?.AuditReference, replayAuditReference, replayVerifiedAt, run.Identity?.HasReplayAudit ?? false));
+
+            if (run.CompletedAt is { } completedAt)
+            {
+                yield return new StrategyRunLineageTimelineEntry(
+                    CanonicalRunKey: canonicalRunKey,
+                    ParentCanonicalRunKey: parentCanonicalRunKey,
+                    RunId: run.RunId,
+                    StrategyId: run.StrategyId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    EventTimestamp: completedAt,
+                    EventType: StrategyRunLineageEventType.RunCompleted,
+                    PromotionDecision: promotionDecision,
+                    CrossModeTransition: null);
+            }
+
+            if (!string.IsNullOrWhiteSpace(promotionDecision))
+            {
+                var targetMode = run.Promotion?.SuggestedNextMode;
+                var eventType = targetMode.HasValue && targetMode.Value != run.Mode
+                    ? StrategyRunLineageEventType.CrossModeTransition
+                    : StrategyRunLineageEventType.PromotionDecision;
+
+                yield return new StrategyRunLineageTimelineEntry(
+                    CanonicalRunKey: canonicalRunKey,
+                    ParentCanonicalRunKey: parentCanonicalRunKey,
+                    RunId: run.RunId,
+                    StrategyId: run.StrategyId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    EventTimestamp: run.LastUpdatedAt,
+                    EventType: eventType,
+                    PromotionDecision: promotionDecision,
+                    CrossModeTransition: BuildTransitionMetadata(run.Mode, targetMode, sourceRunId, targetRunId, run.Promotion?.AuditReference, replayAuditReference, replayVerifiedAt, run.Identity?.HasReplayAudit ?? false));
+            }
+
+            if ((run.Identity?.HasReplayAudit ?? false) && replayVerifiedAt is { } verifiedAt)
+            {
+                yield return new StrategyRunLineageTimelineEntry(
+                    CanonicalRunKey: canonicalRunKey,
+                    ParentCanonicalRunKey: parentCanonicalRunKey,
+                    RunId: run.RunId,
+                    StrategyId: run.StrategyId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    EventTimestamp: verifiedAt,
+                    EventType: StrategyRunLineageEventType.ReplayVerified,
+                    PromotionDecision: promotionDecision,
+                    CrossModeTransition: BuildTransitionMetadata(run.Mode, run.Mode, sourceRunId, targetRunId, run.Promotion?.AuditReference, replayAuditReference, replayVerifiedAt, true));
+            }
+        }
+    }
+
+    private static StrategyRunCrossModeTransitionMetadata BuildTransitionMetadata(
+        StrategyRunMode? sourceMode,
+        StrategyRunMode? targetMode,
+        string? sourceRunId,
+        string? targetRunId,
+        string? promotionReference,
+        string? replayAuditReference,
+        DateTimeOffset? replayVerifiedAt,
+        bool hasReplayAudit) =>
+        new(
+            SourceMode: sourceMode,
+            TargetMode: targetMode,
+            SourceRunId: sourceRunId,
+            TargetRunId: targetRunId,
+            PromotionReference: promotionReference,
+            ReplayAuditReference: replayAuditReference,
+            ReplayVerifiedAt: replayVerifiedAt,
+            HasReplayAudit: hasReplayAudit);
 
     internal IReadOnlyList<StrategyRunContinuityWarning> GetPortfolioContinuityWarnings(StrategyRunDetail run) =>
         _portfolioReadService.BuildContinuityWarnings(run.Summary.RunId, run.Portfolio);
@@ -779,5 +958,50 @@ public sealed class StrategyRunReadService
             TotalUnrealizedPnl: bySymbol.Sum(static item => item.UnrealizedPnl),
             TotalCommissions: bySymbol.Sum(static item => item.Commissions),
             BySymbol: bySymbol);
+    }
+
+    /// <summary>
+    /// Returns a normalized, versioned portfolio drill-in aggregate for one run.
+    /// </summary>
+    public async Task<RunPortfolioDrillInSummary?> GetPortfolioDrillInAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
+        {
+            return null;
+        }
+
+        var attributionTask = GetAttributionAsync(runId, ct);
+        var drawdownTask = GetEquityCurveAsync(runId, ct);
+        var tradeTask = GetFillsAsync(runId, ct);
+        var cashFlowTask = _cashFlowProjectionService?.GetAsync(runId, ct: ct) ?? Task.FromResult<RunCashFlowSummary?>(null);
+
+        await Task.WhenAll(attributionTask, drawdownTask, tradeTask, cashFlowTask).ConfigureAwait(false);
+
+        var asOf = GetLastUpdatedAt(run);
+        var currency = ResolveCurrencyContext(run, await cashFlowTask.ConfigureAwait(false));
+
+        return new RunPortfolioDrillInSummary(
+            SchemaVersion: "v1",
+            RunId: run.RunId,
+            AsOf: asOf,
+            Currency: currency,
+            Mode: MapMode(run.RunType),
+            Attribution: await attributionTask.ConfigureAwait(false),
+            DrawdownProfile: await drawdownTask.ConfigureAwait(false),
+            CashFlow: await cashFlowTask.ConfigureAwait(false),
+            Trades: await tradeTask.ConfigureAwait(false));
+    }
+
+    private static string ResolveCurrencyContext(StrategyRunEntry run, RunCashFlowSummary? cashFlow)
+    {
+        if (!string.IsNullOrWhiteSpace(cashFlow?.Currency))
+        {
+            return cashFlow.Currency;
+        }
+
+        return "USD";
     }
 }

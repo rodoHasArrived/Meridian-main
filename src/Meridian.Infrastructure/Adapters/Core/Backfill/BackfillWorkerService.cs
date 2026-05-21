@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -210,13 +211,28 @@ public sealed class BackfillWorkerService : IDisposable
     /// </summary>
     private async Task ProcessRequestAsync(BackfillRequest request, CancellationToken ct)
     {
+        using var activity = MarketDataTracing.StartBackfillActivity(
+            request.AssignedProvider ?? "unknown",
+            request.Symbol,
+            request.FromDate.ToString("yyyy-MM-dd"),
+            request.ToDate.ToString("yyyy-MM-dd"));
+
+        activity?.SetTag("backfill.job_id", request.JobId);
+        activity?.SetTag("backfill.request_id", request.RequestId);
+        var correlationId = activity?.TraceId.ToString() ?? request.RequestId;
+        var scopedLog = _log
+            .ForContext("CorrelationId", correlationId)
+            .ForContext("BackfillJobId", request.JobId)
+            .ForContext("BackfillRequestId", request.RequestId)
+            .ForContext("Symbol", request.Symbol);
+
         try
         {
             // Check offline-first mode
             if (_appConfig.OfflineFirstMode && _connectivityProbe != null && !_connectivityProbe.IsOnline)
             {
-                _log.Warning("Offline mode: queueing backfill for {Symbol} until connectivity restored", request.Symbol);
-                // Mark as offline queued and requeue
+                scopedLog.Warning("Offline mode: queueing backfill for {Symbol} until connectivity restored", request.Symbol);
+                activity?.SetTag("backfill.outcome", "offline_queued");
                 await _requestQueue.EnqueueAsync(request, ct).ConfigureAwait(false);
                 return;
             }
@@ -227,16 +243,24 @@ public sealed class BackfillWorkerService : IDisposable
             {
                 try
                 {
-                    _log.Debug("Processing request: {Symbol} {From}-{To} via {Provider} (attempt {Attempt})",
-                        request.Symbol, request.FromDate, request.ToDate, request.AssignedProvider, retryAttempt + 1);
+                    var providerName = request.AssignedProvider ?? _provider.Name;
+
+                    scopedLog.Debug("Processing request: {Symbol} {From}-{To} via {Provider} (attempt {Attempt})",
+                        request.Symbol, request.FromDate, request.ToDate, providerName, retryAttempt + 1);
 
                     // Fetch data from provider
+                    using var fetchActivity = MarketDataTracing.StartBackfillFetchActivity(
+                        providerName,
+                        request.Symbol);
                     var bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
+                    MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
 
                     if (bars.Count > 0)
                     {
                         // Write to storage
+                        using var storageActivity = MarketDataTracing.StartBackfillStorageActivity(request.Symbol, bars.Count);
                         await WriteBarsToStorageAsync(request, bars, ct).ConfigureAwait(false);
+                        MarketDataTracing.RecordEventCount(storageActivity, bars.Count);
                         request.BarsRetrieved = bars.Count;
 
                         // Record progress
@@ -247,10 +271,14 @@ public sealed class BackfillWorkerService : IDisposable
                     await _requestQueue.CompleteRequestAsync(request, true, ct: ct).ConfigureAwait(false);
                     await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
                     _progressTracker.MarkCompleted(request.Symbol);
+
+                    MarketDataTracing.RecordEventCount(activity, bars.Count);
+                    activity?.SetTag("backfill.outcome", "success");
                     return;
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
+                    activity?.SetTag("backfill.outcome", "cancelled");
                     throw;
                 }
                 catch (RateLimitException rle) when (request.AssignedProvider != null)
@@ -264,7 +292,8 @@ public sealed class BackfillWorkerService : IDisposable
                         var providerDelay = rle.RetryAfter;
                         var delay = providerDelay ?? CalculateBackoff(retryAttempt, RateLimitBaseDelay, RateLimitMaxDelay);
 
-                        _log.Information(
+                        activity?.SetTag("backfill.retry_count", retryAttempt);
+                        scopedLog.Information(
                             "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
                             request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
                             providerDelay.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
@@ -273,10 +302,12 @@ public sealed class BackfillWorkerService : IDisposable
                         continue;
                     }
 
-                    _log.Warning(
+                    scopedLog.Warning(
                         "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
                         request.Symbol, request.AssignedProvider, retryAttempt);
 
+                    MarketDataTracing.RecordError(activity, rle);
+                    activity?.SetTag("backfill.outcome", "rate_limit_exhausted");
                     await _requestQueue.CompleteRequestAsync(request, false, rle.Message, ct).ConfigureAwait(false);
                     await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
                     _progressTracker.MarkFailed(request.Symbol, rle.Message);
@@ -300,7 +331,8 @@ public sealed class BackfillWorkerService : IDisposable
                             retryAttempt++;
                             var delay = retryAfter ?? CalculateBackoff(retryAttempt, RateLimitBaseDelay, RateLimitMaxDelay);
 
-                            _log.Information(
+                            activity?.SetTag("backfill.retry_count", retryAttempt);
+                            scopedLog.Information(
                                 "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
                                 request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
                                 retryAfter.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
@@ -309,11 +341,13 @@ public sealed class BackfillWorkerService : IDisposable
                             continue;
                         }
 
-                        _log.Warning(
+                        scopedLog.Warning(
                             "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
                             request.Symbol, request.AssignedProvider, retryAttempt);
                     }
 
+                    MarketDataTracing.RecordError(activity, ex);
+                    activity?.SetTag("backfill.outcome", isRateLimited ? "rate_limit_exhausted" : "error");
                     await _requestQueue.CompleteRequestAsync(request, false, ex.Message, ct).ConfigureAwait(false);
                     await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
                     _progressTracker.MarkFailed(request.Symbol, ex.Message);
@@ -550,7 +584,6 @@ public sealed class BackfillWorkerService : IDisposable
             }
         }
 
-        _log.Debug("Wrote {BarCount} bars for {Symbol} to storage", bars.Count, request.Symbol);
     }
 
     /// <summary>

@@ -1,6 +1,14 @@
 # Codebase Audit and Cleanup Roadmap
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **codebase audit cleanup roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the codebase audit cleanup roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active cleanup backlog
 **Purpose:** Current cleanup and maintainability roadmap grounded in the repository as it exists today
 
@@ -11,7 +19,7 @@ Use this document with:
 - `docs/status/ROADMAP.md` for delivery-wave sequencing
 - `docs/status/IMPROVEMENTS.md` for completed improvement history
 - `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for the broader non-assembly implementation backlog
-- `docs/plans/readability-refactor-roadmap.md` for deeper host/UI refactor sequencing
+- `archive/docs/plans/readability-refactor-roadmap.md` for historical host/UI refactor sequencing; keep current cleanup guidance in this document
 
 ---
 
@@ -53,11 +61,11 @@ Primary anchors:
 
 ### 2. WPF workflow cleanup
 
-The app now has shared run surfaces and a delivered four-workspace shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
+The app now has shared run surfaces, a browser-first seven-workspace operator lane, and a retained WPF compatibility shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
 
 Open work:
 
-- validate the delivered workspace shells against real Research, Trading, Data Operations, and Governance journeys
+- validate the browser-first workspace shells and retained WPF compatibility shells against real Data, Strategy, Trading, Portfolio, Accounting, Reporting, and Settings journeys
 - identify placeholder or low-value pages and either strengthen them or label/re-scope them
 - keep business logic moving out of page code-behind and into shared services/view models
 - make run, portfolio, ledger, Position Blotter, and reconciliation flows feel like one workstation family rather than separate page islands
@@ -65,6 +73,7 @@ Open work:
 Primary anchors:
 
 - `src/Meridian.Wpf/Services/NavigationService.cs`
+- `src/Meridian.Ui/dashboard/`
 - `src/Meridian.Ui.Services/Services/WorkspaceModels.cs`
 - `src/Meridian.Wpf/ViewModels/`
 - `src/Meridian.Wpf/Views/`

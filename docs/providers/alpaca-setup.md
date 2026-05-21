@@ -16,6 +16,8 @@ Alpaca provides free real-time and historical market data through WebSocket and 
 - **Free Real-Time Data**: IEX feed included with free account
 - **SIP Data**: Premium consolidated feed ($9/month for unlimited)
 - **Historical Data**: Unlimited historical bars with free account
+- **Trading API Orders**: Equities, options, advanced order classes, trailing stops, and paper/live order routing through the `/v2/orders` endpoint
+- **Fixed Income Payload Support**: Treasury/corporate-bond order payload validation for Alpaca fixed-income lanes that use full face-value denominations
 - **No Special SDK**: Uses standard WebSocket and HTTP clients
 - **Simple Authentication**: API key + secret key
 
@@ -124,7 +126,7 @@ $env:ALPACA_PAPER = "true"
 | `KeyId` | string | - | API Key ID |
 | `SecretKey` | string | - | API Secret Key |
 | `Paper` | bool | `true` | Use paper trading endpoint |
-| `DataFeed` | string | `"iex"` | `"iex"` or `"sip"` |
+| `DataFeed` | string | `"iex"` | `"iex"`, `"sip"`, `"delayed_sip"`, `"boats"`, `"overnight"`, or `"otc"` |
 | `ReconnectAttempts` | int | `5` | WebSocket reconnection attempts |
 | `ReconnectDelayMs` | int | `2000` | Delay between reconnects (ms) |
 
@@ -227,6 +229,71 @@ client.SubscribeQuotes(config);
 ```
 1Min, 5Min, 15Min, 30Min, 1Hour, 4Hour, 1Day, 1Week, 1Month
 ```
+
+### Adjustment Values
+
+Meridian accepts Alpaca's current stock-bar adjustment values:
+
+```
+raw, split, dividend, spin-off, all
+```
+
+Comma-separated combinations are accepted for additive adjustments, such as `split,dividend,spin-off`.
+`raw` and `all` must be used alone.
+
+---
+
+## Trading Support
+
+`AlpacaBrokerageGateway` routes Trading API orders through the configured paper or live base URL.
+Keep paper trading as the default validation lane before enabling live execution.
+
+### Equity Orders
+
+Supported order types:
+
+- market
+- limit
+- stop
+- stop-limit
+- trailing stop
+- market-on-open / market-on-close
+- limit-on-open / limit-on-close
+
+Supported advanced order classes:
+
+- `simple`
+- `bracket`
+- `oco`
+- `oto`
+
+Use `OrderRequest.Metadata` keys such as `order_class`, `take_profit.limit_price`,
+`stop_loss.stop_price`, and `stop_loss.limit_price` to populate Alpaca advanced-order legs.
+Use `extended_hours=true` only with eligible limit orders.
+
+### Options Orders
+
+Single-leg option orders use the same `OrderRequest` contract with an OCC option symbol and
+`asset_class=us_option` metadata. Set `PositionIntent` or `position_intent` metadata to one of:
+
+- `buy_to_open`
+- `buy_to_close`
+- `sell_to_open`
+- `sell_to_close`
+
+Multi-leg option orders use `OrderRequest.Legs`; Meridian serializes them as Alpaca `mleg` orders
+with `ratio_qty`, `side`, and optional `position_intent` per leg. Ratios must be positive whole
+numbers and simplified to their smallest ratio.
+
+### Fixed Income Orders
+
+Fixed-income payloads use `asset_class=treasury` or `asset_class=corporate` metadata.
+Meridian validates the lane conservatively:
+
+- market and limit orders only
+- `day` time-in-force only
+- no extended-hours flag
+- quantity is full face-value denomination from 1,000 through 1,000,000, in 1,000 increments
 
 ### Example: Fetch Historical Bars
 

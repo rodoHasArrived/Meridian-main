@@ -8,11 +8,23 @@ This runbook gets a new operator from zero to a validated pilot workflow:
 4. Promote a strategy to paper trading.
 5. Troubleshoot the most common pilot blockers.
 
-## 1) Credential setup
+## 1) First-run setup
 
-1. Copy `config/appsettings.sample.json` to `config/appsettings.json`.
-2. Keep secrets in environment variables (never commit credentials into JSON).
-3. Confirm required provider variables from the sample config header.
+Run the first-run bootstrap from the repository root:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
+```
+
+`--setup` is the easiest entry point for a new local install. It uses the same validated path as
+`--quickstart`: it detects provider environment variables, creates `config/appsettings.json`, backs
+up an existing config before overwriting it, and validates credentials when keys are present.
+
+## 2) Credential setup
+
+1. Keep secrets in environment variables (never commit credentials into JSON).
+2. Confirm required provider variables from the sample config header or provider guide.
+3. Re-run `--setup` after adding credentials if you want Meridian to detect and validate them.
 
 ### Example (PowerShell)
 
@@ -30,7 +42,7 @@ export ALPACA_SECRET_KEY="<your-secret-key>"
 export MDC_API_KEY="<operator-api-key>"
 ```
 
-## 2) Provider validation
+## 3) Provider validation
 
 Run preflight checks before opening workstation flows:
 
@@ -47,7 +59,7 @@ Run preflight checks before opening workstation flows:
 
 If any provider fails, resolve credentials/entitlements first, then re-run checks.
 
-## 3) First backtest
+## 4) First backtest
 
 1. Start Meridian in web mode:
 
@@ -59,7 +71,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --mode web
 3. Run one baseline strategy with default risk limits.
 4. Record run ID, fill count, and PnL summary for your pilot log.
 
-## 4) Promote to paper
+## 5) Promote to paper
 
 Promotion gate for pilot operators:
 
@@ -70,7 +82,7 @@ Promotion gate for pilot operators:
 
 After gates pass, create a paper session and monitor for one trading day.
 
-## 5) Troubleshooting
+## 6) Troubleshooting
 
 ### Authentication failures (`401`)
 
@@ -87,6 +99,8 @@ After gates pass, create a paper session and monitor for one trading day.
 
 - Inspect rate-limit settings under `Backfill` and provider priorities.
 - Check `data/_logs/` for throttling and transport errors.
+- Runtime logs roll daily, retain the latest 30 files, and start a new file at 16 MB to keep
+  noisy debug sessions from filling the data root.
 
 ### Workstation page does not load
 

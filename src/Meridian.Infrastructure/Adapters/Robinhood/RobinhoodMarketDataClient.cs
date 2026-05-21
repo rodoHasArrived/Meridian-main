@@ -14,6 +14,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Infrastructure.Adapters.Robinhood;
@@ -50,6 +51,7 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     private readonly QuoteCollector _quoteCollector;
     private readonly ILogger<RobinhoodMarketDataClient> _logger;
     private readonly string? _accessToken;
+    private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
 
     private readonly ConcurrentDictionary<int, string> _subscriptions = new();
     private int _nextSubId;
@@ -57,6 +59,15 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     private Task? _pollTask;
     private volatile bool _connected;
     private bool _disposed;
+    private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
+    private DateTimeOffset? _connectedAt;
+    private DateTimeOffset? _disconnectedAt;
+    private DateTimeOffset? _lastPollAttemptAt;
+    private DateTimeOffset? _lastSuccessfulApiCallAt;
+    private DateTimeOffset? _lastMessageReceivedAt;
+    private string? _lastError;
+    private int _consecutivePollFailures;
+    private long _dataQualityRejections;
 
     public RobinhoodMarketDataClient(
         IHttpClientFactory httpClientFactory,
@@ -99,47 +110,79 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     public bool IsEnabled => !string.IsNullOrWhiteSpace(_accessToken);
 
     /// <inheritdoc />
-    public Task ConnectAsync(CancellationToken ct = default)
+    public async Task ConnectAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (string.IsNullOrWhiteSpace(_accessToken))
+        {
+            SetLifecycleState(ProviderConnectionLifecycleState.NotConfigured);
+            _lastError = "Robinhood access token is missing.";
             throw new ConnectionException(
                 $"ROBINHOOD_ACCESS_TOKEN environment variable is not set. " +
                 "Set it to your Robinhood personal access token before connecting.");
+        }
 
-        if (_connected)
-            return Task.CompletedTask;
+        await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_connected)
+                return;
 
-        _pollCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        _pollTask = RunPollLoopAsync(_pollCts.Token);
-        _connected = true;
-        _logger.LogInformation("Robinhood market data client connected (polling interval {Interval})", DefaultPollInterval);
-        return Task.CompletedTask;
+            SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
+            _pollCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            _connected = true;
+            _connectedAt = DateTimeOffset.UtcNow;
+            _lastError = null;
+            _consecutivePollFailures = 0;
+            SetLifecycleState(ProviderConnectionLifecycleState.Connected);
+            _pollTask = RunPollLoopAsync(_pollCts.Token);
+            _logger.LogInformation("Robinhood market data client connected (polling interval {Interval})", DefaultPollInterval);
+        }
+        finally
+        {
+            _lifecycleLock.Release();
+        }
     }
 
     /// <inheritdoc />
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        if (!_connected)
-            return;
-
-        _connected = false;
-
-        if (_pollCts is not null)
+        await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            await _pollCts.CancelAsync().ConfigureAwait(false);
-            if (_pollTask is not null)
+            if (!_connected)
             {
-                try
-                { await _pollTask.ConfigureAwait(false); }
-                catch (OperationCanceledException) { }
+                if (_lifecycleState is not ProviderConnectionLifecycleState.NotConfigured)
+                    SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
+                return;
             }
-            _pollCts.Dispose();
-            _pollCts = null;
-        }
 
-        _logger.LogInformation("Robinhood market data client disconnected");
+            SetLifecycleState(ProviderConnectionLifecycleState.Disconnecting);
+            _connected = false;
+
+            if (_pollCts is not null)
+            {
+                await _pollCts.CancelAsync().ConfigureAwait(false);
+                if (_pollTask is not null)
+                {
+                    try
+                    { await _pollTask.WaitAsync(ct).ConfigureAwait(false); }
+                    catch (OperationCanceledException) { }
+                }
+                _pollCts.Dispose();
+                _pollCts = null;
+            }
+
+            _pollTask = null;
+            _disconnectedAt = DateTimeOffset.UtcNow;
+            SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
+            _logger.LogInformation("Robinhood market data client disconnected");
+        }
+        finally
+        {
+            _lifecycleLock.Release();
+        }
     }
 
     /// <inheritdoc />
@@ -183,6 +226,31 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
             _logger.LogDebug("Robinhood unsubscribed quotes for {Symbol} (subId={SubId})", symbol, subscriptionId);
     }
 
+    /// <summary>
+    /// Returns a redacted diagnostics snapshot for health surfaces and tests.
+    /// </summary>
+    public RobinhoodMarketDataDiagnostics GetDiagnosticsSnapshot()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var lastActivity = _lastMessageReceivedAt ?? _lastSuccessfulApiCallAt ?? _connectedAt;
+
+        return new RobinhoodMarketDataDiagnostics(
+            ProviderId: "robinhood-live",
+            LifecycleState: _lifecycleState,
+            IsConnected: _connected,
+            ActiveSubscriptionCount: _subscriptions.Count,
+            LastConnectedAt: _connectedAt,
+            LastDisconnectedAt: _disconnectedAt,
+            LastPollAttemptAt: _lastPollAttemptAt,
+            LastSuccessfulApiCallAt: _lastSuccessfulApiCallAt,
+            LastMessageReceivedAt: _lastMessageReceivedAt,
+            LastError: _lastError,
+            ConsecutivePollFailures: _consecutivePollFailures,
+            DataQualityRejections: Interlocked.Read(ref _dataQualityRejections),
+            ConnectionAge: _connected && _connectedAt is not null ? now - _connectedAt.Value : null,
+            IdleDuration: lastActivity is not null ? now - lastActivity.Value : null);
+    }
+
     // ── Polling loop ──────────────────────────────────────────────────────
 
     private async Task RunPollLoopAsync(CancellationToken ct)
@@ -196,6 +264,7 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
 
                 var seenSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var batch = new List<string>(MaxSymbolsPerBatch);
+                var pollSucceeded = true;
 
                 foreach (var symbol in _subscriptions.Values)
                 {
@@ -212,14 +281,33 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
                         continue;
                     }
 
-                    await PollBatchAsync(batch, ct).ConfigureAwait(false);
+                    pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
                     batch.Clear();
                 }
 
                 if (batch.Count > 0)
                 {
                     ct.ThrowIfCancellationRequested();
-                    await PollBatchAsync(batch, ct).ConfigureAwait(false);
+                    pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
+                }
+
+                if (pollSucceeded)
+                {
+                    _consecutivePollFailures = 0;
+                    if (_lifecycleState is ProviderConnectionLifecycleState.Degraded)
+                        SetLifecycleState(ProviderConnectionLifecycleState.Connected);
+                }
+                else
+                {
+                    _consecutivePollFailures++;
+                    if (_lifecycleState is not ProviderConnectionLifecycleState.Failed)
+                        SetLifecycleState(ProviderConnectionLifecycleState.Degraded);
+                    var backoff = CalculatePollBackoff(_consecutivePollFailures);
+                    _logger.LogWarning(
+                        "Robinhood quote polling degraded after {Failures} consecutive failed poll cycles; backing off for {Delay}",
+                        _consecutivePollFailures,
+                        backoff);
+                    await Task.Delay(backoff, ct).ConfigureAwait(false);
                 }
             }
         }
@@ -234,10 +322,11 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
         }
     }
 
-    private async Task PollBatchAsync(IReadOnlyList<string> symbols, CancellationToken ct)
+    private async Task<bool> PollBatchAsync(IReadOnlyList<string> symbols, CancellationToken ct)
     {
         try
         {
+            _lastPollAttemptAt = DateTimeOffset.UtcNow;
             using var client = CreateHttpClient();
             var symbolList = string.Join(",", symbols);
             var url = $"{QuotesEndpoint}?symbols={Uri.EscapeDataString(symbolList)}";
@@ -246,16 +335,19 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
+                _lastError = "Provider returned Unauthorized while polling Robinhood quotes. Refresh or replace the stored access token.";
+                SetLifecycleState(ProviderConnectionLifecycleState.Failed);
                 _logger.LogWarning("Robinhood quote polling: 401 Unauthorized — access token may have expired");
-                return;
+                return false;
             }
 
             if (!response.IsSuccessStatusCode)
             {
+                _lastError = $"Provider returned HTTP {(int)response.StatusCode} while polling Robinhood quotes.";
                 _logger.LogWarning(
                     "Robinhood quote polling: HTTP {StatusCode} for batch {Symbols}",
                     response.StatusCode, string.Join(",", symbols));
-                return;
+                return false;
             }
 
             using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -264,9 +356,14 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
                 .ConfigureAwait(false);
 
             if (result?.Results is null)
-                return;
+            {
+                _lastSuccessfulApiCallAt = DateTimeOffset.UtcNow;
+                _lastError = null;
+                return true;
+            }
 
             var timestamp = DateTimeOffset.UtcNow;
+            var publishedAny = false;
             foreach (var q in result.Results)
             {
                 if (string.IsNullOrWhiteSpace(q.Symbol))
@@ -288,8 +385,26 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
                     AskSize: q.AskSize ?? 0L,
                     StreamId: "ROBINHOOD");
 
+                var issues = ProviderDataQualityValidator.ValidateQuote("robinhood-live", update);
+                if (issues.Any(issue => issue.Severity == ProviderDataQualitySeverity.Error))
+                {
+                    Interlocked.Increment(ref _dataQualityRejections);
+                    _logger.LogWarning(
+                        "Rejected Robinhood quote for {Symbol} due to provider data quality issues: {Issues}",
+                        q.Symbol,
+                        string.Join("; ", issues.Select(issue => $"{issue.FieldPath}: {issue.Message}")));
+                    continue;
+                }
+
                 _quoteCollector.OnQuote(update);
+                publishedAny = true;
             }
+
+            _lastSuccessfulApiCallAt = DateTimeOffset.UtcNow;
+            if (publishedAny)
+                _lastMessageReceivedAt = _lastSuccessfulApiCallAt;
+            _lastError = null;
+            return true;
         }
         catch (OperationCanceledException)
         {
@@ -297,7 +412,9 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
         }
         catch (Exception ex)
         {
+            _lastError = ex.Message;
             _logger.LogError(ex, "Robinhood quote poll error for batch {Symbols}", string.Join(",", symbols));
+            return false;
         }
     }
 
@@ -317,6 +434,23 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
             return;
         _disposed = true;
         await DisconnectAsync().ConfigureAwait(false);
+        _lifecycleLock.Dispose();
+    }
+
+    private static TimeSpan CalculatePollBackoff(int consecutiveFailures)
+    {
+        var attempt = Math.Clamp(consecutiveFailures, 1, 5);
+        var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
+        return delay > TimeSpan.FromSeconds(30) ? TimeSpan.FromSeconds(30) : delay;
+    }
+
+    private void SetLifecycleState(ProviderConnectionLifecycleState state)
+    {
+        if (_lifecycleState == state)
+            return;
+
+        _lifecycleState = state;
+        _logger.LogInformation("Robinhood market data lifecycle state changed to {LifecycleState}", state);
     }
 
     // ── JSON DTOs (ADR-014: source generators) ────────────────────────────
@@ -356,3 +490,23 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true)]
 internal sealed partial class RobinhoodQuoteSerializerContext : JsonSerializerContext;
+
+/// <summary>
+/// Redacted provider diagnostics for the Robinhood polling market data adapter.
+/// Excludes access tokens, request URLs, account IDs, and response payloads.
+/// </summary>
+public sealed record RobinhoodMarketDataDiagnostics(
+    string ProviderId,
+    ProviderConnectionLifecycleState LifecycleState,
+    bool IsConnected,
+    int ActiveSubscriptionCount,
+    DateTimeOffset? LastConnectedAt,
+    DateTimeOffset? LastDisconnectedAt,
+    DateTimeOffset? LastPollAttemptAt,
+    DateTimeOffset? LastSuccessfulApiCallAt,
+    DateTimeOffset? LastMessageReceivedAt,
+    string? LastError,
+    int ConsecutivePollFailures,
+    long DataQualityRejections,
+    TimeSpan? ConnectionAge,
+    TimeSpan? IdleDuration);

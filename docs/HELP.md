@@ -1,312 +1,130 @@
 # Meridian Help
 
-Meridian is a desktop-first platform: the main CLI/host lives in `src/Meridian/`, shared workstation services and local API endpoints live in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`, and the Windows desktop shell lives in `src/Meridian.Wpf/`.
+**Last Reviewed:** 2026-05-18
 
-This guide focuses on the repo entry points and CLI flows that are currently verified in code.
+This page keeps the high-traffic local operator and developer commands in one stable target for
+docs links. For roadmap status and product direction, start with
+[`plans/current-direction-and-status.md`](plans/current-direction-and-status.md), then use
+[`status/ROADMAP.md`](status/ROADMAP.md) and
+[`status/FEATURE_INVENTORY.md`](status/FEATURE_INVENTORY.md).
 
-## Quick Start
+## Command-line usage
 
-### Desktop-local API host
-
-Use the desktop-local API host for backend services and local workstation APIs:
-
-```bash
-make run
-```
-
-Or run the host directly:
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
-```
-
-Local API endpoint: `http://localhost:8080`.
-
-### Windows WPF desktop
-
-Use the full desktop workstation shell on Windows:
-
-```powershell
-dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
-```
-
-The desktop shell is update-safe by default:
-
-- Config lives at `%LocalAppData%\Meridian\appsettings.json`
-- Relative `DataRoot` values such as `data` resolve relative to that config location, not the executable folder
-- Desktop catalog and health metadata also live alongside the external config instead of under the install directory
-- Retained desktop state now follows the external roots as well: activity logs and collection session history write under the resolved `DataRoot`, symbol mapping persistence follows its configured path or a `DataRoot` fallback, and generated schema artifacts live under `%LocalAppData%\Meridian\_catalog\schemas`
-
-On Linux/macOS, the WPF project remains in the solution as a CI-friendly stub build rather than a full desktop runtime.
-
-### Discover commands
+Run these from the repository root unless a command says otherwise.
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
-make help
-```
-
-## Verified CLI Workflows
-
-<a id="command-line-usage"></a>
-
-The current CLI argument surface is defined in `src/Meridian.Application/Commands/CliArguments.cs`, with command handlers in `src/Meridian.Application/Commands/`.
-
-### Configuration and startup
-
-<a id="configuration"></a>
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
+dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --selftest
+dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
-dotnet run --project src/Meridian/Meridian.csproj -- --check-config
-dotnet run --project src/Meridian/Meridian.csproj -- --show-config
-dotnet run --project src/Meridian/Meridian.csproj -- --watch-config
-dotnet run --project src/Meridian/Meridian.csproj -- --config config/appsettings.json
 ```
 
-Also supported by the current command handlers:
+The browser workstation is the active operator UI lane. During local development:
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --wizard
-dotnet run --project src/Meridian/Meridian.csproj -- --auto-config
-dotnet run --project src/Meridian/Meridian.csproj -- --detect-providers
-dotnet run --project src/Meridian/Meridian.csproj -- --generate-config --template minimal
-dotnet run --project src/Meridian/Meridian.csproj -- --generate-config-schema --output config/appsettings.schema.json
-dotnet run --project src/Meridian/Meridian.csproj -- --list-presets
-dotnet run --project src/Meridian/Meridian.csproj -- --preset researcher
+cd src/Meridian.Ui/dashboard
+npm install
+npm run dev
+npm run test
+npm run build
 ```
 
-Configuration path resolution is currently:
+`npm run dev` serves the workstation under `/workstation/` and proxies `/api` to
+`MERIDIAN_API_BASE_URL` when set, or `http://localhost:8080` by default.
+
+To install the browser workstation as a local Windows app with Desktop and Start Menu shortcuts:
+
+```powershell
+.\build\scripts\install\install-web-workstation.ps1
+.\build\scripts\install\install.ps1 -Mode WebWorkstation
+```
+
+The installed shortcut starts the local host and opens `http://localhost:8080/workstation/`.
+It uses `--mode workstation`, which keeps provider connections and collector subscriptions
+deferred until an operator action needs them.
+For an end-to-end installed-copy smoke, run:
+
+```powershell
+.\build\scripts\install\smoke-web-workstation-install.ps1
+```
+
+## Configuration
+
+Configuration path resolution uses this order:
 
 1. `--config <path>`
 2. `MDC_CONFIG_PATH`
 3. `config/appsettings.json`
-4. `appsettings.json`
 
-For the WPF desktop host, startup now pins both the UI shell and the launched backend process to `%LocalAppData%\Meridian\appsettings.json`, and relative storage paths resolve from that external config root.
-
-### Diagnostics
-
-<a id="troubleshooting"></a>
+Useful probes:
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
-dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
-dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
-dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
-dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
-```
-
-### Provider recommendation
-
-```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
+dotnet run --project src/Meridian/Meridian.csproj -- --check-config
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
+dotnet run --project src/Meridian/Meridian.csproj -- --detect-providers
 dotnet run --project src/Meridian/Meridian.csproj -- --recommend-providers
 ```
 
-The browser workstation provider setup form posts to `POST /api/providers/configure`. The endpoint
-persists supported providers as data-source configuration entries and returns the setup result used
-by the confirmation screen. Current local data-source setup supports `polygon`, `alpaca`,
-`interactivebrokers`/`ib`, `synthetic`, and `custom`; unsupported catalog entries return a structured
-bad-request result until their configuration model is implemented.
+`--setup` and `--first-run` are friendly aliases for the existing `--quickstart` path. They
+auto-detect provider credentials from the environment, generate a practical starter config, validate
+credentials when keys are present, back up any existing `config/appsettings.json`, and save the new
+config to `config/appsettings.json`.
 
-### Symbol management
+Provider setup should stay paper-first by default. Use Settings in the browser workstation for
+Alpaca paper-key verification and only test live endpoints after an explicit operator
+acknowledgement.
 
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols-monitored
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols-archived
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add AAPL,MSFT
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add ES --depth-levels 20
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add SPY --no-depth
-dotnet run --project src/Meridian/Meridian.csproj -- --symbols-remove TSLA
-dotnet run --project src/Meridian/Meridian.csproj -- --symbol-status AAPL
-```
+## Analysis-ready exports
 
-### Historical backfill
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-01-01 --backfill-to 2025-12-31
-dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-provider polygon --backfill-symbols SPY
-dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backfill-symbols QQQ
-```
-
-### Package operations
-
-<a id="analysis-ready-exports"></a>
+Use package and export commands when producing local analysis artifacts:
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name market-data-archive
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-symbols AAPL,MSFT --package-from 2025-01-01
 dotnet run --project src/Meridian/Meridian.csproj -- --list-package ./packages/data.zip
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-package ./packages/data.zip
-dotnet run --project src/Meridian/Meridian.csproj -- --import-package ./packages/data.zip
 ```
 
-### Schema, replay, and validation-adjacent flags
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas
-dotnet run --project src/Meridian/Meridian.csproj -- --strict-schemas
-dotnet run --project src/Meridian/Meridian.csproj -- --replay ./data/session/events.jsonl
-dotnet run --project src/Meridian/Meridian.csproj -- --replay ./data/session/
-dotnet run --project src/Meridian/Meridian.csproj -- --dry-run
-dotnet run --project src/Meridian/Meridian.csproj -- --offline
-dotnet run --project src/Meridian/Meridian.csproj -- --selftest
-```
-
-`--replay` accepts either one JSONL/JSONL.GZ file or a directory tree containing `*.jsonl*`
-files. Directory replay processes files in stable path order.
-
-### ETL import/export
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --etl-import --etl-source-kind local --etl-source-path ./incoming/trades --etl-schema partner.trades.csv.v1
-dotnet run --project src/Meridian/Meridian.csproj -- --etl-export --etl-source-kind local --etl-source-path ./data --etl-destination-kind local --etl-destination-path ./exports --etl-symbols AAPL,MSFT --etl-publish-normalized
-dotnet run --project src/Meridian/Meridian.csproj -- --etl-roundtrip --etl-source-kind local --etl-source-path ./incoming/trades --etl-destination-kind local --etl-destination-path ./exports --etl-publish-package
-dotnet run --project src/Meridian/Meridian.csproj -- --etl-resume <job-id>
-```
-
-`--etl-import`, `--etl-export`, and `--etl-roundtrip` require `--etl-source-kind` and
-`--etl-source-path`. `--etl-resume` requires an existing ETL job ID from a prior run.
-
-
-### Statement import/reconciliation
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
-```
-
-`--statement-import`, `--statement-validate`, and `--statement-reconcile` require both
-`--statement-source-kind` and `--statement-source-path`.
-
-## Build And Test
-
-### Solution build
-
-```bash
-python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
-```
-
-For concurrent automation or screenshot/smoke runs, isolate the whole build graph:
-
-```bash
-python3 build/python/cli/buildctl.py build \
-  --project src/Meridian.Wpf/Meridian.Wpf.csproj \
-  --configuration Release \
-  --full-wpf-build \
-  --isolation-key desktop-smoke
-```
-
-### Focused test runs
-
-```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj
-dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj
-dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
-dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj
-dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj
-```
-
-## Key Paths
-
-- `src/Meridian/` - main host executable
-- `src/Meridian.Application/` - startup orchestration, commands, and application services
-- `src/Meridian.Ui.Shared/` - shared workstation endpoints and local API composition
-- `src/Meridian.Ui.Services/` - shared desktop-facing services
-- `src/Meridian.Wpf/` - Windows WPF workstation shell
-- `src/Meridian.Mcp/` and `src/Meridian.McpServer/` - MCP integrations
-- `src/Meridian.QuantScript/` - QuantScript project
-- `docs/README.md` - main documentation index
-- `docs/status/ROADMAP.md` - current planning source
-- `docs/status/FEATURE_INVENTORY.md` - capability inventory
-- `docs/plans/` - active product and technical blueprints
-
-## Configuration
-
-Configuration lives in `config/` at the repository root. The primary config file is `config/appsettings.json`. Provider credentials and secrets use the secrets management pattern documented in [ADR-011](adr/011-centralized-configuration-and-credentials.md).
-
-Desktop note:
-
-- The installed WPF application does not use the repo-local `config/` directory at runtime
-- It stores config under `%LocalAppData%\Meridian\appsettings.json`
-- If `DataRoot` is omitted, Meridian uses `data` under the active config root
-- Legacy desktop configs that still contain `Storage.BaseDirectory` are migrated to `DataRoot` on load
-- Legacy desktop installs with app-folder `sessions.json`, `data/_logs/activity_log.json`, `data/_config/symbol-mappings.json`, or `_catalog/schemas/data_dictionary.json` are migrated into the external desktop locations on first use
-
-```bash
-# View current configuration
-dotnet run --project src/Meridian/Meridian.csproj -- --show-config
-
-# Validate provider credentials
-dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
-```
-
-See [Getting Started](getting-started/README.md) for initial setup steps and provider configuration.
+For ETL local-file workflows, use the `--etl-source-kind` and `--etl-source-path` arguments exposed
+by `src/Meridian.Application/Commands/EtlCommands.cs`.
 
 ## Troubleshooting
 
-Common issues and resolutions:
-
-- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 10 SDK is installed.
-- **Provider connectivity:** Run `dotnet run --project src/Meridian/Meridian.csproj -- --selftest` to validate connectivity.
-- **Missing configuration:** Confirm `config/appsettings.json` exists and contains valid provider entries.
-- **WPF test failures on Linux/macOS:** WPF tests require Windows. Use `/p:EnableWindowsTargeting=true` or skip with `--filter "Category!=WPF"`.
-- **Test isolation failures:** Each test must own its data; see [Desktop Testing Guide](development/desktop-testing-guide.md).
-
-For deeper diagnostics run `dotnet run ... -- --diagnostics`.
-
-## FAQ
-
-**Q: Which provider should I use for equities data?**
-See [Provider Comparison](providers/provider-comparison.md) for a feature matrix.
-
-**Q: How do I add a new data provider?**
-Follow the [Provider Builder Guide](ai/skills/README.md) or use the `meridian-provider-builder` skill.
-
-**Q: Where do I find the current roadmap?**
-See [ROADMAP.md](status/ROADMAP.md) for current delivery waves and priorities.
-
-**Q: How do I run only tests for a single project?**
-Use `dotnet test tests/<ProjectName>.Tests/<ProjectName>.Tests.csproj`.
-
-## Command-Line Usage
-
-Full CLI reference:
+Use the narrowest probe that matches the failure.
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
+dotnet run --project src/Meridian/Meridian.csproj -- --selftest
+dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
+python build/scripts/docs/run-docs-automation.py --profile quick --dry-run
 ```
 
-Common flags:
+For browser-workstation issues, first verify the local host and route:
 
-| Flag | Purpose |
-|------|---------|
-| `--dry-run` | Simulate operations without writing data |
-| `--offline` | Run without live provider connections |
-| `--selftest` | Run connectivity and config validation |
-| `--diagnostics` | Extended diagnostic output |
-| `--backfill` | Trigger historical data backfill |
-| `--package` | Package data for export |
-| `--check-config` | Validate configuration file |
-| `--show-config` | Print the effective configuration |
-| `--validate-credentials` | Test configured credentials |
-
-## Analysis-Ready Exports
-
-Meridian can export data in analysis-ready formats using the package command:
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name my-export
-dotnet run --project src/Meridian/Meridian.csproj -- --package --package-format csv --package-symbols AAPL,MSFT
+```powershell
+Invoke-RestMethod http://localhost:8080/healthz
+Invoke-RestMethod http://localhost:8080/api/workstation/trading/readiness
+Invoke-RestMethod http://localhost:8080/api/workstation/operator/inbox
 ```
 
-See [Portable Data Packager](operations/portable-data-packager.md) for full export options including CSV, Parquet, and ZIP bundle formats.
-## Notes
+Known local-environment pitfalls:
 
-- This document is intentionally grounded in the local codebase rather than aspirational feature copy.
-- Some built-in `--help` topic text in the application still contains older wording. When in doubt, prefer the command handlers in `src/Meridian.Application/Commands/` and the typed flags in `src/Meridian.Application/Commands/CliArguments.cs`.
+- stale Vite preview or Node processes can lock built workstation assets during `npm run build`
+- missing Playwright-managed browsers may require installed Chrome or Edge for smoke checks
+- low free space on `C:` can break restore/build/test lanes before product code is at fault
+
+
+## Workstation governance workflow references
+
+For workstation governance lifecycle, approval/rejection/reopen guidance, and API route catalog:
+
+- [`status/workstation-governance-state-model.md`](status/workstation-governance-state-model.md)
+- [`operations/workstation-governance-approval-runbook.md`](operations/workstation-governance-approval-runbook.md)
+- [`reference/api-reference.md`](reference/api-reference.md) (Workstation governance routes)
 
 <!-- BEGIN AUTO-GENERATED: WORKFLOW-MANIFEST-HELP -->
 ### Canonical Workflow Manifest (Generated)
@@ -341,16 +159,41 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
   - `make desktop-test-operator-inbox-route`
   - `pwsh -File ./scripts/dev/validate-operator-inbox-route.ps1`
 
+#### `provider-validation-evidence-bundle`
+
+- Owners: @provider-infra, @ops-readiness
+- Commands:
+  - `pwsh ./scripts/dev/run-provider-validation-evidence-bundle.ps1`
+
+#### `ibapi-smoke-build`
+
+- Owners: @provider-infra, @desktop-shell
+- Commands:
+  - `pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release`
+
+#### `wpf-route-validation-position-blotter`
+
+- Owners: @desktop-shell, @api-workstation
+- Commands:
+  - `pwsh -File ./scripts/dev/validate-position-blotter-route.ps1`
+
+#### `wpf-dev-loop-validation`
+
+- Owners: @desktop-shell, @developer-experience
+- Commands:
+  - `pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore`
+
+#### `robinhood-options-smoke`
+
+- Owners: @desktop-shell, @provider-infra
+- Commands:
+  - `pwsh ./scripts/dev/robinhood-options-smoke.ps1 -Configuration Release`
+
+#### `web-screenshot-capture`
+
+- Owners: @operator-experience, @developer-experience
+- Commands:
+  - `node scripts/dev/capture-web-screenshots.mjs --output-dir docs/screenshots/web --config scripts/dev/web-screenshot-routes.json`
+
 _Generated by `python3 build/scripts/docs/generate-workflow-manifest.py`._
 <!-- END AUTO-GENERATED: WORKFLOW-MANIFEST-HELP -->
-
-## Broker statement reconciliation (validated)
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-broker samplebroker --statement-source-path ./artifacts/recon/samplebroker-statement.csv --statement-date 2026-01-31
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-broker samplebroker --statement-source-path ./artifacts/recon/samplebroker-statement.csv --statement-date 2026-01-31
-```
-
-Expected artifacts:
-- `reconciliation/statement-imports/<import-id>.json` containing raw/normalized row payload plus source checksum.
-- `reconciliation/cases/<case-id>.json` for open unmatched rows once matcher/case services are run.

@@ -158,6 +158,41 @@ public sealed class ProviderEndpointTests
     }
 
     [Fact]
+    public async Task ConfigureProvider_WithYahooPayload_PersistsHistoricalDataSource()
+    {
+        var displayName = $"Yahoo Finance Test {Guid.NewGuid():N}";
+        var payload = new
+        {
+            Kind = "yahoo",
+            DisplayName = displayName,
+            ApiKey = (string?)null,
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill" }
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/providers/configure", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await DeserializeAsync(response);
+        result["success"].GetBoolean().Should().BeTrue();
+        result["providerId"].GetString().Should().StartWith("yahoo");
+        result["providerName"].GetString().Should().Be(displayName);
+        result["error"].ValueKind.Should().Be(JsonValueKind.Null);
+
+        var dataSourcesResponse = await _client.GetAsync("/api/config/datasources");
+        dataSourcesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var dataSources = await DeserializeAsync(dataSourcesResponse);
+        var source = dataSources["sources"].EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("id").GetString().Should().StartWith("yahoo");
+        source.GetProperty("type").GetString().Should().Be("Historical");
+    }
+
+    [Fact]
     public async Task ConfigureProvider_WithUnsupportedProvider_ReturnsBadRequestResult()
     {
         var payload = new
@@ -183,6 +218,105 @@ public sealed class ProviderEndpointTests
     #endregion
 
     #region Data Source CRUD
+
+
+    [Fact]
+    public async Task GetDataSources_RedactsProviderCredentials()
+    {
+        var displayName = $"Alpaca Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "alpaca-key",
+            ApiSecret = "alpaca-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/datasources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
+        source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetDataSources_RedactsPolygonApiKey()
+    {
+        var displayName = $"Polygon Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "polygon",
+            DisplayName = displayName,
+            ApiKey = "polygon-secret-key",
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill", "reference" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/datasources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        var polygonElement = source.GetProperty("polygon");
+        // apiKey should either be absent (WhenWritingNull) or present with a null value
+        if (polygonElement.TryGetProperty("apiKey", out var apiKeyElement))
+            apiKeyElement.ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task GetDataSources_AliasEndpoint_RedactsProviderCredentials()
+    {
+        var displayName = $"Alpaca Alias Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "alpaca-alias-key",
+            ApiSecret = "alpaca-alias-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/data-sources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
+        source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
+    }
 
     [Fact]
     public async Task GetDataSources_DoesNotReturnProviderSecrets()
@@ -213,8 +347,8 @@ public sealed class ProviderEndpointTests
 
         configuredSource.ValueKind.Should().NotBe(JsonValueKind.Undefined);
         var alpaca = configuredSource.GetProperty("alpaca");
-        alpaca.GetProperty("keyId").ValueKind.Should().Be(JsonValueKind.Null);
-        alpaca.GetProperty("secretKey").ValueKind.Should().Be(JsonValueKind.Null);
+        alpaca.GetProperty("keyId").GetString().Should().BeEmpty();
+        alpaca.GetProperty("secretKey").GetString().Should().BeEmpty();
     }
 
     [Fact]

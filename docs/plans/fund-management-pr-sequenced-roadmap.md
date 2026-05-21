@@ -2,10 +2,23 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **fund management pr sequenced roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the fund management pr sequenced roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
-> **Retirement note (2026-04-09):** Browser workstation references in this roadmap, including any WPF/web alignment language carried over from earlier planning, are historical only. Current implementation should stay desktop-first and use the retained desktop-local API seams where needed.
+> **UI lane refresh (2026-05-18):** Browser workstation references in this
+> roadmap are active again. New operator-facing governance, accounting,
+> reporting, and portfolio workflows should be shared-contract-first and
+> visible through `src/Meridian.Ui/dashboard/`; WPF remains retained support,
+> compatibility, and regression evidence unless a slice explicitly names
+> desktop support as its goal.
 
 ## Purpose
 
@@ -29,10 +42,10 @@ The goal is to let multiple contributors work concurrently without repeatedly co
 
 | Lane | Theme | Primary write scope |
 | ------ | ------- | --------------------- |
-| Lane A | Workstation and front-office UX | `src/Meridian.Wpf`, `src/Meridian.Ui.Services`, parts of `src/Meridian.Ui.Shared` |
+| Lane A | Workstation and front-office UX | `src/Meridian.Ui/dashboard`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, retained `src/Meridian.Wpf` support where needed |
 | Lane B | Shared contracts and orchestration | `src/Meridian.Contracts`, `src/Meridian.Strategies`, `src/Meridian.Application` |
 | Lane C | Governance and accounting kernel | `src/Meridian.FSharp`, `src/Meridian.FSharp.Ledger`, `src/Meridian.Ledger`, parts of `src/Meridian.Storage` |
-| Lane D | Reporting, evidence, and data-ops support | `src/Meridian.Storage`, `src/Meridian.Ui.Shared`, selected WPF pages |
+| Lane D | Reporting, evidence, and data-ops support | `src/Meridian.Storage`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard`, retained WPF pages where needed |
 
 ## Dependency Rules
 

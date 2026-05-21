@@ -383,6 +383,48 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         info.Cash.Should().Be(5000m);
     }
 
+    [Fact]
+    public async Task GetPositionsAsync_UntrustedInstrumentUrl_DoesNotFollowExternalHost()
+    {
+        var handler = new RecordingHttpHandler((request, _) =>
+        {
+            var response = request.RequestUri?.AbsolutePath switch
+            {
+                "/positions/" => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = BuildJson(new
+                    {
+                        results = new[]
+                        {
+                            new
+                            {
+                                instrument = "https://attacker.example/instruments/AAPL/",
+                                quantity = "10",
+                                average_buy_price = "150.00"
+                            }
+                        }
+                    })
+                },
+                "/options/positions/" => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = BuildJson(new { results = Array.Empty<object>() })
+                },
+                _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
+            };
+
+            return Task.FromResult(response);
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var positions = await sut.GetPositionsAsync(cts.Token);
+
+        positions.Should().ContainSingle();
+        positions[0].Symbol.Should().Be("https://attacker.example/instruments/AAPL/");
+        handler.Requests.Should().NotContain(r => r.Url.Contains("attacker.example", StringComparison.OrdinalIgnoreCase));
+    }
+
     // ── CheckHealthAsync ──────────────────────────────────────────────────
 
     [Fact]

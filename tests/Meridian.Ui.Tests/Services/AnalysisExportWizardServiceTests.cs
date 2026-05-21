@@ -38,7 +38,7 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
             CancellationToken.None);
 
         result.RecordCount.Should().Be(3);
-        result.OutputFile.Should().Be(Path.Combine(outputPath, "SPY.csv"));
+        result.OutputFile.Should().Be(Path.Combine(outputPath, "SPY_6493341e.csv"));
         var lines = await File.ReadAllLinesAsync(result.OutputFile);
         lines.Should().Equal(
             "timestamp,price,volume,bid",
@@ -73,8 +73,8 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
             new ExportConfiguration { OutputPath = outputPath },
             CancellationToken.None);
 
-        var csvPath = Path.Combine(outputPath, "BRK_B.csv");
-        var scriptPath = Path.Combine(outputPath, "BRK_B_load.sql");
+        var csvPath = Path.Combine(outputPath, "BRK_B_82f67012.csv");
+        var scriptPath = Path.Combine(outputPath, "BRK_B_82f67012_load.sql");
 
         result.OutputFile.Should().Be(csvPath);
         result.GeneratedFiles.Should().ContainSingle().Which.Should().Be(scriptPath);
@@ -82,7 +82,70 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
         File.Exists(scriptPath).Should().BeTrue();
         var script = await File.ReadAllTextAsync(scriptPath);
         script.Should().Contain("CREATE TABLE IF NOT EXISTS market_data_brk_b");
-        script.Should().Contain("\\COPY market_data_brk_b FROM 'BRK_B.csv' WITH CSV HEADER;");
+        script.Should().Contain("\\COPY market_data_brk_b FROM 'BRK_B_82f67012.csv' WITH CSV HEADER;");
+    }
+
+    [Fact]
+    public void CreateUniqueFileStem_ShouldDisambiguateSymbolsWithSameSafeStem()
+    {
+        var first = AnalysisExportWizardService.CreateUniqueFileStem("A'B");
+        var second = AnalysisExportWizardService.CreateUniqueFileStem("A;B");
+
+        first.Should().StartWith("A_B_");
+        second.Should().StartWith("A_B_");
+        first.Should().NotBe(second);
+    }
+
+    [Fact]
+    public async Task ExecuteExportAsync_ParquetFallbackNote_ShouldReferenceActualGeneratedCsv()
+    {
+        var (service, outputPath) = await CreateExportServiceAsync();
+
+        var result = await service.ExecuteExportAsync(new ExportConfiguration
+        {
+            Profile = new ExportProfile { OutputFormat = "Parquet" },
+            Symbols = new[] { "BRK/B" },
+            DataTypes = new[] { "trades" },
+            FromDate = new DateOnly(2026, 1, 1),
+            ToDate = new DateOnly(2026, 1, 31),
+            OutputPath = outputPath
+        });
+
+        var csvPath = Path.Combine(outputPath, "BRK_B_82f67012.csv");
+        var notePath = Path.Combine(outputPath, "BRK_B_82f67012_parquet_note.txt");
+
+        result.Success.Should().BeTrue();
+        File.Exists(csvPath).Should().BeTrue();
+        File.Exists(notePath).Should().BeTrue();
+        var note = await File.ReadAllTextAsync(notePath);
+        note.Should().Contain("pd.read_csv('BRK_B_82f67012.csv')");
+        note.Should().NotContain("pd.read_csv('BRK_B.csv')");
+    }
+
+    [Fact]
+    public async Task ExecuteExportAsync_Notebook_ShouldLoadActualGeneratedCsv()
+    {
+        var (service, outputPath) = await CreateExportServiceAsync();
+
+        var result = await service.ExecuteExportAsync(new ExportConfiguration
+        {
+            Profile = new ExportProfile { OutputFormat = "Notebook" },
+            Symbols = new[] { "BRK/B" },
+            DataTypes = new[] { "trades" },
+            FromDate = new DateOnly(2026, 1, 1),
+            ToDate = new DateOnly(2026, 1, 31),
+            OutputPath = outputPath
+        });
+
+        var csvPath = Path.Combine(outputPath, "BRK_B_82f67012.csv");
+        var notebookPath = Path.Combine(outputPath, "BRK_B_82f67012_analysis.ipynb");
+
+        result.Success.Should().BeTrue();
+        File.Exists(csvPath).Should().BeTrue();
+        File.Exists(notebookPath).Should().BeTrue();
+        var notebook = await File.ReadAllTextAsync(notebookPath);
+        notebook.Should().Contain("df = pd.read_csv('BRK_B_82f67012.csv')");
+        notebook.Should().NotContain("df = pd.read_csv('BRK_B.csv')");
     }
 
     [Fact]
@@ -125,5 +188,23 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, content);
         return path;
+    }
+
+    private async Task<(AnalysisExportWizardService Service, string OutputPath)> CreateExportServiceAsync()
+    {
+        var dataRoot = Directory.CreateDirectory(Path.Combine(_root, "data")).FullName;
+        WriteJsonl(
+            Path.Combine(dataRoot, "BRK-B-trades-2026-01-02.jsonl"),
+            """{"timestamp":"2026-01-02T14:30:00Z","price":470.12,"volume":100}""",
+            rootedPath: true);
+
+        var configPath = Path.Combine(_root, "config", "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(
+            configPath,
+            JsonSerializer.Serialize(new AppConfigDto { DataRoot = dataRoot }));
+
+        var outputPath = Directory.CreateDirectory(Path.Combine(_root, "export-output", Guid.NewGuid().ToString("N"))).FullName;
+        return (new AnalysisExportWizardService(new ConfigService(() => configPath)), outputPath);
     }
 }

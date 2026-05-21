@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services;
 
@@ -20,7 +22,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<SystemHealthSummary?> GetHealthSummaryAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<SystemHealthSummary>("/api/health/summary", ct);
+        return await ApiClientService.Instance.GetAsync<SystemHealthSummary>(UiApiRoutes.HealthSummary, ct);
     }
 
     /// <summary>
@@ -28,7 +30,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<List<ProviderHealth>?> GetProviderHealthAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<ProviderHealth>>("/api/health/providers", ct);
+        return await ApiClientService.Instance.GetAsync<List<ProviderHealth>>(UiApiRoutes.HealthProviders, ct);
     }
 
     /// <summary>
@@ -36,7 +38,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ProviderDiagnostics?> GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<ProviderDiagnostics>($"/api/health/providers/{provider}/diagnostics", ct);
+        return await ApiClientService.Instance.GetAsync<ProviderDiagnostics>(BuildProviderDiagnosticsRoute(provider), ct);
     }
 
     /// <summary>
@@ -44,7 +46,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<StorageHealth?> GetStorageHealthAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<StorageHealth>("/api/health/storage", ct);
+        return await ApiClientService.Instance.GetAsync<StorageHealth>(UiApiRoutes.HealthStorage, ct);
     }
 
     /// <summary>
@@ -52,7 +54,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<List<SystemEvent>?> GetRecentEventsAsync(int limit = 50, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<SystemEvent>>($"/api/health/events?limit={limit}", ct);
+        return await ApiClientService.Instance.GetAsync<List<SystemEvent>>(BuildRecentEventsRoute(limit), ct);
     }
 
     /// <summary>
@@ -60,7 +62,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<SystemMetrics?> GetSystemMetricsAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<SystemMetrics>("/api/health/metrics", ct);
+        return await ApiClientService.Instance.GetAsync<SystemMetrics>(UiApiRoutes.HealthMetrics, ct);
     }
 
     /// <summary>
@@ -68,7 +70,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ConnectionTestResult?> TestConnectionAsync(string provider, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<ConnectionTestResult>($"/api/health/providers/{provider}/test", null, ct);
+        return await ApiClientService.Instance.PostAsync<ConnectionTestResult>(BuildProviderTestRoute(provider), null, ct);
     }
 
     /// <summary>
@@ -76,8 +78,19 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<DiagnosticBundle?> GenerateDiagnosticBundleAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<DiagnosticBundle>("/api/health/diagnostics/bundle", null, ct);
+        return await ApiClientService.Instance.PostAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct);
     }
+
+    internal static string BuildProviderDiagnosticsRoute(string provider)
+        => UiApiRoutes.WithParam(UiApiRoutes.HealthProviderDiagnostics, "provider", provider);
+
+    internal static string BuildRecentEventsRoute(int limit)
+        => UiApiRoutes.WithQuery(
+            UiApiRoutes.HealthEvents,
+            string.Create(CultureInfo.InvariantCulture, $"limit={limit}"));
+
+    internal static string BuildProviderTestRoute(string provider)
+        => UiApiRoutes.WithParam(UiApiRoutes.HealthProviderTest, "provider", provider);
 }
 
 // DTO classes for system health

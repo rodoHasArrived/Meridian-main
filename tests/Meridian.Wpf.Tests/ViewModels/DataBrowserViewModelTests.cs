@@ -132,7 +132,8 @@ public sealed class DataBrowserViewModelTests
         xaml.Should().Contain("DataBrowserTimePeriodCombo");
         xaml.Should().Contain("ItemsSource=\"{Binding TimePeriods}\"");
         xaml.Should().Contain("SelectedValue=\"{Binding SelectedTimePeriodKey");
-        xaml.Should().Contain("TimePeriodScopeText");
+        xaml.Should().Contain("{Binding FilteredCountText, Mode=OneWay}");
+        xaml.Should().Contain("{Binding TimePeriodScopeText, Mode=OneWay}");
         xaml.Should().Contain("DataBrowserEmptyStatePanel");
         xaml.Should().Contain("DataBrowserResetFiltersButton");
         xaml.Should().Contain("{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}}");

@@ -86,13 +86,14 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
         self.assertIn("default: '10.0.x'", action)
         self.assertNotIn("default: '9.0.x'", action)
 
-    def test_codeql_csharp_analysis_does_not_restore_with_previous_sdk(self) -> None:
+    def test_codeql_csharp_analysis_builds_with_current_sdk(self) -> None:
         workflow = CODEQL_WORKFLOW.read_text(encoding="utf-8")
 
-        self.assertIn("- language: csharp\n          build-mode: none", workflow)
+        self.assertIn("- language: csharp\n          build-mode: manual", workflow)
+        self.assertIn("dotnet-version: '10.0.x'", workflow)
         self.assertNotIn("dotnet-version: '9.0.x'", workflow)
-        self.assertNotIn("Restore C# solution", workflow)
-        self.assertNotIn("Build C# solution", workflow)
+        self.assertIn("Restore C# solution", workflow)
+        self.assertIn("Build C# solution", workflow)
 
     def test_security_workflow_reports_current_platform(self) -> None:
         workflow = SECURITY_WORKFLOW.read_text(encoding="utf-8")

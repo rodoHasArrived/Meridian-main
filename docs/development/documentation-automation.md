@@ -4,7 +4,9 @@
 
 ## Overview
 
-The documentation automation system keeps project documentation accurate and up-to-date through a unified GitHub Actions workflow (`.github/workflows/documentation.yml`) and a suite of Python scripts in `build/scripts/docs/`.
+The documentation automation system keeps project documentation accurate and up-to-date through
+Python scripts in `build/scripts/docs/`. GitHub Actions no longer regenerates or deploys
+documentation automatically; run the scripts locally when documentation needs to be refreshed.
 
 ### What It Does
 
@@ -12,7 +14,7 @@ The documentation automation system keeps project documentation accurate and up-
 | --------- | ------------- |
 | **UI Diagram Refresh** | Regenerates WPF UI implementation diagrams from live source files before rendering committed SVG artifacts |
 | **Structure Generation** | Auto-generates repository structure docs from the file tree |
-| **README Tree Sync** | Updates markdown tree markers in README and AI-facing docs on every push to `main` |
+| **README Tree Sync** | Updates markdown tree markers in README and AI-facing docs when the tree sync tool is run locally |
 | **Provider Registry** | Extracts provider metadata from `[DataSource]` attributes |
 | **ADR Indexing** | Builds an index of Architecture Decision Records |
 | **AI Instruction Sync** | Keeps CLAUDE.md, Copilot instructions, and agent files in sync |
@@ -43,19 +45,14 @@ That command updates `docs/diagrams/ui-navigation-map.dot` and `docs/diagrams/ui
 - `src/Meridian.Wpf/Views/MainPage.xaml.cs`
 - `src/Meridian.Wpf/Views/Pages.cs`
 
-The `update-diagrams.yml` workflow now listens for those files, so the committed UI diagrams stay synchronized as the desktop implementation evolves.
+Run the diagram generation command before committing diagram source changes so committed UI diagrams
+stay synchronized as the implementation evolves.
 
-## Workflow Triggers
+## Running Documentation Automation
 
-The workflow runs automatically on:
-
-- **Push to main** when documentation-related files change
-- **Pull requests** to main with doc changes
-- **Weekly schedule** (Monday 3 AM UTC) for full regeneration
-- **Manual dispatch** via GitHub Actions UI with configurable options
-- **Issue events** for AI Known Error intake
-
-The repository also has a dedicated `readme-tree.yml` workflow that runs on every push to `main` and refreshes markdown files containing `<!-- readme-tree start -->` / `<!-- readme-tree end -->` markers.
+Run the relevant documentation script locally and review the diff before committing. The
+`Maintenance` workflow validates workflow hygiene, but it does not rewrite docs or push generated
+content.
 
 ## README Tree Sync
 
@@ -76,7 +73,8 @@ Add the following markers anywhere a generated tree should appear:
 <!-- readme-tree end -->
 ```
 
-On each push to `main`, `.github/workflows/readme-tree.yml` refreshes the content between those markers and commits the updated markdown back to the branch.
+When the tree sync tool is run, it refreshes the content between those markers. Review generated
+changes before committing them.
 
 ## Manual Dispatch Options
 
@@ -452,6 +450,23 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 
 All generated files include an "auto-generated" notice and should not be edited manually.
 
+## Canonical Workflow Inventory Source Of Truth
+
+Use the workflow-manifest artifacts below as the only authoritative workflow inventory.
+Do not hard-code explicit numeric workflow totals in docs under
+`README.md`, `docs/developer/`, or `docs/development/`.
+
+1. `docs/status/workflow-manifest.json` — canonical declared workflow inventory.
+2. `docs/generated/workflow-command-reference.md` — generated human-readable workflow command reference.
+3. `docs/status/workflow-validation-summary.json` — generated machine-readable validation summary, including `workflowCount`.
+4. `docs/status/workflow-drift-report.md` — generated drift surface for missing declared targets/scripts.
+
+When workflow inventory changes:
+
+- Update `docs/status/workflow-manifest.json`.
+- Run `python3 build/scripts/docs/generate-workflow-manifest.py`.
+- Reference generated artifacts in docs instead of restating workflow counts manually.
+
 ## Troubleshooting
 
 ### Workflow skipped all jobs
@@ -509,6 +524,12 @@ Use this generated snapshot when validating docs automation and workflow drift.
 | `desktop-screenshot-catalog` | Windows build host with PowerShell; Release WPF build available when using -SkipBuild | screenshot workflow artifacts produced |
 | `provider-validation-wave1` | Provider credentials configured for Wave 1 adapters; PowerShell available | provider validation summary exists |
 | `operator-inbox-route-validation` | dotnet SDK with Windows targeting packs; PowerShell available | operator inbox route artifact directory exists |
+| `provider-validation-evidence-bundle` | Provider credentials configured for Wave 1 adapters; PowerShell available | provider evidence bundle output exists |
+| `ibapi-smoke-build` | dotnet SDK with Windows targeting packs; PowerShell available | IBAPI smoke build script exists |
+| `wpf-route-validation-position-blotter` | dotnet SDK with Windows targeting packs; PowerShell available | position blotter route artifact directory exists |
+| `wpf-dev-loop-validation` | dotnet SDK with Windows targeting packs; PowerShell available | WPF dev-loop validation artifacts produced |
+| `robinhood-options-smoke` | dotnet SDK with Windows targeting packs; PowerShell available | Robinhood options smoke artifacts produced |
+| `web-screenshot-capture` | Node.js 24 available on PATH; npm dependencies installed for src/Meridian.Ui/dashboard | web screenshot output directory exists |
 
 _Generated by `python3 build/scripts/docs/generate-workflow-manifest.py`._
 <!-- END AUTO-GENERATED: WORKFLOW-MANIFEST-DEV -->

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,12 +20,13 @@ public partial class WelcomePage : Page
         WpfServices.NotificationService notificationService,
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
-        WpfServices.ConfigService configService)
+        WpfServices.ConfigService configService,
+        ILogger<WelcomePageViewModel> logger)
     {
         InitializeComponent();
 
         _viewModel = new WelcomePageViewModel(
-            navigationService, notificationService, statusService, connectionService, configService);
+            navigationService, notificationService, statusService, connectionService, configService, logger);
         DataContext = _viewModel;
     }
 

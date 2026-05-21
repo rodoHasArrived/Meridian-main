@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
@@ -14,21 +15,36 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class EdgarReferenceDataEndpoints
 {
+    private const int MaxEdgarIngestFilers = 250;
+
     public static void MapEdgarReferenceDataEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup(string.Empty).WithTags("EDGAR");
 
         group.MapPost(UiApiRoutes.SecurityMasterEdgarIngest, async (
+            HttpContext httpContext,
             EdgarIngestRequest request,
             [FromServices] IEdgarIngestOrchestrator orchestrator,
             CancellationToken ct) =>
         {
-            var result = await orchestrator.IngestAsync(request, ct).ConfigureAwait(false);
+            if (!HasPermission(httpContext, UserPermission.ModifySecurityMaster))
+                return EndpointHelpers.Forbidden();
+
+            var normalizedRequest = request with
+            {
+                MaxFilers = request.MaxFilers is > 0 and <= MaxEdgarIngestFilers
+                    ? request.MaxFilers
+                    : MaxEdgarIngestFilers
+            };
+
+            var result = await orchestrator.IngestAsync(normalizedRequest, ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("IngestEdgarSecurityMaster")
         .Accepts<EdgarIngestRequest>("application/json")
-        .Produces<EdgarIngestResult>(StatusCodes.Status200OK);
+        .Produces<EdgarIngestResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.ReferenceDataEdgarFiler, async (
             string cik,
@@ -71,5 +87,13 @@ public static class EdgarReferenceDataEndpoints
         .WithName("GetEdgarSecurityData")
         .Produces<EdgarSecurityDataRecord>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+    }
+
+    private static bool HasPermission(HttpContext context, UserPermission permission)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) && value is UserPermission current)
+            return (current & permission) == permission;
+
+        return false;
     }
 }

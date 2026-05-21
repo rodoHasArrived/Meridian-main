@@ -236,6 +236,42 @@ public sealed class QuantScriptViewModelTests
         vm.ScriptSource.Should().Contain("Data.PricesAsync");
     }
 
+    [Fact]
+    public void DuplicateCellCommand_Execute_AddsCellCopyAfterSelection()
+    {
+        var vm = CreateVm();
+        vm.NewNotebookCommand.Execute(null);
+        vm.NotebookCells[0].Source = "Print(\"hello\");";
+        vm.SelectedCell = vm.NotebookCells[0];
+
+        vm.DuplicateCellCommand.Execute(null);
+
+        vm.NotebookCells.Should().HaveCount(2);
+        vm.NotebookCells[1].Source.Should().Be("Print(\"hello\");");
+        vm.SelectedCell.Should().BeSameAs(vm.NotebookCells[1]);
+    }
+
+    [Fact]
+    public void MoveCellCommands_ReorderNotebookCells_WhenSelectionMoves()
+    {
+        var vm = CreateVm();
+        vm.NewNotebookCommand.Execute(null);
+        vm.NotebookCells[0].Source = "Print(\"first\");";
+        vm.AddCellCommand.Execute(null);
+        vm.NotebookCells[1].Source = "Print(\"second\");";
+        vm.SelectedCell = vm.NotebookCells[1];
+
+        vm.MoveCellUpCommand.Execute(null);
+
+        vm.NotebookCells[0].Source.Should().Be("Print(\"second\");");
+        vm.SelectedCell.Should().BeSameAs(vm.NotebookCells[0]);
+
+        vm.MoveCellDownCommand.Execute(null);
+
+        vm.NotebookCells[1].Source.Should().Be("Print(\"second\");");
+        vm.SelectedCell.Should().BeSameAs(vm.NotebookCells[1]);
+    }
+
     // ── Dispose ───────────────────────────────────────────────────────────────
 
     [Fact]
@@ -259,11 +295,12 @@ public sealed class QuantScriptViewModelTests
             CompileTime: TimeSpan.FromMilliseconds(10),
             PeakMemoryBytes: 0,
             CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
             RuntimeError: "boom",
             ConsoleOutput: "error",
             Metrics: Array.Empty<KeyValuePair<string, string>>(),
             Plots: Array.Empty<PlotRequest>(),
-            TradesSummary: Array.Empty<string>(),
+            Trades: Array.Empty<ScriptTradeResult>(),
             CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
             RuntimeParameters: Array.Empty<ParameterDescriptor>()));
         var vm = CreateVm(runner: runner);
@@ -330,10 +367,68 @@ public sealed class QuantScriptViewModelTests
 
         runner.CallCount.Should().Be(1);
         runner.LastParameters.Should().NotBeNull();
-        runner.LastParameters!["symbol"].Should().Be("SPY");
-        runner.LastParameters["from"].Should().Be(new DateOnly(2024, 1, 2));
-        runner.LastParameters["to"].Should().Be(new DateOnly(2024, 2, 3));
-        runner.LastParameters["interval"].Should().Be("daily");
+        runner.LastParameters!["context.symbol"].Should().Be("SPY");
+        runner.LastParameters["context.from"].Should().Be(new DateOnly(2024, 1, 2));
+        runner.LastParameters["context.to"].Should().Be(new DateOnly(2024, 2, 3));
+        runner.LastParameters["context.interval"].Should().Be("daily");
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_WithTrades_PopulatesBacktestOutputAndSelectsTradesTab()
+    {
+        var runner = new FakeScriptRunner().SetResult(new ScriptRunResult(
+            Success: true,
+            Elapsed: TimeSpan.FromMilliseconds(50),
+            CompileTime: TimeSpan.FromMilliseconds(10),
+            PeakMemoryBytes: 0,
+            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
+            RuntimeError: null,
+            ConsoleOutput: string.Empty,
+            Metrics: Array.Empty<KeyValuePair<string, string>>(),
+            Plots: Array.Empty<PlotRequest>(),
+            Trades:
+            [
+                new ScriptTradeResult(
+                    Timestamp: new DateTimeOffset(2026, 5, 1, 14, 30, 0, TimeSpan.Zero),
+                    Symbol: "SPY",
+                    Side: "Buy",
+                    Quantity: 10m,
+                    Price: 523.45m,
+                    Commission: 0.45m)
+            ],
+            CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
+            RuntimeParameters: Array.Empty<ParameterDescriptor>()));
+        var vm = CreateVm(runner: runner);
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        vm.Trades.Should().ContainSingle();
+        vm.ActiveResultsTab.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_WithMetricsOnly_SelectsMetricsTab()
+    {
+        var runner = new FakeScriptRunner().SetResult(new ScriptRunResult(
+            Success: true,
+            Elapsed: TimeSpan.FromMilliseconds(50),
+            CompileTime: TimeSpan.FromMilliseconds(10),
+            PeakMemoryBytes: 0,
+            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
+            RuntimeError: null,
+            ConsoleOutput: string.Empty,
+            Metrics: [new KeyValuePair<string, string>("Sharpe", "1.2")],
+            Plots: Array.Empty<PlotRequest>(),
+            Trades: Array.Empty<ScriptTradeResult>(),
+            CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
+            RuntimeParameters: Array.Empty<ParameterDescriptor>()));
+        var vm = CreateVm(runner: runner);
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        vm.ActiveResultsTab.Should().Be(1);
     }
 
     [Fact]

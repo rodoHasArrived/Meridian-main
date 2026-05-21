@@ -58,7 +58,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
-            entry.Actor == "ops");
+            entry.Actor == "ops-user");
     }
 
     [Fact]
@@ -120,18 +120,18 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "ManualOverrideCreated" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-create");
         auditEntries.Should().Contain(entry =>
             entry.Action == "ManualOverrideCleared" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-clear");
     }
 
     [Fact]
-    public async Task ControlsEndpoints_RejectMutation_WhenPermissionMissing()
+    public async Task ControlsEndpoints_ManualOverrideMutations_ForbidReadOnlyPermissions()
     {
         var tempRoot = CreateTempRoot();
 
@@ -141,16 +141,20 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
-        });
+        }, RolePermissions.For(UserRole.ReadOnly));
 
         var client = app.GetTestClient();
-        client.DefaultRequestHeaders.Add("X-Test-Permissions", "readonly");
+        var createResponse = await client.PostAsync(
+            "/api/execution/controls/manual-overrides",
+            JsonContent(new
+            {
+                kind = ExecutionManualOverrideKinds.AllowLivePromotion,
+                reason = "Risk review completed",
+                strategyId = "strategy-live",
+                runId = "run-123"
+            }));
 
-        var response = await client.PostAsync(
-            "/api/execution/controls/circuit-breaker",
-            JsonContent(new { isOpen = true, reason = "unauthorized mutation" }));
-
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -190,6 +194,8 @@ public sealed class ExecutionGovernanceEndpointsTests
                 config.MaxPositionSize = 100m;
             });
         });
+
+        await app.Services.GetRequiredService<AlpacaBrokerageGateway>().ConnectAsync();
 
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
@@ -270,6 +276,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             });
         });
 
+        await app.Services.GetRequiredService<RobinhoodBrokerageGateway>().ConnectAsync();
+
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
@@ -308,7 +316,118 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Symbol == "AAPL");
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
+    [Fact]
+    public async Task SubmitOrder_WithoutManageOrdersPermission_ReturnsForbidden()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance));
+        }, permissions: UserPermission.ExecuteTrades);
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            timeInForce = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadataAlias_ReturnsBadRequest()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            timeInForce = 0,
+            quantity = 1,
+            metadata = new Dictionary<string, string>
+            {
+                ["brokerAccountId"] = "acct-123"
+            }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = JsonSerializer.Deserialize<OrderResult>(
+            await response.Content.ReadAsStringAsync(),
+            JsonOptions());
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithFixedIncomeRoutingMetadata_IsRejected()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            timeInForce = 0,
+            quantity = 1,
+            metadata = new Dictionary<string, string>
+            {
+                ["asset_class"] = "treasury",
+                ["broker_account_id"] = "acct-123"
+            }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = JsonSerializer.Deserialize<OrderResult>(
+            await response.Content.ReadAsStringAsync(),
+            JsonOptions());
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection> configureServices,
+        UserPermission permissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -320,14 +439,9 @@ public sealed class ExecutionGovernanceEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            var permissions = string.Equals(
-                context.Request.Headers["X-Test-Permissions"],
-                "readonly",
-                StringComparison.OrdinalIgnoreCase)
-                ? RolePermissions.For(UserRole.ReadOnly)
-                : RolePermissions.For(UserRole.Admin);
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
-            await next().ConfigureAwait(false);
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
+            await next(context);
         });
         app.MapExecutionEndpoints(JsonOptions());
         await app.StartAsync();

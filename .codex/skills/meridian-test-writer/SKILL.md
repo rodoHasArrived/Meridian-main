@@ -4,8 +4,8 @@ description: >
   Write or expand Meridian tests grounded in real-world market scenarios that exercise complete
   code paths end-to-end, rather than arbitrarily calling individual methods. Use when the user
   asks for tests, coverage, missing unit tests, regression tests, integration tests, validation
-  for Meridian providers, storage, pipelines, services, WPF view models, UI services, execution
-  code, F# interop, or when they describe a market event (e.g. "flash crash", "session open",
+  for Meridian providers, storage, pipelines, services, browser dashboard view models/components,
+  retained WPF view models, UI services, execution code, F# interop, or when they describe a market event (e.g. "flash crash", "session open",
   "feed interruption") and want to know how the system handles it.
 ---
 
@@ -15,9 +15,35 @@ Write tests that simulate what the system will actually experience in production
 be grounded in a named, real-world market scenario and must exercise at least the full relevant
 code path — not just a single method in isolation.
 
-Read `../_shared/project-context.md` before choosing the test project. Read
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before choosing
+the test project. Read
 `references/test-patterns.md` for the component-to-test-project mapping and the Market Scenario
 Catalog.
+
+---
+
+## Use When
+
+Use this skill when the user asks for tests, coverage, regression protection, validation scenarios,
+or market-event handling in Meridian.
+
+Trigger examples:
+
+- "Write regression tests for the paper-session replay bug."
+- "Add coverage for this provider failure path."
+- "How would the system handle a feed interruption? Test it."
+
+## Do Not Use When
+
+Use `meridian-code-review` to identify missing tests without writing them, `meridian-blueprint` for
+test strategy in a design document, and `meridian-implementation-assurance` for final certification
+after implementation.
+
+Non-trigger examples:
+
+- "Review this diff and tell me if tests are missing."
+- "Design the testing approach for a future feature."
+- "Certify this completed implementation."
 
 ---
 
@@ -47,6 +73,18 @@ name the new scenario before proceeding.
 6. Cover happy path, error path, cancellation path, and disposal or cleanup where relevant.
 7. Use the mock library already used by the target project (Moq for `Meridian.Tests`; NSubstitute for `Meridian.Ui.Tests`).
 8. Run the narrowest relevant `dotnet test` command and report it.
+
+## Handoffs
+
+- Hand off from `meridian-code-review` when missing tests are the actionable finding.
+- Hand off to `meridian-provider-builder` when tests expose missing provider implementation work.
+- Hand off to `meridian-implementation-assurance` when tests are part of a broader implementation proof.
+
+## Validation
+
+- Run the narrowest test command for the touched project and filter where practical.
+- Use dashboard-local Vitest/build commands for `src/Meridian.Ui/dashboard/` tests.
+- If tests cannot run, report the exact blocker and residual risk.
 
 ---
 
@@ -87,7 +125,8 @@ name the new scenario before proceeding.
   `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/` and the official provider docs in the
   Provider Wire-Format Catalog before constructing mock HTTP responses.
 - Storage, WAL, and pipeline code need stronger cleanup and flush assertions.
-- WPF and shared UI services should respect the existing test project's mocking style.
+- Browser workstation tests should use the existing Vitest and Testing Library patterns under `src/Meridian.Ui/dashboard/`.
+- Retained WPF and shared UI services should respect the existing test project's mocking style.
 - F# interop tests should focus on the boundary contract, not re-implementing the F# logic in C#.
 - Multi-layer scenario tests belong in `tests/Meridian.Tests/Integration/`.
 - Use `MarketScenarioBuilder` from `tests/Meridian.Tests/TestHelpers/MarketScenarioBuilder.cs`
@@ -104,9 +143,16 @@ name the new scenario before proceeding.
 | `IStorageSink` / WAL | C | Temp dir, FlushAsync, DisposeAsync, line count |
 | `EventPipeline` | D | FlushAsync before assert, DisposeAsync flushes |
 | Application service (pure) | E | `[Theory]` for multiple inputs, `[InlineData]` |
+| Browser dashboard | F1 | Vitest, view-model state, accessible labels, keyboard paths |
 | WPF / Ui.Services | F | API mock, null on error |
 | F# modules | G | F# test module style, `Result` type assertions |
 | Endpoint integration | H | `WebApplicationFactory`, JSON contract snapshots |
 | **Market scenario (multi-layer)** | **I** | **Named scenario, ≥2 layers, `MarketScenarioBuilder`** |
 
 Full scaffolding for all patterns and the Market Scenario Catalog are in `references/test-patterns.md`.
+
+## Output Standards
+
+- Name the market or operator scenario each test protects.
+- State the full code path exercised and the business-observable outcome asserted.
+- Summarize tests added or changed, exact validation commands, and any remaining untested risk.

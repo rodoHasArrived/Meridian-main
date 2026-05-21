@@ -116,6 +116,9 @@ public sealed class ResearchWorkspaceShellPageTests
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\ResearchWorkspaceShellViewModel.cs"));
 
         xaml.Should().Contain("Research Desk Briefing");
+        xaml.Should().Contain("PlotTool workstation");
+        xaml.Should().Contain("Run scripts");
+        xaml.Should().Contain("Console &amp; compare");
         xaml.Should().Contain("ResearchHeroBadgeText");
         xaml.Should().Contain("ResearchHeroPrimaryActionButton");
         xaml.Should().Contain("ResearchHeroSecondaryActionButton");

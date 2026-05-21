@@ -205,7 +205,7 @@ Implementation roadmaps, blueprints, and sprint backlogs.
 **Files (selection):**
 
 - `meridian-6-week-roadmap.md` - Active sprint roadmap
-- `readability-refactor-roadmap.md` - Readability refactor plan
+- `archive/docs/plans/readability-refactor-roadmap.md` - Archived readability refactor plan
 - `trading-workstation-migration-blueprint.md` - WPF workstation blueprint
 - `ufl-*.md` - Unified financial ledger target-state documents
 

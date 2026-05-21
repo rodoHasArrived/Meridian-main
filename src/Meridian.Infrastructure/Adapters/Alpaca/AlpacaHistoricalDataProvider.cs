@@ -72,8 +72,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     /// </summary>
     /// <param name="keyId">API Key ID (falls back to ALPACA_KEY_ID env var).</param>
     /// <param name="secretKey">API Secret Key (falls back to ALPACA_SECRET_KEY env var).</param>
-    /// <param name="feed">Data feed: "iex" (free), "sip" (paid), or "delayed_sip" (free, 15-min delay).</param>
-    /// <param name="adjustment">Price adjustment: "raw", "split", "dividend", or "all".</param>
+    /// <param name="feed">Data feed: "iex", "sip", "delayed_sip", "boats", "overnight", or "otc".</param>
+    /// <param name="adjustment">Price adjustment: "raw", "split", "dividend", "spin-off", "all", or a comma-separated combination.</param>
     /// <param name="priority">Priority in fallback chain (lower = tried first).</param>
     /// <param name="rateLimitPerMinute">Maximum requests per minute.</param>
     /// <param name="httpClient">Optional HTTP client instance.</param>
@@ -113,17 +113,36 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     {
         return feed.ToLowerInvariant() switch
         {
-            "iex" or "sip" or "delayed_sip" => feed.ToLowerInvariant(),
-            _ => throw new ArgumentException($"Invalid feed '{feed}'. Must be 'iex', 'sip', or 'delayed_sip'.", nameof(feed))
+            "iex" or "sip" or "delayed_sip" or "boats" or "overnight" or "otc" => feed.ToLowerInvariant(),
+            _ => throw new ArgumentException($"Invalid feed '{feed}'. Must be 'iex', 'sip', 'delayed_sip', 'boats', 'overnight', or 'otc'.", nameof(feed))
         };
     }
 
     private static string ValidateAdjustment(string adjustment)
     {
-        return adjustment.ToLowerInvariant() switch
+        var normalized = adjustment.ToLowerInvariant();
+        var parts = normalized.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 0)
         {
-            "raw" or "split" or "dividend" or "all" => adjustment.ToLowerInvariant(),
-            _ => throw new ArgumentException($"Invalid adjustment '{adjustment}'. Must be 'raw', 'split', 'dividend', or 'all'.", nameof(adjustment))
+            throw new ArgumentException("Alpaca adjustment must not be empty.", nameof(adjustment));
+        }
+
+        foreach (var part in parts)
+        {
+            _ = part switch
+            {
+                "raw" or "split" or "dividend" or "spin-off" or "all" => part,
+                _ => throw new ArgumentException($"Invalid adjustment '{adjustment}'. Must contain only 'raw', 'split', 'dividend', 'spin-off', or 'all'.", nameof(adjustment))
+            };
+        }
+
+        return normalized switch
+        {
+            _ when parts.Contains("raw") && parts.Length > 1
+                => throw new ArgumentException("'raw' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
+            _ when parts.Contains("all") && parts.Length > 1
+                => throw new ArgumentException("'all' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
+            _ => normalized
         };
     }
 
@@ -347,11 +366,11 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         string url;
         if (symbols.Count == 1)
         {
-            url = $"{BaseUrl}/{symbols[0]}/quotes?start={startStr}&end={endStr}&feed={_feed}";
+            url = $"{BaseUrl}/{symbols[0]}/quotes?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
         }
         else
         {
-            url = $"{BaseUrl}/quotes?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={_feed}";
+            url = $"{BaseUrl}/quotes?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
         }
 
         if (limit.HasValue)
@@ -462,11 +481,11 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         string url;
         if (symbols.Count == 1)
         {
-            url = $"{BaseUrl}/{symbols[0]}/trades?start={startStr}&end={endStr}&feed={_feed}";
+            url = $"{BaseUrl}/{symbols[0]}/trades?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
         }
         else
         {
-            url = $"{BaseUrl}/trades?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={_feed}";
+            url = $"{BaseUrl}/trades?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
         }
 
         if (limit.HasValue)
@@ -598,11 +617,11 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         string url;
         if (symbols.Count == 1)
         {
-            url = $"{BaseUrl}/{symbols[0]}/auctions?start={startStr}&end={endStr}&feed={_feed}";
+            url = $"{BaseUrl}/{symbols[0]}/auctions?start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
         }
         else
         {
-            url = $"{BaseUrl}/auctions?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={_feed}";
+            url = $"{BaseUrl}/auctions?symbols={Uri.EscapeDataString(symbolsParam)}&start={startStr}&end={endStr}&feed={Uri.EscapeDataString(_feed)}";
         }
 
         if (!string.IsNullOrEmpty(pageToken))
@@ -624,7 +643,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         var startDate = from?.ToString("yyyy-MM-dd") ?? "2000-01-01";
         var endDate = to?.AddDays(1).ToString("yyyy-MM-dd") ?? DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd");
 
-        var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={_feed}&adjustment={_adjustment}";
+        var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={Uri.EscapeDataString(_feed)}&adjustment={Uri.EscapeDataString(_adjustment)}";
 
         if (!string.IsNullOrEmpty(pageToken))
         {

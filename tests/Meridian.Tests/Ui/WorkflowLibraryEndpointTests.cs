@@ -170,6 +170,22 @@ public sealed class WorkflowLibraryEndpointTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => store.LoadAsync(cts.Token));
     }
 
+    [Fact]
+    public async Task FileWorkflowPresetStore_LoadAsync_ShouldRejectUnsupportedSnapshotVersion()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        var snapshotDirectory = Path.Combine(root, "workstation", "workflows");
+        Directory.CreateDirectory(snapshotDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(snapshotDirectory, "workflow-presets.json"),
+            """{"version":999,"presets":[]}""");
+
+        var store = new FileWorkflowPresetStore(root, NullLogger<FileWorkflowPresetStore>.Instance);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => store.LoadAsync());
+        ex.Message.Should().Contain("version 999");
+    }
+
     private static async Task<WebApplication> CreateWorkflowPresetAppAsync(string root)
     {
         Directory.CreateDirectory(root);

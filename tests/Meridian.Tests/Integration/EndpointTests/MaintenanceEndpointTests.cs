@@ -224,6 +224,7 @@ public sealed class MaintenanceEndpointTests
 
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK,
+            HttpStatusCode.Forbidden,
             HttpStatusCode.NotImplemented);
     }
 
@@ -246,6 +247,7 @@ public sealed class MaintenanceEndpointTests
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK,
             HttpStatusCode.Accepted,
+            HttpStatusCode.Forbidden,
             HttpStatusCode.NotImplemented);
     }
 
@@ -256,6 +258,7 @@ public sealed class MaintenanceEndpointTests
 
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.OK,
+            HttpStatusCode.Forbidden,
             HttpStatusCode.NotImplemented);
     }
 

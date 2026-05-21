@@ -54,6 +54,7 @@ Primary inputs:
 | `performance-agent.md` | Optimize measured bottlenecks |
 | `provider-builder-agent.md` | Build and extend providers |
 | `repo-navigation-agent.md` | Orient large-repo tasks before deeper work |
+| `software-engineer-agent-v1.agent.md` | General-purpose production software engineering execution agent |
 | `simulated-user-panel-agent.md` | Run manifest-driven owner-minded user panels across design-partner, release-gate, and usability-lab modes |
 | `test-writer-agent.md` | Generate Meridian-style tests |
 
@@ -99,4 +100,4 @@ Use repo navigation first whenever the main problem is â€œwhere should I start?â
 
 ---
 
-_Last Updated: 2026-04-29_
+_Last Updated: 2026-05-08_

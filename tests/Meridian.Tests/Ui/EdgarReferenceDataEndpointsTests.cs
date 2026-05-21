@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Endpoints;
@@ -20,7 +21,7 @@ public sealed class EdgarReferenceDataEndpointsTests
     public async Task MapEdgarReferenceDataEndpoints_PostIngest_ReturnsResult()
     {
         var orchestrator = new FakeEdgarIngestOrchestrator();
-        await using var app = await CreateAppAsync(orchestrator, new FakeEdgarReferenceDataStore());
+        await using var app = await CreateAppAsync(orchestrator, new FakeEdgarReferenceDataStore(), UserPermission.ModifySecurityMaster);
         var client = app.GetTestClient();
 
         using var response = await client.PostAsJsonAsync(
@@ -31,12 +32,44 @@ public sealed class EdgarReferenceDataEndpointsTests
         orchestrator.LastRequest.Should().NotBeNull();
         orchestrator.LastRequest!.IncludeXbrl.Should().BeTrue();
         orchestrator.LastRequest.Cik.Should().Be("789019");
+        orchestrator.LastRequest.MaxFilers.Should().Be(1);
 
         var result = await response.Content.ReadFromJsonAsync<EdgarIngestResult>(
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
         result!.DryRun.Should().BeTrue();
     }
 
+
+    [Fact]
+    public async Task MapEdgarReferenceDataEndpoints_PostIngest_RequiresModifySecurityMasterPermission()
+    {
+        var orchestrator = new FakeEdgarIngestOrchestrator();
+        await using var app = await CreateAppAsync(orchestrator, new FakeEdgarReferenceDataStore(), UserPermission.ViewSecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.SecurityMasterEdgarIngest,
+            new EdgarIngestRequest(MaxFilers: 1));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        orchestrator.LastRequest.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task MapEdgarReferenceDataEndpoints_PostIngest_AppliesServerSideMaxFilersCap()
+    {
+        var orchestrator = new FakeEdgarIngestOrchestrator();
+        await using var app = await CreateAppAsync(orchestrator, new FakeEdgarReferenceDataStore(), UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.SecurityMasterEdgarIngest,
+            new EdgarIngestRequest(MaxFilers: null));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        orchestrator.LastRequest.Should().NotBeNull();
+        orchestrator.LastRequest!.MaxFilers.Should().Be(250);
+    }
     [Fact]
     public async Task MapEdgarReferenceDataEndpoints_GetFiler_ReturnsLocalPartition()
     {
@@ -137,7 +170,8 @@ public sealed class EdgarReferenceDataEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         IEdgarIngestOrchestrator orchestrator,
-        IEdgarReferenceDataStore store)
+        IEdgarReferenceDataStore store,
+        UserPermission permissions = UserPermission.ModifySecurityMaster)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -148,6 +182,11 @@ public sealed class EdgarReferenceDataEndpointsTests
         builder.Services.AddSingleton(store);
 
         var app = builder.Build();
+        app.Use((context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            return next();
+        });
         app.MapEdgarReferenceDataEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase

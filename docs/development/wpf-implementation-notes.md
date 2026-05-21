@@ -1,10 +1,10 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-04-27 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-05-09 | **Status**: Authored / Included in solution build
 
 ## Overview
 
-Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Windows desktop surface for the platform. It exposes the full Meridian capability set through a workspace-based shell with a command palette, four canonical workspaces (Research, Trading, Data Operations, Governance), and deep drill-in pages for strategy runs, portfolios, and ledger governance.
+Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active native Windows desktop operator surface for the platform alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
 ## Architecture
 
@@ -56,6 +56,9 @@ Content Frame
 
 **Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
 
+**Desktop shell MVVM seam** — shell-owned route and pane orchestration now lives under `src/Meridian.Wpf/Shell/`. `IShellRouteRegistry` projects `ShellNavigationCatalog` into route metadata, `IPageContentFactory` preserves existing `NavigationService.CreatePageContent()` behavior for docked pages, `IShellNavigationCoordinator` bridges explicit route/pane state back to the retained frame navigation service, and `PaneHostViewModel` owns pane layout, active-pane, and dropped-page assignments. `MainPage` remains the compatibility shell while its split-pane code-behind is limited to frame/content wiring.
+`Shell/Root` owns launch/deep-link and drop routing, `Shell/Session` owns workspace/window restore and persistence, `Shell/Refresh` owns cancellable shell context refresh scheduling, and `Shell/ViewModels` owns command-palette, operator-inbox, and workflow-summary presentation state. `MainWindow` should compose these services and forward WPF lifecycle events; it should not own JSON persistence, workspace-session decisions, file-drop routing, or launch-argument workflow logic directly.
+
 **Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
 
 **Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target), a readiness progress strip, and a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data Operations before the landing page suggests Research, Trading, or Governance shells.
@@ -64,7 +67,7 @@ Content Frame
 
 **Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated attention rail after the page title and wrapped badge row. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
 
-**Main shell context strip** — `MainPage` renders the shared context strip for workflow pages and suppresses it on workspace landing pages where the compact next-action row already carries the first operator handoff. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
+**Main shell context strip** — `MainPage` renders the shared context strip for workflow pages and suppresses it on workspace landing pages where the compact next-action row already carries the first operator handoff. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable. `WorkstationOperatingContextService.LoadAsync()` reserves its in-flight load task before raising catalog refresh events, which keeps shell-context subscribers from recursively starting another initial load while the catalog is being built.
 
 **Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, includes the selected account operating context as `fundAccountId` when one is active, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `AccountPortfolio` for brokerage-sync blockers instead of stopping on a workspace landing page. Queue attention text includes review count, severity, owner/source, and the concrete target page so the context-strip warning is actionable. The Trading shell uses the same account context when it requests shared operator readiness, so brokerage-sync blockers and account-scoped readiness stay aligned between the queue and the cockpit. Its desk briefing hero also resolves readiness work-item routes to concrete workbenches before broad shell tags when a warning or critical item blocks a ready active-run state. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
 
@@ -150,7 +153,7 @@ Content Frame
 
 **Storage archive posture** — `StoragePage` now places an archive-posture card above the configuration and preview panels. `StorageViewModel` projects daily growth, capacity horizon, last scan, and one operator handoff from the already-loaded `StorageAnalytics` snapshot, so capacity pressure and stalled archive growth are visible without adding another storage scan, timer, or persistence write.
 
-**Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
+**Data Operations next-handoff card** — `DataWorkspaceShellPage` turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
 **Backfill start readiness** — `BackfillPage` now shows an automation-addressable start-readiness card above the run controls. `BackfillViewModel` owns symbol normalization, date-range validation, request scope text, validation label visibility, and Start enablement so empty-symbol and invalid-date states are visible before an operator launches a historical backfill; the page code-behind only refreshes the VM from existing WPF controls and delegates the launch to the existing backfill command path.
 
@@ -159,6 +162,8 @@ Content Frame
 **Admin Maintenance cleanup readiness** — `AdminMaintenancePage` now renders a cleanup readiness card with preview, execution, and confirmation actions bound through `AdminMaintenanceViewModel`. The view model owns preview scope, empty/error copy, destructive-action gating, inline confirmation state, and cleanup execution reset behavior while the page keeps cleanup rendering and layout concerns in XAML.
 
 **Admin Maintenance schedule readiness** — `AdminMaintenancePage` now renders a schedule readiness strip and binds Save Schedule through `AdminMaintenanceViewModel`. The view model owns selected-operation summary, frequency copy, validation, and save command enablement so an enabled schedule cannot be saved without at least one maintenance operation.
+
+**Retention Assurance cleanup readiness** — `RetentionAssurancePage` now renders a cleanup readiness card and inline confirmation panel bound through `RetentionAssuranceViewModel`. The view model owns guardrail inputs, retention-policy parsing, validation result rows, dry-run result copy, destructive-action gating, busy/error status, and cleanup reset behavior, while the page keeps legal-hold and audit-list rendering in WPF. No new polling, timers, or persistence behavior is added beyond the existing retention service calls.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
@@ -435,10 +440,12 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ## Workspace Shells
 
-The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy and Trading shells keep presentation state in view models backed by WPF-scoped presentation services; their pages handle WPF lifecycle, docking, tone resources, and navigation forwarding. Data uses a service-backed projection layer that folds provider, backfill, storage, session, notification, and export-job telemetry into a single operator shell.
+The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy keeps presentation state in view models backed by WPF-scoped presentation services; its page handles WPF lifecycle, docking, tone resources, and navigation forwarding. Trading and Data now live on the feature-owned desktop module spine under `src/Meridian.Wpf/Features/`: their shell view models own loading/error state, readiness and queue summaries, hero state, action resolution, and shell-context refresh requests while WPF code-behind is limited to lifecycle, dock hosting, tone resource application, and navigation forwarding.
 
 Shell implementation now shares descriptor-driven infrastructure:
 
+- `src/Meridian.Wpf/Features/` owns feature module registration; `TradingFeatureModule` registers the Trading shell page, state provider, view model, and presentation service, while `DataFeatureModule` registers the Data shell page, view model, snapshot service, and presentation adapter before catalog fallback registration fills in unmigrated pages
+- `src/Meridian.Wpf/Shell/` owns route registry, page-content factory, shell navigation coordinator, and pane-host view-model seams for the desktop shell
 - `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
 - `WorkspaceShellViewModelBase` carries shell command state
 - `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes
@@ -465,7 +472,7 @@ indicator toggles, refresh command enablement, and the setup-readiness card. The
 limited to rendering the toolbar, chart panels, and loading overlay; avoid reintroducing page event
 handlers for toolbar selection, date validation, indicator state, or refresh readiness.
 
-### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
+### `TradingWorkspaceShellPage` (`Features/Trading/Shell/TradingWorkspaceShellPage.xaml`)
 
 **Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and a compact promotion/audit/validation status card for the active run or aggregate workspace posture.
 
@@ -478,15 +485,16 @@ handlers for toolbar selection, date validation, indicator state, or refresh rea
 
 Replay and collection-session review stay on their owning Data Operations and Governance pages until the trading shell has a proven need for another deep-review lane.
 
-### `DataOperationsWorkspaceShellPage` (`Views/DataOperationsWorkspaceShellPage.xaml`)
+### `DataWorkspaceShellPage` (`Features/Data/Shell/DataWorkspaceShellPage.xaml`)
 
 **Purpose**: Operational cockpit for provider readiness, backfill pressure, storage posture, collection sessions, and export delivery.
 
 **Data composition**:
 
-1. `DataOperationsWorkspaceShellPage.xaml.cs` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
-2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, a next-handoff hero card, queue cards, summary values, recent operations, and quick-action wiring.
-3. Primary actions route directly to `ProviderHealth`, `Backfill`, and `DataExport`; secondary actions keep `Providers`, `Storage`, `CollectionSessions`, `Schedules`, and `PackageManager` in the same shell flow.
+1. `DataWorkspaceShellSnapshotService` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
+2. `DataWorkspaceShellPresentationService` adapts the retained `DataOperationsWorkspacePresentationBuilder` projection into immutable shell presentation state.
+3. `DataWorkspaceShellViewModel` owns loading/error states, command group, hero state, queue state, recent operations, summary values, and action resolution for retry, context switching, navigation commands, and dock-pane opens.
+4. `DataWorkspaceShellPage.xaml.cs` forwards view-model action requests to `NavigationService` or `OpenWorkspacePage` and applies WPF-only visual resources such as tone brushes and queue-state visibility.
 
 **Design zones**:
 

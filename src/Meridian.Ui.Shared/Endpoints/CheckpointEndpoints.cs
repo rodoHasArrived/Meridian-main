@@ -114,7 +114,7 @@ public static class CheckpointEndpoints
         .Produces(200);
 
         // Get checkpoint for a specific job
-        group.MapGet("/api/backfill/checkpoints/{jobId}", (string jobId, BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillCheckpointById, (string jobId, BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -140,7 +140,7 @@ public static class CheckpointEndpoints
         .Produces(404);
 
         // Get pending symbols for a checkpoint
-        group.MapGet("/api/backfill/checkpoints/{jobId}/pending", (string jobId, BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillCheckpointPending, (string jobId, BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -200,9 +200,10 @@ public static class CheckpointEndpoints
         .Produces(404);
 
         // Resume a checkpoint (trigger backfill for pending symbols)
-        group.MapPost("/api/backfill/checkpoints/{jobId}/resume", async (
+        group.MapPost(UiApiRoutes.BackfillCheckpointResume, async (
             string jobId,
-            BackfillCoordinator backfill) =>
+            BackfillCoordinator backfill,
+            HttpContext context) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -225,7 +226,7 @@ public static class CheckpointEndpoints
                     status.To ?? DateOnly.FromDateTime(DateTime.Today),
                     ResumeFromCheckpoint: true);
 
-                var result = await backfill.RunAsync(request, CancellationToken.None);
+                var result = await backfill.RunAsync(request, context.RequestAborted);
 
                 return Results.Json(new
                 {

@@ -19,6 +19,7 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -133,6 +134,17 @@ public sealed class PilotAcceptanceHarnessTests
         portfolioEvidenceId.Should().NotBeNullOrWhiteSpace();
         ledgerEvidenceId.Should().NotBeNullOrWhiteSpace();
 
+        var evidencePacket = await client.GetFromJsonAsync<EvidencePacketDto>(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.StrategyRunKind}/{Uri.EscapeDataString(seed.PaperRunId)}/packet",
+            ServerJsonOptions);
+        evidencePacket.Should().NotBeNull();
+        var ledgerNode = evidencePacket!.Nodes.Single(node => node.Kind == "run-ledger");
+        var ledgerJournalRoute = $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/journal";
+        var ledgerTrialBalanceRoute = $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/trial-balance";
+        ledgerNode.Status.Should().Be(EvidenceStatusDto.Ready);
+        var ledgerArtifactRefs = ledgerNode.ArtifactRefs;
+        AssertLedgerArtifactRefs(ledgerArtifactRefs, ledgerJournalRoute, ledgerTrialBalanceRoute);
+
         var reportPackResponse = await client.PostAsJsonAsync(
             "/api/fund-structure/report-packs",
             new FundReportPackGenerateRequestDto(
@@ -186,14 +198,24 @@ public sealed class PilotAcceptanceHarnessTests
             ReportPackId: reportPack.ReportId.ToString("D"),
             ReportPackRelatedRunIds: reportPack.Provenance.RelatedRunIds,
             StageGates: stageGates,
-            EvidenceGraph: evidenceGraph);
+            EvidenceGraph: evidenceGraph)
+        {
+            LedgerArtifactRefs = ledgerArtifactRefs
+        };
 
         var artifactPath = await WritePilotReadinessArtifactAsync(artifact);
+        var markdownPath = Path.Combine(Path.GetDirectoryName(artifactPath)!, "pilot-readiness.md");
         using var artifactDocument = await JsonDocument.ParseAsync(File.OpenRead(artifactPath));
         artifactDocument.RootElement.GetProperty("datasetEvidenceId").GetString().Should().Be(DatasetEvidenceId);
         artifactDocument.RootElement.GetProperty("paperSessionId").GetString().Should().Be(session.SessionId);
         artifactDocument.RootElement.GetProperty("portfolioEvidenceId").GetString().Should().Be(portfolioEvidenceId);
         artifactDocument.RootElement.GetProperty("ledgerEvidenceId").GetString().Should().Be(ledgerEvidenceId);
+        File.Exists(markdownPath).Should().BeTrue();
+        var markdown = await File.ReadAllTextAsync(markdownPath);
+        markdown.Should().Contain("trusted data -> strategy run -> paper promotion");
+        markdown.Should().Contain("| TrustedData | W2, W3, W4 | Ready |");
+        markdown.Should().Contain(reportPack.ReportId.ToString("D"));
+        AssertSerializedLedgerArtifactRefs(artifactDocument.RootElement, ledgerJournalRoute, ledgerTrialBalanceRoute);
         artifactDocument.RootElement.GetProperty("allStagesReady").GetBoolean().Should().BeTrue();
         artifactDocument.RootElement.GetProperty("readyStageCount").GetInt32().Should().Be(8);
         var stageNames = artifactDocument.RootElement.GetProperty("stageGates")
@@ -217,6 +239,8 @@ public sealed class PilotAcceptanceHarnessTests
         graphRelationships.Should().Contain("feeds-run");
         graphRelationships.Should().Contain("produces-portfolio");
         graphRelationships.Should().Contain("books-ledger");
+        graphRelationships.Should().Contain("checked-against");
+        graphRelationships.Should().Contain("reconciled-by");
         graphRelationships.Should().Contain("summarized-by");
         artifactDocument.RootElement.GetProperty("evidenceGraph")
             .EnumerateArray()
@@ -291,6 +315,7 @@ public sealed class PilotAcceptanceHarnessTests
 
         var app = builder.Build();
         app.MapWorkstationEndpoints(ServerJsonOptions);
+        app.MapEvidenceEndpoints(ServerJsonOptions);
         app.MapExecutionEndpoints(ServerJsonOptions);
         app.MapFundStructureEndpoints(ServerJsonOptions);
         await app.StartAsync();
@@ -573,49 +598,70 @@ public sealed class PilotAcceptanceHarnessTests
             PilotReadinessStageStatusDto.Ready,
             [FeedEvidenceId, DatasetEvidenceId],
             [],
-            "DK1 packet fixture and dataset references seeded by PilotAcceptanceHarnessTests."),
+            "DK1 packet fixture and dataset references seeded by PilotAcceptanceHarnessTests.")
+        {
+            WaveClaims = ["W2", "W3", "W4"]
+        },
         new(
             PilotReadinessStageDto.ResearchRun,
             "Research run evidence retained",
             PilotReadinessStageStatusDto.Ready,
             [seed.BacktestRunId, DatasetEvidenceId],
             [],
-            "Research briefing returned the retained backtest run and dataset evidence."),
+            "Research briefing returned the retained backtest run and dataset evidence.")
+        {
+            WaveClaims = ["W3"]
+        },
         new(
             PilotReadinessStageDto.RunComparison,
             "Baseline and candidate run comparison",
             PilotReadinessStageStatusDto.Ready,
             [.. seed.ComparedRunIds],
             [],
-            "Shared run comparison endpoint accepted the baseline and paper run IDs."),
+            "Shared run comparison endpoint accepted the baseline and paper run IDs.")
+        {
+            WaveClaims = ["W3"]
+        },
         new(
             PilotReadinessStageDto.PaperPromotion,
             "Paper promotion approval audit",
             PilotReadinessStageStatusDto.Ready,
             [seed.BacktestRunId, promotionAuditId ?? "promotion-audit-missing"],
             [],
-            "PromotionService approved the backtest run with the required checklist."),
+            "PromotionService approved the backtest run with the required checklist.")
+        {
+            WaveClaims = ["W2", "W3"]
+        },
         new(
             PilotReadinessStageDto.PaperSession,
             "Paper session replay verification",
             PilotReadinessStageStatusDto.Ready,
             [paperSessionId, replayVerificationAuditId ?? "replay-audit-missing"],
             [],
-            "PaperSessionPersistenceService replay verification returned consistent counts."),
+            "PaperSessionPersistenceService replay verification returned consistent counts.")
+        {
+            WaveClaims = ["W2"]
+        },
         new(
             PilotReadinessStageDto.PortfolioLedgerReview,
             "Portfolio and ledger continuity",
             PilotReadinessStageStatusDto.Ready,
             [continuityRunId, portfolioEvidenceId, ledgerEvidenceId],
             [],
-            "Run continuity detail confirmed portfolio, ledger, and reconciliation coverage."),
+            "Run continuity detail confirmed portfolio, ledger, and reconciliation coverage.")
+        {
+            WaveClaims = ["W3", "W4"]
+        },
         new(
             PilotReadinessStageDto.Reconciliation,
             "Reconciliation run casework",
             PilotReadinessStageStatusDto.Ready,
             [reconciliationRunId, seed.PaperRunId],
             [],
-            "Reconciliation run endpoint retained run-scoped reconciliation detail."),
+            "Reconciliation run endpoint retained run-scoped reconciliation detail.")
+        {
+            WaveClaims = ["W3", "W4"]
+        },
         new(
             PilotReadinessStageDto.GovernedReportPack,
             "Governed report pack lineage",
@@ -623,6 +669,9 @@ public sealed class PilotAcceptanceHarnessTests
             [reportPackId, seed.BacktestRunId, seed.PaperRunId],
             [],
             "Fund report-pack generation retained provenance links to both pilot runs.")
+        {
+            WaveClaims = ["W4"]
+        }
     ];
 
     private static IReadOnlyList<PilotEvidenceGraphEdgeDto> BuildPilotEvidenceGraph(
@@ -653,21 +702,108 @@ public sealed class PilotAcceptanceHarnessTests
 
     private static async Task<string> WritePilotReadinessArtifactAsync(PilotReadinessArtifactDto artifact)
     {
-        var artifactPath = Path.Combine(
+        var artifactDirectory = Path.Combine(
             FindRepositoryRoot(),
             "artifacts",
             "pilot-acceptance",
-            "latest",
-            "pilot-readiness.json");
-        Directory.CreateDirectory(Path.GetDirectoryName(artifactPath)!);
+            "latest");
+        var artifactPath = Path.Combine(artifactDirectory, "pilot-readiness.json");
+        var markdownPath = Path.Combine(artifactDirectory, "pilot-readiness.md");
+        Directory.CreateDirectory(artifactDirectory);
         await File.WriteAllTextAsync(
             artifactPath,
             JsonSerializer.Serialize(artifact, new JsonSerializerOptions(ServerJsonOptions)
             {
                 WriteIndented = true
             }));
+        await File.WriteAllTextAsync(markdownPath, BuildPilotReadinessMarkdown(artifact));
         return artifactPath;
     }
+
+    private static string BuildPilotReadinessMarkdown(PilotReadinessArtifactDto artifact)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("# Meridian Pilot Readiness");
+        builder.AppendLine();
+        builder.AppendLine("Canonical lifecycle: `trusted data -> strategy run -> paper promotion -> paper session -> replay -> portfolio/ledger review -> reconciliation -> governed report pack`.");
+        builder.AppendLine();
+        builder.AppendLine($"- Generated UTC: `{artifact.GeneratedAtUtc:O}`");
+        builder.AppendLine($"- Overall status: `{(artifact.AllStagesReady ? "Ready" : "ReviewRequired")}`");
+        builder.AppendLine($"- Ready stages: `{artifact.ReadyStageCount}/{artifact.TotalStageCount}`");
+        builder.AppendLine($"- Validation command: `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~PilotAcceptanceHarnessTests\" --logger \"console;verbosity=normal\"`");
+        builder.AppendLine($"- Report pack: `{artifact.ReportPackId}`");
+        builder.AppendLine();
+        builder.AppendLine("| Stage | W2-W4 claims | Status | Evidence IDs | Blockers | Validation |");
+        builder.AppendLine("|---|---|---|---|---|---|");
+
+        foreach (var gate in artifact.StageGates)
+        {
+            builder.Append("| ");
+            builder.Append(gate.Stage);
+            builder.Append(" | ");
+            builder.Append(gate.WaveClaims.Count == 0
+                ? "None"
+                : EscapeMarkdownCell(string.Join(", ", gate.WaveClaims)));
+            builder.Append(" | ");
+            builder.Append(gate.Status);
+            builder.Append(" | ");
+            builder.Append(EscapeMarkdownCell(string.Join("<br>", gate.EvidenceIds.Select(static id => $"`{id}`"))));
+            builder.Append(" | ");
+            builder.Append(gate.Blockers.Count == 0
+                ? "None"
+                : EscapeMarkdownCell(string.Join("<br>", gate.Blockers)));
+            builder.Append(" | ");
+            builder.Append(EscapeMarkdownCell(gate.Validation));
+            builder.AppendLine(" |");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string EscapeMarkdownCell(string value)
+        => value.Replace("|", "\\|", StringComparison.Ordinal)
+            .Replace("\r", " ", StringComparison.Ordinal)
+            .Replace("\n", " ", StringComparison.Ordinal);
+
+    private static void AssertLedgerArtifactRefs(
+        IReadOnlyList<EvidenceArtifactRefDto> artifactRefs,
+        string ledgerJournalRoute,
+        string ledgerTrialBalanceRoute)
+    {
+        artifactRefs.Should().HaveCount(2);
+        artifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "ledger-journal" &&
+            artifact.Route == ledgerJournalRoute &&
+            artifact.Path == null &&
+            artifact.Hash == null);
+        artifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "ledger-trial-balance" &&
+            artifact.Route == ledgerTrialBalanceRoute &&
+            artifact.Path == null &&
+            artifact.Hash == null);
+    }
+
+    private static void AssertSerializedLedgerArtifactRefs(
+        JsonElement artifactRoot,
+        string ledgerJournalRoute,
+        string ledgerTrialBalanceRoute)
+    {
+        var ledgerArtifactRefs = artifactRoot.GetProperty("ledgerArtifactRefs")
+            .EnumerateArray()
+            .ToArray();
+
+        ledgerArtifactRefs.Should().HaveCount(2);
+        ledgerArtifactRefs.Should().Contain(artifact =>
+            IsSerializedLedgerArtifact(artifact, "ledger-journal", ledgerJournalRoute));
+        ledgerArtifactRefs.Should().Contain(artifact =>
+            IsSerializedLedgerArtifact(artifact, "ledger-trial-balance", ledgerTrialBalanceRoute));
+    }
+
+    private static bool IsSerializedLedgerArtifact(JsonElement artifact, string kind, string route)
+        => artifact.GetProperty("kind").GetString() == kind &&
+           artifact.GetProperty("route").GetString() == route &&
+           artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
 
     private static string FindRepositoryRoot()
     {

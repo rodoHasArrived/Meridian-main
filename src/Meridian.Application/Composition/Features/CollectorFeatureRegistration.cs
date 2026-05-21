@@ -19,12 +19,16 @@ internal sealed class CollectorFeatureRegistration : IServiceFeatureRegistration
             return new QuoteCollector(publisher);
         });
 
+        // SessionStatsCollector - per-symbol intraday open/high/low/last/volume/VWAP
+        services.AddSingleton<SessionStatsCollector>();
+
         // TradeDataCollector - tick-by-tick trade processing
         services.AddSingleton<TradeDataCollector>(sp =>
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var quoteCollector = sp.GetRequiredService<QuoteCollector>();
-            return new TradeDataCollector(publisher, quoteCollector);
+            var sessionStats = sp.GetRequiredService<SessionStatsCollector>();
+            return new TradeDataCollector(publisher, quoteCollector, sessionStats);
         });
 
         // MarketDepthCollector - L2 order book maintenance

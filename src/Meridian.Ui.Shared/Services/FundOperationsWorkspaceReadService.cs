@@ -3,8 +3,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Export;
@@ -56,9 +58,12 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly PortfolioReadService _portfolioReadService;
     private readonly ISecurityReferenceLookup? _securityReferenceLookup;
     private readonly IReconciliationRunService? _strategyReconciliationService;
+    private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
     private readonly NavAttributionService _navAttributionService;
     private readonly ReportGenerationService _reportGenerationService;
     private readonly IGovernanceReportPackRepository? _reportPackRepository;
+    private readonly ReportPackValidationService _reportPackValidationService;
+    private readonly ISecurityValidationGateService? _securityValidationGate;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -68,7 +73,10 @@ public sealed class FundOperationsWorkspaceReadService
         ReportGenerationService reportGenerationService,
         ISecurityReferenceLookup? securityReferenceLookup = null,
         IReconciliationRunService? strategyReconciliationService = null,
-        IGovernanceReportPackRepository? reportPackRepository = null)
+        IReconciliationBreakQueueRepository? breakQueueRepository = null,
+        IGovernanceReportPackRepository? reportPackRepository = null,
+        ReportPackValidationService? reportPackValidationService = null,
+        ISecurityValidationGateService? securityValidationGate = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -77,7 +85,10 @@ public sealed class FundOperationsWorkspaceReadService
         _reportGenerationService = reportGenerationService ?? throw new ArgumentNullException(nameof(reportGenerationService));
         _securityReferenceLookup = securityReferenceLookup;
         _strategyReconciliationService = strategyReconciliationService;
+        _breakQueueRepository = breakQueueRepository;
         _reportPackRepository = reportPackRepository;
+        _reportPackValidationService = reportPackValidationService ?? new ReportPackValidationService();
+        _securityValidationGate = securityValidationGate;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -265,6 +276,30 @@ public sealed class FundOperationsWorkspaceReadService
         var securityMissingCount = report.TrialBalance.Count(static row =>
             !string.IsNullOrWhiteSpace(row.Symbol)
             && string.Equals(row.LookupQuality, "missing", StringComparison.OrdinalIgnoreCase));
+        var auditActor = request.AuditActor.Trim();
+        var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
+            ? Guid.NewGuid().ToString("N")
+            : request.CorrelationId.Trim();
+        var securityValidationResults = await ValidateReportPackSecuritiesAsync(
+            report,
+            auditActor,
+            ct).ConfigureAwait(false);
+        var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
+            ReportId: report.ReportId,
+            AsOf: asOf,
+            Report: report,
+            Ledger: ledger,
+            Reconciliation: reconciliation,
+            RunCount: runs.Count,
+            SecurityMissingCount: securityMissingCount,
+            Formats: formats,
+            SecurityValidationResults: securityValidationResults));
+        var status = _reportPackValidationService.ResolveStatus(validationIssues);
+        var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
+            auditActor,
+            correlationId,
+            report.GeneratedAt,
+            status);
         var provenance = new FundReportPackProvenanceDto(
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             JournalEntryCount: ledger.JournalEntryCount,
@@ -292,10 +327,8 @@ public sealed class FundOperationsWorkspaceReadService
             AsOf: asOf,
             GeneratedAt: report.GeneratedAt,
             TotalNetAssets: report.TotalNetAssets,
-            AuditActor: request.AuditActor.Trim(),
-            CorrelationId: string.IsNullOrWhiteSpace(request.CorrelationId)
-                ? Guid.NewGuid().ToString("N")
-                : request.CorrelationId.Trim(),
+            AuditActor: auditActor,
+            CorrelationId: correlationId,
             DecisionRationale: string.IsNullOrWhiteSpace(request.DecisionRationale)
                 ? null
                 : request.DecisionRationale.Trim(),
@@ -303,7 +336,12 @@ public sealed class FundOperationsWorkspaceReadService
             Artifacts: [],
             Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount),
             ContractName: GovernanceReportPackContract.ContractName,
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion)
+        {
+            Status = status,
+            ValidationIssues = validationIssues,
+            LifecycleEvents = lifecycleEvents
+        };
 
         return await repository
             .SaveAsync(snapshot, BuildReportPackArtifacts(report, formats, ct), ct)
@@ -328,6 +366,42 @@ public sealed class FundOperationsWorkspaceReadService
         var repository = _reportPackRepository
             ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
         return repository.GetAsync(reportId, ct);
+    }
+
+    private async Task<IReadOnlyList<SecurityValidationGateResultDto>> ValidateReportPackSecuritiesAsync(
+        ReportPack report,
+        string auditActor,
+        CancellationToken ct)
+    {
+        if (_securityValidationGate is null)
+        {
+            return [];
+        }
+
+        var symbols = report.TrialBalance
+            .Select(static row => row.Symbol)
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Select(static symbol => symbol!.Trim().ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.Ordinal)
+            .ToArray();
+
+        var results = new List<SecurityValidationGateResultDto>(symbols.Length);
+        foreach (var symbol in symbols)
+        {
+            ct.ThrowIfCancellationRequested();
+            results.Add(await _securityValidationGate
+                .ValidateSymbolAsync(
+                    symbol,
+                    SecurityValidationWorkflowDto.ReportPackEvidence,
+                    workflowReference: report.ReportId.ToString("N"),
+                    actor: auditActor,
+                    persistSnapshot: true,
+                    ct)
+                .ConfigureAwait(false));
+        }
+
+        return results;
     }
 
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadRunsAsync(
@@ -631,7 +705,80 @@ public sealed class FundOperationsWorkspaceReadService
             OpenBreakCount: openBreaks,
             BreakAmountTotal: breakAmountTotal,
             RecentRuns: ordered,
-            SecurityCoverageIssueCount: securityCoverageIssues);
+            SecurityCoverageIssueCount: securityCoverageIssues,
+            BreakQueue: await BuildBreakQueueProjectionAsync(ct).ConfigureAwait(false),
+            LedgerImpactPreview: BuildLedgerImpactPreview(ordered),
+            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(ct).ConfigureAwait(false));
+    }
+
+    private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(CancellationToken ct)
+    {
+        if (_breakQueueRepository is null)
+        {
+            return null;
+        }
+
+        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var projected = items
+            .OrderByDescending(static item => item.LastUpdatedAt)
+            .Select(static item => new ReconciliationBreakQueueProjectionItemDto(
+                BreakId: item.BreakId,
+                WorkflowId: item.RunId,
+                Severity: item.Severity,
+                Status: item.Status,
+                Owner: item.AssignedTo,
+                RequiredSignoffRole: item.RequiredSignoffRole,
+                SignoffStatus: item.SignoffStatus,
+                RoutingTarget: item.RoutingTarget,
+                RoutingDetail: item.RoutingDetail,
+                EvidenceReference: item.UpstreamSyncCursor ?? item.ExternalAccountId,
+                LastUpdatedAt: item.LastUpdatedAt))
+            .ToArray();
+
+        return new ReconciliationBreakQueueProjectionDto(
+            TotalCount: projected.Length,
+            OpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
+            InReviewCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
+            ResolvedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
+            DismissedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
+            CriticalOpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open && item.Severity == ReconciliationBreakSeverity.Critical),
+            Items: projected);
+    }
+
+    private static LedgerImpactPreviewDto BuildLedgerImpactPreview(IReadOnlyList<FundReconciliationItem> items)
+    {
+        var draftEntryCount = items.Sum(static item => item.TotalBreaks);
+        var netDebit = items.Where(static item => item.BreakAmountTotal >= 0m).Sum(static item => item.BreakAmountTotal);
+        var netCredit = items.Where(static item => item.BreakAmountTotal < 0m).Sum(static item => Math.Abs(item.BreakAmountTotal));
+        var flags = new List<string>();
+        if (draftEntryCount > 0)
+        {
+            flags.Add("draft-entries-present");
+        }
+
+        if (items.Any(static item => item.TotalBreaks > 0 && !string.Equals(item.Status, "Resolved", StringComparison.OrdinalIgnoreCase)))
+        {
+            flags.Add("unresolved-breaks-blocking-close");
+        }
+
+        return new LedgerImpactPreviewDto(
+            DraftEntryCount: draftEntryCount,
+            NetDebitEffect: netDebit,
+            NetCreditEffect: netCredit,
+            NetBalanceDelta: netDebit - netCredit,
+            HasValidationWarnings: flags.Count > 0,
+            ValidationFlags: flags);
+    }
+
+    private async Task<bool> HasCriticalBreakOpenAsync(CancellationToken ct)
+    {
+        if (_breakQueueRepository is null)
+        {
+            return false;
+        }
+
+        var items = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
+        return items.Any(static item => item.Severity == ReconciliationBreakSeverity.Critical);
     }
 
     private async Task<FundNavAttributionSummaryDto> BuildNavSummaryAsync(
@@ -1033,9 +1180,24 @@ public sealed class FundOperationsWorkspaceReadService
             _ => value.ToString() ?? string.Empty
         };
 
+        if (IsPotentialSpreadsheetFormula(text))
+        {
+            text = $"'{text}";
+        }
+
         return text.IndexOfAny(['"', ',', '\r', '\n']) < 0
             ? text
             : $"\"{text.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    }
+
+    private static bool IsPotentialSpreadsheetFormula(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return false;
+        }
+
+        return text[0] is '=' or '+' or '-' or '@' or '\t' or '\r';
     }
 
     private static IReadOnlyList<string> BuildReportPackWarnings(

@@ -1,9 +1,12 @@
 using System.Globalization;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Application.Config;
 using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
@@ -29,12 +32,9 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// - Supports fractional shares
 /// - Supports extended hours trading
 /// - Supports US equities and fixed income (US Treasuries, corporate bonds)
-/// - Fixed income orders may use notional sizing: set Metadata["notional"] = "true" on the OrderRequest
-///   and pass the dollar amount as Quantity. Optionally set Metadata["asset_class"] = "us_treasury"
-///   to route treasury orders explicitly.
 /// - Rate limit: 200 req/min
 /// </remarks>
-[DataSource("alpaca-brokerage", "Alpaca Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+[DataSource("alpaca-brokerage", "Alpaca Brokerage", Meridian.Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 10, Description = "Alpaca Markets order execution gateway")]
 [ImplementsAdr("ADR-001", "Alpaca brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
@@ -44,6 +44,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 {
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
     private const string LiveBaseUrl = "https://api.alpaca.markets";
+    private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
+    private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -61,7 +63,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+        if (!CurrentCredentials.HasCredentials)
         {
             _logger.LogWarning(
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
@@ -97,7 +99,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     string IBrokerageActivitySync.ProviderId => GatewayId;
 
-    private string BaseUrl => _options.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
+    private AlpacaCredentialSnapshot CurrentCredentials => AlpacaCredentialEnvironment.Resolve(_options);
+
+    private string BaseUrl => CurrentCredentials.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
 
     /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken ct = default)
@@ -106,7 +110,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         if (_connected)
             return;
 
-        if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+        if (!CurrentCredentials.HasCredentials)
             throw new InvalidOperationException(
                 "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
@@ -130,35 +134,25 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
-        RejectSessionScopedOrderType(request.Type);
 
         _logger.LogInformation(
             "Alpaca submitting order: {Side} {Quantity} {Symbol} @ {Type}",
             request.Side, request.Quantity, request.Symbol, request.Type);
 
-        var isNotional = request.Metadata?.TryGetValue("notional", out var notionalFlag) == true
-            && string.Equals(notionalFlag, "true", StringComparison.OrdinalIgnoreCase);
+        var payload = BuildOrderPayload(request);
+        ValidateOrderPayload(request, payload);
 
-        string? assetClass = request.Metadata is not null
-            && request.Metadata.TryGetValue("asset_class", out var ac) ? ac : null;
-
-        var payload = new AlpacaOrderPayload
+        var endpoint = ResolveOrderEndpoint(request, payload);
+        if (endpoint.RequiresBrokerApi)
         {
-            Symbol = request.Symbol,
-            Qty = isNotional ? null : request.Quantity.ToString("G"),
-            Notional = isNotional ? request.Quantity.ToString("G") : null,
-            Side = request.Side == OrderSide.Buy ? "buy" : "sell",
-            Type = MapOrderType(request.Type),
-            TimeInForce = MapTimeInForce(request.TimeInForce),
-            LimitPrice = request.LimitPrice?.ToString("G"),
-            StopPrice = request.StopPrice?.ToString("G"),
-            ClientOrderId = request.ClientOrderId,
-            AssetClass = assetClass,
-        };
+            payload.AssetClass = null;
+        }
 
-        using var client = CreateHttpClient();
+        using var client = endpoint.RequiresBrokerApi
+            ? CreateBrokerApiHttpClient()
+            : CreateHttpClient();
         var response = await client.PostAsJsonAsync(
-            $"{BaseUrl}/v2/orders", payload, AlpacaBrokerageSerializerContext.Default.AlpacaOrderPayload, ct)
+            endpoint.Url, payload, AlpacaBrokerageSerializerContext.Default.AlpacaOrderPayload, ct)
             .ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
@@ -258,9 +252,10 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         var payload = new AlpacaOrderModifyPayload
         {
-            Qty = modification.NewQuantity?.ToString("G"),
-            LimitPrice = modification.NewLimitPrice?.ToString("G"),
-            StopPrice = modification.NewStopPrice?.ToString("G"),
+            Qty = FormatDecimal(modification.NewQuantity),
+            LimitPrice = FormatDecimal(modification.NewLimitPrice),
+            StopPrice = FormatDecimal(modification.NewStopPrice),
+            Trail = FormatDecimal(modification.NewTrail),
         };
 
         using var client = CreateHttpClient();
@@ -408,7 +403,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 RetrievedAt: account.RetrievedAt,
                 Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["environment"] = _options.UseSandbox ? "paper" : "live",
+                    ["environment"] = CurrentCredentials.Environment,
                     ["broker"] = BrokerDisplayName
                 })
         ];
@@ -433,7 +428,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["requestedAccountId"] = externalAccountId,
-                ["environment"] = _options.UseSandbox ? "paper" : "live"
+                ["environment"] = CurrentCredentials.Environment
             });
 
         return new BrokeragePortfolioSnapshotDto(
@@ -545,9 +540,31 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     private HttpClient CreateHttpClient()
     {
+        var credentials = CurrentCredentials;
+        if (!credentials.HasCredentials)
+        {
+            throw new InvalidOperationException(
+                "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling Alpaca Trading API.");
+        }
+
         var client = _httpClientFactory.CreateClient("AlpacaBrokerage");
-        client.DefaultRequestHeaders.Add("APCA-API-KEY-ID", _options.KeyId);
-        client.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", _options.SecretKey);
+        client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", credentials.KeyId);
+        client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", credentials.SecretKey);
+        return client;
+    }
+
+    private HttpClient CreateBrokerApiHttpClient()
+    {
+        var credentials = CurrentCredentials;
+        if (!credentials.HasCredentials)
+        {
+            throw new InvalidOperationException(
+                "Alpaca Broker API KeyId and SecretKey are required for fixed-income brokerage orders.");
+        }
+
+        var client = _httpClientFactory.CreateClient("AlpacaBrokerage");
+        var token = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{credentials.KeyId}:{credentials.SecretKey}"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
         return client;
     }
 
@@ -571,35 +588,363 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         return activities ?? Array.Empty<AlpacaAccountActivityResponse>();
     }
 
+    private static AlpacaOrderPayload BuildOrderPayload(OrderRequest request)
+    {
+        var payload = new AlpacaOrderPayload
+        {
+            Symbol = request.Legs is { Count: > 0 } ? null : request.Symbol,
+            Qty = request.Quantity.ToString("G", CultureInfo.InvariantCulture),
+            Side = request.Side == OrderSide.Buy ? "buy" : "sell",
+            Type = MapOrderType(request.Type),
+            TimeInForce = MapTimeInForce(request),
+            LimitPrice = FormatDecimal(request.LimitPrice),
+            StopPrice = FormatDecimal(request.StopPrice),
+            ClientOrderId = request.ClientOrderId,
+            ExtendedHours = ReadMetadataBool(request.Metadata, "extended_hours", "extendedHours", "alpaca:extended_hours"),
+        };
+
+        if (ReadMetadataString(request.Metadata, out var orderClass, "order_class", "orderClass", "alpaca:order_class"))
+        {
+            payload.OrderClass = NormalizeOrderClass(orderClass);
+        }
+
+        if (request.Legs is { Count: > 0 } legs)
+        {
+            payload.OrderClass = "mleg";
+            payload.Legs = legs.Select(MapOrderLeg).ToArray();
+        }
+
+        if (ReadMetadataString(request.Metadata, out var assetClass, "asset_class", "assetClass", "alpaca:asset_class"))
+        {
+            payload.AssetClass = NormalizeAssetClass(assetClass);
+        }
+        else if (LooksLikeOptionSymbol(request.Symbol))
+        {
+            payload.AssetClass = "us_option";
+        }
+
+        var notional = ReadMetadataDecimal(request.Metadata, "notional", "alpaca:notional")
+            ?? (ReadMetadataBool(request.Metadata, "notional", "alpaca:notional") == true ? request.Quantity : null);
+        if (notional.HasValue)
+        {
+            payload.Notional = FormatDecimal(notional);
+            payload.Qty = null;
+        }
+
+        if (request.PositionIntent.HasValue)
+        {
+            payload.PositionIntent = MapPositionIntent(request.PositionIntent.Value);
+        }
+        else if (ReadMetadataString(request.Metadata, out var positionIntent, "position_intent", "positionIntent", "alpaca:position_intent"))
+        {
+            payload.PositionIntent = NormalizePositionIntent(positionIntent);
+        }
+
+        var takeProfitLimit = ReadMetadataDecimal(request.Metadata, "take_profit.limit_price", "take_profit_limit_price", "alpaca:take_profit_limit_price");
+        if (takeProfitLimit.HasValue)
+        {
+            payload.TakeProfit = new AlpacaTakeProfitPayload
+            {
+                LimitPrice = FormatDecimal(takeProfitLimit),
+            };
+        }
+
+        var stopLossStop = ReadMetadataDecimal(request.Metadata, "stop_loss.stop_price", "stop_loss_stop_price", "alpaca:stop_loss_stop_price");
+        var stopLossLimit = ReadMetadataDecimal(request.Metadata, "stop_loss.limit_price", "stop_loss_limit_price", "alpaca:stop_loss_limit_price");
+        if (stopLossStop.HasValue || stopLossLimit.HasValue)
+        {
+            payload.StopLoss = new AlpacaStopLossPayload
+            {
+                StopPrice = FormatDecimal(stopLossStop),
+                LimitPrice = FormatDecimal(stopLossLimit),
+            };
+        }
+
+        payload.TrailPrice = FormatDecimal(request.TrailPrice)
+            ?? FormatDecimal(ReadMetadataDecimal(request.Metadata, "trail_price", "trailPrice", "alpaca:trail_price"));
+        payload.TrailPercent = FormatDecimal(request.TrailPercent)
+            ?? FormatDecimal(ReadMetadataDecimal(request.Metadata, "trail_percent", "trailPercent", "alpaca:trail_percent"));
+
+        return payload;
+    }
+
+    private static void ValidateOrderPayload(OrderRequest request, AlpacaOrderPayload payload)
+    {
+        if (request.Type is OrderType.TrailingStop)
+        {
+            var hasTrailPrice = !string.IsNullOrWhiteSpace(payload.TrailPrice);
+            var hasTrailPercent = !string.IsNullOrWhiteSpace(payload.TrailPercent);
+            if (hasTrailPrice == hasTrailPercent)
+            {
+                throw new NotSupportedException("Alpaca trailing stop orders require exactly one of TrailPrice or TrailPercent.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(payload.OrderClass) && payload.OrderClass != "simple")
+            {
+                throw new NotSupportedException("Alpaca currently supports trailing stops only as simple orders.");
+            }
+        }
+
+        if (IsFixedIncomeAssetClass(payload.AssetClass))
+        {
+            if (request.Type is not (OrderType.Market or OrderType.Limit))
+            {
+                throw new NotSupportedException("Alpaca fixed-income orders support only market and limit orders.");
+            }
+
+            if (payload.TimeInForce != "day")
+            {
+                throw new NotSupportedException("Alpaca fixed-income orders require day time in force.");
+            }
+
+            if (request.Quantity < 1000m || request.Quantity > 1_000_000m || request.Quantity % 1000m != 0m)
+            {
+                throw new NotSupportedException("Alpaca fixed-income order quantity must be full face-value denominations from 1000 through 1000000.");
+            }
+
+            if (!ReadMetadataString(request.Metadata, out _, "broker_account_id", "brokerAccountId", "account_id", "accountId", "alpaca:broker_account_id"))
+            {
+                throw new NotSupportedException("Alpaca fixed-income orders require Broker API account id metadata: broker_account_id.");
+            }
+
+            payload.Notional = null;
+            payload.Qty = request.Quantity.ToString("G", CultureInfo.InvariantCulture);
+            payload.ExtendedHours = null;
+        }
+
+        if (IsOptionsOrder(payload))
+        {
+            if (payload.OrderClass == "mleg")
+            {
+                if (request.Type is not (OrderType.Market or OrderType.Limit))
+                {
+                    throw new NotSupportedException("Alpaca multi-leg options orders support only market and limit orders.");
+                }
+
+                if (payload.Legs is null || payload.Legs.Length is < 2 or > 4)
+                {
+                    throw new NotSupportedException("Alpaca multi-leg options orders require two to four legs.");
+                }
+
+                ValidateMlegRatioQuantities(payload.Legs);
+            }
+            else if (request.Type is not (OrderType.Market or OrderType.Limit or OrderType.StopMarket or OrderType.StopLimit))
+            {
+                throw new NotSupportedException("Alpaca single-leg options orders support market, limit, stop, and stop-limit orders.");
+            }
+
+            if (payload.TimeInForce is not ("day" or "gtc"))
+            {
+                throw new NotSupportedException("Alpaca options orders require day or gtc time in force.");
+            }
+
+            if (payload.ExtendedHours == true)
+            {
+                throw new NotSupportedException("Alpaca options orders do not support extended-hours execution.");
+            }
+
+            if (payload.Notional is not null)
+            {
+                throw new NotSupportedException("Alpaca options orders do not support notional sizing.");
+            }
+
+            if (request.Quantity <= 0m || request.Quantity != decimal.Truncate(request.Quantity))
+            {
+                throw new NotSupportedException("Alpaca options order quantity must be a positive whole number.");
+            }
+        }
+
+        if (payload.ExtendedHours == true)
+        {
+            if (request.Type is not OrderType.Limit)
+            {
+                throw new NotSupportedException("Alpaca extended-hours orders must be limit orders.");
+            }
+
+            if (request.TimeInForce is not (TimeInForce.Day or TimeInForce.GoodTilCancelled))
+            {
+                throw new NotSupportedException("Alpaca extended-hours orders require Day or GoodTilCancelled time in force.");
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.OrderClass) || payload.OrderClass == "simple")
+        {
+            return;
+        }
+
+        if (payload.ExtendedHours == true)
+        {
+            throw new NotSupportedException("Alpaca advanced order classes do not support extended-hours execution.");
+        }
+
+        if (payload.OrderClass is "bracket" or "oco")
+        {
+            if (payload.TakeProfit?.LimitPrice is null || payload.StopLoss?.StopPrice is null)
+            {
+                throw new NotSupportedException($"Alpaca {payload.OrderClass} orders require take_profit.limit_price and stop_loss.stop_price.");
+            }
+        }
+
+        if (payload.OrderClass == "oco" && request.Type is not OrderType.Limit)
+        {
+            throw new NotSupportedException("Alpaca OCO orders must be submitted as limit orders.");
+        }
+
+        if (payload.OrderClass == "oto" && payload.TakeProfit is null && payload.StopLoss is null)
+        {
+            throw new NotSupportedException("Alpaca OTO orders require a take_profit or stop_loss leg.");
+        }
+    }
+
     private static string MapOrderType(OrderType type) => type switch
     {
         OrderType.Market => "market",
         OrderType.Limit => "limit",
         OrderType.StopMarket => "stop",
         OrderType.StopLimit => "stop_limit",
-        OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose
-            => throw new NotSupportedException(
-                $"Alpaca order mapping does not preserve the {type} session timing qualifier."),
+        OrderType.MarketOnOpen or OrderType.MarketOnClose => "market",
+        OrderType.LimitOnOpen or OrderType.LimitOnClose => "limit",
+        OrderType.TrailingStop => "trailing_stop",
         _ => throw new NotSupportedException($"Alpaca order mapping does not support {type}.")
     };
 
-    private static void RejectSessionScopedOrderType(OrderType type)
+    private static string MapTimeInForce(OrderRequest request) => request.Type switch
     {
-        if (type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        OrderType.MarketOnOpen or OrderType.LimitOnOpen => "opg",
+        OrderType.MarketOnClose or OrderType.LimitOnClose => "cls",
+        _ => request.TimeInForce switch
         {
-            throw new NotSupportedException(
-                $"Alpaca gateway does not currently preserve the {type} session timing qualifier.");
+            TimeInForce.Day => "day",
+            TimeInForce.GoodTilCancelled => "gtc",
+            TimeInForce.ImmediateOrCancel => "ioc",
+            TimeInForce.FillOrKill => "fok",
+            _ => "day"
         }
+    };
+
+    private static string NormalizeOrderClass(string orderClass) => orderClass.Trim().ToLowerInvariant() switch
+    {
+        "simple" or "bracket" or "oco" or "oto" => orderClass.Trim().ToLowerInvariant(),
+        "mleg" => "mleg",
+        _ => throw new NotSupportedException($"Alpaca order_class '{orderClass}' is not supported.")
+    };
+
+    private static string NormalizeAssetClass(string assetClass) => assetClass.Trim().ToLowerInvariant() switch
+    {
+        "equity" or "us_equity" => "us_equity",
+        "option" or "options" or "us_option" => "us_option",
+        "treasury" or "us_treasury" or "fixed_income_treasury" => "treasury",
+        "corporate" or "bond" or "corporate_bond" or "us_corporate" => "corporate",
+        _ => assetClass.Trim().ToLowerInvariant()
+    };
+
+    private static AlpacaOrderLegPayload MapOrderLeg(OrderLeg leg)
+    {
+        ArgumentNullException.ThrowIfNull(leg);
+        if (string.IsNullOrWhiteSpace(leg.Symbol))
+            throw new NotSupportedException("Alpaca option legs require a symbol.");
+
+        if (leg.RatioQuantity <= 0m || leg.RatioQuantity != decimal.Truncate(leg.RatioQuantity))
+            throw new NotSupportedException("Alpaca option leg ratio quantities must be positive whole numbers.");
+
+        return new AlpacaOrderLegPayload
+        {
+            Symbol = leg.Symbol,
+            RatioQty = FormatDecimal(leg.RatioQuantity),
+            Side = leg.Side == OrderSide.Buy ? "buy" : "sell",
+            PositionIntent = leg.PositionIntent.HasValue
+                ? MapPositionIntent(leg.PositionIntent.Value)
+                : null,
+        };
     }
 
-    private static string MapTimeInForce(TimeInForce tif) => tif switch
+    private static string MapPositionIntent(PositionIntent positionIntent) => positionIntent switch
     {
-        TimeInForce.Day => "day",
-        TimeInForce.GoodTilCancelled => "gtc",
-        TimeInForce.ImmediateOrCancel => "ioc",
-        TimeInForce.FillOrKill => "fok",
-        _ => "day"
+        PositionIntent.BuyToOpen => "buy_to_open",
+        PositionIntent.BuyToClose => "buy_to_close",
+        PositionIntent.SellToOpen => "sell_to_open",
+        PositionIntent.SellToClose => "sell_to_close",
+        _ => throw new NotSupportedException($"Unsupported Alpaca position intent {positionIntent}.")
     };
+
+    private static string NormalizePositionIntent(string positionIntent) => positionIntent.Trim().ToLowerInvariant() switch
+    {
+        "buy_to_open" or "buytoopen" => "buy_to_open",
+        "buy_to_close" or "buytoclose" => "buy_to_close",
+        "sell_to_open" or "selltoopen" => "sell_to_open",
+        "sell_to_close" or "selltoclose" => "sell_to_close",
+        _ => throw new NotSupportedException($"Alpaca position_intent '{positionIntent}' is not supported.")
+    };
+
+    private static bool LooksLikeOptionSymbol(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+            return false;
+
+        var trimmed = symbol.Trim();
+        return trimmed.Length >= 15 &&
+               (trimmed.Contains("C", StringComparison.Ordinal) || trimmed.Contains("P", StringComparison.Ordinal)) &&
+               trimmed.Any(char.IsDigit);
+    }
+
+    private static bool IsFixedIncomeAssetClass(string? assetClass) =>
+        assetClass is "treasury" or "corporate";
+
+    private static bool IsOptionsOrder(AlpacaOrderPayload payload) =>
+        payload.OrderClass == "mleg" || payload.AssetClass == "us_option";
+
+    private OrderEndpoint ResolveOrderEndpoint(OrderRequest request, AlpacaOrderPayload payload)
+    {
+        if (!IsFixedIncomeAssetClass(payload.AssetClass))
+        {
+            return new OrderEndpoint($"{BaseUrl}/v2/orders", RequiresBrokerApi: false);
+        }
+
+        if (!ReadMetadataString(request.Metadata, out var accountId, "broker_account_id", "brokerAccountId", "account_id", "accountId", "alpaca:broker_account_id"))
+        {
+            throw new NotSupportedException("Alpaca fixed-income orders require Broker API account id metadata: broker_account_id.");
+        }
+
+        var brokerBaseUrl = CurrentCredentials.UseSandbox ? BrokerApiSandboxBaseUrl : BrokerApiLiveBaseUrl;
+        return new OrderEndpoint(
+            $"{brokerBaseUrl}/v1/trading/accounts/{Uri.EscapeDataString(accountId)}/orders",
+            RequiresBrokerApi: true);
+    }
+
+    private static void ValidateMlegRatioQuantities(IReadOnlyList<AlpacaOrderLegPayload> legs)
+    {
+        var values = legs
+            .Select(static leg => decimal.TryParse(leg.RatioQty, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+                ? parsed
+                : 0m)
+            .ToArray();
+
+        if (values.Any(static value => value <= 0m || value != decimal.Truncate(value)))
+            throw new NotSupportedException("Alpaca multi-leg option ratios must be positive whole numbers.");
+
+        var gcd = values.Select(static value => (long)value).Aggregate(GreatestCommonDivisor);
+        if (gcd > 1)
+            throw new NotSupportedException("Alpaca multi-leg option ratios must be simplified so their greatest common divisor is 1.");
+    }
+
+    private static long GreatestCommonDivisor(long left, long right)
+    {
+        left = Math.Abs(left);
+        right = Math.Abs(right);
+        while (right != 0)
+        {
+            var temp = right;
+            right = left % right;
+            left = temp;
+        }
+
+        return left;
+    }
+
+    private sealed record OrderEndpoint(string Url, bool RequiresBrokerApi);
+
+    private static string? FormatDecimal(decimal? value) =>
+        value?.ToString("G", CultureInfo.InvariantCulture);
 
     private static OrderStatus MapAlpacaStatus(string? status) => status switch
     {
@@ -647,6 +992,67 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         return DateTimeOffset.UtcNow;
     }
 
+    private static bool ReadMetadataString(
+        IReadOnlyDictionary<string, string>? metadata,
+        out string value,
+        params string[] keys)
+    {
+        value = string.Empty;
+        if (metadata is null)
+            return false;
+
+        foreach (var key in keys)
+        {
+            if (metadata.TryGetValue(key, out var directValue) &&
+                !string.IsNullOrWhiteSpace(directValue))
+            {
+                value = directValue;
+                return true;
+            }
+
+            foreach (var kvp in metadata)
+            {
+                if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrWhiteSpace(kvp.Value))
+                {
+                    value = kvp.Value;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool? ReadMetadataBool(
+        IReadOnlyDictionary<string, string>? metadata,
+        params string[] keys)
+    {
+        if (!ReadMetadataString(metadata, out var value, keys))
+            return null;
+
+        var normalized = value.Trim().ToLowerInvariant();
+        return bool.TryParse(normalized, out var parsed)
+            ? parsed
+            : normalized is "1" or "yes" or "y";
+    }
+
+    private static decimal? ReadMetadataDecimal(
+        IReadOnlyDictionary<string, string>? metadata,
+        params string[] keys)
+    {
+        if (!ReadMetadataString(metadata, out var value, keys))
+            return null;
+
+        return decimal.TryParse(
+            value,
+            NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+            CultureInfo.InvariantCulture,
+            out var parsed)
+            ? parsed
+            : null;
+    }
+
     // ── JSON DTOs (ADR-014: source generators) ─────────────────────────
 
     internal sealed class AlpacaOrderPayload
@@ -661,6 +1067,14 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
         [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
         [JsonPropertyName("client_order_id")] public string? ClientOrderId { get; set; }
+        [JsonPropertyName("extended_hours")] public bool? ExtendedHours { get; set; }
+        [JsonPropertyName("order_class")] public string? OrderClass { get; set; }
+        [JsonPropertyName("legs")] public AlpacaOrderLegPayload[]? Legs { get; set; }
+        [JsonPropertyName("take_profit")] public AlpacaTakeProfitPayload? TakeProfit { get; set; }
+        [JsonPropertyName("stop_loss")] public AlpacaStopLossPayload? StopLoss { get; set; }
+        [JsonPropertyName("trail_price")] public string? TrailPrice { get; set; }
+        [JsonPropertyName("trail_percent")] public string? TrailPercent { get; set; }
+        [JsonPropertyName("position_intent")] public string? PositionIntent { get; set; }
         /// <summary>Explicit asset class hint used for treasury/bond routing (e.g., "us_treasury").</summary>
         [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
     }
@@ -670,6 +1084,26 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("qty")] public string? Qty { get; set; }
         [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
         [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
+        [JsonPropertyName("trail")] public string? Trail { get; set; }
+    }
+
+    internal sealed class AlpacaTakeProfitPayload
+    {
+        [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
+    }
+
+    internal sealed class AlpacaStopLossPayload
+    {
+        [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
+        [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
+    }
+
+    internal sealed class AlpacaOrderLegPayload
+    {
+        [JsonPropertyName("symbol")] public string? Symbol { get; set; }
+        [JsonPropertyName("ratio_qty")] public string? RatioQty { get; set; }
+        [JsonPropertyName("side")] public string? Side { get; set; }
+        [JsonPropertyName("position_intent")] public string? PositionIntent { get; set; }
     }
 
     internal sealed class AlpacaOrderResponse
@@ -735,6 +1169,10 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 /// </summary>
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderPayload))]
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderModifyPayload))]
+[JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaTakeProfitPayload))]
+[JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaStopLossPayload))]
+[JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderLegPayload))]
+[JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderLegPayload[]))]
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderResponse))]
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderResponse[]))]
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaAccountResponse))]

@@ -34,6 +34,18 @@ Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 . (Join-Path $PSScriptRoot 'shared/retry.ps1')
 
+# Script-level constants for all hardcoded automation identifiers, process/window names,
+# and timing values. Centralising these here means a single-line change adapts the entire
+# script when the binary name or named-pipe identifier changes.
+$script:DesktopProcessName = 'Meridian.Desktop'
+$script:DesktopWindowTitle = 'Meridian'
+$script:SingleInstancePipeName = 'Meridian.Desktop.SingleInstance.Pipe'
+$script:MinCaptureWidth = 200
+$script:MinCaptureHeight = 200
+$script:WindowActivationDelayMs = 400
+$script:KeySendDelayMs = 250
+$script:DefaultCaptureRetryAttempts = 6
+
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
@@ -155,7 +167,7 @@ function Find-MeridianWindow {
         return $processWindow
     }
 
-    foreach ($candidateProcess in @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)) {
+    foreach ($candidateProcess in @(Get-Process -Name $script:DesktopProcessName -ErrorAction SilentlyContinue)) {
         $processWindow = Get-MeridianWindowFromProcess -Process $candidateProcess
         if ($null -ne $processWindow) {
             return $processWindow
@@ -166,7 +178,7 @@ function Find-MeridianWindow {
         $root = [System.Windows.Automation.AutomationElement]::RootElement
         $nameCondition = New-Object System.Windows.Automation.PropertyCondition(
             [System.Windows.Automation.AutomationElement]::NameProperty,
-            'Meridian')
+            $script:DesktopWindowTitle)
 
         return $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $nameCondition)
     }
@@ -183,8 +195,8 @@ function Activate-MeridianWindow {
             $wshShell = $script:WshShell
         }
 
-        [void]$wshShell.AppActivate('Meridian')
-        Start-Sleep -Milliseconds 400
+        [void]$wshShell.AppActivate($script:DesktopWindowTitle)
+        Start-Sleep -Milliseconds $script:WindowActivationDelayMs
         return $true
     }
     catch {
@@ -225,7 +237,8 @@ function Wait-MeridianWindow {
         [System.Diagnostics.Process]$Process
     )
 
-    for ($attempt = 0; $attempt -lt ($TimeoutSec * 2); $attempt++) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline) {
         Start-Sleep -Milliseconds 500
 
         if ($null -ne $Process -and $Process.HasExited) {
@@ -420,6 +433,13 @@ function Ensure-EnteredOperatingContext {
         [System.Diagnostics.Process]$Process
     )
 
+    # Delay between invoking Switch Context and probing Enter Workstation on FundProfileSelection.
+    $contextSwitchTransitionDelayMs = 800
+    # Settle time after Seed Sample Contexts completes before re-probing Enter Workstation.
+    $contextSeedSettleSeconds = 2
+    # Settle time after entering the workstation before the capture loop starts.
+    $contextEnterSettleSeconds = 1
+
     $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
         if ($null -ne $Process -and $Process.HasExited) {
             throw "Meridian desktop exited before operating context could be confirmed."
@@ -431,6 +451,13 @@ function Ensure-EnteredOperatingContext {
         }
 
         if (Test-ShellAutomationReady -Window $currentWindow) {
+            $contextSelectionHint = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHint'
+            if ($null -ne $contextSelectionHint) {
+                # Returning $null forces the workflow into the context-selection automation branch below.
+                # Wait-ForElement bounds retries so this recovery path fails fast instead of hanging indefinitely.
+                return $null
+            }
+
             return $currentWindow
         }
 
@@ -454,6 +481,49 @@ function Ensure-EnteredOperatingContext {
         return Get-OperatingContextEnterButton -Window $currentWindow
     }
 
+    if (-not $enterButton) {
+        $switchContextButton = Wait-ForElement -Attempts 6 -DelayMilliseconds 250 -Finder {
+            if ($null -ne $Process -and $Process.HasExited) {
+                throw "Meridian desktop exited before context switch could be requested."
+            }
+
+            $currentWindow = Find-MeridianWindow -Process $Process
+            if ($null -eq $currentWindow) {
+                return $null
+            }
+
+            $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
+            if ($null -ne $contextSelectionHintButton) {
+                # Preferred shell hint when no operating context is active.
+                return $contextSelectionHintButton
+            }
+
+            $fallbackSwitchButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'SwitchContextButton'
+            if ($null -ne $fallbackSwitchButton) {
+                # Fallback command-strip action for shells where the hint card is not rendered.
+                return $fallbackSwitchButton
+            }
+
+            return $null
+        }
+
+        if ($switchContextButton -and (Test-AutomationElementEnabled -Element $switchContextButton)) {
+            Activate-MeridianWindow | Out-Null
+            if (Invoke-AutomationButton -Button $switchContextButton -Description 'switch context') {
+                # Allow the FundProfileSelection page transition to complete before probing for Enter Workstation.
+                Start-Sleep -Milliseconds $contextSwitchTransitionDelayMs
+                $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+                    $currentWindow = Find-MeridianWindow -Process $Process
+                    if ($null -eq $currentWindow) {
+                        return $null
+                    }
+
+                    return Get-OperatingContextEnterButton -Window $currentWindow
+                }
+            }
+        }
+    }
+
     if ($enterButton -and -not (Test-AutomationElementEnabled -Element $enterButton)) {
         $seedButton = Wait-ForElement -Attempts 5 -DelayMilliseconds 250 -Finder {
             $currentWindow = Find-MeridianWindow -Process $Process
@@ -466,7 +536,7 @@ function Ensure-EnteredOperatingContext {
 
         if ($seedButton) {
             if (Invoke-AutomationButton -Button $seedButton -Description 'seed sample contexts') {
-                Start-Sleep -Seconds 2
+                Start-Sleep -Seconds $contextSeedSettleSeconds
             }
         }
 
@@ -517,7 +587,7 @@ function Ensure-EnteredOperatingContext {
         return $false
     }
 
-    Start-Sleep -Seconds 1
+    Start-Sleep -Seconds $contextEnterSettleSeconds
     return $true
 }
 
@@ -612,7 +682,7 @@ function Save-WindowCapture {
     )
 
     $rect = $Window.Current.BoundingRectangle
-    if ($rect.Width -lt 200 -or $rect.Height -lt 200) {
+    if ($rect.Width -lt $script:MinCaptureWidth -or $rect.Height -lt $script:MinCaptureHeight) {
         throw "Window bounds are too small to capture ($($rect.Width)x$($rect.Height))."
     }
 
@@ -681,7 +751,7 @@ function Send-ForwardedLaunchArgs {
         try {
             $pipe = [System.IO.Pipes.NamedPipeClientStream]::new(
                 '.',
-                'Meridian.Desktop.SingleInstance.Pipe',
+                $script:SingleInstancePipeName,
                 [System.IO.Pipes.PipeDirection]::Out,
                 [System.IO.Pipes.PipeOptions]::None)
             try {
@@ -712,14 +782,14 @@ function Send-WindowKeys {
     )
 
     $Window.SetFocus()
-    Start-Sleep -Milliseconds 250
+    Start-Sleep -Milliseconds $script:KeySendDelayMs
     [System.Windows.Forms.SendKeys]::SendWait($Keys)
 }
 
 function Add-StageStatus {
     param(
         [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[object]]$StageStatus,
+        [object]$StageStatus,
 
         [Parameter(Mandatory = $true)]
         [string]$Stage,
@@ -730,6 +800,14 @@ function Add-StageStatus {
         [string]$Message = '',
         [object]$Metadata = $null
     )
+
+    if ($null -eq $StageStatus) {
+        throw "StageStatus collection is null."
+    }
+
+    if ($StageStatus -isnot [System.Collections.Generic.List[object]]) {
+        throw "StageStatus must be a List[object], got: $($StageStatus.GetType().FullName)"
+    }
 
     $StageStatus.Add([ordered]@{
             stage = $Stage
@@ -981,7 +1059,7 @@ for ($i = $resumeFromIndex + 1; $i -lt $stageOrder.Count; $i++) {
 $ownedProcess = $null
 $window = $null
 $workflowTranscriptActive = $false
-$stageStatus = [System.Collections.Generic.List[object]]::new()
+$stageStatusEntries = [System.Collections.Generic.List[object]]::new()
 $lastSuccessfulStep = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
 
@@ -1018,14 +1096,25 @@ if ($preflight.status -eq 'blocked') {
     $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
     throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
-Add-StageStatus -StageStatus $stageStatus -Stage 'preflight' -Status 'ok' -Message 'Desktop workflow preflight checks completed.'
+Add-StageStatus -StageStatus $stageStatusEntries -Stage 'preflight' -Status 'ok' -Message 'Desktop workflow preflight checks completed.'
 
 $retryTelemetry = New-Object System.Collections.ArrayList
-$originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
+foreach ($uiaAssembly in @('UIAutomationClient', 'UIAutomationTypes')) {
+    try {
+        Add-Type -AssemblyName $uiaAssembly -ErrorAction Stop
+    }
+    catch {
+        # Fallback for environments where the assembly must be loaded by partial name.
+        try {
+            [void][System.Reflection.Assembly]::LoadWithPartialName($uiaAssembly)
+        }
+        catch {
+            throw "Required UI Automation assembly '$uiaAssembly' could not be loaded. Desktop workflow automation requires Windows UIAutomation assemblies. Error: $($_.Exception.Message)"
+        }
+    }
+}
 
 try {
     if (-not (Test-Path -LiteralPath 'config/appsettings.json') -and (Test-Path -LiteralPath 'config/appsettings.sample.json')) {
@@ -1134,14 +1223,14 @@ try {
             $stageContracts['build'] = (Get-StageState -Path $buildStagePath)
         }
         Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'ok' -Message 'Desktop build completed.' -Metadata @{ exePath = $exePath }
+        Add-StageStatus -StageStatus $stageStatusEntries -Stage 'build-desktop' -Status 'ok' -Message 'Desktop build completed.' -Metadata @{ exePath = $exePath }
     }
     elseif (-not $SkipBuild) {
         Write-Info 'Skipping desktop build (checkpoint resume).'
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
+        Add-StageStatus -StageStatus $stageStatusEntries -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
     }
     else {
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped because -SkipBuild was supplied.'
+        Add-StageStatus -StageStatus $stageStatusEntries -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped because -SkipBuild was supplied.'
     }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
@@ -1156,7 +1245,7 @@ try {
             fixtureMode = $useFixture
         }
         try {
-            $existingProcesses = @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)
+            $existingProcesses = @(Get-Process -Name $script:DesktopProcessName -ErrorAction SilentlyContinue)
             if ($existingProcesses.Count -gt 0) {
                 if (-not $ReuseExistingApp) {
                     throw "Meridian.Desktop is already running. Close it or rerun with -ReuseExistingApp."
@@ -1183,7 +1272,7 @@ try {
                 if ($useFixture) { $launchArguments += '--fixture' }
 
                 if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
-                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
+                    Add-StageStatus -StageStatus $stageStatusEntries -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
                     Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
                     Write-Info "Launching Meridian desktop: $exePath"
                     $ownedProcess = Start-Process -FilePath $exePath `
@@ -1197,7 +1286,7 @@ try {
                     $manifest.run.processId = $ownedProcess.Id
                     $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
                     Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
-                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
+                    Add-StageStatus -StageStatus $stageStatusEntries -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
                     Write-Ok 'Meridian window detected.'
                     $launchStage.outputs = @{
                         processId = $ownedProcess.Id
@@ -1208,7 +1297,7 @@ try {
                 }
                 else {
                     Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
-                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
+                    Add-StageStatus -StageStatus $stageStatusEntries -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
                 }
             }
             $launchStage.status = 'succeeded'
@@ -1236,7 +1325,7 @@ try {
     if (-not $operatingContextConfirmed) {
         throw 'Operating context was not confirmed; screenshot workflow cannot continue before shell readiness. Check EnterWorkstationButton and Seed Sample Contexts automation.'
     }
-    Add-StageStatus -StageStatus $stageStatus -Stage 'ensure-operating-context' -Status 'ok' -Message 'Operating context confirmed.'
+    Add-StageStatus -StageStatus $stageStatusEntries -Stage 'ensure-operating-context' -Status 'ok' -Message 'Operating context confirmed.'
 
     Write-Ok 'Operating context confirmed.'
 
@@ -1244,7 +1333,7 @@ try {
     $window = $startupReadiness.Window
     $manifest.run.initialPageTag = $startupReadiness.State.PageTag
     $manifest.run.initialPageTitle = $startupReadiness.State.PageTitle
-    Add-StageStatus -StageStatus $stageStatus -Stage 'startup-readiness' -Status 'ok' -Message 'Shell readiness confirmed.' -Metadata @{ pageTag = $startupReadiness.State.PageTag; pageTitle = $startupReadiness.State.PageTitle }
+    Add-StageStatus -StageStatus $stageStatusEntries -Stage 'startup-readiness' -Status 'ok' -Message 'Shell readiness confirmed.' -Metadata @{ pageTag = $startupReadiness.State.PageTag; pageTitle = $startupReadiness.State.PageTitle }
     Write-Ok "Shell ready on $($startupReadiness.State.PageTag) ($($startupReadiness.State.PageTitle))."
 
     $captureFailedSteps = @()
@@ -1275,8 +1364,21 @@ try {
 
         $stepWaitMs = [int](Get-ConfigValue -Table $step -Key 'waitMs' -Fallback $settleMs)
         $shouldCapture = Get-ConfigBool -Table $step -Key 'capture' -Fallback $true
+        $stepMaxRetryAttempts = [int](Get-ConfigValue -Table $step -Key 'retryAttempts' -Fallback $script:DefaultCaptureRetryAttempts)
         $captureName = [string](Get-ConfigValue -Table $step -Key 'captureName' -Fallback ('{0:D2}-{1}' -f $stepIndex, ($title -replace '[^A-Za-z0-9]+', '-').Trim('-').ToLowerInvariant()))
         $capturePath = if ($shouldCapture) { Join-Path $screenshotDirectory "$captureName.png" } else { $null }
+        # Collect step-level additional accepted page tags and resolve each alias.
+        $stepAdditionalPageTags = @()
+        if ($step.Contains('additionalPageTags')) {
+            $stepAdditionalPageTags = @(
+                $step.additionalPageTags |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                    ForEach-Object { Resolve-WorkflowPageTag -PageTag ([string]$_) }
+            )
+        }
+        if ($shouldCapture -and [string]::IsNullOrWhiteSpace($pageTag)) {
+            Write-Warn ("Step {0} '{1}': capture is enabled but no pageTag is set — screenshot will use whatever page is currently active." -f $stepIndex, $title)
+        }
 
         $stepResult = [ordered]@{
             index = $stepIndex
@@ -1303,7 +1405,7 @@ try {
                 continue
             }
             Start-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Description $title
-            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'running' -Message $title
+            Add-StageStatus -StageStatus $stageStatusEntries -Stage $checkpointStepId -Status 'running' -Message $title
 
             if ($null -ne $ownedProcess -and $ownedProcess.HasExited) {
                 throw "Meridian desktop exited unexpectedly with code $($ownedProcess.ExitCode)."
@@ -1328,7 +1430,7 @@ try {
 
             $captureRetry = Invoke-MeridianRetry `
                 -Name ("{0}/step-{1:D2}/{2}" -f $Workflow, $stepIndex, $captureName) `
-                -MaxAttempts 6 `
+                -MaxAttempts $stepMaxRetryAttempts `
                 -BaseDelayMs ([Math]::Max(250, [int]($stepWaitMs / 3))) `
                 -MaxDelayMs ([Math]::Max(1200, $stepWaitMs * 2)) `
                 -JitterMs 180 `
@@ -1367,6 +1469,7 @@ try {
 
                     $expectedTags = @()
                     if (-not [string]::IsNullOrWhiteSpace($expectedPageTag)) { $expectedTags += $expectedPageTag }
+                    if ($stepAdditionalPageTags.Count -gt 0) { $expectedTags += $stepAdditionalPageTags }
                     $expectedTags = @($expectedTags | Select-Object -Unique)
 
                     if ($expectedTags.Count -gt 0 -and -not ($expectedTags -contains $shellState.PageTag)) {
@@ -1437,13 +1540,13 @@ try {
                 completedAt = $stepResult.completedAt
             }
             Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($capturePath)
-            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'ok' -Message $title -Metadata @{ capturePath = $capturePath }
+            Add-StageStatus -StageStatus $stageStatusEntries -Stage $checkpointStepId -Status 'ok' -Message $title -Metadata @{ capturePath = $capturePath }
         }
         catch {
             $stepResult.status = 'failed'
             $stepResult.error = $_.Exception.Message
             $stepResult.completedAt = (Get-Date).ToString('o')
-            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'failed' -Message $_.Exception.Message -Metadata @{ title = $title; index = $stepIndex }
+            Add-StageStatus -StageStatus $stageStatusEntries -Stage $checkpointStepId -Status 'failed' -Message $_.Exception.Message -Metadata @{ title = $title; index = $stepIndex }
             try {
                 if ($null -ne $window) {
                     $failedCapturePath = Join-Path $bundleScreenshotDirectory ('{0:D2}-{1}-failed-attempt.png' -f $stepIndex, (($title -replace '[^A-Za-z0-9]+', '-').Trim('-').ToLowerInvariant()))
@@ -1518,7 +1621,11 @@ try {
                 New-Item -ItemType Directory -Force -Path $publishDirectory | Out-Null
                 foreach ($step in @($manifest.steps | Where-Object { $_.status -eq 'ok' -and $_.capturePath })) {
                     $destination = Join-Path $publishDirectory ([System.IO.Path]::GetFileName([string]$step.capturePath))
-                    Copy-Item -LiteralPath $step.capturePath -Destination $destination -Force
+                    $resolvedSource = [System.IO.Path]::GetFullPath([string]$step.capturePath)
+                    $resolvedDest = [System.IO.Path]::GetFullPath($destination)
+                    if ($resolvedSource -ne $resolvedDest) {
+                        Copy-Item -LiteralPath $step.capturePath -Destination $destination -Force
+                    }
                     $publishedFiles += $destination
                 }
             }
@@ -1544,7 +1651,7 @@ try {
 catch {
     $manifest.run.status = 'failed'
     $manifest.run.error = $_.Exception.Message
-    Add-StageStatus -StageStatus $stageStatus -Stage 'workflow' -Status 'failed' -Message $_.Exception.Message
+    Add-StageStatus -StageStatus $stageStatusEntries -Stage 'workflow' -Status 'failed' -Message $_.Exception.Message
     throw
 }
 finally {
@@ -1566,7 +1673,7 @@ finally {
         )
     }
     $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
-    $stageStatus | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
+    $stageStatusEntries | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
     if ($null -ne $lastSuccessfulStep) {
         $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
     }

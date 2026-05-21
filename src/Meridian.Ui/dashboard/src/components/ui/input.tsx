@@ -1,6 +1,26 @@
 import { forwardRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Single-line text input with Meridian styling. Wraps a native `<input>` in a relative
+ * container so leading/trailing icon slots can be absolutely positioned.
+ *
+ * **Error state:** set `error` to switch the border and focus ring to danger tones and add
+ * `aria-invalid` for screen readers.
+ *
+ * **Icons:** pass a Lucide icon (or any ReactNode) to `leadingIcon` / `trailingIcon`. Icons
+ * are `pointer-events-none` so they never interfere with click/focus on the input itself.
+ *
+ * Focus ring uses `focus-visible:` so it does not appear on mouse click.
+ *
+ * @example
+ * <Input
+ *   placeholder="AAPL"
+ *   leadingIcon={<Search className="h-4 w-4" />}
+ *   error={fieldInvalid}
+ *   aria-describedby="symbol-help"
+ * />
+ */
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   leadingIcon?: ReactNode;

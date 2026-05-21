@@ -1,6 +1,28 @@
 import { type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * CSS-only tooltip that appears on hover or keyboard focus of the wrapped child.
+ *
+ * **Sides:** `"top"` (default), `"bottom"`, `"left"`, `"right"`. Each variant positions
+ * the popover and its directional arrow automatically.
+ *
+ * **Trigger mechanism:** the tooltip becomes visible via `group-hover:opacity-100` and
+ * `group-focus-within:opacity-100` on a wrapping `<span class="group">`. This means:
+ * - No JavaScript is involved — it cannot be shown or hidden programmatically.
+ * - It works for `:focus` (keyboard) but not for triggered states like "Copied!" feedback.
+ *   For dynamic/triggered tooltips, manage visibility with state and a conditional render.
+ *
+ * `TooltipLabel` is a companion `<span>` styled to match the tooltip popover font —
+ * useful for inline label text adjacent to an icon.
+ *
+ * @example
+ * <Tooltip content="Refresh execution snapshot" side="bottom">
+ *   <Button size="sm" variant="ghost" aria-label="Refresh">
+ *     <RefreshCcw className="h-4 w-4" />
+ *   </Button>
+ * </Tooltip>
+ */
 type TooltipSide = "top" | "bottom" | "left" | "right";
 
 interface TooltipProps {

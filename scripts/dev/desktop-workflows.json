@@ -40,12 +40,18 @@
           "title": "Backfill",
           "pageTag": "Backfill",
           "captureName": "wpf-backfill",
+          "blueprintChecklistIds": [
+            "desktop-screen-backfill-data-repair"
+          ],
           "notes": "Capture the historical backfill workflow."
         },
         {
           "title": "Live Data",
           "pageTag": "LiveData",
           "captureName": "wpf-live-data",
+          "blueprintChecklistIds": [
+            "desktop-screen-live-market-data"
+          ],
           "notes": "Capture the live data viewer."
         },
         {
@@ -70,12 +76,18 @@
           "title": "Strategy Runs",
           "pageTag": "StrategyRuns",
           "captureName": "wpf-strategy-runs",
+          "blueprintChecklistIds": [
+            "desktop-screen-strategy-research"
+          ],
           "notes": "Capture the strategy run browser."
         },
         {
           "title": "Backtest",
           "pageTag": "Backtest",
           "captureName": "wpf-backtest",
+          "blueprintChecklistIds": [
+            "desktop-screen-historical-replay"
+          ],
           "notes": "Capture the backtesting workflow."
         },
         {
@@ -88,6 +100,9 @@
           "title": "Security Master",
           "pageTag": "SecurityMaster",
           "captureName": "wpf-security-master",
+          "blueprintChecklistIds": [
+            "desktop-screen-security-master"
+          ],
           "notes": "Capture the security master surface."
         },
         {
@@ -139,6 +154,9 @@
           "title": "System Health",
           "pageTag": "SystemHealth",
           "captureName": "04-system-health",
+          "blueprintChecklistIds": [
+            "desktop-screen-system-health-diagnostics"
+          ],
           "notes": "Verify that health cards and status chips react to a non-happy-path fixture scenario."
         },
         {
@@ -229,6 +247,9 @@
           "title": "Backfill",
           "pageTag": "Backfill",
           "captureName": "04-backfill",
+          "blueprintChecklistIds": [
+            "desktop-screen-backfill-data-repair"
+          ],
           "notes": "Use Backfill to queue or inspect historical data collection work."
         },
         {
@@ -268,12 +289,18 @@
           "title": "Backtest",
           "pageTag": "Backtest",
           "captureName": "02-backtest",
+          "blueprintChecklistIds": [
+            "desktop-screen-historical-replay"
+          ],
           "notes": "Use Backtest to configure a strategy replay and inspect summary metrics."
         },
         {
           "title": "Strategy Runs",
           "pageTag": "StrategyRuns",
           "captureName": "03-strategy-runs",
+          "blueprintChecklistIds": [
+            "desktop-screen-strategy-research"
+          ],
           "notes": "Use Strategy Runs to browse completed runs and drill into the detail pages."
         },
         {
@@ -286,18 +313,29 @@
           "title": "Trading Workspace",
           "pageTag": "TradingShell",
           "captureName": "05-trading-shell",
+          "blueprintChecklistIds": [
+            "desktop-screen-paper-trading",
+            "desktop-screen-live-trading"
+          ],
           "notes": "Switch to the Trading workspace to capture the action-first cockpit layout, with positions, current blocker, and primary desk action ahead of supporting narrative lanes."
         },
         {
           "title": "Position Blotter",
           "pageTag": "PositionBlotter",
           "captureName": "06-position-blotter",
+          "blueprintChecklistIds": [
+            "desktop-screen-position-exposure",
+            "desktop-screen-order-management"
+          ],
           "notes": "Use the Position Blotter to capture the grid-first layout, batch-action readiness, and the simplified single-path blocked state."
         },
         {
           "title": "Run Risk",
           "pageTag": "RunRisk",
           "captureName": "07-run-risk",
+          "blueprintChecklistIds": [
+            "desktop-screen-risk-management"
+          ],
           "notes": "Finish on Run Risk to validate the controls and risk views that govern a strategy run."
         }
       ]
@@ -325,18 +363,27 @@
           "title": "Fund Reconciliation",
           "pageTag": "FundReconciliation",
           "captureName": "03-fund-reconciliation",
+          "blueprintChecklistIds": [
+            "desktop-screen-reconciliation"
+          ],
           "notes": "Use Fund Reconciliation to capture the deep-link route banner plus the prominent ownership and stale-snapshot posture."
         },
         {
           "title": "Fund Report Pack",
           "pageTag": "FundReportPack",
           "captureName": "04-fund-report-pack",
+          "blueprintChecklistIds": [
+            "desktop-screen-export-reporting"
+          ],
           "notes": "Use Fund Report Pack to capture the reporting-mode route banner, handoff readiness, sign-off owner, and freshness warning."
         },
         {
           "title": "Security Master",
           "pageTag": "SecurityMaster",
           "captureName": "05-security-master",
+          "blueprintChecklistIds": [
+            "desktop-screen-security-master"
+          ],
           "notes": "Use Security Master to review reference data coverage and investigate security-level issues."
         },
         {

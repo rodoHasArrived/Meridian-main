@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using Meridian.Application.Logging;
 using Meridian.Application.Serialization;
+using Meridian.Domain.Events;
 using Prometheus;
 using Serilog;
 
@@ -156,7 +157,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(recordType);
         ct.ThrowIfCancellationRequested();
 
-        var payload = JsonSerializer.Serialize(data, MarketDataJsonContext.HighPerformanceOptions);
+        var payload = data is MarketEvent marketEvent
+            ? JsonSerializer.Serialize(marketEvent, MarketDataJsonContext.Default.MarketEvent)
+            : JsonSerializer.Serialize(data, MarketDataJsonContext.HighPerformanceOptions);
         return AppendSerializedPayloadAsync(payload, recordType, ct);
     }
 

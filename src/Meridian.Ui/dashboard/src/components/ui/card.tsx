@@ -1,11 +1,54 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-export const Card = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+/**
+ * Surface container with a rounded border and card background. Compose with
+ * `CardHeader`, `CardTitle`, `CardDescription`, and `CardContent` for consistent
+ * internal spacing and typography.
+ *
+ * **Variants:**
+ * - `"default"` — static surface, no interaction affordance (default).
+ * - `"interactive"` — adds hover border/background shift and a `focus-visible` ring.
+ *   Use when the entire card is a clickable or keyboard-navigable target (e.g. wrapped
+ *   in a `<Link>` or used as a `<button>`), instead of duplicating hover classes inline.
+ *
+ * @example
+ * // Static information card
+ * <Card>
+ *   <CardHeader><CardTitle>Risk state</CardTitle></CardHeader>
+ *   <CardContent>…</CardContent>
+ * </Card>
+ *
+ * // Navigable card
+ * <Card variant="interactive" onClick={handleSelect} tabIndex={0} role="button">
+ *   <CardContent>…</CardContent>
+ * </Card>
+ */
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * `"default"` — standard card surface (default).
+   * `"interactive"` — adds hover/focus-ring affordances for clickable or
+   *   keyboard-navigable cards. Apply when the whole card is a link or button
+   *   target, rather than adding inline hover classes at every usage site.
+   */
+  variant?: "default" | "interactive";
+}
+
+const cardVariants: Record<NonNullable<CardProps["variant"]>, string> = {
+  default: "",
+  interactive:
+    "cursor-pointer transition-colors hover:border-border/70 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+};
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant = "default", ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-lg border border-border/80 bg-card text-card-foreground shadow-panel", className)}
+      className={cn(
+        "rounded-lg border border-border/80 bg-card text-card-foreground shadow-panel",
+        cardVariants[variant],
+        className
+      )}
       {...props}
     />
   )

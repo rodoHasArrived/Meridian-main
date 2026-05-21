@@ -749,7 +749,7 @@ public static class DirectLendingEndpoints
             CorrelationId: metadata?.CorrelationId ?? TryParseGuidHeader(context, "X-Correlation-Id"),
             CausationId: metadata?.CausationId ?? TryParseGuidHeader(context, "X-Causation-Id"),
             SourceSystem: metadata?.SourceSystem ?? context.Request.Headers["X-Source-System"].ToString(),
-            ReplayFlag: metadata?.ReplayFlag ?? false);
+            ReplayFlag: false);
 
     private static Guid? TryParseGuidHeader(HttpContext context, string headerName)
         => Guid.TryParse(context.Request.Headers[headerName].ToString(), out var value) ? value : null;

@@ -1,0 +1,220 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  dotnet:
+    name: verify-fast (restore/build/test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore solution
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Verify formatting
+        run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+
+      - name: Validate warning suppression inventory
+        run: python3 build/scripts/ci/check-warning-suppressions.py
+
+      - name: Build web workstation lane
+        run: |
+          mkdir -p artifacts/build-logs
+          set -euo pipefail
+          dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log
+
+      - name: Report build warning count
+        if: always()
+        run: |
+          LOG_PATH=artifacts/build-logs/web-workstation-build.log
+          if [ ! -f "$LOG_PATH" ]; then
+            echo "Build log missing; skipping warning count summary."
+            exit 0
+          fi
+
+          # Prefer the standardized MSBuild summary line; fallback handles mixed warning formats.
+          SUMMARY_LINE=$(grep -E '[0-9]+[[:space:]]+Warnings?(\(s\))?' "$LOG_PATH" | tail -1 || true)
+          if [ -n "$SUMMARY_LINE" ]; then
+            WARNING_COUNT=$(echo "$SUMMARY_LINE" | sed -E 's/.*([0-9]+)[[:space:]]+Warning(\(s\)|s)?.*/\1/')
+          else
+            WARNING_COUNT=$(grep -Eic '(^|[[:space:]:])warning([[:space:]]($|[A-Za-z]+[0-9]+)|$)' "$LOG_PATH" || true)
+          fi
+
+          echo "Build warning count: $WARNING_COUNT"
+          {
+            echo "### Build warning count"
+            echo ""
+            echo "- Web workstation build warnings: $WARNING_COUNT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run non-integration tests
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=core" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fsharp" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=ui" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=backtesting" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=directlending" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fundstructure" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=mcpserver" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=quantscript" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Validate status docs delivery claims
+        run: |
+          python3 scripts/check_status_delivery_claims.py
+          python3 -m unittest tests/scripts/test_check_status_delivery_claims.py
+
+      - name: Validate provider-validation script tests
+        run: |
+          python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
+          python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
+
+      - name: Validate TODO registry contract
+        run: |
+          python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
+          python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
+
+      - name: Validate AI contract drift
+        run: |
+          python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+
+      - name: Validate lane vocabulary
+        run: |
+          python3 build/scripts/docs/check-known-lanes.py
+
+      - name: Upload .NET test results
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ci-dotnet-${{ github.run_number }}
+          path: |
+            artifacts/build-logs/
+            artifacts/test-results/dotnet/
+            docs/status/todo-scan-results.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  browser-workstation:
+    name: verify-fast (browser workstation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        run: npm ci --prefix src/Meridian.Ui/dashboard
+
+      - name: Run dashboard tests
+        run: npm --prefix src/Meridian.Ui/dashboard run test
+
+      - name: Build dashboard bundle
+        run: npm --prefix src/Meridian.Ui/dashboard run build
+
+      - name: Upload browser workstation artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ci-browser-workstation-${{ github.run_number }}
+          path: src/Meridian.Ui/dashboard/dist
+          if-no-files-found: ignore
+          retention-days: 14
+
+  source-doc-determinism:
+    name: verify-docs (roadmap/source docs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate roadmap registry
+        run: python3 build/scripts/docs/validate-roadmap-registry.py --summary
+
+      - name: Validate source READMEs
+        run: python3 build/scripts/docs/validate-source-readmes.py --summary
+
+      - name: Scan source TODOs
+        run: python3 build/scripts/docs/scan-source-todos.py --summary
+
+      - name: Render + drift gate
+        run: |
+          python3 build/scripts/docs/render-roadmap-docs.py --summary
+          python3 build/scripts/docs/render-source-docs.py --summary
+          git diff -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src --exit-code

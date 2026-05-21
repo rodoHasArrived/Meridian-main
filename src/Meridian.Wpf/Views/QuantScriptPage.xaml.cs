@@ -61,5 +61,13 @@ public partial class QuantScriptPage : Page
                 Source = new Uri("/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Relative)
             });
         }
+
+        if (TryFindResource("ChartLegendStripStyle") is null)
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Meridian.Desktop;component/Styles/ThemeSurfaces.xaml", UriKind.Relative)
+            });
+        }
     }
 }
