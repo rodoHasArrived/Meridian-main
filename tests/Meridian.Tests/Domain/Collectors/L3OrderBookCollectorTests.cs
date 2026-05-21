@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -56,6 +57,19 @@ public class L3OrderBookCollectorTests
         Published[0].Payload.Should().BeOfType<OrderAdd>();
         Published[1].Type.Should().Be(MarketEventType.L2Snapshot);
         Published[1].Payload.Should().BeOfType<LOBSnapshot>();
+    }
+
+    [Fact]
+    public void OnOrderAdd_StartsCollectorActivityForPublish()
+    {
+        using var listener = CreateListener();
+        var publisher = new ActivityCapturingPublisher();
+        var collector = new L3OrderBookCollector(publisher, requireExplicitSubscription: false);
+
+        collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));
+
+        publisher.TraceIds.Should().ContainSingle(id => !string.IsNullOrWhiteSpace(id));
+        publisher.OperationNames.Should().ContainSingle(name => name == "l3-collector.publish");
     }
 
     [Fact]
@@ -351,5 +365,31 @@ public class L3OrderBookCollectorTests
         var snap = Published.LastOrDefault(e => e.Type == MarketEventType.L2Snapshot)?.Payload as LOBSnapshot;
         snap.Should().NotBeNull("an L2 snapshot should have been published");
         return snap!;
+    }
+
+    private static ActivityListener CreateListener()
+    {
+        var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Meridian",
+            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData
+        };
+
+        ActivitySource.AddActivityListener(listener);
+        return listener;
+    }
+
+    private sealed class ActivityCapturingPublisher : IMarketEventPublisher
+    {
+        public List<string?> TraceIds { get; } = new();
+        public List<string?> OperationNames { get; } = new();
+
+        public bool TryPublish(in MarketEvent evt)
+        {
+            TraceIds.Add(Activity.Current?.TraceId.ToString());
+            OperationNames.Add(Activity.Current?.OperationName);
+            return true;
+        }
     }
 }

@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
+using Meridian.Domain.Events;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 
@@ -44,6 +46,20 @@ public sealed class OptionDataCollectorTests
         _publisher.PublishedEvents.Should().HaveCount(1);
         _publisher.PublishedEvents[0].Type.Should().Be(MarketEventType.OptionQuote);
         _publisher.PublishedEvents[0].Payload.Should().Be(quote);
+    }
+
+    [Fact]
+    public void OnOptionQuote_StartsCollectorActivityForPublish()
+    {
+        using var listener = CreateListener();
+        var publisher = new ActivityCapturingPublisher();
+        var sut = new OptionDataCollector(publisher);
+        var quote = CreateOptionQuote("AAPL", 150m, OptionRight.Call);
+
+        sut.OnOptionQuote(quote);
+
+        publisher.TraceIds.Should().ContainSingle(id => !string.IsNullOrWhiteSpace(id));
+        publisher.OperationNames.Should().ContainSingle(name => name == "option-collector.publish");
     }
 
     [Fact]
@@ -344,6 +360,19 @@ public sealed class OptionDataCollectorTests
 
     #region Helpers
 
+    private static ActivityListener CreateListener()
+    {
+        var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Meridian",
+            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData
+        };
+
+        ActivitySource.AddActivityListener(listener);
+        return listener;
+    }
+
     private static OptionContractSpec CreateContract(string underlying, decimal strike, OptionRight right)
     {
         return new OptionContractSpec(
@@ -445,6 +474,19 @@ public sealed class OptionDataCollectorTests
             Contract: contract,
             OpenInterest: openInterest,
             Volume: 1200);
+    }
+
+    private sealed class ActivityCapturingPublisher : IMarketEventPublisher
+    {
+        public List<string?> TraceIds { get; } = new();
+        public List<string?> OperationNames { get; } = new();
+
+        public bool TryPublish(in MarketEvent evt)
+        {
+            TraceIds.Add(Activity.Current?.TraceId.ToString());
+            OperationNames.Add(Activity.Current?.OperationName);
+            return true;
+        }
     }
 
     #endregion
