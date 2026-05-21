@@ -70,6 +70,7 @@ A task delivered by this skill is complete when **all** of the following are tru
 
 - Run the narrowest command that proves the touched surface, then broaden only when risk justifies it.
 - For AI/tooling changes, run `check-codex-skills.py`, `check-ai-inventory.py`, `validate-skill-packages.py`, implementation-assurance eval dry-run, and `git diff --check`.
+- For registered source module changes, run `python3 build/scripts/docs/mark-stale-docs.py --write --summary` before source-doc updates so only stale module docs are targeted, then run `python3 build/scripts/docs/validate-doc-hashes.py --summary` after source README and registry review. Refresh the hash manifest with `--write` only when code/docs alignment is intentionally accepted.
 - Confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step when AI workflow behavior changes.
 
 ## Execution Discipline
@@ -162,6 +163,8 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - For new docs, choose placement using `references/documentation-routing.md` and add cross-links from the nearest index or README.
 - When runtime config or persistence semantics change, update the AI-facing docs and shared context in the same change: the relevant `docs/ai/*` pages, `../_shared/project-context.md`, and any mirrored Codex, Claude, or GitHub agent files that teach the affected workflow.
 - Keep documentation concrete: what changed, why, and how to use or operate it.
+- For source READMEs, add optional sections only when they add value: plans, end-user value, benchmarks/performance, operational evidence, security or credential handling, API/contract notes, and migration/archive notes.
+- Treat `docs/source/generated/stale-docs.json` as the source-doc work queue and `docs/source/generated/source-hash-manifest.json` as the accepted code/docs alignment checkpoint. If source code changed but documentation did not, mark the stale module first, update only those docs when possible, and leave the hash gate failing until documentation is reviewed or updated.
 
 ## AI Tooling Gates
 
@@ -196,6 +199,7 @@ Before finishing, confirm:
 - [ ] code compiles or tests pass for the touched surface
 - [ ] performance-sensitive changes were reviewed with explicit notes
 - [ ] docs were updated, or newly added in the correct location
+- [ ] stale source docs were marked with `mark-stale-docs.py` and source/docs hash alignment was checked with `validate-doc-hashes.py` when registered `src/**` files changed
 - [ ] AI/tooling changes ran `make ai-verify`, `make ai-arch-check`, and confirmed the CI contract-drift step
 - [ ] final response includes a Code + Docs Sync Matrix with code change, doc owner, doc update status, and validation result
 - [ ] evaluation harness was completed with a rubric score summary (>= 8/10, no category at 0)

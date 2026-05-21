@@ -38,7 +38,31 @@ Generated content.
 
 ## Validation
 
+## Optional conditional sections
+
+Add only the sections that apply:
+
+### Plans and roadmap
+
+### End-user value
+
+### Benchmarks and performance
+
+### Operational evidence
+
+### Security and credentials
+
+### API and contract notes
+
+### Migration and archive notes
+
 ## Change rules
 
 ## Related docs
 ```
+
+## Tree-level README template
+
+`build/scripts/docs/sync-source-readmes.py --tree --create-missing` creates smaller folder-level
+READMEs for nested source folders. Use `docs/source/data/source-readme-ignore.yml` to exclude
+generated, vendor, build, archive, or low-value folders from discovery.

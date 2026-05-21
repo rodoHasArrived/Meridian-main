@@ -78,6 +78,13 @@ different work:
 - Treat `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step as
   required gates for AI/tooling changes. Keep `ai-audit*`, `ai-report`, docs-drift/freshness, and
   archive/maintenance targets as advisory or reporting lanes unless a task explicitly promotes them.
+- For source/docs alignment, run `python build/scripts/docs/validate-doc-hashes.py --summary`.
+  Refresh `docs/source/generated/source-hash-manifest.json` with
+  `python build/scripts/docs/validate-doc-hashes.py --write --summary` only after confirming the
+  nearest source README and registries still describe the changed code.
+- When source READMEs need extra context, prefer conditional sections such as plans, end-user value,
+  benchmarks/performance, operational evidence, security/credentials, API/contracts, or
+  migration/archive notes. Skip empty optional sections.
 - Validate Codex skill drift with `python build/scripts/docs/check-codex-skills.py --summary`
   after changing repo-local Codex skills, their `agents/openai.yaml` metadata, or Codex docs.
 - Validate catalog drift with `python build/scripts/docs/check-ai-inventory.py --summary` after

@@ -100,6 +100,14 @@ Maintenance/reporting:
   `docs/source/data/source-modules.yml`.
 - For meaningful source behavior, workflow, validation, diagram, ownership, or TODO changes, update
   the nearest source README plus `docs/source/data/*.yml` records in the same change.
+- Use `python3 build/scripts/docs/mark-stale-docs.py --write --summary` to create the source-doc
+  update queue, then use stale-only sync/render commands when only outdated docs should change.
+- Use `python3 build/scripts/docs/validate-doc-hashes.py --summary` to detect source/docs drift.
+  Use `--write` only after reviewing or updating the nearest README, registry, generated blocks,
+  and hash baseline.
+- Add optional source README sections only when relevant: plans, end-user value, benchmarks and
+  performance, operational evidence, security/credentials, API/contracts, or migration/archive
+  notes.
 - Never hand-edit generated docs under `docs/roadmap/generated/` or `docs/source/generated/`;
   update registry data or renderers and regenerate.
 - Update shared Claude, GitHub, or portable skill surfaces only when the requested change is
@@ -125,4 +133,6 @@ python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/co
 python3 build/scripts/docs/validate-roadmap-registry.py --summary
 python3 build/scripts/docs/validate-source-readmes.py --summary
 python3 build/scripts/docs/scan-source-todos.py --summary
+python3 build/scripts/docs/mark-stale-docs.py --write --summary
+python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```

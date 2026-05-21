@@ -63,6 +63,16 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
   validation, ownership, diagrams, or TODO scope changes.
 - Do not hand-edit generated roadmap/source docs. Update registry data or renderers under
   `build/scripts/docs/`, then rerun the narrow generator.
+- Use `python3 build/scripts/docs/mark-stale-docs.py --write --summary` to mark registered modules
+  whose code or README hashes need documentation review, then use `--stale-only` source README
+  sync/render commands when only outdated docs should be touched.
+- Use `python3 build/scripts/docs/validate-doc-hashes.py --summary` to detect code/docs drift for
+  registered modules. Refresh `docs/source/generated/source-hash-manifest.json` with
+  `python3 build/scripts/docs/validate-doc-hashes.py --write --summary` only after source README
+  and registry alignment is reviewed.
+- Source READMEs may include conditional sections for plans, end-user value, benchmarks and
+  performance, operational evidence, security or credential handling, API/contract notes, and
+  migration/archive notes when those sections add real module-specific context.
 
 ## Useful Commands
 
@@ -92,6 +102,8 @@ python build/scripts/docs/validate-skill-packages.py
 python build/scripts/docs/validate-roadmap-registry.py --summary
 python build/scripts/docs/validate-source-readmes.py --summary
 python build/scripts/docs/scan-source-todos.py --summary
+python build/scripts/docs/mark-stale-docs.py --write --summary
+python build/scripts/docs/validate-doc-hashes.py --summary
 python .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
 git diff --check
 ```

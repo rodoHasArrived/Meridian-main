@@ -45,6 +45,14 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
   operator-facing behavior changes.
 - Prefer existing docs over new docs.
 - Put Codex-specific docs under `docs/ai/codex/`.
+- For registered `src/**` modules, use `docs/source/data/source-modules.yml` to identify the
+  module README, update required docs when behavior changes, then run
+  `python3 build/scripts/docs/validate-doc-hashes.py --summary`. If source/docs alignment was
+  intentionally reviewed, refresh the baseline with
+  `python3 build/scripts/docs/validate-doc-hashes.py --write --summary`.
+- Use optional source README sections when applicable: plans, end-user value, benchmarks and
+  performance, operational evidence, security or credential handling, API/contract notes, and
+  migration/archive notes. Do not add empty optional sections only for cosmetic symmetry.
 - Keep `.codex/skills/README.md`, `docs/ai/README.md`, and `docs/ai/skills/README.md` linked when
   Codex skill discovery or validation changes.
 

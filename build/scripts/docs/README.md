@@ -51,20 +51,28 @@ python3 build/scripts/docs/validate-source-readmes.py --summary
 ### sync-source-readmes.py
 
 Creates missing source READMEs from `docs/source/data/source-modules.yml` so new modules can be
-bootstrapped programmatically. Existing READMEs are preserved.
+bootstrapped programmatically. Existing READMEs are preserved. Use `--tree` to discover nested
+source folders under registered modules; `tree_roots` and ignored paths come from
+`docs/source/data/source-readme-ignore.yml`. Use `--stale-only` after running
+`mark-stale-docs.py --write` to limit README creation to modules already marked as needing review.
 
 ```bash
 python3 build/scripts/docs/sync-source-readmes.py --summary
 python3 build/scripts/docs/sync-source-readmes.py --create-missing --summary
+python3 build/scripts/docs/sync-source-readmes.py --tree --max-depth 2 --summary
+python3 build/scripts/docs/sync-source-readmes.py --tree --create-missing --max-depth 2 --summary
+python3 build/scripts/docs/sync-source-readmes.py --create-missing --stale-only --summary
 ```
 
 ### render-source-docs.py
 
 Renders deterministic source module views under `docs/source/generated/` and
-updates only marked generated blocks in registered source READMEs.
+updates only marked generated blocks in registered source READMEs. `--stale-only` limits README
+block updates to modules listed in `docs/source/generated/stale-docs.json`.
 
 ```bash
 python3 build/scripts/docs/render-source-docs.py --summary
+python3 build/scripts/docs/render-source-docs.py --stale-only --summary
 ```
 
 ### scan-source-todos.py
@@ -85,6 +93,18 @@ refreshed.
 ```bash
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 python3 build/scripts/docs/validate-doc-hashes.py --write --summary
+```
+
+### mark-stale-docs.py
+
+Compares current registered source module hashes to
+`docs/source/generated/source-hash-manifest.json` and writes a deterministic stale-doc report
+without refreshing the accepted hash baseline. This lets agents and maintainers update only
+outdated module READMEs before accepting a new hash baseline.
+
+```bash
+python3 build/scripts/docs/mark-stale-docs.py --write --summary
+python3 build/scripts/docs/mark-stale-docs.py --write --fail-on-stale --summary
 ```
 
 ### render-roadmap-diagrams.py and render-source-diagrams.py
