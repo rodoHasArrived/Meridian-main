@@ -1292,8 +1292,10 @@ public static class ExecutionEndpoints
             return false;
         }
 
-        return metadata.Keys.Any(static key => key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
+        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
             || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
             || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
             || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
             || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
