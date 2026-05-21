@@ -2,6 +2,8 @@
 
 This matrix enumerates every adapter subfolder under `src/Meridian.Infrastructure/Adapters/` and records capability coverage for:
 
+Canonical source note: this file is the canonical adapter readiness source used for governance/readiness review in this repository.
+
 - streaming
 - historical
 - symbol search
