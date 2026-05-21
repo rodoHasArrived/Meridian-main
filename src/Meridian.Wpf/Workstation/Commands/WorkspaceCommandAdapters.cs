@@ -27,9 +27,24 @@ public static class WorkspaceCommandAdapters
                 Label = entry.Label,
                 IconGlyph = entry.Glyph,
                 Tone = entry.Tone,
-                Tooltip = string.IsNullOrWhiteSpace(entry.Description) ? entry.Label : entry.Description,
+                Tooltip = ResolveTooltip(entry),
                 IsEnabled = entry.IsEnabled
             });
         }
+    }
+
+    private static string ResolveTooltip(WorkspaceCommandItem entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.Description))
+        {
+            return entry.Description;
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.Label))
+        {
+            return entry.Label;
+        }
+
+        return "Workspace command";
     }
 }

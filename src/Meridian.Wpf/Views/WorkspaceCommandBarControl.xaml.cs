@@ -113,6 +113,8 @@ public partial class WorkspaceCommandBarControl : UserControl
 
     internal bool TryInvokeCommandRouting(WorkspaceCommandItem command)
     {
+        ArgumentNullException.ThrowIfNull(command);
+
         var routedCommand = CommandInvokedCommand;
         if (routedCommand?.CanExecute(command) != true)
         {
