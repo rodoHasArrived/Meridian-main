@@ -9,6 +9,7 @@ inputs:
   - docs/source/data/diagram-index.yml
   - docs/source/data/source-modules.yml
   - docs/source/data/source-readme-coverage.yml
+  - docs/source/data/source-readme-ignore.yml
   - docs/source/data/source-todos.yml
 do_not_edit: true
 -->
