@@ -212,6 +212,30 @@ public sealed class DirectLendingEventRebuilder
                         break;
                     }
 
+
+                case "loan.prepayment-penalty-charged":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var penaltyAmount = root.GetProperty("penaltyAmount").GetDecimal();
+
+                        servicing = servicing! with
+                        {
+                            Balances = servicing.Balances with
+                            {
+                                PenaltyAccruedUnpaid = servicing.Balances.PenaltyAccruedUnpaid + penaltyAmount
+                            },
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Prepayment penalty charged for {penaltyAmount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
                 case "loan.daily-accrual-posted":
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);
