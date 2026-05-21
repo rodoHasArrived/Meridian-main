@@ -3,11 +3,17 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Workstation.Layout;
 
-public sealed class SplitPaneLayoutControl : ContentControl;
+public sealed class SplitPaneLayoutControl : ContentControl
+{
+}
 
-public sealed class DockablePanelHostControl : ContentControl;
+public sealed class DockablePanelHostControl : ContentControl
+{
+}
 
-public sealed class WorkflowTabHostControl : TabControl;
+public sealed class WorkflowTabHostControl : TabControl
+{
+}
 
 public sealed class DetailPaneControl : ContentControl
 {
