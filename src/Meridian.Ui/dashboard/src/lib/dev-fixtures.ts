@@ -553,6 +553,8 @@ const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
   ],
   providers: [
     {
+      providerId: "polygon",
+      displayName: "Polygon.io",
       provider: "Polygon",
       status: "Healthy",
       capability: "Streaming equities",
@@ -565,6 +567,8 @@ const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
       gateImpact: "Supports DK1"
     },
     {
+      providerId: "databento",
+      displayName: "Databento",
       provider: "Databento",
       status: "Warning",
       capability: "Backfill bars",

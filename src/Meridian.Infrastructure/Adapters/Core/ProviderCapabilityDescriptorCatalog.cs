@@ -22,16 +22,16 @@ public static class ProviderCapabilityDescriptorCatalog
     public static IReadOnlyList<ProviderCapabilityDescriptor> Descriptors { get; } =
     [
         new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProviderRefactored), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway)),
-        new("synthetic", historical: typeof(SyntheticHistoricalDataProvider), search: typeof(SyntheticSymbolSearchProvider)),
-        new("ib", historical: typeof(IBHistoricalDataProvider)),
-        new("yahoo", historical: typeof(YahooFinanceHistoricalDataProvider)),
-        new("polygon", historical: typeof(PolygonHistoricalDataProvider), search: typeof(PolygonSymbolSearchProvider), corporateActions: typeof(PolygonCorporateActionProvider)),
-        new("tiingo", historical: typeof(TiingoHistoricalDataProvider)),
-        new("finnhub", historical: typeof(FinnhubHistoricalDataProvider), search: typeof(FinnhubSymbolSearchProvider)),
-        new("stooq", historical: typeof(StooqHistoricalDataProvider)),
-        new("alphavantage", historical: typeof(AlphaVantageHistoricalDataProvider)),
-        new("fred", historical: typeof(FredHistoricalDataProvider)),
-        new("nasdaq", historical: typeof(NasdaqDataLinkHistoricalDataProvider))
+        new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider)),
+        new("ib", Historical: typeof(IBHistoricalDataProvider)),
+        new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider)),
+        new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider)),
+        new("tiingo", Historical: typeof(TiingoHistoricalDataProvider)),
+        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored)),
+        new("stooq", Historical: typeof(StooqHistoricalDataProvider)),
+        new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider)),
+        new("fred", Historical: typeof(FredHistoricalDataProvider)),
+        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider))
     ];
 }
 

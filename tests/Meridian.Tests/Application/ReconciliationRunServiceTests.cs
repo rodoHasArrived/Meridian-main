@@ -252,6 +252,8 @@ public sealed class ReconciliationRunServiceTests
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
             securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
 
@@ -280,6 +282,8 @@ public sealed class ReconciliationRunServiceTests
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
             securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
 
@@ -288,7 +292,7 @@ public sealed class ReconciliationRunServiceTests
         detail.Should().NotBeNull();
         detail!.ExpectedAccountingEvents.Should().Contain(item =>
             item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
-            item.ExpectedPrincipalAmount == 1_000m);
+            item.PrincipalAmount == 1_000m);
     }
 
     [Fact]
@@ -309,13 +313,15 @@ public sealed class ReconciliationRunServiceTests
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null,
+            bankTransactionSource: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
             securityMasterAccountingEventSourceAdapter: new StaticSecurityMasterAccountingEventSourceAdapter(request));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-mismatch"));
 
         detail.Should().NotBeNull();
-        detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "SECURITY_MASTER_EXPECTED_VS_ACTUAL_MISMATCH");
+        detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "ACCRUAL_AMOUNT_MISMATCH");
     }
 
     [Fact]
@@ -361,6 +367,64 @@ public sealed class ReconciliationRunServiceTests
             item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
         detail.Summary.SecurityMasterAccountingIssueCount.Should().BeGreaterThan(0);
         detail.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldUseSecurityMasterFactorScheduleForPaydown()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-factor-schedule"));
+
+        var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL mortgage-backed test security",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "MortgageBackedSecurity"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ]));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-factor-schedule"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().NotContain("FACTOR_SCHEDULE_MISSING");
+        detail.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.30m &&
+            item.Provenance.Contains("factor-source:custodian-factor-file", StringComparison.Ordinal));
+        detail.ExpectedJournalPreviews.Should().Contain(preview =>
+            preview.IsBalanced &&
+            preview.Lines.Any(line => line.AccountName == "Cash" && line.Debit == 0.30m));
     }
 
     [Fact]
@@ -541,10 +605,10 @@ public sealed class ReconciliationRunServiceTests
             : new LedgerReadService(securityReferenceLookup);
         var runReadService = new StrategyRunReadService(strategyRepository, portfolioReadService, ledgerReadService);
         return new ReconciliationRunService(
-            runReadService,
-            new ReconciliationProjectionService(),
-            repository,
-            bankTransactionSource,
+            runReadService: runReadService,
+            projectionService: new ReconciliationProjectionService(),
+            repository: repository,
+            bankTransactionSource: bankTransactionSource,
             securityValidationGate: securityValidationGate,
             securityMasterAccountingEventService: securityMasterAccountingEventService,
             securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter);
@@ -671,7 +735,8 @@ public sealed class ReconciliationRunServiceTests
         Guid securityId,
         string symbol,
         string? accountingClassification,
-        decimal? currentFactor = null)
+        decimal? currentFactor = null,
+        IReadOnlyList<FactorScheduleSeed>? factorSchedule = null)
     {
         var commonTerms = JsonSerializer.SerializeToElement(new
         {
@@ -710,7 +775,15 @@ public sealed class ReconciliationRunServiceTests
                 {
                     factor = currentFactor,
                     factorDate = "2026-03-21",
-                    notionalBalance = 100_000m
+                    notionalBalance = 100_000m,
+                    factorSchedule = factorSchedule?.Select(static entry => new
+                    {
+                        asOfDate = entry.AsOfDate.ToString("yyyy-MM-dd"),
+                        priorFactor = entry.PriorFactor,
+                        currentFactor = entry.CurrentFactor,
+                        source = entry.Source,
+                        evidenceLink = entry.EvidenceLink
+                    }).ToArray()
                 }
         });
 
@@ -743,6 +816,13 @@ public sealed class ReconciliationRunServiceTests
             LegacyAssetClass: null,
             LegacyAssetSpecificTerms: null);
     }
+
+    private sealed record FactorScheduleSeed(
+        DateOnly AsOfDate,
+        decimal PriorFactor,
+        decimal CurrentFactor,
+        string Source,
+        string? EvidenceLink);
 
     // -----------------------------------------------------------------------
     // Banking integration tests

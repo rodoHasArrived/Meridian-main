@@ -389,7 +389,7 @@ public sealed class TradingOperatorReadinessService
             fundAccountId: brokerageStatus.FundAccountId,
             workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")),
             workspaceOverride: "Settings",
-            targetRouteOverride: BuildProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
+            targetRouteOverride: ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
             targetPageTagOverride: "ProviderConnectionCenter");
     }
 
@@ -1798,19 +1798,6 @@ public sealed class TradingOperatorReadinessService
                 UiApiRoutes.WorkstationTradingReadiness,
                 "TradingShell")
         };
-
-    private static string BuildProviderConnectionSettingsRoute(string? providerId)
-    {
-        if (string.IsNullOrWhiteSpace(providerId))
-        {
-            return "/settings#provider-connection-center";
-        }
-
-        var normalized = providerId.Trim().ToLowerInvariant();
-        return normalized == "alpaca"
-            ? "/settings#alpaca-provider-setup"
-            : $"/settings#provider-{normalized}-connection";
-    }
 
     private static string BuildWorkItemId(string prefix, string? scope = null)
     {

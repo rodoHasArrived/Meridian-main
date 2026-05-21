@@ -1,13 +1,15 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-21
 
-## TODO Checklist (Concrete Implementation Items)
-- [ ] Define scope boundaries for **meridian 6 week roadmap** and document explicit in-scope vs out-of-scope items.
-- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
-- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
-- [ ] Add/update operator runbook steps and rollback procedure for the meridian 6 week roadmap workflow.
-- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+## Current Execution TODOs
+
+- [ ] Keep the DK1 packet, provider-validation matrix, kernel-readiness dashboard, and contract-compatibility matrix synchronized after any provider evidence change.
+- [ ] Drive W2 cockpit acceptance through replay freshness, operator-inbox routing, promotion controls, and browser Trading scenario evidence.
+- [ ] Convert shared run, portfolio, ledger, brokerage/account, and reconciliation support into W3 continuity evidence across the seven-workspace path.
+- [ ] Prove W4 casework, approvals, report-pack lifecycle, provenance, and close/reopen controls with durable evidence before marking governance readiness complete.
+- [ ] Assign owners and target sprints to provider capability gaps and keep adapter-readiness follow-up tied to the capability matrix.
+- [ ] Use [`wave-implementation-checklists.md`](wave-implementation-checklists.md) as the working TODO ledger for W1 maintenance and W2-W4 blocker cleanup.
 
 **Horizon:** 2026-05-18 through 2026-06-28
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
@@ -88,6 +90,14 @@ This plan starts from the current repo state:
   for preserved provider settings, and browser session/role/disabled-field recovery text. Use
   these as support evidence for operator trust and release hygiene; do not count them as W2/W3/W4
   exit criteria until the corresponding pilot-readiness stages and browser/operator scenarios pass
+- current strategy/contract/documentation-control support also includes Strategy Engine
+  definitions, parameter schemas, data-dependency policy, pre-run validation, evidence hashes, and
+  workstation definitions/validate-run endpoints for Covered Call and visual-designer flows;
+  additive continuity payload compatibility guards for ledger/reconciliation/strategy read models;
+  a provider capability matrix for adapter-readiness owners and next actions; and structured
+  roadmap/source registries with stale-doc/hash validation. Use these to keep shared contracts,
+  provider follow-up, and docs freshness explicit without treating them as cockpit, continuity,
+  close/report, or live-readiness exits
 - buyer-facing demo paths, role-based views, readiness dashboards, close workflow previews, and evidence packet actions should be planned for the web dashboard after shared contracts exist; retained WPF coverage should stay limited to support and regression validation
 - the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, selected run-detail inspection, promotion-history decision detail, command-error alerts, component/view-model coverage, and refreshed built assets; the gated Quant Lab browser surface adds execution/parameter/template and plot-rendering support evidence, with plot geometry and accessibility state now extracted into a reusable view-model module, but strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
 - the retained WPF workstation shell is already organized around compatibility workspace groupings
@@ -139,7 +149,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 
 #### W3 pre-work package (dependency-first)
 
-- define shared run-lineage and continuity-warning payload contracts as the single cross-workspace source
+- keep shared run-lineage, continuity-warning, and Strategy Engine pre-run payload contracts as the single cross-workspace source
 - finish service-backed projection boundaries that separate operator payload builders from fixture/fallback builders
 - lock brokerage/custodian raw-snapshot versus normalized-projection persistence boundaries and freshness/divergence semantics
 - pre-validate operating-context propagation rules for fund/entity/sleeve/vehicle/account routing across deep links and shell handoffs

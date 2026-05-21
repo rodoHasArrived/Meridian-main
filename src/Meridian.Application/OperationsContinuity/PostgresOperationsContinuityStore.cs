@@ -1,4 +1,6 @@
+using System.Buffers.Binary;
 using System.Data;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
@@ -189,6 +191,7 @@ public sealed class PostgresOperationsContinuityStore :
         OperationsWorkflowAuditDraft draft,
         CancellationToken ct)
     {
+        await AcquireWorkflowAuditLockAsync(connection, transaction, draft.WorkflowId, ct).ConfigureAwait(false);
         var previousHash = await LoadPreviousAuditHashAsync(connection, transaction, draft.WorkflowId, ct).ConfigureAwait(false);
         var audit = OperationsWorkflowAuditHashing.Create(draft, previousHash, DateTimeOffset.UtcNow);
 
@@ -255,6 +258,25 @@ public sealed class PostgresOperationsContinuityStore :
         command.Parameters.AddWithValue("audit_json", JsonSerializer.Serialize(audit, JsonOptions));
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         return audit;
+    }
+
+    private static async Task AcquireWorkflowAuditLockAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid workflowId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "select pg_advisory_xact_lock(@workflow_lock_key);";
+        command.Parameters.AddWithValue("workflow_lock_key", CreateWorkflowAuditLockKey(workflowId));
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private static long CreateWorkflowAuditLockKey(Guid workflowId)
+    {
+        var hash = SHA256.HashData(workflowId.ToByteArray());
+        return BinaryPrimitives.ReadInt64BigEndian(hash.AsSpan(0, sizeof(long)));
     }
 
     private async Task<string?> LoadPreviousAuditHashAsync(

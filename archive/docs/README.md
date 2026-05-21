@@ -19,6 +19,20 @@ This folder contains historical and superseded Meridian documentation that has b
 ## Archived Summaries
 
 - [`summaries/WAVE2_IMPLEMENTATION_SUMMARY.md`](summaries/WAVE2_IMPLEMENTATION_SUMMARY.md) - Historical Wave 2 acceptance test implementation snapshot from 2026-05-08.
+- [`summaries/broker-phase-promotion-checklist-template.md`](summaries/broker-phase-promotion-checklist-template.md) - Superseded broker phase promotion checklist template retained for historical reference.
+- [`summaries/dead-code-inventory.md`](summaries/dead-code-inventory.md) - Point-in-time dead-code analysis snapshot retained as historical context.
+- [`summaries/ibkr-provider-inventory.md`](summaries/ibkr-provider-inventory.md) - Historical IBKR endpoint inventory and fallback posture snapshot.
+- [`summaries/provider-adapters-closure-summary.md`](summaries/provider-adapters-closure-summary.md) - Historical Wave 1 adapter closure status summary.
+- [`summaries/provider-capability-inventory.md`](summaries/provider-capability-inventory.md) - Historical provider capability inventory snapshot.
+- [`summaries/provider-core-hardening-notes.md`](summaries/provider-core-hardening-notes.md) - Historical provider hardening notes retained for reference.
+- [`summaries/provider-failover-hardening.md`](summaries/provider-failover-hardening.md) - Historical provider failover hardening checklist snapshot.
+- [`summaries/provider-test-gap-baseline.md`](summaries/provider-test-gap-baseline.md) - Historical provider test-gap baseline snapshot.
+- [`summaries/provider-test-minimums.md`](summaries/provider-test-minimums.md) - Historical provider minimum test guidance snapshot.
+
+## Archived Plans
+
+- [`plans/approach-b-plus-v2-implementation-plan.md`](plans/approach-b-plus-v2-implementation-plan.md) - Superseded documentation-system implementation plan; active guidance now lives in structured roadmap/source registries, docs automation, and validation docs.
+- [`plans/covered-call-writing-slice-1-blueprint.md`](plans/covered-call-writing-slice-1-blueprint.md) - Superseded Covered Call backtest-slice blueprint; active planning now routes through Strategy Engine support evidence, options roadmap, and Backtest Studio plans.
 
 ## Archived Assessments
 

@@ -43,6 +43,17 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             actor: "operator",
             orderId: "order-1",
             correlationId: "corr-1");
+        await sessionService.RecordOrderUpdateAsync(session.SessionId, new OrderState
+        {
+            OrderId = "order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10,
+            Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        });
 
         // Apply fill to portfolio
         var fill = new ExecutionFill
@@ -456,7 +467,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
         var readiness = await readinessService.GetAsync();
 
         // Assert: Promotion gate is in review required state
-        var promotionGate = readiness.AcceptanceGates.FirstOrDefault(g => g.GateId == "promotion-decision");
+        var promotionGate = readiness.AcceptanceGates.FirstOrDefault(g => g.GateId == "promotion");
         promotionGate.Should().NotBeNull("promotion gate should be in readiness model");
     }
 

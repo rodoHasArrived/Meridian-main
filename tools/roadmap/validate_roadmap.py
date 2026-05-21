@@ -25,6 +25,8 @@ CANONICAL = {
     "evidence_posture": {"none", "draft", "partial", "verified", "audited"},
     "completion_term": {"done", "complete", "completed", "closed", "shipped"},
 }
+REQUIRED_FIELDS = {"id", "status", "health", "priority", "evidence_posture", "completion_term", "owner", "last_updated"}
+ALLOWED_FIELDS = REQUIRED_FIELDS | {"title", "summary", "exit_criteria", "links", "evidence", "created_at", "target_date", "notes", "extensions"}
 
 
 def _try_import_yaml() -> Any:
@@ -367,6 +369,13 @@ def _check_canonical_enums(node: Any, path: str = "$") -> list[str]:
 def validate_fixture_file(path: Path) -> int:
     data = json.loads(path.read_text(encoding="utf-8"))
     errors = _check_canonical_enums(data)
+    if isinstance(data, dict):
+        missing = sorted(field for field in REQUIRED_FIELDS if field not in data)
+        unexpected = sorted(field for field in data if field not in ALLOWED_FIELDS)
+        for field in missing:
+            errors.append(f"$.{field}: missing required field")
+        for field in unexpected:
+            errors.append(f"$.{field}: unexpected field")
     if errors:
         print(f"{path} failed enum validation:")
         for error in errors:

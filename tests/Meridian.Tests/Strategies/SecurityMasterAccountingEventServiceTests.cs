@@ -153,6 +153,48 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_FactorBasedSecurityWithPriorOnlySchedule_ShouldReturnStaleFactorIssue()
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(
+            security: new SecurityMasterAccountingSecurity(
+                BondSecurityId,
+                "MBS1",
+                "MortgageBackedSecurity",
+                "USD",
+                new SecurityFixedIncomeTerms(
+                    CouponRate: 0.03m,
+                    CouponType: "Fixed",
+                    DayCountConvention: "ACT/365",
+                    PaymentFrequencyPerYear: 12,
+                    IssueDate: new DateOnly(2025, 1, 1),
+                    MaturityDate: new DateOnly(2035, 1, 1),
+                    AccrualStartDate: new DateOnly(2026, 1, 1),
+                    CurrentFactor: 0.97m,
+                    OriginalFace: 100_000m,
+                    CurrentFace: 97_000m,
+                    RequiresFactorSchedule: true),
+                new SecurityAccountingRule("AvailableForSale", "GAAP")),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2025, 12, 15),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.98m,
+                    Source: "prior-month-factor-file")
+            ]);
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "FACTOR_STALE" &&
+            issue.Severity == ReconciliationBreakSeverity.High);
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
     public void Generate_MissingTerms_ShouldReturnStructuredPostureIssues()
     {
         var service = new SecurityMasterAccountingEventService();

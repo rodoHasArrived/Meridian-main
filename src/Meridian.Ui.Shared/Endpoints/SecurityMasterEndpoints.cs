@@ -157,9 +157,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterCreate, async (
             CreateSecurityRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
@@ -180,9 +185,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAmend, async (
             AmendSecurityTermsRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
@@ -203,9 +213,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterDeactivate, async (
             DeactivateSecurityRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             await service.DeactivateAsync(request, ct).ConfigureAwait(false);
             return Results.NoContent();
         })
@@ -226,9 +241,14 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAliasesUpsert, async (
             UpsertSecurityAliasRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
             var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
             return Results.Json(alias, jsonOptions);
         })
@@ -621,6 +641,16 @@ public static class SecurityMasterEndpoints
         }
 
         throw new BadHttpRequestException("Authenticated actor is required for Security Master mutations.", StatusCodes.Status401Unauthorized);
+    }
+
+    private static IResult? RequireSecurityMasterMutationPermission(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            return Results.Unauthorized();
+
+        return (permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster
+            ? Results.Forbid()
+            : null;
     }
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

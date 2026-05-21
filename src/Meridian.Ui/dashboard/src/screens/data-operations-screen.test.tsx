@@ -9,7 +9,14 @@ import {
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-operations-screen.view-model";
 import { renderWithRouter } from "@/test/render";
-import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse, ProviderSetupResult } from "@/types";
+import type {
+  BackfillProgressResponse,
+  BackfillTriggerResult,
+  DataOperationsWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderCredentialVerificationResult,
+  ProviderSetupResult
+} from "@/types";
 
 const data: DataOperationsWorkspaceResponse = {
   metrics: [
@@ -20,6 +27,8 @@ const data: DataOperationsWorkspaceResponse = {
   ],
   providers: [
     {
+      providerId: "polygon",
+      displayName: "Polygon.io",
       provider: "Polygon",
       status: "Healthy",
       capability: "Streaming equities",
@@ -62,6 +71,38 @@ const data: DataOperationsWorkspaceResponse = {
   ]
 };
 
+const polygonConnection: ProviderConnectionRow = {
+  providerId: "polygon",
+  displayName: "Polygon.io",
+  capability: "Data",
+  credentialState: "Verified",
+  credentialSource: "LocalEncryptedStore",
+  verificationState: "Verified",
+  health: "Healthy",
+  fallbackActive: false,
+  lastVerifiedAt: "2026-05-20T18:20:00Z",
+  lastSuccessfulAt: "2026-05-20T18:25:00Z",
+  lastFailureAt: null,
+  lastError: null,
+  maskedKeyPreview: "pk_live_****7F3A",
+  environment: "paper",
+  externalAccountId: null,
+  affectedWorkflows: ["Research", "Backfill"],
+  recommendedAction: "Keep provider active.",
+  actionHref: "/settings#provider-polygon"
+};
+
+const successfulVerification: ProviderCredentialVerificationResult = {
+  providerId: "polygon",
+  success: true,
+  verificationState: "Verified",
+  health: "Healthy",
+  lastVerifiedAt: "2026-05-20T18:30:00Z",
+  lastError: null,
+  externalAccountId: "acct-provider-01",
+  warnings: []
+};
+
 describe("DataOperationsScreen", () => {
   it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
     renderWithRouter(<DataOperationsScreen data={null} />, { initialEntries: ["/data/backfills"] });
@@ -90,12 +131,12 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
     expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
-    const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon" });
+    const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     expect(providerRow).toHaveAttribute("aria-selected", "true");
     expect(providerRow).toHaveAttribute("aria-expanded", "true");
     expect(providerRow).toHaveAttribute("aria-controls", DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerRow).toHaveClass("bg-success/5");
-    const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon/i });
+    const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon\.io/i });
     expect(providerDetail).toBeInTheDocument();
     expect(within(providerDetail).getByText("Trust score")).toBeInTheDocument();
     expect(within(providerDetail).getByText("98%")).toBeInTheDocument();
@@ -148,6 +189,8 @@ describe("DataOperationsScreen", () => {
       providers: [
         ...data.providers,
         {
+          providerId: "databento",
+          displayName: "Databento",
           provider: "Databento",
           status: "Degraded",
           capability: "Historical futures",
@@ -164,7 +207,7 @@ describe("DataOperationsScreen", () => {
 
     renderWithRouter(<DataOperationsScreen data={providerData} />, { initialEntries: ["/data"] });
 
-    const polygonProvider = screen.getByRole("row", { name: "Inspect provider Polygon" });
+    const polygonProvider = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     const databentoProvider = screen.getByRole("row", { name: "Inspect provider Databento" });
 
     expect(polygonProvider).toHaveAttribute("aria-selected", "true");
@@ -179,6 +222,45 @@ describe("DataOperationsScreen", () => {
     expect(polygonProvider).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Route fresh requests");
     expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Reason: LATENCY_ELEVATED");
+  });
+
+  it("runs provider verification from the selected provider diagnostics tab", async () => {
+    const user = userEvent.setup();
+    const verifyProviderConnection = vi.spyOn(api, "verifyProviderConnection").mockResolvedValueOnce(successfulVerification);
+    const refreshProviderRouting = vi.fn();
+
+    renderWithRouter(
+      <DataOperationsScreen
+        data={data}
+        providerConnections={[polygonConnection]}
+        onProviderRoutingRefresh={refreshProviderRouting}
+      />,
+      { initialEntries: ["/data"] }
+    );
+
+    expect(screen.getByRole("combobox")).toHaveValue("provider-row-polygon");
+
+    await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
+    await user.click(screen.getByRole("button", { name: /run provider credential verification/i }));
+
+    await waitFor(() => expect(verifyProviderConnection).toHaveBeenCalledWith("polygon"));
+    await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("Verification passed.")).toBeInTheDocument();
+    expect(screen.getByText("External account: acct-provider-01")).toBeInTheDocument();
+
+    verifyProviderConnection.mockRestore();
+  });
+
+  it("renders a diagnostics empty state when provider evidence has not loaded", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
+
+    expect(screen.getByRole("status", { name: "Polygon.io diagnostics empty state" }))
+      .toHaveTextContent("Diagnostics not loaded yet");
+    expect(screen.getByRole("button", { name: "Provider verification unavailable for Polygon.io" })).toBeDisabled();
   });
 
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {

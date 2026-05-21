@@ -64,8 +64,7 @@ internal sealed class CanonicalizationFeatureRegistration : IServiceFeatureRegis
         services.AddSingleton<CanonicalizingPublisher>(sp =>
         {
             var metrics = sp.GetRequiredService<IEventMetrics>();
-            IMarketEventPublisher pipelinePublisher = sp.GetService<DualPathEventPipeline>()
-                ?? (IMarketEventPublisher)sp.GetRequiredService<EventPipeline>();
+            IMarketEventPublisher pipelinePublisher = sp.GetRequiredService<EventPipeline>();
             var innerPublisher = new PipelinePublisher(pipelinePublisher, metrics);
 
             var configStore = sp.GetRequiredService<ConfigStore>();

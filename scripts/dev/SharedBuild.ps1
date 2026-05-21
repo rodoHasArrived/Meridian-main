@@ -483,3 +483,152 @@ function Get-MeridianBuildArguments {
 
     return $args
 }
+
+function Format-MeridianCommandText {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Command
+    )
+
+    return ($Command | ForEach-Object {
+            if ($_ -match '\\s') { '"{0}"' -f $_ } else { $_ }
+        }) -join ' '
+}
+
+function Invoke-MeridianLoggedStep {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string[]]$Command,
+        [Parameter(Mandatory = $true)][string]$LogPath
+    )
+
+    Write-Host ">>> $Name" -ForegroundColor Cyan
+    Write-Host ("    " + (Format-MeridianCommandText -Command $Command))
+
+    $logDirectory = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))
+    if (-not [string]::IsNullOrWhiteSpace($logDirectory)) {
+        New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
+    }
+
+    $output = @()
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+
+    try {
+        & $Command[0] @($Command[1..($Command.Count - 1)]) 2>&1 |
+            Tee-Object -FilePath $LogPath |
+            ForEach-Object { $output += $_ }
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+        $stopwatch.Stop()
+    }
+
+    $exitCode = if ($null -ne $LASTEXITCODE) { [int]$LASTEXITCODE } else { 0 }
+    return [ordered]@{
+        name = $Name
+        command = Format-MeridianCommandText -Command $Command
+        exitCode = $exitCode
+        durationSeconds = [Math]::Round($stopwatch.Elapsed.TotalSeconds, 2)
+        logPath = $LogPath
+        tail = ($output | Select-Object -Last 25) -join [Environment]::NewLine
+    }
+}
+
+function Get-MeridianRepoOwnedTestHostProcesses {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot
+    )
+
+    if (-not ($IsWindows -or $env:OS -eq 'Windows_NT')) {
+        return @()
+    }
+
+    $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'testhost.exe'" -ErrorAction SilentlyContinue)
+    if ($processes.Count -eq 0) {
+        return @()
+    }
+
+    return @(
+        $processes | Where-Object {
+            ($_.ExecutablePath -and $_.ExecutablePath.StartsWith($RepoRoot, [System.StringComparison]::OrdinalIgnoreCase)) -or
+            ($_.CommandLine -and $_.CommandLine.IndexOf($RepoRoot, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) -or
+            ($_.CommandLine -and $_.CommandLine.IndexOf("Meridian.Wpf.Tests", [System.StringComparison]::OrdinalIgnoreCase) -ge 0)
+        }
+    )
+}
+
+function Stop-MeridianRepoOwnedTestHostProcesses {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot
+    )
+
+    $repoTestHosts = @(Get-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot)
+    if ($repoTestHosts.Count -eq 0) {
+        return @()
+    }
+
+    foreach ($repoTestHost in $repoTestHosts) {
+        Write-Host ("Stopping stale repo-owned testhost PID {0}..." -f $repoTestHost.ProcessId) -ForegroundColor Yellow
+        Stop-Process -Id $repoTestHost.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+
+    Start-Sleep -Milliseconds 750
+    return $repoTestHosts
+}
+
+function Invoke-MeridianStepWithTestHostRetry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string[]]$Command,
+        [Parameter(Mandatory = $true)][string]$LogName,
+        [Parameter(Mandatory = $true)][string]$SummaryDir,
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [Parameter(Mandatory = $true)]$Steps,
+        [Parameter(Mandatory = $true)]$RetryEvents
+    )
+
+    $logPath = Join-Path $SummaryDir $LogName
+    $step = Invoke-MeridianLoggedStep -Name $Name -Command $Command -LogPath $logPath
+    if ($null -ne $Steps -and $Steps.GetType().GetMethod('Add')) {
+        [void]$Steps.Add($step)
+    }
+
+    if ($step.exitCode -eq 0) {
+        return $step
+    }
+
+    $repoTestHosts = @(Get-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot)
+    if ($repoTestHosts.Count -eq 0 -or $null -eq $RetryEvents -or -not $RetryEvents.GetType().GetMethod('Add')) {
+        return $step
+    }
+
+    $retryLogSuffix = if ($LogName -match '\.log$') { '-retry.log' } else { '-retry.log' }
+    $retryLogName = if ($LogName -match '\.log$') {
+        $LogName.Substring(0, $LogName.Length - 4) + $retryLogSuffix
+    }
+    else {
+        "$LogName$retryLogSuffix"
+    }
+    $retryLogPath = Join-Path $SummaryDir $retryLogName
+    $stoppedTestHostPids = @($repoTestHosts | Select-Object -ExpandProperty ProcessId)
+
+    Stop-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot | Out-Null
+
+    $retryReason = "build failed while repo-owned testhost processes were still running"
+    [void]$RetryEvents.Add([ordered]@{
+            step = $Name
+            reason = $retryReason
+            stoppedTestHostPids = $stoppedTestHostPids
+        })
+
+    $retryStepName = "$Name (retry after testhost cleanup)"
+    $retryStep = Invoke-MeridianLoggedStep -Name $retryStepName -Command $Command -LogPath $retryLogPath
+    [void]$Steps.Add($retryStep)
+    return $retryStep
+}

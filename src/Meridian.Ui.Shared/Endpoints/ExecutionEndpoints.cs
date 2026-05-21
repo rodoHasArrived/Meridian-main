@@ -991,13 +991,15 @@ public static class ExecutionEndpoints
             return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
-        if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+        var blockedGateDecision = BrokerageOrderPlacementGate.Evaluate(
+            context.RequestServices.GetService<BrokerageConfiguration>());
+        if (!blockedGateDecision.IsAllowed)
         {
-            var actionId = GenerateActionId();
-            var message = blockingMessage ?? "Broker order routing is disabled by validation gates.";
-            var auditEntry = await RecordOperatorAuditAsync(
+            var blockedActionId = GenerateActionId();
+            var message = blockedGateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.";
+            var blockedAuditEntry = await RecordOperatorAuditAsync(
                 context,
-                actionId,
+                blockedActionId,
                 action: actionName,
                 outcome: "Rejected",
                 message: message,
@@ -1010,11 +1012,11 @@ public static class ExecutionEndpoints
                 }).ConfigureAwait(false);
 
             var blocked = new TradingActionResult(
-                ActionId: actionId,
+                ActionId: blockedActionId,
                 Status: "Rejected",
                 Message: message,
                 OccurredAt: DateTimeOffset.UtcNow,
-                AuditId: auditEntry?.AuditId);
+                AuditId: blockedAuditEntry?.AuditId);
             return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
         }
 
@@ -1290,8 +1292,10 @@ public static class ExecutionEndpoints
             return false;
         }
 
-        return metadata.Keys.Any(static key => key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
+        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
             || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
             || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
             || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
             || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)

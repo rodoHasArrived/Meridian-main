@@ -984,6 +984,12 @@ function Repair-InvalidWorkstationConfig {
     }
 }
 
+function ConvertTo-PowerShellSingleQuotedLiteral {
+    param([Parameter(Mandatory)][string]$Value)
+
+    return "'" + $Value.Replace("'", "''") + "'"
+}
+
 function New-LauncherScript {
     param(
         [Parameter(Mandatory)][string]$LauncherPath,
@@ -991,7 +997,8 @@ function New-LauncherScript {
         [Parameter(Mandatory)][int]$DefaultPort
     )
 
-    $escapedConfigPath = $ConfigPath.Replace('"', '`"')
+    $canonicalConfigPath = [System.IO.Path]::GetFullPath($ConfigPath)
+    $configPathLiteral = ConvertTo-PowerShellSingleQuotedLiteral -Value $canonicalConfigPath
     $launcher = @"
 param(
     [ValidateRange(1, 65535)]
@@ -1005,7 +1012,7 @@ param(
 `$ErrorActionPreference = "Stop"
 `$installRoot = Split-Path -Parent `$MyInvocation.MyCommand.Path
 `$exePath = Join-Path `$installRoot "Meridian.exe"
-`$configPath = "$escapedConfigPath"
+`$configPath = $configPathLiteral
 `$stateRoot = Join-Path (Split-Path -Parent `$configPath) "service"
 `$runtimePath = Join-Path `$stateRoot "web-workstation-runtime.json"
 `$healthUrl = "http://localhost:`$Port/healthz"
@@ -1196,8 +1203,19 @@ if (`$Status) {
 if (-not (Test-MeridianEndpoint -Uri `$healthUrl)) {
     `$shutdownToken = New-ShutdownToken
     `$env:MDC_SHUTDOWN_TOKEN = `$shutdownToken
-    `$arguments = "--mode workstation --http-port `$Port --config ```"`$configPath```""
-    `$process = Start-Process -FilePath `$exePath -ArgumentList `$arguments -WorkingDirectory `$installRoot -WindowStyle Hidden -PassThru
+    `$startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    `$startInfo.FileName = `$exePath
+    `$startInfo.WorkingDirectory = `$installRoot
+    `$startInfo.UseShellExecute = `$false
+    `$startInfo.CreateNoWindow = `$true
+    foreach (`$argument in @("--mode", "workstation", "--http-port", [string]`$Port, "--config", `$configPath)) {
+        [void]`$startInfo.ArgumentList.Add(`$argument)
+    }
+
+    `$process = [System.Diagnostics.Process]::Start(`$startInfo)
+    if (`$null -eq `$process) {
+        throw "Failed to start Meridian host."
+    }
     Write-RuntimeState -Process `$process -ShutdownToken `$shutdownToken
 
     `$ready = `$false

@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Meridian.Application.Config;
 using Meridian.Application.Coordination;
 using Meridian.Application.Monitoring;
@@ -7,6 +9,7 @@ using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
+using Meridian.Storage.Sinks;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -166,8 +169,11 @@ public static class DiagnosticsEndpoints
             var eventMetrics = services.GetService<IEventMetrics>();
             var eventPipeline = services.GetService<EventPipeline>();
             var hotPathPipeline = services.GetService<DualPathEventPipeline>();
+            var jsonlSink = services.GetService<JsonlStorageSink>();
+            var shutdownDiagnostics = services.GetService<ShutdownDiagnosticsService>();
             var stats = errorTracker?.GetStatistics();
             var pipelineStats = eventPipeline?.GetStatistics();
+            var jsonlStats = jsonlSink?.GetStatistics();
             var metricsSnapshot = (eventPipeline?.EventMetrics ?? eventMetrics)?.GetSnapshot();
             return Results.Json(new
             {
@@ -214,6 +220,18 @@ public static class DiagnosticsEndpoints
                     hotQuoteFallbacks = hotPathPipeline.HotQuoteFallbacks,
                     hotQuoteDropped = hotPathPipeline.HotQuoteDropped
                 } : null,
+                jsonlStorage = jsonlStats != null ? new
+                {
+                    batchingEnabled = jsonlStats.IsBatchingEnabled,
+                    batchSize = jsonlStats.BatchSize,
+                    flushIntervalMs = Math.Round(jsonlStats.FlushInterval.TotalMilliseconds, 2),
+                    eventsBuffered = jsonlStats.EventsBuffered,
+                    eventsWritten = jsonlStats.EventsWritten,
+                    batchesWritten = jsonlStats.BatchesWritten,
+                    writerCount = jsonlStats.WriterCount,
+                    bufferCount = jsonlStats.BufferCount,
+                    timestamp = jsonlStats.Timestamp
+                } : null,
                 marketDataMetrics = metricsSnapshot.HasValue ? new
                 {
                     published = metricsSnapshot.Value.Published,
@@ -228,6 +246,8 @@ public static class DiagnosticsEndpoints
                     maxLatencyUs = Math.Round(metricsSnapshot.Value.MaxLatencyUs, 2),
                     latencySampleCount = metricsSnapshot.Value.LatencySampleCount
                 } : null,
+                shutdown = CreateShutdownDiagnosticsPayload(shutdownDiagnostics?.GetSnapshot()),
+                runtime = CreateRuntimeDiagnosticsSnapshot(),
                 processMemoryBytes = GC.GetTotalMemory(false),
                 gcCollections = new { gen0 = GC.CollectionCount(0), gen1 = GC.CollectionCount(1), gen2 = GC.CollectionCount(2) },
                 timestamp = DateTimeOffset.UtcNow
@@ -480,6 +500,93 @@ public static class DiagnosticsEndpoints
             context = RuntimeDiagnosticRedactor.SanitizeText(error.Context),
             innerException = RuntimeDiagnosticRedactor.SanitizeText(error.InnerException)
         };
+    }
+
+    private static object CreateShutdownDiagnosticsPayload(ShutdownSequenceDiagnosticSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return new
+            {
+                available = false,
+                operationName = "runtime.shutdown.sequence",
+                status = "Unavailable"
+            };
+        }
+
+        return new
+        {
+            available = snapshot.Available,
+            operationName = SanitizeDiagnosticText(snapshot.OperationName),
+            status = SanitizeDiagnosticText(snapshot.Status),
+            correlationId = SanitizeDiagnosticText(snapshot.CorrelationId),
+            reason = SanitizeDiagnosticText(snapshot.Reason),
+            startedAtUtc = snapshot.StartedAtUtc,
+            completedAtUtc = snapshot.CompletedAtUtc,
+            durationMs = snapshot.DurationMs,
+            flushTimeoutOccurred = snapshot.FlushTimeoutOccurred,
+            incompleteFlushCount = snapshot.IncompleteFlushCount,
+            warningCount = snapshot.WarningCount,
+            warningSummary = snapshot.WarningSummary.Select(SanitizeDiagnosticText).ToArray(),
+            flushableComponentCount = snapshot.FlushableComponentCount,
+            disposableComponentCount = snapshot.DisposableComponentCount,
+            callbackCount = snapshot.CallbackCount,
+            duplicateRequestCount = snapshot.DuplicateRequestCount,
+            lastDuplicateRequestAtUtc = snapshot.LastDuplicateRequestAtUtc,
+            lastUpdatedAtUtc = snapshot.LastUpdatedAtUtc
+        };
+    }
+
+    private static object CreateRuntimeDiagnosticsSnapshot()
+    {
+        using var process = Process.GetCurrentProcess();
+        var startedAtUtc = GetProcessStartTimeUtc(process);
+        var now = DateTimeOffset.UtcNow;
+
+        return new
+        {
+            operationName = "diagnostics.metrics.snapshot",
+            componentName = "DiagnosticsEndpoints",
+            processId = Environment.ProcessId,
+            processName = SanitizeDiagnosticText(process.ProcessName),
+            startedAtUtc,
+            uptimeSeconds = startedAtUtc.HasValue
+                ? Math.Max(0, (long)(now - startedAtUtc.Value).TotalSeconds)
+                : (long?)null,
+            threadCount = process.Threads.Count,
+            handleCount = GetHandleCount(process),
+            workingSetBytes = Environment.WorkingSet,
+            privateMemoryBytes = process.PrivateMemorySize64,
+            managedHeapBytes = GC.GetTotalMemory(false),
+            gcTotalMemoryBytes = GC.GetGCMemoryInfo().HeapSizeBytes,
+            processorCount = Environment.ProcessorCount,
+            runtimeVersion = RuntimeInformation.FrameworkDescription,
+            osDescription = RuntimeInformation.OSDescription
+        };
+    }
+
+    private static DateTimeOffset? GetProcessStartTimeUtc(Process process)
+    {
+        try
+        {
+            return new DateTimeOffset(process.StartTime.ToUniversalTime(), TimeSpan.Zero);
+        }
+        catch (Exception) when (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            return null;
+        }
+    }
+
+    private static int? GetHandleCount(Process process)
+    {
+        try
+        {
+            return process.HandleCount;
+        }
+        catch (Exception) when (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            return null;
+        }
     }
 
     private static IReadOnlyList<object> SanitizeHeldLeases(IReadOnlyList<LeaseRecord> leases)

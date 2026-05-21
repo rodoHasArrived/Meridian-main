@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-05-20
+**Last Reviewed:** 2026-05-21
 
 
 ## TODO Checklist (Concrete Implementation Items)
@@ -45,17 +45,17 @@ This sprint closes that gap with four explicit acceptance gates:
 3. risk auditability
 4. promotion traceability
 
-## Sprint Completion Scoreboard (2026-05-18)
+## Sprint Completion Scoreboard (2026-05-21)
 
 This section turns the reliability sprint into an execution checklist so Wave 2 can be closed with
 evidence instead of feature-count claims.
 
 | Gate | Current Status | Evidence In Repo | Remaining Work To Mark Done |
 | --- | --- | --- | --- |
-| Replay confidence | **Completed (implementation); awaiting fresh dated packet per release** | Shared readiness models stale replay evidence and work-item IDs (`paper-replay-stale-{normalizedSessionId}`; lower-cased with non-alphanumerics collapsed to `-`), replay audits persist compared counts and mismatch reason, and the Wave 2 evidence runbook now defines `verify -> stale -> re-verify` capture steps. | Generate and archive the current-release date-stamped evidence packet from the runbook sequence. |
-| Session persistence | **Completed** | Session metadata, fills, order history, and ledger continuity persistence are in service seams; readiness reads those seams; automated continuity flow now covers `create -> restart/restore -> verify -> close` in one test. | Keep this coverage green in Wave 2 acceptance runs. |
-| Risk auditability | **Completed (implementation); awaiting fresh dated packet per release** | Readiness keeps `audit-controls` in review when actor/scope/rationale are missing, projects an execution-control work item, and focused readiness tests fail when explainability fields are missing. | Capture one dated operator evidence snapshot in the same packet used for release gating. |
-| Promotion traceability | **Completed (implementation); awaiting fresh dated packet per release** | Durable promotion history is persisted and replayed after restart; readiness gates require operator/rationale/lineage/audit-reference completeness; API-level readiness tests enforce review-required posture when trace is incomplete. | Include approve/reject trace evidence in the dated release packet and verify audit-reference continuity. |
+| Replay confidence | **Done** | Cockpit-level stale-replay recovery test (`trading-screen.test.tsx > clears stale replay work item after re-verify returns consistent state`); named replay-mismatch state test; service-level Wave2 acceptance tests. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/wave2-cockpit-evidence-packet.md). | Operator acceptance sign-off. |
+| Session persistence | **Done** | Cockpit-level `create→verify→close` flow test (`trading-screen.test.tsx > create→verify→close session flow`); named context-required state test; service-level `Wave2PaperTradingCockpitAcceptanceTests.SessionPersistenceGate_*`. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/wave2-cockpit-evidence-packet.md). | Keep this coverage green in Wave 2 acceptance runs. |
+| Risk auditability | **Done** | Named controls-blocked state test (circuit-breaker reason surfaced, routes to `/trading/risk`); ExecutionControl routing unit test; service-level readiness endpoint tests. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/wave2-cockpit-evidence-packet.md). | Operator acceptance sign-off. |
+| Promotion traceability | **Done** | Approval checklist field validated in view model (blocks empty checklist, auto-populated from evaluation, clears on runId change); `approvalChecklist` in serialized request; end-to-end happy path test. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/wave2-cockpit-evidence-packet.md). | Operator acceptance sign-off. |
 
 ### Definition of Done for This Sprint
 

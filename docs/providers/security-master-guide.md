@@ -1,6 +1,6 @@
 # Security Master Guide
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-21
 **Owner:** Core Team
 **Scope:** Engineering / Operations / Product
 **Review Cadence:** When asset class coverage or API changes
@@ -14,7 +14,7 @@ Security Master is the event-sourced golden record for all financial instruments
 **Key capabilities:**
 
 - **Event-sourced storage** — Every change (creation, amendment, deactivation) is recorded with full audit trail
-- **Multi-identifier support** — Resolve securities by ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, and custom provider aliases
+- **Multi-identifier support** — Resolve securities by ISIN, CUSIP, Ticker, FIGI, SEDOL, OCC option symbol, LEI, RIC, Bloomberg ID, and custom provider aliases
 - **Asset class polymorphism** — 14 distinct asset classes with class-specific economic terms (coupon, strike, multiplier, etc.)
 - **Version-based concurrency** — Optimistic locking prevents concurrent amendment conflicts
 - **Corporate actions** — Immutable record of dividends, splits, mergers, and other adjustments
@@ -92,6 +92,8 @@ Security Master currently supports these asset classes:
 
 All asset classes also have **common terms:** Display name, Currency (ISO 4217 code), Country of risk, Issuer name, Exchange, Lot size, Tick size.
 
+Shared asset metadata is now centralized in `SecurityAssetClassCatalog`, which keeps workstation capability hints, preferred identifier kinds, and basic create-workflow support aligned across projections and UI workflows. Schema literals are likewise centralized in `SecurityMasterSchemaVersions` so legacy asset-specific payloads and newer economic-definition payloads do not drift across adapters, projections, and trust-snapshot consumers.
+
 ---
 
 ## API Endpoints
@@ -121,7 +123,7 @@ Returns a `SecurityValidationReportDto` without mutating the record. The report 
 - `suggestedAction`: the next remediation step
 - `evidenceLinks`: related Security Master records or evidence packet targets when available
 
-Validation currently checks common record shape, effective-date windows, identifier presence and primary-identifier rules, duplicate canonical identifiers, provider-symbol conflicts, provenance freshness, pricing-source metadata, accounting-classification metadata, and registry-backed asset-class term rules.
+Validation currently checks common record shape, legacy asset-specific schema-version compatibility, effective-date windows, identifier presence and primary-identifier rules, projection-vs-identifier primary consistency, duplicate canonical identifiers, provider-symbol conflicts, provenance freshness, pricing-source metadata, accounting-classification metadata, and registry-backed asset-class term rules.
 
 ### Resolve by Identifier
 ```
@@ -175,7 +177,9 @@ Returns the selected-security workstation projection used by retained desktop go
 
 - `validationReport` — read-only blocking/advisory Security Master validation issues
 - `identifierSummary` — active identifiers, aliases, and provider-mapping coverage
-- `schemaCompatibility` — legacy asset-specific schema version plus normalized economic-terms schema version
+- `schemaCompatibility` — legacy asset-specific schema version plus normalized economic-terms schema version, including explicit review messaging when payloads drift beyond supported workstation compatibility
+- `scheduleSummary` — typed cash-flow/factor schedule posture derived from economic terms and corporate-action context
+- `lotModel` — typed lot/open-position modeling guidance derived from asset class, factors, and trading parameters
 
 ### Get Corporate Actions
 ```

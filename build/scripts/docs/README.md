@@ -13,6 +13,109 @@ This directory contains Python scripts for automating documentation tasks in the
 
 ## Core Scripts
 
+### common.py
+
+Shared helper module for documentation automation. It provides repo-root resolution,
+stable path normalization, Markdown table rendering, generated headers, manifest
+writing, safe file writes, lightweight YAML loading, and finding output helpers.
+
+### validate-roadmap-registry.py
+
+Validates `docs/roadmap/data/*.yml` schema headers, duplicate IDs, stage-gate
+references, source-module references, required fields, and evidence requirements
+for accepted or done items.
+
+```bash
+python3 build/scripts/docs/validate-roadmap-registry.py --summary
+```
+
+### render-roadmap-docs.py
+
+Renders deterministic roadmap Markdown views and a generated manifest from
+`docs/roadmap/data/*.yml`.
+
+```bash
+python3 build/scripts/docs/render-roadmap-docs.py --summary
+```
+
+### validate-source-readmes.py
+
+Validates `docs/source/data/source-modules.yml`,
+`docs/source/data/source-readme-coverage.yml`, and registered `src/**/README.md`
+front matter, required sections, and generated block markers.
+
+```bash
+python3 build/scripts/docs/validate-source-readmes.py --summary
+```
+
+### sync-source-readmes.py
+
+Creates missing source READMEs from `docs/source/data/source-modules.yml` so new modules can be
+bootstrapped programmatically. Existing READMEs are preserved. Use `--tree` to discover nested
+source folders under registered modules; `tree_roots` and ignored paths come from
+`docs/source/data/source-readme-ignore.yml`. Use `--stale-only` after running
+`mark-stale-docs.py --write` to limit README creation to modules already marked as needing review.
+
+```bash
+python3 build/scripts/docs/sync-source-readmes.py --summary
+python3 build/scripts/docs/sync-source-readmes.py --create-missing --summary
+python3 build/scripts/docs/sync-source-readmes.py --tree --max-depth 2 --summary
+python3 build/scripts/docs/sync-source-readmes.py --tree --create-missing --max-depth 2 --summary
+python3 build/scripts/docs/sync-source-readmes.py --create-missing --stale-only --summary
+```
+
+### render-source-docs.py
+
+Renders deterministic source module views under `docs/source/generated/` and
+updates only marked generated blocks in registered source READMEs. `--stale-only` limits README
+block updates to modules listed in `docs/source/generated/stale-docs.json`.
+
+```bash
+python3 build/scripts/docs/render-source-docs.py --summary
+python3 build/scripts/docs/render-source-docs.py --stale-only --summary
+```
+
+### scan-source-todos.py
+
+Checks registry-backed TODO alignment for registered source modules.
+
+```bash
+python3 build/scripts/docs/scan-source-todos.py --summary
+```
+
+### validate-doc-hashes.py
+
+Validates hash alignment for generated roadmap/source manifests and registered source modules. The
+hash manifest records source-tree hashes plus README hashes for each registered module, so code
+changes can intentionally fail the check until documentation has been reviewed and the manifest is
+refreshed.
+
+```bash
+python3 build/scripts/docs/validate-doc-hashes.py --summary
+python3 build/scripts/docs/validate-doc-hashes.py --write --summary
+```
+
+### mark-stale-docs.py
+
+Compares current registered source module hashes to
+`docs/source/generated/source-hash-manifest.json` and writes a deterministic stale-doc report
+without refreshing the accepted hash baseline. This lets agents and maintainers update only
+outdated module READMEs before accepting a new hash baseline.
+
+```bash
+python3 build/scripts/docs/mark-stale-docs.py --write --summary
+python3 build/scripts/docs/mark-stale-docs.py --write --fail-on-stale --summary
+```
+
+### render-roadmap-diagrams.py and render-source-diagrams.py
+
+Render deterministic Mermaid diagram sources from roadmap and source registries.
+
+```bash
+python3 build/scripts/docs/render-roadmap-diagrams.py --summary
+python3 build/scripts/docs/render-source-diagrams.py --summary
+```
+
 ### add-todos.py (NEW)
 
 Interactive tool to help developers add well-formatted TODO comments to the codebase.

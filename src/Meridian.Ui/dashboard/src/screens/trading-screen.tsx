@@ -407,7 +407,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
+  const fundAccountId = asGuid(data?.brokerage?.account);
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const orderTicket = useOrderTicketViewModel({
@@ -1669,6 +1670,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
       <ConfirmActionDialog vm={confirmVm} />
     </div>
   );
+}
+
+function asGuid(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    ? value
+    : undefined;
 }
 
 function buildCockpitAcceptance({

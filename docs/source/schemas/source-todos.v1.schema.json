@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.source-todos.v1",
+  "type": "object",
+  "required": ["schema", "todos"],
+  "properties": {
+    "schema": { "type": "object" },
+    "todos": { "type": "array" }
+  },
+  "additionalProperties": false
+}

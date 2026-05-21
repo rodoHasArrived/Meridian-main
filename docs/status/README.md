@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-05-20
+**Last Reviewed:** 2026-05-21
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to evidence-backed investment operations across cockpit hardening, shared-model continuity, accounting, reconciliation, and governed report productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/current-direction-and-status.md](../plans/current-direction-and-status.md) for the consolidated planning interpretation and [../plans/README.md](../plans/README.md) for the detailed active blueprint set.
@@ -25,6 +25,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md) | Concise description of Meridian's intended finished product |
 | [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | Current-vs-target capability inventory across platform and product areas |
 | [provider-validation-matrix.md](provider-validation-matrix.md) | Evidence-backed provider readiness matrix used by readiness docs |
+| [provider-capability-matrix.md](provider-capability-matrix.md) | Canonical adapter capability/readiness matrix for provider follow-up ownership |
 | [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | Compatibility, deprecation, and migration policy for workstation/strategy/ledger contracts |
 | [production-status.md](production-status.md) | Current production and pilot-readiness caveats |
 | [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
@@ -71,6 +72,15 @@ These dated snapshots remain useful for history, but they no longer act as activ
 
 - [Documentation triage (2026-03-21)](../../archive/docs/summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
 - [Now / Next / Later roadmap (2026-03-25)](../../archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
+- [Broker phase promotion checklist template](../../archive/docs/summaries/broker-phase-promotion-checklist-template.md)
+- [Dead code inventory](../../archive/docs/summaries/dead-code-inventory.md)
+- [IBKR provider inventory](../../archive/docs/summaries/ibkr-provider-inventory.md)
+- [Provider adapters closure summary](../../archive/docs/summaries/provider-adapters-closure-summary.md)
+- [Provider capability inventory](../../archive/docs/summaries/provider-capability-inventory.md)
+- [Provider core hardening notes](../../archive/docs/summaries/provider-core-hardening-notes.md)
+- [Provider failover hardening notes](../../archive/docs/summaries/provider-failover-hardening.md)
+- [Provider test gap baseline](../../archive/docs/summaries/provider-test-gap-baseline.md)
+- [Provider test minimums](../../archive/docs/summaries/provider-test-minimums.md)
 
 ## Recommended Reading Order
 
@@ -104,7 +114,7 @@ When authoring or editing these doc categories, include the required section hea
 - **Workstation state:** The web dashboard is the active operator UI lane, now with support evidence for Overview Today panel, Price Alerts, Strategy Designer route-action safety for GET versus POST backend actions, Covered Call, Quant Notebook helpers, Trading Recent Fills detail state, full-console readiness checkpoints, provider-routing refresh posture in Settings/Data, abort-backed Reporting exports, and Meridian Design System reference workbench/tokenized-color work; retained WPF remains support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, shared-model continuity, durable reconciliation, and governed-report acceptance still remain
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it, with operations-continuity close-lane APIs now available as support evidence for broker intake, Security Master resolution, ledger posting, reconciliation, approval, close, and governed reopen
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
-- **Documentation state:** Status and plan navigation now starts with the consolidated current-direction document, then the canonical roadmap, production-status posture, and subordinate execution plans; generated TODO scans should exclude repo-local diagnostic tool caches rather than treating `.tools/.store` package documentation as project work
+- **Documentation state:** Status and plan navigation now starts with the consolidated current-direction document, then the canonical roadmap, production-status posture, and subordinate execution plans; structured roadmap/source registries, generated source README coverage, and stale-doc/hash validation now control documentation freshness; generated TODO scans should exclude repo-local diagnostic tool caches rather than treating `.tools/.store` package documentation as project work
 - **Archive state:** Deprecated prior release checklists, UI notes, and dated snapshots should live under `archive/docs/` and stay out of the active status tree
 - **DK program state:** Active implementation window (2026-04-20 to 2026-06-26) with weekly dashboard updates and subsystem milestones
 

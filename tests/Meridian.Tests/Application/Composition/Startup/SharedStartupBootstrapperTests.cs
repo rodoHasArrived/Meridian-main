@@ -4,6 +4,8 @@ using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Xunit;
 
 namespace Meridian.Tests.Application.Composition.Startup;
@@ -157,6 +159,48 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         server.DisposeCallCount.Should().Be(1);
     }
 
+    [Fact]
+    public async Task RunAsync_EmitsCorrelatedStartupPhaseDiagnostics()
+    {
+        var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var cliArgs = CliArguments.Parse(["--help"]);
+        var deployment = DeploymentContext.ForCommand("help", "accountNumber=ACCT-123456-test.json");
+        await using var configService = new ConfigurationService(_log);
+        var sink = new CollectingSink();
+        using var logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        var orchestrator = new HostModeOrchestrator(
+            logger,
+            (_, _, _) => throw new InvalidOperationException("Command dispatch should not start the dashboard server."));
+
+        var exitCode = await orchestrator.RunAsync(cliArgs, cfg, deployment.ConfigPath, configService, deployment)
+            .WaitAsync(TimeSpan.FromSeconds(10));
+
+        exitCode.Should().Be(0);
+        var events = sink.Events;
+        var startupStart = events.Should().ContainSingle(evt =>
+            evt.MessageTemplate.Text.Contains("Startup sequence started for {OperationName}", StringComparison.Ordinal))
+            .Subject;
+        var correlationId = startupStart.Properties["CorrelationId"].ToString();
+
+        startupStart.Properties["OperationName"].ToString().Should().Contain("runtime.startup.sequence");
+        startupStart.Properties["ComponentName"].ToString().Should().Contain("StartupOrchestrator");
+        startupStart.Properties["ConfigPath"].ToString().Should().Contain("[REDACTED]");
+        startupStart.Properties["ConfigPath"].ToString().Should().NotContain("ACCT-123456");
+
+        events.Should().Contain(evt =>
+            evt.MessageTemplate.Text.Contains("Startup phase completed for {OperationName}", StringComparison.Ordinal)
+            && evt.Properties["CorrelationId"].ToString() == correlationId
+            && evt.Properties["StartupPhase"].ToString().Contains("command-dispatch", StringComparison.Ordinal));
+        events.Should().Contain(evt =>
+            evt.MessageTemplate.Text.Contains("Startup sequence completed for {OperationName}", StringComparison.Ordinal)
+            && evt.Properties["CorrelationId"].ToString() == correlationId
+            && evt.Properties["ExitCode"].ToString().Contains("0", StringComparison.Ordinal));
+    }
+
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", _originalConfigPath);
@@ -219,6 +263,31 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         {
             DisposeCallCount++;
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class CollectingSink : ILogEventSink
+    {
+        private readonly object _gate = new();
+        private readonly List<LogEvent> _events = [];
+
+        public IReadOnlyList<LogEvent> Events
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _events.ToArray();
+                }
+            }
+        }
+
+        public void Emit(LogEvent logEvent)
+        {
+            lock (_gate)
+            {
+                _events.Add(logEvent);
+            }
         }
     }
 }

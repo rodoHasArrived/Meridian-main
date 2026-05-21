@@ -1,10 +1,10 @@
 # Meridian
 
-Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into an evidence-backed investment operations product: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports in one explainable chain.
+Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a Windows WPF desktop workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into an evidence-backed investment operations product: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports in one explainable chain.
 
-> **Web UI active direction:** New operator UI development is focused on `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets. `src/Meridian.Wpf/` is retained for compatibility, regression fixes, and shared-contract support rather than new desktop-first feature work.
+> **Active operator UI lanes:** Both the desktop and browser workstations are first-class operator surfaces. The Windows desktop shell (`src/Meridian.Wpf/`) and the browser workstation (`src/Meridian.Ui/dashboard/`) are developed in parallel. New product behavior should land behind shared contracts, local/web API endpoints, or shared read models before expanding into either client.
 
-Current local project path: `C:\Dev\Meridian-main`.
+Current local project path: `D:\Meridian-main`.
 
 ## Start Here
 
@@ -22,6 +22,8 @@ Current local project path: `C:\Dev\Meridian-main`.
 - [Prompt and Agent Guidance](docs/prompts/repo-maintenance-prompts.md)
 - [Evidence-Backed Investment Operations Plan](docs/plans/evidence-backed-investment-operations-plan.md)
 - [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
+- [Roadmap Registry](docs/roadmap/README.md)
+- [Source Documentation Mesh](docs/source/README.md)
 
 ## Current Product Direction
 
@@ -48,7 +50,7 @@ The solution currently includes these major areas:
 - `src/Meridian.QuantScript` for scripting and charting-oriented tooling
 - `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
 - `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, and `src/Meridian.Ui.Shared` for the active web workstation and shared UI/API layers
-- `src/Meridian.Wpf` for the retained Windows desktop shell
+- `src/Meridian.Wpf` for the active Windows desktop workstation shell
 - `tests/` and `benchmarks/` for automated validation and performance work
 
 ## Verified Entry Points
@@ -166,6 +168,15 @@ messages, and accessible disabled-field support text. Security Master accounting
 treats MBS, ABS, loan, and amortizing-loan instruments as factor-schedule fixed-income families.
 Treat these as risk-reduction and operator-trust support evidence, not W2-W4 readiness exits.
 
+Current May 21 support evidence adds a shared Strategy Engine pre-run foundation: explicit strategy
+definitions, typed parameter schemas, data dependency policy, run-request validation, evidence
+hashing, and workstation definitions/validate-run endpoints for Covered Call and visual designer
+flows. The repo also now has structured roadmap and source documentation registries under
+`docs/roadmap/` and `docs/source/`, generated source README coverage, stale-doc/hash validation,
+and a provider capability matrix for adapter readiness. Treat these as contract, planning, and
+documentation-control support evidence; they do not close cockpit, shared-continuity,
+governance/reporting, or live-readiness gates.
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
@@ -184,11 +195,11 @@ dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --confi
 
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
-### Retained Windows WPF desktop app — `src/Meridian.Wpf`
+### Windows WPF desktop app — `src/Meridian.Wpf`
 
-The retained Windows workstation shell. Use it for compatibility support, regression fixes, and shared-contract validation. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
+The active Windows desktop workstation shell. Runs alongside the browser workstation as a first-class operator surface, sharing contracts, read models, and workstation API seams. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
 
-The retained shell is also moving compatibility work toward feature-owned modules: the Data shell now lives under `src/Meridian.Wpf/Features/Data/` with a feature registration module, snapshot service, presentation adapter, view model, and thin WPF page.
+The desktop shell is built around feature-owned modules: the Data shell lives under `src/Meridian.Wpf/Features/Data/` with a feature registration module, snapshot service, presentation adapter, view model, and thin WPF page.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1
@@ -202,10 +213,28 @@ Manual fallback:
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 
+
+### Canonical validation lanes
+
+| Lane | Use when | Maps to |
+| --- | --- | --- |
+| `bootstrap` | Setting up a fresh or repaired local dev environment. | `make setup-dev` |
+| `verify-fast` | Pre-commit or tight-loop validation for most code changes. | `make pre-pr` |
+| `verify-full` | Pre-PR broad validation and coverage collection. | `make pre-pr-full` |
+| `verify-docs` | Changing docs, workflow docs, AI/TODO governance references, or lane vocabulary. | `make docs-lint`, `make check-workflow-docs-parity`, `make check-status-delivery-claims`, `python3 build/scripts/docs/check-known-lanes.py` |
+| `verify-desktop` | Touching WPF desktop shell, routing, or shared contracts that need desktop confidence. | `make desktop-build`, `make desktop-test` |
+| `verify-release` | Validating publish outputs or release packaging paths. | `make publish` |
+
 ### Makefile shortcuts
 
 ```bash
 make help           # List all task targets
+make bootstrap      # Canonical lane: local bootstrap
+make verify-fast    # Canonical lane: fast validation
+make verify-full    # Canonical lane: full validation + coverage
+make verify-docs    # Canonical lane: docs/workflow/lane checks
+make verify-desktop # Canonical lane: desktop validation
+make verify-release # Canonical lane: publish validation
 make build-quick    # Shared restore-once, sequential Debug build
 npm run ui:dashboard:test   # Web workstation Vitest suite
 npm run ui:dashboard:build  # Web workstation production build

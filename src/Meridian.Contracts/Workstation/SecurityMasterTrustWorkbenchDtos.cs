@@ -63,6 +63,8 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityValidationReportDto? ValidationReport { get; init; }
     public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }
     public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }
+    public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }
+    public SecurityMasterLotModelDto? LotModel { get; init; }
 }
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
@@ -155,6 +157,25 @@ public sealed record SecurityMasterSchemaCompatibilityDto(
     bool HasLegacyAssetSpecificTerms,
     bool HasEconomicTerms,
     bool HasClassificationPayload,
+    string Summary);
+
+public sealed record SecurityMasterScheduleSummaryDto(
+    bool SupportsCashflowSchedule,
+    bool SupportsFactorHistory,
+    bool HasEconomicScheduleTerms,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateOnly? NextLifecycleDate,
+    string SourceSummary,
+    string Summary);
+
+public sealed record SecurityMasterLotModelDto(
+    string QuantityModel,
+    decimal? LotSize,
+    decimal? ContractMultiplier,
+    bool UsesFaceValue,
+    bool SupportsFactorAdjustedExposure,
+    bool RequiresResolvedSecurityId,
     string Summary);
 
 public sealed record SecurityMasterDownstreamImpactDto(

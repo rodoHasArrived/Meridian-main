@@ -186,6 +186,12 @@ export function providerVerifyEndpoint(providerId: string): string {
   return `/api/providers/${pathSegment(providerId, "providerId")}/verify`;
 }
 
+export function workstationTradingReadinessEndpoint(fundAccountId?: string): string {
+  return fundAccountId
+    ? `${WORKSTATION_API_ENDPOINTS.tradingReadiness}${queryString({ fundAccountId })}`
+    : WORKSTATION_API_ENDPOINTS.tradingReadiness;
+}
+
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`

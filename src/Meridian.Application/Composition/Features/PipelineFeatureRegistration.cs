@@ -66,7 +66,10 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var policy = sp.GetRequiredService<JsonlStoragePolicy>();
-            return new JsonlStorageSink(storageOptions, policy);
+            return new JsonlStorageSink(
+                storageOptions,
+                policy,
+                JsonlBatchOptions.Default);
         });
 
         // ParquetStorageSink - writes events to Parquet files (optional)
@@ -223,8 +226,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             }
 
             var metrics = sp.GetRequiredService<IEventMetrics>();
-            IMarketEventPublisher innerPublisher = sp.GetService<DualPathEventPipeline>()
-                ?? (IMarketEventPublisher)sp.GetRequiredService<EventPipeline>();
+            IMarketEventPublisher innerPublisher = sp.GetRequiredService<EventPipeline>();
             IMarketEventPublisher publisher = new PipelinePublisher(
                 innerPublisher,
                 metrics);

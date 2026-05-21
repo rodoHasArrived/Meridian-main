@@ -1,1 +1,640 @@
-modules: []
+schema:
+  id: meridian.source-modules
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+modules:
+  - id: SRC-HOST
+    path: src/Meridian
+    name: Meridian host
+    layer: Host
+    status: active
+    owner_lane: Runtime Host
+    purpose: Application host, CLI entrypoint, and runtime composition root.
+    readme: src/Meridian/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W6-LIVE-001
+    stage_gates:
+      - DataConfidence
+      - PaperSession
+      - LiveReadiness
+    validation:
+      - python3 build/python/cli/buildctl.py build --project src/Meridian/Meridian.csproj --configuration Debug --isolation-key codex-host
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-APP
+    path: src/Meridian.Application
+    name: Meridian application layer
+    layer: Application
+    status: active
+    owner_lane: Runtime Host
+    purpose: Application use cases, orchestration services, commands, and workflow coordination.
+    readme: src/Meridian.Application/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W2-PROMO-001
+      - W3-CONT-001
+    stage_gates:
+      - PaperSession
+      - PromotionReview
+      - ResearchContinuity
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-CONTRACTS
+    path: src/Meridian.Contracts
+    name: Meridian contracts
+    layer: Contracts
+    status: active
+    owner_lane: Contract Compatibility
+    purpose: Shared DTOs and cross-layer contracts used by host, services, dashboard, and retained WPF.
+    readme: src/Meridian.Contracts/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W3-CONT-001
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - DataConfidence
+      - PaperSession
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-CORE
+    path: src/Meridian.Core
+    name: Meridian core
+    layer: Core
+    status: active
+    owner_lane: Runtime Host
+    purpose: Shared configuration, exceptions, logging, scheduling, serialization, and cross-cutting infrastructure.
+    readme: src/Meridian.Core/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W6-LIVE-001
+    stage_gates:
+      - DataConfidence
+      - PaperSession
+      - LiveReadiness
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-DOMAIN
+    path: src/Meridian.Domain
+    name: Meridian domain
+    layer: Domain
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: Domain events, market data collectors, models, reconciliation concepts, and telemetry primitives.
+    readme: src/Meridian.Domain/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W4-RECON-001
+    stage_gates:
+      - DataConfidence
+      - PaperSession
+      - PortfolioLedgerReview
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-PROVIDER-SDK
+    path: src/Meridian.ProviderSdk
+    name: Provider SDK
+    layer: Provider SDK
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: Provider-facing abstractions for market data, historical data, and symbol search adapters.
+    readme: src/Meridian.ProviderSdk/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W6-LIVE-001
+    stage_gates:
+      - DataConfidence
+      - LiveReadiness
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-INFRASTRUCTURE
+    path: src/Meridian.Infrastructure
+    name: Meridian infrastructure
+    layer: Infrastructure
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: Provider adapters, HTTP integration, ETL adapters, resilience helpers, and data-source implementations.
+    readme: src/Meridian.Infrastructure/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W6-LIVE-001
+    stage_gates:
+      - DataConfidence
+      - PaperSession
+      - LiveReadiness
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-INFRASTRUCTURE-CPPTRADER
+    path: src/Meridian.Infrastructure.CppTrader
+    name: CppTrader infrastructure adapter
+    layer: Infrastructure
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: CppTrader integration support kept isolated from core provider and application contracts.
+    readme: src/Meridian.Infrastructure.CppTrader/README.md
+    roadmap_items:
+      - W1-DATA-001
+    stage_gates:
+      - DataConfidence
+    validation:
+      - dotnet build src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-STORAGE
+    path: src/Meridian.Storage
+    name: Meridian storage
+    layer: Storage
+    status: active
+    owner_lane: Governance and Ledger
+    purpose: WAL-backed persistence, archival packaging, storage catalogs, replay, ledger storage, and export support.
+    readme: src/Meridian.Storage/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - DataConfidence
+      - PaperSession
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-EXECUTION
+    path: src/Meridian.Execution
+    name: Meridian execution
+    layer: Execution
+    status: active
+    owner_lane: Execution and Fund Accounts
+    purpose: Order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.
+    readme: src/Meridian.Execution/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W2-PROMO-001
+      - W6-LIVE-001
+    stage_gates:
+      - PaperSession
+      - PromotionReview
+      - LiveReadiness
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-PAPER-SESSION-REPLAY
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-EXECUTION-SDK
+    path: src/Meridian.Execution.Sdk
+    name: Execution SDK
+    layer: Execution SDK
+    status: active
+    owner_lane: Execution and Fund Accounts
+    purpose: Execution-facing abstractions shared by gateways, brokers, and execution integrations.
+    readme: src/Meridian.Execution.Sdk/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W6-LIVE-001
+    stage_gates:
+      - PaperSession
+      - LiveReadiness
+    validation:
+      - dotnet build src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-PAPER-SESSION-REPLAY
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-RISK
+    path: src/Meridian.Risk
+    name: Meridian risk
+    layer: Risk
+    status: active
+    owner_lane: Execution and Fund Accounts
+    purpose: Pre-trade validation, risk rules, and order-safety checks.
+    readme: src/Meridian.Risk/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W6-LIVE-001
+    stage_gates:
+      - PaperSession
+      - LiveReadiness
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-STRATEGIES
+    path: src/Meridian.Strategies
+    name: Meridian strategies
+    layer: Strategies
+    status: active
+    owner_lane: Strategy and Research
+    purpose: Strategy lifecycle, run storage, promotion records, and strategy read services.
+    readme: src/Meridian.Strategies/README.md
+    roadmap_items:
+      - W2-PROMO-001
+      - W3-CONT-001
+      - W5-BTSTUDIO-001
+    stage_gates:
+      - PromotionReview
+      - ResearchContinuity
+      - BacktestingEvidence
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-BACKTESTING
+    path: src/Meridian.Backtesting
+    name: Meridian backtesting
+    layer: Backtesting
+    status: active
+    owner_lane: Strategy and Research
+    purpose: Backtesting runtime and replay support for historical strategy simulation.
+    readme: src/Meridian.Backtesting/README.md
+    roadmap_items:
+      - W3-CONT-001
+      - W5-BTSTUDIO-001
+    stage_gates:
+      - ResearchContinuity
+      - BacktestingEvidence
+    validation:
+      - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-BACKTESTING-SDK
+    path: src/Meridian.Backtesting.Sdk
+    name: Backtesting SDK
+    layer: Backtesting SDK
+    status: active
+    owner_lane: Strategy and Research
+    purpose: SDK surface for backtesting and simulation integrations.
+    readme: src/Meridian.Backtesting.Sdk/README.md
+    roadmap_items:
+      - W5-BTSTUDIO-001
+    stage_gates:
+      - BacktestingEvidence
+    validation:
+      - dotnet build src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-LEDGER
+    path: src/Meridian.Ledger
+    name: Meridian ledger
+    layer: Ledger
+    status: active
+    owner_lane: Governance and Ledger
+    purpose: Ledger and accounting domain support for books, reconciliation, and governed reporting.
+    readme: src/Meridian.Ledger/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-FSHARP
+    path: src/Meridian.FSharp
+    name: Meridian FSharp
+    layer: FSharp
+    status: active
+    owner_lane: Strategy and Research
+    purpose: F# domain models, calculations, and functional workflow support.
+    readme: src/Meridian.FSharp/README.md
+    roadmap_items:
+      - W3-CONT-001
+      - W5-BTSTUDIO-001
+    stage_gates:
+      - ResearchContinuity
+      - BacktestingEvidence
+    validation:
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-FSHARP-DIRECTLENDING
+    path: src/Meridian.FSharp.DirectLending.Aggregates
+    name: FSharp direct lending aggregates
+    layer: FSharp
+    status: active
+    owner_lane: Governance and Ledger
+    purpose: Functional aggregate calculations for direct lending and fund-structure workflows.
+    readme: src/Meridian.FSharp.DirectLending.Aggregates/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-FSHARP-LEDGER
+    path: src/Meridian.FSharp.Ledger
+    name: FSharp ledger
+    layer: FSharp
+    status: active
+    owner_lane: Governance and Ledger
+    purpose: Functional ledger models and accounting calculations.
+    readme: src/Meridian.FSharp.Ledger/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-FSHARP-TRADING
+    path: src/Meridian.FSharp.Trading
+    name: FSharp trading
+    layer: FSharp
+    status: active
+    owner_lane: Execution and Fund Accounts
+    purpose: Functional trading calculations and models that support execution and research workflows.
+    readme: src/Meridian.FSharp.Trading/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W3-CONT-001
+    stage_gates:
+      - PaperSession
+      - ResearchContinuity
+    validation:
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-PAPER-SESSION-REPLAY
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-QUANTSCRIPT
+    path: src/Meridian.QuantScript
+    name: QuantScript
+    layer: Research
+    status: active
+    owner_lane: Strategy and Research
+    purpose: QuantScript scripting and research tooling for strategy development and analysis.
+    readme: src/Meridian.QuantScript/README.md
+    roadmap_items:
+      - W3-CONT-001
+      - W5-BTSTUDIO-001
+    stage_gates:
+      - ResearchContinuity
+      - BacktestingEvidence
+    validation:
+      - dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-MCP
+    path: src/Meridian.Mcp
+    name: Meridian MCP host
+    layer: MCP
+    status: active
+    owner_lane: Docs and Automation
+    purpose: Minimal MCP host surface for Meridian tools, prompts, and resources.
+    readme: src/Meridian.Mcp/README.md
+    roadmap_items:
+      - W6-LIVE-001
+    stage_gates:
+      - LiveReadiness
+    validation:
+      - dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj -- --help
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-MCP-SERVER
+    path: src/Meridian.McpServer
+    name: Meridian MCP server
+    layer: MCP
+    status: active
+    owner_lane: Docs and Automation
+    purpose: Market-data MCP server with tool/resource access for AI-assisted workflows.
+    readme: src/Meridian.McpServer/README.md
+    roadmap_items:
+      - W6-LIVE-001
+    stage_gates:
+      - LiveReadiness
+    validation:
+      - dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-IBAPI-SMOKESTUB
+    path: src/Meridian.IbApi.SmokeStub
+    name: IB API smoke stub
+    layer: Provider Test Support
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: Local smoke-test stub for Interactive Brokers API integration checks.
+    readme: src/Meridian.IbApi.SmokeStub/README.md
+    roadmap_items:
+      - W1-DATA-001
+    stage_gates:
+      - DataConfidence
+    validation:
+      - dotnet build src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-UI
+    path: src/Meridian.Ui
+    name: Meridian UI asset host
+    layer: UI Host Assets
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Browser workstation source and built host-served workstation assets.
+    readme: src/Meridian.Ui/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W3-CONT-001
+    stage_gates:
+      - PaperSession
+      - ResearchContinuity
+    validation:
+      - npm --prefix src/Meridian.Ui/dashboard run build
+    diagrams:
+      - DIA-BROWSER-WORKSTATION
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-UI-SERVICES
+    path: src/Meridian.Ui.Services
+    name: UI services
+    layer: UI Services
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Workstation endpoints, UI projections, and operator workflow service support.
+    readme: src/Meridian.Ui.Services/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W2-PROMO-001
+      - W3-CONT-001
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - PaperSession
+      - PromotionReview
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-BROWSER-WORKSTATION
+      - DIA-PAPER-SESSION-REPLAY
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-UI-SHARED
+    path: src/Meridian.Ui.Shared
+    name: UI shared contracts
+    layer: UI Shared
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Shared UI read models and compatibility shims for browser and retained desktop surfaces.
+    readme: src/Meridian.Ui.Shared/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - PaperSession
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-BROWSER-WORKSTATION
+    todos: []
+    last_reviewed: 2026-05-20
+
+  - id: SRC-UI-DASHBOARD
+    path: src/Meridian.Ui/dashboard
+    name: Browser workstation dashboard
+    layer: UI Surface
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Active browser-first operator workstation.
+    readme: src/Meridian.Ui/dashboard/README.md
+    roadmap_items:
+      - W2-TRD-001
+      - W2-PROMO-001
+      - W3-CONT-001
+    stage_gates:
+      - PaperSession
+      - PromotionReview
+      - ResearchContinuity
+    validation:
+      - npm --prefix src/Meridian.Ui/dashboard run test
+      - npm --prefix src/Meridian.Ui/dashboard run build
+    diagrams:
+      - DIA-BROWSER-WORKSTATION
+      - DIA-PAPER-SESSION-REPLAY
+    todos:
+      - TODO-SRC-UI-DASHBOARD-001
+    last_reviewed: 2026-05-20
+
+  - id: SRC-WPF
+    path: src/Meridian.Wpf
+    name: Retained WPF workstation
+    layer: Retained UI Surface
+    status: retained_support
+    owner_lane: Workstation Shell and UX
+    purpose: Retained desktop shell for compatibility, regression coverage, and existing WPF workflows.
+    readme: src/Meridian.Wpf/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W4-RPT-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    validation:
+      - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-05-20

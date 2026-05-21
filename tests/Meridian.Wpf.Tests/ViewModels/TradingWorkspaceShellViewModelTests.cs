@@ -280,6 +280,64 @@ public sealed class TradingWorkspaceShellViewModelTests
         actionId.Should().Be("NotificationCenter");
     }
 
+
+    [Fact]
+    public void BuildDeskHeroState_AllClearScenario_ProjectsReadyPostureWithoutQueueDuplication()
+    {
+        var readiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-clear", "Clear Desk", "Paper"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Clear Desk");
+
+        hero.BadgeText.Should().Be("Ready");
+        hero.FocusLabel.Should().Be("Paper oversight");
+        hero.Summary.Should().Contain("paper session");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_MixedSeverityScenario_PrioritizesCriticalQueuePosture()
+    {
+        var readiness = CreateReadiness(
+            workItems:
+            [
+                new OperatorWorkItemDto(
+                    WorkItemId: "promotion-warning-1",
+                    Kind: OperatorWorkItemKindDto.PromotionReview,
+                    Label: "Promotion checklist review",
+                    Detail: "Checklist evidence needs sign-off.",
+                    Tone: OperatorWorkItemToneDto.Warning,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 20, 0, TimeSpan.Zero),
+                    TargetPageTag: "TradingShell"),
+                new OperatorWorkItemDto(
+                    WorkItemId: "replay-critical-1",
+                    Kind: OperatorWorkItemKindDto.PaperReplay,
+                    Label: "Replay stale",
+                    Detail: "Replay verification is stale.",
+                    Tone: OperatorWorkItemToneDto.Critical,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 21, 0, TimeSpan.Zero),
+                    TargetPageTag: "TradingShell")
+            ],
+            overallStatus: TradingAcceptanceGateStatusDto.Blocked,
+            readyForPaperOperation: false);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-mixed", "Mixed Desk", "Paper"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Mixed Desk");
+
+        hero.FocusLabel.Should().Be("Readiness blocked");
+        hero.PrimaryActionId.Should().Be("FundAuditTrail");
+    }
+
     [Fact]
     public void ExecuteCommandAction_WithNoActiveRun_RaisesAccountPortfolioRequest()
     {

@@ -76,7 +76,7 @@ The repository includes `.github/workflows/update-diagrams.yml` to keep committe
 - Push to `main` that modifies any of:
   - `docs/diagrams/uml/*.puml` — PlantUML source edits
   - `docs/diagrams/**/*.dot` — Graphviz DOT source edits
-  - `scripts/generate-diagrams.mjs` or `scripts/lib/ui-diagram-generator.mjs` — generator script edits
+  - `npm run generate-diagrams` (which invokes the canonical package script) — generator updates
   - `src/Meridian.Wpf/**/*.xaml` or `src/Meridian.Wpf/**/*.cs` — WPF source changes that affect UI diagrams
 - Manually via **Actions → Update Diagram Artifacts**
 

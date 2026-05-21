@@ -43,6 +43,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | --- | --- |
 | [Developer Setup](../developer/setup.md) | bootstrap the local checkout at `C:\Dev\Meridian-main` |
 | [Build, Test, Run](../developer/build-test-run.md) | choose a narrow build, test, or local run command |
+| [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
 | [Publish Standalone EXE](../developer/publish-standalone-exe.md) | produce local standalone publish output |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
@@ -67,6 +68,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
 | [Desktop Workflow Automation](desktop-workflow-automation.md) | drive scripted desktop flows, screenshots, and manual-generation workflows |
+| [Codex Desktop Workstation Workflow](codex-workflow.md) | use Codex skills, prompt templates, and quality scripts for modular desktop work |
+| [Modular Desktop Architecture](modular-desktop-architecture.md) | keep WPF workspaces reusable, MVVM-aligned, and refactorable |
+| [Desktop Resource Management](desktop-resource-management.md) | apply memory, CPU, I/O, rendering, concurrency, and lifecycle guardrails |
+| [Shared Workstation Components](shared-workstation-components.md) | inventory and extract reusable desktop workstation controls and view-model patterns |
 | [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
 
@@ -93,7 +98,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 Some topics in this folder have deeper source material outside `docs/development/`:
 
-- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/README.md) is the authoritative workflow inventory referenced by the GitHub Actions summary.
+- [`docs/status/workflow-manifest.json`](../status/workflow-manifest.json), [`docs/generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), and [`docs/status/workflow-validation-summary.json`](../status/workflow-validation-summary.json) are the canonical workflow inventory source of truth surfaces referenced by the GitHub Actions summary.
 - [`build/scripts/docs/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
 - [`scripts/dev/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/scripts/dev) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
 

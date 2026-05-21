@@ -2,6 +2,8 @@ import {
   CheckCircle2,
   DatabaseZap,
   FileOutput,
+  KeyRound,
+  MonitorCheck,
   Plus,
   RadioTower,
   RefreshCcw,
@@ -37,15 +39,29 @@ import type {
   DataOperationsExportDetailState,
   DataOperationsExportRow,
   DataOperationsLoadingState,
+  DataOperationsProviderDiagnosticRow,
   DataOperationsProviderDetailState,
   DataOperationsProviderRow,
   DataOperationsRouteFocusCardState,
+  DataOperationsProviderSummaryCardState,
   ProviderSetupNextActionState
 } from "@/screens/data-operations-screen.view-model";
+import type {
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot
+} from "@/types";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
+  providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
   onProviderSetupConfigured?: () => Promise<void> | void;
+  onProviderRoutingRefresh?: () => Promise<void> | void;
 }
 
 const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
@@ -72,8 +88,18 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     )
   },
   {
+    id: "credential",
+    label: "Credential",
+    render: (provider) => <span className="text-xs text-muted-foreground">{provider.credentialText}</span>
+  },
+  {
+    id: "verification",
+    label: "Verification",
+    render: (provider) => <span className="text-xs text-muted-foreground">{provider.verificationText}</span>
+  },
+  {
     id: "latency",
-    label: "Latency",
+    label: "Last good",
     render: (provider) => <span className="font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
   },
   {
@@ -88,8 +114,8 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "gate",
-    label: "Gate impact",
-    render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.gateImpactText}</span>
+    label: "Workflows",
+    render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.affectedWorkflowsText}</span>
   }
 ];
 
@@ -173,14 +199,38 @@ const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
   }
 ];
 
-export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOperationsScreenProps) {
+export function DataOperationsScreen({
+  data,
+  providerConnections = null,
+  providerRoutingConnections = null,
+  providerRoutingBindings = null,
+  providerRoutingTrustSnapshots = null,
+  providerRoutingRefreshing = false,
+  onProviderSetupConfigured,
+  onProviderRoutingRefresh
+}: DataOperationsScreenProps) {
   const { pathname } = useLocation();
   const workspace = workspaceForPath(pathname);
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
   );
-  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle);
+  const providerEvidence = useMemo(() => ({
+    providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    providerRoutingRefreshing,
+    onProviderRoutingRefresh
+  }), [
+    onProviderRoutingRefresh,
+    providerConnections,
+    providerRoutingBindings,
+    providerRoutingConnections,
+    providerRoutingRefreshing,
+    providerRoutingTrustSnapshots
+  ]);
+  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -249,20 +299,81 @@ export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOp
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
         <Card aria-labelledby="data-provider-health-title" className="xl:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <CardTitle id="data-provider-health-title">Provider health</CardTitle>
-                <CardDescription>Current data-source posture for security, market, and export coverage.</CardDescription>
+                <div className="eyebrow-label">Provider management</div>
+                <CardTitle id="data-provider-health-title" className="mt-2 flex items-center gap-2">
+                  <MonitorCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.providerSection.title}
+                </CardTitle>
+                <div className="mt-1 text-xs font-medium text-muted-foreground">Provider health</div>
+                <CardDescription className="mt-2">
+                  Provider health, credential verification, routing, and fallback posture. {vm.providerSection.subtitle}
+                </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={vm.openProviderSetup} aria-label="Configure a new data provider">
-                <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                Add provider
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant={vm.providerSection.statusTone === "danger" ? "danger" : vm.providerSection.statusTone === "warning" ? "warning" : "success"}
+                  dot={vm.providerSection.statusTone === "success"}
+                >
+                  {vm.providerSection.statusLabel}
+                </Badge>
+                {vm.providerSection.commandActions.map((action) => (
+                  action.href ? (
+                    <Button key={action.id} asChild size="sm" variant={action.variant}>
+                      <Link to={action.href} aria-label={action.ariaLabel}>
+                        <ProviderCommandIcon actionId={action.id} busy={action.busy} />
+                        {action.label}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      key={action.id}
+                      size="sm"
+                      variant={action.variant}
+                      onClick={() => {
+                        if (action.id === "add") vm.openProviderSetup();
+                        if (action.id === "refresh") void onProviderRoutingRefresh?.();
+                        if (action.id === "diagnostics") void vm.verifySelectedProvider();
+                      }}
+                      disabled={action.disabled}
+                      disabledReason={action.disabledReason}
+                      busy={action.busy}
+                      aria-label={action.ariaLabel}
+                    >
+                      <ProviderCommandIcon actionId={action.id} busy={action.busy} />
+                      {action.label}
+                    </Button>
+                  )
+                ))}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {vm.providerSection.hasRows ? (
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.42fr)]">
+              <>
+                <label htmlFor="configured-provider-selector" className="grid gap-1 text-sm font-medium text-muted-foreground">
+                  Configured Provider
+                  <select
+                    id="configured-provider-selector"
+                    className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    value={vm.providerSection.selectedRowId ?? ""}
+                    onChange={(event) => vm.selectProvider(event.target.value)}
+                    aria-label="Configured Provider"
+                  >
+                    {vm.providerSection.providerOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                  {vm.providerSection.summaryCards.map((card) => (
+                    <ProviderSummaryCard key={card.id} card={card} />
+                  ))}
+                </div>
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.46fr)]">
                 <DenseDataTable
                   columns={providerHealthColumns}
                   rows={vm.providerSection.rows}
@@ -281,8 +392,12 @@ export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOp
                 <ProviderDetailPanel
                   detail={vm.providerSection.selectedDetail}
                   emptyState={vm.providerSection.detailEmptyState}
+                  activeTab={vm.selectedProviderTab}
+                  onTabSelect={vm.selectProviderTab}
+                  onVerify={vm.verifySelectedProvider}
                 />
               </div>
+              </>
             ) : (
               <ProviderEmptyState state={vm.providerSection.emptyState} onSetup={vm.openProviderSetup} />
             )}
@@ -373,6 +488,37 @@ export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOp
 
 type DataOperationsVm = ReturnType<typeof useDataOperationsViewModel>;
 
+function ProviderCommandIcon({
+  actionId,
+  busy
+}: {
+  actionId: "add" | "refresh" | "diagnostics" | "settings";
+  busy: boolean;
+}) {
+  if (actionId === "add") return <Plus className="h-3.5 w-3.5" aria-hidden="true" />;
+  if (actionId === "refresh") return <RefreshCcw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden="true" />;
+  if (actionId === "diagnostics") return <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />;
+  return <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />;
+}
+
+function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCardState }) {
+  const toneClass = card.tone === "success"
+    ? "border-success/30 bg-success/10"
+    : card.tone === "warning"
+      ? "border-warning/35 bg-warning/10"
+      : card.tone === "danger"
+        ? "border-danger/35 bg-danger/10"
+        : "border-border/70 bg-secondary/25";
+
+  return (
+    <div className={cn("min-w-0 rounded-md border px-3 py-3", toneClass)}>
+      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
+      <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
+      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+    </div>
+  );
+}
+
 function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingState }) {
   return (
     <section
@@ -445,10 +591,16 @@ function ProviderEmptyState({
 
 function ProviderDetailPanel({
   detail,
-  emptyState
+  emptyState,
+  activeTab,
+  onTabSelect,
+  onVerify
 }: {
   detail: DataOperationsProviderDetailState | null;
   emptyState: DataOperationsEmptyState | null;
+  activeTab: DataOperationsProviderDetailState["activeTab"];
+  onTabSelect: (tab: DataOperationsProviderDetailState["activeTab"]) => void;
+  onVerify: () => void;
 }) {
   if (!detail) {
     return (
@@ -491,8 +643,108 @@ function ProviderDetailPanel({
         </Badge>
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {detail.fields.map((field) => (
+      <div className="mt-3 flex flex-wrap gap-1" role="tablist" aria-label={`${detail.title} provider detail tabs`}>
+        {detail.tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={tab.selected}
+            aria-controls={tab.ariaControls}
+            className={cn(
+              "rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+              tab.selected
+                ? "border-primary/40 bg-primary/[0.08] text-foreground"
+                : "border-border/70 bg-secondary/20 text-muted-foreground hover:bg-secondary/35"
+            )}
+            onClick={() => onTabSelect(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <ProviderDetailTabPanel detail={detail} activeTab={activeTab} onVerify={onVerify} />
+    </aside>
+  );
+}
+
+function ProviderDetailTabPanel({
+  detail,
+  activeTab,
+  onVerify
+}: {
+  detail: DataOperationsProviderDetailState;
+  activeTab: DataOperationsProviderDetailState["activeTab"];
+  onVerify: () => void;
+}) {
+  if (activeTab === "credentials") {
+    return (
+      <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
+        <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+          {detail.credentialFields.map((field) => (
+            <FieldTile key={field.id} field={field} />
+          ))}
+        </dl>
+        <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+          <div className="eyebrow-label">Secret handling</div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            Raw secrets are never displayed after submit. Use Settings to replace or clear stored values.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === "diagnostics") {
+    return (
+      <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-diagnostics`} role="tabpanel" className="mt-3 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+          <div className="min-w-0">
+            <div className="eyebrow-label">Diagnostics</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.verifyAction.statusLabel}</p>
+            {detail.verifyAction.details.length > 0 ? (
+              <ul className="mt-2 grid gap-1 text-xs leading-5 text-muted-foreground">
+                {detail.verifyAction.details.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            ) : null}
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void onVerify()}
+            disabled={detail.verifyAction.disabled}
+            disabledReason={detail.verifyAction.disabledReason}
+            busy={detail.verifyAction.busy}
+            aria-label={detail.verifyAction.ariaLabel}
+          >
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            {detail.verifyAction.label}
+          </Button>
+        </div>
+        {detail.diagnosticsEmptyState ? (
+          <div
+            role="status"
+            aria-label={`${detail.title} diagnostics empty state`}
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-3 py-3"
+          >
+            <div className="font-semibold text-foreground">{detail.diagnosticsEmptyState.title}</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.diagnosticsEmptyState.description}</p>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {detail.diagnostics.map((diagnostic) => (
+              <ProviderDiagnosticRow key={diagnostic.id} diagnostic={diagnostic} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
+      <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.overviewFields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
       </dl>
@@ -502,7 +754,27 @@ function ProviderDetailPanel({
         <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {detail.reasonCodeText}</p>
         <p className="mt-1 font-mono text-[11px] text-muted-foreground">Gate: {detail.gateImpactText}</p>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+function ProviderDiagnosticRow({ diagnostic }: { diagnostic: DataOperationsProviderDiagnosticRow }) {
+  const variant = diagnostic.status === "pass"
+    ? "success"
+    : diagnostic.status === "fail"
+      ? "danger"
+      : diagnostic.status === "warning"
+        ? "warning"
+        : "outline";
+
+  return (
+    <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-xs font-semibold text-foreground">{diagnostic.label}</div>
+        <Badge variant={variant}>{diagnostic.statusLabel}</Badge>
+      </div>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{diagnostic.detail}</p>
+    </div>
   );
 }
 
@@ -777,6 +1049,53 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   disabledReasonId={`${vm.providerSetupDialogState.displayNameField.id}-disabled-reason`}
                 />
               </label>
+
+              <label htmlFor={vm.providerSetupDialogState.environmentField.id} className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.environmentField.label}
+                <select
+                  id={vm.providerSetupDialogState.environmentField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerSetupDialogState.environmentField.value}
+                  aria-label={vm.providerSetupDialogState.environmentField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.environmentField.disabled}
+                  aria-describedby={joinDescribedByIds(
+                    `${vm.providerSetupDialogState.environmentField.id}-description`,
+                    `${vm.providerSetupDialogState.environmentField.id}-disabled-reason`
+                  )}
+                  onChange={(e) => vm.updateProviderForm("environment", e.target.value)}
+                >
+                  {vm.providerSetupDialogState.environmentField.options.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <FieldSupportText
+                  helpId={`${vm.providerSetupDialogState.environmentField.id}-description`}
+                  helpText={vm.providerSetupDialogState.environmentField.description}
+                  disabledReason={vm.providerSetupDialogState.environmentField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.environmentField.id}-disabled-reason`}
+                />
+              </label>
+
+              {vm.providerSetupDialogState.liveAcknowledgement.visible ? (
+                <label
+                  htmlFor={vm.providerSetupDialogState.liveAcknowledgement.id}
+                  className="flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-2.5 text-sm"
+                >
+                  <input
+                    id={vm.providerSetupDialogState.liveAcknowledgement.id}
+                    type="checkbox"
+                    className="mt-0.5 shrink-0 accent-[hsl(var(--live-env))]"
+                    checked={vm.providerSetupDialogState.liveAcknowledgement.checked}
+                    disabled={vm.providerSetupDialogState.liveAcknowledgement.disabled}
+                    aria-label={vm.providerSetupDialogState.liveAcknowledgement.ariaLabel}
+                    onChange={(event) => vm.setProviderLiveAcknowledged(event.currentTarget.checked)}
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-live-env">{vm.providerSetupDialogState.liveAcknowledgement.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{vm.providerSetupDialogState.liveAcknowledgement.detail}</span>
+                  </span>
+                </label>
+              ) : null}
 
               {vm.providerSetupDialogState.credentialFields.map((field) => (
                 <label key={field.id} htmlFor={field.id} className="grid gap-1 text-sm">

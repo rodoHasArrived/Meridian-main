@@ -15,9 +15,35 @@ Write tests that simulate what the system will actually experience in production
 be grounded in a named, real-world market scenario and must exercise at least the full relevant
 code path — not just a single method in isolation.
 
-Read `../_shared/project-context.md` before choosing the test project. Read
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before choosing
+the test project. Read
 `references/test-patterns.md` for the component-to-test-project mapping and the Market Scenario
 Catalog.
+
+---
+
+## Use When
+
+Use this skill when the user asks for tests, coverage, regression protection, validation scenarios,
+or market-event handling in Meridian.
+
+Trigger examples:
+
+- "Write regression tests for the paper-session replay bug."
+- "Add coverage for this provider failure path."
+- "How would the system handle a feed interruption? Test it."
+
+## Do Not Use When
+
+Use `meridian-code-review` to identify missing tests without writing them, `meridian-blueprint` for
+test strategy in a design document, and `meridian-implementation-assurance` for final certification
+after implementation.
+
+Non-trigger examples:
+
+- "Review this diff and tell me if tests are missing."
+- "Design the testing approach for a future feature."
+- "Certify this completed implementation."
 
 ---
 
@@ -47,6 +73,18 @@ name the new scenario before proceeding.
 6. Cover happy path, error path, cancellation path, and disposal or cleanup where relevant.
 7. Use the mock library already used by the target project (Moq for `Meridian.Tests`; NSubstitute for `Meridian.Ui.Tests`).
 8. Run the narrowest relevant `dotnet test` command and report it.
+
+## Handoffs
+
+- Hand off from `meridian-code-review` when missing tests are the actionable finding.
+- Hand off to `meridian-provider-builder` when tests expose missing provider implementation work.
+- Hand off to `meridian-implementation-assurance` when tests are part of a broader implementation proof.
+
+## Validation
+
+- Run the narrowest test command for the touched project and filter where practical.
+- Use dashboard-local Vitest/build commands for `src/Meridian.Ui/dashboard/` tests.
+- If tests cannot run, report the exact blocker and residual risk.
 
 ---
 
@@ -112,3 +150,9 @@ name the new scenario before proceeding.
 | **Market scenario (multi-layer)** | **I** | **Named scenario, ≥2 layers, `MarketScenarioBuilder`** |
 
 Full scaffolding for all patterns and the Market Scenario Catalog are in `references/test-patterns.md`.
+
+## Output Standards
+
+- Name the market or operator scenario each test protects.
+- State the full code path exercised and the business-observable outcome asserted.
+- Summarize tests added or changed, exact validation commands, and any remaining untested risk.
