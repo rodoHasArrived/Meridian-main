@@ -380,16 +380,4 @@ public class L3OrderBookCollectorTests
         return listener;
     }
 
-    private sealed class ActivityCapturingPublisher : IMarketEventPublisher
-    {
-        public List<string?> TraceIds { get; } = new();
-        public List<string?> OperationNames { get; } = new();
-
-        public bool TryPublish(in MarketEvent evt)
-        {
-            TraceIds.Add(Activity.Current?.TraceId.ToString());
-            OperationNames.Add(Activity.Current?.OperationName);
-            return true;
-        }
-    }
 }

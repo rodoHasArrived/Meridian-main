@@ -259,7 +259,6 @@ public sealed class BackfillWorkerService : IDisposable
                         using var storageActivity = MarketDataTracing.StartBackfillStorageActivity(request.Symbol, bars.Count);
                         await WriteBarsToStorageAsync(request, bars, ct).ConfigureAwait(false);
                         MarketDataTracing.RecordEventCount(storageActivity, bars.Count);
-                        requestLog.Debug("Wrote {BarCount} bars for {Symbol} to storage", bars.Count, request.Symbol);
                         request.BarsRetrieved = bars.Count;
 
                         // Record progress

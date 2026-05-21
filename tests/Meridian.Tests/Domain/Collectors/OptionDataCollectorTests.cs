@@ -3,7 +3,6 @@ using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
-using Meridian.Domain.Events;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 
@@ -474,19 +473,6 @@ public sealed class OptionDataCollectorTests
             Contract: contract,
             OpenInterest: openInterest,
             Volume: 1200);
-    }
-
-    private sealed class ActivityCapturingPublisher : IMarketEventPublisher
-    {
-        public List<string?> TraceIds { get; } = new();
-        public List<string?> OperationNames { get; } = new();
-
-        public bool TryPublish(in MarketEvent evt)
-        {
-            TraceIds.Add(Activity.Current?.TraceId.ToString());
-            OperationNames.Add(Activity.Current?.OperationName);
-            return true;
-        }
     }
 
     #endregion
