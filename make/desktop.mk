@@ -5,7 +5,7 @@
 # The WPF project requires Windows or EnableWindowsTargeting=true.
 # See: src/Meridian.Wpf/README.md and docs/development/wpf-implementation-notes.md
 
-.PHONY: verify-desktop desktop-build desktop-test desktop-test-position-blotter-route desktop-test-operator-inbox-route
+.PHONY: verify-desktop desktop-build desktop-test desktop-test-dev desktop-test-position-blotter-route desktop-test-operator-inbox-route
 
 verify-desktop: desktop-build desktop-test ## Canonical lane: retained desktop build and test validation
 
@@ -19,6 +19,9 @@ desktop-test: ## Run WPF desktop tests
 	@dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj \
 		--logger "console;verbosity=normal" \
 		/p:EnableWindowsTargeting=true
+
+desktop-test-dev: ## Run serialized WPF development build plus focused tests with artifacts
+	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
 
 desktop-test-position-blotter-route: ## Run the isolated WPF position blotter route validation slice
 	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1

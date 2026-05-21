@@ -353,39 +353,8 @@
                                 Background="Transparent" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                 BorderThickness="0" Padding="8,4" FontSize="12"/>
                     </Grid>
-
-                    <ItemsControl ItemsSource="{Binding ConnectionHistory}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                        Padding="0,8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{Binding EventColor}"
-                                                 VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                        <StackPanel Grid.Column="1">
-                                            <TextBlock Text="{Binding Message}"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding Provider}"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="{Binding TimeText}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12"
-                                                   VerticalAlignment="Center"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <TextBlock Text="No connection events recorded."
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               Visibility="{Binding HasNoHistory, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <workstation:ActivityLogGridControl Timeline="{Binding ProviderActivityTimeline}"
+                                                        AutomationProperties.AutomationId="ProviderActivityLogGrid"/>
                 </StackPanel>
             </Border>
         </StackPanel>

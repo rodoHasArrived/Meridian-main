@@ -5,6 +5,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
+- `.codex/AGENTS.md` for Codex-specific desktop workstation implementation rules.
 - `docs/architecture/project-structure.md` for the maintained repository map.
 - `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
 - `docs/developer/setup.md`, `docs/developer/build-test-run.md`, and `docs/developer/publish-standalone-exe.md` for current local developer workflows.

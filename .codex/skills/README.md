@@ -24,6 +24,16 @@ Last verified against `README.md`, `docs/status/ROADMAP.md`, and
 | `meridian-roadmap-strategist` | [`SKILL.md`](meridian-roadmap-strategist/SKILL.md) | Refresh roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel` | [`SKILL.md`](meridian-simulated-user-panel/SKILL.md) | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | [`SKILL.md`](meridian-test-writer/SKILL.md) | Write scenario-first Meridian tests |
+| `modular-desktop-mvvm` | [`SKILL.md`](modular-desktop-mvvm/SKILL.md) | Implement modular WPF MVVM workstation changes |
+| `workstation-screen-composition` | [`SKILL.md`](workstation-screen-composition/SKILL.md) | Compose desktop screens from shared workstation primitives |
+| `shared-component-extraction` | [`SKILL.md`](shared-component-extraction/SKILL.md) | Extract repeated desktop patterns into reusable components |
+| `provider-management-workflow` | [`SKILL.md`](provider-management-workflow/SKILL.md) | Build secure provider setup, health, credential, and recovery workflows |
+| `research-data-acquisition` | [`SKILL.md`](research-data-acquisition/SKILL.md) | Build research acquisition, preview, validation, and lineage workflows |
+| `dense-data-grid-inspector-panel` | [`SKILL.md`](dense-data-grid-inspector-panel/SKILL.md) | Build scalable dense grids and inspector panels |
+| `diagnostics-audit-timeline` | [`SKILL.md`](diagnostics-audit-timeline/SKILL.md) | Build diagnostics panels, audit timelines, and evidence trails |
+| `performance-resource-review` | [`SKILL.md`](performance-resource-review/SKILL.md) | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `safe-refactoring` | [`SKILL.md`](safe-refactoring/SKILL.md) | Refactor desktop code incrementally without behavior drift |
+| `desktop-test-generation` | [`SKILL.md`](desktop-test-generation/SKILL.md) | Generate focused WPF view-model, command, service, and binding tests |
 
 ## Routing Model
 
@@ -44,6 +54,16 @@ different work:
 | Roadmap | `meridian-roadmap-strategist` | Reconcile plans, delivery waves, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while improving maintainability. |
 | Simulated user review | `meridian-simulated-user-panel` | Run persona-backed critique from concrete artifacts. |
+| Desktop implementation | `modular-desktop-mvvm` | Implement WPF changes with MVVM, shared seams, tests, and resource guardrails. |
+| Desktop composition | `workstation-screen-composition` | Shape new workspaces, tabs, panels, and command surfaces from shared primitives. |
+| Component extraction | `shared-component-extraction` | Consolidate repeated controls, templates, commands, view models, and services. |
+| Provider workflow | `provider-management-workflow` | Implement secure provider setup, health, credential, validation, and recovery flows. |
+| Research acquisition | `research-data-acquisition` | Implement bounded research ingestion, preview, validation, lineage, and handoff flows. |
+| Dense data UI | `dense-data-grid-inspector-panel` | Implement virtualized grids, row models, selection, detail tabs, and inspectors. |
+| Diagnostics and audit | `diagnostics-audit-timeline` | Implement diagnostics panels, evidence trails, and audit timelines. |
+| Resource review | `performance-resource-review` | Review and reduce memory, CPU, I/O, rendering, concurrency, and lifecycle risk. |
+| Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
+| Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
 
 ## Shared Resources
 
@@ -54,6 +74,9 @@ different work:
   AI tooling gates, and final response shape
 - [`docs/ai/codex/README.md`](../../docs/ai/codex/README.md) — Codex-specific AI docs index,
   skill validation commands, and required/advisory/maintenance tooling split
+- [`../AGENTS.md`](../AGENTS.md) — Codex-specific desktop workstation implementation rules
+- [`../prompts/`](../prompts) and [`../checklists/`](../checklists) — reusable desktop prompts and
+  modularity, MVVM, resource, definition-of-done, and safe-refactor checklists
 
 ## Maintenance Rules
 

@@ -1,8 +1,11 @@
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -186,6 +189,84 @@ public sealed class ProviderHealthViewModelTests
         alpaca.Diagnostics.Should().Contain(diagnostic =>
             diagnostic.Label == "Credential presence" &&
             diagnostic.StatusText == "Fail");
+    }
+
+    [Fact]
+    public void BuildProviderManagementTable_ShouldExposeReusableDenseGridColumns()
+    {
+        var rows = new ObservableCollection<ProviderManagementRowModel>
+        {
+            new()
+            {
+                ProviderId = "polygon",
+                DisplayName = "Polygon.io",
+                CapabilityText = "Data + Backfill",
+                HealthText = "Healthy"
+            }
+        };
+
+        var table = ProviderHealthViewModel.BuildProviderManagementTable(rows);
+
+        table.Title.Should().Be("Provider management table");
+        table.Columns.Should().Contain(column => column.Header == "Provider" && column.BindingPath == nameof(ProviderManagementRowModel.DisplayName));
+        table.Columns.Should().Contain(column => column.Header == "Verification" && column.BindingPath == nameof(ProviderManagementRowModel.VerificationStateText));
+        table.Rows.Should().ContainSingle().Which.DisplayName.Should().Be("Polygon.io");
+        ((WorkstationTableModel)table).Rows.Cast<object>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void BuildProviderDiagnosticsChecklist_ShouldMapProviderDiagnosticsToSharedChecklist()
+    {
+        var row = new ProviderManagementRowModel
+        {
+            DisplayName = "Alpaca Paper",
+            HealthText = "Blocked",
+            CredentialStateText = "Missing",
+            VerificationStateText = "Failed"
+        };
+        row.Diagnostics.Add(new ProviderManagementDiagnosticModel
+        {
+            Label = "Credential presence",
+            StatusText = "Fail",
+            Detail = "Missing"
+        });
+
+        var checklist = ProviderHealthViewModel.BuildProviderDiagnosticsChecklist(row);
+
+        checklist.Title.Should().Be("Diagnostics");
+        checklist.Items.Should().ContainSingle().Which.Should().Match<DiagnosticsChecklistItemModel>(item =>
+            item.Label == "Credential presence" &&
+            item.StatusText == "Fail" &&
+            item.Tone == WorkspaceTone.Danger);
+    }
+
+    [Fact]
+    public void BuildProviderInspectorAndRoutingMatrix_ShouldKeepProviderSpecificLogicOutOfControls()
+    {
+        var row = new ProviderManagementRowModel
+        {
+            DisplayName = "Polygon.io",
+            CapabilityText = "Data + Backfill",
+            HealthText = "Healthy",
+            CredentialStateText = "Configured",
+            CredentialSourceText = "Source: encrypted store",
+            VerificationStateText = "Verified",
+            LastVerifiedText = "Last verified: 2026-05-20 18:30 UTC",
+            LastSuccessfulConnectionText = "Latency: 82ms",
+            FallbackText = "Fallback not active",
+            AffectedWorkflowsText = "Live quotes, Backfill",
+            TrustExplanationText = "Health=Healthy; credentials=Configured; verification=Verified;",
+            RecommendedActionText = "Keep provider active and monitor diagnostics."
+        };
+
+        var inspector = ProviderHealthViewModel.BuildProviderInspector(row);
+        var routing = ProviderHealthViewModel.BuildProviderRoutingMatrix(row);
+
+        inspector.Title.Should().Be("Polygon.io");
+        inspector.Badge.Should().NotBeNull();
+        inspector.Facts.Should().Contain(fact => fact.Label == "Credential state" && fact.Value == "Configured");
+        routing.Rows.Should().HaveCount(2);
+        routing.Rows.Should().Contain(row => row.Workflow == "Live quotes" && row.Route == "Polygon.io");
     }
 
     [Fact]

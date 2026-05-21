@@ -68,6 +68,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
 | [Desktop Workflow Automation](desktop-workflow-automation.md) | drive scripted desktop flows, screenshots, and manual-generation workflows |
+| [Codex Desktop Workstation Workflow](codex-workflow.md) | use Codex skills, prompt templates, and quality scripts for modular desktop work |
+| [Modular Desktop Architecture](modular-desktop-architecture.md) | keep WPF workspaces reusable, MVVM-aligned, and refactorable |
+| [Desktop Resource Management](desktop-resource-management.md) | apply memory, CPU, I/O, rendering, concurrency, and lifecycle guardrails |
+| [Shared Workstation Components](shared-workstation-components.md) | inventory and extract reusable desktop workstation controls and view-model patterns |
 | [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
 

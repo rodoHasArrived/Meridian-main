@@ -91,9 +91,9 @@ function New-CodexFinding {
 
 function Add-CodexPatternFindings {
     param(
-        [Parameter(Mandatory = $true)][System.Collections.Generic.List[object]]$Findings,
+        [System.Collections.Generic.List[object]]$Findings,
         [Parameter(Mandatory = $true)][string]$Root,
-        [Parameter(Mandatory = $true)][object[]]$Files,
+        [object[]]$Files = @(),
         [Parameter(Mandatory = $true)][string]$Pattern,
         [Parameter(Mandatory = $true)][string]$Rule,
         [Parameter(Mandatory = $true)][string]$Message,
@@ -110,7 +110,7 @@ function Add-CodexPatternFindings {
 function Write-CodexFindingReport {
     param(
         [Parameter(Mandatory = $true)][string]$Title,
-        [Parameter(Mandatory = $true)][object[]]$Findings,
+        [object[]]$Findings = @(),
         [string]$MarkdownPath
     )
 
@@ -154,7 +154,7 @@ function Write-CodexFindingReport {
 
 function Get-CodexExitCode {
     param(
-        [Parameter(Mandatory = $true)][object[]]$Findings,
+        [object[]]$Findings = @(),
         [switch]$FailOnWarning
     )
 

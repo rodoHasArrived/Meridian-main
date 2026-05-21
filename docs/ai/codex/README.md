@@ -13,6 +13,9 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
 | [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for concurrency, validation, docs sync, and response shape |
 | [`.codex/skills/*/agents/openai.yaml`](../../../.codex/skills) | Codex UI metadata for repo-local skills |
+| [`.codex/AGENTS.md`](../../../.codex/AGENTS.md) | Codex-specific desktop workstation implementation rules |
+| [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
+| [`.codex/checklists/`](../../../.codex/checklists) | Modularity, MVVM, resource, definition-of-done, and safe-refactor checklists |
 
 ## Current Codex Skills
 
@@ -30,6 +33,16 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | `meridian-roadmap-strategist` | Refresh roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Write scenario-first Meridian tests |
+| `modular-desktop-mvvm` | Implement modular WPF MVVM workstation changes |
+| `workstation-screen-composition` | Compose desktop screens from shared workstation primitives |
+| `shared-component-extraction` | Extract repeated desktop patterns into reusable components |
+| `provider-management-workflow` | Build secure provider setup, health, credential, and recovery workflows |
+| `research-data-acquisition` | Build research acquisition, preview, validation, and lineage workflows |
+| `dense-data-grid-inspector-panel` | Build scalable dense grids and inspector panels |
+| `diagnostics-audit-timeline` | Build diagnostics panels, audit timelines, and evidence trails |
+| `performance-resource-review` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `safe-refactoring` | Refactor desktop code incrementally without behavior drift |
+| `desktop-test-generation` | Generate focused WPF view-model, command, service, and binding tests |
 
 ## Routing Model
 
@@ -50,6 +63,16 @@ route by task phase:
 | Roadmap | `meridian-roadmap-strategist` | Reconcile status, waves, opportunities, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code or duplication. |
 | Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and explicit evidence. |
+| Desktop implementation | `modular-desktop-mvvm` | Implement WPF changes with MVVM, shared seams, tests, and resource guardrails. |
+| Desktop composition | `workstation-screen-composition` | Shape new workspaces, tabs, panels, and command surfaces from shared primitives. |
+| Component extraction | `shared-component-extraction` | Consolidate repeated controls, templates, commands, view models, and services. |
+| Provider workflow | `provider-management-workflow` | Implement secure provider setup, health, credential, validation, and recovery flows. |
+| Research acquisition | `research-data-acquisition` | Implement bounded research ingestion, preview, validation, lineage, and handoff flows. |
+| Dense data UI | `dense-data-grid-inspector-panel` | Implement virtualized grids, row models, selection, detail tabs, and inspectors. |
+| Diagnostics and audit | `diagnostics-audit-timeline` | Implement diagnostics panels, evidence trails, and audit timelines. |
+| Resource review | `performance-resource-review` | Review and reduce memory, CPU, I/O, rendering, concurrency, and lifecycle risk. |
+| Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
+| Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
 
 ## Required Gates For Codex AI/Tooling Changes
 
