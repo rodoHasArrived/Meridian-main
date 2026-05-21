@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
@@ -41,8 +42,9 @@ public partial class HealthBadgeControl : UserControl
             return;
         }
 
-        BadgeBorder.BorderBrush = ResolveBrush(Badge.Tone);
-        BadgeBorder.Foreground = ResolveBrush(Badge.Tone);
+        var toneBrush = ResolveBrush(Badge.Tone);
+        BadgeBorder.BorderBrush = toneBrush;
+        BadgeBorder.SetValue(TextElement.ForegroundProperty, toneBrush);
     }
 
     private Brush ResolveBrush(string tone)

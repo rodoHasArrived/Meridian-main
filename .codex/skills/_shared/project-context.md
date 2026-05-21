@@ -17,12 +17,13 @@ repeating the same facts in every `SKILL.md`.
 - The current delivery focus is productization: turn those foundations into one evidence-backed
   investment operations experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`,
   `Strategy`, `Data`, and `Settings`.
-- New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
-  contracts, regression fixes, or retained desktop support.
-- `src/Meridian.Ui/dashboard/` is now the active browser-based operator workstation lane, with production
+- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
+- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
+  workflows, launch automation, and desktop validation.
+- `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support the web workstation first while preserving retained desktop compatibility.
+  that should support both desktop and browser surfaces without duplicating business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -83,9 +84,11 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+pwsh ./scripts/dev/desktop-dev.ps1
+pwsh ./scripts/dev/run-desktop.ps1 -Fixture
+pwsh ./scripts/dev/test-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 make test
-pwsh ./scripts/dev/run-desktop.ps1
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
@@ -214,4 +217,3 @@ and choose the narrowest lane that matches the user's request:
   services; await initialization and terminal metadata writes at the service boundary.
 - Do not add package versions directly to project files; central package management lives in
   `Directory.Packages.props`.
-

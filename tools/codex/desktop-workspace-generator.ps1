@@ -40,7 +40,7 @@ $plan.Add("- Mode: $(if ($Apply) { 'apply' } else { 'dry-run' })")
 $plan.Add("")
 $plan.Add("## Files")
 foreach ($file in $files) {
-    $plan.Add("- `$file`")
+    $plan.Add("- ``$file``")
 }
 $plan.Add("")
 $plan.Add("## Required follow-up")

@@ -21,7 +21,7 @@ desktop-test: ## Run WPF desktop tests
 		/p:EnableWindowsTargeting=true
 
 desktop-test-dev: ## Run serialized WPF development build plus focused tests with artifacts
-	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
+	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
 
 desktop-test-position-blotter-route: ## Run the isolated WPF position blotter route validation slice
 	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1

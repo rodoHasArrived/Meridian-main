@@ -8,6 +8,8 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   QuotesResponse,
+  QuotesSnapshotItem,
+  QuotesSnapshotResponse,
   SessionStatsDto,
   TradeDataResponse,
   TradesResponse
@@ -17,6 +19,9 @@ export const LIVE_QUOTES_POLL_INTERVAL_MS = 2000;
 export const LIVE_QUOTES_TRADE_HISTORY_LIMIT = 200;
 export const LIVE_QUOTES_TRADE_TABLE_LIMIT = 25;
 export const LIVE_QUOTES_EMPTY_VALUE = "—";
+export const LIVE_QUOTES_DEFAULT_SYMBOL_SET = ["AAPL", "MSFT", "SPY", "QQQ"];
+export const LIVE_QUOTES_PINNED_SET_STORAGE_KEY = "meridian.liveMarketData.pinnedSymbolSet.v1";
+export const LIVE_QUOTES_MAX_SYMBOL_SET_SIZE = 24;
 
 export type QuickTicketPhase = "idle" | "seeded" | "submitting" | "submitted" | "error";
 
@@ -350,16 +355,110 @@ export interface LiveQuotesMarketDataViewModel {
   tradesDescription: string;
 }
 
+export type LiveMarketDataCommandId =
+  | "add-symbol"
+  | "remove-symbol"
+  | "pin-set"
+  | "open-order-book"
+  | "open-replay"
+  | "open-ticket"
+  | "pause-updates"
+  | "reset-layout";
+
+export interface LiveMarketDataCommandViewModel {
+  id: LiveMarketDataCommandId;
+  label: string;
+  ariaLabel: string;
+  href: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
+  pressed?: boolean;
+}
+
+export interface LiveMarketDataMarketStatusBadgeViewModel {
+  id: string;
+  label: string;
+  value: string;
+  tone: "success" | "warning" | "danger" | "default";
+  ariaLabel: string;
+}
+
+export interface LiveQuoteMatrixRowViewModel {
+  id: string;
+  symbol: string;
+  bidLabel: string;
+  askLabel: string;
+  lastLabel: string;
+  spreadLabel: string;
+  venueLabel: string;
+  sequenceLabel: string;
+  providerLabel: string;
+  quoteAgeLabel: string;
+  tickRateLabel: string;
+  stateLabel: string;
+  stateTone: "success" | "warning" | "danger" | "default";
+  selected: boolean;
+  ariaLabel: string;
+  selectAriaLabel: string;
+}
+
+export interface LiveMarketDataDetailViewModel {
+  ariaLabel: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "default";
+  fields: LiveQuotesMetricRowViewModel[];
+}
+
+export interface LiveMarketDataDiagnosticsViewModel {
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "default";
+  summary: string;
+  providerLatencyLabel: string;
+  throughputLabel: string;
+  connectionQualityLabel: string;
+  tickHealthLabel: string;
+  items: LiveQuotesMetricRowViewModel[];
+}
+
+export interface LiveMarketDataWorkspaceViewModel {
+  title: string;
+  description: string;
+  symbolSet: string[];
+  symbolSetLabel: string;
+  selectedSymbol: string | null;
+  selectedSymbolSummary: string;
+  matrixRows: LiveQuoteMatrixRowViewModel[];
+  selectedDetail: LiveMarketDataDetailViewModel;
+  diagnostics: LiveMarketDataDiagnosticsViewModel;
+  marketStatusBadges: LiveMarketDataMarketStatusBadgeViewModel[];
+  commands: Record<LiveMarketDataCommandId, LiveMarketDataCommandViewModel>;
+  matrixTableLabel: string;
+  matrixEmptyText: string;
+  snapshotState: LiveQuotesPanelState;
+  paused: boolean;
+  selectSymbol: (symbol: string) => void;
+  removeSelectedSymbol: () => void;
+  loadStarterSet: () => void;
+  pinSymbolSet: () => void;
+  togglePaused: () => void;
+}
+
 export interface LiveQuotesApi {
   getLiveQuote: (symbol: string, options?: ApiRequestOptions) => Promise<QuotesResponse>;
   getLiveTrades: (symbol: string, limit: number, options?: ApiRequestOptions) => Promise<TradesResponse>;
   getLiveOrderbook: (symbol: string, depth: number, options?: ApiRequestOptions) => Promise<OrderBookResponse>;
+  getLiveQuotesSnapshot: (symbols?: readonly string[], options?: ApiRequestOptions) => Promise<QuotesSnapshotResponse>;
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
 }
 
 export interface LiveQuotesRouteBinding {
   routeSymbol: string;
+  routeSymbols?: string;
   setRouteSymbol: (symbol: string) => void;
+  setRouteSymbols?: (symbols: readonly string[], selectedSymbol: string | null) => void;
 }
 
 export interface LiveQuotesScreenViewModel {
@@ -367,6 +466,7 @@ export interface LiveQuotesScreenViewModel {
   setSymbolInput: (value: string) => void;
   activeSymbol: string | null;
   lookup: LiveQuoteSymbolLookupViewModel;
+  workspace: LiveMarketDataWorkspaceViewModel;
   market: LiveQuotesMarketDataViewModel;
   quickTrade: QuickTradeTicketViewModel;
   refreshCommand: LiveQuoteRefreshCommandViewModel | null;
@@ -400,20 +500,28 @@ export function useLiveQuotesScreenViewModel(
   api: LiveQuotesApi,
   route: LiveQuotesRouteBinding
 ): LiveQuotesScreenViewModel {
-  const initialSymbol = normalizeLiveQuoteSymbol(route.routeSymbol);
-  const [symbolInput, setSymbolInputState] = useState(initialSymbol);
+  const initialSymbolSet = initialLiveMarketDataSymbolSet(route.routeSymbols, route.routeSymbol);
+  const initialSymbol = normalizeLiveQuoteSymbol(route.routeSymbol) || (initialSymbolSet[0] ?? "");
+  const [symbolInput, setSymbolInputState] = useState(initialSymbolSet.join(", "));
+  const [symbolSet, setSymbolSet] = useState<string[]>(initialSymbolSet);
   const [activeSymbol, setActiveSymbol] = useState<string | null>(initialSymbol || null);
   const [submittedEmptySymbol, setSubmittedEmptySymbol] = useState(false);
   const [quote, setQuote] = useState<LiveQuotesLoadState<QuotesResponse>>({ data: null, error: null });
   const [trades, setTrades] = useState<LiveQuotesLoadState<TradesResponse>>({ data: null, error: null });
   const [orderbook, setOrderbook] = useState<LiveQuotesLoadState<OrderBookResponse>>({ data: null, error: null });
+  const [snapshot, setSnapshot] = useState<LiveQuotesLoadState<QuotesSnapshotResponse>>({ data: null, error: null });
   const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
   const [selectedDepthLevelId, setSelectedDepthLevelId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshingSnapshot, setRefreshingSnapshot] = useState(false);
+  const [paused, setPaused] = useState(false);
   const requestIdRef = useRef(0);
+  const snapshotRequestIdRef = useRef(0);
   const inFlightSymbolRef = useRef<string | null>(null);
+  const inFlightSnapshotKeyRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
   const marketAbortRef = useRef<AbortController | null>(null);
+  const snapshotAbortRef = useRef<AbortController | null>(null);
   const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder: api.submitOrder });
 
   useEffect(() => {
@@ -422,8 +530,11 @@ export function useLiveQuotesScreenViewModel(
     return () => {
       mountedRef.current = false;
       requestIdRef.current += 1;
+      snapshotRequestIdRef.current += 1;
       inFlightSymbolRef.current = null;
+      inFlightSnapshotKeyRef.current = null;
       marketAbortRef.current?.abort();
+      snapshotAbortRef.current?.abort();
     };
   }, []);
 
@@ -432,6 +543,12 @@ export function useLiveQuotesScreenViewModel(
     setTrades({ data: null, error: null });
     setOrderbook({ data: null, error: null });
   }, []);
+
+  const resetSelectedPanels = useCallback(() => {
+    quickTrade.resetTicket();
+    setSelectedTradeId(null);
+    setSelectedDepthLevelId(null);
+  }, [quickTrade]);
 
   const fetchMarketData = useCallback(async (symbol: string) => {
     const requestedSymbol = normalizeLiveQuoteSymbol(symbol);
@@ -473,30 +590,78 @@ export function useLiveQuotesScreenViewModel(
     }
   }, [api.getLiveOrderbook, api.getLiveQuote, api.getLiveTrades]);
 
+  const fetchSnapshotData = useCallback(async (symbols: readonly string[]) => {
+    const normalizedSymbols = normalizeLiveQuoteSymbols(symbols.join(","));
+    const snapshotKey = normalizedSymbols.join(",");
+    if (normalizedSymbols.length === 0 || inFlightSnapshotKeyRef.current === snapshotKey) {
+      return;
+    }
+
+    const requestId = snapshotRequestIdRef.current + 1;
+    snapshotRequestIdRef.current = requestId;
+    snapshotAbortRef.current?.abort();
+    const controller = new AbortController();
+    snapshotAbortRef.current = controller;
+    inFlightSnapshotKeyRef.current = snapshotKey;
+    setRefreshingSnapshot(true);
+
+    try {
+      const result = await Promise.allSettled([
+        api.getLiveQuotesSnapshot(normalizedSymbols, { signal: controller.signal })
+      ]);
+
+      if (!mountedRef.current || snapshotRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setSnapshot((current) => mergeLiveQuotesLoadState(result[0], current, "Failed to load quote matrix"));
+    } finally {
+      if (mountedRef.current && snapshotRequestIdRef.current === requestId) {
+        if (snapshotAbortRef.current === controller) {
+          snapshotAbortRef.current = null;
+        }
+        inFlightSnapshotKeyRef.current = null;
+        setRefreshingSnapshot(false);
+      }
+    }
+  }, [api.getLiveQuotesSnapshot]);
+
   useEffect(() => {
-    if (!activeSymbol) {
+    if (!activeSymbol || paused) {
       return;
     }
 
     void fetchMarketData(activeSymbol);
     const interval = window.setInterval(() => void fetchMarketData(activeSymbol), LIVE_QUOTES_POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
-  }, [activeSymbol, fetchMarketData]);
+  }, [activeSymbol, fetchMarketData, paused]);
 
   useEffect(() => {
-    const nextSymbol = normalizeLiveQuoteSymbol(route.routeSymbol);
-    if (nextSymbol === (activeSymbol ?? "")) {
+    if (symbolSet.length === 0 || paused) {
       return;
     }
 
-    setSymbolInputState(nextSymbol);
+    void fetchSnapshotData(symbolSet);
+    const interval = window.setInterval(() => void fetchSnapshotData(symbolSet), LIVE_QUOTES_POLL_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, [fetchSnapshotData, paused, symbolSet]);
+
+  useEffect(() => {
+    const nextSymbolSet = initialLiveMarketDataSymbolSet(route.routeSymbols, route.routeSymbol);
+    const nextSymbol = normalizeLiveQuoteSymbol(route.routeSymbol) || (nextSymbolSet[0] ?? "");
+    const currentSymbolSetKey = symbolSet.join(",");
+    const nextSymbolSetKey = nextSymbolSet.join(",");
+    if (nextSymbol === (activeSymbol ?? "") && nextSymbolSetKey === currentSymbolSetKey) {
+      return;
+    }
+
+    setSymbolInputState(nextSymbolSet.join(", "));
+    setSymbolSet(nextSymbolSet);
     setSubmittedEmptySymbol(false);
     setActiveSymbol(nextSymbol || null);
     resetMarketState();
-    quickTrade.resetTicket();
-    setSelectedTradeId(null);
-    setSelectedDepthLevelId(null);
-  }, [activeSymbol, quickTrade, resetMarketState, route.routeSymbol]);
+    resetSelectedPanels();
+  }, [activeSymbol, resetMarketState, resetSelectedPanels, route.routeSymbol, route.routeSymbols, symbolSet]);
 
   const setSymbolInput = useCallback((value: string) => {
     setSymbolInputState(value);
@@ -522,38 +687,136 @@ export function useLiveQuotesScreenViewModel(
     tradeTableLimit: LIVE_QUOTES_TRADE_TABLE_LIMIT
   }), [activeSymbol, orderbook, quote, refreshing, selectedDepthLevelId, selectedTradeId, trades]);
 
+  const selectSymbol = useCallback((symbol: string) => {
+    const next = normalizeLiveQuoteSymbol(symbol);
+    if (!next || next === activeSymbol) {
+      return;
+    }
+
+    setActiveSymbol(next);
+    resetMarketState();
+    resetSelectedPanels();
+    if (route.setRouteSymbols) {
+      route.setRouteSymbols(symbolSet, next);
+    } else {
+      route.setRouteSymbol(next);
+    }
+  }, [activeSymbol, resetMarketState, resetSelectedPanels, route, symbolSet]);
+
+  const removeSelectedSymbol = useCallback(() => {
+    if (!activeSymbol) {
+      return;
+    }
+
+    const nextSet = symbolSet.filter((symbol) => symbol !== activeSymbol);
+    const nextActiveSymbol = nextSet[0] ?? null;
+    setSymbolSet(nextSet);
+    setActiveSymbol(nextActiveSymbol);
+    setSymbolInputState(nextSet.join(", "));
+    resetMarketState();
+    resetSelectedPanels();
+    setSnapshot((current) => current.data ? {
+      ...current,
+      data: {
+        ...current.data,
+        count: current.data.quotes.filter((row) => row.symbol !== activeSymbol).length,
+        quotes: current.data.quotes.filter((row) => row.symbol !== activeSymbol)
+      }
+    } : current);
+    if (route.setRouteSymbols) {
+      route.setRouteSymbols(nextSet, nextActiveSymbol);
+    } else {
+      route.setRouteSymbol(nextActiveSymbol ?? "");
+    }
+  }, [activeSymbol, resetMarketState, resetSelectedPanels, route, symbolSet]);
+
+  const loadStarterSet = useCallback(() => {
+    const nextSet = [...LIVE_QUOTES_DEFAULT_SYMBOL_SET];
+    const nextActiveSymbol = nextSet[0] ?? null;
+    setSymbolSet(nextSet);
+    setActiveSymbol(nextActiveSymbol);
+    setSymbolInputState(nextSet.join(", "));
+    setSubmittedEmptySymbol(false);
+    resetMarketState();
+    resetSelectedPanels();
+    if (route.setRouteSymbols) {
+      route.setRouteSymbols(nextSet, nextActiveSymbol);
+    } else {
+      route.setRouteSymbol(nextActiveSymbol ?? "");
+    }
+  }, [resetMarketState, resetSelectedPanels, route]);
+
+  const pinSymbolSet = useCallback(() => {
+    persistLiveMarketDataPinnedSet(symbolSet);
+  }, [symbolSet]);
+
+  const togglePaused = useCallback(() => {
+    setPaused((current) => !current);
+  }, []);
+
+  const workspace = useMemo(() => buildLiveMarketDataWorkspaceViewModel({
+    symbolSet,
+    selectedSymbol: activeSymbol,
+    snapshot,
+    snapshotRefreshing: refreshingSnapshot,
+    market,
+    paused,
+    selectSymbol,
+    removeSelectedSymbol,
+    loadStarterSet,
+    pinSymbolSet,
+    togglePaused
+  }), [
+    activeSymbol,
+    loadStarterSet,
+    market,
+    paused,
+    pinSymbolSet,
+    refreshingSnapshot,
+    removeSelectedSymbol,
+    selectSymbol,
+    snapshot,
+    symbolSet,
+    togglePaused
+  ]);
+
   const submitLookup = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const next = lookup.normalizedSymbol;
-    if (!next) {
+    const nextSet = normalizeLiveQuoteSymbols(symbolInput);
+    const next = nextSet[0] ?? "";
+    if (nextSet.length === 0) {
       setSubmittedEmptySymbol(true);
       return;
     }
 
     setSubmittedEmptySymbol(false);
+    setSymbolSet(nextSet);
     resetMarketState();
     setActiveSymbol(next);
-    quickTrade.resetTicket();
-    setSelectedDepthLevelId(null);
-    route.setRouteSymbol(next);
-  }, [lookup.normalizedSymbol, quickTrade, resetMarketState, route]);
+    resetSelectedPanels();
+    if (route.setRouteSymbols) {
+      route.setRouteSymbols(nextSet, next);
+    } else {
+      route.setRouteSymbol(next);
+    }
+  }, [resetMarketState, resetSelectedPanels, route, symbolInput]);
 
   const refreshMarketData = useCallback(async () => {
-    if (!activeSymbol) {
-      return;
-    }
-
-    await fetchMarketData(activeSymbol);
-  }, [activeSymbol, fetchMarketData]);
+    await Promise.all([
+      activeSymbol ? fetchMarketData(activeSymbol) : Promise.resolve(),
+      symbolSet.length > 0 ? fetchSnapshotData(symbolSet) : Promise.resolve()
+    ]);
+  }, [activeSymbol, fetchMarketData, fetchSnapshotData, symbolSet]);
 
   return {
     symbolInput,
     setSymbolInput,
     activeSymbol,
     lookup,
+    workspace,
     market,
     quickTrade,
-    refreshCommand: buildLiveQuoteRefreshCommand(activeSymbol, refreshing),
+    refreshCommand: buildLiveQuoteRefreshCommand(activeSymbol, refreshing || refreshingSnapshot),
     pollIntervalSecondsLabel: String(LIVE_QUOTES_POLL_INTERVAL_MS / 1000),
     submitLookup,
     refreshMarketData
@@ -562,6 +825,66 @@ export function useLiveQuotesScreenViewModel(
 
 export function normalizeLiveQuoteSymbol(value: string): string {
   return value.trim().toUpperCase();
+}
+
+export function normalizeLiveQuoteSymbols(value: string): string[] {
+  const seen = new Set<string>();
+  const symbols: string[] = [];
+  for (const candidate of value.split(/[\s,;|]+/)) {
+    const symbol = normalizeLiveQuoteSymbol(candidate).replace(/[^A-Z0-9.\-]/g, "");
+    if (!symbol || seen.has(symbol)) {
+      continue;
+    }
+
+    seen.add(symbol);
+    symbols.push(symbol);
+    if (symbols.length >= LIVE_QUOTES_MAX_SYMBOL_SET_SIZE) {
+      break;
+    }
+  }
+
+  return symbols;
+}
+
+export function initialLiveMarketDataSymbolSet(routeSymbols: string | undefined, routeSymbol: string): string[] {
+  const requested = normalizeLiveQuoteSymbols(routeSymbols || routeSymbol);
+  if (requested.length > 0) {
+    return requested;
+  }
+
+  return readLiveMarketDataPinnedSet();
+}
+
+export function readLiveMarketDataPinnedSet(): string[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(LIVE_QUOTES_PINNED_SET_STORAGE_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? normalizeLiveQuoteSymbols(parsed.join(",")) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function persistLiveMarketDataPinnedSet(symbols: readonly string[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const normalized = normalizeLiveQuoteSymbols(symbols.join(","));
+  if (normalized.length === 0) {
+    window.localStorage.removeItem(LIVE_QUOTES_PINNED_SET_STORAGE_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(LIVE_QUOTES_PINNED_SET_STORAGE_KEY, JSON.stringify(normalized));
 }
 
 export function buildLiveQuoteSymbolLookupViewModel({
@@ -573,25 +896,31 @@ export function buildLiveQuoteSymbolLookupViewModel({
   activeSymbol: string | null;
   submittedEmpty: boolean;
 }): LiveQuoteSymbolLookupViewModel {
-  const normalizedSymbol = normalizeLiveQuoteSymbol(inputValue);
-  const inputInvalid = submittedEmpty && normalizedSymbol.length === 0;
-  const disabledReason = normalizedSymbol.length === 0
+  const normalizedSymbols = normalizeLiveQuoteSymbols(inputValue);
+  const normalizedSymbol = normalizedSymbols.join(", ");
+  const inputInvalid = submittedEmpty && normalizedSymbols.length === 0;
+  const disabledReason = normalizedSymbols.length === 0
     ? "Enter a symbol before loading live market data."
     : null;
+  const symbolLabel = normalizedSymbols.length > 1
+    ? `${normalizedSymbols.length} symbols`
+    : normalizedSymbols[0] ?? "";
 
   return {
     inputId: "live-quote-symbol",
     statusId: "live-quote-symbol-status",
-    formLabel: "Live quote symbol lookup",
+    formLabel: "Live market data symbol set",
     inputLabel: "Symbol",
-    inputPlaceholder: "Enter a symbol (e.g. AAPL)",
+    inputPlaceholder: "Enter symbols (e.g. AAPL, MSFT, SPY)",
     normalizedSymbol,
     inputInvalid,
     command: {
-      label: "View quote",
-      ariaLabel: normalizedSymbol
-        ? `View live quote for ${normalizedSymbol}`
-        : "View live quote",
+      label: "Add symbol set",
+      ariaLabel: normalizedSymbols.length > 1
+        ? `Load live market data for ${symbolLabel}`
+        : symbolLabel
+          ? `View live quote for ${symbolLabel}`
+          : "View live quote",
       disabled: disabledReason !== null,
       disabledReason
     },
@@ -754,6 +1083,370 @@ export function buildLiveQuotesMarketViewModel({
     }),
     orderbookDescription: `Top ${orderbook.data?.bids.length ?? 0} bids / ${orderbook.data?.asks.length ?? 0} asks`,
     tradesDescription: tradeRows.length > 0 ? `Last ${tradeRows.length} prints` : "Recent prints"
+  };
+}
+
+export function buildLiveMarketDataWorkspaceViewModel({
+  symbolSet,
+  selectedSymbol,
+  snapshot,
+  snapshotRefreshing,
+  market,
+  paused,
+  selectSymbol,
+  removeSelectedSymbol,
+  loadStarterSet,
+  pinSymbolSet,
+  togglePaused
+}: {
+  symbolSet: readonly string[];
+  selectedSymbol: string | null;
+  snapshot: LiveQuotesLoadState<QuotesSnapshotResponse>;
+  snapshotRefreshing: boolean;
+  market: LiveQuotesMarketDataViewModel;
+  paused: boolean;
+  selectSymbol: (symbol: string) => void;
+  removeSelectedSymbol: () => void;
+  loadStarterSet: () => void;
+  pinSymbolSet: () => void;
+  togglePaused: () => void;
+}): LiveMarketDataWorkspaceViewModel {
+  const quoteBySymbol = new Map((snapshot.data?.quotes ?? []).map((quote) => [quote.symbol, quote]));
+  const matrixRows = symbolSet.map((symbol) => buildLiveQuoteMatrixRow({
+    symbol,
+    quote: quoteBySymbol.get(symbol) ?? quoteSnapshotFromSelectedMarket(symbol, selectedSymbol, market),
+    selected: symbol === selectedSymbol
+  }));
+  const selectedRow = matrixRows.find((row) => row.selected) ?? matrixRows[0] ?? null;
+  const selectedQuote = selectedRow ? quoteBySymbol.get(selectedRow.symbol) ?? quoteSnapshotFromSelectedMarket(selectedRow.symbol, selectedSymbol, market) : null;
+  const hasAnyLoadedQuote = matrixRows.some((row) => row.stateTone !== "default");
+  const snapshotState = buildPanelState({
+    loading: snapshotRefreshing && !snapshot.data && !snapshot.error,
+    error: snapshot.error,
+    ready: matrixRows.length > 0 && hasAnyLoadedQuote,
+    emptyMessage: symbolSet.length === 0
+      ? "No symbols selected. Load the starter set or enter symbols to begin monitoring."
+      : "Waiting for the quote matrix to return current rows.",
+    loadingMessage: `Loading quote matrix for ${formatCount(symbolSet.length, "symbol")}…`
+  });
+  const diagnostics = buildLiveMarketDataDiagnostics({
+    snapshot,
+    snapshotRefreshing,
+    matrixRows,
+    market,
+    paused
+  });
+  const selectedDetail = buildLiveMarketDataDetail(selectedRow, selectedQuote, market);
+
+  return {
+    title: "Live Market Data Workspace",
+    description: "Monitor real-time quotes, trades, BBO, spreads, provider posture, and latency from one symbol set.",
+    symbolSet: [...symbolSet],
+    symbolSetLabel: symbolSet.length > 0 ? symbolSet.join(", ") : "No symbols",
+    selectedSymbol: selectedRow?.symbol ?? null,
+    selectedSymbolSummary: selectedRow
+      ? `${selectedRow.symbol} ${selectedRow.stateLabel}; bid ${selectedRow.bidLabel}, ask ${selectedRow.askLabel}, spread ${selectedRow.spreadLabel}.`
+      : "No selected symbol summary is available.",
+    matrixRows,
+    selectedDetail,
+    diagnostics,
+    marketStatusBadges: buildLiveMarketStatusBadges(matrixRows, diagnostics, paused),
+    commands: buildLiveMarketDataCommands({
+      selectedSymbol: selectedRow?.symbol ?? null,
+      symbolSet,
+      paused,
+      snapshotRefreshing
+    }),
+    matrixTableLabel: "Live quote matrix",
+    matrixEmptyText: "No symbols are in the quote matrix.",
+    snapshotState,
+    paused,
+    selectSymbol,
+    removeSelectedSymbol,
+    loadStarterSet,
+    pinSymbolSet,
+    togglePaused
+  };
+}
+
+function buildLiveQuoteMatrixRow({
+  symbol,
+  quote,
+  selected
+}: {
+  symbol: string;
+  quote: QuotesSnapshotItem | null;
+  selected: boolean;
+}): LiveQuoteMatrixRowViewModel {
+  const quoteAgeMs = quote ? Date.now() - new Date(quote.timestamp).getTime() : null;
+  const stale = quoteAgeMs !== null && quoteAgeMs > LIVE_QUOTES_POLL_INTERVAL_MS * 3;
+  const stateTone: LiveQuoteMatrixRowViewModel["stateTone"] = !quote
+    ? "default"
+    : stale
+      ? "warning"
+      : quote.spread !== null && quote.midPrice !== null && quote.midPrice > 0 && quote.spread / quote.midPrice > 0.005
+        ? "warning"
+        : "success";
+  const stateLabel = !quote ? "Waiting" : stale ? "Stale" : stateTone === "warning" ? "Wide spread" : "Live";
+  const spreadLabel = formatMarketPrice(quote?.spread);
+  const venueLabel = quote?.venue ?? "Unreported";
+  const lastTradeAgeLabel = quote?.lastTradeTimestamp ? formatRelativeAge(quote.lastTradeTimestamp) : LIVE_QUOTES_EMPTY_VALUE;
+
+  return {
+    id: symbol,
+    symbol,
+    bidLabel: quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : LIVE_QUOTES_EMPTY_VALUE,
+    askLabel: quote ? formatPriceSize(quote.askPrice, quote.askSize) : LIVE_QUOTES_EMPTY_VALUE,
+    lastLabel: formatMarketPrice(quote?.lastPrice),
+    spreadLabel,
+    venueLabel,
+    sequenceLabel: quote ? formatMarketSize(quote.sequenceNumber) : LIVE_QUOTES_EMPTY_VALUE,
+    providerLabel: quote?.streamId ?? "No stream",
+    quoteAgeLabel: quote ? formatRelativeAge(quote.timestamp) : "No quote",
+    tickRateLabel: lastTradeAgeLabel === LIVE_QUOTES_EMPTY_VALUE ? "No tape" : `Last print ${lastTradeAgeLabel}`,
+    stateLabel,
+    stateTone,
+    selected,
+    ariaLabel: `${symbol}. ${stateLabel}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Spread ${spreadLabel}. Venue ${venueLabel}. Quote age ${quote ? formatRelativeAge(quote.timestamp) : "not available"}.`,
+    selectAriaLabel: `Inspect ${symbol} live market data`
+  };
+}
+
+function quoteSnapshotFromSelectedMarket(
+  symbol: string,
+  selectedSymbol: string | null,
+  market: LiveQuotesMarketDataViewModel
+): QuotesSnapshotItem | null {
+  const quote = market.quoteRow;
+  if (!quote || symbol !== selectedSymbol) {
+    return null;
+  }
+
+  const latestTrade = market.tradeHistory[0] ?? null;
+  return {
+    symbol,
+    timestamp: quote.timestamp,
+    bidPrice: quote.bidPrice,
+    bidSize: quote.bidSize,
+    askPrice: quote.askPrice,
+    askSize: quote.askSize,
+    midPrice: quote.midPrice,
+    spread: quote.spread,
+    lastPrice: latestTrade?.price ?? quote.session?.last ?? quote.midPrice,
+    lastSize: latestTrade?.size ?? null,
+    lastTradeTimestamp: latestTrade?.timestamp ?? quote.session?.lastTradeAt ?? null,
+    sequenceNumber: quote.sequenceNumber,
+    streamId: quote.streamId,
+    venue: quote.venue,
+    session: quote.session
+  };
+}
+
+function buildLiveMarketDataDetail(
+  selectedRow: LiveQuoteMatrixRowViewModel | null,
+  selectedQuote: QuotesSnapshotItem | null,
+  market: LiveQuotesMarketDataViewModel
+): LiveMarketDataDetailViewModel {
+  if (!selectedRow) {
+    return {
+      ariaLabel: "Selected symbol summary",
+      title: "No symbol selected",
+      subtitle: "Load a symbol set to inspect detail",
+      description: "The selected-symbol detail panel announces quote posture, venue, spread, tick health, and latency once a row is selected.",
+      statusLabel: "Empty",
+      statusTone: "default",
+      fields: []
+    };
+  }
+
+  const midLabel = formatMarketPrice(selectedQuote?.midPrice ?? market.quoteRow?.midPrice);
+  const session = selectedQuote?.session ?? market.quoteRow?.session ?? null;
+  return {
+    ariaLabel: `${selectedRow.symbol} selected symbol summary`,
+    title: `${selectedRow.symbol} live summary`,
+    subtitle: `${selectedRow.venueLabel} · ${selectedRow.providerLabel}`,
+    description: `BBO ${selectedRow.bidLabel} / ${selectedRow.askLabel}. Status ${selectedRow.stateLabel}; spread state is shown with text and tone.`,
+    statusLabel: selectedRow.stateLabel,
+    statusTone: selectedRow.stateTone,
+    fields: [
+      { id: "bid", label: "Bid x size", value: selectedRow.bidLabel },
+      { id: "ask", label: "Ask x size", value: selectedRow.askLabel },
+      { id: "last", label: "Last print", value: selectedRow.lastLabel },
+      { id: "mid", label: "Mid", value: midLabel },
+      { id: "spread", label: "Spread", value: selectedRow.spreadLabel },
+      { id: "quote-age", label: "Quote age", value: selectedRow.quoteAgeLabel },
+      { id: "tick-health", label: "Tick health", value: selectedRow.tickRateLabel },
+      { id: "session", label: "Session", value: session ? `${session.sessionDate} ${formatChange(session.change)} (${formatChangePct(session.changePercent)})` : LIVE_QUOTES_EMPTY_VALUE }
+    ]
+  };
+}
+
+function buildLiveMarketDataDiagnostics({
+  snapshot,
+  snapshotRefreshing,
+  matrixRows,
+  market,
+  paused
+}: {
+  snapshot: LiveQuotesLoadState<QuotesSnapshotResponse>;
+  snapshotRefreshing: boolean;
+  matrixRows: readonly LiveQuoteMatrixRowViewModel[];
+  market: LiveQuotesMarketDataViewModel;
+  paused: boolean;
+}): LiveMarketDataDiagnosticsViewModel {
+  const warningRows = matrixRows.filter((row) => row.stateTone === "warning").length;
+  const waitingRows = matrixRows.filter((row) => row.stateTone === "default").length;
+  const errorCount = [snapshot.error, market.quoteState.status === "error" ? market.quoteState.message : null, market.orderbookState.status === "error" ? market.orderbookState.message : null, market.tradesState.status === "error" ? market.tradesState.message : null].filter(Boolean).length;
+  const statusTone: LiveMarketDataDiagnosticsViewModel["statusTone"] = errorCount > 0
+    ? "danger"
+    : paused || warningRows > 0 || waitingRows > 0
+      ? "warning"
+      : "success";
+  const statusLabel = errorCount > 0 ? "Degraded" : paused ? "Paused" : statusTone === "warning" ? "Review" : "Healthy";
+  const throughputLabel = market.tradeHistory.length > 0
+    ? `${formatCount(market.tradeHistory.length, "print")} buffered`
+    : "No tape prints buffered";
+  const providerLatencyLabel = matrixRows.length > 0
+    ? `${formatCount(matrixRows.filter((row) => row.stateTone === "success").length, "symbol")} live`
+    : "No provider ticks";
+  const connectionQualityLabel = errorCount > 0
+    ? `${formatCount(errorCount, "feed")} degraded`
+    : snapshotRefreshing
+      ? "Refreshing"
+      : paused
+        ? "Updates paused"
+        : "Connected";
+  const tickHealthLabel = warningRows > 0
+    ? `${formatCount(warningRows, "symbol")} need review`
+    : waitingRows > 0
+      ? `${formatCount(waitingRows, "symbol")} waiting`
+      : "Ticks current";
+
+  return {
+    statusLabel,
+    statusTone,
+    summary: `${connectionQualityLabel}; ${providerLatencyLabel}; ${tickHealthLabel}.`,
+    providerLatencyLabel,
+    throughputLabel,
+    connectionQualityLabel,
+    tickHealthLabel,
+    items: [
+      { id: "provider-latency", label: "Provider posture", value: providerLatencyLabel },
+      { id: "throughput", label: "Throughput", value: throughputLabel },
+      { id: "connection", label: "Connection quality", value: connectionQualityLabel },
+      { id: "tick-health", label: "Tick health", value: tickHealthLabel }
+    ]
+  };
+}
+
+function buildLiveMarketStatusBadges(
+  rows: readonly LiveQuoteMatrixRowViewModel[],
+  diagnostics: LiveMarketDataDiagnosticsViewModel,
+  paused: boolean
+): LiveMarketDataMarketStatusBadgeViewModel[] {
+  return [
+    {
+      id: "connection",
+      label: "Connection",
+      value: diagnostics.connectionQualityLabel,
+      tone: diagnostics.statusTone,
+      ariaLabel: `Connection ${diagnostics.connectionQualityLabel}`
+    },
+    {
+      id: "coverage",
+      label: "Coverage",
+      value: `${rows.filter((row) => row.stateTone === "success").length}/${rows.length || 0} live`,
+      tone: rows.length === 0 ? "default" : rows.every((row) => row.stateTone === "success") ? "success" : "warning",
+      ariaLabel: `${rows.filter((row) => row.stateTone === "success").length} of ${rows.length || 0} symbols live`
+    },
+    {
+      id: "updates",
+      label: "Updates",
+      value: paused ? "Paused" : `${LIVE_QUOTES_POLL_INTERVAL_MS / 1000}s`,
+      tone: paused ? "warning" : "success",
+      ariaLabel: paused ? "Updates paused" : `Updates every ${LIVE_QUOTES_POLL_INTERVAL_MS / 1000} seconds`
+    }
+  ];
+}
+
+function buildLiveMarketDataCommands({
+  selectedSymbol,
+  symbolSet,
+  paused,
+  snapshotRefreshing
+}: {
+  selectedSymbol: string | null;
+  symbolSet: readonly string[];
+  paused: boolean;
+  snapshotRefreshing: boolean;
+}): Record<LiveMarketDataCommandId, LiveMarketDataCommandViewModel> {
+  const noSelectionReason = selectedSymbol ? null : "Select a symbol before using this action.";
+  return {
+    "add-symbol": {
+      id: "add-symbol",
+      label: "Add symbol",
+      ariaLabel: "Add symbols to the live market data workspace",
+      href: null,
+      disabled: false,
+      disabledReason: null
+    },
+    "remove-symbol": {
+      id: "remove-symbol",
+      label: "Remove symbol",
+      ariaLabel: selectedSymbol ? `Remove ${selectedSymbol} from the live market data workspace` : "Remove selected symbol",
+      href: null,
+      disabled: selectedSymbol === null,
+      disabledReason: noSelectionReason
+    },
+    "pin-set": {
+      id: "pin-set",
+      label: "Pin set",
+      ariaLabel: `Pin current symbol set: ${symbolSet.join(", ") || "empty"}`,
+      href: null,
+      disabled: symbolSet.length === 0,
+      disabledReason: symbolSet.length === 0 ? "Add at least one symbol before pinning the set." : null
+    },
+    "open-order-book": {
+      id: "open-order-book",
+      label: "Open order book",
+      ariaLabel: selectedSymbol ? `Open order book for ${selectedSymbol}` : "Open order book",
+      href: selectedSymbol ? `/data/quotes?symbol=${encodeURIComponent(selectedSymbol)}#order-book` : null,
+      disabled: selectedSymbol === null,
+      disabledReason: noSelectionReason
+    },
+    "open-replay": {
+      id: "open-replay",
+      label: "Open replay",
+      ariaLabel: selectedSymbol ? `Open replay workflow for ${selectedSymbol}` : "Open replay workflow",
+      href: selectedSymbol ? `/trading/readiness?symbol=${encodeURIComponent(selectedSymbol)}#session-replay` : null,
+      disabled: selectedSymbol === null,
+      disabledReason: noSelectionReason
+    },
+    "open-ticket": {
+      id: "open-ticket",
+      label: "Open ticket",
+      ariaLabel: selectedSymbol ? `Open trade ticket for ${selectedSymbol}` : "Open trade ticket",
+      href: selectedSymbol ? `/data/quotes?symbol=${encodeURIComponent(selectedSymbol)}#quick-ticket` : null,
+      disabled: selectedSymbol === null,
+      disabledReason: noSelectionReason
+    },
+    "pause-updates": {
+      id: "pause-updates",
+      label: paused ? "Resume updates" : "Pause updates",
+      ariaLabel: paused ? "Resume live market data updates" : "Pause live market data updates",
+      href: null,
+      disabled: snapshotRefreshing,
+      disabledReason: snapshotRefreshing ? "Wait for the current refresh to complete before pausing updates." : null,
+      pressed: paused
+    },
+    "reset-layout": {
+      id: "reset-layout",
+      label: "Reset layout",
+      ariaLabel: "Reset live market data workspace to starter symbols",
+      href: null,
+      disabled: false,
+      disabledReason: null
+    }
   };
 }
 
@@ -1192,11 +1885,39 @@ export function formatMarketSize(value: number | null | undefined): string {
   return value.toLocaleString();
 }
 
+function formatPriceSize(price: number | null | undefined, size: number | null | undefined): string {
+  const priceLabel = formatMarketPrice(price);
+  const sizeLabel = formatMarketSize(size);
+  if (priceLabel === LIVE_QUOTES_EMPTY_VALUE || sizeLabel === LIVE_QUOTES_EMPTY_VALUE) {
+    return LIVE_QUOTES_EMPTY_VALUE;
+  }
+
+  return `${priceLabel} x ${sizeLabel}`;
+}
+
 export function formatMarketTime(iso: string | null | undefined): string {
   if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
   return formatUtcTimeWithMilliseconds(date);
+}
+
+function formatRelativeAge(iso: string | null | undefined): string {
+  if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return LIVE_QUOTES_EMPTY_VALUE;
+  const elapsedMs = Math.max(0, Date.now() - then);
+  if (elapsedMs < 1000) return "just now";
+  const seconds = Math.round(elapsedMs / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  return `${hours}h ago`;
+}
+
+function formatCount(count: number, noun: string): string {
+  return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
 }
 
 function buildBboPanels(symbol: string, quoteRow: QuotesResponse["quote"] | null): LiveQuotesBboPanelViewModel[] {
@@ -1793,10 +2514,11 @@ function buildLiveQuoteSymbolLookupStatus({
   }
 
   if (normalizedSymbol && normalizedSymbol !== activeSymbol) {
+    const count = normalizeLiveQuoteSymbols(normalizedSymbol).length;
     return {
       id: "live-quote-symbol-status",
       role: "status",
-      message: `Ready to load ${normalizedSymbol}.`,
+      message: count > 1 ? `Ready to load ${count} symbols.` : `Ready to load ${normalizedSymbol}.`,
       toneClass: "text-muted-foreground"
     };
   }

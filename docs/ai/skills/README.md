@@ -43,6 +43,16 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Produce scenario-first Meridian tests |
+| `modular-desktop-mvvm` | Implement modular WPF MVVM workstation changes |
+| `workstation-screen-composition` | Compose desktop screens from shared workstation primitives |
+| `shared-component-extraction` | Extract repeated desktop patterns into reusable components |
+| `provider-management-workflow` | Build secure provider setup, health, credential, and recovery workflows |
+| `research-data-acquisition` | Build research acquisition, preview, validation, and lineage workflows |
+| `dense-data-grid-inspector-panel` | Build scalable dense grids and inspector panels |
+| `diagnostics-audit-timeline` | Build diagnostics panels, audit timelines, and evidence trails |
+| `performance-resource-review` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `safe-refactoring` | Refactor desktop code incrementally without behavior drift |
+| `desktop-test-generation` | Generate focused WPF view-model, command, service, and binding tests |
 
 Shared grounding files:
 

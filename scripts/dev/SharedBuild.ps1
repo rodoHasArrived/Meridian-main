@@ -506,7 +506,7 @@ function Invoke-MeridianLoggedStep {
     Write-Host ">>> $Name" -ForegroundColor Cyan
     Write-Host ("    " + (Format-MeridianCommandText -Command $Command))
 
-    $logDirectory = Split-Path -LiteralPath $LogPath -Parent
+    $logDirectory = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))
     if (-not [string]::IsNullOrWhiteSpace($logDirectory)) {
         New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
     }
@@ -579,4 +579,56 @@ function Stop-MeridianRepoOwnedTestHostProcesses {
 
     Start-Sleep -Milliseconds 750
     return $repoTestHosts
+}
+
+function Invoke-MeridianStepWithTestHostRetry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string[]]$Command,
+        [Parameter(Mandatory = $true)][string]$LogName,
+        [Parameter(Mandatory = $true)][string]$SummaryDir,
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [Parameter(Mandatory = $true)]$Steps,
+        [Parameter(Mandatory = $true)]$RetryEvents
+    )
+
+    $logPath = Join-Path $SummaryDir $LogName
+    $step = Invoke-MeridianLoggedStep -Name $Name -Command $Command -LogPath $logPath
+    if ($null -ne $Steps -and $Steps.GetType().GetMethod('Add')) {
+        [void]$Steps.Add($step)
+    }
+
+    if ($step.exitCode -eq 0) {
+        return $step
+    }
+
+    $repoTestHosts = @(Get-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot)
+    if ($repoTestHosts.Count -eq 0 -or $null -eq $RetryEvents -or -not $RetryEvents.GetType().GetMethod('Add')) {
+        return $step
+    }
+
+    $retryLogSuffix = if ($LogName -match '\.log$') { '-retry.log' } else { '-retry.log' }
+    $retryLogName = if ($LogName -match '\.log$') {
+        $LogName.Substring(0, $LogName.Length - 4) + $retryLogSuffix
+    }
+    else {
+        "$LogName$retryLogSuffix"
+    }
+    $retryLogPath = Join-Path $SummaryDir $retryLogName
+    $stoppedTestHostPids = @($repoTestHosts | Select-Object -ExpandProperty ProcessId)
+
+    Stop-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot | Out-Null
+
+    $retryReason = "build failed while repo-owned testhost processes were still running"
+    [void]$RetryEvents.Add([ordered]@{
+            step = $Name
+            reason = $retryReason
+            stoppedTestHostPids = $stoppedTestHostPids
+        })
+
+    $retryStepName = "$Name (retry after testhost cleanup)"
+    $retryStep = Invoke-MeridianLoggedStep -Name $retryStepName -Command $Command -LogPath $retryLogPath
+    [void]$Steps.Add($retryStep)
+    return $retryStep
 }

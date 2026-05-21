@@ -9,6 +9,7 @@ param(
     [switch]$SkipRestore,
     [switch]$SkipBuild,
     [switch]$SkipTestBuild,
+    [switch]$SkipLaunchSmoke,
     [switch]$NoIsolation,
     [switch]$EmitJson
 )
@@ -269,6 +270,33 @@ elseif ($SkipTestBuild) {
     Write-Warn 'Skipping WPF desktop test build because -SkipTestBuild was supplied.'
 }
 
+if ($validationErrors.Count -eq 0 -and -not $SkipLaunchSmoke) {
+    Write-Step 'Run fixture startup smoke'
+
+    if ($SkipRestore -or $SkipBuild) {
+        Add-ValidationWarning 'Skipping fixture startup smoke because -SkipRestore or -SkipBuild was supplied. Run desktop-dev.ps1 without those switches, or run pwsh ./scripts/dev/run-desktop.ps1 -Fixture -StartupSmoke separately.'
+    }
+    else {
+        Invoke-DesktopCommand `
+            -Name 'Launch fixture desktop startup smoke' `
+            -Command @(
+                'pwsh',
+                '-NoProfile',
+                '-ExecutionPolicy', 'Bypass',
+                '-File', (Join-Path $PSScriptRoot 'run-desktop.ps1'),
+                '-Profile', $Profile,
+                '-ProfileRoot', $ProfileRoot,
+                '-Fixture',
+                '-StartupSmoke'
+            ) `
+            -FixHint 'Run: pwsh ./scripts/dev/run-desktop.ps1 -Fixture -StartupSmoke'
+    }
+}
+elseif ($SkipLaunchSmoke) {
+    Write-Step 'Run fixture startup smoke'
+    Write-Warn 'Skipping fixture startup smoke because -SkipLaunchSmoke was supplied.'
+}
+
 $summaryResult = if ($validationErrors.Count -eq 0) { 'passed' } else { 'failed' }
 $summary = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
@@ -277,6 +305,7 @@ $summary = [ordered]@{
     framework = $Framework
     profile = $Profile
     buildIsolationKey = $buildIsolationKey
+    skipLaunchSmoke = [bool]$SkipLaunchSmoke
     errors = @($validationErrors.ToArray())
     warnings = @($validationWarnings.ToArray())
     result = $summaryResult
@@ -292,7 +321,7 @@ if ($summary.result -eq 'passed') {
     Write-Ok 'Desktop environment validation complete.'
     Write-Host ''
     Write-Host 'Next steps for desktop development:' -ForegroundColor Cyan
-    Write-Host '  1. Launch fixture desktop:     pwsh ./scripts/dev/run-desktop.ps1 -Fixture' -ForegroundColor Gray
+    Write-Host '  1. Launch full fixture desktop: pwsh ./scripts/dev/run-desktop.ps1 -Fixture' -ForegroundColor Gray
     Write-Host '  2. Build desktop app:          make desktop-build' -ForegroundColor Gray
     Write-Host '  3. Run desktop tests:          make desktop-test' -ForegroundColor Gray
     Write-Host '  4. Focused route validation:   make desktop-test-position-blotter-route' -ForegroundColor Gray

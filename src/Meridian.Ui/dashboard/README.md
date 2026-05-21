@@ -29,6 +29,8 @@ This layer owns browser UI behavior, screen state, and operator interactions. Sh
 
 Use the dashboard for new operator UI development. Keep state labels, disabled reasons, and accessibility status in view-model seams where existing patterns support it.
 
+The `/data/quotes` route is the Live Market Data workspace. It supports comma- or space-separated symbol sets, a keyboard-selectable quote matrix, selected-symbol BBO/order-book/trade-tape detail, provider/latency diagnostics, pinned local symbol sets, pause/resume updates, starter-set reset, and handoffs to order book, replay readiness, watchlist, alerts, and the guarded quick trade ticket. Keep symbol-set parsing, matrix row labels, selected-detail summaries, diagnostics, disabled reasons, and live-region copy in `live-quotes-screen.view-model.ts`; React markup should only render the view-model state through shared table, badge, card, and entity-summary primitives.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.

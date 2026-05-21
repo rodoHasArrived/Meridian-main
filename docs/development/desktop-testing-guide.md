@@ -10,14 +10,17 @@ This guide helps contributors set up and test Meridian's active WPF desktop oper
 # Environment validation
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
-# Fast script/profile check without restore or build
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1 -SkipRestore -SkipBuild -SkipTestBuild -EmitJson
+# Fast script/profile check without restore, build, or launch smoke
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1 -SkipRestore -SkipBuild -SkipTestBuild -SkipLaunchSmoke -EmitJson
 
 # Inner-loop WPF build plus focused tests
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
 
 # Launch the fixture-backed desktop shell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture
+
+# Bounded fixture startup proof without keeping the shell open
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture -StartupSmoke
 
 # Build desktop application
 make desktop-build                # Build WPF desktop app
@@ -49,8 +52,9 @@ This script validates:
 - the WPF desktop project, WPF test project, and shared UI-services project paths
 - isolated restore/build output under `artifacts/bin/<desktop-dev-*>` and `artifacts/obj/<desktop-dev-*>`
 - the WPF desktop shell build and WPF desktop test-project build
+- a bounded fixture startup smoke through `run-desktop.ps1 -Fixture -StartupSmoke` unless `-SkipLaunchSmoke` is supplied
 
-Use `-Configuration Release` to match release build behavior, `-Profile <workflow-name>` to validate a different workflow profile, `-NoIsolation` only when you intentionally want standard `bin/` and `obj/` output, and `-EmitJson` when automation needs machine-readable step results. The script keeps workflow orchestration PowerShell-first; use `run-desktop.ps1` or `run-desktop-workflow.ps1` to launch or drive the shell after bootstrap succeeds.
+Use `-Configuration Release` to match release build behavior, `-Profile <workflow-name>` to validate a different workflow profile, `-NoIsolation` only when you intentionally want standard `bin/` and `obj/` output, `-SkipLaunchSmoke` when you want a compile-only bootstrap pass, and `-EmitJson` when automation needs machine-readable step results. The script keeps workflow orchestration PowerShell-first; use `run-desktop.ps1` or `run-desktop-workflow.ps1` to launch or drive the shell after bootstrap succeeds.
 
 **Actionable Fix Messages**: The script provides specific instructions for any missing components.
 
@@ -68,7 +72,7 @@ This wrapper encodes the serialized WPF build lane that avoids common shared-out
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal
 ```
 
-The default run builds `src/Meridian.Wpf/Meridian.Wpf.csproj`, builds `tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj`, and runs the focused `DesktopWorkflowScriptTests` slice with `--no-build`. It writes logs plus JSON and Markdown summaries under `artifacts/wpf-validation/dev-loop/<timestamp>/`, uses the existing restored `obj/` graph by default to match the no-restore inner-loop command, and retries once after stopping only stale repo-owned `testhost.exe` processes if a build step fails while one is still running. Use `-Restore` when packages, generated assets, or intermediate output changed; that path restores first and uses isolated output under `artifacts/bin/<wpf-dev-test-*>` and `artifacts/obj/<wpf-dev-test-*>` unless `-NoIsolation` is also supplied.
+The default run builds `src/Meridian.Wpf/Meridian.Wpf.csproj`, builds `tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj`, and runs the focused `DesktopWorkflowScriptTests` slice with `--no-build`. It writes logs plus JSON and Markdown summaries under `artifacts/wpf-validation/dev-loop/<timestamp>/`, uses the existing restored `obj/` graph by default to match the no-restore inner-loop command, and retries once after stopping only stale repo-owned `testhost.exe` processes if a build step fails while one is still running. The wrapper also fails fast when another repo-owned `dotnet`, `MSBuild`, or `testhost` process is active, because overlapping WPF builds commonly produce misleading shared-output failures; pass `-AllowConcurrentDotnet` only when overlap is intentional. Use `-Restore` when packages, generated assets, or intermediate output changed; that path restores first and uses isolated output under `artifacts/bin/<wpf-dev-test-*>` and `artifacts/obj/<wpf-dev-test-*>` unless `-NoIsolation` is also supplied.
 
 Common variants:
 
@@ -82,11 +86,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Rest
 # Run a different focused WPF slice after the build
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Filter "FullyQualifiedName~TradingWorkspaceShellPageTests"
 
+# Proceed even when another repo-owned dotnet build/test is active
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -AllowConcurrentDotnet
+
 # Run the broader non-integration WPF test set through the same serialized build path
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Filter "Category!=Integration&FullyQualifiedName!~Integration"
 ```
 
-Use `make desktop-test-dev` for the default wrapper. Keep `desktop-dev.ps1` as the environment/bootstrap check and use `test-wpf-dev.ps1` as the faster inner-loop validation after restore has already succeeded.
+Use `make desktop-test-dev` for the default wrapper. Keep `desktop-dev.ps1` as the environment/bootstrap check plus bounded fixture launch proof, and use `test-wpf-dev.ps1` as the faster inner-loop validation after restore has already succeeded.
 
 ### 3. Run Desktop Tests
 

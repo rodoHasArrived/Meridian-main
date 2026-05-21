@@ -49,7 +49,11 @@ foreach ($dir in $componentDirs) {
 
 Write-Host 'Codex Component Inventory'
 Write-Host ("Components: {0}" -f $items.Count)
-$items | Sort-Object Purpose, Component | Format-Table -AutoSize
+$displayItems = @($items | Sort-Object Purpose, Component | Select-Object -First 100)
+$displayItems | Format-Table -AutoSize
+if ($items.Count -gt $displayItems.Count) {
+    Write-Host ("Console output truncated to first {0} component(s); Markdown report contains all components." -f $displayItems.Count)
+}
 
 if ($MarkdownPath) {
     $resolved = if ([System.IO.Path]::IsPathRooted($MarkdownPath)) { $MarkdownPath } else { Join-Path $root $MarkdownPath }

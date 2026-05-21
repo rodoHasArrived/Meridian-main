@@ -89,18 +89,26 @@ public sealed class ProviderHealthViewModelTests
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ProviderHealthPage.xaml"));
 
         xaml.Should().Contain("Provider posture briefing");
-        xaml.Should().Contain("ProviderPostureTitle");
-        xaml.Should().Contain("ProviderPostureDetail");
-        xaml.Should().Contain("ProviderPostureActionText");
-        xaml.Should().Contain("ProviderPostureTargetText");
-        xaml.Should().Contain("ProviderPostureEvidenceText");
+        xaml.Should().Contain("WorkstationStatePanelControl");
+        xaml.Should().Contain("ProviderPostureState");
+        xaml.Should().Contain("HealthBadgeControl");
+        xaml.Should().Contain("ProviderPostureBadge");
         xaml.Should().Contain("ProviderPostureBriefingCard");
-        xaml.Should().Contain("ProviderPostureHandoffPanel");
         xaml.Should().Contain("ProviderManagementCenter");
         xaml.Should().Contain("Provider Management");
+        xaml.Should().Contain("WorkstationCommandBarControl");
+        xaml.Should().Contain("ProviderManagementCommandGroup");
         xaml.Should().Contain("Configured Provider");
-        xaml.Should().Contain("Provider management table");
-        xaml.Should().Contain("Run Verification");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("ProviderManagementTable");
+        xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("SelectedProviderInspector");
+        xaml.Should().Contain("DiagnosticsChecklistControl");
+        xaml.Should().Contain("SelectedProviderDiagnostics");
+        xaml.Should().Contain("RoutingMatrixControl");
+        xaml.Should().Contain("SelectedProviderRoutingMatrix");
+        xaml.Should().Contain("ActivityLogGridControl");
+        xaml.Should().Contain("ProviderActivityTimeline");
     }
 
     [Fact]

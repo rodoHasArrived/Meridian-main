@@ -23,7 +23,7 @@ $lines.Add("Desired end state: $DesiredEndState")
 $lines.Add('')
 $lines.Add('## Target Files')
 foreach ($target in $TargetFiles) {
-    $lines.Add("- `$target`")
+    $lines.Add("- ``$target``")
 }
 $lines.Add('')
 $lines.Add('## Behavior Preservation Constraints')
@@ -61,7 +61,7 @@ if ($missing.Count -gt 0) {
     $lines.Add('')
     $lines.Add('## Missing Files')
     foreach ($target in $missing) {
-        $lines.Add("- `$target`")
+        $lines.Add("- ``$target``")
     }
 }
 
