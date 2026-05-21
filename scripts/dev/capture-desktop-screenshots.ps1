@@ -33,6 +33,7 @@ $OutputDir = if ($PSBoundParameters.ContainsKey('OutputDir')) { $OutputDir } els
 $fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $true)
 $retentionDays = [int](Get-MeridianWorkflowProfileValue -Table $retentionProfile -Key 'maxAgeDays' -Fallback 14)
 $retentionLatest = [int](Get-MeridianWorkflowProfileValue -Table $retentionProfile -Key 'retainLatest' -Fallback 10)
+$script:MeridianProcessId = 0
 $resolvedProjectPath = if ([System.IO.Path]::IsPathRooted($ProjectPath)) {
   [System.IO.Path]::GetFullPath($ProjectPath)
 }
@@ -50,6 +51,20 @@ function Assert-Command {
 }
 
 function Find-MeridianWindow {
+  param(
+    [int]$ProcessId = 0
+  )
+
+  $targetProcessId = if ($ProcessId -gt 0) {
+    $ProcessId
+  }
+  elseif ($script:MeridianProcessId -gt 0) {
+    $script:MeridianProcessId
+  }
+  else {
+    0
+  }
+
   $root = [System.Windows.Automation.AutomationElement]::RootElement
   $all = $root.FindAll(
     [System.Windows.Automation.TreeScope]::Children,
@@ -58,6 +73,10 @@ function Find-MeridianWindow {
 
   foreach ($w in $all) {
     try {
+      if ($targetProcessId -gt 0 -and $w.Current.ProcessId -eq $targetProcessId) {
+        return $w
+      }
+
       if ($w.Current.Name -match 'Meridian') {
         return $w
       }
@@ -77,7 +96,14 @@ function Activate-MeridianWindow {
       $wshShell = $script:WshShell
     }
 
-    [void]$wshShell.AppActivate('Meridian')
+    $activationTarget = if ($script:MeridianProcessId -gt 0) {
+      $script:MeridianProcessId
+    }
+    else {
+      'Meridian'
+    }
+
+    [void]$wshShell.AppActivate($activationTarget)
     Start-Sleep -Milliseconds 400
     return $true
   } catch {
@@ -337,6 +363,10 @@ function Invoke-Navigate {
 
     $inputEl = Wait-ForElement -Attempts 15 -DelayMilliseconds 250 -Finder {
       $currentWindow = Find-MeridianWindow
+      if (-not $currentWindow) {
+        $currentWindow = $Window
+      }
+
       if (-not $currentWindow) { return $null }
       return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
     }
@@ -401,6 +431,7 @@ if (-not (Test-Path $exePath)) {
 
 Write-Host "Starting $exePath in fixture mode..."
 $proc = Start-Process -FilePath $exePath -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Normal
+$script:MeridianProcessId = $proc.Id
 
 try {
   $window = $null
@@ -549,6 +580,7 @@ try {
     Format-Table -AutoSize
 }
 finally {
+  $script:MeridianProcessId = 0
   $retryReport = [ordered]@{
     generatedAt = (Get-Date).ToString('o')
     outputDirectory = $OutputDir
