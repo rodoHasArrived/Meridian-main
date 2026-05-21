@@ -29,6 +29,10 @@ This layer should preserve strategy lineage from research through paper validati
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Reconciliation also projects Security Master accounting inputs for Operations Continuity: fixed
+coupon accruals, expected journal previews, and factor-schedule principal paydowns are generated
+from resolved Security Master economic definitions before ledger/reconciliation gate posture is
+reported.
 
 ## Diagrams
 

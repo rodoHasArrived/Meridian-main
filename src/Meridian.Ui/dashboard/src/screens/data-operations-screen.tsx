@@ -721,11 +721,22 @@ function ProviderDetailTabPanel({
             {detail.verifyAction.label}
           </Button>
         </div>
-        <div className="grid gap-2">
-          {detail.diagnostics.map((diagnostic) => (
-            <ProviderDiagnosticRow key={diagnostic.id} diagnostic={diagnostic} />
-          ))}
-        </div>
+        {detail.diagnosticsEmptyState ? (
+          <div
+            role="status"
+            aria-label={`${detail.title} diagnostics empty state`}
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-3 py-3"
+          >
+            <div className="font-semibold text-foreground">{detail.diagnosticsEmptyState.title}</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.diagnosticsEmptyState.description}</p>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {detail.diagnostics.map((diagnostic) => (
+              <ProviderDiagnosticRow key={diagnostic.id} diagnostic={diagnostic} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }

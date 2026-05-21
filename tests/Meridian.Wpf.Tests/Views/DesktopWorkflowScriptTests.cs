@@ -308,6 +308,7 @@ public sealed class DesktopWorkflowScriptTests
 
         launcher.Should().Contain("[switch]$StartupSmoke");
         launcher.Should().Contain("[int]$StartupSmokeTimeoutSec = 45");
+        launcher.Should().Contain("$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }");
         launcher.Should().Contain("function Wait-ForDesktopWindow");
         launcher.Should().Contain("function Stop-DesktopProcessAfterSmoke");
         launcher.Should().Contain("Write-Step 'Startup smoke'");

@@ -306,6 +306,7 @@ export interface DataOperationsProviderDetailState {
   overviewFields: DataOperationsDetailField[];
   credentialFields: DataOperationsDetailField[];
   diagnostics: DataOperationsProviderDiagnosticRow[];
+  diagnosticsEmptyState: DataOperationsEmptyState | null;
   activeTab: DataOperationsProviderTabId;
   tabs: DataOperationsProviderTabState[];
   verifyAction: DataOperationsProviderVerifyActionState;
@@ -1545,6 +1546,7 @@ export function buildSelectedProviderDetail(
     overviewFields,
     credentialFields,
     diagnostics,
+    diagnosticsEmptyState: buildProviderDiagnosticsEmptyState(selected),
     activeTab: selectedTab,
     tabs: (["overview", "credentials", "diagnostics"] satisfies DataOperationsProviderTabId[]).map((tab) => ({
       id: tab,
@@ -1588,11 +1590,17 @@ function buildProviderCenterRecords(
   const trustSnapshots = evidence.providerRoutingTrustSnapshots ?? [];
   const matchedWorkspace = new Set<string>();
   const matchedRouting = new Set<string>();
+  const workspaceByProviderId = new Map(
+    providers
+      .filter((provider) => Boolean(provider.providerId))
+      .map((provider) => [normalizeProviderToken(provider.providerId ?? ""), provider] as const)
+  );
 
   const records = providerConnections.map((connection) => {
-    const workspaceProvider = findWorkspaceProviderForConnection(connection, providers);
+    const workspaceProvider = workspaceByProviderId.get(normalizeProviderToken(connection.providerId))
+      ?? findWorkspaceProviderForConnection(connection, providers);
     if (workspaceProvider) {
-      matchedWorkspace.add(normalizeProviderToken(workspaceProvider.provider));
+      matchedWorkspace.add(normalizeProviderToken(workspaceProvider.providerId ?? workspaceProvider.provider));
     }
 
     const routingConnection = findRoutingConnectionForProviderConnection(connection, routingConnections);
@@ -1612,7 +1620,8 @@ function buildProviderCenterRecords(
   });
 
   for (const provider of providers) {
-    if (!matchedWorkspace.has(normalizeProviderToken(provider.provider))) {
+    const providerKey = normalizeProviderToken(provider.providerId ?? provider.provider);
+    if (!matchedWorkspace.has(providerKey)) {
       records.push(buildProviderCenterRecordFromWorkspace(provider));
     }
   }
@@ -1665,10 +1674,10 @@ function buildProviderCenterRecord({
 
 function buildProviderCenterRecordFromWorkspace(provider: DataOperationsProviderRecord): DataOperationsProviderCenterRecord {
   return {
-    providerId: normalizeProviderToken(provider.provider) || provider.provider,
-    displayName: provider.provider,
+    providerId: provider.providerId ?? normalizeProviderToken(provider.provider) || provider.provider,
+    displayName: provider.displayName ?? provider.provider,
     workspaceProvider: provider,
-    connection: null,
+    connection: provider.connectionSummary ?? null,
     routingConnection: null,
     bindings: [],
     trustSnapshot: null
@@ -1682,7 +1691,12 @@ function findWorkspaceProviderForConnection(
   const providerId = normalizeProviderToken(connection.providerId);
   const displayName = normalizeProviderToken(connection.displayName);
   return providers.find((provider) => {
-    const normalized = normalizeProviderToken(provider.provider);
+    const directId = normalizeProviderToken(provider.providerId ?? "");
+    if (directId.length > 0 && directId === providerId) {
+      return true;
+    }
+
+    const normalized = normalizeProviderToken(provider.displayName ?? provider.provider);
     return normalized === providerId || normalized === displayName || normalized.includes(providerId) || providerId.includes(normalized);
   }) ?? null;
 }
@@ -1725,7 +1739,7 @@ function resolveSelectedProviderCenterRecord(
 }
 
 function buildProviderCenterRowId(record: DataOperationsProviderCenterRecord): string {
-  return buildProviderRowId(record.connection?.providerId ?? record.routingConnection?.connectionId ?? record.displayName);
+  return buildProviderRowId(record.connection?.providerId ?? record.providerId ?? record.routingConnection?.connectionId ?? record.displayName);
 }
 
 function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderStatus {
@@ -1776,6 +1790,10 @@ function resolveProviderWorkflows(record: DataOperationsProviderCenterRecord): s
     return record.connection.affectedWorkflows;
   }
 
+  if (record.workspaceProvider?.connectionSummary?.affectedWorkflows?.length) {
+    return record.workspaceProvider.connectionSummary.affectedWorkflows;
+  }
+
   const workflows = record.bindings.map((binding) => formatProviderRoutingCapability(binding.capability));
   if (workflows.length > 0) {
     return uniqueStrings(workflows);
@@ -1820,17 +1838,30 @@ function buildProviderOverviewFields(
   row: DataOperationsProviderRow
 ): DataOperationsDetailField[] {
   const connection = record.connection;
+  const workspaceRouting = record.workspaceProvider?.routingSummary;
   return [
     { id: "health", label: "Current health", value: row.status },
     { id: "capability", label: "Capability", value: row.capability },
-    { id: "connection-state", label: "Connection state", value: connection ? row.status : "Routing evidence only" },
+    {
+      id: "connection-state",
+      label: "Connection state",
+      value: connection ? row.status : workspaceRouting ? (workspaceRouting.healthStatus ?? "Workspace summary") : "Routing evidence only"
+    },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
     { id: "verification-state", label: "Verification", value: row.verificationText },
     { id: "last-verified", label: "Last verified", value: formatProviderUtcMinute(connection?.lastVerifiedAt) },
     { id: "last-response", label: "Last successful call", value: row.lastSuccessfulText },
     { id: "last-failure", label: "Last failure", value: formatProviderUtcMinute(connection?.lastFailureAt) },
     { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
-    { id: "fallback", label: "Fallback", value: connection?.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(record.bindings) },
+    {
+      id: "fallback",
+      label: "Fallback",
+      value: connection?.fallbackActive
+        ? "Fallback active"
+        : workspaceRouting && workspaceRouting.fallbackRouteCount > 0
+          ? `${workspaceRouting.fallbackRouteCount} fallback route${workspaceRouting.fallbackRouteCount === 1 ? "" : "s"}`
+          : providerRoutingFallbackLabel(record.bindings)
+    },
     { id: "workflows", label: "Affected workflows", value: row.affectedWorkflowsText },
     { id: "trust-score", label: "Trust score", value: row.trustScoreText }
   ];
@@ -1853,6 +1884,10 @@ function buildProviderCredentialFieldsForDetail(
 }
 
 function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): DataOperationsProviderDiagnosticRow[] {
+  if (record.workspaceProvider?.diagnostics?.length) {
+    return record.workspaceProvider.diagnostics;
+  }
+
   const connection = record.connection;
   const hasCredentialRecord = Boolean(connection);
   const credentialPass = connection?.credentialState === "Verified" || connection?.credentialState === "NotRequired" || connection?.credentialState === "Configured";
@@ -1902,6 +1937,21 @@ function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): D
       detail: "Reference-data diagnostics will use provider-specific checks in a follow-up phase."
     }
   ];
+}
+
+function buildProviderDiagnosticsEmptyState(record: DataOperationsProviderCenterRecord): DataOperationsEmptyState | null {
+  if (record.workspaceProvider?.diagnostics?.length) {
+    return null;
+  }
+
+  if (record.connection || record.trustSnapshot) {
+    return null;
+  }
+
+  return {
+    title: "Diagnostics not loaded yet",
+    description: "Load credential or routing evidence before Meridian can run provider-specific verification, quote probes, or backfill checks."
+  };
 }
 
 function buildProviderVerifyActionState(

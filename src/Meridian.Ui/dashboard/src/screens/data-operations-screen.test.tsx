@@ -247,6 +247,18 @@ describe("DataOperationsScreen", () => {
     verifyProviderConnection.mockRestore();
   });
 
+  it("renders a diagnostics empty state when provider evidence has not loaded", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
+
+    expect(screen.getByRole("status", { name: "Polygon diagnostics empty state" }))
+      .toHaveTextContent("Diagnostics not loaded yet");
+    expect(screen.getByRole("button", { name: "Provider verification unavailable for Polygon" })).toBeDisabled();
+  });
+
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {
     const user = userEvent.setup();
 

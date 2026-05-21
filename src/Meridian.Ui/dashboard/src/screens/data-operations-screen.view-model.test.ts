@@ -682,6 +682,22 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.rows[0].credentialText).toBe("Verified");
   });
 
+  it("shows a diagnostics empty state when shared provider evidence has not loaded yet", () => {
+    const providerSection = buildProviderSection(
+      providers,
+      "provider-row-polygon",
+      {},
+      "diagnostics"
+    );
+
+    expect(providerSection.selectedDetail?.diagnosticsEmptyState).toEqual({
+      title: "Diagnostics not loaded yet",
+      description: "Load credential or routing evidence before Meridian can run provider-specific verification, quote probes, or backfill checks."
+    });
+    expect(providerSection.selectedDetail?.verifyAction.disabled).toBe(true);
+    expect(providerSection.selectedDetail?.verifyAction.disabledReason).toBe("This provider row does not have a credential connection record yet.");
+  });
+
   it("selects export detail rows by export id or table row id", () => {
     const exportRecords: DataOperationsExportRecord[] = [
       ...exports,
