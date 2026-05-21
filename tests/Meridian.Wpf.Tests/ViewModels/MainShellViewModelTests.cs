@@ -831,58 +831,65 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void OperatorInboxPresentation_FiltersToLatestRunActionableItemsOnly()
+    public void OperatorInboxPresentation_AllClearScenario_RemainsActionableWithoutRunHistoryDuplication()
     {
         WpfTestThread.Run(async () =>
         {
-            var latestRunId = "run-latest-actionable";
-            var historicalRunId = "run-historical-only";
             var inbox = new OperatorInboxDto(
                 DateTimeOffset.UtcNow,
-                [
-                    new OperatorWorkItemDto(
-                        WorkItemId: $"promotion-review-{latestRunId}",
-                        Kind: OperatorWorkItemKindDto.PromotionReview,
-                        Label: "Latest run requires promotion review",
-                        Detail: "The newest run is waiting for operator approval.",
-                        Tone: OperatorWorkItemToneDto.Warning,
-                        CreatedAt: DateTimeOffset.UtcNow,
-                        RunId: latestRunId,
-                        TargetRoute: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", latestRunId),
-                        TargetPageTag: "TradingShell"),
-                    new OperatorWorkItemDto(
-                        WorkItemId: $"promotion-history-{historicalRunId}",
-                        Kind: OperatorWorkItemKindDto.PromotionReview,
-                        Label: "Historical run review (history only)",
-                        Detail: "A prior run remains visible in review history.",
-                        Tone: OperatorWorkItemToneDto.Info,
-                        CreatedAt: DateTimeOffset.UtcNow.AddMinutes(-15),
-                        RunId: historicalRunId,
-                        TargetRoute: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", historicalRunId),
-                        TargetPageTag: "TradingShell"),
-                    new OperatorWorkItemDto(
-                        WorkItemId: "promotion-review-informational-latest",
-                        Kind: OperatorWorkItemKindDto.PromotionReview,
-                        Label: "Informational-only advisory",
-                        Detail: "No action needed for this item.",
-                        Tone: OperatorWorkItemToneDto.Info,
-                        CreatedAt: DateTimeOffset.UtcNow,
-                        TargetPageTag: "TradingShell")
-                ],
+                [],
                 CriticalCount: 0,
-                WarningCount: 1,
-                ReviewCount: 1,
-                Summary: "1 warning work item needs review.");
+                WarningCount: 0,
+                ReviewCount: 0,
+                Summary: "No operator work items are open.");
             var inboxClient = new FakeOperatorInboxApiClient(inbox);
 
             using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
 
-            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+            await WaitForConditionAsync(() => vm.OperatorInboxSummary.Contains("No operator work items", StringComparison.Ordinal));
 
-            vm.OperatorInboxButtonText.Should().Be("Queue (1)");
-            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Warning);
-            vm.OperatorInboxPrimaryLabel.Should().Be("Latest run requires promotion review");
-            vm.OperatorInboxSummary.Should().NotContain("informational", StringComparison.OrdinalIgnoreCase);
+            vm.OperatorInboxButtonText.Should().Be("Queue");
+            vm.OperatorInboxSummary.Should().NotContain("run history", StringComparison.OrdinalIgnoreCase);
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_MixedSeverityScenario_PrioritizesCriticalQueueItem()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "promotion-warning-1",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Promotion checklist review",
+                        Detail: "Review promotion checklist evidence.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell"),
+                    new OperatorWorkItemDto(
+                        WorkItemId: "replay-critical-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification stale",
+                        Detail: "Session changed after replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow.AddSeconds(1),
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 1,
+                ReviewCount: 2,
+                Summary: "2 work items need review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 2);
+
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Danger);
+            vm.OperatorInboxPrimaryLabel.Should().Contain("Replay verification stale");
         });
     }
 
