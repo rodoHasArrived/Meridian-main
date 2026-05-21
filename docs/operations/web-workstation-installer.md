@@ -19,7 +19,10 @@ The root Windows installer exposes the same workflow through `-Mode WebWorkstati
 
 The installed shortcut starts `Meridian.exe --mode workstation --http-port 8080 --config
 %LOCALAPPDATA%\Meridian\appsettings.json`, waits for `http://localhost:8080/healthz`, and opens
-`http://localhost:8080/workstation/`.
+`http://localhost:8080/workstation/`. The generated launcher stores the canonical config path as a
+PowerShell single-quoted literal and passes host arguments through `ProcessStartInfo.ArgumentList`,
+so install roots and app-data paths with spaces or shell-special characters are not reparsed as a
+single command-line string.
 
 `workstation` mode starts only the local UI/API host. It does not auto-connect providers, start
 market-data subscriptions, or run the collector pipeline; use `--mode desktop` when the retained

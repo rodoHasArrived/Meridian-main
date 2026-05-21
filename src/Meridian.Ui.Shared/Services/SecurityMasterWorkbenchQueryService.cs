@@ -1416,7 +1416,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
         foreach (var alias in detail.Aliases.Where(static alias => alias.IsEnabled))
         {
-            identifiers.Add(NormalizeComparableString(alias.AliasValue));
+            identifiers.Add(NormalizeComparableString(SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue)));
         }
 
         identifiers.Add(NormalizeComparableString(detail.DisplayName));
@@ -1547,14 +1547,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         => validFrom <= asOf && (!validTo.HasValue || validTo.Value > asOf);
 
     private static string NormalizeAliasValue(SecurityAliasDto alias)
-    {
-        if (Enum.TryParse<SecurityIdentifierKind>(alias.AliasKind, ignoreCase: true, out var identifierKind))
-        {
-            return SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue);
-        }
-
-        return NormalizeComparableString(alias.AliasValue);
-    }
+        => SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue);
 
     private static int? TryGetSchemaVersion(JsonElement element)
     {

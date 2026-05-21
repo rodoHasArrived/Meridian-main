@@ -1,6 +1,5 @@
 using System.Text.Json;
 using FluentAssertions;
-using System.Text.Json;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -1225,6 +1224,26 @@ public sealed class OperationsContinuityWorkflowServiceTests
         File.ReadAllLines(auditPath).Should().HaveCount(2);
     }
 
+    [Fact]
+    public void PostgresAuditAppend_ShouldAcquireWorkflowScopedAdvisoryLockBeforeReadingTailHash()
+    {
+        var source = ReadRepoFile(
+            "src",
+            "Meridian.Application",
+            "OperationsContinuity",
+            "PostgresOperationsContinuityStore.cs");
+        var appendMethodStart = source.IndexOf(
+            "private async Task<OperationsWorkflowAuditDto> AppendAuditAsync",
+            StringComparison.Ordinal);
+
+        appendMethodStart.Should().BeGreaterThanOrEqualTo(0);
+        var appendMethod = source[appendMethodStart..];
+        appendMethod.IndexOf("AcquireWorkflowAuditLockAsync", StringComparison.Ordinal)
+            .Should().BeLessThan(appendMethod.IndexOf("LoadPreviousAuditHashAsync", StringComparison.Ordinal));
+        source.Should().Contain("pg_advisory_xact_lock");
+        source.Should().Contain("CreateWorkflowAuditLockKey");
+    }
+
     private static OperationsContinuityWorkflowService CreateService(
         out InMemoryOperationsContinuityRepository repository,
         out InMemoryOperationsWorkflowAuditStore auditStore,
@@ -1359,6 +1378,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "Monthly close evidence",
             "corr-1",
             []);
+
+    private static string ReadRepoFile(params string[] pathParts)
+    {
+        var root = FindRepoRoot();
+        return File.ReadAllText(Path.Combine(pathParts.Prepend(root).ToArray()));
+    }
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (Directory.Exists(Path.Combine(directory.FullName, "src", "Meridian.Application")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
+    }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
     {

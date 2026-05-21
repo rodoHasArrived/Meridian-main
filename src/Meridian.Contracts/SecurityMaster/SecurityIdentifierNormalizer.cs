@@ -36,6 +36,11 @@ public static class SecurityIdentifierNormalizer
     public static string NormalizeProvider(string? provider)
         => NormalizeBasic(provider);
 
+    public static string NormalizeAliasValue(string? aliasKind, string? aliasValue)
+        => Enum.TryParse<SecurityIdentifierKind>(aliasKind, ignoreCase: true, out var identifierKind)
+            ? NormalizeValue(identifierKind, aliasValue)
+            : NormalizeBasic(aliasValue);
+
     public static string GetOrComputeNormalizedValue(SecurityIdentifierDto identifier)
     {
         ArgumentNullException.ThrowIfNull(identifier);

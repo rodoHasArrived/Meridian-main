@@ -78,10 +78,10 @@ Evidence-backed narrative, client-facing commentary drafting, and evidence-aware
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
-| Event Pipeline (`System.Threading.Channels`) | ✅ | Bounded channel, backpressure, 100 K capacity, nanosecond timing |
+| Event Pipeline (`System.Threading.Channels`) | ✅ | Durable-streaming bounded channel, explicit backpressure (`Wait`), 50 K capacity, adaptive batch consume, and nanosecond timing |
 | Injectable `IEventMetrics` | ✅ | Static dependency removed; `TracedEventMetrics` decorator available |
 | `CompositeSink` fan-out | ✅ | Per-sink fault isolation; JSONL + Parquet simultaneously |
-| Write-Ahead Log (WAL) | ✅ | SHA-256 checksums, streaming recovery, uncommitted-size warnings |
+| Write-Ahead Log (WAL) | ✅ | SHA-256 checksums, streaming recovery, uncommitted-size warnings, and sink flush before commit |
 | Provider Registry & DI | ✅ | `[DataSource]` scanning, `ProviderRegistry`, `ServiceCompositionRoot` |
 | Config Validation Pipeline | ✅ | `ConfigValidationPipeline` with composable stages; obsoletes `ConfigValidationHelper` |
 | Graceful Shutdown | ✅ | `GracefulShutdownService`, provider disconnect, flush-to-disk before exit |

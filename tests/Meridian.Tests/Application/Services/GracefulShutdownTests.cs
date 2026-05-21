@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Services;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Xunit;
 
 namespace Meridian.Tests;
@@ -7,6 +10,7 @@ namespace Meridian.Tests;
 /// <summary>
 /// Tests for the GracefulShutdownService and IFlushable implementations.
 /// </summary>
+[Collection("Sequential")]
 public class GracefulShutdownTests
 {
     [Fact]
@@ -260,6 +264,80 @@ public class GracefulShutdownTests
         flushOrder.Should().Contain("Slow");
     }
 
+    [Fact]
+    public async Task StopAsync_EmitsCorrelatedStructuredShutdownOutcome()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            var service = new GracefulShutdownService(
+                new IFlushable[] { new MockFlushable("Fast") },
+                shutdownTimeout: TimeSpan.FromSeconds(5));
+
+            await service.StartAsync(CancellationToken.None);
+            await service.StopAsync(CancellationToken.None);
+
+            sink.Events.Should().Contain(evt =>
+                evt.MessageTemplate.Text.Contains("Graceful shutdown initiated for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["OperationName"].ToString().Contains("runtime.shutdown.flush", StringComparison.Ordinal)
+                && evt.Properties.ContainsKey("CorrelationId"));
+
+            sink.Events.Should().Contain(evt =>
+                evt.MessageTemplate.Text.Contains("Graceful shutdown completed for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["Succeeded"].ToString().Contains("1", StringComparison.Ordinal)
+                && evt.Properties["ElapsedMs"].ToString().Length > 0);
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenFlushFails_LogsStructuredRecoveryAction()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            var service = new GracefulShutdownService(
+                new IFlushable[] { new MockFlushable("Failing", shouldThrow: true) },
+                shutdownTimeout: TimeSpan.FromSeconds(5));
+
+            await service.StartAsync(CancellationToken.None);
+            await service.StopAsync(CancellationToken.None);
+
+            sink.Events.Should().Contain(evt =>
+                evt.Level == LogEventLevel.Error
+                && evt.MessageTemplate.Text.Contains("Failed to flush {ComponentName}", StringComparison.Ordinal)
+                && evt.Properties["OperationName"].ToString().Contains("runtime.shutdown.flush", StringComparison.Ordinal)
+                && evt.Properties.ContainsKey("CorrelationId"));
+
+            sink.Events.Should().Contain(evt =>
+                evt.Level == LogEventLevel.Error
+                && evt.MessageTemplate.Text.Contains("Graceful shutdown completed with flush failures", StringComparison.Ordinal)
+                && evt.Properties["Failed"].ToString().Contains("1", StringComparison.Ordinal)
+                && evt.Properties["RecoveryAction"].ToString().Contains("Inspect failed component", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
     private sealed class OrderTrackingFlushable : IFlushable
     {
         private readonly string _name;
@@ -312,6 +390,31 @@ public class GracefulShutdownTests
             }
 
             WasFlushed = true;
+        }
+    }
+
+    private sealed class CollectingSink : ILogEventSink
+    {
+        private readonly object _gate = new();
+        private readonly List<LogEvent> _events = [];
+
+        public IReadOnlyList<LogEvent> Events
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _events.ToArray();
+                }
+            }
+        }
+
+        public void Emit(LogEvent logEvent)
+        {
+            lock (_gate)
+            {
+                _events.Add(logEvent);
+            }
         }
     }
 }

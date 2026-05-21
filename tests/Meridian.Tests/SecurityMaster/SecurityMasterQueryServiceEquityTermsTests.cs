@@ -258,6 +258,52 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task GetByIdentifierAsync_UsesNormalizedValueAndProvider_BeforeUniverseFallback()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = CreateEquityProjection(
+            securityId,
+            JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Common",
+                classification = "Common"
+            })) with
+        {
+            Identifiers =
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Isin,
+                    "us-0378331005",
+                    true,
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    null,
+                    "xnas")
+            ]
+        };
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Isin,
+                "US0378331005",
+                "XNAS",
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(projection);
+
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(SecurityIdentifierKind.Isin, "us-0378331005", "xnas");
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers[0].NormalizedValue.Should().Be("US0378331005");
+        result.Identifiers[0].NormalizedProvider.Should().Be("XNAS");
+        await store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
+    }
+
     private static SecurityMasterQueryService CreateQueryService(ISecurityMasterStore store)
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();

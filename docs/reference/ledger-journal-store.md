@@ -55,10 +55,13 @@ the period version produced by that save.
 
 `operations_continuity_workflows` stores one JSON snapshot per workflow plus query columns for fund
 account, period, derived status, and version. `operations_continuity_audit` stores the append-only
-workflow audit timeline with `previous_hash` and `current_hash` uniqueness guards. When
-`PostgresOperationsContinuityStore` handles `ledger/post`, it opens one serializable transaction,
-appends the ledger journal candidate through `ITransactionalLedgerJournalStore`, appends the
-workflow audit event, touches the workflow version, and saves the workflow snapshot before commit.
+workflow audit timeline with `previous_hash` and `current_hash` uniqueness guards.
+`PostgresOperationsContinuityStore` also takes a transaction-scoped PostgreSQL advisory lock keyed
+to the workflow id before reading the tail hash, so concurrent audit appends serialize the hash
+chain even when competing commands target the same workflow. When the store handles `ledger/post`,
+it opens one serializable transaction, appends the ledger journal candidate through
+`ITransactionalLedgerJournalStore`, appends the workflow audit event, touches the workflow version,
+and saves the workflow snapshot before commit.
 
 Basis-aware books use `Primary`, `Gaap`, `Cash`, `Tax`, or `Statutory` as the configured accounting
 basis. Existing books migrate as `Primary` with the `legacy-v1` policy. New books are unique by

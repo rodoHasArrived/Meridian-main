@@ -66,7 +66,10 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var policy = sp.GetRequiredService<JsonlStoragePolicy>();
-            return new JsonlStorageSink(storageOptions, policy);
+            return new JsonlStorageSink(
+                storageOptions,
+                policy,
+                JsonlBatchOptions.Default);
         });
 
         // ParquetStorageSink - writes events to Parquet files (optional)

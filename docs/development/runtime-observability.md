@@ -76,6 +76,11 @@ Startup and shutdown should emit information-level milestones with elapsed time 
 
 Warn when startup or shutdown phases exceed their expected budget, when a background service fails to stop, when a provider cannot disconnect cleanly, or when a channel consumer does not exit before timeout.
 
+`GracefulShutdownService` emits the `runtime.shutdown.flush` operation when hosted buffers are
+flushed. Use its `CorrelationId` to connect the shutdown-request log, per-component flush timings,
+and the final outcome summary. The summary reports succeeded, failed, cancelled, and missing
+flushes plus a recovery action when buffered data may need verification.
+
 ## Provider Health
 
 Provider diagnostics should track connection state, last heartbeat, last message time, reconnect attempts, authentication failures, subscription failures, data gaps, rate-limit warnings, latency, disconnect reasons, and recovery state.
@@ -113,8 +118,12 @@ for aggregate published/dropped counts, events/sec, message-type counters, and l
 When the dual-path trade/quote fast path is registered, use the `eventPipelineHotPath` block for
 ring-buffer depth plus hot-path published, consumed, fallback, and dropped counts so operators can
 distinguish slow-path backpressure from hot-path saturation without enabling verbose logging.
-These fields are counts and timings only; do not add raw provider payloads, account identifiers,
-order details, or portfolio values to this endpoint.
+Use the `runtime` block for support triage before enabling heavier tracing: process ID, sanitized
+process name, start time, uptime, thread count, handle count when available, working set, private
+memory, managed heap, processor count, runtime version, and OS description. These values are sampled
+only when the diagnostics endpoint is called and must stay out of market-data hot paths.
+These fields are counts, timings, and runtime metadata only; do not add raw provider payloads,
+account identifiers, order details, or portfolio values to this endpoint.
 
 ## Diagnostic Bundles
 
@@ -141,6 +150,7 @@ Runtime observability changes should add or update focused tests for the affecte
 - Correlation ID propagation
 - Provider health state transitions
 - Queue metric updates
+- Runtime resource snapshots
 - Diagnostic summary generation
 - Error handling paths
 - Logging does not throw

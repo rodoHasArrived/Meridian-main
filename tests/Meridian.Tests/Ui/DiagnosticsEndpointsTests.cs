@@ -17,6 +17,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Sinks;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
@@ -67,6 +68,14 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         root.GetProperty("eventPipeline").GetProperty("isDeduplicationEnabled").GetBoolean().Should().BeFalse();
         root.GetProperty("marketDataMetrics").GetProperty("published").GetInt64().Should().Be(1);
         root.GetProperty("marketDataMetrics").GetProperty("trades").GetInt64().Should().Be(1);
+        var runtime = root.GetProperty("runtime");
+        runtime.GetProperty("operationName").GetString().Should().Be("diagnostics.metrics.snapshot");
+        runtime.GetProperty("componentName").GetString().Should().Be("DiagnosticsEndpoints");
+        runtime.GetProperty("processId").GetInt32().Should().Be(Environment.ProcessId);
+        runtime.GetProperty("threadCount").GetInt32().Should().BeGreaterThan(0);
+        runtime.GetProperty("workingSetBytes").GetInt64().Should().BeGreaterThan(0);
+        runtime.GetProperty("managedHeapBytes").GetInt64().Should().BeGreaterThan(0);
+        runtime.GetProperty("processorCount").GetInt32().Should().BeGreaterThan(0);
         var payload = root.GetRawText().ToLowerInvariant();
         payload.Should().NotContain("secret");
         payload.Should().NotContain("accountnumber");
@@ -84,6 +93,7 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         var root = document.RootElement;
         root.GetProperty("eventPipeline").ValueKind.Should().Be(JsonValueKind.Null);
         root.GetProperty("marketDataMetrics").ValueKind.Should().Be(JsonValueKind.Null);
+        root.GetProperty("runtime").GetProperty("operationName").GetString().Should().Be("diagnostics.metrics.snapshot");
         root.GetProperty("processMemoryBytes").GetInt64().Should().BeGreaterThan(0);
     }
 
@@ -122,6 +132,38 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         root.GetProperty("eventPipelineHotPath").GetProperty("hotTradePublished").GetInt64().Should().Be(1);
         root.GetProperty("eventPipelineHotPath").GetProperty("hotTradeFallbacks").GetInt64().Should().Be(0);
         root.GetProperty("eventPipelineHotPath").GetProperty("hotQuotePublished").GetInt64().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DiagnosticsMetrics_IncludesJsonlStorageSnapshot_WhenJsonlSinkIsRegistered()
+    {
+        var rootPath = Path.Combine(_tempRoot, "jsonl-storage");
+        Directory.CreateDirectory(rootPath);
+
+        await using var sink = new JsonlStorageSink(
+            new StorageOptions { RootPath = rootPath },
+            new DiagnosticsJsonlStoragePolicy(rootPath),
+            JsonlBatchOptions.Default);
+
+        await sink.AppendAsync(CreateTradeEvent("SPY"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(sink);
+        });
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.DiagnosticsMetrics);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var storage = document.RootElement.GetProperty("jsonlStorage");
+
+        storage.GetProperty("batchingEnabled").GetBoolean().Should().BeTrue();
+        storage.GetProperty("batchSize").GetInt32().Should().Be(JsonlBatchOptions.Default.BatchSize);
+        storage.GetProperty("eventsBuffered").GetInt64().Should().Be(1);
+        storage.GetProperty("eventsWritten").GetInt64().Should().Be(0);
+        storage.GetProperty("batchesWritten").GetInt64().Should().Be(0);
+        storage.GetProperty("bufferCount").GetInt32().Should().Be(1);
     }
 
     [Fact]
@@ -369,6 +411,18 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default) => ValueTask.CompletedTask;
         public Task FlushAsync(CancellationToken ct = default) => Task.CompletedTask;
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class DiagnosticsJsonlStoragePolicy : Meridian.Storage.Interfaces.IStoragePolicy
+    {
+        private readonly string _rootPath;
+
+        public DiagnosticsJsonlStoragePolicy(string rootPath)
+        {
+            _rootPath = rootPath;
+        }
+
+        public string GetPath(MarketEvent evt) => Path.Combine(_rootPath, $"{evt.Symbol}.jsonl");
     }
 
     private sealed class StubLeaseManager : ILeaseManager

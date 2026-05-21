@@ -84,8 +84,8 @@ and controlled live-readiness remain open.
 
 | Capability | Maturity | Notes |
 | --- | --- | --- |
-| Core event pipeline | Complete | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
-| Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
+| Core event pipeline | Complete | Channel-based processing with durable-streaming backpressure, metrics, validation, dual-path hot ingress, and storage fan-out |
+| Storage layer | Complete | JSONL/Parquet composite sink with WAL, bounded JSONL batch persistence on the market-data path, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
 | Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, replay-audit metadata, promotion seam, risk/control audit explainability, canonical promotion approval checklist, DK1 trust-gate projection, acceptance gates, and the shared trading-readiness contract are in code |
