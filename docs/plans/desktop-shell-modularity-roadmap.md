@@ -9,12 +9,13 @@ shell easier to extend, update, and maintain as new feature workspaces come onli
 produced in the brainstorm session of 2026-05-21 (`meridian-brainstorm`, Architecture / Refactoring
 mode) and are sequenced here into four delivery phases that can each be merged independently.
 
-The driving problem: adding a new workspace or page today requires edits across three separate
-locations — a `ShellNavigationCatalog` static partial file, a DI registration in
-`WpfShellServiceCollectionExtensions`, and the `DesktopFeatureModuleRegistry` array. Services have
-no explicit workspace lifetime, so expensive streaming/polling objects live for the full application
-session even when idle. There is no runtime mechanism to hide in-progress capabilities without a
-recompile. Workspace state resets on every navigation switch.
+The driving problem: adding a new workspace or page today still requires touching shared
+infrastructure in multiple places — `ShellNavigationCatalog` static partial files, the
+`DesktopFeatureModuleRegistry` array, and module `Register()` implementations when workspace
+services are introduced. Services have no explicit workspace lifetime, so expensive
+streaming/polling objects live for the full application session even when idle. There is no runtime
+mechanism to hide in-progress capabilities without a recompile. Workspace state resets on every
+navigation switch.
 
 Resolving these issues unlocks a sustainable pattern where each new workspace is a single,
 self-contained module that contributes its own pages, services, capability declarations, state
