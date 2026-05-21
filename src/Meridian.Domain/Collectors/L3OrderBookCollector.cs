@@ -80,7 +80,7 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
         if (!ShouldProcessUpdate(symbol))
             return;
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-add", symbol);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-add", symbol);
         var book = _books.GetOrAdd(new SymbolId(symbol), _ => new SymbolL3Book());
         book.Add(order);
 
@@ -103,7 +103,7 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
         if (!ShouldProcessUpdate(sym))
             return;
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-modify", sym);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-modify", sym);
         var book = _books.GetOrAdd(new SymbolId(sym), _ => new SymbolL3Book());
         book.Modify(modify);
 
@@ -126,7 +126,7 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
         if (!ShouldProcessUpdate(sym))
             return;
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-cancel", sym);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-cancel", sym);
         var book = _books.GetOrAdd(new SymbolId(sym), _ => new SymbolL3Book());
         book.Cancel(cancel);
 
@@ -149,7 +149,7 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
         if (!ShouldProcessUpdate(sym))
             return;
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-execute", sym);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-execute", sym);
         var book = _books.GetOrAdd(new SymbolId(sym), _ => new SymbolL3Book());
         book.Execute(execute);
 
@@ -172,7 +172,7 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
         if (!ShouldProcessUpdate(sym))
             return;
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-replace", sym);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("l3-collector", "order-replace", sym);
         var book = _books.GetOrAdd(new SymbolId(sym), _ => new SymbolL3Book());
         book.Replace(replace);
 

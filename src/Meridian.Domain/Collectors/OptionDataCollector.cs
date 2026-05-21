@@ -53,7 +53,7 @@ public sealed class OptionDataCollector
         if (quote is null)
             throw new ArgumentNullException(nameof(quote));
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-quote", quote.Symbol);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-quote", quote.Symbol);
         var key = BuildContractKey(quote.Contract);
         _latestQuotes[key] = quote;
 
@@ -68,7 +68,7 @@ public sealed class OptionDataCollector
         if (trade is null)
             throw new ArgumentNullException(nameof(trade));
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-trade", trade.Symbol);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-trade", trade.Symbol);
         var key = BuildContractKey(trade.Contract);
 
         var ring = _recentTrades.GetOrAdd(key, _ => new RecentOptionTradeRing(MaxRecentTrades));
@@ -85,7 +85,7 @@ public sealed class OptionDataCollector
         if (greeks is null)
             throw new ArgumentNullException(nameof(greeks));
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-greeks", greeks.Symbol);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-greeks", greeks.Symbol);
         var key = BuildContractKey(greeks.Contract);
         _latestGreeks[key] = greeks;
 
@@ -100,7 +100,7 @@ public sealed class OptionDataCollector
         if (chain is null)
             throw new ArgumentNullException(nameof(chain));
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-chain", chain.UnderlyingSymbol);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-chain", chain.UnderlyingSymbol);
         var key = BuildChainKey(chain.UnderlyingSymbol, chain.Expiration);
         _latestChains[key] = chain;
 
@@ -115,7 +115,7 @@ public sealed class OptionDataCollector
         if (update is null)
             throw new ArgumentNullException(nameof(update));
 
-        using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-open-interest", update.Symbol);
+        using var ingressActivity = MarketEventIngressTracing.StartCollectorActivity("option-collector", "option-open-interest", update.Symbol);
         var key = BuildContractKey(update.Contract);
         _latestOpenInterest[key] = update;
 
