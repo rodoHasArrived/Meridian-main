@@ -27,6 +27,7 @@ public sealed class StrategyRunReadService
     private readonly PortfolioReadService _portfolioReadService;
     private readonly LedgerReadService _ledgerReadService;
     private readonly IPromotionRecordStore? _promotionRecordStore;
+    private readonly CashFlowProjectionService? _cashFlowProjectionService;
 
     internal PortfolioReadService PortfolioReadService => _portfolioReadService;
     internal LedgerReadService LedgerReadService => _ledgerReadService;
@@ -35,12 +36,14 @@ public sealed class StrategyRunReadService
         IStrategyRepository repository,
         PortfolioReadService portfolioReadService,
         LedgerReadService ledgerReadService,
-        IPromotionRecordStore? promotionRecordStore = null)
+        IPromotionRecordStore? promotionRecordStore = null,
+        CashFlowProjectionService? cashFlowProjectionService = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _portfolioReadService = portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService));
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
         _promotionRecordStore = promotionRecordStore;
+        _cashFlowProjectionService = cashFlowProjectionService;
     }
 
     public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
@@ -955,5 +958,53 @@ public sealed class StrategyRunReadService
             TotalUnrealizedPnl: bySymbol.Sum(static item => item.UnrealizedPnl),
             TotalCommissions: bySymbol.Sum(static item => item.Commissions),
             BySymbol: bySymbol);
+    }
+
+    /// <summary>
+    /// Returns a normalized, versioned portfolio drill-in aggregate for one run.
+    /// </summary>
+    public async Task<RunPortfolioDrillInSummary?> GetPortfolioDrillInAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
+        {
+            return null;
+        }
+
+        var attributionTask = GetAttributionAsync(runId, ct);
+        var drawdownTask = GetEquityCurveAsync(runId, ct);
+        var tradeTask = GetFillsAsync(runId, ct);
+        var cashFlowTask = _cashFlowProjectionService?.GetAsync(runId, ct) ?? Task.FromResult<RunCashFlowSummary?>(null);
+
+        await Task.WhenAll(attributionTask, drawdownTask, tradeTask, cashFlowTask).ConfigureAwait(false);
+
+        var asOf = GetLastUpdatedAt(run);
+        var currency = ResolveCurrencyContext(run, await cashFlowTask.ConfigureAwait(false));
+
+        return new RunPortfolioDrillInSummary(
+            SchemaVersion: "v1",
+            RunId: run.RunId,
+            AsOf: asOf,
+            Currency: currency,
+            Mode: MapMode(run.RunType),
+            Attribution: await attributionTask.ConfigureAwait(false),
+            DrawdownProfile: await drawdownTask.ConfigureAwait(false),
+            CashFlow: await cashFlowTask.ConfigureAwait(false),
+            Trades: await tradeTask.ConfigureAwait(false));
+    }
+
+    private static string ResolveCurrencyContext(StrategyRunEntry run, RunCashFlowSummary? cashFlow)
+    {
+        if (!string.IsNullOrWhiteSpace(cashFlow?.Currency))
+        {
+            return cashFlow.Currency;
+        }
+
+        var firstFillCurrency = run.Metrics?.Fills
+            .FirstOrDefault(static fill => !string.IsNullOrWhiteSpace(fill.Currency))
+            ?.Currency;
+        return string.IsNullOrWhiteSpace(firstFillCurrency) ? "USD" : firstFillCurrency;
     }
 }

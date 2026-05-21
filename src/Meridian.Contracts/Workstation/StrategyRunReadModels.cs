@@ -671,6 +671,21 @@ public sealed record RunCashFlowSummary(
     RunCashLadder Ladder);
 
 /// <summary>
+/// Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices
+/// aligned under one additive, versioned contract.
+/// </summary>
+public sealed record RunPortfolioDrillInSummary(
+    string SchemaVersion,
+    string RunId,
+    DateTimeOffset AsOf,
+    string Currency,
+    StrategyRunMode Mode,
+    RunAttributionSummary? Attribution,
+    EquityCurveSummary? DrawdownProfile,
+    RunCashFlowSummary? CashFlow,
+    RunFillSummary? Trades);
+
+/// <summary>
 /// Lightweight run identity used to connect research, trading, and governance flows.
 /// </summary>
 public sealed record StrategyRunContinuityLink(
