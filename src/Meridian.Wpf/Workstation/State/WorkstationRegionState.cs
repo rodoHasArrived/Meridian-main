@@ -71,7 +71,7 @@ public sealed class WorkstationRegionState : BindableBase
         var hasActionLabel = !string.IsNullOrWhiteSpace(actionLabel);
         if (hasActionId != hasActionLabel)
         {
-            throw new ArgumentException("Error action state requires both action id and label when either is provided.");
+            throw new ArgumentException("Error action state requires both actionId and actionLabel to be provided together. One was provided without the other.");
         }
 
         return new()
