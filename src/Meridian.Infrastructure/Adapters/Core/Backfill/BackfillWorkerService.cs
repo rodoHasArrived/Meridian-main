@@ -243,12 +243,14 @@ public sealed class BackfillWorkerService : IDisposable
             {
                 try
                 {
+                    var providerName = request.AssignedProvider ?? _provider.Name;
+
                     scopedLog.Debug("Processing request: {Symbol} {From}-{To} via {Provider} (attempt {Attempt})",
-                        request.Symbol, request.FromDate, request.ToDate, request.AssignedProvider, retryAttempt + 1);
+                        request.Symbol, request.FromDate, request.ToDate, providerName, retryAttempt + 1);
 
                     // Fetch data from provider
                     using var fetchActivity = MarketDataTracing.StartBackfillFetchActivity(
-                        request.AssignedProvider ?? _provider.Name,
+                        providerName,
                         request.Symbol);
                     var bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
                     MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
