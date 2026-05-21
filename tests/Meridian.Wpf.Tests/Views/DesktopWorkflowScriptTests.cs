@@ -253,6 +253,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("dotnet', 'build', $wpfTestsProject, '-c', $Configuration, '--no-restore'");
         script.Should().Contain("make desktop-test-position-blotter-route");
         script.Should().Contain("pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup");
+        script.Should().Contain("python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary");
 
         script.Should().NotContain("src/Meridian.Uwp/Meridian.Uwp.csproj");
         script.Should().NotContain("make build-wpf");

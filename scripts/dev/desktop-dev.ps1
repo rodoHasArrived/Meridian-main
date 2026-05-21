@@ -297,7 +297,8 @@ if ($summary.result -eq 'passed') {
     Write-Host '  3. Run desktop tests:          make desktop-test' -ForegroundColor Gray
     Write-Host '  4. Focused route validation:   make desktop-test-position-blotter-route' -ForegroundColor Gray
     Write-Host '  5. Workflow automation:        pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup' -ForegroundColor Gray
-    Write-Host '  6. Open in Visual Studio:      Start-Process src/Meridian.Wpf/Meridian.Wpf.csproj' -ForegroundColor Gray
+    Write-Host '  6. Blueprint checklist:        python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary' -ForegroundColor Gray
+    Write-Host '  7. Open in Visual Studio:      Start-Process src/Meridian.Wpf/Meridian.Wpf.csproj' -ForegroundColor Gray
 }
 else {
     Write-Fail "Desktop environment validation failed with $($validationErrors.Count) error(s)."

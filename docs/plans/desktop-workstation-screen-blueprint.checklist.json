@@ -1,0 +1,403 @@
+{
+  "schemaVersion": 1,
+  "blueprintPath": "docs/plans/desktop-workstation-screen-blueprint.md",
+  "status": "draft-tracking",
+  "generatedBy": "scripts/dev/desktop_screen_blueprint_checklist.py",
+  "allowedStatuses": [
+    "planned",
+    "partial",
+    "implemented",
+    "blocked",
+    "deferred"
+  ],
+  "screens": [
+    {
+      "id": "desktop-screen-security-master",
+      "title": "Security Master Workspace",
+      "rootWorkspace": "Accounting",
+      "blueprintHeading": "### 1. Security Master Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "src/Meridian.Wpf/Views/SecurityMasterPage.xaml",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "screenshot-catalog",
+          "pageTag": "SecurityMaster",
+          "captureName": "wpf-security-master"
+        },
+        {
+          "workflow": "manual-governance",
+          "pageTag": "SecurityMaster",
+          "captureName": "05-security-master"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~SecurityMasterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-live-market-data",
+      "title": "Live Market Data Workspace",
+      "rootWorkspace": "Trading",
+      "blueprintHeading": "### 2. Live Market Data Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "src/Meridian.Wpf/Views/LiveDataViewerPage.xaml"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "screenshot-catalog",
+          "pageTag": "LiveData",
+          "captureName": "wpf-live-data"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~WorkstationPageSmokeTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-watchlist",
+      "title": "Watchlist Workspace",
+      "rootWorkspace": "Data",
+      "blueprintHeading": "### 3. Watchlist Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/WatchlistViewModelTests.cs"
+      ],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~WatchlistViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-historical-replay",
+      "title": "Historical Replay Workspace",
+      "rootWorkspace": "Strategy",
+      "blueprintHeading": "### 4. Historical Replay Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "screenshot-catalog",
+          "pageTag": "Backtest",
+          "captureName": "wpf-backtest"
+        },
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "Backtest",
+          "captureName": "02-backtest"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~BatchBacktestViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-strategy-research",
+      "title": "Strategy Research Workspace",
+      "rootWorkspace": "Strategy",
+      "blueprintHeading": "### 5. Strategy Research Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunBrowserViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/ResearchWorkspaceShellPageTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "screenshot-catalog",
+          "pageTag": "StrategyRuns",
+          "captureName": "wpf-strategy-runs"
+        },
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "StrategyRuns",
+          "captureName": "03-strategy-runs"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~StrategyRunBrowserViewModelTests|FullyQualifiedName~ResearchWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-strategy-builder",
+      "title": "Strategy Builder Workspace",
+      "rootWorkspace": "Strategy",
+      "blueprintHeading": "### 6. Strategy Builder Workspace",
+      "status": "planned",
+      "implementationPaths": [],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~QuantScriptViewModelTests|FullyQualifiedName~StrategyRunWorkspaceServiceTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-paper-trading",
+      "title": "Paper Trading Workspace",
+      "rootWorkspace": "Trading",
+      "blueprintHeading": "### 7. Paper Trading Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "TradingShell",
+          "captureName": "05-trading-shell"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~TradingWorkspaceShellViewModelTests|FullyQualifiedName~TradingWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-live-trading",
+      "title": "Live Trading Workspace",
+      "rootWorkspace": "Trading",
+      "blueprintHeading": "### 8. Live Trading Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "TradingShell",
+          "captureName": "05-trading-shell"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~TradingWorkspaceShellViewModelTests|FullyQualifiedName~PositionBlotterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-portfolio",
+      "title": "Portfolio Workspace",
+      "rootWorkspace": "Portfolio",
+      "blueprintHeading": "### 9. Portfolio Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "src/Meridian.Wpf/Views/AccountPortfolioPage.xaml",
+        "tests/Meridian.Wpf.Tests/ViewModels/AccountPortfolioViewModelTests.cs"
+      ],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~AccountPortfolioViewModelTests|FullyQualifiedName~AggregatePortfolioViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-position-exposure",
+      "title": "Position & Exposure Workspace",
+      "rootWorkspace": "Portfolio",
+      "blueprintHeading": "### 10. Position & Exposure Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "PositionBlotter",
+          "captureName": "06-position-blotter"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~PositionBlotterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-risk-management",
+      "title": "Risk Management Workspace",
+      "rootWorkspace": "Settings",
+      "blueprintHeading": "### 11. Risk Management Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "RunRisk",
+          "captureName": "07-run-risk"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~RunMatViewModelTests|FullyQualifiedName~TradingWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-reconciliation",
+      "title": "Reconciliation Workspace",
+      "rootWorkspace": "Accounting",
+      "blueprintHeading": "### 12. Reconciliation Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-governance",
+          "pageTag": "FundReconciliation",
+          "captureName": "03-fund-reconciliation"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~FundLedgerViewModelTests|FullyQualifiedName~FundReconciliationWorkbenchServiceTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-export-reporting",
+      "title": "Export & Reporting Workspace",
+      "rootWorkspace": "Reporting",
+      "blueprintHeading": "### 13. Export & Reporting Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/DataExportViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-governance",
+          "pageTag": "FundReportPack",
+          "captureName": "04-fund-report-pack"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~AnalysisExportViewModelTests|FullyQualifiedName~DataExportViewModelTests|FullyQualifiedName~ExportPresetsViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-backfill-data-repair",
+      "title": "Backfill & Data Repair Workspace",
+      "rootWorkspace": "Data",
+      "blueprintHeading": "### 14. Backfill & Data Repair Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/BackfillViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "screenshot-catalog",
+          "pageTag": "Backfill",
+          "captureName": "wpf-backfill"
+        },
+        {
+          "workflow": "manual-data-operations",
+          "pageTag": "Backfill",
+          "captureName": "04-backfill"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~BackfillViewModelTests|FullyQualifiedName~DataQualityViewModelCharacterizationTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-system-health-diagnostics",
+      "title": "System Health & Diagnostics Workspace",
+      "rootWorkspace": "Settings",
+      "blueprintHeading": "### 15. System Health & Diagnostics Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/SystemHealthPageSmokeTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "debug-startup",
+          "pageTag": "SystemHealth",
+          "captureName": "04-system-health"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~SystemHealthViewModelTests|FullyQualifiedName~SystemHealthPageSmokeTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-workflow-automation",
+      "title": "Workflow Automation Workspace",
+      "rootWorkspace": "Settings",
+      "blueprintHeading": "### 16. Workflow Automation Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs"
+      ],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~WorkflowLibraryViewModelTests|FullyQualifiedName~WorkstationWorkflowSummaryServiceTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-audit-activity",
+      "title": "Audit & Activity Workspace",
+      "rootWorkspace": "Accounting",
+      "blueprintHeading": "### 17. Audit & Activity Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs"
+      ],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~ActivityLogViewModelTests|FullyQualifiedName~MessagingHubViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-notification-alert-center",
+      "title": "Notification & Alert Center",
+      "rootWorkspace": "Settings",
+      "blueprintHeading": "### 18. Notification & Alert Center",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/NotificationCenterViewModelTests.cs"
+      ],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~NotificationCenterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-order-management",
+      "title": "Order Management Workspace",
+      "rootWorkspace": "Trading",
+      "blueprintHeading": "### 19. Order Management Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs"
+      ],
+      "workflowCoverage": [
+        {
+          "workflow": "manual-research-and-trading",
+          "pageTag": "PositionBlotter",
+          "captureName": "06-position-blotter"
+        }
+      ],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~PositionBlotterViewModelTests|FullyQualifiedName~TradingWorkspaceShellViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    },
+    {
+      "id": "desktop-screen-market-depth-order-book",
+      "title": "Market Depth / Order Book Workspace",
+      "rootWorkspace": "Trading",
+      "blueprintHeading": "### 20. Market Depth / Order Book Workspace",
+      "status": "partial",
+      "implementationPaths": [
+        "tests/Meridian.Wpf.Tests/ViewModels/OrderBookViewModelTests.cs"
+      ],
+      "workflowCoverage": [],
+      "validationCommands": [
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~OrderBookViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ]
+    }
+  ]
+}

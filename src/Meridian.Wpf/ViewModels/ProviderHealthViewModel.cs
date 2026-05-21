@@ -10,6 +10,8 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
+using Meridian.Wpf.Workstation.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -19,7 +21,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageActionBarProvider
+public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable, IPageActionBarProvider
 {
     private static readonly Brush ReadyPostureBrush = CreateFrozenBrush(63, 185, 80);
     private static readonly Brush WarningPostureBrush = CreateFrozenBrush(255, 193, 7);
@@ -49,6 +51,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     public ObservableCollection<ConnectionEventModel> ConnectionHistory { get; } = new();
     public ObservableCollection<ProviderManagementRowModel> ProviderManagementRows { get; } = new();
     public ObservableCollection<ProviderManagementSummaryCardModel> ProviderManagementSummaryCards { get; } = new();
+    public ObservableCollection<WorkstationMetricModel> ProviderMetricTiles { get; } = new();
 
     // ── Bindable properties ─────────────────────────────────────────────────
     private string _connectedCount = "0";
@@ -115,6 +118,56 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     private string _providerVerificationStatusText = "Credential verification can be run from Diagnostics.";
     public string ProviderVerificationStatusText { get => _providerVerificationStatusText; private set => SetProperty(ref _providerVerificationStatusText, value); }
 
+    private WorkstationStateModel _providerPostureState = WorkstationStateModel.Loading(
+        "Provider posture loading",
+        "Refresh provider health to compute the active streaming and backfill posture.");
+    public WorkstationStateModel ProviderPostureState { get => _providerPostureState; private set => SetProperty(ref _providerPostureState, value); }
+
+    private WorkstationBadgeModel _providerPostureBadge = new("Posture", "Loading", "\uE946", WorkspaceTone.Info);
+    public WorkstationBadgeModel ProviderPostureBadge { get => _providerPostureBadge; private set => SetProperty(ref _providerPostureBadge, value); }
+
+    private WorkstationCommandGroupModel _providerManagementCommandGroup = new();
+    public WorkstationCommandGroupModel ProviderManagementCommandGroup
+    {
+        get => _providerManagementCommandGroup;
+        private set => SetProperty(ref _providerManagementCommandGroup, value);
+    }
+
+    private WorkstationTableModel<ProviderManagementRowModel> _providerManagementTable =
+        BuildProviderManagementTable(new ObservableCollection<ProviderManagementRowModel>());
+    public WorkstationTableModel<ProviderManagementRowModel> ProviderManagementTable
+    {
+        get => _providerManagementTable;
+        private set => SetProperty(ref _providerManagementTable, value);
+    }
+
+    private InspectorPanelModel _selectedProviderInspector = BuildEmptyInspector();
+    public InspectorPanelModel SelectedProviderInspector
+    {
+        get => _selectedProviderInspector;
+        private set => SetProperty(ref _selectedProviderInspector, value);
+    }
+
+    private DiagnosticsChecklistModel _selectedProviderDiagnostics = BuildEmptyDiagnostics();
+    public DiagnosticsChecklistModel SelectedProviderDiagnostics
+    {
+        get => _selectedProviderDiagnostics;
+        private set => SetProperty(ref _selectedProviderDiagnostics, value);
+    }
+
+    private RoutingMatrixModel _selectedProviderRoutingMatrix = BuildEmptyRoutingMatrix();
+    public RoutingMatrixModel SelectedProviderRoutingMatrix
+    {
+        get => _selectedProviderRoutingMatrix;
+        private set => SetProperty(ref _selectedProviderRoutingMatrix, value);
+    }
+
+    public AuditTimelineModel ProviderActivityTimeline { get; } = new()
+    {
+        Title = "Connection History",
+        EmptyText = "No connection events recorded."
+    };
+
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Provider Health";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
@@ -135,6 +188,11 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
         _staleCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _staleCheckTimer.Tick += (_, _) => UpdateStaleIndicator();
+
+        ProviderManagementCommandGroup = BuildProviderManagementCommandGroup();
+        CommandGroup = ProviderManagementCommandGroup;
+        ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
+        UpdateProviderMetricTiles();
     }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -228,10 +286,30 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     {
         ConnectionHistory.Clear();
         HasNoHistory = true;
+        RebuildProviderActivityTimeline();
         _notificationService.ShowNotification(
             "History Cleared",
             "Connection history has been cleared.",
             NotificationType.Info);
+    }
+
+    public async Task ExecuteProviderManagementCommandAsync(string commandId, CancellationToken ct = default)
+    {
+        switch (commandId)
+        {
+            case "AddProvider":
+                OpenAddProviderWizard();
+                break;
+            case "RefreshStatus":
+                await RefreshAsync(ct);
+                break;
+            case "RunDiagnostics":
+                RunSelectedProviderDiagnostics();
+                break;
+            case "OpenSettings":
+                OpenProviderSettings();
+                break;
+        }
     }
 
     public void RunSelectedProviderDiagnostics()
@@ -500,6 +578,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         AvgLatency = _connectionService.State == ConnectionState.Connected
             ? $"{_connectionService.LastLatencyMs:F0}"
             : "--";
+        UpdateProviderMetricTiles();
         UpdateProviderPosture();
     }
 
@@ -526,6 +605,12 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         ProviderPostureIcon = posture.Icon;
         ProviderPostureAccentBrush = GetPostureAccentBrush(posture.Tone);
         ProviderPostureBackgroundBrush = GetPostureBackgroundBrush(posture.Tone);
+        ProviderPostureState = ToWorkstationState(posture);
+        ProviderPostureBadge = new WorkstationBadgeModel(
+            "Posture",
+            posture.Tone.ToString(),
+            posture.Icon,
+            ToWorkspaceTone(posture.Tone));
     }
 
     private void UpdateProviderManagementCenter()
@@ -543,6 +628,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
                 string.Equals(row.ProviderId, previouslySelectedProviderId, StringComparison.OrdinalIgnoreCase))
             ?? ProviderManagementRows.FirstOrDefault();
 
+        ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
         UpdateProviderManagementSummary();
     }
 
@@ -561,6 +647,9 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
                 AccentBrush = CreateModelBrush(139, 148, 158)
             });
             ProviderManagementStatusText = "No configured provider is available for management.";
+            SelectedProviderInspector = BuildEmptyInspector();
+            SelectedProviderDiagnostics = BuildEmptyDiagnostics();
+            SelectedProviderRoutingMatrix = BuildEmptyRoutingMatrix();
             return;
         }
 
@@ -610,7 +699,115 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         ProviderManagementStatusText =
             $"{ProviderManagementRows.Count} provider(s) loaded; selected {selected.DisplayName}. " +
             "Routing and advanced diagnostics are read-only placeholders in the retained desktop MVP.";
+        SelectedProviderInspector = BuildProviderInspector(selected);
+        SelectedProviderDiagnostics = BuildProviderDiagnosticsChecklist(selected);
+        SelectedProviderRoutingMatrix = BuildProviderRoutingMatrix(selected);
     }
+
+    internal static WorkstationTableModel<ProviderManagementRowModel> BuildProviderManagementTable(
+        ObservableCollection<ProviderManagementRowModel> rows)
+        => new(
+            rows,
+            [
+                new("Provider", nameof(ProviderManagementRowModel.DisplayName), 150),
+                new("Capability", nameof(ProviderManagementRowModel.CapabilityText), 130),
+                new("Status", nameof(ProviderManagementRowModel.HealthText), 90),
+                new("Credential", nameof(ProviderManagementRowModel.CredentialStateText), 105),
+                new("Verification", nameof(ProviderManagementRowModel.VerificationStateText), 110),
+                new("Last good", nameof(ProviderManagementRowModel.LastSuccessfulConnectionText), 130),
+                new("Workflows", nameof(ProviderManagementRowModel.AffectedWorkflowsText), 190),
+                new("Action", nameof(ProviderManagementRowModel.ActionText), 90)
+            ],
+            "Provider management table",
+            "No providers discovered",
+            "Configure a provider before routing Data workspace workflows.");
+
+    internal static WorkstationCommandGroupModel BuildProviderManagementCommandGroup()
+        => new()
+        {
+            PrimaryCommands =
+            [
+                new("AddProvider", "Add Provider", "Add a provider configuration.", "\uE710", WorkspaceTone.Primary),
+                new("RefreshStatus", "Refresh Status", "Refresh provider health and routing posture.", "\uE72C"),
+                new("RunDiagnostics", "Run Diagnostics", "Run selected provider diagnostics.", "\uE9D9")
+            ],
+            SecondaryCommands =
+            [
+                new("OpenSettings", "Open Settings", "Open provider settings.", "\uE713")
+            ]
+        };
+
+    internal static InspectorPanelModel BuildProviderInspector(ProviderManagementRowModel selected)
+        => new()
+        {
+            Title = selected.DisplayName,
+            Subtitle = selected.CapabilityText,
+            Detail = selected.TrustExplanationText,
+            Badge = new WorkstationBadgeModel("Health", selected.HealthText, "\uE946", ToneForHealth(selected.HealthText)),
+            Facts =
+            [
+                new("Credential state", selected.CredentialStateText, selected.CredentialSourceText),
+                new("Verification", selected.VerificationStateText, selected.LastVerifiedText),
+                new("Connection", selected.LastSuccessfulConnectionText),
+                new("Fallback", selected.FallbackText),
+                new("Last failure", selected.LastFailureText),
+                new("Last error", selected.LastErrorText),
+                new("Masked preview", selected.MaskedKeyPreviewText),
+                new("External account", selected.ExternalAccountIdText)
+            ]
+        };
+
+    internal static DiagnosticsChecklistModel BuildProviderDiagnosticsChecklist(ProviderManagementRowModel selected)
+        => new()
+        {
+            Title = "Diagnostics",
+            Detail = "Credential checks stay separate from provider health so routing decisions remain explainable.",
+            Items = selected.Diagnostics
+                .Select(static diagnostic => new DiagnosticsChecklistItemModel(
+                    diagnostic.Label,
+                    diagnostic.StatusText,
+                    diagnostic.Detail,
+                    ToneForDiagnosticStatus(diagnostic.StatusText)))
+                .ToArray()
+        };
+
+    internal static RoutingMatrixModel BuildProviderRoutingMatrix(ProviderManagementRowModel selected)
+        => new()
+        {
+            Title = "Routing Matrix",
+            Detail = selected.RecommendedActionText,
+            Rows = selected.AffectedWorkflowsText
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(workflow => new RoutingMatrixRowModel(
+                    workflow,
+                    selected.DisplayName,
+                    selected.HealthText,
+                    selected.FallbackText,
+                    ToneForHealth(selected.HealthText)))
+                .ToArray()
+        };
+
+    private static InspectorPanelModel BuildEmptyInspector()
+        => new()
+        {
+            Title = "No provider selected",
+            Subtitle = "Provider management",
+            Detail = "Select a provider to inspect credentials, routing, and diagnostics."
+        };
+
+    private static DiagnosticsChecklistModel BuildEmptyDiagnostics()
+        => new()
+        {
+            Title = "Diagnostics",
+            Detail = "Select a provider to review credential and route diagnostics."
+        };
+
+    private static RoutingMatrixModel BuildEmptyRoutingMatrix()
+        => new()
+        {
+            Title = "Routing Matrix",
+            Detail = "Select a provider to review affected workstation workflows."
+        };
 
     internal static IReadOnlyList<ProviderManagementRowModel> BuildProviderManagementRows(
         IReadOnlyCollection<ProviderStatusModel> streamingProviders,
@@ -920,6 +1117,104 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         return brush;
     }
 
+    private void UpdateProviderMetricTiles()
+    {
+        ProviderMetricTiles.Clear();
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Connected",
+            ConnectedCount,
+            "Streaming sessions ready",
+            "\uE73E",
+            WorkspaceTone.Success,
+            ReadyPostureBrush));
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Disconnected",
+            DisconnectedCount,
+            "Streaming sessions needing review",
+            "\uE783",
+            WorkspaceTone.Danger,
+            ErrorBrush()));
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Avg Latency",
+            AvgLatency,
+            "Milliseconds for active feed",
+            "\uE916",
+            WorkspaceTone.Info,
+            InfoBrush()));
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Total Providers",
+            TotalProviders,
+            "Streaming plus backfill",
+            "\uE968",
+            WorkspaceTone.Neutral,
+            NeutralPostureBrush));
+    }
+
+    private void RebuildProviderActivityTimeline()
+    {
+        ProviderActivityTimeline.Entries.Clear();
+        foreach (var evt in ConnectionHistory)
+        {
+            ProviderActivityTimeline.Entries.Add(new AuditTimelineEntryModel(
+                evt.Message,
+                evt.Provider,
+                evt.TimeText,
+                WorkspaceTone.Info));
+        }
+    }
+
+    private static WorkstationStateModel ToWorkstationState(ProviderHealthPostureState posture)
+    {
+        var kind = posture.Tone switch
+        {
+            ProviderHealthPostureTone.Ready => WorkstationStateKind.Ready,
+            ProviderHealthPostureTone.Warning => WorkstationStateKind.Stale,
+            ProviderHealthPostureTone.Critical => WorkstationStateKind.Blocked,
+            _ => WorkstationStateKind.Empty
+        };
+
+        return new WorkstationStateModel(
+            kind,
+            posture.Title,
+            posture.Detail,
+            posture.ActionText,
+            posture.TargetText,
+            posture.EvidenceText,
+            posture.Icon,
+            ToWorkspaceTone(posture.Tone));
+    }
+
+    private static string ToWorkspaceTone(ProviderHealthPostureTone tone)
+        => tone switch
+        {
+            ProviderHealthPostureTone.Ready => WorkspaceTone.Success,
+            ProviderHealthPostureTone.Warning => WorkspaceTone.Warning,
+            ProviderHealthPostureTone.Critical => WorkspaceTone.Danger,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static string ToneForHealth(string health)
+        => health switch
+        {
+            "Healthy" => WorkspaceTone.Success,
+            "Warning" => WorkspaceTone.Warning,
+            "Blocked" => WorkspaceTone.Danger,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static string ToneForDiagnosticStatus(string status)
+        => status switch
+        {
+            "Pass" => WorkspaceTone.Success,
+            "Fail" => WorkspaceTone.Danger,
+            "Review" => WorkspaceTone.Warning,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static Brush InfoBrush() => CreateModelBrush(31, 111, 235);
+
+    private static Brush ErrorBrush() => CreateModelBrush(244, 67, 54);
+
     private void AddConnectionEvent(string message, string provider, EventType eventType)
     {
         ConnectionHistory.Insert(0, new ConnectionEventModel
@@ -944,6 +1239,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
         foreach (var evt in ConnectionHistory)
             evt.TimeText = FormatTimeAgo(evt.Timestamp);
+
+        RebuildProviderActivityTimeline();
     }
 
     private static string FormatUptime(TimeSpan uptime)

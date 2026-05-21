@@ -69,6 +69,7 @@ These are the active documents for Waves 2-4 and the current short-horizon execu
 | [meridian-pilot-workflow.md](meridian-pilot-workflow.md) | Golden-path pilot workflow and productization filter |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 paper-session, replay, risk, promotion, and cockpit reliability plan |
 | [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation/shared-model migration context interpreted through the browser-first pivot |
+| [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) | Desktop workstation screen blueprint with a programmatically validated checklist for retained WPF support work |
 | [brokerage-portfolio-sync-blueprint.md](brokerage-portfolio-sync-blueprint.md) | Brokerage and custodian account-sync design for Wave 3-4 continuity |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Wave 4 governance, reconciliation, and report-pack blueprint |
 | [ledger.md](ledger.md) | Ledger execution roadmap for period management, persistence, multi-ledger depth, accruals, and reporting |

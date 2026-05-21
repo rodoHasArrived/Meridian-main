@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -63,135 +64,35 @@
             </Border>
 
             <!-- Summary Stats -->
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding ConnectedCount}" FontSize="32" FontWeight="Bold"
-                                   Foreground="{StaticResource SuccessColorBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Connected" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding DisconnectedCount}" FontSize="32" FontWeight="Bold"
-                                   Foreground="{StaticResource ErrorColorBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Disconnected" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="4" Style="{StaticResource CardStyle}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding AvgLatency}" FontSize="32" FontWeight="Bold"
-                                   Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Avg Latency (ms)" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="6" Style="{StaticResource CardStyle}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding TotalProviders}" FontSize="32" FontWeight="Bold"
-                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Total Providers" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
+            <ItemsControl ItemsSource="{Binding ProviderMetricTiles}" Margin="0,0,0,24"
+                          AutomationProperties.AutomationId="ProviderMetricTiles">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <workstation:MetricTileControl Metric="{Binding}" Width="178" Margin="0,0,12,12"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!-- Provider posture briefing -->
-            <Border x:Name="ProviderPostureBriefingCard"
-                    Style="{StaticResource CardStyle}" Margin="0,0,0,24"
-                    Background="{Binding ProviderPostureBackgroundBrush}"
-                    BorderBrush="{Binding ProviderPostureAccentBrush}"
-                    AutomationProperties.AutomationId="ProviderPostureBriefingCard"
-                    AutomationProperties.Name="{Binding ProviderPostureTitle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Width="4" CornerRadius="4"
-                            Background="{Binding ProviderPostureAccentBrush}" Margin="0,0,16,0"/>
-
-                    <Border Grid.Column="1" Width="42" Height="42" CornerRadius="14"
-                            Background="{StaticResource PremiumPanelBrush}"
-                            BorderBrush="{Binding ProviderPostureAccentBrush}" BorderThickness="1"
-                            VerticalAlignment="Center" Margin="0,0,14,0">
-                        <TextBlock Text="{Binding ProviderPostureIcon}"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="20"
-                                   Foreground="{Binding ProviderPostureAccentBrush}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
-                    </Border>
-
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding ProviderPostureTitle}"
-                                   FontSize="17"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                   AutomationProperties.AutomationId="ProviderPostureTitleText"/>
-                        <TextBlock Text="{Binding ProviderPostureDetail}"
-                                   Margin="0,5,24,0"
-                                   Style="{StaticResource CardDescriptionStyle}"
-                                   TextWrapping="Wrap"
-                                   AutomationProperties.AutomationId="ProviderPostureDetailText"/>
-                        <TextBlock Text="{Binding ProviderPostureEvidenceText}"
-                                   Margin="0,8,0,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   AutomationProperties.AutomationId="ProviderPostureEvidenceText"/>
-                    </StackPanel>
-
-                    <Border Grid.Column="3" CornerRadius="14" Padding="14,10"
-                            BorderBrush="{Binding ProviderPostureAccentBrush}" BorderThickness="1"
-                            Background="{StaticResource PremiumPanelBrush}"
-                            VerticalAlignment="Center"
-                            MinWidth="180"
-                            MaxWidth="260"
-                            AutomationProperties.AutomationId="ProviderPostureHandoffPanel">
-                        <StackPanel>
-                            <TextBlock Text="Next handoff"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                            <TextBlock Text="{Binding ProviderPostureActionText}"
-                                       Margin="0,3,0,0"
-                                       FontWeight="SemiBold"
-                                       Foreground="{Binding ProviderPostureAccentBrush}"
-                                       TextWrapping="Wrap"
-                                       AutomationProperties.AutomationId="ProviderPostureActionText"/>
-                            <TextBlock Text="Target"
-                                       Margin="0,8,0,0"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                            <TextBlock Text="{Binding ProviderPostureTargetText}"
-                                       Margin="0,3,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       TextWrapping="Wrap"
-                                       AutomationProperties.AutomationId="ProviderPostureTargetText"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </Border>
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <workstation:WorkstationStatePanelControl Grid.Column="0"
+                                                           State="{Binding ProviderPostureState}"
+                                                           AutomationProperties.AutomationId="ProviderPostureBriefingCard" />
+                <workstation:HealthBadgeControl Grid.Column="1"
+                                                Badge="{Binding ProviderPostureBadge}"
+                                                Margin="12,0,0,0"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AutomationId="ProviderPostureBadge" />
+            </Grid>
 
             <!-- Provider Management Center -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24"
@@ -217,23 +118,10 @@
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        AutomationProperties.AutomationId="ProviderManagementStatusText"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                            <Button Content="Add Provider"
-                                    Click="AddProvider_Click"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Margin="0,0,8,0"/>
-                            <Button Content="Refresh Status"
-                                    Click="Refresh_Click"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,8,0"/>
-                            <Button Content="Run Diagnostics"
-                                    Click="RunDiagnostics_Click"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,8,0"/>
-                            <Button Content="Open Settings"
-                                    Click="OpenSettings_Click"
-                                    Style="{StaticResource SecondaryButtonStyle}"/>
-                        </StackPanel>
+                        <workstation:WorkstationCommandBarControl Grid.Column="1"
+                                                                  CommandGroup="{Binding ProviderManagementCommandGroup}"
+                                                                  CommandInvoked="OnProviderManagementCommandInvoked"
+                                                                  VerticalAlignment="Top"/>
                     </Grid>
 
                     <StackPanel Margin="0,0,0,16">
@@ -297,127 +185,37 @@
                             <ColumnDefinition Width="0.9*"/>
                         </Grid.ColumnDefinitions>
 
-                        <ListView Grid.Column="0"
-                                  ItemsSource="{Binding ProviderManagementRows}"
-                                  SelectedItem="{Binding SelectedProviderManagementRow, Mode=TwoWay}"
-                                  MinHeight="260"
-                                  AutomationProperties.Name="Provider management table">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="Provider" Width="150" DisplayMemberBinding="{Binding DisplayName}"/>
-                                    <GridViewColumn Header="Capability" Width="130" DisplayMemberBinding="{Binding CapabilityText}"/>
-                                    <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding HealthText}"/>
-                                    <GridViewColumn Header="Credential" Width="105" DisplayMemberBinding="{Binding CredentialStateText}"/>
-                                    <GridViewColumn Header="Verification" Width="110" DisplayMemberBinding="{Binding VerificationStateText}"/>
-                                    <GridViewColumn Header="Last good" Width="130" DisplayMemberBinding="{Binding LastSuccessfulConnectionText}"/>
-                                    <GridViewColumn Header="Workflows" Width="190" DisplayMemberBinding="{Binding AffectedWorkflowsText}"/>
-                                    <GridViewColumn Header="Action" Width="90" DisplayMemberBinding="{Binding ActionText}"/>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
+                        <workstation:DenseDataGridControl Grid.Column="0"
+                                                          Table="{Binding ProviderManagementTable}"
+                                                          SelectedItem="{Binding SelectedProviderManagementRow, Mode=TwoWay}"
+                                                          MinHeight="260"
+                                                          AutomationProperties.Name="Provider management table"/>
 
-                        <Border Grid.Column="2"
-                                Style="{StaticResource CardStyle}"
-                                Padding="16"
-                                AutomationProperties.AutomationId="SelectedProviderManagementDetail">
-                            <StackPanel DataContext="{Binding SelectedProviderManagementRow}">
-                                <TextBlock Text="Selected Provider"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                <TextBlock Text="{Binding DisplayName, TargetNullValue='No provider selected'}"
-                                           Margin="0,4,0,0"
-                                           FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"/>
-                                <TextBlock Text="{Binding CapabilityText}"
-                                           Margin="0,2,0,12"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-
-                                <TabControl>
-                                    <TabItem Header="Overview">
-                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                            <StackPanel Margin="0,12,0,0">
-                                                <TextBlock Text="{Binding TrustExplanationText}"
-                                                           Style="{StaticResource CardDescriptionStyle}"
-                                                           TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding RecommendedActionText}"
-                                                           Margin="0,10,0,0"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{Binding HealthBrush}"
-                                                           TextWrapping="Wrap"/>
-                                                <UniformGrid Columns="2" Margin="0,12,0,0">
-                                                    <StackPanel Margin="0,0,12,10">
-                                                        <TextBlock Text="Health" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                        <TextBlock Text="{Binding HealthText}" Foreground="{Binding HealthBrush}" FontWeight="SemiBold"/>
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,12,10">
-                                                        <TextBlock Text="Connection" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                        <TextBlock Text="{Binding LastSuccessfulConnectionText}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,12,10">
-                                                        <TextBlock Text="Fallback" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                        <TextBlock Text="{Binding FallbackText}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,12,10">
-                                                        <TextBlock Text="Workflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                        <TextBlock Text="{Binding AffectedWorkflowsText}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,12,10">
-                                                        <TextBlock Text="Last failure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                        <TextBlock Text="{Binding LastFailureText}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,12,10">
-                                                        <TextBlock Text="Last error" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                        <TextBlock Text="{Binding LastErrorText}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                </UniformGrid>
-                                            </StackPanel>
-                                        </ScrollViewer>
-                                    </TabItem>
-                                    <TabItem Header="Credentials">
-                                        <StackPanel Margin="0,12,0,0">
-                                            <TextBlock Text="Raw secrets are never displayed after submit. Use Settings to replace or clear stored values."
-                                                       Style="{StaticResource CardDescriptionStyle}"
-                                                       TextWrapping="Wrap"/>
-                                            <UniformGrid Columns="2" Margin="0,12,0,0">
-                                                <StackPanel Margin="0,0,12,10">
-                                                    <TextBlock Text="Credential state" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                    <TextBlock Text="{Binding CredentialStateText}" FontWeight="SemiBold"/>
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,12,10">
-                                                    <TextBlock Text="Source" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                    <TextBlock Text="{Binding CredentialSourceText}" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,12,10">
-                                                    <TextBlock Text="Masked preview" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                    <TextBlock Text="{Binding MaskedKeyPreviewText}" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,12,10">
-                                                    <TextBlock Text="Environment" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                    <TextBlock Text="{Binding EnvironmentText}" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,12,10">
-                                                    <TextBlock Text="External account" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                    <TextBlock Text="{Binding ExternalAccountIdText}" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,12,10">
-                                                    <TextBlock Text="Last verified" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                                    <TextBlock Text="{Binding LastVerifiedText}" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </UniformGrid>
-                                        </StackPanel>
-                                    </TabItem>
-                                    <TabItem Header="Diagnostics">
-                                        <StackPanel Margin="0,12,0,0">
+                        <TabControl Grid.Column="2"
+                                    AutomationProperties.AutomationId="SelectedProviderManagementDetail">
+                            <TabItem Header="Overview">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <workstation:InspectorPanelControl Panel="{Binding SelectedProviderInspector}" Margin="0,12,0,0"/>
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Routing">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Border Style="{StaticResource CardStyle}" Padding="16" Margin="0,12,0,0">
+                                        <workstation:RoutingMatrixControl Matrix="{Binding SelectedProviderRoutingMatrix}"/>
+                                    </Border>
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Diagnostics">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Border Style="{StaticResource CardStyle}" Padding="16" Margin="0,12,0,0">
+                                        <StackPanel>
                                             <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0"
-                                                           Text="{Binding DataContext.ProviderVerificationStatusText, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                           Text="{Binding ProviderVerificationStatusText}"
                                                            Style="{StaticResource CardDescriptionStyle}"
                                                            TextWrapping="Wrap"/>
                                                 <Button Grid.Column="1"
@@ -426,39 +224,12 @@
                                                         Style="{StaticResource SecondaryButtonStyle}"
                                                         Margin="12,0,0,0"/>
                                             </Grid>
-                                            <ItemsControl ItemsSource="{Binding Diagnostics}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border BorderThickness="0,0,0,1"
-                                                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                                                Padding="0,8">
-                                                            <Grid>
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*"/>
-                                                                    <ColumnDefinition Width="Auto"/>
-                                                                </Grid.ColumnDefinitions>
-                                                                <StackPanel Grid.Column="0">
-                                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                                                                    <TextBlock Text="{Binding Detail}"
-                                                                               FontSize="12"
-                                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                                               TextWrapping="Wrap"/>
-                                                                </StackPanel>
-                                                                <TextBlock Grid.Column="1"
-                                                                           Text="{Binding StatusText}"
-                                                                           Foreground="{Binding StatusBrush}"
-                                                                           FontWeight="SemiBold"
-                                                                           Margin="12,0,0,0"/>
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
+                                            <workstation:DiagnosticsChecklistControl Checklist="{Binding SelectedProviderDiagnostics}"/>
                                         </StackPanel>
-                                    </TabItem>
-                                </TabControl>
-                            </StackPanel>
-                        </Border>
+                                    </Border>
+                                </ScrollViewer>
+                            </TabItem>
+                        </TabControl>
                     </Grid>
                 </StackPanel>
             </Border>

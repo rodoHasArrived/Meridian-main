@@ -9,12 +9,16 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 - `scripts/dev/generate-desktop-user-manual.ps1` runs one or more manual workflows and produces a markdown user manual plus screenshot assets.
 - `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
 - `scripts/dev/desktop-workflows.json` is the catalog of named workflows and per-step notes.
+- `scripts/dev/desktop_screen_blueprint_checklist.py` validates the machine-readable desktop screen blueprint checklist and verifies any workflow steps linked through `blueprintChecklistIds`.
 
 The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states. In the desktop shell this is presented as neutral demo data, not as an operational warning.
 
 ## Quick Commands
 
 ```powershell
+# Validate the desktop screen blueprint checklist
+python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary
+
 # Walk the default debugging flow
 pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 
@@ -176,6 +180,7 @@ Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
 - `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use canonical shell tags such as `StrategyShell`, `TradingShell`, `DataShell`, or `AccountingShell`; compatibility aliases remain accepted for existing workflows
+- `blueprintChecklistIds`: optional stable IDs from `docs/plans/desktop-workstation-screen-blueprint.checklist.json`; use this when a capture step proves a desktop workstation blueprint screen or support lane
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot

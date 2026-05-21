@@ -447,6 +447,8 @@
             </Border>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="2.3*" />
                     <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="3.2*" />
@@ -455,6 +457,58 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0"
+                        Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                        AutomationProperties.AutomationId="SecurityMasterFilterWorkbench">
+                    <StackPanel>
+                        <TextBlock Text="Search Filters" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding SearchFilterSummaryText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,6,0,12"
+                                   TextWrapping="Wrap" />
+
+                        <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Mapping Health" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding MappingHealthSummaryText}"
+                                           Margin="0,6,0,0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Asset Class"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding AssetClassFilterOptions}"
+                                  SelectedItem="{Binding SelectedAssetClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Margin="0,0,0,12"
+                                  AutomationProperties.AutomationId="SecurityMasterAssetClassFilter" />
+
+                        <TextBlock Text="Matched Provider"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding ProviderFilterOptions}"
+                                  SelectedItem="{Binding SelectedProviderFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Margin="0,0,0,12"
+                                  AutomationProperties.AutomationId="SecurityMasterProviderFilter" />
+
+                        <CheckBox Content="Mapping gaps only"
+                                  IsChecked="{Binding ShowMappingGapsOnly}"
+                                  Margin="0,0,0,12"
+                                  Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                  AutomationProperties.AutomationId="SecurityMasterMappingGapFilter" />
+
+                        <Button Content="Reset Filters"
+                                Command="{Binding ResetSearchFiltersCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                HorizontalAlignment="Left"
+                                AutomationProperties.AutomationId="SecurityMasterResetFiltersButton" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2"
                         Style="{StaticResource WorkspaceWorkbenchCardStyle}"
                         AutomationProperties.AutomationId="SecurityMasterResultsWorkbench">
                     <StackPanel>
@@ -498,7 +552,7 @@
                             </StackPanel>
                         </Border>
                         <ListBox x:Name="ResultsList"
-                                 ItemsSource="{Binding Results}"
+                                 ItemsSource="{Binding FilteredResults}"
                                  SelectedItem="{Binding SelectedSecurity, Mode=TwoWay}"
                                  SelectionChanged="ResultsList_SelectionChanged"
                                  Background="Transparent"
@@ -534,7 +588,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2"
+                <Border Grid.Column="4"
                         Style="{StaticResource WorkspaceWorkbenchCardStyle}"
                         AutomationProperties.AutomationId="SecurityMasterDetailWorkbench"
                         Visibility="{Binding HasSelectedSecurity, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -1035,7 +1089,7 @@
                     </ScrollViewer>
                 </Border>
 
-                <Border Grid.Column="2"
+                <Border Grid.Column="4"
                         Style="{StaticResource WorkspaceEmptyStateCardStyle}"
                         Visibility="{Binding HasSelectedSecurity, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40">
@@ -1053,7 +1107,7 @@
                     </StackPanel>
                 </Border>
 
-                <StackPanel Grid.Column="4">
+                <StackPanel Grid.Column="6">
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
                             AutomationProperties.AutomationId="SecurityMasterTrustPostureInspector">
                         <StackPanel>
