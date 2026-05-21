@@ -257,6 +257,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
     [Theory]
     [InlineData("ibkr", "DU-7001")]
     [InlineData("robinhood", "RH-9001")]
+    [InlineData("stocksharp", "SS-3001")]
     public async Task Scenario_BrokerageSyncDegradedSecurityCoverage_ProjectsProviderSpecificReadinessClaims(
         string providerId,
         string externalAccountId)
