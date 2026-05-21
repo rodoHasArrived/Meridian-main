@@ -296,7 +296,7 @@ public sealed class StrategyRunReadServiceTests
         await store.RecordRunAsync(live);
 
         var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
-        var runs = await service.GetRunsAsync(new StrategyRunHistoryQuery(null, null, 20));
+        var runs = await service.GetRunsAsync(new StrategyRunHistoryQuery(null, null, Limit: 20));
 
         runs.Should().HaveCount(3);
         runs.Single(run => run.RunId == "lineage-paper").ParentRunId.Should().Be("lineage-backtest");

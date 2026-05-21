@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;

@@ -6,6 +6,7 @@ using Meridian.Application.Config;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 

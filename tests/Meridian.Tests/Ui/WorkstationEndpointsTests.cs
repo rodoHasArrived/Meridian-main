@@ -391,7 +391,7 @@ public sealed class WorkstationEndpointsTests
                 "override-1",
                 "approve override",
                 "policy-1",
-                DateTimeOffset.UtcNow.AddDays(1)),
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))),
             ServerJsonOptions);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -1868,8 +1868,9 @@ public sealed class WorkstationEndpointsTests
             activeSession.ValueKind.Should().Be(JsonValueKind.Object);
             root.TryGetProperty("brokerageSync", out var brokerageSync).Should().BeTrue();
             brokerageSync.ValueKind.Should().Be(JsonValueKind.Null);
-            var firstCritical = readiness.WorkItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Critical);
-            var firstWarning = readiness.WorkItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Warning);
+            var workItems = readiness.WorkItems.ToList();
+            var firstCritical = workItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Critical);
+            var firstWarning = workItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Warning);
             firstCritical.Should().BeGreaterOrEqualTo(0);
             firstWarning.Should().BeGreaterOrEqualTo(0);
             firstCritical.Should().BeLessThan(firstWarning, "critical readiness blockers should be triaged before warning items");
@@ -2341,7 +2342,7 @@ public sealed class WorkstationEndpointsTests
                 syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
                 syncItem.TargetPageTag.Should().Be("ProviderConnectionCenter");
                 syncItem.TargetRoute.Should().Contain("-provider-setup");
-                syncItem.Detail.Should().Contain("credentials are missing", StringComparison.OrdinalIgnoreCase);
+                syncItem.Detail.Should().ContainEquivalentOf("credentials are missing");
             }
         }
         finally
