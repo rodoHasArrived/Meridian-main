@@ -64,9 +64,8 @@ The project plan set was reviewed against the current `AGENTS.md` direction, sha
 context, and the active roadmap source map. The consolidated planning entry point is now
 [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md), with
 [`../plans/README.md`](../plans/README.md) retaining the detailed file-by-file classification. The
-controlling interpretation is unchanged: Waves 2-4 are the core operator-readiness path, new
-operator UI work belongs in the browser workstation, retained WPF work is
-compatibility/support/regression evidence, and mobile-specific product lanes remain out of scope.
+controlling interpretation is unchanged: Waves 2-4 are the core operator-readiness path, browser and WPF operator workflows are both active, shared contracts remain the integration boundary,
+and mobile-specific product lanes remain out of scope.
 Plan documents that are target-state packages, optional tracks, or later-wave blueprints remain
 active only in the role named by the plan index; they do not alter the wave status table below.
 
