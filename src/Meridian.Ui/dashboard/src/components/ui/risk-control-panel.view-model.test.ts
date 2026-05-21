@@ -41,4 +41,52 @@ describe("buildRiskControlPanelViewModel", () => {
       }
     ]);
   });
+
+  it("projects drawdown save disabled reasons and field semantics from command state", () => {
+    const vm = buildRiskControlPanelViewModel([], {
+      loading: false,
+      saving: false,
+      loadFailed: false,
+      drawdownPercent: "",
+      submitted: true,
+      statusMessage: null,
+      statusTone: "default"
+    });
+
+    expect(vm.drawdownField).toMatchObject({
+      id: "risk-drawdown-threshold",
+      label: "Drawdown threshold percent",
+      error: true,
+      helpText: "Drawdown threshold is required before saving risk policy."
+    });
+    expect(vm.drawdownField.describedBy).toBe("risk-drawdown-threshold-help risk-control-status");
+    expect(vm.saveAction).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a drawdown threshold before saving.",
+      ariaLabel: "Save drawdown threshold unavailable: Enter a drawdown threshold before saving."
+    });
+  });
+
+  it("projects loading, refresh, and successful save announcement state", () => {
+    const vm = buildRiskControlPanelViewModel([], {
+      loading: true,
+      saving: false,
+      loadFailed: false,
+      drawdownPercent: "5",
+      submitted: false,
+      statusMessage: "Drawdown threshold saved.",
+      statusTone: "success"
+    });
+
+    expect(vm.loading).toBe(true);
+    expect(vm.panelAriaLabel).toBe("Trading risk controls");
+    expect(vm.panelAriaBusy).toBe(true);
+    expect(vm.emptyRowsText).toBe("Loading risk rules...");
+    expect(vm.refreshAction).toMatchObject({
+      label: "Refreshing",
+      busy: true,
+      disabledReason: "Risk controls are already refreshing."
+    });
+    expect(vm.statusAnnouncement).toBe("Loading risk controls.");
+  });
 });

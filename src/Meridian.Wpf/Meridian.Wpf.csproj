@@ -76,9 +76,6 @@
     <!-- Modern WPF Controls -->
     <PackageReference Include="MaterialDesignThemes" />
 
-    <!-- JSON Serialization -->
-    <PackageReference Include="System.Text.Json" />
-
     <!-- HttpClientFactory for proper HttpClient lifecycle management -->
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
@@ -90,12 +87,6 @@
     <!-- Logging -->
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-
-    <!-- Credential encryption (DPAPI) -->
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
-
-    <!-- Compression -->
-    <PackageReference Include="System.IO.Compression" />
 
     <!-- QuantScript editor and chart rendering -->
     <PackageReference Include="ZstdSharp.Port" />

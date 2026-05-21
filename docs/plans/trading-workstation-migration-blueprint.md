@@ -2,8 +2,16 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-05-18
-**Status:** Active blueprint — the active operator UI implementation lane is now the web dashboard in `src/Meridian.Ui/dashboard/`, with WPF retained for compatibility, support fixes, and shared-contract regression evidence. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and retained WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **trading workstation migration blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the trading workstation migration blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+**Status:** Active blueprint — browser and WPF are both active operator UI lanes, with business behavior owned by shared contracts, local/web API endpoints, and shared read models before either client composes it. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and retained WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
 
 ---
 
@@ -37,7 +45,7 @@ Meridian already contains strong underlying capabilities:
 - a double-entry ledger implementation
 - a broad WPF page inventory and supporting UI services
 
-However, those capabilities are still exposed through multiple page- and service-centric flows. The active operator UI lane is now the browser workstation, while the retained WPF shell has a seven-workspace compatibility baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first card ordering, Messaging Hub delivery posture with refresh recency, StrategyRuns filter recovery, BatchBacktest results empty guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing, route-aware account-scoped shell queue-button consumption of the shared operator inbox with shell-context attention cues, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that the active browser workflows are better, not just that retained shell compatibility is more organized.
+However, those capabilities are still exposed through multiple page- and service-centric flows. The active operator UI lanes are now the browser workstation and WPF workstation, with the WPF shell carrying a seven-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first card ordering, Messaging Hub delivery posture with refresh recency, StrategyRuns filter recovery, BatchBacktest results empty guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing, route-aware account-scoped shell queue-button consumption of the shared operator inbox with shell-context attention cues, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that both active client workflows consume the same shared model instead of drifting into parallel products.
 
 The newest shell support slice adds Welcome readiness progress for provider connection, symbol inventory, and storage-path posture; Storage preview scope/guidance for archive-path decisions; OrderBook order-flow posture for depth/tape/spread monitoring; compact command-bar presentation for shared deep-page hosts while retaining related-workflow and trust-state context; actionable shell-context attention detail; provider-degradation workflow summaries that hand off to `ProviderHealth`; brokerage-sync queue routing into `AccountPortfolio`; and Trading desk hero attention states for warning or critical shared readiness work items. These are useful operator-orientation improvements, but they remain evidence for validating the workstation migration rather than a separate completion claim.
 
@@ -292,7 +300,7 @@ These services should sit above raw engine/service primitives and below UI view 
 
 ## 6.4 Web workstation and local API direction
 
-The standalone-browser direction has been restored as the active operator UI lane through the React/Vite dashboard. The local API should remain the shared contract source so the web workstation, retained WPF shell, Swagger, and automation consume the same read models instead of drifting into separate products:
+The standalone-browser direction remains active through the React/Vite dashboard, and the WPF workstation is also active for Windows desktop workflows. The local API should remain the shared contract source so the web workstation, WPF shell, Swagger, and automation consume the same read models instead of drifting into separate products:
 
 - run browser, strategy-state, compare, diff, and promotion-history queries through shared workstation APIs
 - portfolio summary and cash / ledger inspection through localhost routes
@@ -462,7 +470,7 @@ The migration should be considered successful when the following are true:
 
 ### Product / UX
 
-- Users can navigate the product through the browser-first seven-workspace model, with retained WPF compatibility routing still available for desktop support instead of dozens of loosely-related pages.
+- Users can navigate the product through the seven-workspace model in browser and WPF surfaces instead of dozens of loosely-related pages.
 - Backtest, paper, and live capabilities share a recognizable run model.
 - Portfolio and ledger views are first-class navigation destinations.
 
@@ -483,7 +491,7 @@ The migration should be considered successful when the following are true:
 ## 11. Immediate Next Actions
 
 1. Align documentation and status reporting around this blueprint.
-2. Validate the browser-first workstation and retained WPF compatibility shell against real `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workflows.
+2. Validate the browser workstation and WPF shell against real `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workflows.
 3. Keep shared `StrategyRun`, `PortfolioSummary`, `LedgerSummary`, reconciliation, and promotion contracts under the compatibility matrix.
 4. Tie cockpit acceptance to DK1 provider trust, replay/sample parity, promotion rationale, and session/replay reliability.
 5. Keep the Trading desk briefing hero consuming shared active-run, workflow-summary, and operator-readiness state, including risk/control audit explainability, rather than becoming a shell-local readiness model.

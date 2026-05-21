@@ -111,8 +111,6 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
         ThrowIfDisposed();
         ValidateSymbol(symbol);
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = BuildRequestUrl(normalizedSymbol, from, to);
 
@@ -120,16 +118,12 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-            var httpResult = await ResponseHandler.HandleResponseAsync(response, symbol, "daily bars", ct: ct).ConfigureAwait(false);
-            if (httpResult.IsNotFound)
+            var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
+            if (json is null)
             {
                 Log.Warning("Nasdaq Data Link: Symbol {Symbol} not found", symbol);
                 return Array.Empty<AdjustedHistoricalBar>();
             }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             var result = DeserializeResponse<QuandlDatasetResponse>(json, symbol);
 
             if (result?.Dataset?.Data is null)

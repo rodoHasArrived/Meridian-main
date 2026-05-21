@@ -1,4 +1,5 @@
 using Meridian.Execution.Sdk;
+using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 

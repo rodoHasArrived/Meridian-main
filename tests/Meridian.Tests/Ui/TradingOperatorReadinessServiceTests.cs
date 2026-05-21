@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
@@ -46,7 +47,11 @@ public sealed class TradingOperatorReadinessServiceTests
         first.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         first.EvidenceCompleteness.Should().NotBeNull();
         first.EvidenceCompleteness!.BlockingGateIds.Should().Contain(["session", "replay"]);
-        first.EvidenceCompleteness.ReviewGateIds.Should().Contain("report-pack");
+        first.EvidenceCompleteness.ReviewGateIds.Should().Contain(["risk-rules", "report-pack"]);
+        first.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "risk-rules" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.Detail.Contains("unavailable", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -328,6 +333,31 @@ public sealed class TradingOperatorReadinessServiceTests
         readiness.ReadyForPaperOperation.Should().BeFalse();
     }
 
+    [Fact]
+    public void EvaluateOverallPosture_WithBlockedRiskRuleGate_ShouldBlockReadiness()
+    {
+        var gates = new[]
+        {
+            ReadyGate("replay"),
+            ReadyGate("reconciliation"),
+            ReadyGate("audit-controls"),
+            ReadyGate("promotion"),
+            ReadyGate("dk1-trust"),
+            ReadyGate("report-pack"),
+            ReadyGate("session"),
+            ReadyGate("brokerage-sync"),
+            new TradingAcceptanceGateDto(
+                GateId: "risk-rules",
+                Label: "Risk rules healthy",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: "PositionLimit: Symbol limit breached.")
+        };
+
+        var status = InvokeEvaluateOverallPosture(gates);
+
+        status.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+    }
+
 
     [Fact]
     public async Task GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndEmitSingleStaleReplayWorkItem()
@@ -373,9 +403,9 @@ public sealed class TradingOperatorReadinessServiceTests
         var auditTrail = new ExecutionAuditTrailService(
             new ExecutionAuditTrailOptions(Path.Combine(artifacts.RootPath, "audit-trail")),
             NullLogger<ExecutionAuditTrailService>.Instance);
-        var store = new FilePaperSessionStore(
+        var store = new JsonlFilePaperSessionStore(
             Path.Combine(artifacts.RootPath, "paper-sessions"),
-            NullLogger<FilePaperSessionStore>.Instance);
+            NullLogger<JsonlFilePaperSessionStore>.Instance);
         var firstPersistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             store,
@@ -429,6 +459,22 @@ public sealed class TradingOperatorReadinessServiceTests
         return new ExecutionAuditTrailService(
             new ExecutionAuditTrailOptions(root),
             NullLogger<ExecutionAuditTrailService>.Instance);
+    }
+
+    private static TradingAcceptanceGateDto ReadyGate(string gateId) => new(
+        GateId: gateId,
+        Label: gateId,
+        Status: TradingAcceptanceGateStatusDto.Ready,
+        Detail: "Ready.");
+
+    private static TradingAcceptanceGateStatusDto InvokeEvaluateOverallPosture(
+        IReadOnlyList<TradingAcceptanceGateDto> gates)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "EvaluateOverallPosture",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (TradingAcceptanceGateStatusDto)method!.Invoke(null, [gates])!;
     }
 
     private static OrderState CreateExecutionOrderState(string orderId, string symbol, decimal quantity) => new()
@@ -521,4 +567,24 @@ public sealed class TradingOperatorReadinessServiceTests
                 $"{kind} route mapping is a compatibility contract for operator inbox deep-links");
         }
     }
+
+
+    [Theory]
+    [InlineData("alpaca", "/settings#alpaca-provider-setup")]
+    [InlineData("ALPACA", "/settings#alpaca-provider-setup")]
+    [InlineData("ib", "/settings#ibkr-provider-setup")]
+    [InlineData("ibkr", "/settings#ibkr-provider-setup")]
+    [InlineData("interactive-brokers", "/settings#ibkr-provider-setup")]
+    [InlineData("stocksharp", "/settings#stocksharp-provider-setup")]
+    [InlineData("robinhood", "/settings#robinhood-provider-setup")]
+    [InlineData("unknown-provider", "/settings#provider-connection-center")]
+    [InlineData("", "/settings#provider-connection-center")]
+    public void ProviderConnectionRouteMapper_ShouldResolveProviderAwareRoutesWithFallback(string providerId, string expectedRoute)
+    {
+        var route = ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId);
+
+        route.Should().Be(expectedRoute);
+    }
+
+
 }

@@ -1101,6 +1101,29 @@ describe("LiveQuotesScreen quick trade", () => {
     vi.spyOn(api, "getLiveQuote").mockResolvedValue(quoteFixture);
     vi.spyOn(api, "getLiveTrades").mockResolvedValue(tradesFixture);
     vi.spyOn(api, "getLiveOrderbook").mockResolvedValue(orderbookFixture);
+    vi.spyOn(api, "getLiveQuotesSnapshot").mockResolvedValue({
+      timestamp: quoteFixture.timestamp,
+      count: 1,
+      quotes: [
+        {
+          symbol: "AAPL",
+          timestamp: quoteFixture.quote.timestamp,
+          bidPrice: quoteFixture.quote.bidPrice,
+          bidSize: quoteFixture.quote.bidSize,
+          askPrice: quoteFixture.quote.askPrice,
+          askSize: quoteFixture.quote.askSize,
+          midPrice: quoteFixture.quote.midPrice,
+          spread: quoteFixture.quote.spread,
+          lastPrice: quoteFixture.quote.session.last,
+          lastSize: null,
+          lastTradeTimestamp: quoteFixture.quote.session.lastTradeAt,
+          sequenceNumber: quoteFixture.quote.sequenceNumber,
+          streamId: quoteFixture.quote.streamId,
+          venue: quoteFixture.quote.venue,
+          session: quoteFixture.quote.session
+        }
+      ]
+    });
     vi.spyOn(api, "getHistoricalBars").mockResolvedValue({
       success: true,
       message: null,
@@ -1237,14 +1260,14 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a quantity greater than zero.");
     expect(screen.getByText("Seeded buy AAPL limit ticket at 188.07. Enter quantity, then acknowledge before submitting.")).toBeInTheDocument();
-    expect(screen.queryByText("Enter a quantity greater than zero.")).not.toBeInTheDocument();
+    expect(screen.getByText("Enter a quantity greater than zero.")).toBeInTheDocument();
 
     const quantityInput = screen.getByLabelText("Order quantity in shares");
     await user.type(quantityInput, "0");
 
     expect(quantityInput).toHaveAttribute("aria-invalid", "true");
     expect(submitSpy).not.toHaveBeenCalled();
-    expect(await screen.findByText("Enter a quantity greater than zero.")).toBeInTheDocument();
+    expect(screen.getAllByText("Enter a quantity greater than zero.").length).toBeGreaterThan(0);
   });
 
   it("syncs the active symbol when the symbol query parameter changes", async () => {

@@ -3,6 +3,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import {
   Dialog,
   DialogContent,
@@ -406,7 +407,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
+  const fundAccountId = asGuid(data?.brokerage?.account);
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const orderTicket = useOrderTicketViewModel({
@@ -843,7 +845,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <label
                   htmlFor={orderTicket.acknowledgement.id}
                   className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-                  title={orderTicket.acknowledgement.disabledReason ?? undefined}
                 >
                   <input
                     id={orderTicket.acknowledgement.id}
@@ -851,7 +852,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     checked={orderTicket.acknowledgement.checked}
                     disabled={orderTicket.acknowledgement.disabled}
                     onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
-                    aria-describedby={`${orderTicket.acknowledgement.id}-description`}
+                    aria-describedby={joinDescribedByIds(
+                      `${orderTicket.acknowledgement.id}-description`,
+                      `${orderTicket.acknowledgement.id}-disabled-reason`
+                    )}
                     className="mt-1 h-4 w-4 accent-primary"
                   />
                   <span>
@@ -859,6 +863,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
                       {orderTicket.acknowledgement.description}
                     </span>
+                    <FieldSupportText
+                      disabledReason={orderTicket.acknowledgement.disabledReason}
+                      disabledReasonId={`${orderTicket.acknowledgement.id}-disabled-reason`}
+                      disabledReasonClassName="mt-1 block"
+                    />
                   </span>
                 </label>
 
@@ -1017,12 +1026,18 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       value={paperSessions.strategyIdField.value}
                       autoComplete={paperSessions.strategyIdField.autoComplete}
                       aria-label={paperSessions.strategyIdField.ariaLabel}
-                      aria-describedby={paperSessions.strategyIdField.describedBy}
+                      aria-describedby={joinDescribedByIds(
+                        paperSessions.strategyIdField.describedBy,
+                        `${paperSessions.strategyIdField.id}-disabled-reason`
+                      )}
                       disabled={paperSessions.strategyIdField.disabled}
-                      title={paperSessions.strategyIdField.disabledReason ?? undefined}
                       error={paperSessions.strategyIdField.invalid}
                       onChange={(e) => paperSessions.updateField(paperSessions.strategyIdField.field, e.target.value)}
                       className="font-mono"
+                    />
+                    <FieldSupportText
+                      disabledReason={paperSessions.strategyIdField.disabledReason}
+                      disabledReasonId={`${paperSessions.strategyIdField.id}-disabled-reason`}
                     />
                   </div>
                   <div className="space-y-1">
@@ -1037,13 +1052,19 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       value={paperSessions.initialCashField.value}
                       autoComplete={paperSessions.initialCashField.autoComplete}
                       aria-label={paperSessions.initialCashField.ariaLabel}
-                      aria-describedby={paperSessions.initialCashField.describedBy}
+                      aria-describedby={joinDescribedByIds(
+                        paperSessions.initialCashField.describedBy,
+                        `${paperSessions.initialCashField.id}-disabled-reason`
+                      )}
                       disabled={paperSessions.initialCashField.disabled}
-                      title={paperSessions.initialCashField.disabledReason ?? undefined}
                       error={paperSessions.initialCashField.invalid}
                       onChange={(e) => paperSessions.updateField(paperSessions.initialCashField.field, e.target.value)}
                       className="font-mono"
                       required
+                    />
+                    <FieldSupportText
+                      disabledReason={paperSessions.initialCashField.disabledReason}
+                      disabledReasonId={`${paperSessions.initialCashField.id}-disabled-reason`}
                     />
                   </div>
                 </div>
@@ -1651,6 +1672,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
   );
 }
 
+function asGuid(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    ? value
+    : undefined;
+}
+
 function buildCockpitAcceptance({
   operatorReadiness,
   sessions,
@@ -2182,7 +2213,6 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
             <label
               htmlFor={vm.acknowledgement.id}
               className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-              title={vm.acknowledgement.disabledReason ?? undefined}
             >
               <input
                 id={vm.acknowledgement.id}
@@ -2190,7 +2220,10 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 checked={vm.acknowledgement.checked}
                 disabled={vm.acknowledgement.disabled}
                 onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
-                aria-describedby={`${vm.acknowledgement.id}-description`}
+                aria-describedby={joinDescribedByIds(
+                  `${vm.acknowledgement.id}-description`,
+                  `${vm.acknowledgement.id}-disabled-reason`
+                )}
                 className="mt-1 h-4 w-4 accent-primary"
               />
               <span>
@@ -2198,6 +2231,11 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 <span id={`${vm.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
                   {vm.acknowledgement.description}
                 </span>
+                <FieldSupportText
+                  disabledReason={vm.acknowledgement.disabledReason}
+                  disabledReasonId={`${vm.acknowledgement.id}-disabled-reason`}
+                  disabledReasonClassName="mt-1 block"
+                />
               </span>
             </label>
             <div className="flex justify-end gap-3">

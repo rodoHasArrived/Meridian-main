@@ -33,3 +33,45 @@
 - Commands:
   - `make desktop-test-operator-inbox-route`
   - `pwsh -File ./scripts/dev/validate-operator-inbox-route.ps1`
+
+## provider-validation-evidence-bundle
+
+- Owners: @provider-infra, @ops-readiness
+- Expected artifacts: artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json, artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json, artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
+- Commands:
+  - `pwsh ./scripts/dev/run-provider-validation-evidence-bundle.ps1`
+
+## ibapi-smoke-build
+
+- Owners: @provider-infra, @desktop-shell
+- Expected artifacts: artifacts/bin/ibapi-smoke
+- Commands:
+  - `pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release`
+
+## wpf-route-validation-position-blotter
+
+- Owners: @desktop-shell, @api-workstation
+- Expected artifacts: artifacts/wpf-validation/position-blotter-route
+- Commands:
+  - `pwsh -File ./scripts/dev/validate-position-blotter-route.ps1`
+
+## wpf-dev-loop-validation
+
+- Owners: @desktop-shell, @developer-experience
+- Expected artifacts: artifacts/wpf-validation/dev-loop
+- Commands:
+  - `pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore`
+
+## robinhood-options-smoke
+
+- Owners: @desktop-shell, @provider-infra
+- Expected artifacts: artifacts/desktop-workflows/robinhood-options-smoke
+- Commands:
+  - `pwsh ./scripts/dev/robinhood-options-smoke.ps1 -Configuration Release`
+
+## web-screenshot-capture
+
+- Owners: @operator-experience, @developer-experience
+- Expected artifacts: docs/screenshots/web
+- Commands:
+  - `node scripts/dev/capture-web-screenshots.mjs --output-dir docs/screenshots/web --config scripts/dev/web-screenshot-routes.json`

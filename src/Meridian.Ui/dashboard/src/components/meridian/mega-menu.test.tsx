@@ -67,9 +67,9 @@ describe("MegaMenu", () => {
     expect(screen.getByLabelText("Mega menu preserves operating scope: Subject: AAPL / Provider: alpaca")).toHaveTextContent(
       "Subject: AAPL / Provider: alpaca"
     );
-    expect(screen.getByRole("link", { name: "Open Readiness, Trading workspace, preserving Subject: AAPL" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Readiness, Trading workspace, preserving Subject: AAPL / Provider: alpaca" })).toHaveAttribute(
       "href",
-      "/trading/readiness?symbol=AAPL"
+      "/trading/readiness?symbol=AAPL&provider=alpaca"
     );
     expect(screen.getByRole("link", { name: "Live quotes, current route, Data workspace, preserving Subject: AAPL / Provider: alpaca" })).toHaveAttribute(
       "href",

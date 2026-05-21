@@ -187,27 +187,31 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void ReusableDotnetBuildWorkflow_ShouldEnableFullWpfTestsForSolutionBuildAndTest()
+    public void WindowsDesktopBuildWorkflow_ShouldEnableFullWpfBuildTestAndPublish()
     {
-        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\reusable-dotnet-build.yml"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\windows-desktop-build.yml"));
 
-        workflow.Should().Contain("default: 'Category!=Integration|FullyQualifiedName!~Integration'");
-        workflow.Should().Contain("dotnet restore Meridian.sln -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
-        workflow.Should().Contain("dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
-        workflow.Should().Contain("-p:EnableFullWpfBuild=true \\");
+        workflow.Should().Contain("dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        workflow.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj");
+        workflow.Should().Contain("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        workflow.Should().Contain("dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj");
+        workflow.Should().Contain("dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj");
+        workflow.Should().Contain("/p:EnableWindowsTargeting=true");
+        workflow.Should().Contain("/p:EnableFullWpfBuild=true");
+        workflow.Should().Contain("/p:WindowsPackageType=None");
+        workflow.Should().Contain("/p:PublishReadyToRun=false");
+        workflow.Should().Contain("artifacts/publish/desktop-smoke/Meridian.Desktop.exe");
     }
 
     [Fact]
-    public void RefreshScreenshotsWorkflow_ShouldTrackCheckpointHelperDependency()
+    public void WorkflowReadme_ShouldDocumentWindowsDesktopBuildWorkflow()
     {
-        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\refresh-screenshots.yml"));
+        var readme = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\README.md"));
 
-        workflow.Should().Contain("'scripts/dev/SharedCheckpoint.ps1'");
-        workflow.Should().Contain("pwsh -File scripts/dev/run-desktop-workflow.ps1");
-        workflow.Should().Contain("-SkipBuild");
-        workflow.Should().Contain("run: npm ci --include=optional");
-        workflow.Should().Contain("name: wpf-build-binaries");
-        workflow.Should().Contain("path: src");
+        readme.Should().Contain("| Windows Desktop Build | `windows-desktop-build.yml` |");
+        readme.Should().Contain("dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true");
+        readme.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None");
+        readme.Should().Contain("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&FullyQualifiedName!~Integration\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true");
     }
 
     [Fact]
@@ -231,6 +235,91 @@ public sealed class DesktopWorkflowScriptTests
             retentionIndex.Should().BeGreaterThan(0);
             summaryIndex.Should().BeGreaterThan(retentionIndex);
         }
+    }
+
+    [Fact]
+    public void WpfDevelopmentTestScript_ShouldUseSerializedBuildAndFocusedTestDefaults()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
+        var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
+        var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
+        var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
+
+        script.Should().Contain("[string]$Filter = \"FullyQualifiedName~DesktopWorkflowScriptTests\"");
+        script.Should().Contain("[switch]$BuildOnly");
+        script.Should().Contain("[switch]$Restore");
+        script.Should().Contain("[switch]$AllowConcurrentDotnet");
+        script.Should().Contain("New-MeridianBuildIsolationKey -Prefix \"wpf-dev-test\"");
+        script.Should().Contain("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot");
+        script.Should().Contain("Get-ActiveRepoDotnetProcess");
+        script.Should().Contain("active-dotnet-processes.log");
+        script.Should().Contain("/m:1");
+        script.Should().Contain("/nr:false");
+        script.Should().Contain("/p:BuildInParallel=false");
+        script.Should().Contain("/p:UseSharedCompilation=false");
+        script.Should().Contain("/p:EnableWindowsTargeting=true");
+        script.Should().Contain("/p:EnableFullWpfBuild=true");
+        script.Should().Contain("/p:WindowsPackageType=None");
+        script.Should().Contain("dotnet\",");
+        script.Should().Contain("\"build\"");
+        script.Should().Contain("$wpfProject");
+        script.Should().Contain("$wpfTestsProject");
+        script.Should().Contain("\"test\"");
+        script.Should().Contain("--no-build");
+        script.Should().Contain("wpf-dev-test-validation.json");
+
+        sharedBuildScript.Should().Contain("function Invoke-MeridianLoggedStep");
+        sharedBuildScript.Should().Contain("[System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))");
+        sharedBuildScript.Should().Contain("Stop-MeridianRepoOwnedTestHostProcesses");
+        sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
+
+        makefile.Should().Contain("desktop-test-dev:");
+        makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");
+
+        guide.Should().Contain("pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1");
+        guide.Should().Contain("make desktop-test-dev");
+        guide.Should().Contain("-AllowConcurrentDotnet");
+        guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
+    }
+
+    [Fact]
+    public void DesktopDevBootstrap_ShouldUseSharedDesktopToolingAndCurrentCommands()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-dev.ps1"));
+        var launcher = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop.ps1"));
+
+        script.Should().Contain("[string]$Profile = 'debug-startup'");
+        script.Should().Contain("[switch]$SkipLaunchSmoke");
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedBuild.ps1')");
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')");
+        script.Should().Contain("$buildIsolationKey = if ($NoIsolation) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-dev' }");
+        script.Should().Contain("Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot");
+        script.Should().Contain("Test-MeridianWorkflowProfile -ProfileData $profileEnvelope.data");
+        script.Should().Contain("Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild");
+        script.Should().Contain("dotnet', 'build', $wpfProject, '-c', $Configuration, '--no-restore'");
+        script.Should().Contain("dotnet', 'build', $wpfTestsProject, '-c', $Configuration, '--no-restore'");
+        script.Should().Contain("Launch fixture desktop startup smoke");
+        script.Should().Contain("run-desktop.ps1");
+        script.Should().Contain("'-StartupSmoke'");
+        script.Should().Contain("make desktop-test-position-blotter-route");
+        script.Should().Contain("pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup");
+        script.Should().Contain("python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary");
+        script.Should().Contain("Launch full fixture desktop: pwsh ./scripts/dev/run-desktop.ps1 -Fixture");
+
+        launcher.Should().Contain("[switch]$StartupSmoke");
+        launcher.Should().Contain("[int]$StartupSmokeTimeoutSec = 45");
+        launcher.Should().Contain("$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }");
+        launcher.Should().Contain("function Wait-ForDesktopWindow");
+        launcher.Should().Contain("function Stop-DesktopProcessAfterSmoke");
+        launcher.Should().Contain("Write-Step 'Startup smoke'");
+        launcher.Should().Contain("Wait-ForDesktopWindow -Process $desktopProcess -TimeoutSec $StartupSmokeTimeoutSec");
+        launcher.Should().Contain("Stop-DesktopProcessAfterSmoke -Process $desktopProcess");
+        launcher.Should().Contain("Meridian desktop startup smoke completed successfully");
+
+        script.Should().NotContain("src/Meridian.Uwp/Meridian.Uwp.csproj");
+        script.Should().NotContain("make build-wpf");
+        script.Should().NotContain("make test-desktop-services");
+        script.Should().NotContain("make uwp-xaml-diagnose");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

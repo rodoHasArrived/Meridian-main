@@ -222,8 +222,8 @@ public sealed class ProviderSetupService
 
     private static DataSourceType ResolveSourceType(IReadOnlyList<string> capabilities)
     {
-        var hasStreaming = capabilities.Any(c => string.Equals(c, "streaming", StringComparison.OrdinalIgnoreCase));
-        var hasBackfill = capabilities.Any(c => string.Equals(c, "backfill", StringComparison.OrdinalIgnoreCase));
+        var hasStreaming = capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.RealtimeMarketData));
+        var hasBackfill = capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.HistoricalBars));
         return (hasStreaming, hasBackfill) switch
         {
             (true, true) => DataSourceType.Both,
@@ -235,7 +235,7 @@ public sealed class ProviderSetupService
     private static string[] NormalizeCapabilities(IReadOnlyList<string>? capabilities)
         => capabilities?
             .Where(capability => !string.IsNullOrWhiteSpace(capability))
-            .Select(capability => capability.Trim().ToLowerInvariant())
+            .Select(CanonicalizeCapability)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(capability => capability, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? Array.Empty<string>();
@@ -335,13 +335,7 @@ public sealed class ProviderSetupService
         var kinds = new List<ProviderCapabilityKind>();
         foreach (var capability in capabilities)
         {
-            var kind = capability switch
-            {
-                "streaming" => ProviderCapabilityKind.RealtimeMarketData,
-                "backfill" => ProviderCapabilityKind.HistoricalBars,
-                "reference" => ProviderCapabilityKind.ReferenceData,
-                _ => (ProviderCapabilityKind?)null
-            };
+            var kind = ResolveCapabilityKind(capability);
 
             if (kind is not null && !kinds.Contains(kind.Value))
             {
@@ -360,6 +354,38 @@ public sealed class ProviderSetupService
             DataSourceType.Both => [ProviderCapabilityKind.RealtimeMarketData, ProviderCapabilityKind.HistoricalBars],
             _ => [ProviderCapabilityKind.RealtimeMarketData]
         };
+    }
+
+    private static bool ResolvesCapability(string capability, ProviderCapabilityKind expected)
+        => ResolveCapabilityKind(capability) == expected;
+
+    private static ProviderCapabilityKind? ResolveCapabilityKind(string? capability)
+        => NormalizeCapabilityAlias(capability) switch
+        {
+            "streaming" or "realtime" or "realtimemarketdata" or "realtimedata"
+                => ProviderCapabilityKind.RealtimeMarketData,
+            "backfill" or "historical" or "historicalbars" or "historicaldata"
+                => ProviderCapabilityKind.HistoricalBars,
+            "reference" or "referencedata"
+                => ProviderCapabilityKind.ReferenceData,
+            _ => null
+        };
+
+    private static string CanonicalizeCapability(string? capability)
+        => ResolveCapabilityKind(capability) switch
+        {
+            ProviderCapabilityKind.RealtimeMarketData => "realtime-market-data",
+            ProviderCapabilityKind.HistoricalBars => "historical-bars",
+            ProviderCapabilityKind.ReferenceData => "reference-data",
+            _ => (capability ?? string.Empty).Trim().ToLowerInvariant()
+        };
+
+    private static string NormalizeCapabilityAlias(string? capability)
+    {
+        var normalized = (capability ?? string.Empty).Trim().ToLowerInvariant();
+        return normalized.Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal);
     }
 
     private static string BuildBindingId(
@@ -406,9 +432,9 @@ public sealed class ProviderSetupService
             }
         }
 
-        return capabilities.Contains("streaming", StringComparer.OrdinalIgnoreCase) ||
-               capabilities.Contains("backfill", StringComparer.OrdinalIgnoreCase) ||
-               capabilities.Contains("reference", StringComparer.OrdinalIgnoreCase)
+        return capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.RealtimeMarketData)) ||
+               capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.HistoricalBars)) ||
+               capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.ReferenceData))
             ? ProviderConnectionMode.ReadOnly
             : ProviderConnectionMode.Research;
     }

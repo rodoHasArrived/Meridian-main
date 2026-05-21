@@ -60,6 +60,18 @@ public static class PipelinePolicyConstants
 
 
     /// <summary>
+    /// DurableStreaming preset capacity for persistence-critical streaming pipelines.
+    /// </summary>
+    public const int DurableStreamingCapacity = 50_000;
+
+    /// <summary>
+    /// DurableStreaming preset full mode (Wait/backpressure - no silent eviction).
+    /// </summary>
+    public const int DurableStreamingFullMode = FullModeWait;
+
+
+
+    /// <summary>
     /// MessageBuffer preset capacity for internal message buffering.
     /// </summary>
     public const int MessageBufferCapacity = 50_000;

@@ -20,7 +20,7 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
             return null;
         }
 
-        var row = await _projectionStore.GetContractAsync(contractSymbol.Trim(), ct).ConfigureAwait(false);
+        var row = await _projectionStore.GetContractAsync(NormalizeIdentifier(contractSymbol), ct).ConfigureAwait(false);
         return row is null ? null : MapContract(row);
     }
 
@@ -31,10 +31,11 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
             return null;
         }
 
+        var normalizedOptionChainId = NormalizeIdentifier(optionChainId);
         var rows = await _projectionStore
-            .GetSeriesContractsAsync(optionChainId.Trim(), expiryDate, ct)
+            .GetSeriesContractsAsync(normalizedOptionChainId, expiryDate, ct)
             .ConfigureAwait(false);
-        return rows.Count == 0 ? null : MapSeries(rows, optionChainId.Trim(), expiryDate);
+        return rows.Count == 0 ? null : MapSeries(rows, normalizedOptionChainId, expiryDate);
     }
 
     public async Task<OptionChainSnapshotDto?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiryDate, CancellationToken ct = default)
@@ -44,8 +45,9 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
             return null;
         }
 
+        var normalizedUnderlyingSymbol = NormalizeIdentifier(underlyingSymbol);
         var rows = await _projectionStore
-            .GetUnderlyingContractsAsync(underlyingSymbol.Trim(), expiryDate, ct)
+            .GetUnderlyingContractsAsync(normalizedUnderlyingSymbol, expiryDate, ct)
             .ConfigureAwait(false);
         if (rows.Count == 0)
         {
@@ -59,7 +61,7 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
 
         return new OptionChainSnapshotDto(
             grouped[0].OptionChainId,
-            rows[0].UnderlyingSymbol,
+            normalizedUnderlyingSymbol,
             expiryDate,
             rows.Max(r => r.LastUpdatedUtc),
             rows.Count,
@@ -80,7 +82,7 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
     public Task<IReadOnlyList<DateOnly>> GetExpiryLadderAsync(string underlyingSymbol, CancellationToken ct = default)
         => string.IsNullOrWhiteSpace(underlyingSymbol)
             ? Task.FromResult<IReadOnlyList<DateOnly>>(Array.Empty<DateOnly>())
-            : _projectionStore.GetExpiryLadderAsync(underlyingSymbol.Trim(), ct);
+            : _projectionStore.GetExpiryLadderAsync(NormalizeIdentifier(underlyingSymbol), ct);
 
     public async Task<OptionChainSnapshotDto> ImportSnapshotAsync(OptionChainSnapshot snapshot, CancellationToken ct = default)
     {
@@ -88,12 +90,13 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
 
         await _projectionStore.UpsertChainSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
-        var chainId = BuildOptionChainId(snapshot.UnderlyingSymbol, snapshot.Expiration);
+        var normalizedUnderlyingSymbol = NormalizeIdentifier(snapshot.UnderlyingSymbol);
+        var chainId = BuildOptionChainId(normalizedUnderlyingSymbol, snapshot.Expiration);
         var series = await GetSeriesAsync(chainId, snapshot.Expiration, ct).ConfigureAwait(false);
 
         return new OptionChainSnapshotDto(
             chainId,
-            snapshot.UnderlyingSymbol.ToUpperInvariant(),
+            normalizedUnderlyingSymbol,
             snapshot.Expiration,
             snapshot.Timestamp,
             snapshot.TotalContracts,
@@ -130,7 +133,10 @@ public sealed class OptionProjectionService : IOptionReferenceService, IOptionCh
     }
 
     private static string BuildOptionChainId(string underlyingSymbol, DateOnly expiryDate)
-        => $"{underlyingSymbol.Trim().ToUpperInvariant()}-{expiryDate:yyyyMMdd}";
+        => $"{NormalizeIdentifier(underlyingSymbol)}-{expiryDate:yyyyMMdd}";
+
+    private static string NormalizeIdentifier(string value)
+        => value.Trim().ToUpperInvariant();
 }
 
 public sealed class NullOptionReferenceService : IOptionReferenceService

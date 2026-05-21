@@ -139,8 +139,10 @@ function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerRespon
 }
 
 const apiBaseUrl = resolveMeridianApiBaseUrl();
+const appRoot = path.resolve(__dirname);
 
 export default defineConfig({
+  root: appRoot,
   base: "/workstation/",
   plugins: [react()],
   server: {

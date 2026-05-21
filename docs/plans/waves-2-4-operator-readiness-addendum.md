@@ -2,11 +2,19 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **waves 2 4 operator readiness addendum** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the waves 2 4 operator readiness addendum workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
 
 Planning review note 2026-05-18: this addendum remains the active dependency plan for Waves 2-4.
-It should be interpreted through the browser-first operator UI lane, retained-WPF support policy,
+It should be interpreted through the shared-contract-first browser and WPF operator UI policy,
 the consolidated current-direction entry point in
 [`current-direction-and-status.md`](current-direction-and-status.md), and the active plan index in
 [`README.md`](README.md).
@@ -110,7 +118,7 @@ It should be read with:
 
 ### Workstation Shell and UX
 
-- Owns browser-dashboard navigation and operator interaction patterns for new UI work, plus retained WPF shell consumption, operating-context switching, notification center, command palette, and workflow deep-linking where shared-contract regression coverage requires it.
+- Owns browser-dashboard and WPF shell navigation, operator interaction patterns, operating-context switching, notification center, command palette, and workflow deep-linking where shared contracts require both surfaces to stay aligned.
 - Primary repo anchors: `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui.Shared/Endpoints/`, `src/Meridian.Wpf/Models/`, `src/Meridian.Wpf/ViewModels/`, `src/Meridian.Wpf/Services/`.
 
 ### Data Confidence and Validation
@@ -124,7 +132,7 @@ It should be read with:
 
 1. Wave 1 trust-gate evidence stays green before any Wave 2-4 readiness claim is promoted.
 2. Wave 2 durable promotion traceability is a prerequisite for **Wave 3 exit claims** and Wave 4 governance handoff; limited Wave 3 pre-work may proceed in parallel when it stays release-neutral and does not bypass DK2 entry/exit criteria.
-3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; new operator UI scope belongs in the browser dashboard while WPF remains retained support.
+3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; browser and WPF UI scope must consume shared contracts rather than define client-local business state.
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
 6. Accounting-led commercial slices must start with shared contract/readiness definitions such as accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness before web dashboard workflow expansion.
@@ -205,7 +213,7 @@ Turn the current paper-trading cockpit from "visible" into "dependable" by makin
 
 ### Objective
 
-Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser dashboard, and retained WPF support surfaces.
+Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser dashboard, and WPF desktop surfaces.
 
 Current WPF evidence now includes RunCashFlow guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Keep that in the Wave 3 continuity lane; governance-wide cash-flow projections and reporting still belong to Wave 4.
 

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.decision-log.v1",
+  "type": "object",
+  "required": ["schema", "decisions"],
+  "properties": {
+    "schema": { "type": "object" },
+    "decisions": { "type": "array" }
+  },
+  "additionalProperties": false
+}

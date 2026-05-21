@@ -544,4 +544,153 @@ public sealed class FundAccountServiceTests
             issue.Code == "account.reconciliation.breaks_open"
             && issue.Severity == AccountReadinessSeverityDto.Warning);
     }
+
+    [Fact]
+    public async Task MarginSnapshots_PersistAndDedupesByCorrelation()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "meridian-fund-account-tests", $"{Guid.NewGuid():N}.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        try
+        {
+            var svc = new InMemoryFundAccountService(path);
+            var account = await svc.CreateAccountAsync(new CreateAccountRequest(
+                Guid.NewGuid(),
+                AccountTypeDto.Margin,
+                "MRG-PERSIST",
+                "Persistent Margin",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-1),
+                "tests",
+                Institution: "alpaca",
+                LedgerReference: "BROKERAGE-MARGIN"));
+
+            var first = await svc.RecordMarginSnapshotAsync(new RecordMarginSnapshotRequest(
+                AccountId: account.AccountId,
+                EffectiveAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+                Currency: "usd",
+                MarginType: MarginModelTypeDto.RegT,
+                ExcessLiquidity: 25_000m,
+                BuyingPower: 100_000m,
+                CorrelationId: "margin-sync-1",
+                SnapshotEvidencePath: "artifacts/account-sync/margin/current.json"));
+            var second = await svc.RecordMarginSnapshotAsync(new RecordMarginSnapshotRequest(
+                AccountId: account.AccountId,
+                EffectiveAt: DateTimeOffset.UtcNow,
+                Currency: "USD",
+                MarginType: MarginModelTypeDto.RegT,
+                ExcessLiquidity: 30_000m,
+                BuyingPower: 120_000m,
+                CorrelationId: "margin-sync-1",
+                SnapshotEvidencePath: "artifacts/account-sync/margin/current.json"));
+
+            second.MarginSnapshotId.Should().Be(first.MarginSnapshotId);
+
+            var restored = new InMemoryFundAccountService(path);
+            var snapshots = await restored.GetMarginSnapshotsAsync(account.AccountId);
+            var latest = await restored.GetLatestMarginSnapshotAsync(account.AccountId);
+
+            snapshots.Should().ContainSingle();
+            latest.Should().NotBeNull();
+            latest!.Currency.Should().Be("USD");
+            latest.ExcessLiquidity.Should().Be(30_000m);
+            latest.SnapshotEvidencePath.Should().Be("artifacts/account-sync/margin/current.json");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Readiness_FlagsMissingMarginSnapshotForMarginAccount()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(),
+            AccountTypeDto.Margin,
+            "MRG-MISSING",
+            "Missing Margin",
+            "USD",
+            DateTimeOffset.UtcNow.AddDays(-1),
+            "tests",
+            Institution: "alpaca",
+            LedgerReference: "BROKERAGE-MARGIN"));
+        await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+            AccountId: account.AccountId,
+            Capability: "margin-sync",
+            Status: AccountSyncStatusDto.Succeeded,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-MARGIN",
+            FreshUntil: DateTimeOffset.UtcNow.AddHours(1)));
+
+        var readiness = await svc.GetReadinessAsync(account.AccountId);
+
+        readiness.Should().NotBeNull();
+        readiness!.Issues.Should().Contain(issue =>
+            issue.Code == "account.margin.snapshot.missing"
+            && issue.Severity == AccountReadinessSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task Readiness_FlagsMarginSnapshotRiskBlockers()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(),
+            AccountTypeDto.Margin,
+            "MRG-RISK",
+            "Risk Margin",
+            "USD",
+            DateTimeOffset.UtcNow.AddDays(-1),
+            "tests",
+            Institution: "alpaca",
+            LedgerReference: "BROKERAGE-MARGIN"));
+        await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+            AccountId: account.AccountId,
+            Capability: "margin-sync",
+            Status: AccountSyncStatusDto.Succeeded,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-RISK",
+            FreshUntil: DateTimeOffset.UtcNow.AddHours(1)));
+        await svc.RecordMarginSnapshotAsync(new RecordMarginSnapshotRequest(
+            AccountId: account.AccountId,
+            EffectiveAt: DateTimeOffset.UtcNow.AddHours(-3),
+            Currency: "USD",
+            MarginType: MarginModelTypeDto.Unsupported,
+            MarginCallStatus: MarginCallStatusDto.Active,
+            MaintenanceMargin: 50_000m,
+            ExcessLiquidity: -125m,
+            MissingRequirementCount: 2,
+            MissingCollateralClassificationCount: 1,
+            ConcentrationLimitBreachCount: 1,
+            IsLiveAccount: true,
+            ApprovedForLiveMargin: false,
+            ProviderId: "ibkr",
+            ExternalAccountId: "IB-RISK",
+            FreshUntil: DateTimeOffset.UtcNow.AddMinutes(-30),
+            SnapshotEvidencePath: "artifacts/account-sync/margin/ib-risk.json"));
+
+        var readiness = await svc.GetReadinessAsync(account.AccountId);
+
+        readiness.Should().NotBeNull();
+        readiness!.IsReady.Should().BeFalse();
+        readiness.Issues.Select(static issue => issue.Code).Should().Contain([
+            "account.margin.model.unsupported",
+            "account.margin.snapshot.stale",
+            "account.margin.requirements.missing",
+            "account.margin.excess_liquidity.negative",
+            "account.margin.call.active",
+            "account.margin.collateral_classification.missing",
+            "account.margin.concentration_limit.breached",
+            "account.margin.live_approval.missing",
+            "account.margin.provider_mismatch"
+        ]);
+        readiness.Issues.Single(issue => issue.Code == "account.margin.call.active")
+            .EvidenceLink.Should().Be("artifacts/account-sync/margin/ib-risk.json");
+    }
 }

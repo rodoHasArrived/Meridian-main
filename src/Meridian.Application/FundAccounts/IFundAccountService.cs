@@ -108,4 +108,17 @@ public interface IFundAccountService
     Task<AccountReadinessSnapshotDto?> GetReadinessAsync(
         Guid accountId,
         CancellationToken ct = default);
+
+    // ── Margin snapshots ────────────────────────────────────────────────────
+
+    Task<MarginSnapshotDto> RecordMarginSnapshotAsync(
+        RecordMarginSnapshotRequest request, CancellationToken ct = default);
+
+    Task<IReadOnlyList<MarginSnapshotDto>> GetMarginSnapshotsAsync(
+        Guid accountId,
+        CancellationToken ct = default);
+
+    Task<MarginSnapshotDto?> GetLatestMarginSnapshotAsync(
+        Guid accountId,
+        CancellationToken ct = default);
 }

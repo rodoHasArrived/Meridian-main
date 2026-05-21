@@ -2,12 +2,13 @@
 # Build, Run, Format, Watch & Publish
 # =============================================================================
 
-.PHONY: build build-quick build-web-workstation run run-backfill run-selftest \
+.PHONY: bootstrap verify-fast verify-full verify-release \
+        build build-quick build-web-workstation run run-backfill run-selftest \
         lint format format-check \
         watch watch-build \
         install-hooks setup-dev \
         clean \
-        benchmark bench-quick bench-filter \
+        benchmark bench-quick bench-filter bench-velocity \
         publish publish-linux publish-windows publish-macos \
         pre-pr pre-pr-full
 
@@ -19,6 +20,14 @@ build-quick: build-web-workstation ## Fast incremental build for the active brow
 
 build-web-workstation: ## Fast isolated browser workstation host build (Debug, no apphost)
 	@python3 build/python/cli/buildctl.py build --project Meridian.WebWorkstation.slnf --configuration Debug --verbosity quiet --isolation-key web-workstation-dev --property UseAppHost=false
+
+bootstrap: setup-dev ## Canonical lane: bootstrap local development prerequisites and quick validation
+
+verify-fast: pre-pr ## Canonical lane: format + fast unit checks
+
+verify-full: pre-pr-full ## Canonical lane: full pre-PR validation with coverage
+
+verify-release: publish ## Canonical lane: release publish validation across supported platforms
 
 run: setup-config ## Run the collector
 	@echo "$(BLUE)Running collector...$(NC)"
@@ -101,6 +110,10 @@ bench-quick: ## Run quick bottleneck benchmarks (~10 min)
 bench-filter: ## Run specific benchmarks (FILTER required, e.g. FILTER=*Collector*)
 	@echo "$(BLUE)Running benchmarks matching $(FILTER)...$(NC)"
 	dotnet run --project $(BENCHMARK_PROJECT) -c Release -- --filter "$(FILTER)" --memory --job short
+
+bench-velocity: ## Run high-velocity benchmark profile for collector/pipeline throughput
+	@echo "$(BLUE)Running high-velocity benchmark profile...$(NC)"
+	dotnet run --project $(BENCHMARK_PROJECT) -c Release -- --filter "*Collector*|*EndToEndPipeline*|*EventPipeline*" --job velocity --memory
 
 publish: ## Publish for all platforms
 	@echo "$(BLUE)Publishing for all platforms...$(NC)"

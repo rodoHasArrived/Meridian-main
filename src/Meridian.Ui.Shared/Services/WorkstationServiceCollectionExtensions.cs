@@ -1,6 +1,7 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Backtesting;
 using Meridian.Application.FundStructure;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -12,6 +13,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
@@ -71,6 +73,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
         services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<StrategyEngineRegistry>();
+        services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -103,6 +107,27 @@ public static class WorkstationServiceCollectionExtensions
             return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+        services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileOperationsContinuityRepository>>();
+            return new FileOperationsContinuityRepository(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                logger);
+        });
+        services.TryAddSingleton<IOperationsWorkflowAuditStore>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileOperationsWorkflowAuditStore>>();
+            return new FileOperationsWorkflowAuditStore(ResolveWorkstationDataDirectory(sp), logger);
+        });
+        services.TryAddSingleton<IOperationsContinuityWorkflowService>(sp =>
+            new OperationsContinuityWorkflowService(
+                sp.GetRequiredService<IOperationsContinuityRepository>(),
+                sp.GetRequiredService<IOperationsWorkflowAuditStore>(),
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IOperationsContinuityTransactionalCommitStore>()));
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -110,6 +135,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
         services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
+        services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
+        services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
+            new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
@@ -117,6 +145,10 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
+            new OperationsContinuityReconciliationBridge(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReconciliationRunService>()));
 
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();

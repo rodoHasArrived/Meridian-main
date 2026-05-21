@@ -72,6 +72,11 @@ import {
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityDetailEndpoint,
+  workstationOperationsContinuityEndpoint,
+  workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
@@ -111,6 +116,7 @@ describe("workstation API endpoint catalog", () => {
       accounting: "/api/workstation/accounting",
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
+      operationsContinuity: "/api/workstation/operations/continuity",
       runHistory: "/api/workstation/runs/history",
       runTimeline: "/api/workstation/runs/timeline",
       runSweeps: "/api/workstation/runs/sweeps",
@@ -144,6 +150,29 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationWorkflowPresetEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201");
     expect(workstationWorkflowPresetPinEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201/pin");
     expect(workstationWorkflowPresetUsedEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201/used");
+  });
+
+  it("builds operations continuity endpoints from the shared accounting close root", () => {
+    expect(workstationOperationsContinuityEndpoint()).toBe("/api/workstation/operations/continuity");
+    expect(workstationOperationsContinuityEndpoint({
+      fundAccountId: "fund / 1",
+      periodId: "2026-05",
+      status: "Blocked"
+    })).toBe(
+      "/api/workstation/operations/continuity?fundAccountId=fund+%2F+1&periodId=2026-05&status=Blocked"
+    );
+    expect(workstationOperationsContinuityDetailEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201"
+    );
+    expect(workstationOperationsContinuityTimelineEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/timeline"
+    );
+    expect(workstationOperationsContinuityBreaksEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/breaks"
+    );
+    expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
+    );
   });
 
   it("builds run evidence endpoints and matching Settings templates", () => {

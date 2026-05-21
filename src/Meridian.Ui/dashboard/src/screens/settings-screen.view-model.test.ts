@@ -708,25 +708,30 @@ describe("buildSettingsScreenViewModel", () => {
     expect(busyState.submitDisabledReason).toContain("already running");
     expect(busyState.keyIdField).toMatchObject({
       disabled: true,
+      helpText: "Alpaca credential request is already running.",
       disabledReason: "Alpaca credential request is already running."
     });
     expect(busyState.secretKeyField).toMatchObject({
       disabled: true,
+      helpText: "Alpaca credential request is already running.",
       disabledReason: "Alpaca credential request is already running."
     });
     expect(busyState.liveAcknowledgement.disabledReason).toBe("Alpaca credential request is already running.");
+    expect(busyState.liveAcknowledgement.disabledReasonId).toBe("alpaca-live-acknowledgement-disabled-reason");
     expect(busyState.environmentOptions).toEqual([
       expect.objectContaining({
         value: "paper",
         isSelected: false,
         disabled: true,
-        disabledReason: "Alpaca credential request is already running."
+        disabledReason: "Alpaca credential request is already running.",
+        disabledReasonId: "alpaca-environment-disabled-reason"
       }),
       expect.objectContaining({
         value: "live",
         isSelected: true,
         disabled: true,
-        disabledReason: "Alpaca credential request is already running."
+        disabledReason: "Alpaca credential request is already running.",
+        disabledReasonId: "alpaca-environment-disabled-reason"
       })
     ]);
 

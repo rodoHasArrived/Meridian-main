@@ -320,9 +320,9 @@
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        VerticalAlignment="Center"
                                        Margin="12,0,0,0">
-                                <Run Text="{Binding FilteredCountText}" />
+                                <Run Text="{Binding FilteredCountText, Mode=OneWay}" />
                                 <Run Text=" | " />
-                                <Run Text="{Binding TimePeriodScopeText}" />
+                                <Run Text="{Binding TimePeriodScopeText, Mode=OneWay}" />
                             </TextBlock>
 
                             <!-- Sort selector -->

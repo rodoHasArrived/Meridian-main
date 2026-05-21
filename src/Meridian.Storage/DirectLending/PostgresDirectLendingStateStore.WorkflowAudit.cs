@@ -1,4 +1,6 @@
+using System.Buffers.Binary;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.DirectLending;
@@ -11,6 +13,16 @@ public sealed partial class PostgresDirectLendingStateStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        var (lockKey1, lockKey2) = ComputeWorkflowAuditLockKeys(request.WorkflowId);
+
+        await using (var workflowLock = connection.CreateCommand())
+        {
+            workflowLock.Transaction = transaction;
+            workflowLock.CommandText = "select pg_advisory_xact_lock(@lock_key_1, @lock_key_2);";
+            workflowLock.Parameters.AddWithValue("lock_key_1", lockKey1);
+            workflowLock.Parameters.AddWithValue("lock_key_2", lockKey2);
+            await workflowLock.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
 
         string? previousHash = null;
         await using (var previous = connection.CreateCommand())
@@ -170,6 +182,16 @@ public sealed partial class PostgresDirectLendingStateStore
             canonicalPayload,
             OperationsWorkflowAuditJsonContext.Default.OperationsWorkflowAuditHashPayload);
         return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+    }
+
+    private static (int LockKey1, int LockKey2) ComputeWorkflowAuditLockKeys(string workflowId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(workflowId.Trim()));
+        return (
+            BinaryPrimitives.ReadInt32BigEndian(hash.AsSpan(0, sizeof(int))),
+            BinaryPrimitives.ReadInt32BigEndian(hash.AsSpan(sizeof(int), sizeof(int))));
     }
 
     private static OperationsWorkflowAuditRecord CreateOperationsWorkflowAuditRecord(

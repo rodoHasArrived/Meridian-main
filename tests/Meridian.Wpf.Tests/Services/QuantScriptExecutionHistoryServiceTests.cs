@@ -71,7 +71,7 @@ public sealed class QuantScriptExecutionHistoryServiceTests
     }
 
     [Fact]
-    public async Task RecordExecutionAsync_WithMultipleBacktests_WritesWarningAndSkipsMirroring()
+    public async Task RecordExecutionAsync_WithMultipleBacktests_MirrorsParentedResearchRuns()
     {
         var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-history-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dataRoot);
@@ -106,10 +106,12 @@ public sealed class QuantScriptExecutionHistoryServiceTests
         var history = await service.GetHistoryAsync();
         var runs = await strategyRunService.GetRecordedRunsAsync();
 
-        record.MirroredRunId.Should().BeNull();
-        record.Warning.Should().Contain("skipped");
+        runs.Should().HaveCount(2);
+        runs.Select(run => run.RunId).Should().Contain(record.MirroredRunId);
+        record.Warning.Should().BeNull();
         history.Should().ContainSingle(item => item.ExecutionId == record.ExecutionId);
-        runs.Should().BeEmpty();
+        runs.Should().OnlyContain(run => run.ParentRunId == $"quant-parent-{record.ExecutionId}");
+        runs.Select(run => run.StrategyName).Should().BeEquivalentTo("Backtest Notebook #1", "Backtest Notebook #2");
     }
 
     [Fact]

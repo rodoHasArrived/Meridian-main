@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
@@ -48,18 +48,24 @@ vi.mock("@/lib/api", async () => {
 });
 
 describe("RiskControlPanel", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders risk rules and saves drawdown threshold updates", async () => {
     const user = userEvent.setup();
     render(<RiskControlPanel />);
 
     await screen.findByText("PositionLimit");
+    expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
     expect(screen.getByText("OrderRateThrottle")).toBeInTheDocument();
     expect(screen.getByText(/Rule violation timeline/i)).toBeInTheDocument();
 
     const input = screen.getByLabelText("Drawdown threshold percent");
+    expect(input).toHaveAttribute("aria-describedby", "risk-drawdown-threshold-help risk-control-status");
     await user.clear(input);
-    await user.type(input, "6");
-    await user.click(screen.getByRole("button", { name: "Save" }));
+    await user.type(input, "6.0");
+    await user.click(screen.getByRole("button", { name: "Save drawdown threshold" }));
 
     await waitFor(() => {
       expect(api.updateRiskRuleConfig).toHaveBeenCalledWith("DrawdownCircuitBreaker", {
@@ -67,6 +73,9 @@ describe("RiskControlPanel", () => {
         reason: "Updated from risk control panel."
       });
     });
+    expect(await screen.findByRole("status")).toHaveTextContent("Drawdown threshold saved.");
+    expect(input).toHaveValue("6");
+    expect(document.getElementById("risk-control-status")).toHaveTextContent("Drawdown threshold saved.");
   });
 
   it("renders structured API error details when a risk update fails", async () => {
@@ -92,12 +101,48 @@ describe("RiskControlPanel", () => {
     const input = screen.getByLabelText("Drawdown threshold percent");
     await user.clear(input);
     await user.type(input, "6");
-    await user.click(screen.getByRole("button", { name: "Save" }));
+    await user.click(screen.getByRole("button", { name: "Save drawdown threshold" }));
 
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText("The proposed threshold conflicts with the active governance policy.")).toBeInTheDocument();
-    expect(screen.getByText("Endpoint returned 409 for /api/risk/rules/DrawdownCircuitBreaker/config.")).toBeInTheDocument();
-    expect(screen.getByText("Risk configuration rejected")).toBeInTheDocument();
-    expect(screen.getByText("maxDrawdownPercent: Lower the threshold or obtain approval before retrying.")).toBeInTheDocument();
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("The proposed threshold conflicts with the active governance policy.")).toBeInTheDocument();
+    expect(within(alert).getByText("Endpoint returned 409 for /api/risk/rules/DrawdownCircuitBreaker/config.")).toBeInTheDocument();
+    expect(within(alert).getByText("Risk configuration rejected")).toBeInTheDocument();
+    expect(within(alert).getByText("maxDrawdownPercent: Lower the threshold or obtain approval before retrying.")).toBeInTheDocument();
+  });
+
+  it("keeps save disabled with a reason when the drawdown value is empty", async () => {
+    const user = userEvent.setup();
+    render(<RiskControlPanel />);
+
+    await screen.findByText("PositionLimit");
+
+    const input = screen.getByLabelText("Drawdown threshold percent");
+    await user.clear(input);
+
+    const save = screen.getByRole("button", {
+      name: "Save drawdown threshold unavailable: Enter a drawdown threshold before saving."
+    });
+    expect(save).toBeDisabled();
+    expect(save).toHaveAttribute("title", "Enter a drawdown threshold before saving.");
+  });
+
+  it("surfaces load failures with a recovery action", async () => {
+    vi.mocked(api.getRiskRules).mockRejectedValueOnce(
+      createApiErrorFromResponseBody(
+        "/api/risk/rules",
+        503,
+        JSON.stringify({
+          title: "Risk runtime unavailable",
+          detail: "The risk service is restarting."
+        })
+      )
+    );
+
+    render(<RiskControlPanel />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("The risk service is restarting.");
+    expect(screen.getByText("Risk runtime unavailable")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh risk controls" })).toBeEnabled();
+    expect(screen.getByText("No risk rules are currently available.")).toBeInTheDocument();
   });
 });

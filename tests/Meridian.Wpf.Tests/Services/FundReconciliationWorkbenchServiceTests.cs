@@ -155,9 +155,9 @@ public sealed class FundReconciliationWorkbenchServiceTests
         var fundAccountReadService = new FundAccountReadService(fundAccountService);
         var reconciliationRepository = new InMemoryReconciliationRunRepository();
         var strategyReconciliationService = new ReconciliationRunService(
-            runReadService,
-            new ReconciliationProjectionService(),
-            reconciliationRepository);
+            runReadService: runReadService,
+            projectionService: new ReconciliationProjectionService(),
+            repository: reconciliationRepository);
         var reconciliationReadService = new ReconciliationReadService(
             fundAccountService,
             fundAccountReadService,

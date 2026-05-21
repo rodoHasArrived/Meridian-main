@@ -242,15 +242,22 @@ describe("OverviewScreen", () => {
     expect(within(moversTable).getByText("Day P&L")).toBeInTheDocument();
 
     const ordersTable = screen.getByRole("table", { name: "1 open order" });
-    expect(within(ordersTable).getByRole("row", {
+    const orderRow = within(ordersTable).getByRole("row", {
       name: "Buy 10 AAPL limit at 190.50, Working, submitted 2026-04-28T18:10:00Z"
-    })).toBeInTheDocument();
+    });
+    expect(orderRow).toBeInTheDocument();
+    expect(orderRow).toHaveClass("bg-success/5");
+    expect(within(orderRow).getByLabelText("Order status Working")).toHaveTextContent("Working");
     expect(within(ordersTable).getByText("Submitted")).toBeInTheDocument();
 
     const fillsTable = screen.getByRole("table", { name: "1 recent fill" });
-    expect(within(fillsTable).getByRole("row", {
+    const fillRow = within(fillsTable).getByRole("row", {
       name: "Sell 5 MSFT at 405.25 on NASDAQ, 2026-04-28T18:12:00Z"
-    })).toBeInTheDocument();
+    });
+    expect(fillRow).toBeInTheDocument();
+    expect(fillRow).toHaveClass("bg-success/5");
+    expect(within(fillRow).getByLabelText("Fill fill-1 completed")).toHaveTextContent("Filled");
     expect(within(fillsTable).getByText("Venue")).toBeInTheDocument();
+    expect(within(fillsTable).getByText("Status")).toBeInTheDocument();
   });
 });

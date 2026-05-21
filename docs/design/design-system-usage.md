@@ -4,7 +4,7 @@
 **Owner:** Core Team
 **Reviewed:** 2026-05-18
 
-The Meridian Design System lives in `C:\Dev\Meridian-main\Meridian Design System`.
+The Meridian Design System lives in `D:\Meridian-main\Meridian Design System`.
 Treat it as the current design source of truth for browser workstation and
 retained desktop compatibility work.
 

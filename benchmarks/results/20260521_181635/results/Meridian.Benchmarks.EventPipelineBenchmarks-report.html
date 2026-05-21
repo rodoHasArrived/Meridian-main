@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.EventPipelineBenchmarks-20260521-181654</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.4 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.300
+  [Host]   : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  ShortRun : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                </th><th>EventCount</th><th>Mean  </th><th>Error  </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>UnboundedChannel</td><td>1000</td><td>97.81 &mu;s</td><td>14.628 &mu;s</td><td>0.802 &mu;s</td><td>0.65</td><td>0.01</td><td>1</td><td>0.2441</td><td>4.7 KB</td><td>0.65</td>
+</tr><tr><td>BoundedChannel_DropOldest</td><td>1000</td><td>104.92 &mu;s</td><td>7.884 &mu;s</td><td>0.432 &mu;s</td><td>0.70</td><td>0.01</td><td>1</td><td>0.9766</td><td>16.35 KB</td><td>2.26</td>
+</tr><tr><td>BoundedChannel_Capacity50000</td><td>1000</td><td>149.37 &mu;s</td><td>40.939 &mu;s</td><td>2.244 &mu;s</td><td>1.00</td><td>0.02</td><td>2</td><td>0.2441</td><td>7.22 KB</td><td>1.00</td>
+</tr><tr><td>BoundedChannel_Capacity10000</td><td>1000</td><td>152.42 &mu;s</td><td>6.090 &mu;s</td><td>0.334 &mu;s</td><td>1.02</td><td>0.01</td><td>2</td><td>0.2441</td><td>7.07 KB</td><td>0.98</td>
+</tr><tr><td>UnboundedChannel</td><td>10000</td><td>519.05 &mu;s</td><td>131.899 &mu;s</td><td>7.230 &mu;s</td><td>0.38</td><td>0.01</td><td>1</td><td>-</td><td>6.61 KB</td><td>0.43</td>
+</tr><tr><td>BoundedChannel_DropOldest</td><td>10000</td><td>841.72 &mu;s</td><td>846.707 &mu;s</td><td>46.411 &mu;s</td><td>0.61</td><td>0.03</td><td>2</td><td>7.8125</td><td>133.16 KB</td><td>8.59</td>
+</tr><tr><td>BoundedChannel_Capacity10000</td><td>10000</td><td>1,343.16 &mu;s</td><td>1,091.335 &mu;s</td><td>59.820 &mu;s</td><td>0.98</td><td>0.04</td><td>3</td><td>-</td><td>17.02 KB</td><td>1.10</td>
+</tr><tr><td>BoundedChannel_Capacity50000</td><td>10000</td><td>1,376.83 &mu;s</td><td>541.089 &mu;s</td><td>29.659 &mu;s</td><td>1.00</td><td>0.03</td><td>3</td><td>-</td><td>15.5 KB</td><td>1.00</td>
+</tr><tr><td>UnboundedChannel</td><td>100000</td><td>5,091.01 &mu;s</td><td>5,157.772 &mu;s</td><td>282.715 &mu;s</td><td>0.32</td><td>0.03</td><td>1</td><td>-</td><td>12.12 KB</td><td>0.05</td>
+</tr><tr><td>BoundedChannel_DropOldest</td><td>100000</td><td>7,150.10 &mu;s</td><td>1,991.475 &mu;s</td><td>109.159 &mu;s</td><td>0.45</td><td>0.04</td><td>2</td><td>-</td><td>257.8 KB</td><td>1.16</td>
+</tr><tr><td>BoundedChannel_Capacity10000</td><td>100000</td><td>15,326.26 &mu;s</td><td>25,281.620 &mu;s</td><td>1,385.771 &mu;s</td><td>0.97</td><td>0.11</td><td>3</td><td>-</td><td>139.93 KB</td><td>0.63</td>
+</tr><tr><td>BoundedChannel_Capacity50000</td><td>100000</td><td>15,894.60 &mu;s</td><td>29,455.297 &mu;s</td><td>1,614.544 &mu;s</td><td>1.01</td><td>0.12</td><td>3</td><td>-</td><td>222.86 KB</td><td>1.00</td>
+</tr></tbody></table>
+</body>
+</html>

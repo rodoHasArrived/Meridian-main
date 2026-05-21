@@ -726,13 +726,17 @@ describe("operator readiness console view model", () => {
       label: "Unknown kind should not break rendering"
     };
     const state = buildOperatorReadinessConsoleState({
-      readiness: {
-        ...readiness,
-        workItems: [unknownItem]
+      trading: {
+        ...trading,
+        readiness: {
+          ...readiness,
+          workItems: [unknownItem]
+        }
       },
-      inbox: null,
+      operatorInbox: null,
+      inboxLoading: false,
+      inboxError: null,
       research,
-      trading,
       dataOperations,
       governance
     });

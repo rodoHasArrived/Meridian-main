@@ -2,12 +2,48 @@
 # Documentation
 # =============================================================================
 
-.PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
+.PHONY: verify-docs docs docs-health docs-stale-mark docs-stale-update docs-hashes-refresh docs-source-readmes-sync docs-source-readmes-tree-check gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
-        update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims
+        update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims generate-icons generate-diagrams
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
+
+verify-docs: docs-lint check-workflow-docs-parity check-status-delivery-claims ## Canonical lane: docs command, workflow, and status-claim validation
+	@python3 build/scripts/docs/check-known-lanes.py
+	@echo "$(GREEN)Documentation lane verification complete$(NC)"
+
+docs-health: ## Validate and render roadmap/source docs health artifacts
+	@python3 build/scripts/docs/validate-roadmap-registry.py --summary
+	@python3 build/scripts/docs/validate-source-readmes.py --summary
+	@python3 build/scripts/docs/scan-source-todos.py --summary
+	@python3 build/scripts/docs/render-roadmap-docs.py --summary
+	@python3 build/scripts/docs/render-source-docs.py --summary
+	@python3 build/scripts/docs/mark-stale-docs.py --write --summary
+	@python3 build/scripts/docs/validate-doc-hashes.py --summary
+	@python3 build/scripts/docs/generate-health-dashboard.py --output docs/status/doc-health-dashboard.md --json-output docs/status/doc-health-dashboard.json --summary
+	@echo "$(GREEN)Documentation health lane complete$(NC)"
+
+docs-stale-mark: ## Mark source docs with hash drift without refreshing the accepted hash baseline
+	@python3 build/scripts/docs/mark-stale-docs.py --write --summary
+
+docs-stale-update: ## Update only stale source README scaffolds and generated README blocks
+	@python3 build/scripts/docs/mark-stale-docs.py --write --summary
+	@python3 build/scripts/docs/sync-source-readmes.py --create-missing --stale-only --summary
+	@python3 build/scripts/docs/render-source-docs.py --stale-only --summary
+	@python3 build/scripts/docs/validate-source-readmes.py --summary
+
+docs-hashes-refresh: ## Refresh source doc hash baseline after stale docs have been reviewed and updated
+	@python3 build/scripts/docs/validate-doc-hashes.py --write --summary
+	@python3 build/scripts/docs/validate-doc-hashes.py --summary
+
+docs-source-readmes-sync: ## Create missing source READMEs from docs/source/data/source-modules.yml
+	@python3 build/scripts/docs/sync-source-readmes.py --create-missing --summary
+	@python3 build/scripts/docs/render-source-docs.py --summary
+	@python3 build/scripts/docs/validate-source-readmes.py --summary
+
+docs-source-readmes-tree-check: ## Preview nested source folders that could receive README coverage
+	@python3 build/scripts/docs/sync-source-readmes.py --tree --max-depth 2 --summary
 
 gen-context: ## Generate project-context.md from code annotations
 	@echo "$(BLUE)Generating project context from code...$(NC)"
@@ -76,6 +112,12 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--claude-md CLAUDE.md \
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
+
+generate-icons: ## Generate documentation icon assets via npm script
+	@npm run generate-icons
+
+generate-diagrams: ## Generate documentation diagrams via npm script
+	@npm run generate-diagrams
 
 docs-lint: ## Validate documented make/pwsh command snippets resolve to real targets/scripts
 	@python3 build/scripts/docs/lint-command-snippets.py

@@ -58,7 +58,16 @@ public sealed record SecurityMasterTrustSnapshotDto(
     IReadOnlyList<SecurityMasterRecommendedActionDto> RecommendedActions,
     IReadOnlyList<SecurityMasterEventEnvelope> History,
     IReadOnlyList<CorporateActionDto> CorporateActions,
-    DateTimeOffset RetrievedAtUtc);
+    DateTimeOffset RetrievedAtUtc)
+{
+    public SecurityValidationReportDto? ValidationReport { get; init; }
+    public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }
+    public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }
+    public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }
+    public SecurityMasterLotModelDto? LotModel { get; init; }
+    public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }
+    public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }
+}
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
     Guid SecurityId,
@@ -117,6 +126,176 @@ public sealed record SecurityMasterConflictAssessmentDto(
     string ImpactDetail,
     bool IsBulkEligible,
     string? BulkIneligibilityReason = null);
+
+public sealed record SecurityMasterIdentifierSummaryDto(
+    string? PrimaryIdentifierKind,
+    string? PrimaryIdentifierValue,
+    int ActiveIdentifierCount,
+    int ActiveAliasCount,
+    int ProviderMappingCount,
+    int DistinctProviderCount,
+    bool HasPrimaryIdentifier,
+    bool HasProviderMappings,
+    string Summary,
+    IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings);
+
+public sealed record SecurityMasterProviderSymbolMappingDto(
+    string MappingSource,
+    string MappingKind,
+    string Value,
+    string NormalizedValue,
+    string? Provider,
+    string? NormalizedProvider,
+    bool IsPrimary,
+    bool IsEnabled,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset? ValidTo,
+    bool IsActive);
+
+public sealed record SecurityMasterSchemaCompatibilityDto(
+    string AssetClass,
+    int LegacyAssetSpecificTermsSchemaVersion,
+    int EconomicTermsSchemaVersion,
+    bool HasLegacyAssetSpecificTerms,
+    bool HasEconomicTerms,
+    bool HasClassificationPayload,
+    string Summary);
+
+public sealed record SecurityMasterScheduleSummaryDto(
+    bool SupportsCashflowSchedule,
+    bool SupportsFactorHistory,
+    bool HasEconomicScheduleTerms,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateOnly? NextLifecycleDate,
+    string SourceSummary,
+    string Summary);
+
+public sealed record SecurityMasterScheduleBookDto(
+    bool SupportsCashflowSchedule,
+    bool SupportsFactorHistory,
+    bool HasEconomicScheduleTerms,
+    string Currency,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateOnly? NextLifecycleDate,
+    string SourceSummary,
+    string Summary,
+    IReadOnlyList<SecurityMasterScheduleEventDto> Events,
+    IReadOnlyList<SecurityMasterFactorPointDto> FactorHistory,
+    IReadOnlyList<SecurityMasterScheduleProvenanceDto> ProvenanceHistory);
+
+public sealed record SecurityMasterScheduleEventDto(
+    string EventId,
+    string EventType,
+    DateOnly EffectiveDate,
+    DateOnly? PayDate,
+    DateOnly? AccrualStartDate,
+    DateOnly? AccrualEndDate,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? VarianceAmount,
+    decimal? FactorStart,
+    decimal? FactorEnd,
+    string Currency,
+    string PostingStatus,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset? SourceAsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    bool IsDerivedFromEconomicTerms,
+    bool IsCurrentProjection);
+
+public sealed record SecurityMasterFactorPointDto(
+    string PointId,
+    DateOnly EffectiveDate,
+    decimal Factor,
+    decimal? PreviousFactor,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset? SourceAsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    bool IsCurrentFactor);
+
+public sealed record SecurityMasterScheduleProvenanceDto(
+    string ProvenanceId,
+    string Category,
+    string Summary,
+    DateOnly? EffectiveDate,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset? SourceAsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    long? StreamVersion,
+    string? EventType);
+
+public sealed record SecurityMasterLotModelDto(
+    string QuantityModel,
+    decimal? LotSize,
+    decimal? ContractMultiplier,
+    bool UsesFaceValue,
+    bool SupportsFactorAdjustedExposure,
+    bool RequiresResolvedSecurityId,
+    string Summary);
+
+public sealed record SecurityMasterOpenLotReadModelDto(
+    string QuantityModel,
+    decimal? LotSize,
+    decimal? ContractMultiplier,
+    bool UsesFaceValue,
+    bool SupportsFactorAdjustedExposure,
+    bool RequiresResolvedSecurityId,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateTimeOffset AsOfUtc,
+    string Summary,
+    IReadOnlyList<SecurityMasterOpenLotDto> Lots,
+    IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
+
+public sealed record SecurityMasterOpenLotDto(
+    Guid SecurityId,
+    string PortfolioId,
+    string RunId,
+    string? AccountScopeId,
+    string? AccountScopeDisplayName,
+    string? VehicleScopeId,
+    string? VehicleScopeDisplayName,
+    string LotId,
+    string Symbol,
+    DateTimeOffset TradeDate,
+    DateTimeOffset? SettleDate,
+    decimal OriginalQuantity,
+    decimal CurrentQuantity,
+    decimal? OriginalFace,
+    decimal? CurrentFace,
+    decimal? FactorAdjustedQuantity,
+    decimal? FactorAdjustedFace,
+    decimal CostBasis,
+    decimal EntryPrice,
+    decimal? UnrealizedPnl,
+    string Currency,
+    string LotStatus,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset AsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    bool IsLongTerm,
+    string? Notes);
+
+public sealed record SecurityMasterOpenLotProvenanceDto(
+    string ProvenanceId,
+    string RunId,
+    string PortfolioId,
+    string? AccountScopeId,
+    string? AccountScopeDisplayName,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset AsOfUtc,
+    string Summary);
 
 public sealed record SecurityMasterDownstreamImpactDto(
     string? FundProfileId,

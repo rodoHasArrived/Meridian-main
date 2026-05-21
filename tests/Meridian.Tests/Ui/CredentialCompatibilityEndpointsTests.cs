@@ -131,6 +131,23 @@ public sealed class CredentialCompatibilityEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task LegacyCredentialPost_WithTradeDeskRolePermissions_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(_ => { }, RolePermissions.For(UserRole.TradeDesk));
+
+        var response = await app.GetTestClient().PostAsync(
+            "/api/credentials/alpaca",
+            JsonContent(new
+            {
+                ALPACA_KEY_ID = "trade-desk-key",
+                ALPACA_SECRET_KEY = "trade-desk-secret",
+                environment = "paper"
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ManageCredentials)

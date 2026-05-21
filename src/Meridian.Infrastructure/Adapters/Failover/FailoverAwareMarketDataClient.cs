@@ -100,6 +100,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        if (_depthSubIds.TryGetValue(cfg.Symbol, out var existingId))
+            return existingId;
+
         try
         {
             var id = _activeClient.SubscribeMarketDepth(cfg);
@@ -142,6 +147,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public int SubscribeTrades(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        if (_tradeSubIds.TryGetValue(cfg.Symbol, out var existingId))
+            return existingId;
+
         try
         {
             var id = _activeClient.SubscribeTrades(cfg);

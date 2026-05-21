@@ -16,5 +16,18 @@ public sealed record SyntheticMarketDataConfig(
     bool IncludeReferenceData = true,
     string[]? UniverseSymbols = null,
     DateOnly? DefaultHistoryStart = null,
-    DateOnly? DefaultHistoryEnd = null
+    DateOnly? DefaultHistoryEnd = null,
+    SyntheticScenarioConfig? Scenario = null
+);
+
+public sealed record SyntheticScenarioConfig(
+    bool Enabled = false,
+    int ThrottleEveryNCalls = 0,
+    int TimeoutEveryNCalls = 0,
+    int DegradeEveryNEvents = 0,
+    int ReplayBarsLimit = 0,
+    int BackfillBarsLimit = 0,
+    int ThrottleDelayMs = 150,
+    bool ApplyToHistorical = true,
+    bool ApplyToStreaming = true
 );

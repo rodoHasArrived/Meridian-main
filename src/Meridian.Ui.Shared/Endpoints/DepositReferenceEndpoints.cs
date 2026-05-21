@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Deposits;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Deposits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,9 @@ public static class DepositReferenceEndpoints
     public static void MapDepositReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup(string.Empty).WithTags("DepositReference");
+        group.AddEndpointFilter(EndpointAuthorization.RequireAny(
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster));
 
         group.MapGet(UiApiRoutes.ReferenceDataDepositReference, async (
             Guid securityId,
@@ -24,6 +28,8 @@ public static class DepositReferenceEndpoints
         })
         .WithName("GetDepositReference")
         .Produces<DepositReferenceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.ReferenceDataDepositsByInstitution, async (
@@ -35,7 +41,9 @@ public static class DepositReferenceEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetDepositsByInstitution")
-        .Produces<IReadOnlyList<DepositReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<DepositReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet(UiApiRoutes.ReferenceDataDepositsMaturingBefore, async (
             [FromQuery] DateOnly beforeDate,
@@ -46,6 +54,8 @@ public static class DepositReferenceEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetDepositsMaturingBefore")
-        .Produces<IReadOnlyList<DepositReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<DepositReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
     }
 }

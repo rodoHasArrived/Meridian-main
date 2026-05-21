@@ -4,7 +4,7 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-04-29
+> **Last verified:** 2026-05-21
 > **Primary grounding docs:** `README.md`, `docs/status/ROADMAP.md`,
 > `docs/plans/trading-workstation-migration-blueprint.md`,
 > `docs/plans/governance-fund-ops-blueprint.md`
@@ -14,18 +14,19 @@
 ## Platform Snapshot
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
-- The authoritative local checkout path for this workspace is `C:\Dev\Meridian-main`.
+- The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one cohesive operator
   experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
   `Settings`.
-- New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
-  contracts, regression fixes, or retained desktop support.
-- `src/Meridian.Ui/dashboard/` is now the active browser-based operator workstation lane, with production
+- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
+- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
+  workflows, launch automation, and desktop validation.
+- `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support the web workstation first while preserving retained desktop compatibility.
+  that should support both desktop and browser surfaces without duplicating business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -65,9 +66,10 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+pwsh ./scripts/dev/desktop-dev.ps1
+pwsh ./scripts/dev/run-desktop.ps1 -Fixture
+pwsh ./scripts/dev/test-wpf-dev.ps1
 make test
-make desktop-run
-pwsh ./scripts/dev/run-desktop.ps1
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 

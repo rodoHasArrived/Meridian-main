@@ -45,7 +45,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         closed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Closed);
         closed.Item.SignoffHistory.Should().NotBeNullOrEmpty();
-        closed.Item.StateTransitions.Should().HaveCountGreaterOrEqualTo(2);
+        closed.Item.StateTransitions.Should().HaveCountGreaterThanOrEqualTo(2);
 
         var timestamps = closed.Item.StateTransitions!.Select(t => t.OccurredAt).ToArray();
         timestamps.Should().BeInAscendingOrder();
@@ -66,7 +66,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var auditPath = Path.Combine(root, "reconciliation-break-queue-audit.jsonl");
         var lines = await File.ReadAllLinesAsync(auditPath);
-        lines.Should().HaveCountGreaterOrEqualTo(3);
+        lines.Length.Should().BeGreaterThanOrEqualTo(3);
 
         foreach (var line in lines)
         {
@@ -126,7 +126,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
             BreakId: Guid.NewGuid().ToString("N"),
             RunId: "run-1",
             StrategyName: "strat",
-            Category: ReconciliationBreakCategory.Cash,
+            Category: ReconciliationBreakCategory.CashMismatch,
             Status: status,
             Variance: 10m,
             Reason: "variance",

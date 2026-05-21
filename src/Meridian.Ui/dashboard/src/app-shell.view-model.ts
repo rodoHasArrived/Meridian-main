@@ -8,6 +8,7 @@ import {
   workspaceForPath,
   workspacePath
 } from "@/lib/workspace";
+import packageJson from "../package.json";
 import type {
   DataOperationsBackfillRecord,
   DataOperationsProviderRecord,
@@ -58,8 +59,27 @@ export interface AppShellViewState {
   statusPanel: ShellStatusPanel | null;
   canRenderRoutes: boolean;
   routeFocus: AppShellRouteFocusState;
+  trustStrip: AppShellTrustStripState;
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   commandPaletteTrigger: AppShellCommandPaletteTriggerState;
+}
+
+export type AppShellTrustStripTone = "ready" | "review" | "blocked" | "pending";
+
+export interface AppShellTrustStripItem {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AppShellTrustStripTone;
+  ariaLabel: string;
+  href: string | null;
+  actionLabel: string | null;
+}
+
+export interface AppShellTrustStripState {
+  ariaLabel: string;
+  items: AppShellTrustStripItem[];
 }
 
 export interface AppShellWorkflowContinuityStep {
@@ -145,6 +165,7 @@ export interface AppShellWorkflowContinuityViewModel {
   nextActionHref: string;
   decisionBrief: AppShellDecisionBrief;
   steps: AppShellWorkflowContinuityStep[];
+  disclosure: AppShellWorkflowContinuityDisclosureState;
   operatorFocusLabel: string;
   operatorFocusSummary: string;
   operatorFocusEmptyText: string;
@@ -168,6 +189,22 @@ export interface AppShellWorkflowContinuityViewModel {
   linkedContextEmptyText: string;
   linkedContextItemsLabel: string;
   linkedContextItems: AppShellLinkedContextItem[];
+}
+
+export type AppShellWorkflowContinuityDisclosurePanelId = "linked-context" | "operator-focus" | "evidence-timeline";
+
+export interface AppShellWorkflowContinuityDisclosurePanel {
+  id: AppShellWorkflowContinuityDisclosurePanelId;
+  label: string;
+  summary: string;
+  ariaLabel: string;
+  defaultExpanded: boolean;
+}
+
+export interface AppShellWorkflowContinuityDisclosureState {
+  label: string;
+  summary: string;
+  panels: AppShellWorkflowContinuityDisclosurePanel[];
 }
 
 export interface AppShellOperatorFocusItem {
@@ -267,6 +304,7 @@ export interface BuildAppShellViewStateOptions {
   error: string | null;
   workflowError?: string | null;
   workspaceErrors: WorkspaceErrorMap;
+  usingDevelopmentFixtures?: boolean;
   payload: AppShellWorkspacePayload;
 }
 
@@ -295,6 +333,7 @@ export function buildAppShellViewState({
   error,
   workflowError = null,
   workspaceErrors,
+  usingDevelopmentFixtures = false,
   payload
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
@@ -312,6 +351,13 @@ export function buildAppShellViewState({
     }),
     canRenderRoutes: !loading && !bootstrapFailed,
     routeFocus: buildRouteFocusState(pathname, search, hash, activeWorkspace),
+    trustStrip: buildTrustStripState({
+      loading,
+      bootstrapFailed,
+      usingDevelopmentFixtures,
+      workspaceErrors,
+      payload
+    }),
     workflowContinuity: buildWorkflowContinuityViewModel(
       pathname,
       search,
@@ -329,6 +375,163 @@ export function buildAppShellViewState({
     ),
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
+}
+
+function buildTrustStripState({
+  loading,
+  bootstrapFailed,
+  usingDevelopmentFixtures,
+  workspaceErrors,
+  payload
+}: {
+  loading: boolean;
+  bootstrapFailed: boolean;
+  usingDevelopmentFixtures: boolean;
+  workspaceErrors: WorkspaceErrorMap;
+  payload: AppShellWorkspacePayload;
+}): AppShellTrustStripState {
+  const session = payload.session;
+  const providerPosture = buildProviderTrustStripItem(payload.dataOperations);
+  const failedWorkspaceCount = Object.keys(workspaceErrors).length;
+
+  const environmentValue = loading
+    ? "Loading"
+    : session?.environment
+      ? titleCase(session.environment)
+      : "Unknown";
+  const environmentTone: AppShellTrustStripTone = session?.environment === "live"
+    ? "blocked"
+    : session?.environment === "paper"
+      ? "ready"
+      : loading
+        ? "pending"
+        : "review";
+
+  const dataSourceValue = usingDevelopmentFixtures
+    ? "Demo fixtures"
+    : bootstrapFailed
+      ? "Unavailable"
+      : failedWorkspaceCount > 0
+        ? "Partial host"
+        : "Local host";
+  const dataSourceTone: AppShellTrustStripTone = usingDevelopmentFixtures
+    ? "pending"
+    : bootstrapFailed
+      ? "blocked"
+      : failedWorkspaceCount > 0
+        ? "review"
+        : "ready";
+  const dataSourceDetail = usingDevelopmentFixtures
+    ? "No-host fixture payloads are visible; do not treat this as live operational readiness."
+    : bootstrapFailed
+      ? "No workstation payloads loaded from the local API host."
+      : failedWorkspaceCount > 0
+        ? `${formatCount(failedWorkspaceCount, "workspace slice")} failed during bootstrap.`
+        : "Workspace payloads are coming from the local API host.";
+
+  return {
+    ariaLabel: "Workstation build, mode, data source, and provider posture",
+    items: [
+      {
+        id: "build",
+        label: "Build",
+        value: `v${packageJson.version}`,
+        detail: "Browser workstation bundle version.",
+        tone: "ready",
+        ariaLabel: `Build ${packageJson.version}. Browser workstation bundle version.`,
+        href: null,
+        actionLabel: null
+      },
+      {
+        id: "mode",
+        label: "Mode",
+        value: environmentValue,
+        detail: session
+          ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.`
+          : "Session environment is not loaded yet.",
+        tone: environmentTone,
+        ariaLabel: `Mode ${environmentValue}. ${session ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.` : "Session environment is not loaded yet."}`,
+        href: session?.environment === "live"
+          ? WORKSTATION_ROUTE_CATALOG.tradingReadiness
+          : null,
+        actionLabel: session?.environment === "live" ? "Review readiness" : null
+      },
+      {
+        id: "source",
+        label: "Source",
+        value: dataSourceValue,
+        detail: dataSourceDetail,
+        tone: dataSourceTone,
+        ariaLabel: `Data source ${dataSourceValue}. ${dataSourceDetail}`,
+        href: bootstrapFailed || failedWorkspaceCount > 0
+          ? WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage
+          : null,
+        actionLabel: bootstrapFailed || failedWorkspaceCount > 0 ? "Open diagnostics" : null
+      },
+      providerPosture
+    ]
+  };
+}
+
+function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResponse | null): AppShellTrustStripItem {
+  if (!dataOperations) {
+    return {
+      id: "providers",
+      label: "Providers",
+      value: "Pending",
+      detail: "Provider posture has not loaded yet.",
+      tone: "pending",
+      ariaLabel: "Providers Pending. Provider posture has not loaded yet.",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+      actionLabel: "Open provider posture"
+    };
+  }
+
+  const providers = dataOperations.providers ?? [];
+  if (providers.length === 0) {
+    return {
+      id: "providers",
+      label: "Providers",
+      value: "No providers",
+      detail: "No provider posture rows are available in the current workstation payload.",
+      tone: "review",
+      ariaLabel: "Providers No providers. No provider posture rows are available in the current workstation payload.",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+      actionLabel: "Configure provider"
+    };
+  }
+
+  const degraded = providers.filter((provider) => provider.status === "Degraded").length;
+  const warning = providers.filter((provider) => provider.status === "Warning").length;
+  const healthy = providers.filter((provider) => provider.status === "Healthy").length;
+  const value = degraded > 0
+    ? `${degraded} degraded`
+    : warning > 0
+      ? `${warning} warning`
+      : `${healthy}/${providers.length} healthy`;
+  const detail = degraded > 0
+    ? `${formatCount(degraded, "provider")} degraded; open Data provider posture before trading decisions.`
+    : warning > 0
+      ? `${formatCount(warning, "provider")} warning; review provider trust before relying on fresh data.`
+      : `${formatCount(healthy, "provider")} healthy in the loaded data posture.`;
+  const tone: AppShellTrustStripTone = degraded > 0 ? "blocked" : warning > 0 ? "review" : "ready";
+
+  return {
+    id: "providers",
+    label: "Providers",
+    value,
+    detail,
+    tone,
+    ariaLabel: `Providers ${value}. ${detail}`,
+    href: degraded > 0 || warning > 0
+      ? WORKSTATION_ROUTE_CATALOG.dataProviders
+      : null,
+    actionLabel: degraded > 0 || warning > 0 ? "Open provider posture" : null
+  };
+}
+
+function titleCase(value: string): string {
+  return value.length > 0 ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
 }
 
 export function buildCommandPaletteTriggerState(open: boolean): AppShellCommandPaletteTriggerState {
@@ -461,9 +664,10 @@ export function buildWorkflowContinuityViewModel(
   const nextStep = steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
-  const operatorFocus = buildOperatorFocusViewModel(statusContext);
-  const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext);
-  const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol);
+  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope);
+  const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
+  const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
+  const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
   const contextValue = subjectSymbol
     ? `${activeWorkspace.label} / ${subjectSymbol}`
     : operatingScope.hasScope
@@ -508,6 +712,7 @@ export function buildWorkflowContinuityViewModel(
     nextActionAriaLabel,
     nextActionHref,
     decisionBrief,
+    disclosure,
     operatorFocusLabel: "Operator focus",
     operatorFocusSummary: operatorFocus.summary,
     operatorFocusEmptyText: operatorFocus.emptyText,
@@ -1347,7 +1552,10 @@ function formatDecisionEvidenceLabel(item: AppShellEvidenceTimelineItem | null):
   return item ? `Latest evidence: ${item.workspaceLabel} ${item.timestampLabel}` : null;
 }
 
-function buildOperatorFocusViewModel(context: WorkflowContinuityStatusContext): OperatorFocusViewModel {
+function buildOperatorFocusViewModel(
+  context: WorkflowContinuityStatusContext,
+  operatingScope: AppShellOperatingScopeState
+): OperatorFocusViewModel {
   if (context.loading) {
     return {
       summary: "Loading cross-workspace operator posture.",
@@ -1368,7 +1576,7 @@ function buildOperatorFocusViewModel(context: WorkflowContinuityStatusContext): 
     ...buildStrategyFocusItems(context)
   ]).sort(compareOperatorFocusCandidates);
 
-  const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map(toOperatorFocusItem);
+  const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map((candidate) => toOperatorFocusItem(candidate, operatingScope));
   const blockedCount = candidates.filter((item) => item.tone === "blocked").length;
   const reviewCount = candidates.filter((item) => item.tone === "review").length;
   const overflowCount = Math.max(0, candidates.length - visibleItems.length);
@@ -1380,8 +1588,62 @@ function buildOperatorFocusViewModel(context: WorkflowContinuityStatusContext): 
     emptyText: "Loaded workspaces have no ranked blockers.",
     overflowLabel: overflowCount > 0 ? `+${overflowCount} more focus ${overflowCount === 1 ? "item" : "items"}` : null,
     items: visibleItems,
-    commandItems: candidates.map(toOperatorFocusItem)
+    commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope))
   };
+}
+
+function buildWorkflowContinuityDisclosureState(
+  statusContext: WorkflowContinuityStatusContext,
+  operatorFocus: OperatorFocusViewModel,
+  evidenceTimeline: EvidenceTimelineViewModel,
+  linkedContext: LinkedContextViewModel
+): AppShellWorkflowContinuityDisclosureState {
+  const degraded = statusContext.loading || Boolean(statusContext.error) || Boolean(statusContext.workflowError)
+    || Object.keys(statusContext.workspaceErrors).length > 0;
+  const defaultExpanded = !degraded;
+  const linkedCount = linkedContext.items.length;
+  const focusCount = operatorFocus.items.length;
+  const evidenceCount = evidenceTimeline.items.length;
+
+  return {
+    label: "Supporting workflow evidence",
+    summary: degraded
+      ? "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+      : "Expand supporting context when you need linked routes, ranked focus items, or recent evidence.",
+    panels: [
+      {
+        id: "linked-context",
+        label: "Linked context",
+        summary: linkedCount === 0 ? linkedContext.emptyText : summarizeDisclosureCount(linkedCount, "linked route"),
+        ariaLabel: linkedCount === 0
+          ? "Expand linked context. No linked routes are loaded."
+          : `Expand linked context. ${summarizeDisclosureCount(linkedCount, "linked route")} loaded.`,
+        defaultExpanded
+      },
+      {
+        id: "operator-focus",
+        label: "Operator focus",
+        summary: focusCount === 0 ? operatorFocus.emptyText : summarizeDisclosureCount(focusCount, "focus item"),
+        ariaLabel: focusCount === 0
+          ? "Expand operator focus. No focus items are loaded."
+          : `Expand operator focus. ${summarizeDisclosureCount(focusCount, "focus item")} loaded.`,
+        defaultExpanded
+      },
+      {
+        id: "evidence-timeline",
+        label: "Evidence timeline",
+        summary: evidenceCount === 0 ? evidenceTimeline.emptyText : summarizeDisclosureCount(evidenceCount, "evidence event"),
+        ariaLabel: evidenceCount === 0
+          ? "Expand evidence timeline. No evidence events are loaded."
+          : `Expand evidence timeline. ${summarizeDisclosureCount(evidenceCount, "evidence event")} loaded.`,
+        defaultExpanded
+      }
+    ]
+  };
+}
+
+function summarizeDisclosureCount(count: number, singular: string): string {
+  return formatCount(count, singular);
 }
 
 function buildWorkspaceErrorFocusItems(context: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
@@ -1867,14 +2129,21 @@ function operatorFocusTonePriority(tone: AppShellWorkflowContinuityStatusTone): 
   }
 }
 
-function toOperatorFocusItem(candidate: OperatorFocusCandidate): AppShellOperatorFocusItem {
-  const { sourcePriority: _sourcePriority, sourceIndex: _sourceIndex, ...item } = candidate;
-  return item;
+function toOperatorFocusItem(
+  candidate: OperatorFocusCandidate,
+  operatingScope: AppShellOperatingScopeState
+): AppShellOperatorFocusItem {
+  const { sourcePriority: _sourcePriority, sourceIndex: _sourceIndex, route, ...item } = candidate;
+  return {
+    ...item,
+    route: appendOperatingScopeToRoute(route, operatingScope)
+  };
 }
 
 function buildLinkedContextViewModel(
   context: WorkflowContinuityStatusContext,
-  subjectSymbol: string | null
+  subjectSymbol: string | null,
+  operatingScope: AppShellOperatingScopeState
 ): LinkedContextViewModel {
   if (context.loading) {
     return {
@@ -1909,7 +2178,7 @@ function buildLinkedContextViewModel(
     buildPortfolioLinkedContextItem(context, symbol),
     buildAccountingLinkedContextItem(context, symbol),
     buildReportingLinkedContextItem(context, symbol)
-  ]);
+  ]).map((item) => materializeScopedLinkedContextItem(item, operatingScope));
   const blockedCount = items.filter((item) => item.tone === "blocked").length;
   const reviewCount = items.filter((item) => item.tone === "review").length;
   const pendingCount = items.filter((item) => item.tone === "pending").length;
@@ -2266,7 +2535,10 @@ function isSameSymbol(value: string | null | undefined, symbol: string): boolean
   return normalizeSubjectSymbol(value ?? null) === symbol;
 }
 
-function buildEvidenceTimelineViewModel(context: WorkflowContinuityStatusContext): EvidenceTimelineViewModel {
+function buildEvidenceTimelineViewModel(
+  context: WorkflowContinuityStatusContext,
+  operatingScope: AppShellOperatingScopeState
+): EvidenceTimelineViewModel {
   if (context.loading) {
     return {
       summary: "Loading cross-workspace evidence timeline.",
@@ -2285,7 +2557,9 @@ function buildEvidenceTimelineViewModel(context: WorkflowContinuityStatusContext
     ...buildAccountingEvidenceTimelineItems(context)
   ]).sort(compareEvidenceTimelineCandidates);
 
-  const visibleItems = candidates.slice(0, EVIDENCE_TIMELINE_VISIBLE_LIMIT).map(toEvidenceTimelineItem);
+  const visibleItems = candidates
+    .slice(0, EVIDENCE_TIMELINE_VISIBLE_LIMIT)
+    .map((candidate) => toEvidenceTimelineItem(candidate, operatingScope));
   const overflowCount = Math.max(0, candidates.length - visibleItems.length);
   const workspaceCount = new Set(candidates.map((item) => item.workspaceLabel)).size;
   const latest = visibleItems[0] ?? null;
@@ -2663,14 +2937,31 @@ function compareEvidenceTimelineCandidates(left: EvidenceTimelineCandidate, righ
     || left.label.localeCompare(right.label);
 }
 
-function toEvidenceTimelineItem(candidate: EvidenceTimelineCandidate): AppShellEvidenceTimelineItem {
+function toEvidenceTimelineItem(
+  candidate: EvidenceTimelineCandidate,
+  operatingScope: AppShellOperatingScopeState
+): AppShellEvidenceTimelineItem {
   const {
     occurredAtMs: _occurredAtMs,
     sourcePriority: _sourcePriority,
     sourceIndex: _sourceIndex,
+    route,
     ...item
   } = candidate;
-  return item;
+  return {
+    ...item,
+    route: appendOperatingScopeToRoute(route, operatingScope)
+  };
+}
+
+function materializeScopedLinkedContextItem(
+  item: AppShellLinkedContextItem,
+  operatingScope: AppShellOperatingScopeState
+): AppShellLinkedContextItem {
+  return {
+    ...item,
+    route: appendOperatingScopeToRoute(item.route, operatingScope)
+  };
 }
 
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {
@@ -2917,10 +3208,10 @@ function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQu
       return new Set(["symbol", "runId", "provider", "window"]);
     case "trading":
     case "portfolio":
-      return new Set(["symbol", "fundAccountId", "runId", "window"]);
+      return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "accounting":
     case "reporting":
-      return new Set(["symbol", "fundAccountId", "runId", "window"]);
+      return new Set(["symbol", "fundAccountId", "runId", "provider", "window"]);
     case "settings":
       return new Set(["fundAccountId", "provider"]);
   }

@@ -360,6 +360,34 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void ShowStartupExperience_PresentsBrandedBriefingAndNotification()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var notificationService = NotificationService.Instance;
+            notificationService.UpdateSettings(new NotificationSettings { Enabled = true });
+            notificationService.ClearHistory();
+
+            using var vm = CreateMainWindowViewModel();
+
+            vm.ShowStartupExperience();
+
+            vm.StartupBannerVisibility.Should().Be(Visibility.Visible);
+            vm.StartupBannerStatusText.Should().Be("Startup briefing");
+            vm.StartupBannerMessage.Should().Contain("operating context");
+            vm.StartupBannerDetail.Should().Contain("Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings");
+
+            notificationService.GetHistory().Should().ContainSingle(item =>
+                item.Title == "Meridian ready"
+                && item.Message.Contains("Review operating context and readiness", StringComparison.Ordinal));
+
+            vm.DismissStartupBannerCommand.Execute(null);
+
+            vm.StartupBannerVisibility.Should().Be(Visibility.Collapsed);
+        });
+    }
+
+    [Fact]
     public void ShowClipboardSymbols_WhenManySymbolsDetected_UsesCompactPreview()
     {
         WpfTestThread.Run(() =>
@@ -371,6 +399,19 @@ public sealed class MainShellViewModelTests
             vm.ClipboardBannerText.Should().Contain("6 symbols detected in clipboard");
             vm.ClipboardBannerText.Should().Contain("AAPL, MSFT, NVDA, AMD +2 more");
         });
+    }
+
+    [Fact]
+    public void MainWindowXaml_BindsStartupExperienceBanner()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\MainWindow.xaml"));
+
+        xaml.Should().Contain("StartupBannerVisibility");
+        xaml.Should().Contain("StartupBannerStatusText");
+        xaml.Should().Contain("StartupBannerMessage");
+        xaml.Should().Contain("StartupBannerDetail");
+        xaml.Should().Contain("DismissStartupBannerCommand");
+        xaml.Should().Contain("CommandParameter=\"Welcome\"");
     }
 
     [Fact]
@@ -786,6 +827,69 @@ public sealed class MainShellViewModelTests
                 Glyph = "\uE7F4",
                 Tone = WorkspaceTone.Warning
             });
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_AllClearScenario_RemainsActionableWithoutRunHistoryDuplication()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [],
+                CriticalCount: 0,
+                WarningCount: 0,
+                ReviewCount: 0,
+                Summary: "No operator work items are open.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxSummary.Contains("No operator work items", StringComparison.Ordinal));
+
+            vm.OperatorInboxButtonText.Should().Be("Queue");
+            vm.OperatorInboxSummary.Contains("run history", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_MixedSeverityScenario_PrioritizesCriticalQueueItem()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "promotion-warning-1",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Promotion checklist review",
+                        Detail: "Review promotion checklist evidence.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell"),
+                    new OperatorWorkItemDto(
+                        WorkItemId: "replay-critical-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification stale",
+                        Detail: "Session changed after replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow.AddSeconds(1),
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 1,
+                ReviewCount: 2,
+                Summary: "2 work items need review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 2);
+
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Danger);
+            vm.OperatorInboxPrimaryLabel.Should().Contain("Replay verification stale");
         });
     }
 

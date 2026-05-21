@@ -240,13 +240,14 @@ function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
       render: (row) => (
         <div className="flex flex-wrap gap-1">
           {row.fieldChips.map((field) => (
-            <Badge
-              key={field.fieldId}
-              variant={field.isEnabled ? "outline" : "warning"}
-              title={field.disabledReason ?? undefined}
-            >
-              {field.fieldId}
-            </Badge>
+            <div key={field.fieldId} className="flex flex-col gap-1">
+              <Badge variant={field.isEnabled ? "outline" : "warning"}>
+                {field.fieldId}
+              </Badge>
+              {field.disabledReason ? (
+                <span className="text-[10px] leading-4 text-warning">{field.disabledReason}</span>
+              ) : null}
+            </div>
           ))}
         </div>
       )

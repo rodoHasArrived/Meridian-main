@@ -449,17 +449,17 @@ describe("SettingsScreen", () => {
     await user.click(screen.getByRole("button", { name: /connect and test/i }));
 
     expect(screen.getByLabelText(/Key ID/)).toBeDisabled();
-    expect(screen.getByLabelText(/Key ID/)).toHaveAttribute("title", busyReason);
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(new RegExp(`${busyReason}.*Testing Alpaca credentials`, "s"));
     expect(screen.getByLabelText(/Secret key/)).toBeDisabled();
-    expect(screen.getByLabelText(/Secret key/)).toHaveAttribute("title", busyReason);
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(new RegExp(`${busyReason}.*Testing Alpaca credentials`, "s"));
     expect(screen.getByRole("radio", { name: "Use Alpaca paper endpoint for workstation validation" })).toHaveAttribute(
-      "title",
-      busyReason
+      "aria-describedby",
+      expect.stringContaining("alpaca-environment-disabled-reason")
     );
     expect(screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" })).toBeDisabled();
-    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).toHaveAttribute(
-      "title",
-      busyReason
+    expect(screen.getAllByText(busyReason).length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).toHaveAccessibleDescription(
+      new RegExp(`${busyReason}.*Testing Alpaca credentials`, "s")
     );
 
     resolveConnect({ ...alpacaConnection, environment: "live" });

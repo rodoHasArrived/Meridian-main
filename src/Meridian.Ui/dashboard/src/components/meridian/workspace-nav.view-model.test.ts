@@ -55,12 +55,19 @@ describe("workspace nav view model", () => {
     const accounting = model.items.find((item) => item.key === "accounting");
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
+      "/accounting/operations-continuity",
       "/accounting",
       "/accounting/reconciliation",
       "/accounting/security-master",
       "/accounting/approvals"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
+      label: "Continuity",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Continuity"
+    });
+    expect(accounting?.subItems[1]).toMatchObject({
       label: "Ledger",
       active: true,
       ariaCurrent: "page",
@@ -113,8 +120,8 @@ describe("workspace nav view model", () => {
 
     expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca");
     expect(trading).toMatchObject({
-      route: "/trading?symbol=AAPL",
-      ariaLabel: "Open Trading workspace, Review, preserving Subject: AAPL"
+      route: "/trading?symbol=AAPL&provider=alpaca",
+      ariaLabel: "Open Trading workspace, Review, preserving Subject: AAPL / Provider: alpaca"
     });
     expect(data).toMatchObject({
       route: "/data?symbol=AAPL&provider=alpaca",

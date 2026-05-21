@@ -1,3 +1,4 @@
+using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Models;
@@ -29,7 +30,7 @@ public static partial class ShellNavigationCatalog
 
     private static readonly ShellPageDescriptor[] SettingsPages =
     [
-        Page<WorkspaceCapabilityHomePage>("SettingsShell", "Settings Workspace", "Manage preferences, credentials, diagnostics, services, alerts, and help.", "settings", "Launchpad", "\uE713", 0, ShellNavigationVisibilityTier.Primary, ["settings", "preferences", "workspace", "support"], ["Settings", "Diagnostics", "SystemHealth", "Help"]),
+        Page<SettingsWorkspaceShellPage>("SettingsShell", "Settings Workspace", "Manage preferences, credentials, diagnostics, services, alerts, and help.", "settings", "Launchpad", "\uE713", 0, ShellNavigationVisibilityTier.Primary, ["settings", "preferences", "workspace", "support"], ["Settings", "Diagnostics", "SystemHealth", "Help"]),
         Page<SettingsPage>("Settings", "Settings", "Adjust workstation preferences, connections, and operator defaults.", "settings", "Preferences", "\uE713", 10, ShellNavigationVisibilityTier.Primary, ["preferences", "settings"], ["CredentialManagement", "KeyboardShortcuts", "Help"], ["Preferences"]),
         Page<CredentialManagementPage>("CredentialManagement", "Credential management", "Manage provider credentials and validate secure access.", "settings", "Preferences", "\uE72E", 20, ShellNavigationVisibilityTier.Primary, ["credentials", "security"], ["Settings", "AddProviderWizard"]),
         Page<SystemHealthPage>("SystemHealth", "System health", "Monitor host health, dependencies, and workstation readiness.", "settings", "Operations", "\uE9D9", 30, ShellNavigationVisibilityTier.Primary, ["health", "system"], ["Diagnostics", "ServiceManager"]),

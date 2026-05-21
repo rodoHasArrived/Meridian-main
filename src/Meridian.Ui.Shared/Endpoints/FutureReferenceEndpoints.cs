@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Futures;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Futures;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,9 @@ public static class FutureReferenceEndpoints
     public static void MapFutureReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup(string.Empty).WithTags("FutureReference");
+        group.AddEndpointFilter(EndpointAuthorization.RequireAny(
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster));
 
         group.MapGet(UiApiRoutes.ReferenceDataFutureReference, async (
             Guid securityId,
@@ -24,6 +28,8 @@ public static class FutureReferenceEndpoints
         })
         .WithName("GetFutureReference")
         .Produces<FutureReferenceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.ReferenceDataFuturesByRoot, async (
@@ -35,7 +41,9 @@ public static class FutureReferenceEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetFuturesByRootSymbol")
-        .Produces<IReadOnlyList<FutureReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<FutureReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet(UiApiRoutes.ReferenceDataFutureExpiryLadder, async (
             [FromQuery] string rootSymbol,
@@ -46,7 +54,9 @@ public static class FutureReferenceEndpoints
             return Results.Json(ladder, jsonOptions);
         })
         .WithName("GetFutureExpiryLadder")
-        .Produces<IReadOnlyList<FutureReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<FutureReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet(UiApiRoutes.ReferenceDataFutureFrontMonth, async (
             [FromQuery] string rootSymbol,
@@ -58,6 +68,8 @@ public static class FutureReferenceEndpoints
         })
         .WithName("GetFutureFrontMonth")
         .Produces<FutureReferenceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
     }
 }

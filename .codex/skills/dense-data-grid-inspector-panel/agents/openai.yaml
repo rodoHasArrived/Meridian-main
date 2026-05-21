@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dense Data Grid Inspector"
+  short_description: "Build virtualized grids with inspector panels"
+  default_prompt: "Use $dense-data-grid-inspector-panel to implement dense grid and inspector workflows that scale to large Meridian datasets."

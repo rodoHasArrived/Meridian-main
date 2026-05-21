@@ -1,0 +1,33 @@
+schema:
+  id: meridian.document-index
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+documents:
+  - id: DOC-ROADMAP-FRONT-DOOR
+    path: docs/status/ROADMAP.md
+    title: Current roadmap front door
+    role: readable_status
+    owner_lane: Core Team
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W3-CONT-001
+      - W4-RPT-001
+  - id: DOC-CURRENT-DIRECTION
+    path: docs/plans/current-direction-and-status.md
+    title: Current direction and status
+    role: planning_interpretation
+    owner_lane: Core Team
+    roadmap_items:
+      - W2-TRD-001
+      - W4-RECON-001
+      - W4-RPT-001
+  - id: DOC-AI-CONTRACT
+    path: docs/ai/assistant-workflow-contract.md
+    title: Assistant workflow contract
+    role: ai_behavior_control
+    owner_lane: Docs and Automation
+    roadmap_items:
+      - W2-TRD-001
+      - W6-LIVE-001

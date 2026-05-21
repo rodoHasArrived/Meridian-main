@@ -51,6 +51,9 @@
 .PARAMETER WebRuntimeIdentifier
     Runtime identifier for WebWorkstation mode: win-x64 or win-arm64
 
+.PARAMETER SkipLegacyInstallCleanup
+    Keep older WebWorkstation side-by-side install roots instead of archiving them
+
 .EXAMPLE
     .\install.ps1
     Interactive installation
@@ -139,6 +142,8 @@ param(
     [switch]$NoDesktopShortcut,
 
     [switch]$NoStartMenuShortcut,
+
+    [switch]$SkipLegacyInstallCleanup,
 
     [switch]$LaunchAfterInstall,
 
@@ -519,6 +524,7 @@ function Show-Help {
     Write-Host "  -EnableTrimmedPublish        Enable trimmed host publish"
     Write-Host "  -NoDesktopShortcut           Do not create a Desktop shortcut"
     Write-Host "  -NoStartMenuShortcut         Do not create a Start Menu shortcut"
+    Write-Host "  -SkipLegacyInstallCleanup    Keep older side-by-side installs"
     Write-Host "  -LaunchAfterInstall          Launch after installation completes"
     Write-Host "  -PlanOnly                    Print install plan without changing files"
     Write-Host ""
@@ -818,6 +824,7 @@ function Install-WebWorkstation {
     if ($script:EnableTrimmedPublish) { $webParameters.EnableTrimmedPublish = $true }
     if ($script:NoDesktopShortcut) { $webParameters.NoDesktopShortcut = $true }
     if ($script:NoStartMenuShortcut) { $webParameters.NoStartMenuShortcut = $true }
+    if ($script:SkipLegacyInstallCleanup) { $webParameters.SkipLegacyInstallCleanup = $true }
     if ($script:LaunchAfterInstall) { $webParameters.LaunchAfterInstall = $true }
     if ($script:PlanOnly) { $webParameters.PlanOnly = $true }
 

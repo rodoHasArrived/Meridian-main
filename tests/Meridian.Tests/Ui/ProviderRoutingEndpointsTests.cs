@@ -206,7 +206,7 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
-    public async Task ConfigureProvider_WithNoPermissionContext_PreservesOptionalLocalSetupMode()
+    public async Task ConfigureProvider_WithNoPermissionContext_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(permissions: null);
 
@@ -218,10 +218,85 @@ public sealed class ProviderRoutingEndpointsTests
             capabilities = new[] { "backfill" }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    private static async Task<WebApplication> CreateAppAsync(UserPermission? permissions = null)
+    [Fact]
+    public async Task DataSourceMutation_WithoutPermissionContext_ReturnsUnauthorized()
+    {
+        await using var app = await CreateAppAsync(permissions: null);
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ConfigDataSources, JsonContent(new
+        {
+            name = "No Session Provider",
+            provider = "Yahoo",
+            type = "Historical"
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task DataSourceMutation_WithoutManageProviders_ReturnsForbiddenAndDoesNotPersist()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ConfigDataSources, JsonContent(new
+        {
+            name = "Forbidden Provider",
+            provider = "Yahoo",
+            type = "Historical"
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var configJson = await File.ReadAllTextAsync(configStore.ConfigPath);
+        configJson.Should().NotContain("Forbidden Provider");
+    }
+
+    [Fact]
+    public async Task DataSourceMutation_WithSubmittedCredentials_RequiresManageCredentials()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ManageProviders);
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ConfigDataSources, JsonContent(new
+        {
+            name = "Polygon Secret Provider",
+            provider = "Polygon",
+            type = "Historical",
+            polygon = new
+            {
+                apiKey = "polygon-secret-that-must-not-persist"
+            }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var configJson = await File.ReadAllTextAsync(configStore.ConfigPath);
+        configJson.Should().NotContain("polygon-secret-that-must-not-persist");
+    }
+
+    [Fact]
+    public async Task DataSourceMutation_WithManageProvidersAndNoSecrets_Persists()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ManageProviders);
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ConfigDataSources, JsonContent(new
+        {
+            name = "Yahoo Historical",
+            provider = "Yahoo",
+            type = "Historical",
+            enabled = true
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var configJson = await File.ReadAllTextAsync(configStore.ConfigPath);
+        configJson.Should().Contain("Yahoo Historical");
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);

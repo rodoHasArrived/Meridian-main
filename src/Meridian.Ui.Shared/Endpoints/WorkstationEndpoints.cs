@@ -1,10 +1,13 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.Configuration;
+using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
@@ -77,6 +80,7 @@ public static partial class WorkstationEndpoints
         .Produces<ResearchBriefingDto>(200);
 
         MapStrategyDesignerEndpoints(group, jsonOptions);
+        MapStrategyEngineEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -305,77 +309,640 @@ public static partial class WorkstationEndpoints
         .Produces<WorkstationPortfolioPayload>(200);
 
 
-        group.MapGet("/operations/continuity", async (Guid? fundAccountId, string? periodId, string? status, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
+            Guid? fundAccountId,
+            string? periodId,
+            string? status,
+            HttpContext context) =>
         {
-            if (fundAccountId is null || fundAccountId == Guid.Empty)
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
             {
-                return Results.ValidationProblem(new Dictionary<string, string[]> { ["fundAccountId"] = ["The fundAccountId query parameter is required."] });
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var readService = context.RequestServices.GetService<IStrategyRunReadService>();
-            if (readService is null)
+            var parsedStatus = ParseOperationsWorkflowStatus(status);
+            if (!string.IsNullOrWhiteSpace(status) && parsedStatus is null)
             {
-                return Results.Problem("Strategy run read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["status"] = [$"Status '{status}' is not a valid operations workflow status."]
+                });
             }
 
-            var runs = await readService.GetRunHistoryAsync(modeFilter: null, statusFilter: status, strategyId: null, limit: 100, context.RequestAborted).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(periodId))
-            {
-                runs = runs.Where(run => string.Equals(run.SweepId, periodId, StringComparison.OrdinalIgnoreCase)).ToArray();
-            }
-
-            return Results.Json(runs, jsonOptions);
+            var workflows = await service.ListAsync(fundAccountId, periodId, parsedStatus, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(workflows, jsonOptions);
         })
         .WithName("GetOperationsContinuitySummary");
 
-        group.MapGet("/operations/continuity/{workflowId}", async (string workflowId, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
+            OperationsStartWorkflowRequestDto? request,
+            HttpContext context) =>
         {
-            return await GetRunContinuityResultAsync(workflowId, context, jsonOptions).ConfigureAwait(false);
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity start request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.StartWorkflowAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("StartOperationsContinuityWorkflow")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (Guid workflowId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow is null ? Results.NotFound() : Results.Json(workflow, jsonOptions);
         })
         .WithName("GetOperationsContinuityDetail");
 
-        group.MapGet("/operations/continuity/{workflowId}/timeline", async (string workflowId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
         {
-            var readService = context.RequestServices.GetService<IStrategyRunReadService>();
-            if (readService is null)
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
             {
-                return Results.Problem("Strategy run read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var timeline = await readService.GetMergedTimelineAsync(modeFilter: null, statusFilter: null, strategyId: null, limit: 200, context.RequestAborted).ConfigureAwait(false);
-            var filtered = timeline.Where(item => string.Equals(item.RunId, workflowId, StringComparison.OrdinalIgnoreCase)).ToArray();
-            return filtered.Length == 0 ? Results.NotFound() : Results.Json(filtered, jsonOptions);
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            if (workflow is null)
+            {
+                return Results.NotFound();
+            }
+
+            var timeline = await service.GetTimelineAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(timeline, jsonOptions);
         })
         .WithName("GetOperationsContinuityTimeline");
 
-        group.MapGet("/operations/continuity/{workflowId}/breaks", async (string workflowId, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerImport), async (
+            Guid workflowId,
+            OperationsTransitionRequestDto? request,
+            HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<IReconciliationRunService>();
-            if (service is null)
+            if (!HasReconciliationMutationPermission(context))
             {
-                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                return EndpointHelpers.Forbidden();
             }
 
-            var detail = await service.GetLatestForRunAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail.Breaks, jsonOptions);
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ImportBrokerDataAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ImportOperationsContinuityBrokerData")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerNormalize), async (
+            Guid workflowId,
+            OperationsTransitionRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.NormalizeBrokerTransactionsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("NormalizeOperationsContinuityBrokerTransactions")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityPostureRefresh), async (
+            Guid workflowId,
+            OperationsGatePostureRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity posture request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.RefreshGatePostureAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("RefreshOperationsContinuityGatePosture");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterResolve), async (
+            Guid workflowId,
+            OperationsSecurityMasterResolveRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A Security Master resolution request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ResolveSecurityMasterMappingsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ResolveOperationsContinuitySecurityMasterMappings");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove), async (
+            Guid workflowId,
+            string overrideId,
+            OperationsSecurityMasterOverrideApprovalRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasSecurityMasterOverrideApprovalPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A Security Master override approval request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId };
+            var result = await service.ApproveSecurityMasterOverrideAsync(workflowId, overrideId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ApproveOperationsContinuitySecurityMasterOverride")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerDraft), async (
+            Guid workflowId,
+            OperationsLedgerDraftRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A ledger draft request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.BuildLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("BuildOperationsContinuityLedgerDraft");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerValidate), async (
+            Guid workflowId,
+            OperationsLedgerValidationRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A ledger validation request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ValidateLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ValidateOperationsContinuityLedgerDraft");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPost), async (
+            Guid workflowId,
+            OperationsLedgerPostRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A ledger posting request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.PostLedgerEntriesAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("PostOperationsContinuityLedgerEntries")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationRun), async (
+            Guid workflowId,
+            OperationsReconciliationRunRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reconciliation run request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity reconciliation bridge is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.RunReconciliationAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("RunOperationsContinuityReconciliation");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakResolve), async (
+            Guid workflowId,
+            string breakId,
+            OperationsResolveBreakCaseRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reconciliation break resolution request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ResolveBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ResolveOperationsContinuityReconciliationBreak");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalSubmit), async (
+            Guid workflowId,
+            OperationsSubmitApprovalRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An approval submission request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("SubmitOperationsContinuityApproval");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalApprove), async (
+            Guid workflowId,
+            OperationsApprovalDecisionRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An approval decision request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ApproveOperationsContinuityWorkflow");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalReject), async (
+            Guid workflowId,
+            OperationsRejectWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An approval rejection request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("RejectOperationsContinuityWorkflow")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityClose), async (
+            Guid workflowId,
+            OperationsCloseWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A close workflow request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("CloseOperationsContinuityWorkflow");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReopen), async (
+            Guid workflowId,
+            OperationsReopenWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasGovernedWorkflowReopenPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reopen workflow request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context) };
+            var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ReopenOperationsContinuityWorkflow")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (Guid workflowId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow is null ? Results.NotFound() : Results.Json(workflow.BreakCases, jsonOptions);
         })
         .WithName("GetOperationsContinuityBreaks");
 
-        group.MapGet("/operations/continuity/{workflowId}/ledger-preview", async (string workflowId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
         {
-            var ledgerService = context.RequestServices.GetService<StrategyRunLedgerService>();
-            if (ledgerService is null)
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
             {
-                return Results.Problem("Strategy run ledger service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await ledgerService.GetSummaryAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return summary is null ? Results.NotFound() : Results.Json(summary, jsonOptions);
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow is null ? Results.NotFound() : Results.Json(workflow.LedgerPreview, jsonOptions);
         })
         .WithName("GetOperationsContinuityLedgerPreview");
 
 
-        group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -392,8 +959,13 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/runs/{reconciliationRunId}", async (string reconciliationRunId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
             {
@@ -409,7 +981,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/reconciliation", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliation), async (string runId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -426,7 +998,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/reconciliation/history", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliationHistory), async (string runId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -500,13 +1072,25 @@ public static partial class WorkstationEndpoints
 
         group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
+            var trustedRequest = request with { ReviewedBy = currentUser };
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ReviewBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ReviewBreakAsync(context.RequestServices, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -517,10 +1101,17 @@ public static partial class WorkstationEndpoints
         .WithName("ReviewReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(400)
+        .Produces(401)
+        .Produces(403)
         .Produces(404);
 
         group.MapPost("/reconciliation/break-queue/{breakId}/resolve", async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
@@ -535,8 +1126,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
-            var currentUser = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
-            if (string.IsNullOrWhiteSpace(currentUser))
+            if (!TryResolveCurrentUser(context, out var currentUser))
             {
                 return Results.Unauthorized();
             }
@@ -555,6 +1145,8 @@ public static partial class WorkstationEndpoints
         .WithName("ResolveReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(400)
+        .Produces(401)
+        .Produces(403)
         .Produces(404);
 
         group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
@@ -1008,18 +1600,46 @@ public static partial class WorkstationEndpoints
             }
 
             var modes = ParseModes(mode);
-            var timeline = await readService.GetMergedTimelineAsync(
-                    new StrategyRunHistoryQuery(
-                        Modes: modes,
-                        Status: status,
-                        StrategyId: strategyId,
-                        Limit: Math.Clamp(limit ?? 100, 1, 500)),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var query = new StrategyRunHistoryQuery(
+                Modes: modes,
+                Status: status,
+                StrategyId: strategyId,
+                Limit: Math.Clamp(limit ?? 100, 1, 500));
+
+            var timeline = await readService.GetMergedTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
         .WithName("GetWorkstationMergedRunTimeline")
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
+        .Produces(501);
+
+        group.MapGet("/runs/lineage-timeline", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var query = new StrategyRunHistoryQuery(
+                Modes: modes,
+                Status: status,
+                StrategyId: strategyId,
+                Limit: Math.Clamp(limit ?? 100, 1, 500));
+
+            var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(
+                timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
+                jsonOptions);
+        })
+        .WithName("GetWorkstationRunLineageTimeline")
+        .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
         group.MapGet("/runs/sweeps", async (int? limit, HttpContext context) =>
@@ -1064,7 +1684,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
+            var comparison = await readService.GetRunComparisonDtosAsync(runIds, ct: context.RequestAborted).ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareStrategyRuns")
@@ -1934,9 +2554,13 @@ public static partial class WorkstationEndpoints
                 .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
                 .ConfigureAwait(false);
 
-            foreach (var run in runs
-                         .Where(ShouldSurfaceRunReviewWorkItems)
-                         .OrderByDescending(GetRunReviewTimestamp))
+            var reviewRuns = runs
+                .Where(ShouldSurfaceRunReviewWorkItems)
+                .OrderByDescending(GetRunReviewTimestamp)
+                .ToArray();
+            var latestReviewRunId = reviewRuns.FirstOrDefault()?.RunId;
+
+            foreach (var run in reviewRuns)
             {
                 var packet = await reviewPacketService
                     .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
@@ -1946,8 +2570,14 @@ public static partial class WorkstationEndpoints
                     continue;
                 }
 
+                var isLatestReviewRun = string.Equals(run.RunId, latestReviewRunId, StringComparison.OrdinalIgnoreCase);
+                var hasStalePromotionAttention = HasStalePromotionAttention(packet);
                 workItems.AddRange(packet.WorkItems
-                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                    .Where(item =>
+                        item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical &&
+                        (isLatestReviewRun ||
+                         item.Kind != OperatorWorkItemKindDto.PromotionReview ||
+                         !hasStalePromotionAttention))
                     .Select(AttachOperatorNavigation));
             }
         }
@@ -1960,6 +2590,13 @@ public static partial class WorkstationEndpoints
             workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
         }
     }
+
+    private static bool HasStalePromotionAttention(StrategyRunReviewPacketDto packet)
+        => packet.Continuity?.ContinuityStatus.HasCashFlow == true &&
+           packet.WorkItems.Any(static item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.WorkItemId.StartsWith("continuity-promotion-target-run-missing-", StringComparison.OrdinalIgnoreCase) &&
+            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
 
     private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
         => run.Promotion?.RequiresReview == true ||
@@ -2253,11 +2890,15 @@ public static partial class WorkstationEndpoints
             DrillIn: null);
     }
 
-    private static async Task<object> BuildDataOperationsPayloadAsync(HttpContext context)
+    private static async Task<WorkstationDataOperationsPayload> BuildDataOperationsPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
         var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
+        var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
+        var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
+        var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
+        var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
 
         if (readService is null && configStore is null)
         {
@@ -2273,31 +2914,29 @@ public static partial class WorkstationEndpoints
         // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
-        object[] providers = metricsStatus is { Providers.Length: > 0 }
-            ? metricsStatus.Providers.Select(static p =>
-            {
-                var trust = BuildProviderTrustRationale(p);
-                return (object)new
-                {
-                    provider = p.ProviderId,
-                    status = trust.Status,
-                    capability = p.ProviderType,
-                    latency = $"{p.AverageLatencyMs:F0}ms p50",
-                    note = p.IsConnected
-                        ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {trust.TrustScore}."
-                        : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC.",
-                    trustScore = trust.TrustScore,
-                    signalSource = trust.SignalSource,
-                    reasonCode = trust.ReasonCode,
-                    recommendedAction = trust.RecommendedAction,
-                    gateImpact = trust.GateImpact
-                };
-            }).ToArray()
+        var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
+        var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
+            ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
+        var routingConnections = routingConnectionService is not null
+            ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
+            : [];
+        var routingBindings = routingBindingService is not null
+            ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
+            : [];
+        var trustSnapshots = routingTrustService is not null
+            ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
+            : [];
+        var providers = BuildWorkstationDataProviderRecords(
+            metricsStatus,
+            connectionRows,
+            routingConnections,
+            routingBindings,
+            trustSnapshots);
 
         // --- Backfills (last known backfill result from status file) ---
         var lastBackfill = configStore?.TryLoadBackfillStatus();
-        object[] backfills;
+        WorkstationDataBackfillRecord[] backfills;
         if (lastBackfill is not null)
         {
             var symbolSummary = lastBackfill.Symbols.Length > 0
@@ -2312,15 +2951,13 @@ public static partial class WorkstationEndpoints
                 : $"{(int)age.TotalHours}h ago";
             backfills =
             [
-                new
-                {
-                    jobId = $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
-                    scope = $"{symbolSummary} / {days}",
-                    provider = lastBackfill.Provider,
-                    status = lastBackfill.Success ? "Completed" : "Failed",
-                    progress = lastBackfill.Success ? "100%" : "Error",
-                    updatedAt
-                }
+                new WorkstationDataBackfillRecord(
+                    JobId: $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
+                    Scope: $"{symbolSummary} / {days}",
+                    Provider: lastBackfill.Provider,
+                    Status: lastBackfill.Success ? "Completed" : "Failed",
+                    Progress: lastBackfill.Success ? "100%" : "Error",
+                    UpdatedAt: updatedAt)
             ];
         }
         else
@@ -2328,90 +2965,561 @@ public static partial class WorkstationEndpoints
             backfills = [];
         }
 
-        return new
+        return new WorkstationDataOperationsPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("providers-healthy", "Providers Healthy", healthyProviderCount.ToString(CultureInfo.InvariantCulture), "0", healthyProviderCount > 0 ? "success" : "default"),
+                new WorkstationMetricCard("backfills-running", "Backfills Running", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0" : $"+{activeRuns}", activeRuns > 0 ? "default" : "success"),
+                new WorkstationMetricCard("exports-ready", "Exports Ready", "0", "0", "default"),
+                new WorkstationMetricCard("ops-review", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0" : $"+{reviewRuns}", reviewRuns == 0 ? "default" : "warning"),
+                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
+            ],
+            Providers: providers,
+            Backfills: backfills,
+            Exports: [],
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static WorkstationDataOperationsPayload BuildDataOperationsFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
+    {
+        var interactiveBrokers = BuildFallbackDataProviderRecord(
+            providerId: "interactivebrokers",
+            displayName: "Interactive Brokers",
+            status: "Healthy",
+            capability: "Execution + fills",
+            latency: "21ms p50",
+            note: "Paper adapter routing is available.",
+            trustScore: "100%",
+            signalSource: "Provider baseline health snapshot",
+            reasonCode: "HEALTHY_BASELINE",
+            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
+            gateImpact: "Normal operation");
+        var polygon = BuildFallbackDataProviderRecord(
+            providerId: "polygon",
+            displayName: "Polygon",
+            status: "Healthy",
+            capability: "Streaming equities",
+            latency: "16ms p50",
+            note: "Realtime subscriptions are steady.",
+            trustScore: "100%",
+            signalSource: "Provider baseline health snapshot",
+            reasonCode: "HEALTHY_BASELINE",
+            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
+            gateImpact: "Normal operation");
+        var databento = BuildFallbackDataProviderRecord(
+            providerId: "databento",
+            displayName: "Databento",
+            status: "Warning",
+            capability: "Historical replay",
+            latency: "69ms p50",
+            note: "Replay queue is elevated but within tolerance.",
+            trustScore: "86%",
+            signalSource: "Latency monitor",
+            reasonCode: "LATENCY_REGRESSION",
+            recommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
+            gateImpact: "Watch");
+
+        return new WorkstationDataOperationsPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("providers-healthy", "Providers Healthy", "4", "0", "success"),
+                new WorkstationMetricCard("backfills-running", "Backfills Running", "2", "+1", "default"),
+                new WorkstationMetricCard("exports-ready", "Exports Ready", "3", "+1", "success"),
+                new WorkstationMetricCard("ops-review", "Needs Review", "1", "+1", "warning"),
+                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
+            ],
+            Providers: [interactiveBrokers, polygon, databento],
+            Backfills:
+            [
+                new WorkstationDataBackfillRecord("BF-1038", "US equities / 30d", "Databento", "Running", "58%", "3m ago"),
+                new WorkstationDataBackfillRecord("BF-1040", "FX majors / 14d", "Polygon", "Queued", "0%", "6m ago")
+            ],
+            Exports:
+            [
+                new WorkstationDataExportRecord("EX-2196", "python-pandas", "research pack", "Ready", "118k", "7m ago"),
+                new WorkstationDataExportRecord("EX-2198", "postgresql", "ops warehouse", "Attention", "42k", "9m ago")
+            ],
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static WorkstationDataProviderRecord[] BuildWorkstationDataProviderRecords(
+        ProviderMetricsStatus? metricsStatus,
+        IReadOnlyList<ProviderConnectionRowDto> connectionRows,
+        IReadOnlyList<ProviderConnectionDto> routingConnections,
+        IReadOnlyList<ProviderBindingDto> routingBindings,
+        IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots)
+    {
+        var metricLookup = metricsStatus?.Providers.ToDictionary(
+            static metric => NormalizeProviderKey(metric.ProviderId),
+            static metric => metric,
+            StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, ProviderMetrics>(StringComparer.OrdinalIgnoreCase);
+        var connectionLookup = connectionRows.ToDictionary(
+            static connection => NormalizeProviderKey(connection.ProviderId),
+            static connection => connection,
+            StringComparer.OrdinalIgnoreCase);
+        var routingLookup = routingConnections
+            .GroupBy(static connection => NormalizeProviderKey(connection.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<ProviderConnectionDto>)group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var trustLookup = trustSnapshots
+            .GroupBy(static snapshot => NormalizeProviderKey(snapshot.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<ProviderTrustSnapshotDto>)group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var bindingLookup = routingBindings
+            .GroupBy(static binding => NormalizeProviderKey(binding.ConnectionId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => (IReadOnlyList<ProviderBindingDto>)group.ToArray(), StringComparer.OrdinalIgnoreCase);
+
+        var providerIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var providerId in metricLookup.Keys)
         {
-            metrics = new[]
+            providerIds.Add(providerId);
+        }
+
+        foreach (var providerId in connectionLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
+        foreach (var providerId in routingLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
+        foreach (var providerId in trustLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
+        return providerIds
+            .Select(providerId =>
             {
-                new { id = "providers-healthy", label = "Providers Healthy", value = healthyProviderCount.ToString(CultureInfo.InvariantCulture), delta = "0", tone = healthyProviderCount > 0 ? "success" : "default" },
-                new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
-                new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
-                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
-            },
-            providers,
-            backfills,
-            exports = Array.Empty<object>(),
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
+                metricLookup.TryGetValue(providerId, out var metrics);
+                connectionLookup.TryGetValue(providerId, out var connection);
+                routingLookup.TryGetValue(providerId, out var routingConnectionsForProvider);
+                trustLookup.TryGetValue(providerId, out var trustSnapshotsForProvider);
+
+                var routingConnection = SelectRepresentativeRoutingConnection(routingConnectionsForProvider);
+                var trustSnapshot = SelectRepresentativeTrustSnapshot(trustSnapshotsForProvider, routingConnection?.ConnectionId);
+                var bindings = ResolveRoutingBindings(bindingLookup, routingConnectionsForProvider);
+                var rationale = metrics is not null
+                    ? BuildProviderTrustRationale(metrics)
+                    : BuildProviderTrustRationaleFromConnection(connection, routingConnection, trustSnapshot);
+                var displayName = ResolveDataProviderDisplayName(providerId, connection, routingConnection, metrics);
+                var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
+                var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
+                var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
+                var connectionSummary = connection ?? BuildSyntheticProviderConnectionSummary(
+                    providerId,
+                    displayName,
+                    capability,
+                    rationale,
+                    metrics);
+
+                return new WorkstationDataProviderRecord(
+                    ProviderId: connectionSummary.ProviderId,
+                    DisplayName: displayName,
+                    Status: connection is not null ? connection.Health.ToString() : rationale.Status,
+                    Capability: capability,
+                    Latency: latency,
+                    Note: note,
+                    TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : rationale.TrustScore,
+                    SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0
+                        ? string.Join(", ", trustSnapshot.Signals)
+                        : rationale.SignalSource,
+                    ReasonCode: rationale.ReasonCode,
+                    RecommendedAction: connectionSummary.RecommendedAction,
+                    GateImpact: rationale.GateImpact,
+                    ConnectionSummary: connectionSummary,
+                    RoutingSummary: new WorkstationDataProviderRoutingSummary(
+                        ConnectionId: routingConnection?.ConnectionId,
+                        ProviderFamilyId: routingConnection?.ProviderFamilyId ?? connection?.ProviderId,
+                        ProductionReady: routingConnection?.ProductionReady,
+                        CertificationFresh: trustSnapshot?.IsCertificationFresh,
+                        BindingCount: bindings.Count,
+                        FallbackRouteCount: bindings.Sum(static binding => binding.FailoverConnectionIds.Length),
+                        HealthStatus: trustSnapshot?.HealthStatus ?? connection?.Health.ToString()),
+                    Diagnostics: BuildWorkstationProviderDiagnostics(
+                        providerId,
+                        connection,
+                        routingConnection,
+                        trustSnapshot,
+                        bindings,
+                        metrics,
+                        rationale));
+            })
+            .OrderBy(static provider => provider.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static WorkstationDataProviderRecord BuildFallbackDataProviderRecord(
+        string providerId,
+        string displayName,
+        string status,
+        string capability,
+        string latency,
+        string note,
+        string trustScore,
+        string signalSource,
+        string reasonCode,
+        string recommendedAction,
+        string gateImpact)
+        => new(
+            ProviderId: providerId,
+            DisplayName: displayName,
+            Status: status,
+            Capability: capability,
+            Latency: latency,
+            Note: note,
+            TrustScore: trustScore,
+            SignalSource: signalSource,
+            ReasonCode: reasonCode,
+            RecommendedAction: recommendedAction,
+            GateImpact: gateImpact,
+            ConnectionSummary: null,
+            RoutingSummary: new WorkstationDataProviderRoutingSummary(
+                ConnectionId: null,
+                ProviderFamilyId: providerId,
+                ProductionReady: null,
+                CertificationFresh: null,
+                BindingCount: 0,
+                FallbackRouteCount: 0,
+                HealthStatus: status),
+            Diagnostics:
+            [
+                new WorkstationDataProviderDiagnostic("provider-health", "Provider health", status == "Healthy" ? "pass" : "warning", status == "Healthy" ? "Pass" : "Review", note),
+                new WorkstationDataProviderDiagnostic("trust-state", "Trust state", status == "Healthy" ? "pass" : "warning", trustScore, $"{signalSource}. {recommendedAction}")
+            ]);
+
+    private static IReadOnlyList<ProviderBindingDto> ResolveRoutingBindings(
+        IReadOnlyDictionary<string, IReadOnlyList<ProviderBindingDto>> bindingLookup,
+        IReadOnlyList<ProviderConnectionDto>? routingConnections)
+    {
+        if (routingConnections is null || routingConnections.Count == 0)
+        {
+            return [];
+        }
+
+        var bindings = new List<ProviderBindingDto>();
+        foreach (var routingConnection in routingConnections)
+        {
+            if (bindingLookup.TryGetValue(NormalizeProviderKey(routingConnection.ConnectionId), out var connectionBindings))
+            {
+                bindings.AddRange(connectionBindings);
+            }
+        }
+
+        return bindings
+            .DistinctBy(static binding => binding.BindingId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static ProviderConnectionDto? SelectRepresentativeRoutingConnection(
+        IReadOnlyList<ProviderConnectionDto>? routingConnections)
+    {
+        if (routingConnections is null || routingConnections.Count == 0)
+        {
+            return null;
+        }
+
+        return routingConnections
+            .OrderByDescending(static connection => connection.Enabled)
+            .ThenByDescending(static connection => connection.ProductionReady)
+            .ThenBy(static connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static ProviderTrustSnapshotDto? SelectRepresentativeTrustSnapshot(
+        IReadOnlyList<ProviderTrustSnapshotDto>? trustSnapshots,
+        string? preferredConnectionId)
+    {
+        if (trustSnapshots is null || trustSnapshots.Count == 0)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(preferredConnectionId))
+        {
+            var exactMatch = trustSnapshots.FirstOrDefault(snapshot =>
+                snapshot.ConnectionId.Equals(preferredConnectionId, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch is not null)
+            {
+                return exactMatch;
+            }
+        }
+
+        return trustSnapshots
+            .OrderByDescending(static snapshot => snapshot.IsHealthy)
+            .ThenByDescending(static snapshot => snapshot.IsProductionReady)
+            .ThenByDescending(static snapshot => snapshot.Score)
+            .ThenBy(static snapshot => snapshot.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static string ResolveDataProviderDisplayName(
+        string providerId,
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderMetrics? metrics)
+        => connection?.DisplayName
+           ?? routingConnection?.DisplayName
+           ?? metrics?.ProviderId
+           ?? providerId;
+
+    private static ProviderConnectionRowDto BuildSyntheticProviderConnectionSummary(
+        string providerId,
+        string displayName,
+        string capability,
+        ProviderTrustRationalePayload rationale,
+        ProviderMetrics? metrics)
+    {
+        var health = rationale.Status switch
+        {
+            "Healthy" => ProviderContinuityHealthDto.Healthy,
+            "Warning" => ProviderContinuityHealthDto.Warning,
+            "Degraded" => ProviderContinuityHealthDto.Degraded,
+            "Blocked" => ProviderContinuityHealthDto.Blocked,
+            _ => ProviderContinuityHealthDto.Unknown
+        };
+
+        return new ProviderConnectionRowDto(
+            ProviderId: metrics?.ProviderId ?? providerId,
+            DisplayName: displayName,
+            Capability: ResolveProviderConnectionCapability(capability),
+            CredentialState: ProviderCredentialStateDto.Missing,
+            CredentialSource: ProviderCredentialSourceDto.None,
+            VerificationState: ProviderVerificationStateDto.NotVerified,
+            Health: health,
+            FallbackActive: false,
+            LastVerifiedAt: metrics?.Timestamp,
+            LastSuccessfulAt: health == ProviderContinuityHealthDto.Healthy ? metrics?.Timestamp : null,
+            LastFailureAt: health is ProviderContinuityHealthDto.Degraded or ProviderContinuityHealthDto.Blocked ? metrics?.Timestamp : null,
+            LastError: health == ProviderContinuityHealthDto.Healthy ? null : rationale.RecommendedAction,
+            MaskedKeyPreview: null,
+            Environment: null,
+            ExternalAccountId: null,
+            AffectedWorkflows: [],
+            RecommendedAction: rationale.RecommendedAction,
+            ActionHref: ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId));
+    }
+
+    private static ProviderConnectionCapabilityDto ResolveProviderConnectionCapability(string capability)
+        => capability.Contains("brokerage", StringComparison.OrdinalIgnoreCase)
+            ? ProviderConnectionCapabilityDto.Brokerage
+            : ProviderConnectionCapabilityDto.Data;
+
+    private static string ResolveDataProviderCapability(
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderMetrics? metrics)
+    {
+        if (connection is not null)
+        {
+            return connection.Capability switch
+            {
+                ProviderConnectionCapabilityDto.DataAndBrokerage => "Data + Brokerage",
+                ProviderConnectionCapabilityDto.Brokerage => "Brokerage",
+                _ => "Data"
+            };
+        }
+
+        return metrics?.ProviderType
+            ?? routingConnection?.ConnectionType
+            ?? "Provider";
+    }
+
+    private static string BuildDataProviderNote(
+        ProviderMetrics? metrics,
+        ProviderConnectionRowDto? connection,
+        ProviderTrustSnapshotDto? trustSnapshot,
+        ProviderTrustRationalePayload rationale)
+    {
+        if (metrics is not null)
+        {
+            return metrics.IsConnected
+                ? $"Active subscriptions: {metrics.ActiveSubscriptions}. Quality score: {rationale.TrustScore}."
+                : $"Provider disconnected. Last seen: {metrics.Timestamp:HH:mm} UTC.";
+        }
+
+        if (connection?.LastError is { Length: > 0 } error)
+        {
+            return error;
+        }
+
+        if (trustSnapshot is not null && trustSnapshot.Signals.Length > 0)
+        {
+            return $"Trust signals: {string.Join(", ", trustSnapshot.Signals)}.";
+        }
+
+        return rationale.RecommendedAction;
+    }
+
+    private static ProviderTrustRationalePayload BuildProviderTrustRationaleFromConnection(
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderTrustSnapshotDto? trustSnapshot)
+    {
+        if (connection is null)
+        {
+            if (trustSnapshot is not null)
+            {
+                var trustScore = FormatScore(NormalizeScore(trustSnapshot.Score));
+                return new ProviderTrustRationalePayload(
+                    Status: trustSnapshot.IsHealthy ? "Healthy" : "Warning",
+                    TrustScore: trustScore,
+                    SignalSource: trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider trust snapshot",
+                    ReasonCode: trustSnapshot.IsHealthy ? "TRUST_SNAPSHOT_HEALTHY" : "TRUST_SNAPSHOT_REVIEW",
+                    RecommendedAction: trustSnapshot.IsHealthy
+                        ? "Provider trust snapshot is healthy."
+                        : "Inspect routing trust signals before routing new workflow traffic.",
+                    GateImpact: trustSnapshot.IsHealthy ? "Normal operation" : "Health gate needs review");
+            }
+
+            return new ProviderTrustRationalePayload(
+                Status: "Warning",
+                TrustScore: "Not reported",
+                SignalSource: "Provider center bootstrap",
+                ReasonCode: "PROVIDER_SUMMARY_PENDING",
+                RecommendedAction: routingConnection?.Enabled == false
+                    ? "Enable the routing connection before selecting this provider."
+                    : "Configure provider credentials and routing before relying on this workflow.",
+                GateImpact: routingConnection?.Enabled == false ? "Disabled for routing" : "No routing gate loaded");
+        }
+
+        return connection.Health switch
+        {
+            ProviderContinuityHealthDto.Healthy => new ProviderTrustRationalePayload(
+                Status: "Healthy",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "100%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_HEALTHY",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Normal operation"),
+            ProviderContinuityHealthDto.Degraded => new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "70%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_DEGRADED",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Degraded"),
+            ProviderContinuityHealthDto.Blocked => new ProviderTrustRationalePayload(
+                Status: "Blocked",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "40%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_BLOCKED",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Critical"),
+            _ => new ProviderTrustRationalePayload(
+                Status: "Warning",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "80%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_REVIEW",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Watch")
         };
     }
 
-    private static object BuildDataOperationsFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
+    private static IReadOnlyList<WorkstationDataProviderDiagnostic> BuildWorkstationProviderDiagnostics(
+        string providerId,
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderTrustSnapshotDto? trustSnapshot,
+        IReadOnlyList<ProviderBindingDto> bindings,
+        ProviderMetrics? metrics,
+        ProviderTrustRationalePayload rationale)
     {
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
-                new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
-                new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
-                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
-            },
-            providers = new[]
-            {
-                new
+        var diagnostics = new List<WorkstationDataProviderDiagnostic>();
+        var hasCredentials = connection is not null &&
+            connection.CredentialState is not ProviderCredentialStateDto.Missing and not ProviderCredentialStateDto.Partial;
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "credential-presence",
+            Label: "Credential presence",
+            Status: !hasCredentials ? "warning" : "pass",
+            StatusLabel: !hasCredentials ? "Review" : "Pass",
+            Detail: connection is null
+                ? "No provider credential summary is loaded for this provider."
+                : connection.CredentialState switch
                 {
-                    provider = "Interactive Brokers",
-                    status = "Healthy",
-                    capability = "Execution + fills",
-                    latency = "21ms p50",
-                    note = "Paper adapter routing is available.",
-                    trustScore = "100%",
-                    signalSource = "Provider baseline health snapshot",
-                    reasonCode = "HEALTHY_BASELINE",
-                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
-                    gateImpact = "Normal operation"
-                },
-                new
-                {
-                    provider = "Polygon",
-                    status = "Healthy",
-                    capability = "Streaming equities",
-                    latency = "16ms p50",
-                    note = "Realtime subscriptions are steady.",
-                    trustScore = "100%",
-                    signalSource = "Provider baseline health snapshot",
-                    reasonCode = "HEALTHY_BASELINE",
-                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
-                    gateImpact = "Normal operation"
-                },
-                new
-                {
-                    provider = "Databento",
-                    status = "Warning",
-                    capability = "Historical replay",
-                    latency = "69ms p50",
-                    note = "Replay queue is elevated but within tolerance.",
-                    trustScore = "86%",
-                    signalSource = "Latency monitor",
-                    reasonCode = "LATENCY_REGRESSION",
-                    recommendedAction = "Delay operator promotion actions; review latency trend and compare against baseline window.",
-                    gateImpact = "Watch"
-                }
-            },
-            backfills = new[]
+                    ProviderCredentialStateDto.NotRequired => "No credentials are required for this provider.",
+                    ProviderCredentialStateDto.Missing => "Required credential fields are missing.",
+                    ProviderCredentialStateDto.Partial => "Credential setup is incomplete.",
+                    ProviderCredentialStateDto.Invalid => "Stored credentials are invalid and must be replaced.",
+                    _ => $"Credential state: {connection.CredentialState}."
+                }));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "credential-verification",
+            Label: "Credential verification",
+            Status: connection is null
+                ? "pending"
+                : connection.VerificationState is ProviderVerificationStateDto.Verified or ProviderVerificationStateDto.NotRequired ? "pass"
+                : connection.VerificationState == ProviderVerificationStateDto.Failed ? "fail" : "warning",
+            StatusLabel: connection is null
+                ? "Pending"
+                : connection.VerificationState is ProviderVerificationStateDto.Verified or ProviderVerificationStateDto.NotRequired ? "Pass"
+                : connection.VerificationState == ProviderVerificationStateDto.Failed ? "Fail" : "Review",
+            Detail: connection?.LastError
+                ?? (connection is null
+                    ? "Verification requires a provider credential summary."
+                    : connection.VerificationState == ProviderVerificationStateDto.Verified
+                        ? $"Verified at {FormatProviderTimestamp(connection.LastVerifiedAt)}."
+                        : $"Verification state: {connection.VerificationState}.")));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "provider-health",
+            Label: "Provider health",
+            Status: rationale.Status switch
             {
-                new { jobId = "BF-1038", scope = "US equities / 30d", provider = "Databento", status = "Running", progress = "58%", updatedAt = "3m ago" },
-                new { jobId = "BF-1040", scope = "FX majors / 14d", provider = "Polygon", status = "Queued", progress = "0%", updatedAt = "6m ago" }
+                "Healthy" => "pass",
+                "Blocked" or "Degraded" => "fail",
+                _ => "warning"
             },
-            exports = new[]
-            {
-                new { exportId = "EX-2196", profile = "python-pandas", target = "research pack", status = "Ready", rows = "118k", updatedAt = "7m ago" },
-                new { exportId = "EX-2198", profile = "postgresql", target = "ops warehouse", status = "Attention", rows = "42k", updatedAt = "9m ago" }
-            },
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
-        };
+            StatusLabel: rationale.Status,
+            Detail: metrics is not null
+                ? $"Latency {metrics.AverageLatencyMs:F0}ms p50; dropped messages {metrics.MessagesDropped}; subscriptions {metrics.ActiveSubscriptions}."
+                : rationale.RecommendedAction));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "routing-readiness",
+            Label: "Routing readiness",
+            Status: routingConnection is null
+                ? "pending"
+                : !routingConnection.Enabled || !routingConnection.ProductionReady
+                    ? "warning"
+                    : "pass",
+            StatusLabel: routingConnection is null
+                ? "Pending"
+                : routingConnection.ProductionReady ? "Pass" : "Review",
+            Detail: routingConnection is null
+                ? "No routing connection is configured for this provider yet."
+                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}." ));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "trust-state",
+            Label: "Trust state",
+            Status: trustSnapshot is null
+                ? rationale.Status == "Healthy" ? "pass" : "warning"
+                : trustSnapshot.IsHealthy ? "pass" : "warning",
+            StatusLabel: trustSnapshot?.HealthStatus ?? rationale.TrustScore,
+            Detail: trustSnapshot is not null
+                ? trustSnapshot.Signals.Length > 0
+                    ? string.Join(", ", trustSnapshot.Signals)
+                    : "Trust snapshot is available with no active signals."
+                : $"{rationale.SignalSource}. {rationale.RecommendedAction}"));
+
+        return diagnostics;
     }
+
+    private static string NormalizeProviderKey(string providerId)
+        => providerId.Trim().ToLowerInvariant();
+
+    private static string FormatProviderTimestamp(DateTimeOffset? value)
+        => value?.ToString("MMM dd, yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? "Never";
 
     private static ProviderTrustRationalePayload BuildProviderTrustRationale(ProviderMetrics metrics)
     {
@@ -4964,13 +6072,122 @@ public static partial class WorkstationEndpoints
             statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
-    {
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissions)
+        => EndpointAuthorization.HasPermission(context, requiredPermission);
+
+    private static bool HasReconciliationMutationPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster);
+
+    private static bool HasSecurityMasterOverrideApprovalPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ModifySecurityMaster);
+
+    private static bool HasGovernedWorkflowReopenPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
+
+    private static bool TryResolveCurrentUser(HttpContext context, out string currentUser)
+        => EndpointAuthorization.TryResolveActor(context, out currentUser);
+
+    private static StrategyRunStatus? ParseStrategyRunStatus(string? status)
+        => Enum.TryParse<StrategyRunStatus>(status, ignoreCase: true, out var parsed) ? parsed : null;
+
+    private static OperationsWorkflowStatusDto? ParseOperationsWorkflowStatus(string? status)
+        => Enum.TryParse<OperationsWorkflowStatusDto>(status, ignoreCase: true, out var parsed) ? parsed : null;
+
+    private static IResult MissingOperationsPayload(string field, string message)
+        => Results.ValidationProblem(new Dictionary<string, string[]>
         {
-            return (permissions & requiredPermission) == requiredPermission;
+            [field] = [message]
+        });
+
+    private static IResult OperationsTransitionResult(OperationsTransitionResultDto result, JsonSerializerOptions jsonOptions)
+    {
+        if (result.Success)
+        {
+            return Results.Json(result, jsonOptions);
         }
 
-        return false;
+        return result.ErrorCode switch
+        {
+            "NOT_FOUND" => Results.NotFound(result),
+            "VERSION_MISMATCH" => Results.Conflict(result),
+            "WORKFLOW_ALREADY_EXISTS" => Results.Conflict(result),
+            "INVALID_STATE_TRANSITION" => Results.Conflict(result),
+            _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+        };
+    }
+
+    private static void MapStrategyEngineEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet("/strategy/engine/definitions", (HttpContext context) =>
+        {
+            var registry = context.RequestServices.GetService<StrategyEngineRegistry>();
+            return registry is null
+                ? StrategyEngineUnavailable(jsonOptions)
+                : Results.Json(registry.GetDefinitions(), jsonOptions);
+        })
+        .WithName("GetStrategyEngineDefinitions")
+        .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
+        .Produces(501);
+
+        group.MapPost("/strategy/engine/validate-run", (
+            StrategyEngineValidateRunRequest? request,
+            HttpContext context) =>
+        {
+            if (request?.RunRequest is null)
+            {
+                return Results.BadRequest(new { error = "A strategy run request is required." });
+            }
+
+            var validation = context.RequestServices.GetService<StrategyEngineValidationService>();
+            if (validation is null)
+            {
+                return StrategyEngineUnavailable(jsonOptions);
+            }
+
+            var result = validation.Validate(request.RunRequest, request.DataAvailability ?? []);
+            return result.IsValid
+                ? Results.Json(result, jsonOptions)
+                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        })
+        .WithName("ValidateStrategyEngineRun")
+        .Produces<StrategyEngineValidationResult>(200)
+        .Produces<StrategyEngineValidationResult>(400)
+        .Produces(501);
+    }
+
+    private static IResult StrategyEngineUnavailable(JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "Strategy Engine services are not registered." },
+            jsonOptions,
+            statusCode: StatusCodes.Status501NotImplemented);
+
+    private sealed record StrategyEngineValidateRunRequest(
+        StrategyEngineRunRequest RunRequest,
+        IReadOnlyList<StrategyEngineDataAvailability>? DataAvailability);
+
+    private static async Task<IResult> GetRunContinuityResultAsync(string runId, HttpContext context, JsonSerializerOptions jsonOptions)
+    {
+        var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
+        if (continuityService is null)
+        {
+            return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
+        return detail is null
+            ? Results.NotFound()
+            : Results.Json(new StrategyRunContinuityDto(
+                detail.Run,
+                detail.Lineage,
+                detail.CashFlow,
+                detail.Reconciliation,
+                detail.ContinuityStatus), jsonOptions);
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
@@ -5063,24 +6280,3 @@ public sealed record MetricsDiff(
     decimal? TargetNetPnl,
     decimal? BaseTotalReturn,
     decimal? TargetTotalReturn);
-
-    private static async Task<IResult> GetRunContinuityResultAsync(string runId, HttpContext context, JsonSerializerOptions jsonOptions)
-    {
-        var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
-        if (continuityService is null)
-        {
-            return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-        }
-
-        var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
-        return detail is null
-            ? Results.NotFound()
-            : Results.Json(new StrategyRunContinuityDto(
-                detail.Run,
-                detail.Lineage,
-                detail.CashFlow,
-                detail.Reconciliation,
-                detail.ContinuityStatus), jsonOptions);
-    }
-
-

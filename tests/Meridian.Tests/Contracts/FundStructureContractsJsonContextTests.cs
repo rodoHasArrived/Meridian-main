@@ -114,4 +114,95 @@ public sealed class FundStructureContractsJsonContextTests
         readinessRoundTrip.Should().NotBeNull();
         readinessRoundTrip!.Issues.Should().ContainSingle(issue => issue.Code == "account.sync.failed");
     }
+
+    [Fact]
+    public void MarginCollateralAndTransferDtos_ShouldRoundTripViaGeneratedContext()
+    {
+        var accountId = Guid.NewGuid();
+        var margin = new RecordMarginSnapshotRequest(
+            AccountId: accountId,
+            EffectiveAt: DateTimeOffset.UtcNow,
+            Currency: "USD",
+            MarginType: MarginModelTypeDto.RegT,
+            MarginCallStatus: MarginCallStatusDto.Potential,
+            InitialMargin: 10_000m,
+            MaintenanceMargin: 5_000m,
+            ExcessLiquidity: 2_500m,
+            BuyingPower: 50_000m,
+            Requirements:
+            [
+                new MarginRequirementDto(
+                    SecurityId: "sec-aapl",
+                    Symbol: "AAPL",
+                    Quantity: 100m,
+                    MarketValue: 20_000m,
+                    InitialRequirement: 10_000m,
+                    MaintenanceRequirement: 5_000m,
+                    IsMarginable: true,
+                    CollateralClass: "equity-large-cap",
+                    Haircut: 0.15m,
+                    EvidencePath: "artifacts/margin/aapl.json")
+            ],
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-MARGIN",
+            SnapshotEvidencePath: "artifacts/margin/current.json");
+
+        var marginJson = JsonSerializer.Serialize(margin, FundStructureContractsJsonContext.Default.RecordMarginSnapshotRequest);
+        marginJson.Should().Contain("\"marginType\":\"RegT\"");
+        marginJson.Should().Contain("\"marginCallStatus\":\"Potential\"");
+
+        var marginRoundTrip = JsonSerializer.Deserialize(marginJson, FundStructureContractsJsonContext.Default.RecordMarginSnapshotRequest);
+        marginRoundTrip.Should().NotBeNull();
+        marginRoundTrip!.Requirements.Should().ContainSingle(requirement => requirement.Symbol == "AAPL");
+
+        var collateral = new CollateralPositionDto(
+            CollateralPositionId: Guid.NewGuid(),
+            AccountId: accountId,
+            SecurityId: "sec-tbill",
+            Symbol: "912797LK5",
+            Quantity: 100_000m,
+            MarketValue: 99_250m,
+            Currency: "USD",
+            IsPledged: true,
+            RestrictionType: "pledged",
+            Haircut: 0.02m,
+            CollateralValue: 97_265m,
+            Eligibility: CollateralEligibilityDto.Eligible,
+            ValuationTimestamp: DateTimeOffset.UtcNow,
+            LienReference: "LIEN-1",
+            SecuredObligationReference: "MARGIN-LOAN-1",
+            AgreementEvidencePath: "artifacts/collateral/agreement.pdf");
+
+        var collateralJson = JsonSerializer.Serialize(collateral, FundStructureContractsJsonContext.Default.CollateralPositionDto);
+        collateralJson.Should().Contain("\"eligibility\":\"Eligible\"");
+
+        var transfer = new CashTransferDto(
+            TransferId: Guid.NewGuid(),
+            FromAccountId: accountId,
+            ToAccountId: Guid.NewGuid(),
+            Amount: 25_000m,
+            Currency: "USD",
+            TradeDate: new DateOnly(2026, 5, 18),
+            SettlementDate: new DateOnly(2026, 5, 19),
+            Status: CashTransferStatusDto.Settled,
+            ProviderId: "meridian-bank",
+            ExternalTransferId: "WIRE-1",
+            TransferType: "wire",
+            EvidencePath: "artifacts/transfers/wire-1.json");
+
+        var transferJson = JsonSerializer.Serialize(transfer, FundStructureContractsJsonContext.Default.CashTransferDto);
+        transferJson.Should().Contain("\"status\":\"Settled\"");
+
+        var match = new TransferMatchDto(
+            TransferMatchId: Guid.NewGuid(),
+            SourceTransferId: transfer.TransferId,
+            MatchedTransferId: Guid.NewGuid(),
+            Status: TransferMatchStatusDto.Matched,
+            AmountVariance: 0m,
+            SettlementDateDeltaDays: 0,
+            EvidencePath: "artifacts/transfers/match.json",
+            MatchedAt: DateTimeOffset.UtcNow);
+        var matchJson = JsonSerializer.Serialize(match, FundStructureContractsJsonContext.Default.TransferMatchDto);
+        matchJson.Should().Contain("\"status\":\"Matched\"");
+    }
 }

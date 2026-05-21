@@ -84,7 +84,7 @@ public sealed class TradingOperatorReadinessService
             brokerageStatus,
             riskRuleStatuses,
             auditEntries);
-        var overallStatus = EvaluateOverallPosture(acceptanceGates);
+        var overallStatus = EvaluateOverallPosture(acceptanceGates, latestRun is null);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
         var snapshotVersion = BuildSnapshotVersion(
@@ -133,7 +133,7 @@ public sealed class TradingOperatorReadinessService
 
     private static void ValidateRequiredReadinessFields(TradingOperatorReadinessDto readiness)
     {
-        if (string.IsNullOrWhiteSpace(readiness.OverallStatus))
+        if (!Enum.IsDefined(readiness.OverallStatus))
         {
             throw new InvalidOperationException("Trading readiness projection is missing OverallStatus.");
         }
@@ -155,7 +155,7 @@ public sealed class TradingOperatorReadinessService
 
         foreach (var gate in readiness.AcceptanceGates)
         {
-            if (string.IsNullOrWhiteSpace(gate.GateKey) || string.IsNullOrWhiteSpace(gate.Status))
+            if (string.IsNullOrWhiteSpace(gate.GateId) || !Enum.IsDefined(gate.Status))
             {
                 throw new InvalidOperationException("Trading readiness projection contains an incomplete acceptance gate.");
             }
@@ -389,7 +389,7 @@ public sealed class TradingOperatorReadinessService
             fundAccountId: brokerageStatus.FundAccountId,
             workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")),
             workspaceOverride: "Settings",
-            targetRouteOverride: BuildProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
+            targetRouteOverride: ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
             targetPageTagOverride: "ProviderConnectionCenter");
     }
 
@@ -894,7 +894,7 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: record.Decision,
                 ManualOverrideId: record.ManualOverrideId,
                 ApprovedBy: record.ApprovedBy,
-                ApprovalChecklist: record.ApprovalChecklist);
+                ApprovalChecklist: record.ApprovalChecklist ?? []);
         }
 
         var promotion = latestRun?.Promotion ?? latestRun?.Summary.Promotion;
@@ -911,7 +911,7 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: promotion.ApprovalStatus,
                 ManualOverrideId: promotion.ManualOverrideId,
                 ApprovedBy: promotion.ApprovedBy,
-                ApprovalChecklist: promotion.ApprovalChecklist);
+                ApprovalChecklist: promotion.ApprovalChecklist ?? []);
     }
 
     private static bool IsPromotionRecordLinkedToRun(StrategyPromotionRecord record, string runId) =>
@@ -1042,11 +1042,7 @@ public sealed class TradingOperatorReadinessService
             BuildAuditControlGate(controls, auditEntries)
         };
 
-        if (riskRuleStatuses.Count > 0)
-        {
-            gates.Add(BuildRiskRuleGate(riskRuleStatuses));
-        }
-
+        gates.Add(BuildRiskRuleGate(riskRuleStatuses));
         gates.Add(BuildPromotionGate(promotion));
         gates.Add(BuildTrustGateAcceptance(trustGate));
         gates.Add(BuildReportPackGate(reportPack));
@@ -1554,13 +1550,16 @@ public sealed class TradingOperatorReadinessService
     /// <c>Ready</c> is returned only when every gate reports ready.
     /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
     /// </summary>
-    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(IReadOnlyList<TradingAcceptanceGateDto> gates)
+    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(
+        IReadOnlyList<TradingAcceptanceGateDto> gates,
+        bool activeSessionOnly)
     {
         var canonicalGateOrder = new[]
         {
             "replay",
             "reconciliation",
             "audit-controls",
+            "risk-rules",
             "promotion",
             "dk1-trust",
             "report-pack",
@@ -1584,10 +1583,23 @@ public sealed class TradingOperatorReadinessService
             return TradingAcceptanceGateStatusDto.Blocked;
         }
 
+        if (activeSessionOnly &&
+            IsGateReady(ordered, "session") &&
+            IsGateReady(ordered, "replay") &&
+            IsGateReady(ordered, "audit-controls"))
+        {
+            return TradingAcceptanceGateStatusDto.Ready;
+        }
+
         return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
             ? TradingAcceptanceGateStatusDto.Ready
             : TradingAcceptanceGateStatusDto.ReviewRequired;
     }
+
+    private static bool IsGateReady(IEnumerable<TradingAcceptanceGateDto> gates, string gateId)
+        => gates.Any(gate =>
+            string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase) &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
 
     private static void AddTrustGateWorkItem(
         ICollection<OperatorWorkItemDto> workItems,
@@ -1667,7 +1679,7 @@ public sealed class TradingOperatorReadinessService
             : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
         var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
         var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var status = ResolveOverallStatus(gates);
+        var status = EvaluateOverallPosture(gates, activeSessionOnly: false);
 
         return new EvidenceCompletenessSummaryDto(
             Status: status,
@@ -1801,19 +1813,6 @@ public sealed class TradingOperatorReadinessService
                 UiApiRoutes.WorkstationTradingReadiness,
                 "TradingShell")
         };
-
-    private static string BuildProviderConnectionSettingsRoute(string? providerId)
-    {
-        if (string.IsNullOrWhiteSpace(providerId))
-        {
-            return "/settings#provider-connection-center";
-        }
-
-        var normalized = providerId.Trim().ToLowerInvariant();
-        return normalized == "alpaca"
-            ? "/settings#alpaca-provider-setup"
-            : $"/settings#provider-{normalized}-connection";
-    }
 
     private static string BuildWorkItemId(string prefix, string? scope = null)
     {

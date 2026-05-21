@@ -69,6 +69,15 @@ describe("app shell view model", () => {
       linkedContextEmptyText: "Portfolio-aware context links will appear after workstation payloads load.",
       linkedContextItems: []
     });
+    expect(state.workflowContinuity.disclosure).toMatchObject({
+      label: "Supporting workflow evidence",
+      summary: "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+    });
+    expect(state.workflowContinuity.disclosure.panels.map((panel) => [panel.id, panel.defaultExpanded])).toEqual([
+      ["linked-context", false],
+      ["operator-focus", false],
+      ["evidence-timeline", false]
+    ]);
     expect(state.statusPanel).toMatchObject({
       id: "workstation-shell-status-loading",
       titleId: "workstation-shell-status-loading-title",
@@ -103,6 +112,108 @@ describe("app shell view model", () => {
       documentTitle: "Trading Workstation - Meridian",
       targetElementId: null,
       fallbackElementId: "workbench-content"
+    });
+  });
+
+  it("builds a shell trust strip from session, fixture, and provider posture", () => {
+    const state = buildAppShellViewState({
+      pathname: "/data/providers",
+      loading: false,
+      error: null,
+      workspaceErrors: { reporting: "Report-pack preview failed." },
+      usingDevelopmentFixtures: true,
+      payload: {
+        ...sessionPayload,
+        dataOperations: {
+          metrics: [],
+          providers: [
+            {
+              provider: "Alpaca",
+              status: "Warning",
+              capability: "paper",
+              latency: "120 ms",
+              note: "Heartbeat delayed"
+            }
+          ],
+          backfills: [],
+          exports: []
+        }
+      }
+    });
+
+    expect(state.trustStrip).toMatchObject({
+      ariaLabel: "Workstation build, mode, data source, and provider posture",
+      items: [
+        {
+          id: "build",
+          label: "Build",
+          value: "v0.1.0",
+          tone: "ready"
+        },
+        {
+          id: "mode",
+          label: "Mode",
+          value: "Paper",
+          tone: "ready"
+        },
+        {
+          id: "source",
+          label: "Source",
+          value: "Demo fixtures",
+          tone: "pending",
+          detail: "No-host fixture payloads are visible; do not treat this as live operational readiness.",
+          href: "/settings#backend-capability-coverage",
+          actionLabel: "Open diagnostics"
+        },
+        {
+          id: "providers",
+          label: "Providers",
+          value: "1 warning",
+          tone: "review",
+          detail: "1 provider warning; review provider trust before relying on fresh data.",
+          href: "/data/providers",
+          actionLabel: "Open provider posture"
+        }
+      ]
+    });
+  });
+
+  it("routes shell trust strip failures to diagnostics and live readiness", () => {
+    const state = buildAppShellViewState({
+      pathname: "/trading",
+      loading: false,
+      error: "Bootstrap failed.",
+      workspaceErrors: {
+        data: "Provider posture timed out."
+      },
+      payload: {
+        ...emptyPayload,
+        session: {
+          displayName: "Live Desk",
+          role: "Trader",
+          environment: "live",
+          activeWorkspace: "trading",
+          commandCount: 12
+        }
+      }
+    });
+
+    expect(state.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Live",
+      tone: "blocked",
+      href: "/trading/readiness",
+      actionLabel: "Review readiness"
+    });
+    expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "Partial host",
+      tone: "review",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Open diagnostics"
+    });
+    expect(state.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
+      value: "Pending",
+      href: "/data/providers",
+      actionLabel: "Open provider posture"
     });
   });
 
@@ -235,12 +346,120 @@ describe("app shell view model", () => {
       ["Window", "2026-05-01 to 2026-05-15"]
     ]);
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["trading-readiness", "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["trading-cockpit", "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["portfolio-exposure", "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
-      ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"]
+      ["trading-readiness", "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["trading-cockpit", "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["portfolio-exposure", "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
+      ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     ]);
+  });
+
+  it("keeps institutional operating scope in cross-workspace focus, evidence, and linked-context handoffs", () => {
+    const state = buildAppShellViewState({
+      pathname: "/portfolio",
+      search: "?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        trading: {
+          readiness: {
+            acceptanceGates: [
+              {
+                gateId: "replay-gate",
+                label: "Replay audit",
+                status: "Blocked",
+                detail: "Replay evidence is stale for the active paper session."
+              }
+            ],
+            workItems: [
+              {
+                workItemId: "brokerage-sync",
+                kind: "BrokerageSync",
+                label: "Brokerage sync failed",
+                detail: "Account sync failed after the last provider heartbeat.",
+                tone: "Critical",
+                createdAt: "2026-05-14T20:00:00Z",
+                runId: "run-9",
+                fundAccountId: "fund-1",
+                auditReference: "audit-1",
+                workspace: "portfolio",
+                targetRoute: "/portfolio/brokerage-sync",
+                targetPageTag: "BrokerageSync"
+              }
+            ],
+            controls: {
+              circuitBreakerOpen: false
+            },
+            replay: null,
+            brokerageSync: null
+          }
+        },
+        dataOperations: {
+          providers: [
+            {
+              provider: "Alpaca",
+              status: "Healthy",
+              capability: "quotes",
+              latency: "95ms",
+              note: "Streaming quote path is healthy."
+            }
+          ],
+          backfills: [],
+          exports: []
+        },
+        portfolio: {
+          positions: [
+            {
+              symbol: "MSFT",
+              side: "Long",
+              quantity: "10",
+              averagePrice: "410.00",
+              markPrice: "415.00",
+              dayPnl: "+$50",
+              unrealizedPnl: "+$50",
+              exposure: "$4,150"
+            }
+          ],
+          risk: {
+            state: "Healthy",
+            summary: "Exposure is inside guardrails."
+          }
+        },
+        governance: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        reporting: {
+          reporting: {
+            reportPackTargets: ["monthly-board-pack"]
+          }
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.operatorFocusItems.find((item) => item.label === "Brokerage sync failed")).toMatchObject({
+      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+    });
+    expect(state.workflowContinuity.operatorFocusCommandItems.find((item) => item.label === "Replay audit")).toMatchObject({
+      route: "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.decisionBrief).toMatchObject({
+      actionHref: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+    });
+    expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Trading cockpit")).toMatchObject({
+      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Quote evidence")).toMatchObject({
+      route: "/data/quotes?symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Evidence packet")).toMatchObject({
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.evidenceTimelineItems[0]).toMatchObject({
+      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+    });
   });
 
   it("builds portfolio-aware linked context for the active operating symbol", () => {
@@ -550,6 +769,20 @@ describe("app shell view model", () => {
 
     expect(state.workflowContinuity.operatorFocusSummary)
       .toBe("4 focus items across workspaces: 2 blocked and 2 review.");
+    expect(state.workflowContinuity.disclosure.panels).toContainEqual({
+      id: "operator-focus",
+      label: "Operator focus",
+      summary: "3 focus items",
+      ariaLabel: "Expand operator focus. 3 focus items loaded.",
+      defaultExpanded: true
+    });
+    expect(state.workflowContinuity.disclosure.panels).toContainEqual({
+      id: "evidence-timeline",
+      label: "Evidence timeline",
+      summary: "2 evidence events",
+      ariaLabel: "Expand evidence timeline. 2 evidence events loaded.",
+      defaultExpanded: true
+    });
     expect(state.workflowContinuity.operatorFocusOverflowLabel).toBe("+1 more focus item");
     expect(state.workflowContinuity.operatorFocusItems.map((item) => [
       item.label,

@@ -88,13 +88,17 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
     };
   }
 
-  const summary = error.detail ?? error.title ?? fallback;
+  const summary = summarizeApiError(error, fallback);
   const details: string[] = [`Endpoint returned ${error.status} for ${error.path}.`];
 
   if (error.title && error.detail && error.title !== error.detail) {
     details.push(error.title);
   } else if (error.title && error.title !== summary) {
     details.push(error.title);
+  }
+
+  if (error.detail && error.detail !== summary && error.detail !== error.title) {
+    details.push(error.detail);
   }
 
   for (const issue of error.validationIssues) {
@@ -111,6 +115,18 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
     summary,
     details
   };
+}
+
+function summarizeApiError(error: ApiError, fallback: string): string {
+  if (error.status === 401) {
+    return "Session expired or Meridian sign-in is required.";
+  }
+
+  if (error.status === 403) {
+    return "Permission denied for this Meridian role.";
+  }
+
+  return error.detail ?? error.title ?? fallback;
 }
 
 function buildMessageSuffix(detail: string | null, validationDetail: string): string {

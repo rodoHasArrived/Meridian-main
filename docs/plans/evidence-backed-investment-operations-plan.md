@@ -1,5 +1,13 @@
 # Evidence-Backed Investment Operations Plan
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **evidence backed investment operations plan** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the evidence backed investment operations plan workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Date:** 2026-05-18
 **Status:** Active product-positioning and roadmap filter, refreshed against current browser-workstation support evidence
 **Audience:** Product, roadmap, architecture, web dashboard, governance, and fund-operations contributors
@@ -24,9 +32,9 @@ The core commercial question is:
 > Can Meridian prove, book, reconcile, approve, and report this investment decision?
 
 That claim is stronger than a broad workstation claim because it connects upstream research and
-paper validation to downstream books, reconciliation, and reporting. The active browser dashboard
-is the primary operator UI lane for proving that flow; retained WPF surfaces remain compatibility,
-regression, and shared-contract support unless a workflow explicitly needs desktop coverage.
+paper validation to downstream books, reconciliation, and reporting. The browser dashboard and WPF desktop are both active operator UI lanes for proving that flow;
+shared contracts, local/web API endpoints, and shared read models should carry business behavior
+before either client composes it.
 
 ## Golden Path
 

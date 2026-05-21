@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Code2, Database, FileText, Play, PlayCircle,
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -204,25 +205,25 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           <label htmlFor={panel.fields.interval.id} className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {panel.fields.interval.label}
           </label>
-          <Select
-            id={panel.fields.interval.id}
-            value={context.interval ?? "daily"}
-            onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
-            aria-label={panel.fields.interval.ariaLabel}
-            aria-describedby={panel.fields.interval.describedBy}
-            disabled={panel.fields.interval.disabled}
-            title={panel.fields.interval.disabledReason ?? undefined}
-          >
+            <Select
+              id={panel.fields.interval.id}
+              value={context.interval ?? "daily"}
+              onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
+              aria-label={panel.fields.interval.ariaLabel}
+              aria-describedby={panel.fields.interval.describedBy ?? undefined}
+              disabled={panel.fields.interval.disabled}
+            >
             <option value="daily">Daily</option>
             <option value="hourly">Hourly</option>
             <option value="minute">Minute</option>
           </Select>
-          <span id={panel.fields.interval.helpId} className="sr-only">{panel.fields.interval.helpText}</span>
-          {panel.fields.interval.disabledReason ? (
-            <span id={panel.fields.interval.disabledReasonId} className="text-xs text-warning">
-              {panel.fields.interval.disabledReason}
-            </span>
-          ) : null}
+          <FieldSupportText
+            helpId={panel.fields.interval.helpId}
+            helpText={panel.fields.interval.helpText}
+            helpClassName="sr-only"
+            disabledReason={panel.fields.interval.disabledReason}
+            disabledReasonId={panel.fields.interval.disabledReasonId}
+          />
         </div>
         <Button
           size="sm"
@@ -288,17 +289,17 @@ function DataContextInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={field.ariaLabel}
-        aria-describedby={field.describedBy}
+        aria-describedby={field.describedBy ?? undefined}
         error={field.error}
         disabled={field.disabled}
-        title={field.disabledReason ?? undefined}
       />
-      <span id={field.helpId} className="sr-only">{field.helpText}</span>
-      {field.disabledReason ? (
-        <span id={field.disabledReasonId} className="text-xs text-warning">
-          {field.disabledReason}
-        </span>
-      ) : null}
+      <FieldSupportText
+        helpId={field.helpId}
+        helpText={field.helpText}
+        helpClassName="sr-only"
+        disabledReason={field.disabledReason}
+        disabledReasonId={field.disabledReasonId}
+      />
     </div>
   );
 }
@@ -403,17 +404,16 @@ function NotebookCellItem({
               onChange={(e) => onSourceChange(e.target.value)}
               placeholder={cell.sourceField.placeholder}
               disabled={cell.sourceField.disabled}
-              title={cell.sourceField.disabledReason ?? undefined}
               aria-label={cell.sourceField.label}
               aria-describedby={cell.sourceField.describedBy ?? undefined}
               rows={4}
               spellCheck={cell.sourceField.spellCheck}
             />
-            {cell.sourceField.disabledReason ? (
-              <p id={cell.sourceField.disabledReasonId} className="mt-1 text-xs text-warning">
-                {cell.sourceField.disabledReason}
-              </p>
-            ) : null}
+            <FieldSupportText
+              disabledReason={cell.sourceField.disabledReason}
+              disabledReasonId={cell.sourceField.disabledReasonId}
+              disabledReasonClassName="mt-1"
+            />
           </div>
 
           {isMarkdown && cell.source.trim().length > 0 && (

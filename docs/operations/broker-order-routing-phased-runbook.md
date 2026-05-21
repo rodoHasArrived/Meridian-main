@@ -9,6 +9,10 @@ This runbook defines broker-by-broker rollout controls for:
 
 It also defines mandatory gating evidence so order placement endpoints remain disabled until validation and signoff artifacts are present.
 
+Current implementation note: `BrokerageOrderPlacementGate` enforces this runbook at the order
+management boundary. When order-placement validation is required, submit paths fail closed unless
+the configured validation and sign-off artifacts are present for the enabled broker flow.
+
 ## Configuration Flags
 
 Configure `BrokerageConfiguration` with per-broker feature flags:

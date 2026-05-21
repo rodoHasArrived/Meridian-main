@@ -1,8 +1,10 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Commands;
+using Meridian.Wpf.Workstation.ViewModels.Base;
 
 namespace Meridian.Wpf.ViewModels;
 
-public abstract class WorkspaceShellViewModelBase : BindableBase
+public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
 {
     private WorkspaceCommandGroup _commandGroup = new();
 
@@ -16,7 +18,13 @@ public abstract class WorkspaceShellViewModelBase : BindableBase
     public WorkspaceCommandGroup CommandGroup
     {
         get => _commandGroup;
-        set => SetProperty(ref _commandGroup, value);
+        set
+        {
+            if (SetProperty(ref _commandGroup, value))
+            {
+                CommandDescriptors = WorkspaceCommandAdapters.ToCommandDescriptors(value);
+            }
+        }
     }
 }
 

@@ -206,8 +206,25 @@ def _prune_isolated_build_artifacts(
     deleted_count = 0
     freed_bytes = 0
 
+    resolved_repo_root = repo_root.resolve()
+
     for relative_root in _ISOLATED_BUILD_ARTIFACT_ROOTS:
-        artifact_root = (repo_root / relative_root).resolve()
+        artifact_root_link = repo_root / relative_root
+        if artifact_root_link.is_symlink():
+            print(
+                f"WARN: Skipping isolated build artifact root symlink: {artifact_root_link}",
+                file=sys.stderr,
+            )
+            continue
+
+        artifact_root = artifact_root_link.resolve()
+        if not _path_is_relative_to(artifact_root, resolved_repo_root):
+            print(
+                f"WARN: Skipping isolated build artifact root outside repository: {artifact_root}",
+                file=sys.stderr,
+            )
+            continue
+
         if not artifact_root.is_dir():
             continue
 
@@ -274,6 +291,14 @@ def _prune_isolated_build_artifacts(
                 projected_root_bytes -= candidate_bytes
 
         for candidate_path in delete_paths:
+            resolved_candidate = candidate_path.resolve()
+            if candidate_path.is_symlink() or not _path_is_relative_to(resolved_candidate, artifact_root):
+                print(
+                    f"WARN: Skipping isolated build artifact delete outside expected root: {candidate_path}",
+                    file=sys.stderr,
+                )
+                continue
+
             try:
                 shutil.rmtree(candidate_path)
             except OSError as exc:
