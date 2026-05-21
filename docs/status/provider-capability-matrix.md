@@ -1,38 +1,53 @@
 # Provider Capability Matrix (Adapter Readiness)
 
-This matrix enumerates the current adapter subfolders under `src/Meridian.Infrastructure/Adapters/` and maps each adapter to the core capability flags used for readiness tracking.
+**Last Updated:** 2026-05-21
 
-**Canonical source note:** this file is the canonical adapter readiness source for capability coverage and governance follow-up.
+This matrix enumerates every adapter subfolder under `src/Meridian.Infrastructure/Adapters/` and records capability coverage for:
 
-| Adapter Folder | Streaming | Historical | Symbol Search | Options | Corporate Actions | Brokerage Sync / Execution | Owner | Target Sprint | Blocking Dependency | Next Action | Readiness Impact |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Alpaca` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Data Integrations | Sprint 27 | Runtime credential evidence refresh | Regenerate runtime validation packet with current credentials and reconnect proofs | High – multi-surface provider used across readiness, options, and brokerage workflows |
-| `AlphaVantage` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Data Integrations | Sprint 28 | API key-bound runtime validation capture | Add bounded runtime evidence and confirm current rate-limit posture | Medium – historical fallback and indicator coverage |
-| `Core` | ⚙️ Shared base | ⚙️ Shared base | ⚙️ Shared base | ⚙️ Shared base | ⚙️ Shared base | ⚙️ Shared base | Platform Infrastructure | Sprint 27 | N/A (framework layer) | Keep adapter base abstractions aligned with provider SDK contracts | High – foundation for multiple adapters |
-| `Edgar` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | Security Master & Reference Data | Sprint 28 | SEC endpoint + cache refresh validation | Re-run symbol-search ingest and issuer-enrichment validation | Medium – reference-data confidence and issuer mapping |
-| `Failover` | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Platform Infrastructure | Sprint 27 | Provider health scoring calibration | Re-verify failover routing against latest degradation calibration baselines | High – affects continuity posture under provider incidents |
-| `Finnhub` | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | Data Integrations | Sprint 28 | Token-scoped runtime evidence | Capture fresh runtime packet for historical + symbol-search paths | Medium – supplemental data coverage |
-| `Fred` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Research Data | Sprint 29 | Series catalog coverage confirmation | Validate mapped-series onboarding and freshness checks | Low – research enrichment, not trade execution-critical |
-| `InteractiveBrokers` | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | Brokerage Integrations | Sprint 27 | `IBAPI` runtime entitlement + binary compatibility | Re-run compile + runtime bounded smoke with current IBAPI entitlement path | High – execution and broker-sync readiness lane |
-| `NYSE` | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | Exchange Integrations | Sprint 28 | NYSE Connect credentialed run artifacts | Regenerate runtime L1 + corporate-action packet for latest review window | Medium – exchange direct data trust inputs |
-| `NasdaqDataLink` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Data Integrations | Sprint 29 | Dataset/API entitlement validation | Reconfirm dataset mappings and retention-compatible evidence capture | Low – backfill enrichment path |
-| `OpenFigi` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | Security Master & Reference Data | Sprint 28 | API quota and symbol-mapping drift checks | Re-run FIGI enrichment sampling against current symbol corpus | Medium – canonical identifier quality |
-| `Polygon` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | Data Integrations | Sprint 27 | Live websocket/runtime packet regeneration | Re-run replay/live validation for trades/quotes/aggregates and options chain | High – primary streaming + options coverage |
-| `Robinhood` | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | Brokerage Integrations | Sprint 27 | Tokenized bounded runtime evidence refresh | Regenerate brokerage read/order + options + quote packet for DK review | High – paper brokerage and options workflow support |
-| `Stooq` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Data Integrations | Sprint 29 | Feed availability + parser drift check | Revalidate free-source historical ingestion/parsing | Low – non-critical free historical fallback |
-| `Synthetic` | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | Platform Infrastructure | Sprint 28 | Fixture profile expansion for deterministic scenarios | Extend deterministic synthetic scenarios for readiness and UI regression usage | Medium – test/demo and controlled validation backbone |
-| `Templates` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | Platform Infrastructure | Sprint 30 | Template governance drift | Align template comments/contracts with latest brokerage gateway patterns | Low – scaffolding only |
-| `Tiingo` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Data Integrations | Sprint 29 | Token-backed runtime evidence refresh | Re-run historical path validation and check throttling behavior | Low – supplemental historical source |
-| `TradeStation` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | Brokerage Integrations | Sprint 28 | OAuth/session lifecycle validation evidence | Capture refreshed order/position/account sync smoke evidence | Medium – execution adapter maturity tracking |
-| `Tradier` | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | Brokerage Integrations | Sprint 28 | Runtime order/options evidence packet | Validate order lifecycle mapping and option payload normalization in bounded run | Medium – options + execution integration lane |
-| `TwelveData` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Data Integrations | Sprint 29 | API entitlement and interval-coverage check | Re-run historical backfill sample across representative intervals | Low – additional historical coverage |
-| `YahooFinance` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | Data Integrations | Sprint 29 | Unofficial endpoint stability re-check | Revalidate parser + pagination behavior against current upstream responses | Low – unofficial historical fallback |
+Canonical source note: this file is the canonical adapter readiness source used for governance/readiness review in this repository.
 
-## Capability Flag Definitions
+- streaming
+- historical
+- symbol search
+- options chain
+- corporate actions
+- brokerage sync / execution
 
-- **Streaming**: adapter exposes real-time market data client capabilities.
-- **Historical**: adapter provides historical backfill or historical-query capabilities.
-- **Symbol Search**: adapter provides symbol discovery, lookup, or mapping services.
-- **Options**: adapter provides options chain/contract/quote workflows.
-- **Corporate Actions**: adapter exposes dividend/split/corporate action workflows.
-- **Brokerage Sync / Execution**: adapter supports brokerage account sync, order lifecycle, or execution gateway operations.
+State tags:
+
+- **complete**: production-ready implementation exists in the folder for the capability.
+- **partial**: capability exists but is scoped, read-only, or otherwise limited.
+- **experimental**: early/incomplete implementation, mapper-only path, or not yet fully wired.
+- **template-only**: scaffold/sample only, no active provider behavior.
+
+## Adapter Capability + Risk Matrix
+
+| Adapter | Streaming | Historical | Symbol Search | Options Chain | Corporate Actions | Brokerage Sync / Execution | Overall State | Ownership | Dependency / Operational Risks |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `Alpaca` | complete | complete | complete | complete | complete | complete | complete | Data Integrations + Brokerage Integrations | API key/secret setup, account entitlement differences, websocket session reliability, rate-limit tiers. |
+| `AlphaVantage` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Strict per-minute/day API limits, key provisioning, free-tier throttling and response-shape drift. |
+| `Core` | template-only | template-only | template-only | template-only | template-only | template-only | template-only | Platform Infrastructure | Shared abstractions only; misuse risk if downstream adapters assume runtime behavior from base types. |
+| `Edgar` | template-only | template-only | complete | template-only | partial | template-only | partial | Security Master & Reference Data | SEC endpoint availability, filing-schema variance, backoff/compliance for public data endpoints. |
+| `Failover` | partial | template-only | template-only | template-only | template-only | template-only | partial | Platform Infrastructure | Non-deterministic upstream outages drive behavior; correctness depends on provider health scoring quality. |
+| `Finnhub` | template-only | complete | complete | template-only | template-only | template-only | partial | Data Integrations | Token limits, per-plan endpoint entitlements, burst throttling, upstream payload drift. |
+| `Fred` | template-only | complete | template-only | template-only | template-only | template-only | partial | Research Data | API key setup, macro-series release lag/revisions, low-frequency dataset semantics. |
+| `InteractiveBrokers` | complete | complete | template-only | template-only | template-only | complete | complete | Data Integrations + Brokerage Integrations | IB Gateway/TWS runtime dependency, IBAPI version compatibility, session lifecycle and entitlement complexity. |
+| `NYSE` | complete | partial | partial | template-only | partial | template-only | partial | Exchange Integrations | Credentialed exchange access, licensing constraints, feed-format stability, market-hours dependent behavior. |
+| `NasdaqDataLink` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Dataset-specific entitlement, API quota limits, symbol/dataset mapping fragility. |
+| `OpenFigi` | template-only | template-only | partial | template-only | template-only | template-only | partial | Security Master & Reference Data | API quota/rate-limit controls, identifier mapping ambiguity, request batching constraints. |
+| `Polygon` | complete | complete | complete | complete | complete | template-only | complete | Data Integrations | Tier-dependent endpoint access, websocket reconnect pressure, strict API-limit windows, external network variability. |
+| `Robinhood` | complete | complete | complete | complete | template-only | partial | partial | Data Integrations + Brokerage Integrations | Unofficial/consumer workflow volatility, auth/token lifecycle sensitivity, non-deterministic brokerage behavior. |
+| `Stooq` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Unofficial/free endpoint stability, scraping/parsing drift, availability uncertainty. |
+| `Synthetic` | complete | complete | partial | complete | template-only | template-only | experimental | Platform Infrastructure | Deterministic test harness by design; risk is realism gap vs live providers and scenario coverage bias. |
+| `Templates` | template-only | template-only | template-only | template-only | template-only | template-only | template-only | Platform Infrastructure | Scaffolding only; accidental production registration is the primary risk. |
+| `Tiingo` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Token setup, paid-plan feature gating, request-throttle and pagination variability. |
+| `TradeStation` | template-only | template-only | template-only | template-only | template-only | experimental | experimental | Brokerage Integrations | Mapper-only asset currently; OAuth/session orchestration and execution lifecycle still integration-risk heavy. |
+| `Tradier` | template-only | template-only | template-only | experimental | template-only | experimental | experimental | Brokerage Integrations | Mapper-only asset currently; sandbox/live divergence, option payload variability, auth/limit controls. |
+| `TwelveData` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Tiered interval history access, quota constraints, symbol coverage and interval normalization risk. |
+| `YahooFinance` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Unofficial endpoint contract risk, anti-bot throttling/format drift, network and parsing nondeterminism. |
+
+## Notes
+
+- The matrix is folder-based: capability states are assigned from concrete adapter artifacts present in each subfolder (for example `*MarketDataClient`, `*HistoricalDataProvider`, `*SymbolSearchProvider`, `*OptionsChainProvider`, `*CorporateAction*`, `*BrokerageGateway`/`*BrokerageSync*`).
+- `Core` and `Templates` are intentionally non-provider runtime folders and are marked `template-only` by design.
+- `TradeStation` and `Tradier` currently expose mapper-focused artifacts in this tree; they remain `experimental` until full adapter classes and wiring are present.
