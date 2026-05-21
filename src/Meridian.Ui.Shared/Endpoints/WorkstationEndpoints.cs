@@ -961,6 +961,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
             {
