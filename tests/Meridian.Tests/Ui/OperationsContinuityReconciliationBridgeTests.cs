@@ -54,7 +54,7 @@ public sealed class OperationsContinuityReconciliationBridgeTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             "2026-05",
-            SecurityMasterSnapshotId: null,
+            securityMasterSnapshotId: null,
             brokerSource: "custodian",
             now);
 
