@@ -184,6 +184,10 @@ snapshot.
 Once a report pack is marked ready through gate posture, submit, approve, and close commands must
 reference that same report-pack id; mismatches return `REPORT_PACK_ID_MISMATCH` without appending
 an audit event or mutating the workflow snapshot.
+The close command also verifies the existing audit timeline before it appends `workflow-closed`.
+If the timeline is missing or any previous/current hash link fails canonical verification, close
+returns `AUDIT_CHAIN_MISSING` or `AUDIT_CHAIN_INVALID` on the Approval gate without appending a new
+audit event or mutating the workflow snapshot.
 When gate posture reports that a report pack exists but is not ready, the aggregate projects a
 `REPORT_PACK_NOT_READY` blocker onto the Approval gate with the linked evidence. That keeps
 approval and close guidance server-derived for both browser and retained WPF clients.

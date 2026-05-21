@@ -88,8 +88,8 @@ Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `con
 
 ### Web workstation dashboard — `src/Meridian.Ui/dashboard`
 
-The browser-based operator dashboard is the active UI delivery lane. It builds static workstation
-assets that are served from `src/Meridian.Ui/wwwroot/workstation/`.
+The browser-based operator dashboard is one of Meridian's active operator UI lanes. It builds
+static workstation assets that are served from `src/Meridian.Ui/wwwroot/workstation/`.
 
 ```bash
 cd src/Meridian.Ui/dashboard

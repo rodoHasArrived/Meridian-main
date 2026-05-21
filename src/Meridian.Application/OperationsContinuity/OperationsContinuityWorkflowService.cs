@@ -806,6 +806,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 workflow.MarkClosed(now);
                 return null;
             },
+            requireIntactAuditChain: true,
             ct: ct).ConfigureAwait(false);
     }
 
@@ -821,6 +822,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         Func<OperationsContinuityWorkflow, OperationsWorkflowBlockerDto?>? precondition = null,
         Func<OperationsContinuityWorkflow, IReadOnlyList<OperationsEvidenceLinkDto>, DateTimeOffset, OperationsWorkflowBlockerDto?>? command = null,
         bool allowClosedWorkflow = false,
+        bool requireIntactAuditChain = false,
         CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
@@ -869,6 +871,21 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         if (precondition?.Invoke(workflow) is { } preconditionBlocker)
         {
             return Failure("INVALID_STATE_TRANSITION", preconditionBlocker.Message, [preconditionBlocker]);
+        }
+
+        if (requireIntactAuditChain)
+        {
+            var auditTimeline = await _auditStore.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
+            if (!OperationsWorkflowAuditHashing.TryValidateChain(auditTimeline, out var auditBlockerCode, out var auditMessage))
+            {
+                var blocker = new OperationsWorkflowBlockerDto(
+                    auditBlockerCode,
+                    auditMessage,
+                    gate,
+                    "Critical",
+                    []);
+                return Failure("INVALID_STATE_TRANSITION", blocker.Message, [blocker]);
+            }
         }
 
         var fromStatus = _statusDerivation.Derive(workflow);

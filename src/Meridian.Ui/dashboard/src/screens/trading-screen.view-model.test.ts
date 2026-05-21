@@ -40,7 +40,7 @@ import {
   type TradingConfirmServices,
   type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, OperatorWorkItem, OperatorWorkItemKind, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingPosition, TradingReplayReadiness, TradingRiskState, TradingTrustGateReadiness, TradingWorkspaceResponse, WorkstationBrokerageSyncStatus } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, OperatorWorkItem, OperatorWorkItemKind, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingPaperSessionReadiness, TradingPosition, TradingReplayReadiness, TradingRiskState, TradingTrustGateReadiness, TradingWorkspaceResponse, WorkstationBrokerageSyncStatus } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -2255,7 +2255,7 @@ describe("promotion approval checklist", () => {
 
 describe("trading readiness fund account threading", () => {
   it("passes fundAccountId to getTradingReadiness on refresh", async () => {
-    const getTradingReadiness = vi.fn<Parameters<TradingReadinessServices["getTradingReadiness"]>, ReturnType<TradingReadinessServices["getTradingReadiness"]>>();
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>();
     const deferred = createDeferred<TradingOperatorReadiness | null>();
     getTradingReadiness.mockReturnValueOnce(deferred.promise);
 
@@ -2279,7 +2279,7 @@ describe("trading readiness fund account threading", () => {
   });
 
   it("omits fundAccountId from the call when no account context is active", async () => {
-    const getTradingReadiness = vi.fn<Parameters<TradingReadinessServices["getTradingReadiness"]>, ReturnType<TradingReadinessServices["getTradingReadiness"]>>();
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>();
     const deferred = createDeferred<TradingOperatorReadiness | null>();
     getTradingReadiness.mockReturnValueOnce(deferred.promise);
 

@@ -1293,6 +1293,46 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task CloseWorkflowAsync_ShouldRejectTamperedAuditChainWithoutAppendingAudit()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new TamperingAuditStore();
+        var service = new OperationsContinuityWorkflowService(
+            repository,
+            auditStore,
+            derivation,
+            new RecordingLedgerJournalStore());
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1"));
+        var appendCountBefore = auditStore.AppendCount;
+        auditStore.TimelineTransform = timeline => timeline
+            .Select((entry, index) => index == 1 ? entry with { PreviousHash = "tampered" } : entry)
+            .ToArray();
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close workflow",
+            "report-pack-1"));
+
+        close.Success.Should().BeFalse();
+        close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        close.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "AUDIT_CHAIN_INVALID" &&
+            blocker.Gate == OperationsGateKeyDto.Approval &&
+            blocker.Severity == "Critical");
+        auditStore.AppendCount.Should().Be(appendCountBefore);
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted!.IsClosed.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task RefreshGatePostureAsync_ShouldRejectClosedWorkflowWithoutAppendingAudit()
     {
         var service = CreateService(out _, out var auditStore);
@@ -1764,6 +1804,32 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         public Task<IReadOnlyList<OperationsWorkflowAuditDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default)
             => _inner.GetTimelineAsync(workflowId, ct);
+    }
+
+    private sealed class TamperingAuditStore : IOperationsWorkflowAuditStore
+    {
+        private readonly InMemoryOperationsWorkflowAuditStore _inner = new();
+
+        public int AppendCount { get; private set; }
+
+        public Func<IReadOnlyList<OperationsWorkflowAuditDto>, IReadOnlyList<OperationsWorkflowAuditDto>>? TimelineTransform { get; set; }
+
+        public async Task<OperationsWorkflowAuditDto> AppendAsync(
+            OperationsWorkflowAuditDraft draft,
+            CancellationToken ct = default)
+        {
+            var audit = await _inner.AppendAsync(draft, ct).ConfigureAwait(false);
+            AppendCount++;
+            return audit;
+        }
+
+        public async Task<IReadOnlyList<OperationsWorkflowAuditDto>> GetTimelineAsync(
+            Guid workflowId,
+            CancellationToken ct = default)
+        {
+            var timeline = await _inner.GetTimelineAsync(workflowId, ct).ConfigureAwait(false);
+            return TimelineTransform?.Invoke(timeline) ?? timeline;
+        }
     }
 
     [Fact]
