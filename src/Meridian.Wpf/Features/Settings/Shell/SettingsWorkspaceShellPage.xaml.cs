@@ -61,10 +61,18 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(SettingsWorkspaceShellViewModel.HeroBadgeTone))
+        if (e.PropertyName != nameof(SettingsWorkspaceShellViewModel.HeroBadgeTone))
         {
-            ApplyToneBindings();
+            return;
         }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(ApplyToneBindings);
+            return;
+        }
+
+        ApplyToneBindings();
     }
 
     private void OnViewModelActionRequested(object? sender, SettingsWorkspaceShellActionRequestedEventArgs e)
