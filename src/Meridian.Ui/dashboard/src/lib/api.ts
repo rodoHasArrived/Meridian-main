@@ -1,4 +1,5 @@
 import type {
+  BackfillPreviewResult,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -420,7 +421,7 @@ export function triggerBackfill(request: BackfillTriggerRequest) {
 }
 
 export function previewBackfill(request: BackfillTriggerRequest) {
-  return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
+  return postJson<BackfillPreviewResult>("/api/backfill/run/preview", request);
 }
 
 // --- Provider management ---
