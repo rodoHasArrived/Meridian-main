@@ -4,7 +4,7 @@
 
 ## Overview
 
-Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the retained native Windows desktop surface for the platform. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
+Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active native Windows desktop operator surface for the platform alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
 ## Architecture
 
@@ -440,12 +440,12 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ## Workspace Shells
 
-The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy and Trading shells keep presentation state in view models backed by WPF-scoped presentation services; their pages handle WPF lifecycle, docking, tone resources, and navigation forwarding. Data now starts the feature-owned desktop module spine under `src/Meridian.Wpf/Features/Data/`: the Data shell view model owns loading/error state, queue summaries, hero state, action resolution, and shell-context refresh requests while WPF code-behind is limited to lifecycle, dock hosting, tone resource application, and navigation forwarding.
+The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy keeps presentation state in view models backed by WPF-scoped presentation services; its page handles WPF lifecycle, docking, tone resources, and navigation forwarding. Trading and Data now live on the feature-owned desktop module spine under `src/Meridian.Wpf/Features/`: their shell view models own loading/error state, readiness and queue summaries, hero state, action resolution, and shell-context refresh requests while WPF code-behind is limited to lifecycle, dock hosting, tone resource application, and navigation forwarding.
 
 Shell implementation now shares descriptor-driven infrastructure:
 
-- `src/Meridian.Wpf/Features/` owns feature module registration; `DataFeatureModule` registers the Data shell page, view model, snapshot service, and presentation adapter before catalog fallback registration fills in unmigrated pages
-- `src/Meridian.Wpf/Shell/` owns route registry, page-content factory, shell navigation coordinator, and pane-host view-model seams for the retained desktop shell
+- `src/Meridian.Wpf/Features/` owns feature module registration; `TradingFeatureModule` registers the Trading shell page, state provider, view model, and presentation service, while `DataFeatureModule` registers the Data shell page, view model, snapshot service, and presentation adapter before catalog fallback registration fills in unmigrated pages
+- `src/Meridian.Wpf/Shell/` owns route registry, page-content factory, shell navigation coordinator, and pane-host view-model seams for the desktop shell
 - `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
 - `WorkspaceShellViewModelBase` carries shell command state
 - `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes
@@ -472,7 +472,7 @@ indicator toggles, refresh command enablement, and the setup-readiness card. The
 limited to rendering the toolbar, chart panels, and loading overlay; avoid reintroducing page event
 handlers for toolbar selection, date validation, indicator state, or refresh readiness.
 
-### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
+### `TradingWorkspaceShellPage` (`Features/Trading/Shell/TradingWorkspaceShellPage.xaml`)
 
 **Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and a compact promotion/audit/validation status card for the active run or aggregate workspace posture.
 

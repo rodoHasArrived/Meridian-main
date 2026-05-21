@@ -237,6 +237,29 @@ public sealed class DesktopWorkflowScriptTests
         }
     }
 
+    [Fact]
+    public void DesktopDevBootstrap_ShouldUseSharedDesktopToolingAndCurrentCommands()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-dev.ps1"));
+
+        script.Should().Contain("[string]$Profile = 'debug-startup'");
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedBuild.ps1')");
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')");
+        script.Should().Contain("$buildIsolationKey = if ($NoIsolation) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-dev' }");
+        script.Should().Contain("Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot");
+        script.Should().Contain("Test-MeridianWorkflowProfile -ProfileData $profileEnvelope.data");
+        script.Should().Contain("Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild");
+        script.Should().Contain("dotnet', 'build', $wpfProject, '-c', $Configuration, '--no-restore'");
+        script.Should().Contain("dotnet', 'build', $wpfTestsProject, '-c', $Configuration, '--no-restore'");
+        script.Should().Contain("make desktop-test-position-blotter-route");
+        script.Should().Contain("pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup");
+
+        script.Should().NotContain("src/Meridian.Uwp/Meridian.Uwp.csproj");
+        script.Should().NotContain("make build-wpf");
+        script.Should().NotContain("make test-desktop-services");
+        script.Should().NotContain("make uwp-xaml-diagnose");
+    }
+
     private static string GetRepositoryFilePath(string relativePath)
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

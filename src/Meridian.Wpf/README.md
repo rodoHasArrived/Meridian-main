@@ -4,7 +4,7 @@ doc_schema: meridian.source-readme
 doc_schema_version: "1.0.0"
 module_id: SRC-WPF
 path: src/Meridian.Wpf
-status: retained_support
+status: active
 owner_lane: Workstation Shell and UX
 last_reviewed: 2026-05-20
 ---
@@ -13,21 +13,21 @@ last_reviewed: 2026-05-20
 
 ## Purpose
 
-The WPF project is Meridian's retained desktop support lane. It preserves compatibility, regression coverage, and existing workstation workflows while new operator UI development happens in the browser workstation.
+The WPF project is Meridian's active Windows desktop operator surface alongside the browser workstation. It carries desktop workflow delivery, workstation automation, and desktop validation while sharing contracts and read models with the web workstation.
 
 ## Layer responsibility
 
-This layer owns WPF shell behavior, MVVM view models, XAML pages, retained desktop workflow automation, and regression support. Shared contracts and read models belong in `src/Meridian.Contracts`, `src/Meridian.Ui.Shared`, or `src/Meridian.Ui.Services`.
+This layer owns WPF shell behavior, MVVM view models, XAML pages, desktop workflow automation, and desktop-specific presentation concerns. Shared contracts and read models belong in `src/Meridian.Contracts`, `src/Meridian.Ui.Shared`, or `src/Meridian.Ui.Services`.
 
 ## Key folders and files
 
-- `Views/` and `ViewModels/` - retained desktop screens and MVVM state.
+- `Views/` and `ViewModels/` - desktop screens and MVVM state.
 - `Services/` - desktop navigation, workflow, shell, and automation support.
 - `App.xaml.cs` and `MainWindow.xaml` - desktop application startup and shell root.
 
 ## Important workflows
 
-Use this module for retained WPF fixes, compatibility work, and desktop regression coverage. Do not route new product UI scope here unless the roadmap explicitly reopens desktop-first work.
+Use this module for active desktop workflow delivery, shell/navigation improvements, desktop automation, and desktop regression coverage. When behavior is shared with the browser workstation, land the business logic and contracts in shared projects first and keep WPF-specific work focused on presentation, routing, and desktop ergonomics.
 
 ## Diagrams
 
@@ -56,7 +56,7 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsT
 
 ## Change rules
 
-Keep WPF changes tied to retained support, shared contract regression, or explicit roadmap approval. Browser workstation work belongs in `src/Meridian.Ui/dashboard/`.
+Keep WPF changes backed by shared contracts, read models, and workstation endpoints when the workflow also exists in the browser workstation. Browser-specific work still belongs in `src/Meridian.Ui/dashboard/`, but desktop is again a first-class operator surface rather than retained support only.
 
 ## Related docs
 
@@ -91,6 +91,7 @@ Recent governance work is also moving older utility pages into shell-native work
 `Backfill` now surfaces a bound start-readiness card before launch, with symbol/date validation, request scope, and the Start button enablement projected by `BackfillViewModel` instead of page-owned validation label updates.
 `ScheduleManager` now binds schedule refresh, empty/error status, template loading, and cron validation through `ScheduleManagerViewModel`, keeping the page code-behind limited to construction and initial load.
 `SystemHealth` now opens with a triage briefing that folds provider health, storage pressure, corrupted/orphaned storage evidence, and retained event severity into one next handoff before the operator scans CPU, storage, and recent-event panels; its provider and recent-event empty states distinguish pending scans from confirmed empty snapshots.
+The System Health header actions now bind Refresh and Diagnostics directly to `SystemHealthViewModel` commands, so command availability follows the same async state that disables duplicate refresh or diagnostics requests.
 `ActivityLog` now keeps a compact triage strip above the virtualized event list so visible entries, retained errors, retained warnings, latest event time, and active filters stay visible while operators export, clear, or reset filtered support traces.
 `Watchlist` now opens with a posture card that summarizes saved lists, pinned lists, symbol coverage, and current search scope before operators load, pin, create, or import a list; pinned lists also surface first with compact card badges for quick desk loading.
 `SecurityMaster` now binds the Search button and Enter key to `SearchCommand`, then pairs no-match or unavailable-runtime states with a recovery card and bound `Clear Search` action so query/results state can reset without another workstation read.
@@ -247,7 +248,7 @@ Examples:
 `DataBrowser` includes a view-model-owned time-period selector, filter-aware empty state, and `Reset Filters` command so data operations users can scope or recover hidden retained market-data rows without a backend read.
 `DataSampling` includes a view-model-owned readiness card, command-gated add/generate/save actions, symbol-scope copy, and recent-sample state so data operators can resolve missing name, symbols, date range, or data-type setup before queueing a sample.
 `TimeSeriesAlignment` includes a view-model-owned readiness card, bound setup controls, command-gated run action, progress state, result summary, and recent-alignment empty state so data operators can fix missing symbols, dates, or fields before launching an alignment request.
-`TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
+`TradingWorkspaceShellPage` now lives under `Features/Trading/Shell` and adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
 `ResearchWorkspaceShellPage` now keeps the active research cycle explicit with a desk-briefing hero that upgrades no-op trading-review prompts into actionable run-browser, portfolio, or promotion handoffs based on the selected run state.
 `StrategyRuns` includes a filter-aware empty state, comparison-picker guidance, and a `Reset Filters` action so search or mode misses can recover the already-loaded run browser rows without another service read.
 `BatchBacktest` hides the empty result grid until rows exist and shows automation-addressable guidance for unresolved validation, active sweeps waiting on first rows, failed batches, and cancelled runs.

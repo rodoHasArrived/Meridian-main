@@ -36,6 +36,7 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-cleanup` | Clean code and docs without changing observable behavior |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | Implement and verify work with strict Codex gates, explicit evidence, and docs sync |
 | `meridian-provider-builder` | Build and extend providers with the right contracts |
 | `meridian-repo-navigation` | Route large-repo tasks before deeper work |

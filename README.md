@@ -22,6 +22,8 @@ Current local project path: `C:\Dev\Meridian-main`.
 - [Prompt and Agent Guidance](docs/prompts/repo-maintenance-prompts.md)
 - [Evidence-Backed Investment Operations Plan](docs/plans/evidence-backed-investment-operations-plan.md)
 - [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
+- [Roadmap Registry](docs/roadmap/README.md)
+- [Source Documentation Mesh](docs/source/README.md)
 
 ## Current Product Direction
 
@@ -165,6 +167,15 @@ for preserved configs that point at missing provider sections, browser session/r
 messages, and accessible disabled-field support text. Security Master accounting support also now
 treats MBS, ABS, loan, and amortizing-loan instruments as factor-schedule fixed-income families.
 Treat these as risk-reduction and operator-trust support evidence, not W2-W4 readiness exits.
+
+Current May 21 support evidence adds a shared Strategy Engine pre-run foundation: explicit strategy
+definitions, typed parameter schemas, data dependency policy, run-request validation, evidence
+hashing, and workstation definitions/validate-run endpoints for Covered Call and visual designer
+flows. The repo also now has structured roadmap and source documentation registries under
+`docs/roadmap/` and `docs/source/`, generated source README coverage, stale-doc/hash validation,
+and a provider capability matrix for adapter readiness. Treat these as contract, planning, and
+documentation-control support evidence; they do not close cockpit, shared-continuity,
+governance/reporting, or live-readiness gates.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 

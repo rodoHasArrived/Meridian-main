@@ -23,6 +23,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-cleanup` | Clean up code and docs without behavior changes |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | Implement and verify changes with strict Codex gates, explicit evidence, and docs sync |
 | `meridian-provider-builder` | Build and extend provider integrations |
 | `meridian-repo-navigation` | Orient large-repo tasks before specialist work |
@@ -42,6 +43,7 @@ route by task phase:
 | Plan | `meridian-blueprint` | Turn one selected idea into an implementation-ready design. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence, docs sync, and gates. |
 | Review | `meridian-code-review` | Findings first; no patching unless explicitly requested. |
+| Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the correct test lane. |
 | Provider | `meridian-provider-builder` | Build providers and hand off to assurance for rollout proof. |
 | Archive | `meridian-archive-organizer` | Classify stale material and update archive/navigation evidence. |

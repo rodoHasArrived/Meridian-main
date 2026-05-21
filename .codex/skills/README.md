@@ -1,9 +1,9 @@
 # Meridian Codex Skills
 
 This folder contains Meridian's repo-local Codex skills. These are the primary project-scoped
-skills for the current AI workflow and should stay aligned with Meridian's browser-first operator
-workstation direction, retained WPF support, fund-management/trading-platform scope, and no-mobile
-development policy.
+skills for the current AI workflow and should stay aligned with Meridian's active desktop app
+operator UI direction, retained browser workstation support, fund-management/trading-platform
+scope, and no-mobile development policy.
 
 Last verified against `README.md`, `docs/status/ROADMAP.md`, and
 `docs/ai/assistant-workflow-contract.md`: 2026-05-21.
@@ -17,6 +17,7 @@ Last verified against `README.md`, `docs/status/ROADMAP.md`, and
 | `meridian-brainstorm` | [`SKILL.md`](meridian-brainstorm/SKILL.md) | Generate Meridian-native product and architecture ideas |
 | `meridian-cleanup` | [`SKILL.md`](meridian-cleanup/SKILL.md) | Clean up code and docs without behavior changes |
 | `meridian-code-review` | [`SKILL.md`](meridian-code-review/SKILL.md) | Review changes for bugs, regressions, and architecture drift |
+| `meridian-docs` | [`SKILL.md`](meridian-docs/SKILL.md) | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement and verify changes with strict Codex gates, explicit evidence, and docs sync |
 | `meridian-provider-builder` | [`SKILL.md`](meridian-provider-builder/SKILL.md) | Build and extend provider integrations |
 | `meridian-repo-navigation` | [`SKILL.md`](meridian-repo-navigation/SKILL.md) | Orient large-repo tasks before specialist work |
@@ -36,6 +37,7 @@ different work:
 | Plan | `meridian-blueprint` | Turn one selected idea into a code-ready design. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence and docs sync. |
 | Review | `meridian-code-review` | Findings first; no implementation unless asked. |
+| Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the right project. |
 | Provider | `meridian-provider-builder` | Build provider adapters, then use assurance for rollout proof. |
 | Archive | `meridian-archive-organizer` | Classify stale material and preserve useful history. |
@@ -64,9 +66,9 @@ different work:
   `Workflow`, `Handoffs`, `Validation`, and `Output Standards`.
 - Every current Codex skill must include lightweight trigger and non-trigger examples so routing
   boundaries remain inspectable without running a full eval harness.
-- Treat `src/Meridian.Ui/dashboard/` and `/workstation/` as the default operator UI surface for
-  new browser-facing work. WPF guidance is retained support unless the user explicitly asks for
-  desktop compatibility work.
+- Treat `src/Meridian.Wpf/` as the active desktop app operator UI path. Keep
+  `src/Meridian.Ui/dashboard/` and `/workstation/` as retained browser workstation surfaces unless
+  the user explicitly asks for browser workstation work.
 - Do not introduce mobile development guidance unless the roadmap or user explicitly reopens that
   lane.
 - Keep `agents/openai.yaml` synchronized with the skill text so Codex UI metadata stays current.

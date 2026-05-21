@@ -38,6 +38,15 @@ public partial class ProviderHealthPage : Page
     private async void Refresh_Click(object sender, RoutedEventArgs e) =>
         await _viewModel.RefreshAsync();
 
+    private void AddProvider_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.OpenAddProviderWizard();
+
+    private void OpenSettings_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.OpenProviderSettings();
+
+    private void RunDiagnostics_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.RunSelectedProviderDiagnostics();
+
     private async void ProviderAction_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string providerId)

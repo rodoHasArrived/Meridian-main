@@ -193,6 +193,276 @@
                 </Grid>
             </Border>
 
+            <!-- Provider Management Center -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24"
+                    AutomationProperties.AutomationId="ProviderManagementCenter"
+                    AutomationProperties.Name="Provider Management Center">
+                <StackPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Provider Management"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       AutomationProperties.AutomationId="ProviderManagementTitle"/>
+                            <TextBlock Text="Configure, verify, monitor, and route market-data and brokerage providers used by Meridian."
+                                       Margin="0,4,0,0"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding ProviderManagementStatusText}"
+                                       Margin="0,8,0,0"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       AutomationProperties.AutomationId="ProviderManagementStatusText"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                            <Button Content="Add Provider"
+                                    Click="AddProvider_Click"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,8,0"/>
+                            <Button Content="Refresh Status"
+                                    Click="Refresh_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,0"/>
+                            <Button Content="Run Diagnostics"
+                                    Click="RunDiagnostics_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,0"/>
+                            <Button Content="Open Settings"
+                                    Click="OpenSettings_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="Configured Provider"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Margin="0,0,0,6"/>
+                        <ComboBox ItemsSource="{Binding ProviderManagementRows}"
+                                  SelectedItem="{Binding SelectedProviderManagementRow, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  MinHeight="34"
+                                  MaxWidth="420"
+                                  HorizontalAlignment="Left"
+                                  AutomationProperties.Name="Configured Provider"/>
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding ProviderManagementSummaryCards}" Margin="0,0,0,16">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="178"
+                                        MinHeight="108"
+                                        Margin="0,0,12,12"
+                                        Padding="12"
+                                        CornerRadius="10"
+                                        BorderThickness="1"
+                                        BorderBrush="{Binding AccentBrush}"
+                                        Background="{StaticResource PremiumPanelBrush}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Label}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Value}"
+                                                   Margin="0,6,0,0"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding AccentBrush}"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Detail}"
+                                                   Margin="0,6,0,0"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*"/>
+                            <ColumnDefinition Width="18"/>
+                            <ColumnDefinition Width="0.9*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ListView Grid.Column="0"
+                                  ItemsSource="{Binding ProviderManagementRows}"
+                                  SelectedItem="{Binding SelectedProviderManagementRow, Mode=TwoWay}"
+                                  MinHeight="260"
+                                  AutomationProperties.Name="Provider management table">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Provider" Width="150" DisplayMemberBinding="{Binding DisplayName}"/>
+                                    <GridViewColumn Header="Capability" Width="130" DisplayMemberBinding="{Binding CapabilityText}"/>
+                                    <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding HealthText}"/>
+                                    <GridViewColumn Header="Credential" Width="105" DisplayMemberBinding="{Binding CredentialStateText}"/>
+                                    <GridViewColumn Header="Verification" Width="110" DisplayMemberBinding="{Binding VerificationStateText}"/>
+                                    <GridViewColumn Header="Last good" Width="130" DisplayMemberBinding="{Binding LastSuccessfulConnectionText}"/>
+                                    <GridViewColumn Header="Workflows" Width="190" DisplayMemberBinding="{Binding AffectedWorkflowsText}"/>
+                                    <GridViewColumn Header="Action" Width="90" DisplayMemberBinding="{Binding ActionText}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+
+                        <Border Grid.Column="2"
+                                Style="{StaticResource CardStyle}"
+                                Padding="16"
+                                AutomationProperties.AutomationId="SelectedProviderManagementDetail">
+                            <StackPanel DataContext="{Binding SelectedProviderManagementRow}">
+                                <TextBlock Text="Selected Provider"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                <TextBlock Text="{Binding DisplayName, TargetNullValue='No provider selected'}"
+                                           Margin="0,4,0,0"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"/>
+                                <TextBlock Text="{Binding CapabilityText}"
+                                           Margin="0,2,0,12"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+
+                                <TabControl>
+                                    <TabItem Header="Overview">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <StackPanel Margin="0,12,0,0">
+                                                <TextBlock Text="{Binding TrustExplanationText}"
+                                                           Style="{StaticResource CardDescriptionStyle}"
+                                                           TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding RecommendedActionText}"
+                                                           Margin="0,10,0,0"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding HealthBrush}"
+                                                           TextWrapping="Wrap"/>
+                                                <UniformGrid Columns="2" Margin="0,12,0,0">
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Text="Health" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding HealthText}" Foreground="{Binding HealthBrush}" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Text="Connection" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding LastSuccessfulConnectionText}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Text="Fallback" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding FallbackText}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Text="Workflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding AffectedWorkflowsText}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Text="Last failure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding LastFailureText}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,12,10">
+                                                        <TextBlock Text="Last error" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                        <TextBlock Text="{Binding LastErrorText}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </UniformGrid>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </TabItem>
+                                    <TabItem Header="Credentials">
+                                        <StackPanel Margin="0,12,0,0">
+                                            <TextBlock Text="Raw secrets are never displayed after submit. Use Settings to replace or clear stored values."
+                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                       TextWrapping="Wrap"/>
+                                            <UniformGrid Columns="2" Margin="0,12,0,0">
+                                                <StackPanel Margin="0,0,12,10">
+                                                    <TextBlock Text="Credential state" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                    <TextBlock Text="{Binding CredentialStateText}" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                                <StackPanel Margin="0,0,12,10">
+                                                    <TextBlock Text="Source" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                    <TextBlock Text="{Binding CredentialSourceText}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <StackPanel Margin="0,0,12,10">
+                                                    <TextBlock Text="Masked preview" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                    <TextBlock Text="{Binding MaskedKeyPreviewText}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <StackPanel Margin="0,0,12,10">
+                                                    <TextBlock Text="Environment" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                    <TextBlock Text="{Binding EnvironmentText}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <StackPanel Margin="0,0,12,10">
+                                                    <TextBlock Text="External account" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                    <TextBlock Text="{Binding ExternalAccountIdText}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <StackPanel Margin="0,0,12,10">
+                                                    <TextBlock Text="Last verified" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                                                    <TextBlock Text="{Binding LastVerifiedText}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </TabItem>
+                                    <TabItem Header="Diagnostics">
+                                        <StackPanel Margin="0,12,0,0">
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding DataContext.ProviderVerificationStatusText, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                           Style="{StaticResource CardDescriptionStyle}"
+                                                           TextWrapping="Wrap"/>
+                                                <Button Grid.Column="1"
+                                                        Content="Run Verification"
+                                                        Click="RunDiagnostics_Click"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Margin="12,0,0,0"/>
+                                            </Grid>
+                                            <ItemsControl ItemsSource="{Binding Diagnostics}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderThickness="0,0,0,1"
+                                                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                                                Padding="0,8">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Column="0">
+                                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                                                                    <TextBlock Text="{Binding Detail}"
+                                                                               FontSize="12"
+                                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                               TextWrapping="Wrap"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding StatusText}"
+                                                                           Foreground="{Binding StatusBrush}"
+                                                                           FontWeight="SemiBold"
+                                                                           Margin="12,0,0,0"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </TabItem>
+                                </TabControl>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <!-- Provider Status Cards -->
             <TextBlock Text="Streaming Providers" FontWeight="SemiBold" FontSize="16"
                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,12"/>

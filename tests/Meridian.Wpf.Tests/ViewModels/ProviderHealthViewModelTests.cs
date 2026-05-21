@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -92,6 +93,99 @@ public sealed class ProviderHealthViewModelTests
         xaml.Should().Contain("ProviderPostureEvidenceText");
         xaml.Should().Contain("ProviderPostureBriefingCard");
         xaml.Should().Contain("ProviderPostureHandoffPanel");
+        xaml.Should().Contain("ProviderManagementCenter");
+        xaml.Should().Contain("Provider Management");
+        xaml.Should().Contain("Configured Provider");
+        xaml.Should().Contain("Provider management table");
+        xaml.Should().Contain("Run Verification");
+    }
+
+    [Fact]
+    public void BuildProviderManagementRows_MergesStreamingAndBackfillProvidersWithoutDuplicatingProviderFamilies()
+    {
+        var streamingProviders = new[]
+        {
+            new ProviderStatusModel
+            {
+                ProviderId = "polygon",
+                Name = "Polygon.io",
+                StatusText = "Connected",
+                LatencyText = "Latency: 82ms",
+                UptimeText = "Uptime: 2h",
+                ActionText = "Disconnect",
+                IsConnected = true
+            }
+        };
+        var backfillProviders = new[]
+        {
+            new BackfillProviderModel
+            {
+                ProviderId = "polygon",
+                Name = "Polygon.io",
+                StatusText = "Available",
+                RateLimitText = "5 req/min (free)",
+                LastUsedText = "Last used: 5m ago"
+            },
+            new BackfillProviderModel
+            {
+                ProviderId = "yahoo",
+                Name = "Yahoo Finance",
+                StatusText = "Available",
+                RateLimitText = "100 req/min",
+                LastUsedText = "Last used: --"
+            }
+        };
+
+        var rows = ProviderHealthViewModel.BuildProviderManagementRows(
+            streamingProviders,
+            backfillProviders,
+            new DateTime(2026, 5, 20, 18, 30, 0, DateTimeKind.Utc));
+
+        rows.Should().HaveCount(2);
+        rows.Should().ContainSingle(row => row.ProviderId == "polygon")
+            .Which.Should().Match<ProviderManagementRowModel>(row =>
+                row.DisplayName == "Polygon.io" &&
+                row.CapabilityText == "Data + Backfill" &&
+                row.HealthText == "Healthy" &&
+                row.CredentialStateText == "Configured" &&
+                row.VerificationStateText == "Verified" &&
+                row.AffectedWorkflowsText.Contains("Live quotes") &&
+                row.AffectedWorkflowsText.Contains("Backfill") &&
+                row.ActionText == "View Details");
+        rows.Should().ContainSingle(row => row.ProviderId == "yahoo")
+            .Which.Should().Match<ProviderManagementRowModel>(row =>
+                row.CredentialStateText == "Not Required" &&
+                row.VerificationStateText == "Not Required" &&
+                row.MaskedKeyPreviewText == "Not required");
+    }
+
+    [Fact]
+    public void BuildProviderManagementRows_SeparatesMissingCredentialsFromProviderHealth()
+    {
+        var rows = ProviderHealthViewModel.BuildProviderManagementRows(
+            [
+                new ProviderStatusModel
+                {
+                    ProviderId = "alpaca",
+                    Name = "Alpaca Paper",
+                    StatusText = "Not Configured",
+                    LatencyText = "Latency: --",
+                    UptimeText = "Uptime: --",
+                    ActionText = "Configure",
+                    IsConnected = false
+                }
+            ],
+            Array.Empty<BackfillProviderModel>(),
+            null);
+
+        var alpaca = rows.Should().ContainSingle().Subject;
+        alpaca.HealthText.Should().Be("Blocked");
+        alpaca.CredentialStateText.Should().Be("Missing");
+        alpaca.VerificationStateText.Should().Be("Failed");
+        alpaca.RecommendedActionText.Should().Contain("Add credentials");
+        alpaca.Diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Label == "Credential presence" &&
+            diagnostic.StatusText == "Fail");
     }
 
     [Fact]

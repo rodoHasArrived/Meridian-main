@@ -1,6 +1,6 @@
 # Desktop Development Testing Guide
 
-This guide helps contributors set up and test the WPF desktop application for Meridian.
+This guide helps contributors set up and test Meridian's active WPF desktop operator surface.
 
 > Migration note: desktop workflow orchestration commands are PowerShell-first as of April 2026. See [desktop-command-surface-migration.md](./desktop-command-surface-migration.md) for deprecated-to-supported command mappings.
 
@@ -9,6 +9,12 @@ This guide helps contributors set up and test the WPF desktop application for Me
 ```bash
 # Environment validation
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
+
+# Fast script/profile check without restore or build
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1 -SkipRestore -SkipBuild -SkipTestBuild -EmitJson
+
+# Launch the fixture-backed desktop shell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture
 
 # Build desktop application
 make desktop-build                # Build WPF desktop app
@@ -33,11 +39,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 This script validates:
 
-- ✅ .NET 10 SDK installation
-- ✅ Windows SDK presence (Windows only)
-- ✅ Visual Studio Build Tools
-- ✅ XAML tooling support
-- ✅ Desktop project restore and smoke build
+- .NET 10 SDK selection and installed SDK inventory
+- Windows SDK and Visual Studio Build Tools presence on Windows
+- the selected desktop workflow profile, defaulting to `debug-startup`
+- the WPF desktop project, WPF test project, and shared UI-services project paths
+- isolated restore/build output under `artifacts/bin/<desktop-dev-*>` and `artifacts/obj/<desktop-dev-*>`
+- the WPF desktop shell build and WPF desktop test-project build
+
+Use `-Configuration Release` to match release build behavior, `-Profile <workflow-name>` to validate a different workflow profile, `-NoIsolation` only when you intentionally want standard `bin/` and `obj/` output, and `-EmitJson` when automation needs machine-readable step results. The script keeps workflow orchestration PowerShell-first; use `run-desktop.ps1` or `run-desktop-workflow.ps1` to launch or drive the shell after bootstrap succeeds.
 
 **Actionable Fix Messages**: The script provides specific instructions for any missing components.
 

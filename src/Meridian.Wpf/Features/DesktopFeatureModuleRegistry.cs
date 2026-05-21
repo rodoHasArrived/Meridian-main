@@ -6,6 +6,7 @@ public static class DesktopFeatureModuleRegistry
 {
     private static readonly IDesktopFeatureModule[] Modules =
     [
+        new Trading.TradingFeatureModule(),
         new Data.DataFeatureModule()
     ];
 

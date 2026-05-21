@@ -1,6 +1,6 @@
 # Desktop Workflow Automation
 
-This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable operator flows, capture screenshots, and generate manual-ready markdown.
+This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable operator flows on the active WPF desktop surface, capture screenshots, and generate manual-ready markdown.
 
 ## What the Automation Covers
 
@@ -66,7 +66,7 @@ template, field-catalog, and draft GET endpoints.
 
 That keeps navigation aligned with Meridian's own startup and deep-link handling instead of relying on brittle screen coordinates.
 
-Restore and build now share the same configuration, WPF build flags, and isolation key before the runner uses `build --no-restore`. The restore step lets each project restore its declared target framework so shared `net9.0` libraries get matching assets, while the build step pins the desktop shell to `net9.0-windows10.0.19041.0`. When `-SkipBuild` is supplied, the runner uses the standard project output path so CI jobs can download prebuilt WPF binaries into `src/Meridian.Wpf/bin/...` and launch them without creating a new isolated output key.
+Restore and build now share the same configuration, WPF build flags, and isolation key before the runner uses `build --no-restore`. The restore step lets each project restore its declared target framework so shared `net10.0` and Windows-targeted libraries get matching assets, while the build step pins the desktop shell to `net10.0-windows10.0.19041.0`. When `-SkipBuild` is supplied, the runner uses the standard project output path so CI jobs can download prebuilt WPF binaries into `src/Meridian.Wpf/bin/...` and launch them without creating a new isolated output key.
 
 Before any screenshot is saved, the runner now:
 

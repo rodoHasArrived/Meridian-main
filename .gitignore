@@ -235,6 +235,7 @@ docs/docfx/api/*.yml
 # that should be restored via `npm install`, not committed.
 
 node_modules/
+/package-lock.json
 /src/Meridian.Ui/dashboard/node_modules/
 /src/Meridian.Ui/dashboard/dist/
 /src/Meridian.Ui/dashboard/coverage/

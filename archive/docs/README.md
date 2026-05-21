@@ -20,6 +20,11 @@ This folder contains historical and superseded Meridian documentation that has b
 
 - [`summaries/WAVE2_IMPLEMENTATION_SUMMARY.md`](summaries/WAVE2_IMPLEMENTATION_SUMMARY.md) - Historical Wave 2 acceptance test implementation snapshot from 2026-05-08.
 
+## Archived Plans
+
+- [`plans/approach-b-plus-v2-implementation-plan.md`](plans/approach-b-plus-v2-implementation-plan.md) - Superseded documentation-system implementation plan; active guidance now lives in structured roadmap/source registries, docs automation, and validation docs.
+- [`plans/covered-call-writing-slice-1-blueprint.md`](plans/covered-call-writing-slice-1-blueprint.md) - Superseded Covered Call backtest-slice blueprint; active planning now routes through Strategy Engine support evidence, options roadmap, and Backtest Studio plans.
+
 ## Archived Assessments
 
 - [`assessments/duplicate-deprecated-implementation-audit-2026-05-17.md`](assessments/duplicate-deprecated-implementation-audit-2026-05-17.md) - Duplicate/deprecated implementation audit and archive dispositions from 2026-05-17.
