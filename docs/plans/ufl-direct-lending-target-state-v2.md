@@ -991,7 +991,26 @@ Servicer ingestion and platform operations:
 
 - explicit suspend/close/default command endpoints with stable operator workflows;
 - richer revision-source drill-down endpoints (for example, first-class revision-source query routes);
-- stronger route-level versioning for future breaking schema shifts.
+- stronger route-level versioning for future breaking schema shifts;
+- period-lock command/query endpoints that align accounting-close controls with direct-lending operations;
+- projection lineage and scenario-comparison endpoints that let operators compare baseline vs what-if runs;
+- bulk portfolio servicing and reconciliation endpoints for controlled, replay-safe operational batches.
+
+### 8.3 Candidate expansion routes for next delivery waves
+
+The following routes make the "more functionality" path concrete while staying within this package's in-scope boundaries:
+
+- `POST /api/loans/{loanId}/status/suspend`
+- `POST /api/loans/{loanId}/status/default`
+- `POST /api/loans/{loanId}/status/close`
+- `GET /api/loans/{loanId}/servicing-revisions`
+- `GET /api/loans/{loanId}/servicing-revisions/{revisionNo}/sources`
+- `POST /api/loans/{loanId}/projections/what-if`
+- `GET /api/projections/{projectionRunId}/lineage`
+- `POST /api/accounting/periods/{periodKey}/lock`
+- `POST /api/accounting/periods/{periodKey}/unlock`
+- `POST /api/loans/portfolio/reconcile`
+- `POST /api/servicer-reports/{batchId}/reprocess`
 
 ## 9. Reference Extraction Structure (Optional Future State)
 
