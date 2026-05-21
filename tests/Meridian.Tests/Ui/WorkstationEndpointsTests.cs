@@ -612,7 +612,8 @@ public sealed class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterConfigStores(services, configPath);
-        });
+        },
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials);
         var client = app.GetTestClient();
 
         using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
@@ -668,7 +669,8 @@ public sealed class WorkstationEndpointsTests
             services.AddSingleton<ProviderConnectionLifecycleService>();
             services.AddSingleton<ProviderConnectionService>();
             services.AddSingleton<ProviderBindingService>();
-        });
+        },
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ManageCredentials);
 
         var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
         var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
@@ -719,6 +721,18 @@ public sealed class WorkstationEndpointsTests
             .Contain(item =>
                 item.GetProperty("id").GetString() == "routing-readiness" &&
                 item.GetProperty("detail").GetString()!.Contains("Bindings 2; fallback routes 1; production ready True.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsPayload_WithoutManageCredentials_ShouldNotExposeConnectionSummary()
+    {
+        await using var app = await CreateAppAsync();
+        using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
+        var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
+
+        providers.Should().NotBeEmpty();
+        providers.Should().OnlyContain(provider =>
+            provider.GetProperty("connectionSummary").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
     }
 
     [Fact]
