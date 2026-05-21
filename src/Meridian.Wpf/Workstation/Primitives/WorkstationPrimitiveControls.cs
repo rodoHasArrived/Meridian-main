@@ -63,20 +63,38 @@ public sealed class WorkspaceHostControl : ContentControl
     }
 }
 
-public sealed class WorkspaceToolbarControl : ItemsControl;
+public sealed class WorkspaceToolbarControl : ItemsControl
+{
+}
 
-public sealed class StatusRibbonControl : ItemsControl;
+public sealed class StatusRibbonControl : ItemsControl
+{
+}
 
-public sealed class MetricTileControl : ContentControl;
+public sealed class MetricTileControl : ContentControl
+{
+}
 
-public sealed class HealthBadgeControl : ContentControl;
+public sealed class HealthBadgeControl : ContentControl
+{
+}
 
-public sealed class TrustBadgeControl : ContentControl;
+public sealed class TrustBadgeControl : ContentControl
+{
+}
 
-public sealed class ConnectionStatusIndicatorControl : ContentControl;
+public sealed class ConnectionStatusIndicatorControl : ContentControl
+{
+}
 
-public sealed class LoadingOverlayControl : ContentControl;
+public sealed class LoadingOverlayControl : ContentControl
+{
+}
 
-public sealed class EmptyStatePanelControl : ContentControl;
+public sealed class EmptyStatePanelControl : ContentControl
+{
+}
 
-public sealed class ErrorStatePanelControl : ContentControl;
+public sealed class ErrorStatePanelControl : ContentControl
+{
+}
