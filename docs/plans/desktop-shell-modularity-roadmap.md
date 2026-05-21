@@ -32,8 +32,9 @@ contract and a runtime-assembled page registry.
 
 **Goals**
 - Extend `IDesktopFeatureModule` to carry page and workspace descriptions alongside DI registration.
-- Replace the six static `ShellNavigationCatalog` partial files with a runtime `ShellPageRegistryBuilder`
-  that collects contributions from each feature module.
+- Replace the five static `ShellNavigationCatalog` partial files (`.Trading`, `.Research`,
+  `.DataOperations`, `.Governance`, `.Workspaces`) plus the root `ShellNavigationCatalog.cs` with a
+  runtime `ShellPageRegistryBuilder` that collects contributions from each feature module.
 - Eliminate the need to touch shared catalog infrastructure when adding a new workspace or page.
 
 **Scope**
