@@ -662,12 +662,21 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             catch (Exception ex) { _log.Debug(ex, "{Provider} CTS cancel failed during cleanup", _providerName); }
         }
 
-        // 3. Wait for the receive task to complete before disposing resources it uses
+        // 3. Wait for the receive task to complete before disposing resources it uses.
+        // Avoid self-await if cleanup is executing on the receive loop task itself.
         if (receiveTask != null)
         {
-            try
-            { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
-            catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
+            var currentTaskId = Task.CurrentId;
+            if (currentTaskId.HasValue && receiveTask.Id == currentTaskId.Value)
+            {
+                _log.Debug("{Provider} skipping receive task self-await during cleanup", _providerName);
+            }
+            else
+            {
+                try
+                { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+                catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
+            }
         }
 
         // 4. Now safe to dispose CTS and WebSocket — receive loop has exited
