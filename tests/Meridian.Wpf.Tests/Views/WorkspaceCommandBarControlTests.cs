@@ -1,6 +1,3 @@
-using System.Reflection;
-using System.Windows;
-using System.Windows.Controls;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
@@ -11,7 +8,7 @@ namespace Meridian.Wpf.Tests.Views;
 public sealed class WorkspaceCommandBarControlTests
 {
     [Fact]
-    public void PrimaryClick_ShouldRouteThroughCommandInvokedCommand()
+    public void TryInvokeCommandRouting_ShouldRouteThroughCommandInvokedCommand()
     {
         WpfTestThread.Run(() =>
         {
@@ -28,15 +25,16 @@ public sealed class WorkspaceCommandBarControlTests
                 CommandInvokedCommand = routed
             };
 
-            InvokePrimaryClick(sut, commandItem);
+            var wasRouted = sut.TryInvokeCommandRouting(commandItem);
 
+            wasRouted.Should().BeTrue();
             routedItem.Should().NotBeNull();
             routedItem!.Id.Should().Be("Refresh");
         });
     }
 
     [Fact]
-    public void PrimaryClick_ShouldNotRouteWhenCommandCannotExecute()
+    public void TryInvokeCommandRouting_ShouldNotRouteWhenCommandCannotExecute()
     {
         WpfTestThread.Run(() =>
         {
@@ -53,24 +51,10 @@ public sealed class WorkspaceCommandBarControlTests
                 CommandInvokedCommand = routed
             };
 
-            InvokePrimaryClick(sut, commandItem);
+            var wasRouted = sut.TryInvokeCommandRouting(commandItem);
 
+            wasRouted.Should().BeFalse();
             wasExecuted.Should().BeFalse();
         });
-    }
-
-    private static void InvokePrimaryClick(WorkspaceCommandBarControl sut, WorkspaceCommandItem commandItem)
-    {
-        var click = typeof(WorkspaceCommandBarControl).GetMethod(
-            "OnPrimaryCommandClick",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-
-        click.Should().NotBeNull();
-        var button = new Button
-        {
-            Tag = commandItem
-        };
-
-        click!.Invoke(sut, [button, new RoutedEventArgs()]);
     }
 }

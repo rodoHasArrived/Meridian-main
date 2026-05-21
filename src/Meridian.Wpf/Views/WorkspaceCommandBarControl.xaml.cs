@@ -67,7 +67,7 @@ public partial class WorkspaceCommandBarControl : UserControl
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
         {
-            ExecuteCommandRouting(command);
+            TryInvokeCommandRouting(command);
             CommandInvoked?.Invoke(this, new WorkspaceCommandInvokedEventArgs(command));
         }
     }
@@ -106,20 +106,21 @@ public partial class WorkspaceCommandBarControl : UserControl
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
         {
-            ExecuteCommandRouting(command);
+            TryInvokeCommandRouting(command);
             CommandInvoked?.Invoke(this, new WorkspaceCommandInvokedEventArgs(command));
         }
     }
 
-    private void ExecuteCommandRouting(WorkspaceCommandItem command)
+    internal bool TryInvokeCommandRouting(WorkspaceCommandItem command)
     {
         var routedCommand = CommandInvokedCommand;
         if (routedCommand?.CanExecute(command) != true)
         {
-            return;
+            return false;
         }
 
         routedCommand.Execute(command);
+        return true;
     }
 
     private static void OnCommandGroupChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
