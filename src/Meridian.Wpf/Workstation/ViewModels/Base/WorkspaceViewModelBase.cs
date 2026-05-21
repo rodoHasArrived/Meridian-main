@@ -7,14 +7,18 @@ namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
 public abstract class WorkspaceViewModelBase : BindableBase
 {
-    private WorkspaceShellContext _shellContext = new();
+    private static readonly WorkspaceShellContext EmptyShellContext = new();
+    private static readonly WorkstationRegionState DefaultLoadingRegionState =
+        WorkstationRegionState.Loading("Loading", "Refreshing workstation context and command state.");
+
+    private WorkspaceShellContext _shellContext = EmptyShellContext;
     private IReadOnlyList<CommandViewModel> _commandDescriptors = Array.Empty<CommandViewModel>();
-    private WorkstationRegionState _workspaceRegionState = WorkstationRegionState.Loading("Loading", "Workspace is loading.");
+    private WorkstationRegionState _workspaceRegionState = DefaultLoadingRegionState;
 
     public WorkspaceShellContext ShellContext
     {
         get => _shellContext;
-        protected set => SetProperty(ref _shellContext, value ?? new WorkspaceShellContext());
+        protected set => SetProperty(ref _shellContext, value ?? EmptyShellContext);
     }
 
     public IReadOnlyList<CommandViewModel> CommandDescriptors
@@ -26,6 +30,6 @@ public abstract class WorkspaceViewModelBase : BindableBase
     public WorkstationRegionState WorkspaceRegionState
     {
         get => _workspaceRegionState;
-        protected set => SetProperty(ref _workspaceRegionState, value ?? WorkstationRegionState.Loading("Loading", "Workspace is loading."));
+        protected set => SetProperty(ref _workspaceRegionState, value ?? DefaultLoadingRegionState);
     }
 }

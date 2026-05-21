@@ -66,7 +66,15 @@ public sealed class WorkstationRegionState : BindableBase
         };
 
     public static WorkstationRegionState Error(string title, string detail, string actionId = "", string actionLabel = "")
-        => new()
+    {
+        var hasActionId = !string.IsNullOrWhiteSpace(actionId);
+        var hasActionLabel = !string.IsNullOrWhiteSpace(actionLabel);
+        if (hasActionId != hasActionLabel)
+        {
+            throw new ArgumentException("Error action state requires both action id and label when either is provided.");
+        }
+
+        return new()
         {
             Status = WorkstationRegionStatus.Error,
             Title = title,
@@ -74,6 +82,7 @@ public sealed class WorkstationRegionState : BindableBase
             ActionId = actionId,
             ActionLabel = actionLabel
         };
+    }
 
     public static WorkstationRegionState Success(string title, string detail)
         => new()

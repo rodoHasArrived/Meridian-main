@@ -57,4 +57,22 @@ public sealed class WorkspaceCommandBarControlTests
             wasExecuted.Should().BeFalse();
         });
     }
+
+    [Fact]
+    public void TryInvokeCommandRouting_ShouldReturnFalseWhenCommandIsNotConfigured()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var sut = new WorkspaceCommandBarControl();
+            var commandItem = new WorkspaceCommandItem
+            {
+                Id = "Noop",
+                Label = "Noop"
+            };
+
+            var wasRouted = sut.TryInvokeCommandRouting(commandItem);
+
+            wasRouted.Should().BeFalse();
+        });
+    }
 }
