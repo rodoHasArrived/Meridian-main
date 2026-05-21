@@ -72,7 +72,7 @@ The current Meridian baseline now includes:
 - service and orchestration layers in `src/Meridian.Application/DirectLending/` with command metadata ingestion, event-lineage writes, projection workflows, outbox dispatch, and rebuild support;
 - PostgreSQL-backed stores and migration runner support in `src/Meridian.Storage/DirectLending/` with normalized projection tables and workflow-audit persistence;
 - direct-lending DTOs/options/contracts in `src/Meridian.Contracts/DirectLending/`, plus shared serialization contexts in `src/Meridian.Ui.Shared/Serialization/DirectLendingJsonContext.cs`;
-- active validation coverage in `tests/Meridian.DirectLending.Tests/`, `tests/Meridian.Tests/Application/DirectLending*/`, and `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`.
+- active validation coverage in `tests/Meridian.DirectLending.Tests/`, `tests/Meridian.Tests/Application/DirectLendingServiceTests.cs`, and `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`.
 
 Use this document as a target-state package that extends the baseline above rather than replacing it.
 
