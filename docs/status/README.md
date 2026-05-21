@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-05-20
+**Last Reviewed:** 2026-05-21
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to evidence-backed investment operations across cockpit hardening, shared-model continuity, accounting, reconciliation, and governed report productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/current-direction-and-status.md](../plans/current-direction-and-status.md) for the consolidated planning interpretation and [../plans/README.md](../plans/README.md) for the detailed active blueprint set.
@@ -71,6 +71,15 @@ These dated snapshots remain useful for history, but they no longer act as activ
 
 - [Documentation triage (2026-03-21)](../../archive/docs/summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
 - [Now / Next / Later roadmap (2026-03-25)](../../archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
+- [Broker phase promotion checklist template](../../archive/docs/summaries/broker-phase-promotion-checklist-template.md)
+- [Dead code inventory](../../archive/docs/summaries/dead-code-inventory.md)
+- [IBKR provider inventory](../../archive/docs/summaries/ibkr-provider-inventory.md)
+- [Provider adapters closure summary](../../archive/docs/summaries/provider-adapters-closure-summary.md)
+- [Provider capability inventory](../../archive/docs/summaries/provider-capability-inventory.md)
+- [Provider core hardening notes](../../archive/docs/summaries/provider-core-hardening-notes.md)
+- [Provider failover hardening notes](../../archive/docs/summaries/provider-failover-hardening.md)
+- [Provider test gap baseline](../../archive/docs/summaries/provider-test-gap-baseline.md)
+- [Provider test minimums](../../archive/docs/summaries/provider-test-minimums.md)
 
 ## Recommended Reading Order
 
