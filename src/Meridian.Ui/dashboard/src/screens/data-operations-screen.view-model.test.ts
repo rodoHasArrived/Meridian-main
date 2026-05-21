@@ -542,7 +542,7 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.description).toContain("Provider trust");
     expect(providerSection.detailPanelId).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.selectedRowId).toBe("provider-row-polygon");
-    expect(providerSection.selectedDetail?.title).toBe("Polygon");
+    expect(providerSection.selectedDetail?.title).toBe("Polygon.io");
     expect(providerSection.selectedDetail?.id).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.rows[0].statusTone).toBe("success");
     expect(providerSection.rows[0].rowClassName).toBe("bg-success/5");
@@ -550,8 +550,8 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.rows[0].selected).toBe(true);
     expect(providerSection.rows[0].expanded).toBe(true);
     expect(providerSection.rows[0].detailPanelId).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
-    expect(providerSection.rows[0].ariaLabel).toContain("Selected provider Polygon");
-    expect(providerSection.rows[0].selectAriaLabel).toBe("Inspect provider Polygon");
+    expect(providerSection.rows[0].ariaLabel).toContain("Selected provider Polygon.io");
+    expect(providerSection.rows[0].selectAriaLabel).toBe("Inspect provider Polygon.io");
     expect(providerSection.rows[0].trustFields).toContainEqual({
       id: "trust-score",
       label: "Trust score",

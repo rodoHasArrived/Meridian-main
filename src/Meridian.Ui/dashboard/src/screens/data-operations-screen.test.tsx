@@ -131,12 +131,12 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
     expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
-    const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon" });
+    const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     expect(providerRow).toHaveAttribute("aria-selected", "true");
     expect(providerRow).toHaveAttribute("aria-expanded", "true");
     expect(providerRow).toHaveAttribute("aria-controls", DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerRow).toHaveClass("bg-success/5");
-    const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon/i });
+    const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon\.io/i });
     expect(providerDetail).toBeInTheDocument();
     expect(within(providerDetail).getByText("Trust score")).toBeInTheDocument();
     expect(within(providerDetail).getByText("98%")).toBeInTheDocument();
@@ -207,7 +207,7 @@ describe("DataOperationsScreen", () => {
 
     renderWithRouter(<DataOperationsScreen data={providerData} />, { initialEntries: ["/data"] });
 
-    const polygonProvider = screen.getByRole("row", { name: "Inspect provider Polygon" });
+    const polygonProvider = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     const databentoProvider = screen.getByRole("row", { name: "Inspect provider Databento" });
 
     expect(polygonProvider).toHaveAttribute("aria-selected", "true");
@@ -258,9 +258,9 @@ describe("DataOperationsScreen", () => {
 
     await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
 
-    expect(screen.getByRole("status", { name: "Polygon diagnostics empty state" }))
+    expect(screen.getByRole("status", { name: "Polygon.io diagnostics empty state" }))
       .toHaveTextContent("Diagnostics not loaded yet");
-    expect(screen.getByRole("button", { name: "Provider verification unavailable for Polygon" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Provider verification unavailable for Polygon.io" })).toBeDisabled();
   });
 
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {

@@ -1674,7 +1674,7 @@ function buildProviderCenterRecord({
 
 function buildProviderCenterRecordFromWorkspace(provider: DataOperationsProviderRecord): DataOperationsProviderCenterRecord {
   return {
-    providerId: provider.providerId ?? normalizeProviderToken(provider.provider) || provider.provider,
+    providerId: provider.providerId ?? (normalizeProviderToken(provider.provider) || provider.provider),
     displayName: provider.displayName ?? provider.provider,
     workspaceProvider: provider,
     connection: provider.connectionSummary ?? null,
