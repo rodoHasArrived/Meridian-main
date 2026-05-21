@@ -73,13 +73,16 @@ jobs:
 
       - name: Run WPF dev loop validation
         shell: pwsh
+        env:
+          BUILD_ONLY: ${{ inputs.build_only }}
+          TEST_FILTER: ${{ inputs.filter }}
         run: |
           $devArgs = @('-Restore')
-          if ('${{ inputs.build_only }}' -eq 'true') {
+          if ($env:BUILD_ONLY -eq 'true') {
             $devArgs += '-BuildOnly'
           }
-          if ('${{ inputs.filter }}' -ne '') {
-            $devArgs += '-Filter', '${{ inputs.filter }}'
+          if ($env:TEST_FILTER -ne '') {
+            $devArgs += '-Filter', $env:TEST_FILTER
           }
           & scripts/dev/validate-wpf-dev.ps1 @devArgs
 
