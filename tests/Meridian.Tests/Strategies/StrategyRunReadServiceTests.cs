@@ -251,6 +251,61 @@ public sealed class StrategyRunReadServiceTests
     }
 
     [Fact]
+    public async Task GetRunsAsync_BacktestPaperLiveLineage_PreservesParentAndPromotionIntegrity()
+    {
+        var store = new StrategyRunStore();
+        var backtest = BuildCompletedRun(
+            runId: "lineage-backtest",
+            strategyId: "lineage-strategy",
+            strategyName: "Lineage Strategy",
+            finalEquity: 110_000m,
+            netPnl: 10_000m,
+            totalReturn: 0.1m,
+            realizedPnl: 6_000m,
+            unrealizedPnl: 4_000m,
+            fillCount: 2,
+            sharpeRatio: 1.0,
+            maxDrawdown: 3_000m);
+        var paper = BuildCompletedRun(
+            runId: "lineage-paper",
+            strategyId: "lineage-strategy",
+            strategyName: "Lineage Strategy",
+            finalEquity: 112_000m,
+            netPnl: 12_000m,
+            totalReturn: 0.12m,
+            realizedPnl: 8_000m,
+            unrealizedPnl: 4_000m,
+            fillCount: 3,
+            sharpeRatio: 1.1,
+            maxDrawdown: 2_500m) with { RunType = RunType.Paper, ParentRunId = "lineage-backtest" };
+        var live = BuildCompletedRun(
+            runId: "lineage-live",
+            strategyId: "lineage-strategy",
+            strategyName: "Lineage Strategy",
+            finalEquity: 114_000m,
+            netPnl: 14_000m,
+            totalReturn: 0.14m,
+            realizedPnl: 10_000m,
+            unrealizedPnl: 4_000m,
+            fillCount: 4,
+            sharpeRatio: 1.2,
+            maxDrawdown: 2_000m) with { RunType = RunType.Live, ParentRunId = "lineage-paper" };
+
+        await store.RecordRunAsync(backtest);
+        await store.RecordRunAsync(paper);
+        await store.RecordRunAsync(live);
+
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var runs = await service.GetRunsAsync(new StrategyRunHistoryQuery(null, null, 20));
+
+        runs.Should().HaveCount(3);
+        runs.Single(run => run.RunId == "lineage-paper").ParentRunId.Should().Be("lineage-backtest");
+        runs.Single(run => run.RunId == "lineage-live").ParentRunId.Should().Be("lineage-paper");
+        runs.Single(run => run.RunId == "lineage-paper").Identity!.PromotionSourceRunId.Should().Be("lineage-backtest");
+        runs.Single(run => run.RunId == "lineage-live").Promotion!.State.Should().Be(StrategyRunPromotionState.LiveManaged);
+    }
+
+    [Fact]
     public void StrategyRunEntry_Fail_SetsTerminalStatusToFailedAndEndedAt()
     {
         var before = DateTimeOffset.UtcNow;
