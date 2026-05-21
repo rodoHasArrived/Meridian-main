@@ -145,6 +145,10 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
+            new OperationsContinuityReconciliationBridge(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReconciliationRunService>()));
 
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();

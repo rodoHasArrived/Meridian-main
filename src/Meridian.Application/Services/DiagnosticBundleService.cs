@@ -20,17 +20,20 @@ public sealed class DiagnosticBundleService
     private readonly Func<MetricsSnapshot>? _metricsProvider;
     private readonly Func<AppConfig>? _configProvider;
     private readonly Func<ErrorQueryResult>? _recentErrorsProvider;
+    private readonly Func<ShutdownSequenceDiagnosticSnapshot>? _shutdownDiagnosticsProvider;
 
     public DiagnosticBundleService(
         string dataRoot,
         Func<MetricsSnapshot>? metricsProvider = null,
         Func<AppConfig>? configProvider = null,
-        Func<ErrorQueryResult>? recentErrorsProvider = null)
+        Func<ErrorQueryResult>? recentErrorsProvider = null,
+        Func<ShutdownSequenceDiagnosticSnapshot>? shutdownDiagnosticsProvider = null)
     {
         _dataRoot = dataRoot;
         _metricsProvider = metricsProvider;
         _configProvider = configProvider;
         _recentErrorsProvider = recentErrorsProvider;
+        _shutdownDiagnosticsProvider = shutdownDiagnosticsProvider;
     }
 
     /// <summary>
@@ -229,6 +232,7 @@ public sealed class DiagnosticBundleService
 
         var metrics = TryCollectMetricsSnapshot();
         var recentErrors = TryCollectRecentErrors();
+        var shutdownDiagnostics = TryCollectShutdownDiagnostics();
         var metricsSummary = metrics is { } snapshot
             ? new
             {
@@ -330,7 +334,8 @@ public sealed class DiagnosticBundleService
                 gen2Collections = GC.CollectionCount(2)
             },
             metrics = metricsSummary,
-            errors = errorsSummary
+            errors = errorsSummary,
+            shutdown = SanitizeShutdownDiagnostics(shutdownDiagnostics)
         };
 
         var json = JsonSerializer.Serialize(summary, new JsonSerializerOptions
@@ -758,6 +763,25 @@ public sealed class DiagnosticBundleService
         }
     }
 
+    private ShutdownSequenceDiagnosticSnapshot? TryCollectShutdownDiagnostics()
+    {
+        if (_shutdownDiagnosticsProvider is null)
+            return null;
+
+        try
+        {
+            return _shutdownDiagnosticsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect shutdown diagnostics for {OperationName}; continuing diagnostic bundle generation without shutdown status",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
     private static object? SanitizeTrackedError(TrackedError? error)
     {
         if (error is null)
@@ -773,6 +797,41 @@ public sealed class DiagnosticBundleService
             stackTrace = RuntimeDiagnosticRedactor.SanitizeText(error.StackTrace),
             context = RuntimeDiagnosticRedactor.SanitizeText(error.Context),
             innerException = RuntimeDiagnosticRedactor.SanitizeText(error.InnerException)
+        };
+    }
+
+    private static object SanitizeShutdownDiagnostics(ShutdownSequenceDiagnosticSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return new
+            {
+                available = false,
+                operationName = "runtime.shutdown.sequence",
+                status = "Unavailable"
+            };
+        }
+
+        return new
+        {
+            available = snapshot.Available,
+            operationName = RuntimeDiagnosticRedactor.SanitizeText(snapshot.OperationName),
+            status = RuntimeDiagnosticRedactor.SanitizeText(snapshot.Status),
+            correlationId = RuntimeDiagnosticRedactor.SanitizeText(snapshot.CorrelationId),
+            reason = RuntimeDiagnosticRedactor.SanitizeText(snapshot.Reason),
+            startedAtUtc = snapshot.StartedAtUtc,
+            completedAtUtc = snapshot.CompletedAtUtc,
+            durationMs = snapshot.DurationMs,
+            flushTimeoutOccurred = snapshot.FlushTimeoutOccurred,
+            incompleteFlushCount = snapshot.IncompleteFlushCount,
+            warningCount = snapshot.WarningCount,
+            warningSummary = snapshot.WarningSummary.Select(RuntimeDiagnosticRedactor.SanitizeText).ToArray(),
+            flushableComponentCount = snapshot.FlushableComponentCount,
+            disposableComponentCount = snapshot.DisposableComponentCount,
+            callbackCount = snapshot.CallbackCount,
+            duplicateRequestCount = snapshot.DuplicateRequestCount,
+            lastDuplicateRequestAtUtc = snapshot.LastDuplicateRequestAtUtc,
+            lastUpdatedAtUtc = snapshot.LastUpdatedAtUtc
         };
     }
 

@@ -40,7 +40,8 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
             dataRoot,
             metricsProvider: CreateMetricsSnapshot,
             configProvider: CreateConfigWithSecrets,
-            recentErrorsProvider: CreateTrackedErrorsWithSecrets);
+            recentErrorsProvider: CreateTrackedErrorsWithSecrets,
+            shutdownDiagnosticsProvider: CreateShutdownDiagnosticsWithSecrets);
 
         var result = await service.GenerateAsync(new DiagnosticBundleOptions(
             IncludeSystemInfo: false,
@@ -78,10 +79,12 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         bundleText.Should().NotContain("tracked-stack-token");
         bundleText.Should().NotContain("tracked-query-secret");
         bundleText.Should().NotContain("tracked-inner-token");
+        bundleText.Should().NotContain("shutdown-secret");
         bundleText.Should().NotContain("ACCT-224466");
         bundleText.Should().NotContain("ACCT-778899");
         bundleText.Should().NotContain("ACCT-123456");
         bundleText.Should().NotContain("ACCT-654321");
+        bundleText.Should().NotContain("ACCT-919191");
         bundleText.Should().Contain("[REDACTED]");
 
         using var archive = ZipFile.OpenRead(result.ZipPath!);
@@ -113,6 +116,13 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         runtimeSummaryDocument.RootElement.GetProperty("metrics").GetProperty("latencySampleCount").GetInt64().Should().Be(10);
         runtimeSummaryDocument.RootElement.GetProperty("errors").GetProperty("available").GetBoolean().Should().BeTrue();
         runtimeSummaryDocument.RootElement.GetProperty("errors").GetProperty("totalErrors").GetInt32().Should().Be(1);
+        runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("available").GetBoolean().Should().BeTrue();
+        runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("operationName").GetString().Should().Be("runtime.shutdown.sequence");
+        runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("correlationId").GetString().Should().Be("shutdown-correlation");
+        runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("incompleteFlushCount").GetInt32().Should().Be(1);
+        runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("warningSummary").EnumerateArray()
+            .Should()
+            .Contain(warning => warning.GetString()!.Contains("[REDACTED]", StringComparison.Ordinal));
 
         var recentErrorsEntry = archive.GetEntry("recent-errors.json");
         recentErrorsEntry.Should().NotBeNull();
@@ -238,6 +248,29 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         QueryTime = DateTimeOffset.UtcNow,
         Message = "last tracked errors"
     };
+
+    private static ShutdownSequenceDiagnosticSnapshot CreateShutdownDiagnosticsWithSecrets() => new(
+        Available: true,
+        OperationName: "runtime.shutdown.sequence",
+        Status: "Completed",
+        CorrelationId: "shutdown-correlation",
+        Reason: "Error",
+        StartedAtUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
+        CompletedAtUtc: DateTimeOffset.UtcNow,
+        DurationMs: 1500,
+        FlushTimeoutOccurred: false,
+        IncompleteFlushCount: 1,
+        WarningCount: 1,
+        WarningSummary:
+        [
+            "Flush error for JsonlWriter: password=shutdown-secret accountNumber=ACCT-919191"
+        ],
+        FlushableComponentCount: 2,
+        DisposableComponentCount: 1,
+        CallbackCount: 1,
+        DuplicateRequestCount: 0,
+        LastDuplicateRequestAtUtc: null,
+        LastUpdatedAtUtc: DateTimeOffset.UtcNow);
 
     private static string ReadAllBundleText(string zipPath)
     {

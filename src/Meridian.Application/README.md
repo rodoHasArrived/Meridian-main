@@ -38,6 +38,10 @@ Shutdown lifecycle coordination in `GracefulShutdownService` and `GracefulShutdo
 keep structured operation names, correlation IDs, elapsed timings, recovery actions, and sanitized
 failure reasons together so operators can diagnose incomplete flushes, duplicate shutdown requests,
 and disposal failures without exposing secrets.
+`ShutdownDiagnosticsService` owns the latest in-process shutdown-sequence support snapshot consumed
+by diagnostic bundles and diagnostics endpoints. Keep that snapshot low-cardinality and sanitized:
+correlation ID, status, reason, timings, incomplete flush count, warning count, short warning
+summary, component counts, and duplicate-request count only.
 
 ## Diagrams
 

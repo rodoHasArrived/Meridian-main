@@ -40,6 +40,7 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
         await using var provider = services.BuildServiceProvider();
         var bundleService = provider.GetRequiredService<DiagnosticBundleService>();
         var errorTracker = provider.GetRequiredService<ErrorTracker>();
+        var shutdownDiagnostics = provider.GetRequiredService<ShutdownDiagnosticsService>();
         errorTracker.RecordError(new TrackedError
         {
             Id = "err-registration",
@@ -48,6 +49,21 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
             Message = "Provider failed token=registration-secret",
             Context = "diagnostic-bundle?accountNumber=ACCT-123456"
         });
+        shutdownDiagnostics.RecordStarted(
+            "registration-shutdown-correlation",
+            ShutdownReason.UserRequested,
+            DateTimeOffset.UtcNow.AddSeconds(-1),
+            flushableCount: 1,
+            disposableCount: 0,
+            callbackCount: 0);
+        shutdownDiagnostics.RecordCompleted(new ShutdownResult(
+            Success: true,
+            Reason: ShutdownReason.UserRequested,
+            StartedAt: DateTimeOffset.UtcNow.AddSeconds(-1),
+            CompletedAt: DateTimeOffset.UtcNow,
+            DurationMs: 250,
+            ComponentsDisposed: 0,
+            CorrelationId: "registration-shutdown-correlation"));
 
         var result = await bundleService.GenerateAsync(new DiagnosticBundleOptions(
             IncludeRuntimeSummary: true,
@@ -73,6 +89,8 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
         errorsDocument.RootElement.GetRawText().Should().NotContain("ACCT-123456");
         summaryDocument.RootElement.GetProperty("metrics").GetProperty("available").GetBoolean().Should().BeTrue();
         summaryDocument.RootElement.GetProperty("errors").GetProperty("available").GetBoolean().Should().BeTrue();
+        summaryDocument.RootElement.GetProperty("shutdown").GetProperty("available").GetBoolean().Should().BeTrue();
+        summaryDocument.RootElement.GetProperty("shutdown").GetProperty("correlationId").GetString().Should().Be("registration-shutdown-correlation");
     }
 
     [Fact]

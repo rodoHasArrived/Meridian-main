@@ -449,6 +449,7 @@ public class GracefulShutdownTests
     {
         var originalLogger = Log.Logger;
         var sink = new CollectingSink();
+        var shutdownDiagnostics = new ShutdownDiagnosticsService();
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Sink(sink)
@@ -457,10 +458,12 @@ public class GracefulShutdownTests
         try
         {
             await using var handler = new GracefulShutdownHandler(
-                new GracefulShutdownConfig { ForceExitOnTimeout = false });
+                new GracefulShutdownConfig { ForceExitOnTimeout = false },
+                shutdownDiagnostics);
             handler.RegisterFlushable(new MockFlushable("password=leaked-token", shouldThrow: true));
 
             var result = await handler.InitiateShutdownAsync(ShutdownReason.Error, "failure path");
+            var snapshot = shutdownDiagnostics.GetSnapshot();
 
             result.Success.Should().BeTrue();
             result.Warnings.Should().NotBeNull();
@@ -473,6 +476,14 @@ public class GracefulShutdownTests
             renderedEvents.Should().Contain("failureReason=");
             renderedEvents.Should().Contain("[REDACTED]");
             renderedEvents.Should().NotContain("leaked-token");
+            snapshot.Available.Should().BeTrue();
+            snapshot.CorrelationId.Should().Be(result.CorrelationId);
+            snapshot.Status.Should().Be("Completed");
+            snapshot.IncompleteFlushCount.Should().Be(1);
+            snapshot.WarningCount.Should().Be(1);
+            snapshot.WarningSummary.Should().ContainSingle(warning =>
+                warning.Contains("[REDACTED]", StringComparison.Ordinal)
+                && !warning.Contains("leaked-token", StringComparison.Ordinal));
             sink.Events.Should().Contain(evt =>
                 evt.Level == LogEventLevel.Error
                 && evt.MessageTemplate.Text.Contains("Flush failed for {OperationName}", StringComparison.Ordinal)

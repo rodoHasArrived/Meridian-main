@@ -170,6 +170,7 @@ public static class DiagnosticsEndpoints
             var eventPipeline = services.GetService<EventPipeline>();
             var hotPathPipeline = services.GetService<DualPathEventPipeline>();
             var jsonlSink = services.GetService<JsonlStorageSink>();
+            var shutdownDiagnostics = services.GetService<ShutdownDiagnosticsService>();
             var stats = errorTracker?.GetStatistics();
             var pipelineStats = eventPipeline?.GetStatistics();
             var jsonlStats = jsonlSink?.GetStatistics();
@@ -245,6 +246,7 @@ public static class DiagnosticsEndpoints
                     maxLatencyUs = Math.Round(metricsSnapshot.Value.MaxLatencyUs, 2),
                     latencySampleCount = metricsSnapshot.Value.LatencySampleCount
                 } : null,
+                shutdown = CreateShutdownDiagnosticsPayload(shutdownDiagnostics?.GetSnapshot()),
                 runtime = CreateRuntimeDiagnosticsSnapshot(),
                 processMemoryBytes = GC.GetTotalMemory(false),
                 gcCollections = new { gen0 = GC.CollectionCount(0), gen1 = GC.CollectionCount(1), gen2 = GC.CollectionCount(2) },
@@ -497,6 +499,41 @@ public static class DiagnosticsEndpoints
             stackTrace = RuntimeDiagnosticRedactor.SanitizeText(error.StackTrace),
             context = RuntimeDiagnosticRedactor.SanitizeText(error.Context),
             innerException = RuntimeDiagnosticRedactor.SanitizeText(error.InnerException)
+        };
+    }
+
+    private static object CreateShutdownDiagnosticsPayload(ShutdownSequenceDiagnosticSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return new
+            {
+                available = false,
+                operationName = "runtime.shutdown.sequence",
+                status = "Unavailable"
+            };
+        }
+
+        return new
+        {
+            available = snapshot.Available,
+            operationName = SanitizeDiagnosticText(snapshot.OperationName),
+            status = SanitizeDiagnosticText(snapshot.Status),
+            correlationId = SanitizeDiagnosticText(snapshot.CorrelationId),
+            reason = SanitizeDiagnosticText(snapshot.Reason),
+            startedAtUtc = snapshot.StartedAtUtc,
+            completedAtUtc = snapshot.CompletedAtUtc,
+            durationMs = snapshot.DurationMs,
+            flushTimeoutOccurred = snapshot.FlushTimeoutOccurred,
+            incompleteFlushCount = snapshot.IncompleteFlushCount,
+            warningCount = snapshot.WarningCount,
+            warningSummary = snapshot.WarningSummary.Select(SanitizeDiagnosticText).ToArray(),
+            flushableComponentCount = snapshot.FlushableComponentCount,
+            disposableComponentCount = snapshot.DisposableComponentCount,
+            callbackCount = snapshot.CallbackCount,
+            duplicateRequestCount = snapshot.DuplicateRequestCount,
+            lastDuplicateRequestAtUtc = snapshot.LastDuplicateRequestAtUtc,
+            lastUpdatedAtUtc = snapshot.LastUpdatedAtUtc
         };
     }
 

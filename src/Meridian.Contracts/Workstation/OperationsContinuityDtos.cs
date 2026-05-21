@@ -234,6 +234,7 @@ public static class OperationsWorkflowContractMatrix
         "RECONCILIATION_FACTOR_PAYDOWN_MISMATCH",
         "RECONCILIATION_LEDGER_POSTING_MISSING_EXTERNAL_EVIDENCE",
         "RECONCILIATION_PRINCIPAL_INCOME_CLASSIFICATION_MISMATCH",
+        "RECONCILIATION_RUN_NOT_FOUND",
         "RECONCILIATION_RUN_REQUIRED",
         "RECONCILIATION_UNASSIGNED_OWNER",
         "REJECTION_METADATA_REQUIRED",
@@ -513,7 +514,12 @@ public sealed record OperationsReconciliationRunRequestDto(
     int? SecurityCoverageIssueCount = null,
     int? SecurityAccountingIssueCount = null,
     int? ExpectedAccountingEventCount = null,
-    int? ExpectedJournalPreviewCount = null);
+    int? ExpectedJournalPreviewCount = null,
+    string? SourceRunId = null,
+    string? ReconciliationRunId = null,
+    Guid? BankEntityId = null,
+    decimal? AmountTolerance = null,
+    int? MaxAsOfDriftMinutes = null);
 
 public sealed record OperationsResolveBreakCaseRequestDto(
     long ExpectedVersion,

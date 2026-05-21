@@ -700,10 +700,10 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
             if (service is null)
             {
-                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                return Results.Problem("Operations continuity reconciliation bridge is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
             var trustedRequest = request with { Actor = currentUser };
@@ -2547,9 +2547,13 @@ public static partial class WorkstationEndpoints
                 .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
                 .ConfigureAwait(false);
 
-            foreach (var run in runs
-                         .Where(ShouldSurfaceRunReviewWorkItems)
-                         .OrderByDescending(GetRunReviewTimestamp))
+            var reviewRuns = runs
+                .Where(ShouldSurfaceRunReviewWorkItems)
+                .OrderByDescending(GetRunReviewTimestamp)
+                .ToArray();
+            var latestReviewRunId = reviewRuns.FirstOrDefault()?.RunId;
+
+            foreach (var run in reviewRuns)
             {
                 var packet = await reviewPacketService
                     .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
@@ -2559,8 +2563,16 @@ public static partial class WorkstationEndpoints
                     continue;
                 }
 
+                var isLatestReviewRun = string.Equals(run.RunId, latestReviewRunId, StringComparison.OrdinalIgnoreCase);
+                var hasNonPromotionAttention = packet.WorkItems.Any(static item =>
+                    item.Kind != OperatorWorkItemKindDto.PromotionReview &&
+                    item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
                 workItems.AddRange(packet.WorkItems
-                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                    .Where(item =>
+                        item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical &&
+                        (isLatestReviewRun ||
+                         item.Kind != OperatorWorkItemKindDto.PromotionReview ||
+                         !hasNonPromotionAttention))
                     .Select(AttachOperatorNavigation));
             }
         }

@@ -18,6 +18,7 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
 
     private readonly ILogger _log = LoggingSetup.ForContext<GracefulShutdownHandler>();
     private readonly GracefulShutdownConfig _config;
+    private readonly ShutdownDiagnosticsService? _shutdownDiagnostics;
     private readonly List<IFlushable> _flushables = new();
     private readonly List<IAsyncDisposable> _disposables = new();
     private readonly List<Func<ShutdownContext, Task>> _shutdownCallbacks = new();
@@ -44,9 +45,12 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
     /// </summary>
     public event Action<ShutdownProgress>? OnProgress;
 
-    public GracefulShutdownHandler(GracefulShutdownConfig? config = null)
+    public GracefulShutdownHandler(
+        GracefulShutdownConfig? config = null,
+        ShutdownDiagnosticsService? shutdownDiagnostics = null)
     {
         _config = config ?? GracefulShutdownConfig.Default;
+        _shutdownDiagnostics = shutdownDiagnostics;
 
         // Register for process termination signals
         Console.CancelKeyPress += OnCancelKeyPress;
@@ -114,6 +118,7 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
     {
         if (_isShuttingDown)
         {
+            _shutdownDiagnostics?.RecordDuplicateRequest(reason, _shutdownReason);
             _log.Warning(
                 "Duplicate shutdown request ignored for {OperationName}; componentName={ComponentName}; reason={Reason}; activeReason={ActiveReason}; recoveryAction={RecoveryAction}",
                 ShutdownOperationName,
@@ -154,6 +159,13 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
             TimeoutSeconds: _config.TimeoutSeconds,
             CorrelationId: correlationId
         );
+        _shutdownDiagnostics?.RecordStarted(
+            correlationId,
+            reason,
+            _shutdownRequestedAt,
+            _flushables.Count,
+            _disposables.Count,
+            _shutdownCallbacks.Count);
 
         // Signal shutdown requested
         _shutdownRequested.TrySetResult();
@@ -196,6 +208,7 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
                 Warnings: flushResult.Warnings.Concat(disposeResult.Warnings).ToArray(),
                 CorrelationId: correlationId
             );
+            _shutdownDiagnostics?.RecordCompleted(result);
 
             _log.Information(
                 "Shutdown sequence completed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; reason={Reason}; elapsedMs={ElapsedMs}; eventsFlushed={EventsFlushed}; flushTimeoutOccurred={FlushTimeoutOccurred}; componentsDisposed={ComponentsDisposed}; warningCount={WarningCount}",
@@ -236,6 +249,7 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
                 ErrorMessage: $"Shutdown timed out after {_config.TimeoutSeconds} seconds",
                 CorrelationId: correlationId
             );
+            _shutdownDiagnostics?.RecordTimedOut(result);
 
             OnShutdownCompleted?.Invoke(result);
 
@@ -270,6 +284,7 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
                 ErrorMessage: RuntimeDiagnosticRedactor.SanitizeText(ex.Message),
                 CorrelationId: correlationId
             );
+            _shutdownDiagnostics?.RecordFailed(result);
 
             OnShutdownCompleted?.Invoke(result);
             return result;

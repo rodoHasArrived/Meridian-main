@@ -203,6 +203,55 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task DiagnosticsMetrics_IncludesSanitizedShutdownSequenceStatus()
+    {
+        var shutdownDiagnostics = new ShutdownDiagnosticsService();
+        shutdownDiagnostics.RecordStarted(
+            "shutdown-correlation",
+            ShutdownReason.Error,
+            DateTimeOffset.UtcNow.AddSeconds(-2),
+            flushableCount: 1,
+            disposableCount: 1,
+            callbackCount: 1);
+        shutdownDiagnostics.RecordCompleted(new ShutdownResult(
+            Success: true,
+            Reason: ShutdownReason.Error,
+            StartedAt: DateTimeOffset.UtcNow.AddSeconds(-2),
+            CompletedAt: DateTimeOffset.UtcNow,
+            DurationMs: 1250,
+            EventsFlushed: 0,
+            FlushTimeoutOccurred: false,
+            ComponentsDisposed: 1,
+            Warnings:
+            [
+                "Flush error for JsonlWriter: token=shutdown-secret accountNumber=ACCT-987654"
+            ],
+            CorrelationId: "shutdown-correlation"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(shutdownDiagnostics);
+        });
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.DiagnosticsMetrics);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadAsStringAsync();
+        payload.Should().Contain("runtime.shutdown.sequence");
+        payload.Should().Contain("shutdown-correlation");
+        payload.Should().Contain("[REDACTED]");
+        payload.Should().NotContain("shutdown-secret");
+        payload.Should().NotContain("ACCT-987654");
+
+        using var document = JsonDocument.Parse(payload);
+        var shutdown = document.RootElement.GetProperty("shutdown");
+        shutdown.GetProperty("available").GetBoolean().Should().BeTrue();
+        shutdown.GetProperty("status").GetString().Should().Be("Completed");
+        shutdown.GetProperty("incompleteFlushCount").GetInt32().Should().Be(1);
+        shutdown.GetProperty("warningCount").GetInt32().Should().Be(1);
+    }
+
+    [Fact]
     public async Task DiagnosticsConfigEndpoints_RedactSensitivePaths()
     {
         Directory.CreateDirectory(_tempRoot);

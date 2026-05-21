@@ -445,6 +445,77 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityReconciliationRun_ShouldBridgeRealReconciliationOutputsIntoGatePosture()
+    {
+        var bankEntityId = Guid.NewGuid();
+        var reconciliation = BuildOperationsContinuityReconciliationDetail("recon-ops-1", "run-ops-1");
+        var reconciliationService = new StaticReconciliationRunService(reconciliation);
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterOperationsContinuityServices(services);
+            services.RemoveAll<IReconciliationRunService>();
+            services.AddSingleton<IReconciliationRunService>(reconciliationService);
+        });
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+
+        var bridged = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(
+                posted.Workflow!.Version,
+                "spoofed-user",
+                SourceRunId: "run-ops-1",
+                BankEntityId: bankEntityId,
+                AmountTolerance: 0.05m,
+                MaxAsOfDriftMinutes: 10));
+
+        reconciliationService.LastRunRequest.Should().NotBeNull();
+        reconciliationService.LastRunRequest!.RunId.Should().Be("run-ops-1");
+        reconciliationService.LastRunRequest.BankEntityId.Should().Be(bankEntityId);
+        reconciliationService.LastRunRequest.AmountTolerance.Should().Be(0.05m);
+        reconciliationService.LastRunRequest.MaxAsOfDriftMinutes.Should().Be(10);
+        bridged.Success.Should().BeTrue();
+        bridged.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
+        bridged.Workflow.BreakCases.Should().ContainSingle(breakCase =>
+            breakCase.BreakId == "recon-ops-1:bank-break-1" &&
+            breakCase.Severity == nameof(ReconciliationBreakSeverity.Critical) &&
+            breakCase.EvidenceLinks.Any(link => link.Source == "reconciliation-run"));
+        bridged.Workflow.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "bank-normalized-activity:recon-ops-1" &&
+            link.Source == "bank-normalized-activity");
+        bridged.Workflow.Blockers.Should().Contain(blocker =>
+            blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+        bridged.Workflow.Blockers.Should().Contain(blocker =>
+            blocker.Code == "RECONCILIATION_CRITICAL_BREAKS_OPEN" &&
+            blocker.Gate == OperationsGateKeyDto.Reconciliation);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldReturnConsistentValidationShapeForMissingBody()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
@@ -540,7 +611,7 @@ public sealed class WorkstationEndpointsTests
 
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+            RegisterConfigStores(services, configPath);
         });
         var client = app.GetTestClient();
 
@@ -591,7 +662,7 @@ public sealed class WorkstationEndpointsTests
 
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+            RegisterConfigStores(services, configPath);
             services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(dataRoot));
             services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
             services.AddSingleton<ProviderConnectionLifecycleService>();
@@ -5061,6 +5132,16 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
         services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
         services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
+        services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
+            new OperationsContinuityReconciliationBridge(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReconciliationRunService>()));
+    }
+
+    private static void RegisterConfigStores(IServiceCollection services, string configPath)
+    {
+        services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+        services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
     }
 
     private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
@@ -5506,6 +5587,33 @@ public sealed class WorkstationEndpointsTests
 
         public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>([]);
+    }
+
+    private sealed class StaticReconciliationRunService(ReconciliationRunDetail detail) : IReconciliationRunService
+    {
+        public ReconciliationRunRequest? LastRunRequest { get; private set; }
+
+        public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+        {
+            LastRunRequest = request;
+            return Task.FromResult<ReconciliationRunDetail?>(detail);
+        }
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =>
+            string.Equals(reconciliationRunId, detail.Summary.ReconciliationRunId, StringComparison.OrdinalIgnoreCase)
+                ? Task.FromResult<ReconciliationRunDetail?>(detail)
+                : Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default) =>
+            string.Equals(runId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase)
+                ? Task.FromResult<ReconciliationRunDetail?>(detail)
+                : Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>(
+                string.Equals(runId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? [detail.Summary]
+                    : []);
     }
 
     private static KernelObservabilityService CreateRecoveredKernelObservability()
@@ -6181,6 +6289,77 @@ public sealed class WorkstationEndpointsTests
             MaxAsOfDriftMinutes: 5);
 
         return new ReconciliationRunDetail(summary, matches, breaks);
+    }
+
+    private static ReconciliationRunDetail BuildOperationsContinuityReconciliationDetail(
+        string reconciliationRunId,
+        string runId)
+    {
+        var createdAt = new DateTimeOffset(2026, 5, 20, 15, 30, 0, TimeSpan.Zero);
+        var breaks = new[]
+        {
+            new ReconciliationBreakDto(
+                CheckId: "bank-break-1",
+                Label: "Bank cash missing ledger posting",
+                Category: ReconciliationBreakCategory.MissingLedgerCoverage,
+                Status: ReconciliationBreakStatus.Open,
+                MissingSource: "ledger",
+                ExpectedAmount: 250m,
+                ActualAmount: null,
+                Variance: 250m,
+                Severity: ReconciliationBreakSeverity.Critical,
+                Reason: "Normalized bank activity has no matching ledger posting.",
+                ExpectedAsOf: createdAt,
+                ActualAsOf: null)
+        };
+        var summary = new ReconciliationRunSummary(
+            ReconciliationRunId: reconciliationRunId,
+            RunId: runId,
+            CreatedAt: createdAt,
+            PortfolioAsOf: createdAt,
+            LedgerAsOf: createdAt,
+            MatchCount: 2,
+            BreakCount: breaks.Length,
+            OpenBreakCount: breaks.Length,
+            HasTimingDrift: false,
+            AmountTolerance: 0.05m,
+            MaxAsOfDriftMinutes: 10,
+            SecurityIssueCount: 1,
+            HasSecurityCoverageIssues: true,
+            BankTransactionCount: 2,
+            BankBreakCount: 1,
+            ExpectedAccountingEventCount: 3,
+            ExpectedJournalPreviewCount: 2,
+            SecurityMasterAccountingIssueCount: 1,
+            HasSecurityMasterAccountingIssues: true);
+
+        return new ReconciliationRunDetail(
+            summary,
+            Matches: [],
+            Breaks: breaks,
+            SecurityCoverageIssues:
+            [
+                new ReconciliationSecurityCoverageIssueDto(
+                    Source: "ledger",
+                    Symbol: "BOND1",
+                    AccountName: "Fixed income",
+                    Reason: "Security Master mapping requires review.",
+                    Code: "SM_RECON_SECURITY_UNRESOLVED",
+                    Severity: ReconciliationBreakSeverity.High,
+                    EvidenceLink: "/workstation/data/security-master")
+            ],
+            BankTransactions: [],
+            SecurityMasterAccountingIssues:
+            [
+                new SecurityMasterAccountingIssueDto(
+                    Code: "SM_ACCOUNTING_TERMS_INCOMPLETE",
+                    Source: "security-master",
+                    Symbol: "BOND1",
+                    AccountId: "fund-account",
+                    Reason: "Coupon day-count terms are incomplete.",
+                    Severity: ReconciliationBreakSeverity.Critical,
+                    EvidenceLink: "/workstation/data/security-master")
+            ]);
     }
 
     private static global::Meridian.Ledger.Ledger CreateLedger()

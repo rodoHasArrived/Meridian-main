@@ -95,6 +95,14 @@ completion diagnostics. Operator-supplied shutdown messages and exception messag
 before they are written to logs or returned in shutdown warnings, so credential-like values and
 account identifiers do not leak through lifecycle diagnostics.
 
+`ShutdownDiagnosticsService` keeps the latest in-process `runtime.shutdown.sequence` status for
+support use. The snapshot includes the last shutdown correlation ID, reason, terminal status,
+duration, incomplete flush count, warning count, sanitized warning summary, component counts, and
+duplicate-request count. It is exposed through the live `GET /api/diagnostics/metrics` `shutdown`
+block and through diagnostic bundles in `runtime-summary.json`. The warning summary must remain a
+short sanitized list; do not add raw exception text, account identifiers, provider payloads, or
+market/order details.
+
 ## Provider Health
 
 Provider diagnostics should track connection state, last heartbeat, last message time, reconnect attempts, authentication failures, subscription failures, data gaps, rate-limit warnings, latency, disconnect reasons, and recovery state.
@@ -136,6 +144,9 @@ Use the `runtime` block for support triage before enabling heavier tracing: proc
 process name, start time, uptime, thread count, handle count when available, working set, private
 memory, managed heap, processor count, runtime version, and OS description. These values are sampled
 only when the diagnostics endpoint is called and must stay out of market-data hot paths.
+Use the `shutdown` block to inspect the latest graceful shutdown sequence: last correlation ID,
+status, incomplete flush count, sanitized warning summary, duplicate request count, and component
+counts.
 These fields are counts, timings, and runtime metadata only; do not add raw provider payloads,
 account identifiers, order details, or portfolio values to this endpoint.
 
@@ -145,6 +156,7 @@ Support bundles may include:
 
 - Manifest with bundle ID, correlation ID, generation time, elapsed time, runtime version, OS version, and files collected.
 - `runtime-summary.json` with operation name, correlation ID, redaction policy, log-directory presence, safe process/runtime counters, and high-level metrics.
+- Latest sanitized shutdown-sequence status when `ShutdownDiagnosticsService` is registered.
 - Sanitized configuration summary.
 - Sanitized recent logs.
 - Metrics snapshot.
