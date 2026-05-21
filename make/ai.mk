@@ -103,6 +103,7 @@ ai-docs-map-check: ## Validate roadmap/source registries, README coverage, TODOs
 	@python3 build/scripts/docs/validate-roadmap-registry.py --summary
 	@python3 build/scripts/docs/validate-source-readmes.py --summary
 	@python3 build/scripts/docs/scan-source-todos.py --summary
+	@python3 build/scripts/docs/mark-stale-docs.py --write --summary
 	@python3 build/scripts/docs/validate-doc-hashes.py --summary
 	@python3 build/scripts/docs/check-ai-inventory.py --summary
 	@echo "$(GREEN)AI documentation map checks complete$(NC)"

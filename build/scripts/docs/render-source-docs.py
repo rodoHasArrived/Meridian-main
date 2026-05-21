@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 from common import (
     build_arg_parser,
@@ -16,6 +17,8 @@ from common import (
     write_manifest,
     write_text_if_changed,
 )
+
+STALE_DOCS_REPORT = Path("docs/source/generated/stale-docs.json")
 
 
 def source_inputs(root: Path) -> list[Path]:
@@ -95,9 +98,19 @@ def readme_blocks(module: dict, todos: dict, roadmap: dict) -> tuple[str, str]:
     return trace, checklist
 
 
-def update_readmes(root: Path, modules: dict, todos: dict, roadmap: dict) -> int:
+def load_stale_module_ids(root: Path) -> set[str]:
+    path = root / STALE_DOCS_REPORT
+    if not path.exists():
+        return set()
+    report = json.loads(path.read_text(encoding="utf-8"))
+    return {entry["module_id"] for entry in report.get("stale_modules", [])}
+
+
+def update_readmes(root: Path, modules: dict, todos: dict, roadmap: dict, module_filter: set[str] | None = None) -> int:
     changed = 0
     for module in modules.get("modules", []):
+        if module_filter is not None and module.get("id") not in module_filter:
+            continue
         readme = root / module.get("readme", "")
         if not readme.exists():
             continue
@@ -114,6 +127,7 @@ def update_readmes(root: Path, modules: dict, todos: dict, roadmap: dict) -> int
 
 def main() -> int:
     parser = build_arg_parser("Render deterministic source docs.")
+    parser.add_argument("--stale-only", action="store_true", help="Only update README generated blocks for modules listed in stale-docs.json.")
     args = parser.parse_args()
     root = repo_root(args.root)
     modules, todos, roadmap = module_maps(root)
@@ -129,10 +143,12 @@ def main() -> int:
         write_text_if_changed(outputs[1], render_traceability(root, modules, roadmap, inputs)),
         write_text_if_changed(outputs[2], render_todo_checklist(root, todos, inputs)),
     ]
-    readme_count = update_readmes(root, modules, todos, roadmap)
+    module_filter = load_stale_module_ids(root) if args.stale_only else None
+    readme_count = update_readmes(root, modules, todos, roadmap, module_filter)
     manifest_changed = write_manifest(output_dir / "MANIFEST.json", "build/scripts/docs/render-source-docs.py", inputs, outputs, root)
     if args.summary:
-        print(f"source docs rendered: {sum(1 for item in changed if item) + readme_count + int(manifest_changed)} file(s) changed")
+        mode = " stale modules" if args.stale_only else ""
+        print(f"source docs rendered{mode}: {sum(1 for item in changed if item) + readme_count + int(manifest_changed)} file(s) changed")
     return 0
 
 

@@ -76,8 +76,11 @@ When editing `src/**`, assistants must:
    layer, diagram, or README path changes.
 7. Update `docs/source/data/source-todos.yml` for module-local follow-up.
 8. Update `docs/source/data/diagram-index.yml` when adding or replacing diagrams.
-9. Never hand-edit generated docs outside approved generated blocks.
-10. Run the narrowest validation command and report the result.
+9. Run `python3 build/scripts/docs/mark-stale-docs.py --write --summary` when registered source
+   code changes, then target `--stale-only` README sync/render commands when only outdated docs
+   should be updated.
+10. Never hand-edit generated docs outside approved generated blocks.
+11. Run the narrowest validation command and report the result.
 
 ---
 
@@ -111,6 +114,7 @@ When editing `src/**`, assistants must:
 | Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
+| Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
@@ -165,6 +169,7 @@ Choose the narrowest command that matches the touched surface:
 ```bash
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
+python3 build/scripts/docs/mark-stale-docs.py --write --summary
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
 python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
 python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
