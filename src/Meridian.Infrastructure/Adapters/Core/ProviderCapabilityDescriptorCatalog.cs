@@ -25,7 +25,7 @@ public static class ProviderCapabilityDescriptorCatalog
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider)),
         new("ib", Historical: typeof(IBHistoricalDataProvider)),
         new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider)),
-        new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider), CorporateActions: typeof(PolygonCorporateActionFetcher)),
+        new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider)),
         new("tiingo", Historical: typeof(TiingoHistoricalDataProvider)),
         new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored)),
         new("stooq", Historical: typeof(StooqHistoricalDataProvider)),
