@@ -943,6 +943,34 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectJournalCandidatePeriodThatDoesNotMatchWorkflowPeriod()
+    {
+        var service = CreateService(out _, out _);
+        var workflowPeriodId = Guid.NewGuid();
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            workflowPeriodId.ToString(),
+            null,
+            "custodian",
+            "ops-user"));
+        var workflow = await AdvanceToLedgerValidatedStateAsync(service, start.Workflow!);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-period-mismatch",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId, Guid.NewGuid())));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_JOURNAL_PERIOD_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.LedgerPosting);
+    }
+
+    [Fact]
     public async Task ResolveBreakCaseAsync_ShouldClearCriticalBreakAndAllowApprovalSubmission()
     {
         var service = CreateService(out _, out _);
@@ -1437,6 +1465,18 @@ public sealed class OperationsContinuityWorkflowServiceTests
         var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user"));
         var draft = await service.BuildLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "ops-user", "ledger-preview-1", true));
         var validated = await service.ValidateLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
+        return validated.Workflow!;
+    }
+
+    private static async Task<OperationsContinuityWorkflowDto> AdvanceToLedgerValidatedStateAsync(
+        OperationsContinuityWorkflowService service,
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var import = await service.ImportBrokerDataAsync(workflow.WorkflowId, new OperationsTransitionRequestDto(workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(workflow.WorkflowId, new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user"));
+        var draft = await service.BuildLedgerDraftAsync(workflow.WorkflowId, new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "ops-user", "ledger-preview-1", true));
+        var validated = await service.ValidateLedgerDraftAsync(workflow.WorkflowId, new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
         return validated.Workflow!;
     }
 

@@ -1258,6 +1258,10 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         {
             blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_REQUIRED", "Ledger journal candidate period id is required.", evidence));
         }
+        else if (TryResolveWorkflowPeriodGuid(workflow.PeriodId, out var workflowPeriodId) && candidate.PeriodId != workflowPeriodId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_MISMATCH", "Ledger journal candidate period id must match the workflow period.", evidence));
+        }
 
         if (candidate.AggregateId != Guid.Empty && candidate.AggregateId != workflow.FundAccountId)
         {
@@ -1307,6 +1311,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
         return blockers;
     }
+
+    private static bool TryResolveWorkflowPeriodGuid(string workflowPeriodId, out Guid resolvedPeriodId) =>
+        Guid.TryParse(workflowPeriodId, out resolvedPeriodId);
 
     private static OperationsWorkflowBlockerDto CreateJournalCandidateBlocker(
         string code,
