@@ -1487,48 +1487,91 @@ public sealed class WorkstationEndpointsTests
                 sp.GetRequiredService<ExecutionAuditTrailService>()));
         });
 
+        var client = app.GetTestClient();
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
             StrategyId: "strat-stale-replay",
             StrategyName: "Stale Replay",
             InitialCash: 100_000m,
             Symbols: ["AAPL", "MSFT"]));
+
         await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-before-replay", "AAPL", 10m));
         await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-before-replay", "AAPL", 10m, 190m));
+
         var verification = await persistence.VerifyReplayAsync(session.SessionId);
+        verification.Should().NotBeNull();
+        verification!.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
 
         await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-after-replay", "MSFT", 5m));
         await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-after-replay", "MSFT", 5m, 320m));
 
-        var readiness = await app
-            .GetTestClient()
-            .GetFromJsonAsync<TradingOperatorReadinessDto>(
-                "/api/workstation/trading/readiness",
-                ServerJsonOptions);
+        var staleReadiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            "/api/workstation/trading/readiness",
+            ServerJsonOptions);
 
-        readiness.Should().NotBeNull();
-        readiness!.ActiveSession.Should().NotBeNull();
-        readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
-        readiness.ActiveSession.FillCount.Should().Be(2);
-        readiness.ActiveSession.OrderCount.Should().Be(2);
-        readiness.ActiveSession.LedgerEntryCount.Should().BeGreaterThan(verification!.ComparedLedgerEntryCount);
-        readiness.Replay.Should().NotBeNull();
-        readiness.Replay!.ComparedFillCount.Should().Be(1);
-        readiness.Replay.ComparedOrderCount.Should().Be(1);
-        readiness.Replay.VerificationAuditId.Should().Be(verification.VerificationAuditId);
-        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
-        readiness.ReadyForPaperOperation.Should().BeFalse();
-        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+        staleReadiness.Should().NotBeNull();
+        staleReadiness!.ActiveSession.Should().NotBeNull();
+        staleReadiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        staleReadiness.ActiveSession.FillCount.Should().Be(2);
+        staleReadiness.ActiveSession.OrderCount.Should().Be(2);
+        staleReadiness.ActiveSession.LedgerEntryCount.Should().BeGreaterThan(verification.ComparedLedgerEntryCount);
+        staleReadiness.Replay.Should().NotBeNull();
+        staleReadiness.Replay!.ComparedFillCount.Should().Be(1);
+        staleReadiness.Replay.ComparedOrderCount.Should().Be(1);
+        staleReadiness.Replay.VerificationAuditId.Should().Be(verification.VerificationAuditId);
+        staleReadiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        staleReadiness.ReadyForPaperOperation.Should().BeFalse();
+        staleReadiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "replay" &&
             gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
             gate.AuditReference == verification.VerificationAuditId &&
             gate.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
-        readiness.WorkItems.Should().ContainSingle(item =>
+        staleReadiness.WorkItems.Should().ContainSingle(item =>
             item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PaperReplay &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
             item.AuditReference == verification.VerificationAuditId &&
             item.Detail.Contains("orders active=2, verified=1", StringComparison.OrdinalIgnoreCase));
+
+        var staleInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+            "/api/workstation/operator/inbox",
+            ServerJsonOptions);
+        staleInbox.Should().NotBeNull();
+        staleInbox!.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
+            item.AuditReference == verification.VerificationAuditId &&
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+
+        var refreshedVerification = await persistence.VerifyReplayAsync(session.SessionId);
+        refreshedVerification.Should().NotBeNull();
+        refreshedVerification!.ComparedFillCount.Should().Be(2);
+        refreshedVerification.ComparedOrderCount.Should().Be(2);
+        refreshedVerification.VerificationAuditId.Should().NotBe(verification.VerificationAuditId);
+
+        var recoveredReadiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            "/api/workstation/trading/readiness",
+            ServerJsonOptions);
+        recoveredReadiness.Should().NotBeNull();
+        recoveredReadiness!.Replay.Should().NotBeNull();
+        recoveredReadiness.Replay!.VerificationAuditId.Should().Be(refreshedVerification.VerificationAuditId);
+        recoveredReadiness.Replay.ComparedFillCount.Should().Be(2);
+        recoveredReadiness.Replay.ComparedOrderCount.Should().Be(2);
+        recoveredReadiness.OverallStatus.Should().NotBe(TradingAcceptanceGateStatusDto.ReviewRequired);
+        recoveredReadiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == refreshedVerification.VerificationAuditId);
+        recoveredReadiness.WorkItems.Should().NotContain(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}");
+
+        var recoveredInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+            "/api/workstation/operator/inbox",
+            ServerJsonOptions);
+        recoveredInbox.Should().NotBeNull();
+        recoveredInbox!.WorkItems.Should().NotContain(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}");
     }
 
     [Fact]
@@ -1987,7 +2030,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldEmitOnlyLatestRunActionableReviewPacketBlockers()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -2018,7 +2061,30 @@ public sealed class WorkstationEndpointsTests
 
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item =>
+            item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+        inbox.Items.Should().NotContain(item =>
             item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}");
+
+        var newestReviewPacket = await app
+            .GetTestClient()
+            .GetFromJsonAsync<StrategyRunReviewPacketDto>(
+                $"/api/workstation/runs/{newestRunId}/review-packet",
+                ServerJsonOptions);
+        var olderReviewPacket = await app
+            .GetTestClient()
+            .GetFromJsonAsync<StrategyRunReviewPacketDto>(
+                $"/api/workstation/runs/{olderRunId}/review-packet",
+                ServerJsonOptions);
+
+        newestReviewPacket.Should().NotBeNull();
+        olderReviewPacket.Should().NotBeNull();
+        newestReviewPacket!.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+        olderReviewPacket!.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
     }
 
     [Fact]
