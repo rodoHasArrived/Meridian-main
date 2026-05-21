@@ -18,8 +18,6 @@ public partial class QuantScriptPage : Page
         InitializeComponent();
         _vm = viewModel;
         DataContext = _vm;
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)

@@ -293,12 +293,13 @@ public sealed class WorkspaceService
         }
     }
 
-    public Task<WorkspaceTemplate> CreateWorkspaceAsync(string name, string description, WorkspaceCategory category, CancellationToken ct = default)
-        => WithStateLockAsync(async () =>
+    public async Task<WorkspaceTemplate> CreateWorkspaceAsync(string name, string description, WorkspaceCategory category, CancellationToken ct = default)
+    {
+        var workspace = await WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            var workspace = new WorkspaceTemplate
+            var createdWorkspace = new WorkspaceTemplate
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = name,
@@ -311,66 +312,92 @@ public sealed class WorkspaceService
                 Filters = new Dictionary<string, string>()
             };
 
-            _workspaces.Add(workspace);
+            _workspaces.Add(createdWorkspace);
             await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+            return createdWorkspace;
+        }, ct).ConfigureAwait(false);
 
-            WorkspaceCreated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
-            return workspace;
-        }, ct);
+        WorkspaceCreated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+        return workspace;
+    }
 
-    public Task UpdateWorkspaceAsync(WorkspaceTemplate workspace, CancellationToken ct = default)
-        => WithStateLockAsync(async () =>
+    public async Task UpdateWorkspaceAsync(WorkspaceTemplate workspace, CancellationToken ct = default)
+    {
+        var updatedWorkspace = await WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
             var existing = _workspaces.FirstOrDefault(w => w.Id == workspace.Id);
-            if (existing != null)
+            if (existing is null)
             {
-                var index = _workspaces.IndexOf(existing);
-                workspace.UpdatedAt = DateTime.UtcNow;
-                _workspaces[index] = workspace;
-                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
-
-                WorkspaceUpdated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+                return null;
             }
-        }, ct);
 
-    public Task DeleteWorkspaceAsync(string workspaceId, CancellationToken ct = default)
-        => WithStateLockAsync(async () =>
+            var index = _workspaces.IndexOf(existing);
+            workspace.UpdatedAt = DateTime.UtcNow;
+            _workspaces[index] = workspace;
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+            return workspace;
+        }, ct).ConfigureAwait(false);
+
+        if (updatedWorkspace is not null)
+        {
+            WorkspaceUpdated?.Invoke(this, new WorkspaceEventArgs { Workspace = updatedWorkspace });
+        }
+    }
+
+    public async Task DeleteWorkspaceAsync(string workspaceId, CancellationToken ct = default)
+    {
+        var deletedWorkspace = await WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
             var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
             var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
-            if (workspace != null && !workspace.IsBuiltIn)
+            if (workspace is null || workspace.IsBuiltIn)
             {
-                _workspaces.Remove(workspace);
-                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
-
-                WorkspaceDeleted?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+                return null;
             }
-        }, ct);
 
-    public Task ActivateWorkspaceAsync(string workspaceId, CancellationToken ct = default)
-        => WithStateLockAsync(async () =>
+            _workspaces.Remove(workspace);
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+            return workspace;
+        }, ct).ConfigureAwait(false);
+
+        if (deletedWorkspace is not null)
+        {
+            WorkspaceDeleted?.Invoke(this, new WorkspaceEventArgs { Workspace = deletedWorkspace });
+        }
+    }
+
+    public async Task ActivateWorkspaceAsync(string workspaceId, CancellationToken ct = default)
+    {
+        var activatedWorkspace = await WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
             var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
             var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
-            if (workspace != null)
+            if (workspace is null)
             {
-                var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
-                PersistActiveWorkspaceSnapshot();
-                _activeWorkspace = workspace;
-                workspace.LastActivatedAt = DateTime.UtcNow;
-                _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
-                    ?? RestoreSessionForWorkspace(workspace, pendingSession);
-                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
-
-                WorkspaceActivated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+                return null;
             }
-        }, ct);
+
+            var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
+            PersistActiveWorkspaceSnapshot();
+            _activeWorkspace = workspace;
+            workspace.LastActivatedAt = DateTime.UtcNow;
+            _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
+                ?? RestoreSessionForWorkspace(workspace, pendingSession);
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+            return workspace;
+        }, ct).ConfigureAwait(false);
+
+        if (activatedWorkspace is not null)
+        {
+            WorkspaceActivated?.Invoke(this, new WorkspaceEventArgs { Workspace = activatedWorkspace });
+        }
+    }
 
     public Task<WorkspaceTemplate> CaptureCurrentStateAsync(string name, string description, CancellationToken ct = default)
         => WithStateLockAsync(async () =>
