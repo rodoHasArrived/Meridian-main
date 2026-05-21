@@ -1634,7 +1634,9 @@ public static partial class WorkstationEndpoints
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
             var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(timeline, jsonOptions);
+            return Results.Json(
+                timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
+                jsonOptions);
         })
         .WithName("GetWorkstationRunLineageTimeline")
         .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
@@ -2569,15 +2571,13 @@ public static partial class WorkstationEndpoints
                 }
 
                 var isLatestReviewRun = string.Equals(run.RunId, latestReviewRunId, StringComparison.OrdinalIgnoreCase);
-                var hasNonPromotionAttention = packet.WorkItems.Any(static item =>
-                    item.Kind != OperatorWorkItemKindDto.PromotionReview &&
-                    item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
+                var hasStalePromotionAttention = HasStalePromotionAttention(packet);
                 workItems.AddRange(packet.WorkItems
                     .Where(item =>
                         item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical &&
                         (isLatestReviewRun ||
                          item.Kind != OperatorWorkItemKindDto.PromotionReview ||
-                         !hasNonPromotionAttention))
+                         !hasStalePromotionAttention))
                     .Select(AttachOperatorNavigation));
             }
         }
@@ -2590,6 +2590,13 @@ public static partial class WorkstationEndpoints
             workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
         }
     }
+
+    private static bool HasStalePromotionAttention(StrategyRunReviewPacketDto packet)
+        => packet.Continuity?.ContinuityStatus.HasCashFlow == true &&
+           packet.WorkItems.Any(static item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.WorkItemId.StartsWith("continuity-promotion-target-run-missing-", StringComparison.OrdinalIgnoreCase) &&
+            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
 
     private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
         => run.Promotion?.RequiresReview == true ||
@@ -3106,9 +3113,15 @@ public static partial class WorkstationEndpoints
                 var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
                 var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
                 var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
+                var connectionSummary = connection ?? BuildSyntheticProviderConnectionSummary(
+                    providerId,
+                    displayName,
+                    capability,
+                    rationale,
+                    metrics);
 
                 return new WorkstationDataProviderRecord(
-                    ProviderId: connection?.ProviderId ?? routingConnection?.ProviderFamilyId ?? metrics?.ProviderId ?? providerId,
+                    ProviderId: connectionSummary.ProviderId,
                     DisplayName: displayName,
                     Status: connection is not null ? connection.Health.ToString() : rationale.Status,
                     Capability: capability,
@@ -3119,9 +3132,9 @@ public static partial class WorkstationEndpoints
                         ? string.Join(", ", trustSnapshot.Signals)
                         : rationale.SignalSource,
                     ReasonCode: rationale.ReasonCode,
-                    RecommendedAction: connection?.RecommendedAction ?? rationale.RecommendedAction,
+                    RecommendedAction: connectionSummary.RecommendedAction,
                     GateImpact: rationale.GateImpact,
-                    ConnectionSummary: connection,
+                    ConnectionSummary: connectionSummary,
                     RoutingSummary: new WorkstationDataProviderRoutingSummary(
                         ConnectionId: routingConnection?.ConnectionId,
                         ProviderFamilyId: routingConnection?.ProviderFamilyId ?? connection?.ProviderId,
@@ -3256,6 +3269,48 @@ public static partial class WorkstationEndpoints
            ?? routingConnection?.DisplayName
            ?? metrics?.ProviderId
            ?? providerId;
+
+    private static ProviderConnectionRowDto BuildSyntheticProviderConnectionSummary(
+        string providerId,
+        string displayName,
+        string capability,
+        ProviderTrustRationalePayload rationale,
+        ProviderMetrics? metrics)
+    {
+        var health = rationale.Status switch
+        {
+            "Healthy" => ProviderContinuityHealthDto.Healthy,
+            "Warning" => ProviderContinuityHealthDto.Warning,
+            "Degraded" => ProviderContinuityHealthDto.Degraded,
+            "Blocked" => ProviderContinuityHealthDto.Blocked,
+            _ => ProviderContinuityHealthDto.Unknown
+        };
+
+        return new ProviderConnectionRowDto(
+            ProviderId: metrics?.ProviderId ?? providerId,
+            DisplayName: displayName,
+            Capability: ResolveProviderConnectionCapability(capability),
+            CredentialState: ProviderCredentialStateDto.Missing,
+            CredentialSource: ProviderCredentialSourceDto.None,
+            VerificationState: ProviderVerificationStateDto.NotVerified,
+            Health: health,
+            FallbackActive: false,
+            LastVerifiedAt: metrics?.Timestamp,
+            LastSuccessfulAt: health == ProviderContinuityHealthDto.Healthy ? metrics?.Timestamp : null,
+            LastFailureAt: health is ProviderContinuityHealthDto.Degraded or ProviderContinuityHealthDto.Blocked ? metrics?.Timestamp : null,
+            LastError: health == ProviderContinuityHealthDto.Healthy ? null : rationale.RecommendedAction,
+            MaskedKeyPreview: null,
+            Environment: null,
+            ExternalAccountId: null,
+            AffectedWorkflows: [],
+            RecommendedAction: rationale.RecommendedAction,
+            ActionHref: ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId));
+    }
+
+    private static ProviderConnectionCapabilityDto ResolveProviderConnectionCapability(string capability)
+        => capability.Contains("brokerage", StringComparison.OrdinalIgnoreCase)
+            ? ProviderConnectionCapabilityDto.Brokerage
+            : ProviderConnectionCapabilityDto.Data;
 
     private static string ResolveDataProviderCapability(
         ProviderConnectionRowDto? connection,

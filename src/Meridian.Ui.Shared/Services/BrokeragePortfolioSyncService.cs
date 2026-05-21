@@ -191,7 +191,7 @@ public sealed class BrokeragePortfolioSyncService
                 fundAccountId,
                 link,
                 attemptedAt,
-                $"No brokerage sync adapter is registered for provider '{link.ProviderId}'.");
+                $"Provider credentials are missing or no brokerage sync adapter is registered for provider '{link.ProviderId}'.");
             await PersistFailureProjectionAsync(fundAccountId, link, status, attemptedAt, ct).ConfigureAwait(false);
             await RecordSharedSyncHistoryAsync(
                 fundAccountId,

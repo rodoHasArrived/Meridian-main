@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Meridian.Backtesting.Sdk;
 using Meridian.Application.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -56,11 +57,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        var nowUtc = DateTimeOffset.UtcNow;
 
         var detailTask = _queryService.GetByIdAsync(securityId, ct);
         var historyTask = _queryService.GetHistoryAsync(new SecurityHistoryRequest(securityId, 50), ct);
         var economicTask = _queryService.GetEconomicDefinitionByIdAsync(securityId, ct);
-        var tradingTask = _queryService.GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct);
+        var tradingTask = _queryService.GetTradingParametersAsync(securityId, nowUtc, ct);
         var corporateActionsTask = _queryService.GetCorporateActionsAsync(securityId, ct);
         var conflictsTask = _conflictService.GetOpenConflictsAsync(ct);
         var validationTask = _validationService.ValidateSecurityAsync(securityId, ct);
@@ -108,6 +110,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var schemaCompatibility = BuildSchemaCompatibility(detail, economic);
         var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource);
         var lotModel = BuildLotModel(detail, economic, trading);
+        var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary);
+        var openLotReadModel = await BuildOpenLotReadModelAsync(detail, economic, trading, fundProfileId, nowUtc, ct).ConfigureAwait(false);
 
         return new SecurityMasterTrustSnapshotDto(
             SecurityId: detail.SecurityId,
@@ -134,13 +138,15 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             RecommendedActions: recommendedActions,
             History: history,
             CorporateActions: corporateActions,
-            RetrievedAtUtc: DateTimeOffset.UtcNow)
+            RetrievedAtUtc: nowUtc)
         {
             ValidationReport = validationReport,
             IdentifierSummary = identifierSummary,
             SchemaCompatibility = schemaCompatibility,
             ScheduleSummary = scheduleSummary,
-            LotModel = lotModel
+            LotModel = lotModel,
+            ScheduleBook = scheduleBook,
+            OpenLotReadModel = openLotReadModel
         };
     }
 
@@ -1141,6 +1147,283 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Summary: summary);
     }
 
+    private static SecurityMasterScheduleBookDto BuildScheduleBook(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic,
+        IReadOnlyList<CorporateActionDto> corporateActions,
+        IReadOnlyList<SecurityMasterEventEnvelope> history,
+        WinningSourceInfo? winningSource,
+        SecurityMasterScheduleSummaryDto summary)
+    {
+        var economicTerms = economic?.EconomicTerms;
+        var currency = economic?.Currency ?? detail.Currency;
+        var events = new List<SecurityMasterScheduleEventDto>();
+
+        AppendScheduleEventsFromArray(events, economicTerms, "cashflowSchedule", currency, winningSource);
+        AppendScheduleEventsFromArray(events, economicTerms, "cashflows", currency, winningSource);
+        AppendScheduleEventsFromArray(events, economicTerms, "paymentSchedule", currency, winningSource);
+
+        var factorHistory = BuildFactorHistory(economicTerms, winningSource, summary.CurrentFactor, summary.CurrentFactorDate);
+        foreach (var point in factorHistory)
+        {
+            if (events.Any(existing => string.Equals(existing.EventType, "FactorUpdate", StringComparison.OrdinalIgnoreCase)
+                && existing.EffectiveDate == point.EffectiveDate
+                && existing.FactorEnd == point.Factor))
+            {
+                continue;
+            }
+
+            events.Add(new SecurityMasterScheduleEventDto(
+                EventId: $"factor-{point.EffectiveDate:yyyyMMdd}",
+                EventType: "FactorUpdate",
+                EffectiveDate: point.EffectiveDate,
+                PayDate: null,
+                AccrualStartDate: null,
+                AccrualEndDate: null,
+                ExpectedAmount: null,
+                ActualAmount: null,
+                VarianceAmount: null,
+                FactorStart: point.PreviousFactor,
+                FactorEnd: point.Factor,
+                Currency: currency,
+                PostingStatus: point.IsCurrentFactor ? "Posted" : "Reference",
+                SourceSystem: point.SourceSystem,
+                SourceRecordId: point.SourceRecordId,
+                SourceAsOfUtc: point.SourceAsOfUtc,
+                SourceUpdatedBy: point.SourceUpdatedBy,
+                SourceReason: point.SourceReason,
+                IsDerivedFromEconomicTerms: true,
+                IsCurrentProjection: point.IsCurrentFactor));
+        }
+
+        AppendLifecycleEvent(events, "Call", TryGetNestedJsonDateOnly(economicTerms, "call", "firstCallDate"), currency, winningSource);
+        AppendLifecycleEvent(events, "Maturity", TryGetNestedJsonDateOnly(economicTerms, "maturity", "maturityDate"), currency, winningSource);
+
+        foreach (var action in corporateActions)
+        {
+            var postingStatus = action.PayDate.HasValue && action.PayDate.Value < DateOnly.FromDateTime(DateTime.UtcNow)
+                ? "Posted"
+                : action.ExDate < DateOnly.FromDateTime(DateTime.UtcNow)
+                    ? "Pending"
+                    : "Forecast";
+
+            events.Add(new SecurityMasterScheduleEventDto(
+                EventId: $"corp-{action.CorpActId:N}",
+                EventType: string.IsNullOrWhiteSpace(action.EventType) ? "CorporateAction" : action.EventType.Trim(),
+                EffectiveDate: action.ExDate,
+                PayDate: action.PayDate,
+                AccrualStartDate: null,
+                AccrualEndDate: null,
+                ExpectedAmount: action.DividendPerShare,
+                ActualAmount: null,
+                VarianceAmount: null,
+                FactorStart: null,
+                FactorEnd: action.SplitRatio ?? action.DistributionRatio ?? action.ExchangeRatio,
+                Currency: string.IsNullOrWhiteSpace(action.Currency) ? currency : action.Currency.Trim(),
+                PostingStatus: postingStatus,
+                SourceSystem: "corporate-action-stream",
+                SourceRecordId: action.CorpActId.ToString("N"),
+                SourceAsOfUtc: null,
+                SourceUpdatedBy: null,
+                SourceReason: "Corporate action event attached to the security history.",
+                IsDerivedFromEconomicTerms: false,
+                IsCurrentProjection: action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow)));
+        }
+
+        var orderedEvents = events
+            .OrderBy(static item => item.EffectiveDate)
+            .ThenBy(static item => item.EventType, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.EventId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var provenanceHistory = BuildScheduleProvenanceHistory(orderedEvents, factorHistory, history, winningSource);
+
+        return new SecurityMasterScheduleBookDto(
+            SupportsCashflowSchedule: summary.SupportsCashflowSchedule,
+            SupportsFactorHistory: summary.SupportsFactorHistory,
+            HasEconomicScheduleTerms: summary.HasEconomicScheduleTerms,
+            Currency: currency,
+            CurrentFactor: summary.CurrentFactor,
+            CurrentFactorDate: summary.CurrentFactorDate,
+            NextLifecycleDate: summary.NextLifecycleDate,
+            SourceSummary: summary.SourceSummary,
+            Summary: summary.Summary,
+            Events: orderedEvents,
+            FactorHistory: factorHistory,
+            ProvenanceHistory: provenanceHistory);
+    }
+
+    private async Task<SecurityMasterOpenLotReadModelDto> BuildOpenLotReadModelAsync(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic,
+        TradingParametersDto? trading,
+        string? fundProfileId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct)
+    {
+        var lotModel = BuildLotModel(detail, economic, trading);
+        var currentFactor = TryGetNestedJsonDecimal(economic?.EconomicTerms, "structuredProduct", "factor");
+        var currentFactorDate = TryGetNestedJsonDateOnly(economic?.EconomicTerms, "structuredProduct", "factorDate");
+
+        if (string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return new SecurityMasterOpenLotReadModelDto(
+                QuantityModel: lotModel.QuantityModel,
+                LotSize: lotModel.LotSize,
+                ContractMultiplier: lotModel.ContractMultiplier,
+                UsesFaceValue: lotModel.UsesFaceValue,
+                SupportsFactorAdjustedExposure: lotModel.SupportsFactorAdjustedExposure,
+                RequiresResolvedSecurityId: lotModel.RequiresResolvedSecurityId,
+                CurrentFactor: currentFactor,
+                CurrentFactorDate: currentFactorDate,
+                AsOfUtc: asOfUtc,
+                Summary: "Open-lot read model is unscoped. Select a fund profile to materialize account and portfolio lots.",
+                Lots: [],
+                ProvenanceHistory: []);
+        }
+
+        var scopedFundProfileId = fundProfileId.Trim();
+        var relatedRuns = await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false);
+        if (relatedRuns.Count == 0)
+        {
+            return new SecurityMasterOpenLotReadModelDto(
+                QuantityModel: lotModel.QuantityModel,
+                LotSize: lotModel.LotSize,
+                ContractMultiplier: lotModel.ContractMultiplier,
+                UsesFaceValue: lotModel.UsesFaceValue,
+                SupportsFactorAdjustedExposure: lotModel.SupportsFactorAdjustedExposure,
+                RequiresResolvedSecurityId: lotModel.RequiresResolvedSecurityId,
+                CurrentFactor: currentFactor,
+                CurrentFactorDate: currentFactorDate,
+                AsOfUtc: asOfUtc,
+                Summary: $"Fund profile {scopedFundProfileId} has no recorded runs with open-lot context.",
+                Lots: [],
+                ProvenanceHistory: []);
+        }
+
+        var normalizedIdentifiers = BuildNormalizedIdentifierSet(detail);
+        var settlementCycleDays = TryGetJsonInt(detail.CommonTerms, "settlementCycleDays") ?? 0;
+        var lots = new List<SecurityMasterOpenLotDto>();
+        var provenance = new List<SecurityMasterOpenLotProvenanceDto>();
+
+        foreach (var run in relatedRuns)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var latestSnapshot = run.Metrics?.Snapshots.LastOrDefault();
+            if (latestSnapshot is null)
+            {
+                continue;
+            }
+
+            var portfolio = await _portfolioReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
+            var matchingPositions = portfolio?.Positions
+                .Where(position => MatchesSecurity(position.Symbol, position.Security?.SecurityId, detail, normalizedIdentifiers))
+                .ToArray()
+                ?? [];
+
+            var snapshotLots = ExtractSnapshotOpenLots(latestSnapshot);
+            var matchingLots = snapshotLots
+                .Where(item => MatchesSecurity(item.Lot.Symbol, securityId: null, detail, normalizedIdentifiers))
+                .ToArray();
+
+            if (matchingLots.Length == 0)
+            {
+                continue;
+            }
+
+            var portfolioId = portfolio?.PortfolioId ?? run.PortfolioId ?? run.RunId;
+            provenance.Add(new SecurityMasterOpenLotProvenanceDto(
+                ProvenanceId: $"run-{run.RunId}",
+                RunId: run.RunId,
+                PortfolioId: portfolioId,
+                AccountScopeId: matchingPositions.FirstOrDefault()?.AccountScopeId,
+                AccountScopeDisplayName: matchingPositions.FirstOrDefault()?.AccountScopeDisplayName,
+                SourceSystem: "strategy-run-snapshot",
+                SourceRecordId: $"{run.RunId}:{latestSnapshot.Timestamp:O}",
+                AsOfUtc: latestSnapshot.Timestamp,
+                Summary: $"{matchingLots.Length} open lot(s) matched from run {run.RunId} portfolio snapshot."));
+
+            foreach (var snapshotLot in matchingLots)
+            {
+                var quantity = snapshotLot.Lot.Quantity;
+                var price = snapshotLot.Lot.EntryPrice;
+                var position = latestSnapshot.Positions.TryGetValue(snapshotLot.Lot.Symbol, out var matchedPosition)
+                    ? matchedPosition
+                    : null;
+                var impliedMarketPrice = TryResolveImpliedMarketPrice(position);
+                var costBasis = quantity * price;
+                var accountScopeId = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.AccountScopeId))?.AccountScopeId
+                    ?? snapshotLot.AccountId
+                    ?? snapshotLot.Lot.AccountId;
+                var accountScopeDisplayName = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.AccountScopeDisplayName))?.AccountScopeDisplayName
+                    ?? snapshotLot.AccountDisplayName;
+                var vehicleScopeId = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.VehicleScopeId))?.VehicleScopeId;
+                var vehicleScopeDisplayName = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.VehicleScopeDisplayName))?.VehicleScopeDisplayName;
+                var (originalFace, currentFace, factorAdjustedQuantity, factorAdjustedFace) = ProjectLotFaces(quantity, lotModel, currentFactor);
+
+                lots.Add(new SecurityMasterOpenLotDto(
+                    SecurityId: detail.SecurityId,
+                    PortfolioId: portfolioId,
+                    RunId: run.RunId,
+                    AccountScopeId: accountScopeId,
+                    AccountScopeDisplayName: accountScopeDisplayName,
+                    VehicleScopeId: vehicleScopeId,
+                    VehicleScopeDisplayName: vehicleScopeDisplayName,
+                    LotId: snapshotLot.Lot.LotId.ToString("N"),
+                    Symbol: snapshotLot.Lot.Symbol,
+                    TradeDate: snapshotLot.Lot.OpenedAt,
+                    SettleDate: settlementCycleDays > 0 ? snapshotLot.Lot.OpenedAt.AddDays(settlementCycleDays) : null,
+                    OriginalQuantity: quantity,
+                    CurrentQuantity: quantity,
+                    OriginalFace: originalFace,
+                    CurrentFace: currentFace,
+                    FactorAdjustedQuantity: factorAdjustedQuantity,
+                    FactorAdjustedFace: factorAdjustedFace,
+                    CostBasis: costBasis,
+                    EntryPrice: price,
+                    UnrealizedPnl: impliedMarketPrice.HasValue ? snapshotLot.Lot.UnrealizedPnl(impliedMarketPrice.Value) : null,
+                    Currency: detail.Currency,
+                    LotStatus: "Open",
+                    SourceSystem: "strategy-run-snapshot",
+                    SourceRecordId: $"{run.RunId}:{portfolioId}:{snapshotLot.Lot.LotId:N}",
+                    AsOfUtc: latestSnapshot.Timestamp,
+                    SourceUpdatedBy: null,
+                    SourceReason: "Latest scoped run snapshot",
+                    IsLongTerm: snapshotLot.Lot.IsLongTerm(latestSnapshot.Timestamp),
+                    Notes: snapshotLot.Lot.Notes));
+            }
+        }
+
+        var orderedLots = lots
+            .OrderBy(static lot => lot.TradeDate)
+            .ThenBy(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var summary = orderedLots.Length == 0
+            ? $"No scoped open lots currently reference security {detail.SecurityId} in fund profile {scopedFundProfileId}."
+            : lotModel.SupportsFactorAdjustedExposure && currentFactor.HasValue
+                ? $"{orderedLots.Length} scoped open lot(s) reconcile with factor-adjusted face support at factor {currentFactor.Value:0.########}."
+                : $"{orderedLots.Length} scoped open lot(s) matched across {orderedLots.Select(static lot => lot.PortfolioId).Distinct(StringComparer.OrdinalIgnoreCase).Count()} portfolio(s).";
+
+        return new SecurityMasterOpenLotReadModelDto(
+            QuantityModel: lotModel.QuantityModel,
+            LotSize: lotModel.LotSize,
+            ContractMultiplier: lotModel.ContractMultiplier,
+            UsesFaceValue: lotModel.UsesFaceValue,
+            SupportsFactorAdjustedExposure: lotModel.SupportsFactorAdjustedExposure,
+            RequiresResolvedSecurityId: lotModel.RequiresResolvedSecurityId,
+            CurrentFactor: currentFactor,
+            CurrentFactorDate: currentFactorDate,
+            AsOfUtc: orderedLots.LastOrDefault()?.AsOfUtc ?? asOfUtc,
+            Summary: summary,
+            Lots: orderedLots,
+            ProvenanceHistory: provenance
+                .OrderByDescending(static item => item.AsOfUtc)
+                .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
+                .ToArray());
+    }
+
     private static int GetImpactLinkOrder(SecurityMasterImpactLinkDto link)
         => link.Target switch
         {
@@ -1726,6 +2009,29 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return DateOnly.TryParse(property.GetString(), out var parsed) ? parsed : null;
     }
 
+    private static JsonElement? TryGetNestedJsonElement(JsonElement? element, string objectName, string propertyName)
+    {
+        if (!element.HasValue
+            || !TryGetPropertyCaseInsensitive(element.Value, objectName, out var nested)
+            || nested.ValueKind != JsonValueKind.Object
+            || !TryGetPropertyCaseInsensitive(nested, propertyName, out var property))
+        {
+            return null;
+        }
+
+        return property;
+    }
+
+    private static DateOnly? TryGetJsonDateOnly(JsonElement element, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(element, propertyName, out var property) || property.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return DateOnly.TryParse(property.GetString(), out var parsed) ? parsed : null;
+    }
+
     private static string? FormatNullableDecimal(decimal? value)
         => value.HasValue
             ? value.Value.ToString(CultureInfo.InvariantCulture)
@@ -1771,12 +2077,365 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             _ => true
         };
 
+    private static void AppendScheduleEventsFromArray(
+        ICollection<SecurityMasterScheduleEventDto> destination,
+        JsonElement? economicTerms,
+        string propertyName,
+        string defaultCurrency,
+        WinningSourceInfo? winningSource)
+    {
+        if (!economicTerms.HasValue
+            || !TryGetPropertyCaseInsensitive(economicTerms.Value, propertyName, out var scheduleArray)
+            || scheduleArray.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        var index = 0;
+        foreach (var entry in scheduleArray.EnumerateArray())
+        {
+            index++;
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var effectiveDate =
+                TryGetJsonDateOnly(entry, "effectiveDate")
+                ?? TryGetJsonDateOnly(entry, "paymentDate")
+                ?? TryGetJsonDateOnly(entry, "payDate")
+                ?? TryGetJsonDateOnly(entry, "date");
+
+            if (!effectiveDate.HasValue)
+            {
+                continue;
+            }
+
+            var expectedAmount = TryGetJsonDecimal(entry, "expectedAmount")
+                ?? TryGetJsonDecimal(entry, "amount")
+                ?? TryGetJsonDecimal(entry, "principalAmount")
+                ?? TryGetJsonDecimal(entry, "interestAmount");
+            var actualAmount = TryGetJsonDecimal(entry, "actualAmount");
+            decimal? varianceAmount = expectedAmount.HasValue && actualAmount.HasValue
+                ? actualAmount.Value - expectedAmount.Value
+                : (decimal?)null;
+
+            destination.Add(new SecurityMasterScheduleEventDto(
+                EventId: TryGetJsonString(entry, "eventId") ?? $"{propertyName}-{effectiveDate.Value:yyyyMMdd}-{index}",
+                EventType: TryGetJsonString(entry, "eventType") ?? InferScheduleEventType(propertyName),
+                EffectiveDate: effectiveDate.Value,
+                PayDate: TryGetJsonDateOnly(entry, "paymentDate") ?? TryGetJsonDateOnly(entry, "payDate"),
+                AccrualStartDate: TryGetJsonDateOnly(entry, "accrualStartDate"),
+                AccrualEndDate: TryGetJsonDateOnly(entry, "accrualEndDate"),
+                ExpectedAmount: expectedAmount,
+                ActualAmount: actualAmount,
+                VarianceAmount: varianceAmount,
+                FactorStart: TryGetJsonDecimal(entry, "factorStart"),
+                FactorEnd: TryGetJsonDecimal(entry, "factorEnd") ?? TryGetJsonDecimal(entry, "factor"),
+                Currency: TryGetJsonString(entry, "currency") ?? defaultCurrency,
+                PostingStatus: TryGetJsonString(entry, "postingStatus") ?? "Projected",
+                SourceSystem: TryGetJsonString(entry, "sourceSystem") ?? winningSource?.SourceSystem ?? "economic-terms",
+                SourceRecordId: TryGetJsonString(entry, "sourceRecordId") ?? winningSource?.SourceRecordId,
+                SourceAsOfUtc: TryGetJsonDateTimeOffset(entry, "asOf") ?? winningSource?.AsOf,
+                SourceUpdatedBy: TryGetJsonString(entry, "updatedBy") ?? winningSource?.UpdatedBy,
+                SourceReason: TryGetJsonString(entry, "reason") ?? winningSource?.Reason,
+                IsDerivedFromEconomicTerms: true,
+                IsCurrentProjection: true));
+        }
+    }
+
+    private static IReadOnlyList<SecurityMasterFactorPointDto> BuildFactorHistory(
+        JsonElement? economicTerms,
+        WinningSourceInfo? winningSource,
+        decimal? currentFactor,
+        DateOnly? currentFactorDate)
+    {
+        var points = new List<SecurityMasterFactorPointDto>();
+        var factorHistory = TryGetNestedJsonElement(economicTerms, "structuredProduct", "factorHistory");
+
+        if (factorHistory.HasValue && factorHistory.Value.ValueKind == JsonValueKind.Array)
+        {
+            var index = 0;
+            foreach (var entry in factorHistory.Value.EnumerateArray())
+            {
+                index++;
+                if (entry.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var effectiveDate =
+                    TryGetJsonDateOnly(entry, "effectiveDate")
+                    ?? TryGetJsonDateOnly(entry, "factorDate")
+                    ?? TryGetJsonDateOnly(entry, "date");
+                var factor = TryGetJsonDecimal(entry, "factor");
+                if (!effectiveDate.HasValue || !factor.HasValue)
+                {
+                    continue;
+                }
+
+                points.Add(new SecurityMasterFactorPointDto(
+                    PointId: TryGetJsonString(entry, "pointId") ?? $"factor-{effectiveDate.Value:yyyyMMdd}-{index}",
+                    EffectiveDate: effectiveDate.Value,
+                    Factor: factor.Value,
+                    PreviousFactor: TryGetJsonDecimal(entry, "previousFactor"),
+                    SourceSystem: TryGetJsonString(entry, "sourceSystem") ?? winningSource?.SourceSystem ?? "economic-terms",
+                    SourceRecordId: TryGetJsonString(entry, "sourceRecordId") ?? winningSource?.SourceRecordId,
+                    SourceAsOfUtc: TryGetJsonDateTimeOffset(entry, "asOf") ?? winningSource?.AsOf,
+                    SourceUpdatedBy: TryGetJsonString(entry, "updatedBy") ?? winningSource?.UpdatedBy,
+                    SourceReason: TryGetJsonString(entry, "reason") ?? winningSource?.Reason,
+                    IsCurrentFactor: false));
+            }
+        }
+
+        if (points.Count == 0 && currentFactor.HasValue && currentFactorDate.HasValue)
+        {
+            points.Add(new SecurityMasterFactorPointDto(
+                PointId: $"factor-{currentFactorDate.Value:yyyyMMdd}",
+                EffectiveDate: currentFactorDate.Value,
+                Factor: currentFactor.Value,
+                PreviousFactor: null,
+                SourceSystem: winningSource?.SourceSystem ?? "economic-terms",
+                SourceRecordId: winningSource?.SourceRecordId,
+                SourceAsOfUtc: winningSource?.AsOf,
+                SourceUpdatedBy: winningSource?.UpdatedBy,
+                SourceReason: winningSource?.Reason,
+                IsCurrentFactor: true));
+        }
+
+        var ordered = points
+            .OrderBy(static point => point.EffectiveDate)
+            .ThenBy(static point => point.PointId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        for (var index = 0; index < ordered.Length; index++)
+        {
+            var previousFactor = ordered[index].PreviousFactor ?? (index > 0 ? ordered[index - 1].Factor : null);
+            var isCurrentFactor = currentFactorDate.HasValue
+                ? ordered[index].EffectiveDate == currentFactorDate.Value
+                : index == ordered.Length - 1;
+
+            ordered[index] = ordered[index] with
+            {
+                PreviousFactor = previousFactor,
+                IsCurrentFactor = isCurrentFactor
+            };
+        }
+
+        return ordered;
+    }
+
+    private static IReadOnlyList<SecurityMasterScheduleProvenanceDto> BuildScheduleProvenanceHistory(
+        IReadOnlyList<SecurityMasterScheduleEventDto> events,
+        IReadOnlyList<SecurityMasterFactorPointDto> factorHistory,
+        IReadOnlyList<SecurityMasterEventEnvelope> history,
+        WinningSourceInfo? winningSource)
+    {
+        var provenance = new List<SecurityMasterScheduleProvenanceDto>();
+
+        if (winningSource is not null)
+        {
+            provenance.Add(new SecurityMasterScheduleProvenanceDto(
+                ProvenanceId: "winning-source",
+                Category: "WinningSource",
+                Summary: $"Golden-copy schedule source {winningSource.SourceSystem}.",
+                EffectiveDate: null,
+                SourceSystem: winningSource.SourceSystem,
+                SourceRecordId: winningSource.SourceRecordId,
+                SourceAsOfUtc: winningSource.AsOf,
+                SourceUpdatedBy: winningSource.UpdatedBy,
+                SourceReason: winningSource.Reason,
+                StreamVersion: null,
+                EventType: null));
+        }
+
+        provenance.AddRange(events.Select(eventItem => new SecurityMasterScheduleProvenanceDto(
+            ProvenanceId: $"event-{eventItem.EventId}",
+            Category: "ScheduleEvent",
+            Summary: $"{eventItem.EventType} effective {eventItem.EffectiveDate:yyyy-MM-dd}.",
+            EffectiveDate: eventItem.EffectiveDate,
+            SourceSystem: eventItem.SourceSystem,
+            SourceRecordId: eventItem.SourceRecordId,
+            SourceAsOfUtc: eventItem.SourceAsOfUtc,
+            SourceUpdatedBy: eventItem.SourceUpdatedBy,
+            SourceReason: eventItem.SourceReason,
+            StreamVersion: null,
+            EventType: eventItem.EventType)));
+
+        provenance.AddRange(factorHistory.Select(point => new SecurityMasterScheduleProvenanceDto(
+            ProvenanceId: $"factor-{point.PointId}",
+            Category: "FactorHistory",
+            Summary: $"Factor {point.Factor:0.########} effective {point.EffectiveDate:yyyy-MM-dd}.",
+            EffectiveDate: point.EffectiveDate,
+            SourceSystem: point.SourceSystem,
+            SourceRecordId: point.SourceRecordId,
+            SourceAsOfUtc: point.SourceAsOfUtc,
+            SourceUpdatedBy: point.SourceUpdatedBy,
+            SourceReason: point.SourceReason,
+            StreamVersion: null,
+            EventType: "FactorUpdate")));
+
+        foreach (var envelope in history.Where(IsScheduleHistoryEvent))
+        {
+            provenance.Add(new SecurityMasterScheduleProvenanceDto(
+                ProvenanceId: $"history-{envelope.StreamVersion}",
+                Category: "History",
+                Summary: $"{envelope.EventType} recorded at {envelope.EventTimestamp:yyyy-MM-dd HH:mm} UTC.",
+                EffectiveDate: null,
+                SourceSystem: TryGetJsonString(envelope.Metadata, "sourceSystem")
+                    ?? TryGetJsonString(envelope.Metadata, "source")
+                    ?? winningSource?.SourceSystem
+                    ?? "security-history",
+                SourceRecordId: TryGetJsonString(envelope.Metadata, "sourceRecordId"),
+                SourceAsOfUtc: envelope.EventTimestamp,
+                SourceUpdatedBy: envelope.Actor,
+                SourceReason: TryGetJsonString(envelope.Metadata, "reason"),
+                StreamVersion: envelope.StreamVersion,
+                EventType: envelope.EventType));
+        }
+
+        return provenance
+            .OrderByDescending(static item => item.SourceAsOfUtc ?? DateTimeOffset.MinValue)
+            .ThenByDescending(static item => item.EffectiveDate ?? DateOnly.MinValue)
+            .ThenBy(static item => item.ProvenanceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static void AppendLifecycleEvent(
+        ICollection<SecurityMasterScheduleEventDto> destination,
+        string eventType,
+        DateOnly? effectiveDate,
+        string currency,
+        WinningSourceInfo? winningSource)
+    {
+        if (!effectiveDate.HasValue
+            || destination.Any(existing => string.Equals(existing.EventType, eventType, StringComparison.OrdinalIgnoreCase)
+                && existing.EffectiveDate == effectiveDate.Value))
+        {
+            return;
+        }
+
+        destination.Add(new SecurityMasterScheduleEventDto(
+            EventId: $"{eventType.ToLowerInvariant()}-{effectiveDate.Value:yyyyMMdd}",
+            EventType: eventType,
+            EffectiveDate: effectiveDate.Value,
+            PayDate: effectiveDate,
+            AccrualStartDate: null,
+            AccrualEndDate: null,
+            ExpectedAmount: null,
+            ActualAmount: null,
+            VarianceAmount: null,
+            FactorStart: null,
+            FactorEnd: null,
+            Currency: currency,
+            PostingStatus: effectiveDate.Value < DateOnly.FromDateTime(DateTime.UtcNow) ? "Reference" : "Projected",
+            SourceSystem: winningSource?.SourceSystem ?? "economic-terms",
+            SourceRecordId: winningSource?.SourceRecordId,
+            SourceAsOfUtc: winningSource?.AsOf,
+            SourceUpdatedBy: winningSource?.UpdatedBy,
+            SourceReason: winningSource?.Reason,
+            IsDerivedFromEconomicTerms: true,
+            IsCurrentProjection: true));
+    }
+
+    private static string InferScheduleEventType(string propertyName)
+        => propertyName.Equals("paymentSchedule", StringComparison.OrdinalIgnoreCase)
+            ? "Payment"
+            : propertyName.Equals("cashflows", StringComparison.OrdinalIgnoreCase)
+                ? "CashFlow"
+                : "Schedule";
+
+    private static bool IsScheduleHistoryEvent(SecurityMasterEventEnvelope envelope)
+    {
+        var eventType = envelope.EventType.AsSpan();
+        if (eventType.Contains("factor", StringComparison.OrdinalIgnoreCase)
+            || eventType.Contains("coupon", StringComparison.OrdinalIgnoreCase)
+            || eventType.Contains("payment", StringComparison.OrdinalIgnoreCase)
+            || eventType.Contains("maturity", StringComparison.OrdinalIgnoreCase)
+            || eventType.Contains("call", StringComparison.OrdinalIgnoreCase)
+            || eventType.Contains("corp", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var payloadText = envelope.Payload.GetRawText();
+        return payloadText.Contains("factor", StringComparison.OrdinalIgnoreCase)
+            || payloadText.Contains("coupon", StringComparison.OrdinalIgnoreCase)
+            || payloadText.Contains("payment", StringComparison.OrdinalIgnoreCase)
+            || payloadText.Contains("cashflow", StringComparison.OrdinalIgnoreCase)
+            || payloadText.Contains("maturity", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static IReadOnlyList<SnapshotOpenLotEnvelope> ExtractSnapshotOpenLots(PortfolioSnapshot snapshot)
+    {
+        var lots = new List<SnapshotOpenLotEnvelope>();
+        foreach (var account in snapshot.Accounts.Values)
+        {
+            foreach (var lot in account.OpenLots ?? [])
+            {
+                lots.Add(new SnapshotOpenLotEnvelope(account.AccountId, account.DisplayName, lot));
+            }
+        }
+
+        if (lots.Count > 0)
+        {
+            return lots;
+        }
+
+        foreach (var position in snapshot.Positions.Values)
+        {
+            foreach (var lot in position.OpenLots ?? [])
+            {
+                lots.Add(new SnapshotOpenLotEnvelope(lot.AccountId, null, lot));
+            }
+        }
+
+        return lots;
+    }
+
+    private static decimal? TryResolveImpliedMarketPrice(Position? position)
+    {
+        if (position is null || position.Quantity == 0)
+        {
+            return null;
+        }
+
+        return position.AverageCostBasis + (position.UnrealizedPnl / position.Quantity);
+    }
+
+    private static (decimal? OriginalFace, decimal? CurrentFace, decimal? FactorAdjustedQuantity, decimal? FactorAdjustedFace) ProjectLotFaces(
+        decimal quantity,
+        SecurityMasterLotModelDto lotModel,
+        decimal? currentFactor)
+    {
+        if (!lotModel.UsesFaceValue && !lotModel.SupportsFactorAdjustedExposure)
+        {
+            return (null, null, null, null);
+        }
+
+        if (lotModel.SupportsFactorAdjustedExposure)
+        {
+            var factor = currentFactor is > 0m ? currentFactor.Value : 1m;
+            var currentFace = quantity * factor;
+            return (quantity, currentFace, currentFace, currentFace);
+        }
+
+        return lotModel.UsesFaceValue
+            ? (quantity, quantity, null, null)
+            : (null, null, null, null);
+    }
+
     private sealed record SecurityWorkbenchContext(
         SecurityDetailDto Detail,
         SecurityEconomicDefinitionRecord? EconomicDefinition,
         TradingParametersDto? TradingParameters,
         WinningSourceInfo? WinningSource,
         SecurityMasterDownstreamImpactDto DownstreamImpact);
+
+    private sealed record SnapshotOpenLotEnvelope(
+        string? AccountId,
+        string? AccountDisplayName,
+        OpenLot Lot);
 
     private sealed record WinningSourceInfo(
         string SourceSystem,

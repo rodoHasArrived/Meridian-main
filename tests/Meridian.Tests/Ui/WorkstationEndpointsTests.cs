@@ -504,6 +504,16 @@ public sealed class WorkstationEndpointsTests
             breakCase.BreakId == "recon-ops-1:bank-break-1" &&
             breakCase.Severity == nameof(ReconciliationBreakSeverity.Critical) &&
             breakCase.EvidenceLinks.Any(link => link.Source == "reconciliation-run"));
+        bridged.Workflow.BreakCases.Should().Contain(breakCase =>
+            breakCase.CheckId == "SM_RECON_SECURITY_UNRESOLVED" &&
+            breakCase.Category == "SecurityMasterCoverage" &&
+            breakCase.Symbol == "BOND1" &&
+            breakCase.EvidenceLinks.Any(link => link.Source == "security-master-coverage"));
+        bridged.Workflow.BreakCases.Should().Contain(breakCase =>
+            breakCase.CheckId == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            breakCase.Category == "SecurityMasterAccounting" &&
+            breakCase.Symbol == "BOND1" &&
+            breakCase.EvidenceLinks.Any(link => link.Source == "security-master-accounting"));
         bridged.Workflow.EvidenceLinks.Should().Contain(link =>
             link.EvidenceId == "bank-normalized-activity:recon-ops-1" &&
             link.Source == "bank-normalized-activity");
@@ -4020,16 +4030,64 @@ public sealed class WorkstationEndpointsTests
                         issueDate = "2026-01-15",
                         maturityDate = "2031-12-15"
                     },
+                    call = new
+                    {
+                        firstCallDate = "2028-06-15"
+                    },
                     coupon = new
                     {
                         couponType = "Fixed",
                         couponRate = 5.125
                     },
+                    cashflowSchedule = new object[]
+                    {
+                        new
+                        {
+                            eventId = "cf-20260625",
+                            eventType = "InterestPayment",
+                            effectiveDate = "2026-06-25",
+                            paymentDate = "2026-06-25",
+                            expectedAmount = 12500.00m,
+                            currency = "USD",
+                            postingStatus = "Projected",
+                            sourceSystem = "trustee-feed",
+                            sourceRecordId = "cashflow-20260625",
+                            asOf = "2026-05-20T10:00:00Z",
+                            updatedBy = "trustee.ops",
+                            reason = "scheduled-interest"
+                        }
+                    },
                     structuredProduct = new
                     {
                         factor = 0.9825,
                         factorDate = "2026-05-01",
-                        collateralType = "AutoLoan"
+                        collateralType = "AutoLoan",
+                        factorHistory = new object[]
+                        {
+                            new
+                            {
+                                pointId = "factor-20260401",
+                                effectiveDate = "2026-04-01",
+                                factor = 0.9910m,
+                                sourceSystem = "trustee-feed",
+                                sourceRecordId = "factor-20260401",
+                                asOf = "2026-04-01T10:00:00Z",
+                                updatedBy = "trustee.ops",
+                                reason = "monthly-factor"
+                            },
+                            new
+                            {
+                                pointId = "factor-20260501",
+                                effectiveDate = "2026-05-01",
+                                factor = 0.9825m,
+                                previousFactor = 0.9910m,
+                                sourceSystem = "trustee-feed",
+                                sourceRecordId = "factor-20260501",
+                                asOf = "2026-05-01T10:00:00Z",
+                                updatedBy = "trustee.ops",
+                                reason = "monthly-factor"
+                            }
+                        }
                     }
                 }),
                 Provenance: JsonSerializer.SerializeToElement(new
@@ -4058,6 +4116,50 @@ public sealed class WorkstationEndpointsTests
                     maturity = "2031-12-15"
                 })));
         queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+        queryService.RegisterCorporateActions(
+            securityId,
+            [
+                new CorporateActionDto(
+                    CorpActId: Guid.Parse("22222222-bbbb-4444-cccc-222222222222"),
+                    SecurityId: securityId,
+                    EventType: "PrincipalPaydown",
+                    ExDate: new DateOnly(2026, 5, 25),
+                    PayDate: new DateOnly(2026, 5, 27),
+                    DividendPerShare: null,
+                    Currency: "USD",
+                    SplitRatio: null,
+                    NewSecurityId: null,
+                    DistributionRatio: 0.0085m,
+                    AcquirerSecurityId: null,
+                    ExchangeRatio: null,
+                    SubscriptionPricePerShare: null,
+                    RightsPerShare: null)
+            ]);
+        queryService.RegisterHistory(
+            securityId,
+            [
+                new SecurityMasterEventEnvelope(
+                    GlobalSequence: 10,
+                    SecurityId: securityId,
+                    StreamVersion: 8,
+                    EventType: "FactorScheduleRefreshed",
+                    EventTimestamp: new DateTimeOffset(2026, 5, 20, 10, 15, 0, TimeSpan.Zero),
+                    Actor: "trustee.bot",
+                    CorrelationId: Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                    CausationId: Guid.Parse("10000000-0000-0000-0000-000000000002"),
+                    Payload: JsonSerializer.SerializeToElement(new
+                    {
+                        factor = 0.9825,
+                        factorDate = "2026-05-01",
+                        paymentDate = "2026-06-25"
+                    }),
+                    Metadata: JsonSerializer.SerializeToElement(new
+                    {
+                        sourceSystem = "trustee-feed",
+                        sourceRecordId = "factor-20260501",
+                        reason = "monthly remittance"
+                    }))
+            ]);
 
         var validationService = new StubSecurityValidationService();
         validationService.RegisterReport(
@@ -4090,8 +4192,24 @@ public sealed class WorkstationEndpointsTests
                 validationService);
         });
 
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-structured-lots",
+            strategyId: "structured-income",
+            strategyName: "Structured Income",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/structured-credit",
+            feedReference: "synthetic:structured-credit",
+            fundProfileId: "alpha-credit").Complete(BuildBacktestResultWithOpenLots(
+                symbol: "ACME31",
+                quantity: 1_000_000L,
+                entryPrice: 0.97m,
+                accountId: "structured-income-account",
+                accountDisplayName: "Structured Income Account")));
+
         var client = app.GetTestClient();
-        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=alpha-credit");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
@@ -4119,6 +4237,46 @@ public sealed class WorkstationEndpointsTests
         snapshot.LotModel!.QuantityModel.Should().Be("FactorAdjustedFace");
         snapshot.LotModel.UsesFaceValue.Should().BeTrue();
         snapshot.LotModel.SupportsFactorAdjustedExposure.Should().BeTrue();
+        snapshot.ScheduleBook.Should().NotBeNull();
+        snapshot.ScheduleBook!.FactorHistory.Should().HaveCount(2);
+        snapshot.ScheduleBook.Events.Should().Contain(item =>
+            item.EventType == "InterestPayment" &&
+            item.EffectiveDate == new DateOnly(2026, 6, 25) &&
+            item.ExpectedAmount == 12500.00m &&
+            item.SourceSystem == "trustee-feed");
+        snapshot.ScheduleBook.Events.Should().Contain(item =>
+            item.EventType == "PrincipalPaydown" &&
+            item.EffectiveDate == new DateOnly(2026, 5, 25) &&
+            item.FactorEnd == 0.0085m);
+        snapshot.ScheduleBook.ProvenanceHistory.Should().Contain(item =>
+            item.Category == "History" &&
+            item.EventType == "FactorScheduleRefreshed" &&
+            item.SourceSystem == "trustee-feed");
+        snapshot.OpenLotReadModel.Should().NotBeNull();
+        snapshot.OpenLotReadModel!.SupportsFactorAdjustedExposure.Should().BeTrue();
+        snapshot.OpenLotReadModel.CurrentFactor.Should().Be(0.9825m);
+        snapshot.OpenLotReadModel.Lots.Should().ContainSingle();
+        snapshot.OpenLotReadModel.ProvenanceHistory.Should().ContainSingle(item =>
+            item.RunId == "run-structured-lots" &&
+            item.SourceSystem == "strategy-run-snapshot");
+        var openLot = snapshot.OpenLotReadModel.Lots[0];
+        openLot.SecurityId.Should().Be(securityId);
+        openLot.PortfolioId.Should().Be("structured-income-backtest-portfolio");
+        openLot.RunId.Should().Be("run-structured-lots");
+        openLot.AccountScopeId.Should().Be("structured-income-account");
+        openLot.AccountScopeDisplayName.Should().Be("Structured Income Account");
+        openLot.LotId.Should().NotBeNullOrWhiteSpace();
+        openLot.Symbol.Should().Be("ACME31");
+        openLot.OriginalQuantity.Should().Be(1_000_000m);
+        openLot.CurrentQuantity.Should().Be(1_000_000m);
+        openLot.OriginalFace.Should().Be(1_000_000m);
+        openLot.CurrentFace.Should().Be(982_500m);
+        openLot.FactorAdjustedQuantity.Should().Be(982_500m);
+        openLot.FactorAdjustedFace.Should().Be(982_500m);
+        openLot.CostBasis.Should().Be(970_000m);
+        openLot.EntryPrice.Should().Be(0.97m);
+        openLot.UnrealizedPnl.Should().Be(12_500m);
+        openLot.SettleDate.Should().Be(new DateTimeOffset(2026, 5, 16, 14, 0, 0, TimeSpan.Zero));
         snapshot.RecommendedActions.Should().Contain(action =>
             action.Kind == SecurityMasterRecommendedActionKind.EditSelectedSecurity &&
             action.Detail.Contains("blocking validation issue", StringComparison.OrdinalIgnoreCase));
@@ -6279,6 +6437,106 @@ public sealed class WorkstationEndpointsTests
             Ledger: ledger,
             ElapsedTime: TimeSpan.FromMinutes(30),
             TotalEventsProcessed: 100);
+    }
+
+    private static BacktestResult BuildBacktestResultWithOpenLots(
+        string symbol,
+        long quantity,
+        decimal entryPrice,
+        string accountId,
+        string accountDisplayName)
+    {
+        var startedAt = new DateTimeOffset(2026, 5, 14, 14, 0, 0, TimeSpan.Zero);
+        var completedAt = startedAt.AddDays(6);
+        var openLot = new OpenLot(
+            LotId: Guid.Parse("33333333-cccc-4444-dddd-333333333333"),
+            Symbol: symbol,
+            Quantity: quantity,
+            EntryPrice: entryPrice,
+            OpenedAt: startedAt,
+            OpenFillId: Guid.Parse("44444444-dddd-4444-eeee-444444444444"),
+            AccountId: accountId,
+            Notes: "Trust remittance carry lot");
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            [symbol] = new(symbol, quantity, entryPrice, 12_500m, 0m, [openLot])
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: accountId,
+            DisplayName: accountDisplayName,
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Structured Credit Broker",
+            Cash: 250_000m,
+            MarginBalance: 0m,
+            LongMarketValue: 982_500m,
+            ShortMarketValue: 0m,
+            Equity: 1_232_500m,
+            Positions: positions,
+            Rules: new FinancialAccountRules(),
+            OpenLots: [openLot]);
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: completedAt,
+            Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
+            Cash: 250_000m,
+            MarginBalance: 0m,
+            LongMarketValue: 982_500m,
+            ShortMarketValue: 0m,
+            TotalEquity: 1_232_500m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 5, 14),
+            To: new DateOnly(2026, 5, 20),
+            Symbols: [symbol],
+            InitialCash: 1_220_000m,
+            DataRoot: "./data");
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_220_000m,
+            FinalEquity: 1_232_500m,
+            GrossPnl: 12_500m,
+            NetPnl: 12_500m,
+            TotalReturn: 0.0102459016393442622950819672m,
+            AnnualizedReturn: 0.0102459016393442622950819672m,
+            SharpeRatio: 1.0d,
+            SortinoRatio: 1.0d,
+            CalmarRatio: 1.0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 1,
+            WinningTrades: 1,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, startedAt, $"Buy {symbol}",
+        [
+            (LedgerAccounts.Securities(symbol), 970_000m, 0m),
+            (LedgerAccounts.Cash, 0m, 970_000m)
+        ]);
+
+        return new BacktestResult(
+            Request: request,
+            Universe: new HashSet<string>([symbol], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: ledger,
+            ElapsedTime: TimeSpan.FromMinutes(45),
+            TotalEventsProcessed: 64);
     }
 
     private static ReconciliationRunDetail BuildReconciliationDetail(

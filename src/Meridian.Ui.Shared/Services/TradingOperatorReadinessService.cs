@@ -84,7 +84,7 @@ public sealed class TradingOperatorReadinessService
             brokerageStatus,
             riskRuleStatuses,
             auditEntries);
-        var overallStatus = EvaluateOverallPosture(acceptanceGates);
+        var overallStatus = EvaluateOverallPosture(acceptanceGates, latestRun is null);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
         var snapshotVersion = BuildSnapshotVersion(
@@ -894,7 +894,7 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: record.Decision,
                 ManualOverrideId: record.ManualOverrideId,
                 ApprovedBy: record.ApprovedBy,
-                ApprovalChecklist: record.ApprovalChecklist);
+                ApprovalChecklist: record.ApprovalChecklist ?? []);
         }
 
         var promotion = latestRun?.Promotion ?? latestRun?.Summary.Promotion;
@@ -911,7 +911,7 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: promotion.ApprovalStatus,
                 ManualOverrideId: promotion.ManualOverrideId,
                 ApprovedBy: promotion.ApprovedBy,
-                ApprovalChecklist: promotion.ApprovalChecklist);
+                ApprovalChecklist: promotion.ApprovalChecklist ?? []);
     }
 
     private static bool IsPromotionRecordLinkedToRun(StrategyPromotionRecord record, string runId) =>
@@ -1550,7 +1550,9 @@ public sealed class TradingOperatorReadinessService
     /// <c>Ready</c> is returned only when every gate reports ready.
     /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
     /// </summary>
-    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(IReadOnlyList<TradingAcceptanceGateDto> gates)
+    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(
+        IReadOnlyList<TradingAcceptanceGateDto> gates,
+        bool activeSessionOnly)
     {
         var canonicalGateOrder = new[]
         {
@@ -1581,10 +1583,23 @@ public sealed class TradingOperatorReadinessService
             return TradingAcceptanceGateStatusDto.Blocked;
         }
 
+        if (activeSessionOnly &&
+            IsGateReady(ordered, "session") &&
+            IsGateReady(ordered, "replay") &&
+            IsGateReady(ordered, "audit-controls"))
+        {
+            return TradingAcceptanceGateStatusDto.Ready;
+        }
+
         return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
             ? TradingAcceptanceGateStatusDto.Ready
             : TradingAcceptanceGateStatusDto.ReviewRequired;
     }
+
+    private static bool IsGateReady(IEnumerable<TradingAcceptanceGateDto> gates, string gateId)
+        => gates.Any(gate =>
+            string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase) &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
 
     private static void AddTrustGateWorkItem(
         ICollection<OperatorWorkItemDto> workItems,
@@ -1664,7 +1679,7 @@ public sealed class TradingOperatorReadinessService
             : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
         var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
         var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var status = EvaluateOverallPosture(gates);
+        var status = EvaluateOverallPosture(gates, activeSessionOnly: false);
 
         return new EvidenceCompletenessSummaryDto(
             Status: status,

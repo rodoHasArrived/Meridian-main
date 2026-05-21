@@ -355,7 +355,10 @@ public sealed record WorkstationDataProviderRecord(
     string GateImpact,
     ProviderConnectionRowDto? ConnectionSummary,
     WorkstationDataProviderRoutingSummary? RoutingSummary,
-    IReadOnlyList<WorkstationDataProviderDiagnostic> Diagnostics);
+    IReadOnlyList<WorkstationDataProviderDiagnostic> Diagnostics)
+{
+    public string Provider => ProviderId;
+}
 
 /// <summary>
 /// Backfill row returned by the Data workspace bootstrap payload.

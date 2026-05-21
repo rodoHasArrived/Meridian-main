@@ -180,6 +180,10 @@ Returns the selected-security workstation projection used by retained desktop go
 - `schemaCompatibility` — legacy asset-specific schema version plus normalized economic-terms schema version, including explicit review messaging when payloads drift beyond supported workstation compatibility
 - `scheduleSummary` — typed cash-flow/factor schedule posture derived from economic terms and corporate-action context
 - `lotModel` — typed lot/open-position modeling guidance derived from asset class, factors, and trading parameters
+- `scheduleBook` — first-class effective-dated schedule entities with event rows, factor history, and provenance history sourced from economic terms, corporate actions, and Security Master history
+- `openLotReadModel` — stable open-lot rows keyed by `SecurityId`, `PortfolioId`, `AccountScopeId`, and `LotId`, including factor-adjusted face/current-face projections for structured fixed-income holdings
+
+`scheduleBook` is additive to `scheduleSummary`: the summary remains the quick UI posture, while the book carries auditable rows for scheduled cash flows, factor updates, lifecycle dates, and provenance. `openLotReadModel` is likewise additive to `lotModel`: the model still explains how a security should reconcile, while the read model materializes scoped lots from strategy-run portfolio snapshots without turning Security Master into the accounting ledger.
 
 ### Get Corporate Actions
 ```

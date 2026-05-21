@@ -2,6 +2,7 @@ using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
@@ -122,15 +123,15 @@ public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBas
             return;
         }
 
-        await _refreshGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _refreshGate.WaitAsync(cancellationToken);
         try
         {
             ApplyLoadingState();
-            var snapshot = await _snapshotService.LoadAsync(cancellationToken).ConfigureAwait(false);
+            var snapshot = await _snapshotService.LoadAsync(cancellationToken);
             var presentation = _presentationService.Build(snapshot);
             var shellContext = _shellContextService is null
                 ? ShellContext
-                : await _shellContextService.CreateAsync(presentation.Context, cancellationToken).ConfigureAwait(false);
+                : await _shellContextService.CreateAsync(presentation.Context, cancellationToken);
 
             ApplyPresentation(presentation, shellContext);
         }
@@ -140,7 +141,7 @@ public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBas
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError("[SettingsWorkspaceShell] Refresh failed", ex);
+            WpfLoggingService.Instance.LogError("[SettingsWorkspaceShell] Refresh failed", ex);
             ApplyErrorState();
         }
         finally
@@ -158,7 +159,7 @@ public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBas
 
         if (string.Equals(actionId, "Refresh", StringComparison.OrdinalIgnoreCase))
         {
-            await RefreshAsync().ConfigureAwait(false);
+            await RefreshAsync();
             ActionRequested?.Invoke(
                 this,
                 new SettingsWorkspaceShellActionRequestedEventArgs(SettingsWorkspaceShellActionKind.Refresh, actionId));

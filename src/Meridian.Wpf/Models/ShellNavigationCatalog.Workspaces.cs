@@ -197,5 +197,5 @@ public static partial class ShellNavigationCatalog
             PresetPanes: new Dictionary<string, IReadOnlyList<WorkspacePaneDefinition>>(StringComparer.OrdinalIgnoreCase),
             ContextlessPanes: Array.Empty<WorkspacePaneDefinition>(),
             StateProviderType: typeof(SettingsWorkspaceShellStateProvider),
-            ViewModelType: typeof(SettingsWorkspaceShellViewModel));
+            ViewModelType: typeof(Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel));
 }
