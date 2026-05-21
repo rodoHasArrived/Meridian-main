@@ -546,7 +546,7 @@ public static partial class WorkstationEndpoints
             OperationsSecurityMasterOverrideApprovalRequestDto? request,
             HttpContext context) =>
         {
-            if (!HasReconciliationMutationPermission(context))
+            if (!HasSecurityMasterOverrideApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -882,7 +882,7 @@ public static partial class WorkstationEndpoints
             OperationsReopenWorkflowRequestDto? request,
             HttpContext context) =>
         {
-            if (!HasReconciliationMutationPermission(context))
+            if (!HasGovernedWorkflowReopenPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -903,7 +903,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context) };
             var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -5565,6 +5565,15 @@ public static partial class WorkstationEndpoints
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending,
             UserPermission.ModifySecurityMaster);
+
+    private static bool HasSecurityMasterOverrideApprovalPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ModifySecurityMaster);
+
+    private static bool HasGovernedWorkflowReopenPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
     private static bool TryResolveCurrentUser(HttpContext context, out string currentUser)
         => EndpointAuthorization.TryResolveActor(context, out currentUser);
