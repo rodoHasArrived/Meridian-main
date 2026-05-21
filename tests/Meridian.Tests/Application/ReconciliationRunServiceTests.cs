@@ -321,7 +321,7 @@ public sealed class ReconciliationRunServiceTests
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-sm-mismatch"));
 
         detail.Should().NotBeNull();
-        detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "SECURITY_MASTER_EXPECTED_VS_ACTUAL_MISMATCH");
+        detail!.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "ACCRUAL_AMOUNT_MISMATCH");
     }
 
     [Fact]

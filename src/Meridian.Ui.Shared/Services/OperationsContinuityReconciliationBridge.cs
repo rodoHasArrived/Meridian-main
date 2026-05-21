@@ -115,7 +115,7 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
             reconciliationEvidence = evidence.ToArray();
         }
 
-        return detail.Breaks
+        var reconciliationBreaks = detail.Breaks
             .Select(breakRow => new OperationsBreakCaseDto(
                 BuildBreakId(detail.Summary.ReconciliationRunId, breakRow.CheckId),
                 breakRow.CheckId,
@@ -132,7 +132,62 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
                 SecurityId: null,
                 Symbol: null,
                 SuggestedAction: breakRow.Reason,
-                reconciliationEvidence))
+                reconciliationEvidence));
+
+        var securityCoverageBreaks = (detail.SecurityCoverageIssues ?? Array.Empty<ReconciliationSecurityCoverageIssueDto>())
+            .Select(issue => new OperationsBreakCaseDto(
+                BuildIssueBreakId(detail.Summary.ReconciliationRunId, "security-coverage", issue.Source, issue.Symbol, issue.Code),
+                string.IsNullOrWhiteSpace(issue.Code) ? "SM_RECON_SECURITY_UNRESOLVED" : issue.Code.Trim(),
+                "SecurityMasterCoverage",
+                issue.Severity.ToString(),
+                ReconciliationBreakStatus.Open.ToString(),
+                Owner: null,
+                DueDate: null,
+                ExpectedSource: "security-master",
+                ActualSource: string.IsNullOrWhiteSpace(issue.Source) ? null : issue.Source.Trim(),
+                ExpectedAmount: null,
+                ActualAmount: null,
+                Variance: null,
+                SecurityId: null,
+                Symbol: string.IsNullOrWhiteSpace(issue.Symbol) ? null : issue.Symbol.Trim(),
+                SuggestedAction: issue.Reason,
+                BuildIssueEvidence(
+                    reconciliationEvidence,
+                    issue.EvidenceLink,
+                    "security-master-coverage",
+                    "Security Master coverage evidence",
+                    detail.Summary.CreatedAt)));
+
+        var securityAccountingBreaks = (detail.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(issue => new OperationsBreakCaseDto(
+                BuildIssueBreakId(detail.Summary.ReconciliationRunId, "security-accounting", issue.Source, issue.Symbol, issue.Code),
+                issue.Code,
+                "SecurityMasterAccounting",
+                issue.Severity.ToString(),
+                ReconciliationBreakStatus.Open.ToString(),
+                Owner: null,
+                DueDate: null,
+                ExpectedSource: "security-master-expected-event",
+                ActualSource: string.IsNullOrWhiteSpace(issue.Source) ? null : issue.Source.Trim(),
+                issue.ExpectedAmount,
+                issue.ActualAmount,
+                Variance: issue.ExpectedAmount.HasValue && issue.ActualAmount.HasValue
+                    ? issue.ActualAmount.Value - issue.ExpectedAmount.Value
+                    : null,
+                SecurityId: null,
+                Symbol: string.IsNullOrWhiteSpace(issue.Symbol) ? null : issue.Symbol.Trim(),
+                SuggestedAction: issue.Reason,
+                BuildIssueEvidence(
+                    reconciliationEvidence,
+                    issue.EvidenceLink,
+                    "security-master-accounting",
+                    "Security Master accounting evidence",
+                    detail.Summary.CreatedAt)));
+
+        return reconciliationBreaks
+            .Concat(securityCoverageBreaks)
+            .Concat(securityAccountingBreaks)
+            .DistinctBy(static breakCase => breakCase.BreakId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 
@@ -180,6 +235,62 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
         string.IsNullOrWhiteSpace(checkId)
             ? reconciliationRunId
             : $"{reconciliationRunId}:{checkId.Trim()}";
+
+    private static string BuildIssueBreakId(
+        string reconciliationRunId,
+        string issueKind,
+        string source,
+        string? symbol,
+        string? code) =>
+        string.Join(
+            ":",
+            new[]
+            {
+                reconciliationRunId,
+                issueKind,
+                NormalizeBreakIdPart(source),
+                NormalizeBreakIdPart(symbol),
+                NormalizeBreakIdPart(code)
+            });
+
+    private static IReadOnlyList<OperationsEvidenceLinkDto> BuildIssueEvidence(
+        IReadOnlyList<OperationsEvidenceLinkDto> fallbackEvidence,
+        string? issueRoute,
+        string source,
+        string label,
+        DateTimeOffset capturedAt)
+    {
+        var links = new List<OperationsEvidenceLinkDto>();
+        if (!string.IsNullOrWhiteSpace(issueRoute))
+        {
+            links.Add(new OperationsEvidenceLinkDto(
+                $"{source}:{NormalizeBreakIdPart(issueRoute)}",
+                label,
+                issueRoute.Trim(),
+                source,
+                capturedAt));
+        }
+
+        links.AddRange(fallbackEvidence);
+        return links
+            .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string NormalizeBreakIdPart(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "unknown";
+        }
+
+        var trimmed = value.Trim();
+        var chars = trimmed
+            .Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-')
+            .ToArray();
+        return new string(chars).Trim('-');
+    }
 
     private static OperationsTransitionResultDto MissingReconciliationSource(string message) =>
         new(

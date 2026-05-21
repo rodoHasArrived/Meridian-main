@@ -27,6 +27,10 @@ This layer keeps cross-surface UI contracts stable so active browser work and re
 ## Important workflows
 
 Use this module when a UI-facing contract must be shared across the browser dashboard and retained WPF shell.
+Operations Continuity reconciliation bridging belongs here: `OperationsContinuityReconciliationBridge`
+turns shared reconciliation run detail into workflow transition input, including Security Master
+coverage/accounting issues as server-authored break cases so both UI surfaces consume the same close
+blockers and evidence links.
 
 ## Diagrams
 

@@ -7,7 +7,8 @@ public static class DesktopFeatureModuleRegistry
     private static readonly IDesktopFeatureModule[] Modules =
     [
         new Trading.TradingFeatureModule(),
-        new Data.DataFeatureModule()
+        new Data.DataFeatureModule(),
+        new Settings.SettingsFeatureModule()
     ];
 
     public static IServiceCollection AddMeridianWpfFeatureModules(this IServiceCollection services)

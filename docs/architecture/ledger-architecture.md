@@ -193,6 +193,11 @@ accounting issue counts, expected-event counts, and journal-preview counts direc
 reconciliation output. `OperationsContinuityWorkflow` applies those counts to the Security Master
 gate during the reconciliation transition, so unresolved Security Master coverage or
 accounting-term problems block the close lane without requiring UI-side status derivation.
+`OperationsContinuityReconciliationBridge` also preserves the underlying Security Master coverage
+and accounting issue rows as workflow break cases, using stable issue codes such as
+`SM_RECON_SECURITY_UNRESOLVED`, `ACCRUAL_AMOUNT_MISMATCH`, and
+`FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and retained WPF clients the same
+server-authored blocker detail behind the aggregate counts.
 The shared `OperationsWorkflowContractMatrix` also publishes the production blocker and issue code
 vocabulary for broker intake, Security Master accounting coverage, accrual reconciliation, factor
 paydowns, ledger posting, reconciliation evidence, approval, and close blockers. Security Master
