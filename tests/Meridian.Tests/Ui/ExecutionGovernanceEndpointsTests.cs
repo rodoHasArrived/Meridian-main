@@ -58,7 +58,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
-            entry.Actor == "ops");
+            entry.Actor == "ops-user");
     }
 
     [Fact]
@@ -120,12 +120,12 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "ManualOverrideCreated" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-create");
         auditEntries.Should().Contain(entry =>
             entry.Action == "ManualOverrideCleared" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-clear");
     }
@@ -194,6 +194,8 @@ public sealed class ExecutionGovernanceEndpointsTests
                 config.MaxPositionSize = 100m;
             });
         });
+
+        await app.Services.GetRequiredService<AlpacaBrokerageGateway>().ConnectAsync();
 
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
@@ -273,6 +275,8 @@ public sealed class ExecutionGovernanceEndpointsTests
                 config.MaxPositionSize = 100m;
             });
         });
+
+        await app.Services.GetRequiredService<RobinhoodBrokerageGateway>().ConnectAsync();
 
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
@@ -408,6 +412,46 @@ public sealed class ExecutionGovernanceEndpointsTests
             quantity = 1,
             metadata = new Dictionary<string, string>
             {
+                ["brokerAccountId"] = "acct-123"
+            }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var result = JsonSerializer.Deserialize<OrderResult>(
+            await response.Content.ReadAsStringAsync(),
+            JsonOptions());
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithFixedIncomeRoutingMetadata_PreservesSubmitPath()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            timeInForce = 0,
+            quantity = 1,
+            metadata = new Dictionary<string, string>
+            {
+                ["asset_class"] = "treasury",
                 ["broker_account_id"] = "acct-123"
             }
         }));

@@ -59,7 +59,7 @@ public sealed class PolygonCorporateActionFetcherTests : IDisposable
     private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<SecurityDetailDto?>(null);
-        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default) => Task.FromResult<SecurityDetailDto?>(null);
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null) => Task.FromResult<SecurityDetailDto?>(null);
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<SecuritySummaryDto>>(Array.Empty<SecuritySummaryDto>());
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
         public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);

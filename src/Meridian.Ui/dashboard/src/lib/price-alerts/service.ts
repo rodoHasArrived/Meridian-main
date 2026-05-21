@@ -19,6 +19,7 @@ export interface PriceAlertsApi {
   unacknowledgedCount: number;
   lastPollAt: string | null;
   pollErrorMessage: string | null;
+  persistenceErrorMessage: string | null;
   notificationPermission: NotificationPermission | "unsupported";
   requestNotificationPermission: () => Promise<NotificationPermission | "unsupported">;
   createAlert: (draft: PriceAlertDraft) => PriceAlert;
@@ -52,6 +53,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
   const [state, setState] = useState<PriceAlertStorageState>(() => loadPriceAlertState(storage));
   const [lastPollAt, setLastPollAt] = useState<string | null>(null);
   const [pollErrorMessage, setPollErrorMessage] = useState<string | null>(null);
+  const [persistenceErrorMessage, setPersistenceErrorMessage] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | "unsupported">(() => readPermission());
 
   const stateRef = useRef(state);
@@ -59,7 +61,8 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
 
   const persist = useCallback((next: PriceAlertStorageState) => {
     stateRef.current = next;
-    savePriceAlertState(next, storage);
+    const writeStatus = savePriceAlertState(next, storage);
+    setPersistenceErrorMessage(buildPersistenceErrorMessage(writeStatus));
     setState(next);
   }, [storage]);
 
@@ -130,7 +133,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
 
       if (fired) {
         const trigger: PriceAlertTrigger = {
-          id: `trigger-${alert.id}-${Date.now()}`,
+          id: `trigger-${alert.id}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
           alertId: alert.id,
           symbol: alert.symbol,
           condition: alert.condition,
@@ -322,6 +325,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     unacknowledgedCount,
     lastPollAt,
     pollErrorMessage,
+    persistenceErrorMessage,
     notificationPermission,
     requestNotificationPermission,
     createAlert,
@@ -334,6 +338,18 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     clearTriggers,
     evaluateSnapshot
   };
+}
+
+function buildPersistenceErrorMessage(status: ReturnType<typeof savePriceAlertState>): string | null {
+  if (status === "saved") {
+    return null;
+  }
+
+  if (status === "unavailable") {
+    return "Price alert storage is unavailable. Alerts will only last for this browser tab.";
+  }
+
+  return "Price alert storage failed. Alerts may not survive a browser reload.";
 }
 
 function readField(quote: QuotesSnapshotItem, field: PriceAlertField): number | null {

@@ -14,7 +14,8 @@ operator actions.
 - `EvidenceGraphService` composes contributors, deduplicates evidence ids, rejects edges pointing to
   missing nodes, applies template no-orphan warnings, and computes packet completeness.
 - `EvidenceTemplateRegistry` maps existing workflow ids to required and optional evidence kinds.
-- `IEvidenceArtifactStore` writes manifest-only JSON under `DataRoot/workstation/evidence/`.
+- `IEvidenceArtifactStore` writes manifest-only JSON under `DataRoot/workstation/evidence/`,
+  assigns vault identities, maintains a lookup index, and returns retained manifest routes.
 - Strategy-run packets attach route-based ledger artifact refs to the `run-ledger` node when a
   ledger summary exists: `ledger-journal` routes to
   `/api/workstation/runs/{runId}/ledger/journal`, and `ledger-trial-balance` routes to
@@ -32,6 +33,7 @@ The shared UI endpoint layer exposes:
 - `GET /api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph`
 - `POST /api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate`
 - `POST /api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest`
+- `GET /api/workstation/evidence/vault/{vaultId}/manifest`
 - `GET /api/workstation/evidence/templates`
 
 Unsupported subject kinds return `400`. Missing subjects return `404`. Missing optional services
@@ -42,6 +44,10 @@ return a packet with warnings when a subject can still be resolved.
 Version 1 export writes a JSON manifest only. It stores packet metadata, completeness, evidence
 references, actions, and warnings when requested. It does not copy raw broker statements, provider
 credentials, tokens, or binary evidence bundles.
+
+Export responses include a vault id, retained route, and manifest path so the browser can reopen the
+retained manifest without copying raw evidence. The vault index is a lookup for exported manifests
+only; it is not a general evidence object store.
 
 Manifest paths are generated from sanitized subject kind/id segments and retained under the resolved
 data root:

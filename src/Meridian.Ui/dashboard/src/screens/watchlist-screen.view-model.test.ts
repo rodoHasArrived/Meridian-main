@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError, createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   buildBulkAddFeedback,
   buildListRetryCommand,
@@ -10,6 +11,7 @@ import {
   buildStaleFilterCommand,
   buildStarterPackCommands,
   buildStarterPackFeedback,
+  buildWatchlistAddSymbolField,
   buildWatchlistSelectedDetail,
   buildWatchlistRows,
   buildWatchlistStats,
@@ -180,6 +182,38 @@ describe("watchlist-screen view model", () => {
     });
   });
 
+  it("builds add-symbol field accessibility metadata from feedback state", () => {
+    expect(buildWatchlistAddSymbolField(null, false)).toEqual({
+      id: "add-symbol-input",
+      label: "Add symbol",
+      placeholder: "Add symbols (e.g. MSFT, SPY)",
+      helperId: "add-symbol-help",
+      helperText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
+      feedbackId: "add-symbol-feedback",
+      feedbackRole: "alert",
+      describedBy: "add-symbol-help",
+      invalid: false,
+      errorMessageId: undefined,
+      disabled: false
+    });
+
+    expect(buildWatchlistAddSymbolField({ tone: "danger", message: "Provider offline" }, true)).toMatchObject({
+      describedBy: "add-symbol-feedback add-symbol-help",
+      feedbackRole: "alert",
+      invalid: true,
+      errorMessageId: "add-symbol-feedback",
+      disabled: true
+    });
+
+    expect(buildWatchlistAddSymbolField({ tone: "success", message: "Added 1 of 1 symbols." }, false)).toMatchObject({
+      describedBy: "add-symbol-feedback add-symbol-help",
+      feedbackRole: "status",
+      invalid: false,
+      errorMessageId: undefined,
+      disabled: false
+    });
+  });
+
   it("builds a selected-symbol detail panel from the active watchlist row", () => {
     const now = Date.parse("2026-05-09T01:00:00.000Z");
     const [row] = buildWatchlistRows(symbols, {}, { AAPL: quote }, { AAPL: 187 }, now);
@@ -293,7 +327,8 @@ describe("watchlist-screen view model", () => {
       now
     })).toEqual({
       tone: "warning",
-      label: "Live prices for 1 of 3 symbols; 1 stale; updated 0s ago."
+      label: "Live prices for 1 of 3 symbols; 1 stale; updated 0s ago.",
+      details: []
     });
 
     expect(buildQuoteStatus({
@@ -306,7 +341,32 @@ describe("watchlist-screen view model", () => {
       now
     })).toEqual({
       tone: "default",
-      label: "Live prices for 2 symbols; updated 0s ago."
+      label: "Live prices for 2 symbols; updated 0s ago.",
+      details: []
+    });
+  });
+
+  it("keeps structured quote-refresh diagnostics separate from the status summary", () => {
+    expect(buildQuoteStatus({
+      listState: "ready",
+      rowCount: 2,
+      quoteCount: 0,
+      staleCount: 0,
+      quoteError: {
+        summary: "collector offline",
+        details: [
+          "Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.",
+          "Service unavailable"
+        ]
+      },
+      quoteFetchedAt: null
+    })).toEqual({
+      tone: "danger",
+      label: "Live prices unavailable: collector offline",
+      details: [
+        "Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.",
+        "Service unavailable"
+      ]
     });
   });
 
@@ -468,6 +528,96 @@ describe("watchlist-screen view model", () => {
     });
 
     expect(api.removeSymbol).toHaveBeenCalledWith("MSFT");
+  });
+
+  it("surfaces structured live-quote refresh failures from the shared api error contract", async () => {
+    const api = createWatchlistApi();
+    api.getLiveQuotesSnapshot = vi.fn().mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/data/quotes-snapshot?symbols=AAPL",
+        status: 503,
+        title: "Service unavailable",
+        detail: "collector offline"
+      })
+    );
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+
+    await waitFor(() => expect(result.current.quoteStatusTone).toBe("danger"));
+    expect(result.current.quoteStatusLabel).toBe("Live prices unavailable: collector offline");
+    expect(result.current.quoteStatusDetails).toEqual([
+      "Endpoint returned 503 for /api/data/quotes-snapshot?symbols=AAPL.",
+      "Service unavailable"
+    ]);
+  });
+
+  it("surfaces structured symbol-load failures without losing detail lines", async () => {
+    const api = createWatchlistApi();
+    api.getSymbols = vi.fn().mockRejectedValueOnce(
+      createApiErrorFromResponseBody(
+        "/api/symbols",
+        503,
+        JSON.stringify({
+          title: "Symbol service unavailable",
+          detail: "The symbol catalog is temporarily offline.",
+          errors: {
+            provider: ["Reconnect the primary symbol source before retrying."]
+          }
+        })
+      )
+    );
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+
+    await waitFor(() => expect(result.current.listState).toBe("error"));
+    expect(result.current.loadError).toEqual({
+      summary: "The symbol catalog is temporarily offline.",
+      details: [
+        "Endpoint returned 503 for /api/symbols.",
+        "Symbol service unavailable",
+        "provider: Reconnect the primary symbol source before retrying."
+      ]
+    });
+    expect(result.current.listDescription).toBe("The symbol catalog is temporarily offline.");
+  });
+
+  it("surfaces structured add-symbol failures with provider handoff details", async () => {
+    const api = createWatchlistApi();
+    api.addSymbol = vi.fn().mockRejectedValueOnce(
+      createApiErrorFromResponseBody(
+        "/api/symbols",
+        422,
+        JSON.stringify({
+          title: "Symbol add rejected",
+          detail: "The provider rejected the requested symbol.",
+          errors: {
+            symbol: ["Verify the symbol format or enable the provider before retrying."]
+          }
+        })
+      )
+    );
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+    await waitFor(() => expect(result.current.rows.length).toBeGreaterThan(0));
+
+    act(() => {
+      result.current.setPendingSymbol("SPY");
+    });
+
+    await act(async () => {
+      await result.current.addPendingSymbol();
+    });
+
+    expect(result.current.submitFeedback).toEqual({
+      tone: "danger",
+      message: "The provider rejected the requested symbol.",
+      details: [
+        "Endpoint returned 422 for /api/symbols.",
+        "Symbol add rejected",
+        "symbol: Verify the symbol format or enable the provider before retrying."
+      ],
+      providerSetupHandoff: buildProviderSetupHandoff("symbol-add-exception")
+    });
   });
 });
 

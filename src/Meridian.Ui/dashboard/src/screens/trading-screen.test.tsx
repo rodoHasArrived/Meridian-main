@@ -95,6 +95,32 @@ vi.mock("@/lib/api", async () => {
       ],
       asOf: "2026-01-01T00:20:00Z"
     }),
+    getRiskRules: vi.fn().mockResolvedValue([
+      {
+        ruleName: "PositionLimit",
+        state: "Healthy",
+        summary: "No position breaches.",
+        isBreached: false,
+        threshold: "5000",
+        currentValue: "2500",
+        asOf: "2026-01-01T00:20:00Z",
+        recentViolations: []
+      }
+    ]),
+    getRiskRuleConfig: vi.fn().mockResolvedValue({
+      ruleName: "DrawdownCircuitBreaker",
+      defaultMaxPositionSize: null,
+      symbolPositionLimits: null,
+      maxDrawdownPercent: 5,
+      maxOrdersPerMinute: null
+    }),
+    updateRiskRuleConfig: vi.fn().mockResolvedValue({
+      ruleName: "DrawdownCircuitBreaker",
+      defaultMaxPositionSize: null,
+      symbolPositionLimits: null,
+      maxDrawdownPercent: 5,
+      maxOrdersPerMinute: null
+    }),
     getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
     getReplayStatus: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "running", speedMultiplier: 1, eventsProcessed: 3, totalEvents: 10, progressPercent: 30, startedAt: "2026-01-01" }),
@@ -557,6 +583,14 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("renders VM-owned disabled reasons for blocked trading commands", async () => {
+    await renderTradingScreen({ ...data, openOrders: [] });
+
+    const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
+    expect(cancelAll).toBeDisabled();
+    expect(cancelAll).toHaveAttribute("title", "No open orders require cancellation.");
+  });
+
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();
@@ -736,10 +770,11 @@ describe("TradingScreen", () => {
     expect(creatingButton).toHaveAttribute("title", "Paper session creation is in progress.");
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("title", "Paper session creation is in progress.");
     expect(screen.getByLabelText("Strategy ID")).toBeDisabled();
-    expect(screen.getByLabelText("Strategy ID")).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByLabelText("Strategy ID")).toHaveAccessibleDescription("Paper session creation is in progress.");
     expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
     expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
-    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Strategy ID is optional. Initial cash must be at least $1,000.");
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Paper session creation is in progress.");
+    expect(screen.getByText("Paper session creation is in progress.")).toHaveAttribute("id", "paper-session-create-requirements");
 
     resolveCreate({
       sessionId: "sess-new",

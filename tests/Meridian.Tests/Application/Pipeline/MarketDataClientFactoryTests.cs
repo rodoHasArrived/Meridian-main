@@ -153,6 +153,20 @@ public sealed class MarketDataClientFactoryTests
         secondFactoryCalled.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task DisposeAsync_SessionShutdown_AwaitsAsyncProviderDisposal()
+    {
+        await using var registry = new ProviderRegistry();
+        var provider = new AsyncDisposableProvider();
+
+        registry.Register(provider);
+
+        await registry.DisposeAsync();
+
+        provider.DisposeStarted.Task.IsCompletedSuccessfully.Should().BeTrue();
+        provider.DisposeCompleted.Task.IsCompletedSuccessfully.Should().BeTrue();
+    }
+
     private static ProviderRegistry CreateRegistryWithFactories()
     {
         var registry = new ProviderRegistry();
@@ -182,5 +196,23 @@ public sealed class MarketDataClientFactoryTests
         var depth = new MarketDepthCollector(publisher);
         var quote = new QuoteCollector(publisher);
         return (config, publisher, trade, depth, quote);
+    }
+
+    private sealed class AsyncDisposableProvider : IProviderMetadata, IAsyncDisposable
+    {
+        public TaskCompletionSource DisposeStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource DisposeCompleted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public string ProviderId => "async-disposable-provider";
+        public string ProviderDisplayName => "Async Disposable Provider";
+        public string ProviderDescription => "Provider used to verify awaited async disposal.";
+        public int ProviderPriority => 100;
+        public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.Streaming();
+
+        public async ValueTask DisposeAsync()
+        {
+            DisposeStarted.TrySetResult();
+            await Task.Yield();
+            DisposeCompleted.TrySetResult();
+        }
     }
 }

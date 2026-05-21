@@ -2,10 +2,18 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, and delivery leads
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **fund management module implementation backlog** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the fund management module implementation backlog workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active implementation backlog
 
-> **UI lane refresh (2026-05-12):** The browser workstation is the active
+> **UI lane refresh (2026-05-18):** The browser workstation is the active
 > operator UI lane again. Backlog items that touch operator workflow should use
 > shared contracts, local/web API endpoints, or shared read models first, then
 > land browser-visible surfaces in `src/Meridian.Ui/dashboard/`. WPF remains a

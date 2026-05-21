@@ -43,6 +43,9 @@ public static class WpfShellServiceCollectionExtensions
             sp.GetService<Meridian.Strategies.Services.PromotionService>()));
         services.AddTransient<TradingWorkspaceShellPresentationService>();
         services.AddMeridianWpfFeatureModules();
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.GovernanceWorkspaceShellStateProvider));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.GovernanceWorkspaceShellViewModel));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Views.GovernanceWorkspaceShellPage));
 
         foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
         {

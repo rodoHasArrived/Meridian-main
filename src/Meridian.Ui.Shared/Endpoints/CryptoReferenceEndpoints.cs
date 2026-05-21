@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.CryptoCurrency;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.CryptoCurrency;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,9 @@ public static class CryptoReferenceEndpoints
     public static void MapCryptoReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup(string.Empty).WithTags("CryptoReference");
+        group.AddEndpointFilter(EndpointAuthorization.RequireAny(
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster));
 
         group.MapGet(UiApiRoutes.ReferenceDataCryptoReference, async (
             Guid securityId,
@@ -24,6 +28,8 @@ public static class CryptoReferenceEndpoints
         })
         .WithName("GetCryptoReference")
         .Produces<CryptoReferenceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.ReferenceDataCryptoByNetwork, async (
@@ -35,7 +41,9 @@ public static class CryptoReferenceEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetCryptoByNetwork")
-        .Produces<IReadOnlyList<CryptoReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<CryptoReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet(UiApiRoutes.ReferenceDataCryptoByBaseCurrency, async (
             [FromQuery] string baseCurrency,
@@ -46,6 +54,8 @@ public static class CryptoReferenceEndpoints
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetCryptoByBaseCurrency")
-        .Produces<IReadOnlyList<CryptoReferenceDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<CryptoReferenceDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
     }
 }

@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
-public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
+public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStore
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -41,11 +41,53 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        await ValidateJournalBasisAsync(connection, transaction, entry, ct).ConfigureAwait(false);
-        await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
-        await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await AppendAsync(connection, transaction, entry, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    public async Task AppendAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(transaction);
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(entry.Entry);
+
+        if (entry.AggregateId == Guid.Empty)
+        {
+            throw new ArgumentException("Aggregate id is required.", nameof(entry));
+        }
+
+        if (entry.PeriodId == Guid.Empty)
+        {
+            throw new ArgumentException("Period id is required.", nameof(entry));
+        }
+
+        if (!entry.Entry.IsBalanced)
+        {
+            throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
+        }
+
+        var period = await LoadPeriodAsync(
+                connection,
+                transaction,
+                entry.PeriodId,
+                forUpdate: _options.EnablePeriodLocking,
+                ct)
+            .ConfigureAwait(false);
+        if (period is null)
+        {
+            throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
+        }
+
+        LedgerPeriodPostingGuard.Validate(entry, period);
+        await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
+        await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
@@ -408,6 +450,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 rule_version,
                 source_event_id,
                 source_journal_entry_id,
+                posting_kind,
+                adjustment_approval_metadata,
                 occurred_at,
                 description,
                 metadata)
@@ -424,6 +468,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 @rule_version,
                 @source_event_id,
                 @source_journal_entry_id,
+                @posting_kind,
+                cast(@adjustment_approval_metadata as jsonb),
                 @occurred_at,
                 @description,
                 cast(@metadata as jsonb));
@@ -440,6 +486,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         command.Parameters.AddWithValue("rule_version", (object?)NormalizeOptional(entry.RuleVersion) ?? DBNull.Value);
         command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
         command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
+        command.Parameters.AddWithValue("posting_kind", entry.PostingKind.ToString());
+        command.Parameters.AddWithValue("adjustment_approval_metadata", SerializeAdjustmentApproval(entry.AdjustmentApproval));
         command.Parameters.AddWithValue("occurred_at", entry.Entry.Timestamp.UtcDateTime);
         command.Parameters.AddWithValue("description", entry.Entry.Description);
         command.Parameters.AddWithValue("metadata", JsonSerializer.Serialize(entry.Entry.Metadata.Normalize(), JsonOptions));
@@ -450,22 +498,11 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
+        LedgerAccountingPeriod period,
         CancellationToken ct)
     {
         _ = RequireLineageText(entry.AccountingPolicyId, nameof(entry.AccountingPolicyId));
         _ = RequireLineageText(entry.AccountingPolicyVersion, nameof(entry.AccountingPolicyVersion));
-
-        var period = await LoadPeriodAsync(
-                connection,
-                transaction,
-                entry.PeriodId,
-                forUpdate: false,
-                ct)
-            .ConfigureAwait(false);
-        if (period is null)
-        {
-            throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
-        }
 
         if (period.LedgerBookId is not { } ledgerBookId)
         {
@@ -516,6 +553,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                     rule_version,
                     source_event_id,
                     source_journal_entry_id,
+                    posting_kind,
+                    adjustment_approval_metadata,
                     occurred_at,
                     account_name,
                     account_type,
@@ -539,6 +578,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                     @rule_version,
                     @source_event_id,
                     @source_journal_entry_id,
+                    @posting_kind,
+                    cast(@adjustment_approval_metadata as jsonb),
                     @occurred_at,
                     @account_name,
                     @account_type,
@@ -562,6 +603,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
             command.Parameters.AddWithValue("rule_version", (object?)NormalizeOptional(entry.RuleVersion) ?? DBNull.Value);
             command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
             command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
+            command.Parameters.AddWithValue("posting_kind", entry.PostingKind.ToString());
+            command.Parameters.AddWithValue("adjustment_approval_metadata", SerializeAdjustmentApproval(entry.AdjustmentApproval));
             command.Parameters.AddWithValue("occurred_at", leg.Timestamp.UtcDateTime);
             command.Parameters.AddWithValue("account_name", leg.Account.Name);
             command.Parameters.AddWithValue("account_type", leg.Account.AccountType.ToString());
@@ -592,6 +635,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                    je.rule_version,
                    je.source_event_id,
                    je.source_journal_entry_id,
+                   je.posting_kind,
+                   je.adjustment_approval_metadata::text,
                    je.occurred_at,
                    je.description,
                    je.metadata::text,
@@ -643,26 +688,28 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                     RuleVersion: reader.IsDBNull(10) ? null : reader.GetString(10),
                     SourceEventId: reader.IsDBNull(11) ? null : reader.GetGuid(11),
                     SourceJournalEntryId: reader.IsDBNull(12) ? null : reader.GetGuid(12),
-                    Timestamp: ReadUtcDateTimeOffset(reader, 13),
-                    Description: reader.GetString(14),
-                    Metadata: DeserializeMetadata(reader.GetString(15)),
-                    CreatedAt: ReadUtcDateTimeOffset(reader, 16));
+                    PostingKind: Enum.Parse<LedgerPostingKindDto>(reader.GetString(13), ignoreCase: true),
+                    AdjustmentApproval: reader.IsDBNull(14) ? null : DeserializeAdjustmentApproval(reader.GetString(14)),
+                    Timestamp: ReadUtcDateTimeOffset(reader, 15),
+                    Description: reader.GetString(16),
+                    Metadata: DeserializeMetadata(reader.GetString(17)),
+                    CreatedAt: ReadUtcDateTimeOffset(reader, 18));
             }
 
-            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(19), ignoreCase: true);
+            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(21), ignoreCase: true);
             var account = new LedgerAccount(
-                reader.GetString(18),
+                reader.GetString(20),
                 accountType,
-                reader.IsDBNull(20) ? null : reader.GetString(20),
-                reader.IsDBNull(21) ? null : reader.GetString(21));
+                reader.IsDBNull(22) ? null : reader.GetString(22),
+                reader.IsDBNull(23) ? null : reader.GetString(23));
             current.Lines.Add(new LedgerEntry(
-                reader.GetGuid(17),
+                reader.GetGuid(19),
                 journalEntryId,
-                ReadUtcDateTimeOffset(reader, 25),
+                ReadUtcDateTimeOffset(reader, 27),
                 account,
-                reader.GetDecimal(22),
-                reader.GetDecimal(23),
-                reader.GetString(24)));
+                reader.GetDecimal(24),
+                reader.GetDecimal(25),
+                reader.GetString(26)));
         }
 
         if (current is not null)
@@ -952,6 +999,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static object SerializeAdjustmentApproval(LedgerAdjustmentApprovalMetadataDto? approval)
+        => approval is null ? DBNull.Value : JsonSerializer.Serialize(approval, JsonOptions);
+
+    private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)
+        => JsonSerializer.Deserialize<LedgerAdjustmentApprovalMetadataDto>(json, JsonOptions)
+           ?? throw new LedgerValidationException("Stored adjustment approval metadata is invalid.");
+
     private static string RequireLineageText(string value, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -986,6 +1040,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         string? RuleVersion,
         Guid? SourceEventId,
         Guid? SourceJournalEntryId,
+        LedgerPostingKindDto PostingKind,
+        LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval,
         DateTimeOffset Timestamp,
         string Description,
         JournalEntryMetadata Metadata,
@@ -1008,6 +1064,8 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 RuleId,
                 RuleVersion,
                 SourceEventId,
-                SourceJournalEntryId);
+                SourceJournalEntryId,
+                PostingKind,
+                AdjustmentApproval);
     }
 }

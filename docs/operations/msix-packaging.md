@@ -48,6 +48,15 @@ dist\win-x64\msix\    (install script, x64)
 dist\win-arm64\msix\  (install script, ARM64)
 ```
 
+The WPF package uses `src/Meridian.Wpf/Package.appxmanifest` as its explicit package manifest.
+That manifest declares Meridian as a full-trust desktop app and includes a `desktop7:Shortcut`
+contract that creates `Meridian.lnk` on the current user's Desktop when the MSIX is installed.
+The shortcut extension requires Windows 10 build 19645 or newer, so the package manifest sets the
+desktop device-family minimum to `10.0.19645.0`.
+
+After a successful install, the installer summary should point operators to the Start Menu entry,
+the Desktop shortcut, and this guide at `docs/operations/msix-packaging.md`.
+
 ## Installation Options
 
 The install script supports several options for Desktop mode:
@@ -138,6 +147,8 @@ The install script reads the same signing environment variables when packaging.
 ## Notes
 
 - Keep the package identity values in the project file and manifest in sync.
+- Keep the Desktop shortcut target, icon path, and display name in `Package.appxmanifest`; validate
+  changes with `python -m unittest tests/scripts/test_wpf_msix_manifest.py`.
 - AppInstaller generation is optional; omit the URI to skip it.
 - Local desktop packaging defaults to `PublishReadyToRun=false` to reduce disk usage.
 - CI and release packaging should pass `PublishReadyToRun=true` explicitly.

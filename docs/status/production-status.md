@@ -1,10 +1,40 @@
 # Meridian - Production Status
 
-**Version:** 1.7.6
-**Last Updated:** 2026-05-13
-**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview and saved-run history, full-console readiness checkpoint gates, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, and WPF Data shell module deltas are support evidence, not readiness exits
+**Version:** 1.7.8
+**Last Updated:** 2026-05-20
+**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, and WPF Data shell module deltas are support evidence, not readiness exits
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
+Readiness claim wording in this document must follow [`readiness-claim-language-policy.md`](readiness-claim-language-policy.md).
+
+2026-05-19 current-state note: the latest repo evidence adds ledger `posting_kind` guards,
+report-pack validation/lifecycle metadata, evidence-vault manifest lookup, reconciliation case
+storage/audit hardening, account-sync history/readiness DTOs, and an in-flight Security Master
+validation-gate/snapshot slice. These are support evidence for Waves 3-4 and do not change the
+canonical `In Progress` posture for W2-W4.
+
+2026-05-19 operations-continuity note: shared workflow contracts, application services,
+hash-chained audit timeline, optional transactional ledger/audit/workflow commit support, and
+`/api/workstation/operations/continuity*` routes now provide a concrete account-period close-lane
+API. This is support evidence for Wave 4 governance and fund-operations productization; browser
+workflow acceptance, external statement/custodian intake, generalized durable casework, report
+publication controls, and operator-approved calibration remain open.
+
+2026-05-19 browser-workstation note: provider setup and Settings refresh now surface
+provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
+state; Strategy Designer route actions now separate browser-openable GET evidence from
+reference-only POST validation, preview, and run-backtest actions; and Reporting export commands now
+abort superseded profile exports. These improve operator safety and route semantics, but they are
+not cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness exits.
+
+2026-05-20 hardening note: brokerage order placement now fails closed when required validation or
+sign-off artifacts are missing, ledger and promotion endpoints enforce role authorization,
+execution metadata is sanitized before it reaches endpoint/audit payloads, CodeQL/gitleaks
+hardening is present in CI, and the web-workstation installer can archive superseded installs while
+repairing preserved configs that reference missing provider sections. Browser UX hardening now
+surfaces expired-session and forbidden-role API failures explicitly and exposes disabled form
+reasons through accessible field support text. These reduce operational risk, but W2-W4 remain
+`In Progress`.
 
 ---
 
@@ -39,11 +69,12 @@ The current repository reinforces that direction rather than changing it. The br
 
 The current shell evidence also includes Welcome readiness progress for first-run connection/symbol/storage checks, Storage archive posture plus preview scope/guidance for archive-path decisions, OrderBook depth/tape/spread posture, compact shared deep-page command chrome with related-workflow and trust-state context, actionable shell-context attention detail, provider-degradation workflow summaries that route directly to `ProviderHealth`, and Trading hero attention states for warning or critical shared work items. The screenshot-refresh workflow now supports scheduled, push, and manual catalog/manual WPF captures with diagnostic artifacts and a single post-matrix commit job. These are orientation, handoff, and validation-support improvements; production readiness still depends on the wave gates below.
 
-The May 13 browser evidence extends the support surface, but does not change the production
+The May 15 browser evidence extends the support surface, but does not change the production
 posture. The web workstation now has a Today panel for day P&L, movers, open orders, and fills;
 local Price Alerts at `/data/alerts`; a visual Strategy Designer at `/strategy/designer`;
-Covered Call chain preview and saved-run history at `/strategy/covered-call`; Quant Notebook
-cell/data-fetch helpers; selectable Recent Fills detail state; full-console readiness checkpoint
+Covered Call chain preview, saved-run history, and trade-timeline detail state at
+`/strategy/covered-call`; Quant Notebook cell/data-fetch helpers; selectable Recent Fills detail
+state; full-console readiness checkpoint
 gating; and Meridian Design System reference workbench/tokenized-color support. These reduce
 operator dead ends and improve demo/readiness quality, but cockpit acceptance, durable
 reconciliation casework, report-pack lifecycle acceptance, Evidence Vault, report-line provenance,
@@ -61,8 +92,8 @@ and controlled live-readiness remain open.
 | Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; Alpaca now has browser Settings paper-key verification, and Robinhood now has separate read-only aggregation support for normalized account/portfolio/activity sync. Broader runtime proof and controlled live-readiness remain open |
 | Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, reconciliation, and stable route-aware review-packet work-item seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract; current support evidence adds browser search-result selection, identity drill-ins, details/lots tracking, server-side operator overrides, and UFL/reference-data projections for the expanded asset-class set |
-| Governance product surfaces | Partial | Security coverage, Fund Accounts account/routing/balance-evidence posture, browser Accounting reconciliation dense-table selection with keyboard-expanded detail, no-host break-queue fixture coverage, seeded exception-route/tolerance/sign-off metadata, and calibration-summary rollups, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, durable casework, operator-approved calibration, and governed reporting workflows remain incomplete |
-| Web workstation dashboard + retained WPF/local API support surfaces | Partial | The active browser workstation now exposes overview/strategy/trading/portfolio/data/accounting/reporting/settings routes, Research run-library support, gated Quant Lab execution/parameter/template support with testable plot view-model state, Quant Notebook helpers, workflow command-palette commands with hash-aware provider-setup routing, Portfolio brokerage-sync evidence with provider-repair/readiness/cockpit next actions plus selectable position/run-evidence dense tables, Overview portfolio-at-a-glance, richer sidebar/menu/command grouping, menu-linked screenshot routes, Reporting report-pack task state and Evidence Workbench, Settings backend capability/Alpaca connection posture plus provider-setup validation handoffs, Data Security Master print-packet readiness, Data backfill dense-table queue selection with keyboard-expanded detail, browser Accounting reconciliation dense-table rows with keyboard-expanded detail and no-host break-queue fixture coverage, browser Security Master search-result selection, identity drill-ins, details/lots/operator overrides, live quote/order-book/watchlist workflows with view-model-owned no-quote/empty/busy copy, multi-symbol quote snapshots, selectable recent-trade detail inspectors, click-to-trade order-ticket staging, selectable Recent Fills detail state, historical charts, Covered Call chain-preview/saved-run-history support, seeded no-host AAPL market-data fixtures, simplified rail/header context, shared reference-data and evidence packet/graph/validation/manifest-export APIs, and hardened command-palette/mega-menu/Portfolio filter focus behavior; retained WPF surfaces project Trading, Trading Hours, OrderBook posture, Research, Data shell feature-module state, Storage archive posture, Provider Health, System Health, Notification Center, Activity Log, Watchlist pinned-first staging, StrategyRuns, QuantScript, Fund Accounts account and balance-evidence posture, operator queue, and Messaging Hub support surfaces from shared readiness/run/provider/depth/account/calendar/storage/local history/messaging inputs. Shared UI persistence now uses atomic writes for config, export presets, and quality archive snapshots. Workflow hardening, Evidence Vault/report-line provenance, and deeper workflow-first consolidation remain |
+| Governance product surfaces | Partial | Security coverage, Fund Accounts account/routing/balance-evidence posture, browser Accounting reconciliation dense-table selection with keyboard-expanded detail, no-host break-queue fixture coverage, seeded exception-route/tolerance/sign-off metadata, calibration-summary rollups, operations-continuity close-lane APIs, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, browser close acceptance, external statement/custodian intake, durable casework, operator-approved calibration, and governed reporting workflows remain incomplete |
+| Web workstation dashboard + retained WPF/local API support surfaces | Partial | The active browser workstation now exposes overview/strategy/trading/portfolio/data/accounting/reporting/settings routes, Research run-library support, gated Quant Lab execution/parameter/template support with testable plot view-model state, Quant Notebook helpers, workflow command-palette commands with hash-aware provider-setup routing, Portfolio brokerage-sync evidence with provider-repair/readiness/cockpit next actions plus selectable position/run-evidence dense tables, Overview portfolio-at-a-glance, richer sidebar/menu/command grouping, menu-linked screenshot routes, Reporting report-pack task state and Evidence Workbench, Settings backend capability/Alpaca connection posture plus provider-setup validation handoffs, Data Security Master print-packet readiness, Data backfill dense-table queue selection with keyboard-expanded detail, browser Accounting reconciliation dense-table rows with keyboard-expanded detail and no-host break-queue fixture coverage, browser Security Master search-result selection, identity drill-ins, details/lots/operator overrides, live quote/order-book/watchlist workflows with view-model-owned no-quote/empty/busy copy, multi-symbol quote snapshots, selectable recent-trade detail inspectors, click-to-trade order-ticket staging, selectable Recent Fills detail state, historical charts, Covered Call chain-preview, saved-run-history, and trade-timeline support, seeded no-host AAPL market-data fixtures, simplified rail/header context, shared reference-data and evidence packet/graph/validation/manifest-export APIs, and hardened command-palette/mega-menu/Portfolio filter focus behavior; retained WPF surfaces project Trading, Trading Hours, OrderBook posture, Research, Data shell feature-module state, Storage archive posture, Provider Health, System Health, Notification Center, Activity Log, Watchlist pinned-first staging, StrategyRuns, QuantScript, Fund Accounts account and balance-evidence posture, operator queue, and Messaging Hub support surfaces from shared readiness/run/provider/depth/account/calendar/storage/local history/messaging inputs. Shared UI persistence now uses atomic writes for config, export presets, and quality archive snapshots. Workflow hardening, Evidence Vault/report-line provenance, and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
 | Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by regenerated or attached broker-session evidence, and deferred providers stay outside the active closure target |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
@@ -114,6 +145,15 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 
 Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
 
+### Wave 2 operator sign-off sequence (canonical readiness flow)
+
+1. Query `GET /api/workstation/trading/readiness` and `GET /api/workstation/trading` and confirm the embedded readiness projection is identical for `overallStatus`, `acceptanceGates`, and `workItems`.
+2. Verify canonical gate precedence is respected: replay, reconciliation, acceptance controls/promotion/trust/report-pack/session, brokerage-sync.
+3. For each acceptance gate verify explainability fields are populated: `status`, `reason`, `lastEvidenceAt`, and `requiredNextAction`.
+4. Validate account-scoped behavior by rerunning readiness and operator inbox with `fundAccountId=<account-guid>`.
+5. If replay evidence is stale, rerun replay verification and capture the recovered gate/audit reference before final operator acceptance.
+
+
 ### Wave 3: Shared run / portfolio / ledger continuity
 
 - the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
@@ -125,7 +165,7 @@ Operator-readiness language for Wave 2 should stay “in progress” until the f
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 
 - Security Master is a delivered baseline, not an open foundation item
-- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows; the Fund Accounts workbench now projects account-queue, provider-routing, shared-data, retained balance-evidence, and ready-for-reconciliation states from loaded evidence, browser Portfolio now surfaces brokerage household/account posture, browser Reporting now exposes report-pack task state, Security Master now has browser search-result selection, identity drill-ins, details/lots/operator overrides plus UFL/reference-data projection support, and the first reconciliation break-queue slice is file-backed with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary rollups, browser Accounting dense-table selection/empty-state guidance, and no-host break-queue fixture coverage, but operator-approved calibration, external-account acceptance, report-pack lifecycle acceptance, and generalized governance casework remain open
+- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows; the Fund Accounts workbench now projects account-queue, provider-routing, shared-data, retained balance-evidence, and ready-for-reconciliation states from loaded evidence, browser Portfolio now surfaces brokerage household/account posture, browser Reporting now exposes report-pack task state, Security Master now has browser search-result selection, identity drill-ins, details/lots/operator overrides plus UFL/reference-data projection support, the first reconciliation break-queue slice is file-backed with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary rollups, browser Accounting dense-table selection/empty-state guidance, and no-host break-queue fixture coverage, and the operations-continuity close lane now covers broker import/normalization through close/reopen via shared workstation routes, but operator-approved calibration, external-account/custodian acceptance, report-pack lifecycle acceptance, browser close-workflow acceptance, and generalized governance casework remain open
 - the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
 
 

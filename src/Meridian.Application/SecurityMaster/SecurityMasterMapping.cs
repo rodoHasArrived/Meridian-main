@@ -190,7 +190,11 @@ internal static class SecurityMasterMapping
             identifier.IsPrimary,
             identifier.ValidFrom,
             identifier.ValidTo.HasValue ? identifier.ValidTo.Value : null,
-            string.IsNullOrWhiteSpace(identifier.Provider) ? null : identifier.Provider);
+            string.IsNullOrWhiteSpace(identifier.Provider) ? null : identifier.Provider,
+            SecurityIdentifierNormalizer.NormalizeValue(
+                Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
+                identifier.Value),
+            SecurityIdentifierNormalizer.NormalizeProvider(identifier.Provider));
 
     private static CommonTerms ToCommonTerms(JsonElement json)
         => new(

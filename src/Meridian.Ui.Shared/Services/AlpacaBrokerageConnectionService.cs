@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Config;
+using Meridian.Application.Config.Credentials;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Workstation;
 using Microsoft.Extensions.Logging;
 
@@ -12,12 +14,8 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class AlpacaBrokerageConnectionService
 {
     private const string ProviderId = "alpaca";
-    private const string ConnectedAtEnv = "ALPACA_BROKERAGE_CONNECTED_AT";
-    private const string VerifiedAtEnv = "ALPACA_BROKERAGE_VERIFIED_AT";
-    private const string ExternalAccountIdEnv = "ALPACA_BROKERAGE_ACCOUNT_ID";
-    private const string LastErrorEnv = "ALPACA_BROKERAGE_LAST_ERROR";
-    private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
-    private const string LiveBaseUrl = "https://api.alpaca.markets";
+    private const string PaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";
+    private const string LiveTradingApiEndpoint = "https://api.alpaca.markets/v2";
 
     private static readonly IReadOnlyList<string> Scopes =
     [
@@ -27,19 +25,27 @@ public sealed class AlpacaBrokerageConnectionService
 
     private readonly ILogger<AlpacaBrokerageConnectionService> _logger;
     private readonly IHttpClientFactory? _httpClientFactory;
+    private readonly IProviderCredentialStore _credentialStore;
 
     public AlpacaBrokerageConnectionService(
         ILogger<AlpacaBrokerageConnectionService> logger,
-        IHttpClientFactory? httpClientFactory = null)
+        IHttpClientFactory? httpClientFactory = null,
+        IProviderCredentialStore? credentialStore = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
+        _credentialStore = credentialStore ?? new FileProviderCredentialStore(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "data"));
     }
 
-    public Task<BrokerageConnectionStatusDto> GetStatusAsync(CancellationToken ct = default)
+    public async Task<BrokerageConnectionStatusDto> GetStatusAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(BuildStatus(lastError: ReadCredential(LastErrorEnv)));
+        var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
+        return BuildStatus(status);
     }
 
     public async Task<BrokerageConnectionStatusDto> ConnectAsync(
@@ -55,59 +61,65 @@ public sealed class AlpacaBrokerageConnectionService
 
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
         {
+            var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
             return BuildStatus(
-                lastError: "Alpaca API key id and secret key are required.",
+                status,
+                lastErrorOverride: "Alpaca API key id and secret key are required.",
                 environmentOverride: environment);
         }
 
-        SetCredential(AlpacaCredentialEnvironment.KeyIdName, keyId);
-        SetCredential(AlpacaCredentialEnvironment.SecretKeyName, secretKey);
-        SetCredential(AlpacaCredentialEnvironment.TradingEnvironmentName, environment);
-        ClearCredential(ExternalAccountIdEnv);
-        ClearCredential(VerifiedAtEnv);
+        await _credentialStore.SaveAsync(
+            new ProviderCredentialSaveRequest(
+                ProviderId,
+                new Dictionary<string, string?>
+                {
+                    ["KeyId"] = keyId,
+                    ["SecretKey"] = secretKey
+                },
+                Environment: environment,
+                Actor: "browser-workstation"),
+            ct).ConfigureAwait(false);
 
         try
         {
             var account = await VerifyAccountAsync(keyId, secretKey, environment, ct).ConfigureAwait(false);
             var verifiedAt = DateTimeOffset.UtcNow;
-            SetCredential(ConnectedAtEnv, verifiedAt.ToString("O"));
-            SetCredential(VerifiedAtEnv, verifiedAt.ToString("O"));
-            SetCredential(ExternalAccountIdEnv, account.AccountId);
-            ClearCredential(LastErrorEnv);
+            await _credentialStore.RecordVerificationAsync(
+                new ProviderCredentialVerificationUpdate(
+                    ProviderId,
+                    Success: true,
+                    ExternalAccountId: account.AccountId,
+                    VerifiedAt: verifiedAt,
+                    Actor: "browser-workstation"),
+                ct).ConfigureAwait(false);
 
-            return BuildStatus(lastError: null, environmentOverride: environment);
+            var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
+            return BuildStatus(status, environmentOverride: environment);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             var message = $"Alpaca /v2/account verification failed: {ex.Message}";
             _logger.LogWarning(ex, "Alpaca API-key verification failed for {Environment} environment", environment);
-            SetCredential(LastErrorEnv, message);
-            return BuildStatus(lastError: message, environmentOverride: environment);
+            await _credentialStore.RecordVerificationAsync(
+                new ProviderCredentialVerificationUpdate(
+                    ProviderId,
+                    Success: false,
+                    ErrorMessage: message,
+                    VerifiedAt: DateTimeOffset.UtcNow,
+                    Actor: "browser-workstation"),
+                ct).ConfigureAwait(false);
+
+            var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
+            return BuildStatus(status, environmentOverride: environment);
         }
     }
 
-    public Task<BrokerageConnectionStatusDto> RevokeAsync(CancellationToken ct = default)
+    public async Task<BrokerageConnectionStatusDto> RevokeAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        ClearCredential(AlpacaCredentialEnvironment.KeyIdName);
-        ClearCredential(AlpacaCredentialEnvironment.SecretKeyName);
-        ClearCredential(AlpacaCredentialEnvironment.TradingEnvironmentName);
-        ClearCredential(ConnectedAtEnv);
-        ClearCredential(VerifiedAtEnv);
-        ClearCredential(ExternalAccountIdEnv);
-        ClearCredential(LastErrorEnv);
-
-        foreach (var alias in AlpacaCredentialEnvironment.KeyIdAliases)
-        {
-            ClearCredential(alias);
-        }
-
-        foreach (var alias in AlpacaCredentialEnvironment.SecretKeyAliases)
-        {
-            ClearCredential(alias);
-        }
-
-        return Task.FromResult(BuildStatus(lastError: null));
+        await _credentialStore.DeleteAsync(ProviderId, actor: "browser-workstation", ct).ConfigureAwait(false);
+        var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
+        return BuildStatus(status);
     }
 
     private async Task<AlpacaAccountVerification> VerifyAccountAsync(
@@ -117,7 +129,7 @@ public sealed class AlpacaBrokerageConnectionService
         CancellationToken ct)
     {
         using var client = _httpClientFactory?.CreateClient(nameof(AlpacaBrokerageConnectionService)) ?? new HttpClient();
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl(environment)}/v2/account");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{TradingApiEndpoint(environment)}/account");
         request.Headers.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         request.Headers.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
@@ -134,18 +146,21 @@ public sealed class AlpacaBrokerageConnectionService
     }
 
     private BrokerageConnectionStatusDto BuildStatus(
-        string? lastError,
+        ProviderCredentialStoreStatus credentialStatus,
+        string? lastErrorOverride = null,
         string? environmentOverride = null)
     {
-        var credentials = AlpacaCredentialEnvironment.Resolve();
-        var environment = AlpacaCredentialEnvironment.NormalizeTradingEnvironment(environmentOverride ?? credentials.Environment);
-        var connectedAt = ParseDate(ConnectedAtEnv);
-        var verifiedAt = ParseDate(VerifiedAtEnv);
-        var externalAccountId = ReadCredential(ExternalAccountIdEnv);
+        var lastError = lastErrorOverride ?? credentialStatus.LastError;
+        var environment = AlpacaCredentialEnvironment.NormalizeTradingEnvironment(
+            environmentOverride ?? credentialStatus.Environment);
         var warnings = new List<string>();
         var state = BrokerageConnectionStateDto.NotConfigured;
+        var isConfigured = credentialStatus.CredentialState is
+            ProviderCredentialStateDto.Configured
+            or ProviderCredentialStateDto.Verified
+            or ProviderCredentialStateDto.Invalid;
 
-        if (!credentials.HasCredentials)
+        if (!isConfigured)
         {
             warnings.Add("Enter Alpaca paper Trading API keys to verify /v2/account before account discovery or sync.");
         }
@@ -154,7 +169,7 @@ public sealed class AlpacaBrokerageConnectionService
             state = BrokerageConnectionStateDto.Degraded;
             warnings.Add(lastError);
         }
-        else if (verifiedAt.HasValue)
+        else if (credentialStatus.VerificationState == ProviderVerificationStateDto.Verified)
         {
             state = BrokerageConnectionStateDto.Connected;
         }
@@ -175,58 +190,24 @@ public sealed class AlpacaBrokerageConnectionService
                 ? "Alpaca live"
                 : "Alpaca paper",
             State: state,
-            IsConfigured: credentials.HasCredentials,
+            IsConfigured: isConfigured,
             IsConnected: state == BrokerageConnectionStateDto.Connected,
             AuthorizationUrl: null,
-            ConnectedAt: connectedAt,
+            ConnectedAt: credentialStatus.LastSuccessfulAt ?? credentialStatus.SavedAt,
             ExpiresAt: null,
             LastError: lastError,
             Warnings: warnings,
             Scopes: Scopes,
             Environment: environment,
-            ExternalAccountId: string.IsNullOrWhiteSpace(externalAccountId) ? null : externalAccountId,
-            VerifiedAt: verifiedAt,
-            MaskedKeyId: AlpacaCredentialEnvironment.MaskKeyId(credentials.KeyId));
+            ExternalAccountId: string.IsNullOrWhiteSpace(credentialStatus.ExternalAccountId) ? null : credentialStatus.ExternalAccountId,
+            VerifiedAt: credentialStatus.LastSuccessfulAt,
+            MaskedKeyId: credentialStatus.MaskedKeyPreview);
     }
 
-    private static string BaseUrl(string environment)
+    private static string TradingApiEndpoint(string environment)
         => string.Equals(environment, AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
-            ? LiveBaseUrl
-            : PaperBaseUrl;
-
-    private static DateTimeOffset? ParseDate(string name)
-        => DateTimeOffset.TryParse(ReadCredential(name), out var parsed) ? parsed : null;
-
-    private static string? ReadCredential(string name)
-        => AlpacaCredentialEnvironment.ReadEnvironmentValue(name);
-
-    private static void SetCredential(string name, string value)
-    {
-        Environment.SetEnvironmentVariable(name, value);
-        TrySetUserEnvironment(name, value);
-    }
-
-    private static void ClearCredential(string name)
-    {
-        Environment.SetEnvironmentVariable(name, null);
-        TrySetUserEnvironment(name, null);
-    }
-
-    private static void TrySetUserEnvironment(string name, string? value)
-    {
-        try
-        {
-            Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
-        }
-        catch (Exception ex) when (
-            ex is PlatformNotSupportedException
-            || ex is System.Security.SecurityException
-            || ex is UnauthorizedAccessException
-            || ex is System.IO.IOException)
-        {
-            // Process-level storage is sufficient when durable user-profile storage is unavailable.
-        }
-    }
+            ? LiveTradingApiEndpoint
+            : PaperTradingApiEndpoint;
 
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();

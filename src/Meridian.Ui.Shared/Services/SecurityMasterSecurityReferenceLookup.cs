@@ -74,7 +74,7 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
                     .ConfigureAwait(false);
 
                 normalizedIdentifierKind = kind.ToString();
-                normalizedIdentifierValue = identifierValue;
+                normalizedIdentifierValue = SecurityIdentifierNormalizer.NormalizeValue(kind, identifierValue);
                 lookupPath = request.Venue is null ? "identifier" : "identifier+venue";
             }
         }
@@ -133,14 +133,20 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
         string? requestedSymbol,
         string? requestedIdentifier)
         => (!string.IsNullOrWhiteSpace(requestedSymbol)
-            && string.Equals(identifier.Value, requestedSymbol, StringComparison.OrdinalIgnoreCase))
+            && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(
+                SecurityIdentifierNormalizer.NormalizeValue(SecurityIdentifierKind.Ticker, requestedSymbol),
+                StringComparison.Ordinal))
            || (!string.IsNullOrWhiteSpace(requestedIdentifier)
-               && string.Equals(identifier.Value, requestedIdentifier, StringComparison.OrdinalIgnoreCase));
+               && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(
+                   SecurityIdentifierNormalizer.NormalizeValue(identifier.Kind, requestedIdentifier),
+                   StringComparison.Ordinal));
 
     private static bool MatchesVenue(SecurityIdentifierDto identifier, string? requestedVenue)
         => string.IsNullOrWhiteSpace(requestedVenue)
            || string.IsNullOrWhiteSpace(identifier.Provider)
-           || string.Equals(identifier.Provider, requestedVenue, StringComparison.OrdinalIgnoreCase);
+           || SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier).Equals(
+               SecurityIdentifierNormalizer.NormalizeProvider(requestedVenue),
+               StringComparison.Ordinal);
 
     /// <summary>
     /// Attempts to read a string property from a <see cref="System.Text.Json.JsonElement"/>

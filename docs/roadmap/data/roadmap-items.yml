@@ -1,0 +1,37 @@
+version: 1
+schema:
+  roadmap_item: docs/roadmap/schemas/roadmap-item.v1.schema.json
+  evidence_record: docs/roadmap/schemas/evidence-record.v1.schema.json
+
+contract:
+  statuses:
+    - planned
+    - in_progress
+    - ready_for_acceptance
+    - accepted
+    - done
+
+  transition_evidence_requirements:
+    ready_for_acceptance:
+      minimum_evidence_records: 1
+      require_reviewer_metadata: true
+      allowed_review_statuses:
+        - in_review
+        - approved
+    accepted:
+      minimum_evidence_records: 2
+      require_reviewer_metadata: true
+      allowed_review_statuses:
+        - approved
+      required_evidence_types:
+        - validation
+    done:
+      minimum_evidence_records: 2
+      require_reviewer_metadata: true
+      allowed_review_statuses:
+        - approved
+      required_evidence_types:
+        - validation
+        - release_note
+
+items: []

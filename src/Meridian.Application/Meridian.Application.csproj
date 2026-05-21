@@ -45,6 +45,8 @@
 
     <!-- Validation -->
     <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>
 
   <ItemGroup>

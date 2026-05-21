@@ -381,7 +381,9 @@ function New-OperatorSignoffTemplate {
     )
 
     $template = [ordered]@{
+        schemaVersion = "provider-validation-evidence-signoff/v1"
         generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+        runId = "dk1-operator-signoff-$dateStamp"
         purpose = "DK1 operator sign-off for the Alpaca/Robinhood/Yahoo pilot parity packet."
         requiredOwners = $RequiredOwners
         instructions = @(

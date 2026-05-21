@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { appendTrigger, loadPriceAlertState, savePriceAlertState, updateAlert, type StorageLike } from "./storage";
 import { PRICE_ALERT_MAX_TRIGGER_HISTORY, PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState, type PriceAlertTrigger } from "./types";
 
@@ -49,6 +49,7 @@ describe("price alerts storage", () => {
 
   afterEach(() => {
     storage = new MemoryStorage();
+    vi.unstubAllGlobals();
   });
 
   it("returns empty state when storage has no entry", () => {
@@ -61,7 +62,7 @@ describe("price alerts storage", () => {
   it("round-trips state through save/load", () => {
     storage = new MemoryStorage();
     const state: PriceAlertStorageState = { version: 1, alerts: [alertSample], triggers: [triggerSample] };
-    savePriceAlertState(state, storage);
+    expect(savePriceAlertState(state, storage)).toBe("saved");
     const round = loadPriceAlertState(storage);
     expect(round.alerts).toHaveLength(1);
     expect(round.alerts[0]?.symbol).toBe("AAPL");
@@ -133,6 +134,11 @@ describe("price alerts storage", () => {
       },
       removeItem: () => undefined
     };
-    expect(() => savePriceAlertState({ version: 1, alerts: [alertSample], triggers: [] }, failing)).not.toThrow();
+    expect(savePriceAlertState({ version: 1, alerts: [alertSample], triggers: [] }, failing)).toBe("failed");
+  });
+
+  it("reports unavailable storage when no storage target exists", () => {
+    vi.stubGlobal("window", undefined);
+    expect(savePriceAlertState({ version: 1, alerts: [alertSample], triggers: [] }, null)).toBe("unavailable");
   });
 });

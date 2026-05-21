@@ -22,6 +22,7 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.md`
+- Evidence schema contract: [`provider-validation-evidence-schema.md`](./provider-validation-evidence-schema.md)
 
 ### Provider-specific evidence links
 
@@ -39,6 +40,10 @@ into `wave1-validation-summary.json` and `wave1-validation-summary.md`. The same
 [`scripts/dev/generate-dk1-pilot-parity-packet.ps1`](../../scripts/dev/generate-dk1-pilot-parity-packet.ps1)
 to assemble the DK1 operator-review packet from the generated summary, trust rationale mapping,
 baseline thresholds, and evidence documents.
+
+Readiness and operator-inbox trust decisions should be mapped from the summary fields
+`schemaVersion`, `calibration.kernelVersion`, `testRunIds`, and
+`readinessImpact.promotionRecommendation` before promotion claims are advanced.
 
 The generated `pilotReplaySampleSet` is the review contract for DK1 pilot parity:
 

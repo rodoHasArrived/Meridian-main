@@ -2,7 +2,15 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **fund management product vision and capability matrix** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the fund management product vision and capability matrix workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
 > Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a
@@ -18,10 +26,23 @@
 > investment operations**. Read this matrix through the trusted data -> research -> paper ->
 > books -> reconciliation -> governed report path rather than as a generic front-to-back suite.
 >
-> UI lane refresh (2026-05-12): the visible operator shell is now the
+> UI lane refresh (2026-05-18): the visible operator shell is now the
 > browser-first seven-workspace model. WPF shell evidence remains valuable
 > retained desktop support, but it should not define new feature acceptance
 > unless a roadmap item explicitly targets desktop compatibility.
+>
+> Browser safety refresh (2026-05-19): Data provider setup and Settings refresh now expose
+> provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
+> posture; Strategy Designer separates browser-openable GET backend actions from reference-only POST
+> validation/preview/backtest mutations; and Reporting exports abort superseded profile runs. These
+> are support evidence for the browser-first operating model, not completion of report-pack,
+> Backtest Studio, casework, or live-readiness gates.
+>
+> Operations continuity refresh (2026-05-19): shared account-period close workflow contracts,
+> services, audit timeline, optional transactional commit support, and workstation endpoints now
+> seed the Close the Books path. This moves close orchestration from planned-only to in progress,
+> while browser/operator acceptance, external statement intake, durable casework depth, report
+> publication, and calibration sign-off remain open.
 
 ## 1. Product Vision
 
@@ -92,7 +113,7 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus retained WPF compatibility shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains retained support with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
+| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus retained WPF compatibility shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs and provider-routing refresh posture, Strategy Designer route-action safety for GET versus POST backend actions, abort-backed Reporting export state, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains retained support with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
 | Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger/cash-flow flow exists; StrategyRuns now shows visible-versus-recorded run scope and recovers filters that hide retained runs; BatchBacktest now distinguishes idle, validation-blocked, running, failed, cancelled, and populated sweep-result states; RunCashFlow now explains selected-run, missing-run, no-event, and loaded retained cash-flow evidence states |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
@@ -104,6 +125,7 @@ Status legend:
 | Trial balance and account-summary analysis | Back office | In progress | Phase 3 | Fund Operations workspace and report-pack services expose trial-balance slices; broader account-summary UX remains open |
 | Cash-flow modeling and liquidity views | Middle office / Back office | In progress | Phase 3 | Cash-flow projection and governance cash-flow query seams exist; richer liquidity operator workflows remain open |
 | Reconciliation engine and break queues | Middle office / Back office | In progress | Phase 4 | Run-scoped reconciliation, a file-backed break queue, calibration-summary rollups, and browser Accounting dense-table detail-queue selection, keyboard-expanded detail, no-host break-queue fixture coverage, and empty-state projection exist with seeded exception-route, tolerance, and sign-off metadata; position, cash, custodian, external-statement matching, and operator-approved calibration remain |
+| Operations continuity and close workflow | Back office | In progress | Phase 4 | Shared operations-continuity DTOs, service, hash-chained audit timeline, optional transactional ledger/audit/workflow commit support, and `/api/workstation/operations/continuity*` routes now cover broker import/normalization, Security Master resolution and override approval, ledger draft/validate/post, reconciliation, approval, close, and governed reopen; browser close UX, external statement/custodian intake, SLA/casework depth, and close package publication remain open |
 | NAV, attribution, and governance exception workflows | Middle office / Back office | In progress | Phase 4 | Shared portfolio, ledger, reconciliation, and governance exception seams exist; generalized durable casework remains open |
 | Investor, board, compliance, and fund-ops reporting | Back office | In progress | Phase 5 | Governed report-pack schema/version checks, manifest/provenance artifacts, history, and retrieval are present; publication controls and richer templates remain open |
 | Compliance and policy monitoring | Middle office / Back office | Future | Phase 5 | Rule evaluation, mandate monitoring, attestations |
@@ -214,6 +236,7 @@ The current repository already supports parts of the target vision:
 - Security Master has contracts, services, storage, migrations, F# domain anchors, WPF drill-ins, conflict handling, corporate actions, trading parameters, and shared coverage/provenance propagation
 - fund-structure, account/entity, ledger-group, cash-flow, and governed report-pack seams are in code, with focused tests around fund structure, report-pack schema/version behavior, and Fund Operations projections
 - reconciliation now includes a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary profile rollups, browser Accounting dense-table detail-queue selection, keyboard-expanded detail, no-host break-queue fixture coverage, and empty-detail projection, while broader external-account/custodian matching and operator-approved calibrated casework remain open
+- operations-continuity workflow services and workstation routes now provide the first account-period close-lane backbone, while browser/operator close acceptance, external statement/custodian intake, and publication controls remain open
 - export infrastructure already supports JSONL, Parquet, Arrow, XLSX, and CSV
 
 The main gap is operator-readiness and workflow cohesion, not a total absence of technical foundation.
@@ -254,12 +277,14 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 ### Wave A: close Wave 2 cockpit acceptance evidence
 
+0. Complete **Synthetic enablement baseline** before provider Wave A completion claims: deterministic fixtures, replay utilities, and fault-injection hooks used by the acceptance harness.
 1. Keep DK1 provider-trust parity, explainability, calibration, and operator sign-off visible in the trading readiness lane.
 2. Prove paper-session create, restore, replay, audit/control, and promotion-review continuity through repo-backed operator scenarios.
 3. Keep WPF Trading, Trading Hours, OrderBook, Research, Data Operations, Provider Health, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first staging, and StrategyRuns recovery surfaces as consumers of shared readiness/calendar/depth/run/provider/diagnostics/history/log/symbol-state contracts, not separate acceptance models.
 
 **Exit criteria**
 
+- Deterministic harness readiness is complete and documented (fixtures + replay utilities + fault-injection hooks), and harness parity checks pass for the provider set targeted by Wave A.
 - `Backtest -> Paper` can be exercised as one auditable operator path.
 - Replay, signed DK1 trust posture, promotion checklist state, and operator work items are visible from the shared readiness contract and initial operator-inbox endpoint, with route-aware account-scoped WPF shell queue-button routing for the primary work item.
 - The WPF shell supports the workflow without introducing shell-local readiness semantics.
@@ -278,6 +303,7 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 ### Wave C: productize governance and fund operations
 
+0. Finish **Synthetic template modernization** (post-baseline) so template evolution does not block Wave A provider completion.
 1. Extend the delivered file-backed reconciliation break queue and calibration-summary rollups into calibrated, durable casework.
 2. Turn governed report packs from generated artifacts into reviewed, approved, and publishable outputs with provenance.
 3. Connect account/entity, cash-flow, multi-ledger, reconciliation, and reporting views through the shared Fund Operations projection path, keeping Fund Accounts on shared account/provider-route/balance-history/shared-data evidence.
@@ -292,5 +318,6 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 - Keep **contract-first sequencing**: merge shared DTO/read-model slices before dependent UI surfaces.
 - Treat **WPF + shared endpoint parity** as a release gate for each wave.
+- Treat **harness parity checks** as a hard gate before broad provider-wave rollout beyond Wave A pilot scope.
 - Maintain **evidence and auditability** by preserving replay/export/diagnostics support in every phase.
 - Run a **monthly roadmap reconciliation** between this matrix, the implementation backlog, the DK readiness dashboard, and the PR-sequenced roadmap to avoid phase drift.

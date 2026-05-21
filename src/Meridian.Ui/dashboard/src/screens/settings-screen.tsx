@@ -1,8 +1,10 @@
-import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, ShieldCheck, Trash2, User } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
@@ -10,6 +12,8 @@ import {
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel,
   useSettingsRecentEventsSelectionViewModel,
+  type SettingsAlpacaCredentialFieldState,
+  type SettingsProfileAuthenticationStep,
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
@@ -18,6 +22,10 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -35,7 +43,13 @@ interface SettingsScreenProps {
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
   onRefresh?: () => Promise<void> | void;
+  onProviderRoutingRefresh?: () => Promise<void> | void;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
@@ -95,6 +109,45 @@ const environmentOptionClass = {
   }
 } as const;
 
+function AlpacaCredentialField({
+  field,
+  value,
+  onValueChange,
+  leadingIcon
+}: {
+  field: SettingsAlpacaCredentialFieldState;
+  value: string;
+  onValueChange: (value: string) => void;
+  leadingIcon: ReactNode;
+}) {
+  const disabledReasonId = `${field.id}-disabled-reason`;
+  return (
+    <label htmlFor={field.id} className="grid gap-1 text-xs font-medium text-muted-foreground">
+      {field.label}
+      <Input
+        id={field.id}
+        type={field.type}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+        autoComplete={field.autoComplete}
+        placeholder={field.placeholder}
+        leadingIcon={leadingIcon}
+        disabled={field.disabled}
+        error={field.error}
+        aria-describedby={joinDescribedByIds(field.describedBy, field.disabledReason ? disabledReasonId : undefined)}
+      />
+      <FieldSupportText
+        helpId={field.helpId}
+        helpText={field.helpText}
+        helpClassName={cn("text-[11px] leading-4", field.error ? "text-danger" : "text-muted-foreground")}
+        disabledReason={field.disabledReason}
+        disabledReasonId={field.disabledReason ? disabledReasonId : undefined}
+        disabledReasonClassName="text-[11px] leading-4"
+      />
+    </label>
+  );
+}
+
 const setupStepToneClass = {
   success: "border-success/30 bg-success/10",
   warning: "border-warning/35 bg-warning/10",
@@ -138,7 +191,13 @@ export function SettingsScreen({
   governance = null,
   reporting = null,
   brokerageConnection = null,
+  providerConnections = null,
+  providerRoutingConnections = null,
+  providerRoutingBindings = null,
+  providerRoutingTrustSnapshots = null,
+  providerRoutingRefreshing = false,
   onRefresh,
+  onProviderRoutingRefresh,
   loading = false,
   error = null,
   workspaceErrors = {}
@@ -153,6 +212,11 @@ export function SettingsScreen({
     governance,
     reporting,
     brokerageConnection,
+    providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    providerRoutingRefreshing,
     loading,
     error,
     workspaceErrors
@@ -188,41 +252,96 @@ export function SettingsScreen({
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
+        <Card
+          id="profile-authentication"
+          role="region"
+          aria-label={vm.profileAuthenticationPanel.regionLabel}
+          className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.profileAuthenticationPanel.statusTone])}
+        >
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="eyebrow-label">Settings lane</div>
+                <div className="eyebrow-label">Profile and authentication</div>
                 <CardTitle className="mt-2 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
-                  {vm.sessionTitle}
+                  {vm.profileAuthenticationPanel.title}
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  Active operator session context and environment routing for the current workstation shell.
-                </CardDescription>
+                <CardDescription className="mt-2">{vm.profileAuthenticationPanel.summary}</CardDescription>
               </div>
-              <Badge variant={sessionVariant(session?.environment)}>
-                {session ? session.environment : "Unavailable"}
+              <Badge
+                variant={vm.profileAuthenticationPanel.badgeVariant}
+                dot={vm.profileAuthenticationPanel.statusTone === "success"}
+              >
+                {vm.profileAuthenticationPanel.statusLabel}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              <SettingsChip label="Commands" value={session ? String(session.commandCount) : "—"} />
-              <SettingsChip label="Role" value={session?.role ?? "—"} />
-              <SettingsChip label="Workspace" value={session?.activeWorkspace ?? "—"} />
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)]">
+              <div className="rounded-md border border-border/70 bg-background/35 px-4 py-4">
+                <div className="flex items-start gap-3">
+                  <div
+                    aria-hidden="true"
+                    className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-primary/35 bg-primary/12 font-mono text-sm font-semibold text-primary"
+                  >
+                    {vm.profileAuthenticationPanel.avatarInitials}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="break-words text-sm font-semibold text-foreground">
+                      {vm.profileAuthenticationPanel.operatorName}
+                    </div>
+                    <div className="mt-1 break-words text-xs text-muted-foreground">
+                      {vm.profileAuthenticationPanel.roleLabel}
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <SettingsChip label="Mode" value={vm.profileAuthenticationPanel.environmentLabel} />
+                      <SettingsChip label="Workspace" value={vm.profileAuthenticationPanel.workspaceLabel} />
+                    </div>
+                  </div>
+                </div>
+                <dl className="mt-4 grid gap-2">
+                  <SettingsFieldRow label="Command trail" value={vm.profileAuthenticationPanel.commandCountLabel} tone="muted" />
+                  <SettingsFieldRow
+                    label="Authority"
+                    value={vm.profileAuthenticationPanel.authorityLabel}
+                    tone={vm.profileAuthenticationPanel.statusTone === "danger" ? "danger" : vm.profileAuthenticationPanel.statusTone === "warning" ? "warning" : "default"}
+                  />
+                </dl>
+                <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                  {vm.profileAuthenticationPanel.authorityDetail}
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <dl className="grid gap-2 sm:grid-cols-2" aria-label="Profile authentication facts">
+                  {vm.profileAuthenticationPanel.facts.map((fact) => (
+                    <SettingsFieldRow key={fact.id} label={fact.label} value={fact.value} tone={fact.tone} />
+                  ))}
+                </dl>
+                {vm.profileAuthenticationPanel.notice ? (
+                  <div
+                    role={vm.profileAuthenticationPanel.notice.role}
+                    className={cn("rounded-md border px-3 py-3", diagnosticToneClass[vm.profileAuthenticationPanel.notice.tone])}
+                  >
+                    <div className="text-sm font-semibold text-foreground">
+                      {vm.profileAuthenticationPanel.notice.title}
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {vm.profileAuthenticationPanel.notice.detail}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             </div>
-            {vm.hasSession ? (
-              <dl className="grid gap-2">
-                {vm.sessionItems.map((item) => (
-                  <SettingsFieldRow key={item.label} label={item.label} value={item.value} tone={item.tone} />
-                ))}
-              </dl>
-            ) : (
-              <p className="rounded-md border border-border/70 bg-secondary/25 px-4 py-4 text-center text-sm text-muted-foreground">
-                Session data is unavailable. Reconnect to the Meridian API.
-              </p>
-            )}
+
+            <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
+              <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+                {vm.profileAuthenticationPanel.stepsTitle}
+              </h3>
+              {vm.profileAuthenticationPanel.steps.map((step) => (
+                <ProfileAuthenticationStepRow key={step.id} step={step} />
+              ))}
+            </div>
           </CardContent>
         </Card>
 
@@ -264,6 +383,105 @@ export function SettingsScreen({
         </Card>
       </section>
 
+      <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Provider management</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <MonitorCheck className="h-4 w-4 text-primary" />
+                {vm.providerConnectionCenter.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.providerConnectionCenter.description}</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {onProviderRoutingRefresh ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void onProviderRoutingRefresh()}
+                  disabled={vm.providerConnectionCenter.refreshAction.disabled}
+                  disabledReason={vm.providerConnectionCenter.refreshAction.disabledReason}
+                  aria-label={vm.providerConnectionCenter.refreshAction.ariaLabel}
+                >
+                  <RefreshCcw
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      vm.providerConnectionCenter.refreshAction.busy && "animate-spin"
+                    )}
+                    aria-hidden="true"
+                  />
+                  {vm.providerConnectionCenter.refreshAction.label}
+                </Button>
+              ) : null}
+              <Badge
+                variant={vm.providerConnectionCenter.statusVariant}
+                dot={vm.providerConnectionCenter.statusVariant === "success"}
+              >
+                {vm.providerConnectionCenter.statusLabel}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 xl:grid-cols-2">
+          {vm.providerConnectionCenter.groups.map((group) => (
+            <section key={group.id} className="grid gap-3" aria-label={group.label}>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">{group.label}</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{group.summary}</p>
+              </div>
+              {group.rows.length > 0 ? (
+                <div className="grid gap-2">
+                  {group.rows.map((row) => (
+                    <article
+                      key={`${group.id}-${row.providerId}`}
+                      id={row.rowAnchorId === "alpaca-provider-setup" ? undefined : row.rowAnchorId}
+                      className="rounded-md border border-border/70 bg-background/35 px-3 py-3"
+                    >
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
+                            <Badge variant="outline">{row.capabilityLabel}</Badge>
+                            <Badge variant={toneVariant(row.healthTone)} dot={row.healthTone === "success"}>
+                              {row.healthLabel}
+                            </Badge>
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.recommendedAction}</p>
+                        </div>
+                        <Button asChild variant="outline" size="sm" className="shrink-0">
+                          <Link to={row.actionHref} aria-label={row.actionAriaLabel}>
+                            {row.actionLabel}
+                            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Link>
+                        </Button>
+                      </div>
+                      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <SettingsFieldRow label="Credential" value={row.credentialLabel} tone={row.credentialTone} />
+                        <SettingsFieldRow label="Verification" value={row.verificationLabel} tone={row.credentialTone} />
+                        <SettingsFieldRow label="Source" value={row.sourceLabel} tone="muted" />
+                        <SettingsFieldRow label="Environment" value={row.environmentLabel} tone="muted" />
+                        <SettingsFieldRow label="Masked key" value={row.maskedKeyPreviewLabel} tone="muted" />
+                        <SettingsFieldRow label="Last good heartbeat" value={row.lastHeartbeatLabel} tone="muted" />
+                        <SettingsFieldRow label="Failover" value={row.fallbackLabel} tone={row.fallbackLabel === "Fallback active" ? "warning" : "muted"} />
+                        <SettingsFieldRow label="Routing bindings" value={row.routingBindingsLabel} tone="muted" />
+                        <SettingsFieldRow label="Trust score" value={row.trustScoreLabel} tone={row.healthTone} />
+                        <SettingsFieldRow label="Production gate" value={row.productionStateLabel} tone={row.productionStateLabel === "Production ready" ? "success" : "warning"} />
+                        <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                  {group.emptyLabel}
+                </p>
+              )}
+            </section>
+          ))}
+        </CardContent>
+      </Card>
+
       <Card
         id="alpaca-provider-setup"
         className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}
@@ -286,41 +504,18 @@ export function SettingsScreen({
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
           <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate aria-describedby={alpacaForm.formPanelId}>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem]">
-              <label htmlFor="alpaca-key-id" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Key ID
-                <Input
-                  id="alpaca-key-id"
-                  value={alpacaForm.keyId}
-                  onChange={(event) => alpacaForm.setKeyId(event.target.value)}
-                  autoComplete="off"
-                  placeholder="ALPACA_KEY_ID"
-                  leadingIcon={<KeyRound className="h-4 w-4" />}
-                  disabled={!alpacaForm.canEdit}
-                  error={alpacaForm.keyIdError}
-                  aria-describedby={`${alpacaForm.fieldHelpIds.keyId} ${alpacaForm.formPanelId}`}
-                />
-                <span id={alpacaForm.fieldHelpIds.keyId} className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
-                  {alpacaForm.keyIdHelpText}
-                </span>
-              </label>
-              <label htmlFor="alpaca-secret-key" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Secret key
-                <Input
-                  id="alpaca-secret-key"
-                  type="password"
-                  value={alpacaForm.secretKey}
-                  onChange={(event) => alpacaForm.setSecretKey(event.target.value)}
-                  autoComplete="off"
-                  placeholder="ALPACA_SECRET_KEY"
-                  leadingIcon={<ShieldCheck className="h-4 w-4" />}
-                  disabled={!alpacaForm.canEdit}
-                  error={alpacaForm.secretKeyError}
-                  aria-describedby={`${alpacaForm.fieldHelpIds.secretKey} ${alpacaForm.formPanelId}`}
-                />
-                <span id={alpacaForm.fieldHelpIds.secretKey} className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
-                  {alpacaForm.secretKeyHelpText}
-                </span>
-              </label>
+              <AlpacaCredentialField
+                field={alpacaForm.keyIdField}
+                value={alpacaForm.keyId}
+                onValueChange={alpacaForm.setKeyId}
+                leadingIcon={<KeyRound className="h-4 w-4" />}
+              />
+              <AlpacaCredentialField
+                field={alpacaForm.secretKeyField}
+                value={alpacaForm.secretKey}
+                onValueChange={alpacaForm.setSecretKey}
+                leadingIcon={<ShieldCheck className="h-4 w-4" />}
+              />
               <fieldset className="grid gap-1 text-xs font-medium text-muted-foreground">
                 <legend>{alpacaForm.environmentLegend}</legend>
                 <div
@@ -332,6 +527,7 @@ export function SettingsScreen({
                   {alpacaForm.environmentOptions.map((option) => (
                     <label
                       key={option.id}
+                      htmlFor={option.id}
                       className={cn(
                         "relative grid min-h-[4.75rem] cursor-pointer gap-1 rounded-md border px-3 py-2 transition-colors",
                         option.isSelected ? environmentOptionClass[option.tone].selected : environmentOptionClass[option.tone].idle,
@@ -339,6 +535,7 @@ export function SettingsScreen({
                       )}
                     >
                       <input
+                        id={option.id}
                         type="radio"
                         name="alpaca-environment"
                         value={option.value}
@@ -346,7 +543,12 @@ export function SettingsScreen({
                         disabled={option.disabled}
                         onChange={() => alpacaForm.setEnvironment(option.value)}
                         aria-label={option.ariaLabel}
-                        aria-describedby={`${option.descriptionId} ${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
+                        aria-describedby={joinDescribedByIds(
+                          option.descriptionId,
+                          alpacaForm.fieldHelpIds.environment,
+                          option.disabledReasonId,
+                          alpacaForm.formPanelId
+                        )}
                         className="peer sr-only"
                       />
                       <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" aria-hidden="true" />
@@ -359,12 +561,20 @@ export function SettingsScreen({
                       <span id={option.descriptionId} className="text-[11px] font-normal leading-4 text-muted-foreground">
                         {option.description}
                       </span>
+                      <span className="break-all font-mono text-[10px] font-normal leading-4 text-muted-foreground">
+                        {option.endpointLabel}
+                      </span>
                     </label>
                   ))}
                 </div>
-                <span id={alpacaForm.fieldHelpIds.environment} className="text-[11px] leading-4 text-muted-foreground">
-                  {alpacaForm.environmentHelpText}
-                </span>
+                <FieldSupportText
+                  helpId={alpacaForm.fieldHelpIds.environment}
+                  helpText={alpacaForm.environmentHelpText}
+                  helpClassName="text-[11px] leading-4"
+                  disabledReason={alpacaForm.environmentOptions[0]?.disabledReason}
+                  disabledReasonId={alpacaForm.environmentOptions[0]?.disabledReasonId ?? undefined}
+                  disabledReasonClassName="text-[11px] leading-4"
+                />
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
@@ -383,7 +593,11 @@ export function SettingsScreen({
                   required={alpacaForm.liveAcknowledgement.required}
                   onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
-                  aria-describedby={`${alpacaForm.liveAcknowledgement.descriptionId} ${alpacaForm.formPanelId}`}
+                  aria-describedby={joinDescribedByIds(
+                    alpacaForm.liveAcknowledgement.descriptionId,
+                    alpacaForm.liveAcknowledgement.disabledReasonId,
+                    alpacaForm.formPanelId
+                  )}
                   className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
                 />
                 <span className="min-w-0">
@@ -391,6 +605,11 @@ export function SettingsScreen({
                   <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
                     {alpacaForm.liveAcknowledgement.detail}
                   </span>
+                  <FieldSupportText
+                    disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
+                    disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
+                    disabledReasonClassName="mt-1 block"
+                  />
                 </span>
               </label>
             ) : null}
@@ -446,7 +665,16 @@ export function SettingsScreen({
                 {alpacaForm.clearLabel}
               </Button>
               {alpacaForm.actionMessage ? (
-                <span role={alpacaForm.statusRole} className={alpacaForm.statusClassName}>{alpacaForm.actionMessage}</span>
+                <div aria-live={alpacaForm.statusRole === "alert" ? "assertive" : "polite"} className={alpacaForm.statusClassName}>
+                  <div>{alpacaForm.actionMessage}</div>
+                  {alpacaForm.statusDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {alpacaForm.statusDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           </form>
@@ -510,7 +738,7 @@ export function SettingsScreen({
       </Card>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
+        <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -733,6 +961,30 @@ function EndpointReference({
   );
 }
 
+function ProfileAuthenticationStepRow({ step }: { step: SettingsProfileAuthenticationStep }) {
+  return (
+    <div role="listitem" className={cn("rounded-md border px-3 py-2", setupStepToneClass[step.tone])}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-foreground">{step.label}</div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+        </div>
+        <Badge variant={step.badgeVariant} className="shrink-0">
+          {step.statusLabel}
+        </Badge>
+      </div>
+      {step.actionHref && step.actionLabel ? (
+        <Button asChild variant="outline" size="sm" className="mt-3">
+          <Link to={step.actionHref} aria-label={step.actionAriaLabel ?? step.actionLabel}>
+            {step.actionLabel}
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 function RecentEventDetailPanel({
   id,
   title,
@@ -832,6 +1084,13 @@ function systemVariant(tone: keyof typeof systemToneClass): "outline" | "success
   return "outline";
 }
 
+function toneVariant(tone: keyof typeof itemToneClass): "outline" | "success" | "warning" | "danger" {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "outline";
+}
+
 function capabilityTone(tone: "success" | "warning" | "danger" | "outline"): keyof typeof diagnosticToneClass {
   if (tone === "success") return "success";
   if (tone === "warning") return "warning";
@@ -839,9 +1098,3 @@ function capabilityTone(tone: "success" | "warning" | "danger" | "outline"): key
   return "default";
 }
 
-function sessionVariant(environment: SessionInfo["environment"] | undefined): "outline" | "paper" | "live" | "research" {
-  if (environment === "paper") return "paper";
-  if (environment === "live") return "live";
-  if (environment === "research") return "research";
-  return "outline";
-}

@@ -16,6 +16,14 @@ This folder contains historical and superseded Meridian documentation that has b
 - Status docs: [`../../docs/status/README.md`](../../docs/status/README.md)
 - Current changelog: [`../../docs/status/CHANGELOG.md`](../../docs/status/CHANGELOG.md)
 
+## Archived Summaries
+
+- [`summaries/WAVE2_IMPLEMENTATION_SUMMARY.md`](summaries/WAVE2_IMPLEMENTATION_SUMMARY.md) - Historical Wave 2 acceptance test implementation snapshot from 2026-05-08.
+
+## Archived Assessments
+
+- [`assessments/duplicate-deprecated-implementation-audit-2026-05-17.md`](assessments/duplicate-deprecated-implementation-audit-2026-05-17.md) - Duplicate/deprecated implementation audit and archive dispositions from 2026-05-17.
+
 ## Notes
 
 - Active documentation belongs under `docs/`.

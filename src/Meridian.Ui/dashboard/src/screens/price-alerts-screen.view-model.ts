@@ -3,6 +3,7 @@ import type { PriceAlertsApi } from "@/lib/price-alerts/service";
 import { PRICE_ALERTS_POLL_INTERVAL_MS } from "@/lib/price-alerts/service";
 import { describeCondition } from "@/lib/price-alerts/evaluator";
 import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts/types";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot } from "@/types";
 
 export interface PriceAlertFormState {
@@ -28,6 +29,7 @@ export interface PriceAlertFormValidation {
 }
 
 export type PriceAlertFormFieldKey = "symbol" | "threshold";
+export type PriceAlertStaticFormFieldKey = "condition" | "field" | "note";
 
 export interface PriceAlertFormFieldViewModel {
   id: string;
@@ -41,9 +43,23 @@ export interface PriceAlertFormFieldViewModel {
   errorMessageId: string | undefined;
 }
 
+export interface PriceAlertStaticFormFieldViewModel {
+  id: string;
+  label: string;
+  helperId: string;
+  helperText: string;
+  describedBy: string;
+  ariaLabel?: string;
+  placeholder?: string;
+  maxLength?: number;
+}
+
 export interface PriceAlertFormFieldsViewModel {
   symbol: PriceAlertFormFieldViewModel;
+  condition: PriceAlertStaticFormFieldViewModel;
+  field: PriceAlertStaticFormFieldViewModel;
   threshold: PriceAlertFormFieldViewModel;
+  note: PriceAlertStaticFormFieldViewModel;
 }
 
 export type PriceAlertFormValidationVisibility = Record<PriceAlertFormFieldKey, boolean>;
@@ -61,14 +77,10 @@ export interface PriceAlertsScreenViewModel {
   submitFeedback: PriceAlertSubmitFeedback | null;
   conditionOptions: PriceAlertConditionOption[];
   fieldOptions: PriceAlertFieldOption[];
-  conditionHelpId: string;
-  conditionHelpText: string;
-  fieldHelpId: string;
-  fieldHelpText: string;
-  fieldSelectAriaLabel: string;
   summaryMetrics: MetricSnapshot[];
   heroDescription: string;
   pollErrorPanel: PriceAlertStatusPanel | null;
+  storageWarningPanel: PriceAlertStatusPanel | null;
   notificationPanel: PriceAlertNotificationPanel | null;
   triggerSection: PriceAlertTriggerSectionViewModel;
   alertSection: PriceAlertListSectionViewModel;
@@ -159,12 +171,19 @@ export interface PriceAlertListSectionViewModel {
   tableLabel: string;
   caption: string;
   emptyText: string;
+  emptyAction: PriceAlertEmptyAction | null;
   hasRows: boolean;
   detailPanelId: string;
   selectedRowId: string | null;
   selectedDetail: PriceAlertRowDetailViewModel | null;
   detailEmptyState: PriceAlertDetailEmptyState;
   rows: PriceAlertRowViewModel[];
+}
+
+export interface PriceAlertEmptyAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface PriceAlertToolbarAction {
@@ -301,14 +320,20 @@ export function usePriceAlertsScreenViewModel({
       validationVisible: {
         symbol: validationRequested || touchedFields.symbol,
         threshold: validationRequested || touchedFields.threshold
-      }
+      },
+      condition: form.condition,
+      field: form.field
     }),
-    [touchedFields.symbol, touchedFields.threshold, validation, validationRequested]
+    [form.condition, form.field, touchedFields.symbol, touchedFields.threshold, validation, validationRequested]
   );
   const submitAction = useMemo(() => buildPriceAlertSubmitAction(validation), [validation]);
   const sortedAlerts = useMemo(() => sortPriceAlerts(alerts.state.alerts), [alerts.state.alerts]);
   const summaryMetrics = useMemo(() => buildPriceAlertMetrics(alerts), [alerts.enabledCount, alerts.lastPollAt, alerts.unacknowledgedCount]);
   const pollErrorPanel = useMemo(() => buildPollErrorPanel(alerts.pollErrorMessage), [alerts.pollErrorMessage]);
+  const storageWarningPanel = useMemo(
+    () => buildStorageWarningPanel(alerts.persistenceErrorMessage),
+    [alerts.persistenceErrorMessage]
+  );
   const notificationPanel = useMemo(
     () => buildNotificationPanel(alerts.notificationPermission),
     [alerts.notificationPermission]
@@ -388,14 +413,10 @@ export function usePriceAlertsScreenViewModel({
     submitFeedback,
     conditionOptions: PRICE_ALERT_CONDITION_OPTIONS,
     fieldOptions: PRICE_ALERT_FIELD_OPTIONS,
-    conditionHelpId: PRICE_ALERT_CONDITION_HELP_ID,
-    conditionHelpText: buildPriceAlertConditionHelpText(form.condition),
-    fieldHelpId: PRICE_ALERT_FIELD_HELP_ID,
-    fieldHelpText: buildPriceAlertFieldHelpText(form.field),
-    fieldSelectAriaLabel: "Price field",
     summaryMetrics,
     heroDescription: `Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every ${Math.round(PRICE_ALERTS_POLL_INTERVAL_MS / 1000)}s while this tab is open.`,
     pollErrorPanel,
+    storageWarningPanel,
     notificationPanel,
     triggerSection,
     alertSection,
@@ -459,10 +480,14 @@ export function validatePriceAlertForm(form: PriceAlertFormState): PriceAlertFor
 
 export function buildPriceAlertFormFields({
   validation,
-  validationVisible
+  validationVisible,
+  condition = DEFAULT_PRICE_ALERT_FORM.condition,
+  field = DEFAULT_PRICE_ALERT_FORM.field
 }: {
   validation: PriceAlertFormValidation;
   validationVisible: PriceAlertFormValidationVisibility;
+  condition?: PriceAlertCondition;
+  field?: PriceAlertField;
 }): PriceAlertFormFieldsViewModel {
   return {
     symbol: buildPriceAlertFormField(
@@ -470,11 +495,20 @@ export function buildPriceAlertFormFields({
       validation.symbolError,
       validationVisible.symbol
     ),
+    condition: buildPriceAlertStaticFormField({
+      ...PRICE_ALERT_STATIC_FIELD_CONFIG.condition,
+      helperText: buildPriceAlertConditionHelpText(condition)
+    }),
+    field: buildPriceAlertStaticFormField({
+      ...PRICE_ALERT_STATIC_FIELD_CONFIG.field,
+      helperText: buildPriceAlertFieldHelpText(field)
+    }),
     threshold: buildPriceAlertFormField(
       PRICE_ALERT_FIELD_CONFIG.threshold,
       validation.thresholdError,
       validationVisible.threshold
-    )
+    ),
+    note: buildPriceAlertStaticFormField(PRICE_ALERT_STATIC_FIELD_CONFIG.note)
   };
 }
 
@@ -519,8 +553,6 @@ export const PRICE_ALERT_FIELD_OPTIONS: PriceAlertFieldOption[] = [
   { value: "mid", label: "Mid", helper: "Field: bid-ask midpoint." }
 ];
 
-const PRICE_ALERT_CONDITION_HELP_ID = "price-alert-condition-help";
-const PRICE_ALERT_FIELD_HELP_ID = "price-alert-field-help";
 const PRICE_ALERT_FIELD_CONFIG: Record<PriceAlertFormFieldKey, {
   id: string;
   label: string;
@@ -541,6 +573,38 @@ const PRICE_ALERT_FIELD_CONFIG: Record<PriceAlertFormFieldKey, {
     helperId: "price-alert-threshold-help",
     helperText: "Enter a positive price threshold. Commas and decimals are allowed.",
     errorId: "price-alert-threshold-error"
+  }
+};
+
+const PRICE_ALERT_STATIC_FIELD_CONFIG: Record<PriceAlertStaticFormFieldKey, {
+  id: string;
+  label: string;
+  helperId: string;
+  helperText: string;
+  ariaLabel?: string;
+  placeholder?: string;
+  maxLength?: number;
+}> = {
+  condition: {
+    id: "price-alert-condition",
+    label: "Condition",
+    helperId: "price-alert-condition-help",
+    helperText: "Fires whenever price is at or above the threshold."
+  },
+  field: {
+    id: "price-alert-field",
+    label: "Price field",
+    helperId: "price-alert-field-help",
+    helperText: "Field: last trade price.",
+    ariaLabel: "Price field"
+  },
+  note: {
+    id: "price-alert-note",
+    label: "Note (optional)",
+    helperId: "price-alert-note-help",
+    helperText: "Optional operator context, up to 120 characters.",
+    placeholder: "e.g. Watch for earnings call",
+    maxLength: 120
   }
 };
 
@@ -567,6 +631,29 @@ function buildPriceAlertFormField(
     invalid: visibleError !== null,
     describedBy: visibleError ? `${config.helperId} ${config.errorId}` : config.helperId,
     errorMessageId: visibleError ? config.errorId : undefined
+  };
+}
+
+function buildPriceAlertStaticFormField(
+  config: {
+    id: string;
+    label: string;
+    helperId: string;
+    helperText: string;
+    ariaLabel?: string;
+    placeholder?: string;
+    maxLength?: number;
+  }
+): PriceAlertStaticFormFieldViewModel {
+  return {
+    id: config.id,
+    label: config.label,
+    helperId: config.helperId,
+    helperText: config.helperText,
+    describedBy: config.helperId,
+    ...(config.ariaLabel ? { ariaLabel: config.ariaLabel } : {}),
+    ...(config.placeholder ? { placeholder: config.placeholder } : {}),
+    ...(config.maxLength !== undefined ? { maxLength: config.maxLength } : {})
   };
 }
 
@@ -636,7 +723,7 @@ export function buildPriceAlertSubmitFeedback(draft: PriceAlertDraft): PriceAler
     ariaLabel: `Price alert created for ${draft.symbol}`,
     action: {
       label: "Open live quotes",
-      href: `/data/quotes?symbol=${encodeURIComponent(draft.symbol)}`,
+      href: workstationRouteWithQuery("dataQuotes", { symbol: draft.symbol }),
       ariaLabel: `Open live quotes for ${draft.symbol} after creating price alert`
     }
   };
@@ -679,6 +766,20 @@ function buildPollErrorPanel(error: string | null): PriceAlertStatusPanel | null
     ariaLive: "assertive",
     className: "mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger",
     text: `Quote refresh failed: ${error}`
+  };
+}
+
+function buildStorageWarningPanel(error: string | null): PriceAlertStatusPanel | null {
+  if (!error) {
+    return null;
+  }
+
+  return {
+    id: "price-alert-storage-warning",
+    role: "status",
+    ariaLive: "polite",
+    className: "mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning",
+    text: error
   };
 }
 
@@ -782,7 +883,7 @@ function buildTriggerRow(trigger: PriceAlertTrigger, selectedTriggerId: string |
     statusVariant: trigger.acknowledged ? "outline" : "warning",
     rowAriaLabel: `${trigger.symbol} triggered alert. ${conditionLabel}. Fired at ${priceLabel} on ${triggeredAtLabel}. ${trigger.acknowledged ? "Acknowledged." : "Needs acknowledgement."}`,
     rowSelectAriaLabel: `Inspect triggered alert ${trigger.symbol}`,
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: trigger.symbol }),
     quoteAriaLabel: `Open live quotes for ${trigger.symbol}`,
     acknowledgeAction: trigger.acknowledged
       ? null
@@ -811,6 +912,13 @@ export function buildPriceAlertListSection(
     tableLabel: "Configured price alerts",
     caption: "Configured price alerts with current state, condition, last observed price, and row actions.",
     emptyText: "Add your first alert above. You can also click Set price alert from any symbol on the Live quotes screen.",
+    emptyAction: count === 0
+      ? {
+        label: "Open live quotes",
+        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
+        ariaLabel: "Open live quotes to choose a symbol for a price alert"
+      }
+      : null,
     hasRows: rows.length > 0,
     detailPanelId: PRICE_ALERT_LIST_DETAIL_PANEL_ID,
     selectedRowId: selectedAlert?.id ?? null,
@@ -850,7 +958,7 @@ function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null, pendin
     rowClassName: alert.enabled && !isSnoozed ? "border-border/70 bg-background/50" : "border-border/50 bg-secondary/25",
     rowAriaLabel: `${alert.symbol} price alert. ${statusLabel}. ${conditionLabel}. ${lastObservedLabel}.${deleteConfirmationPending ? " Delete confirmation pending." : ""}`,
     rowSelectAriaLabel: `Inspect configured alert ${alert.symbol}`,
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: alert.symbol }),
     quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
     primaryAction: buildPrimaryAlertAction(alert, isSnoozed),
     pauseAction: {
@@ -896,7 +1004,7 @@ function buildTriggerDetail(trigger: PriceAlertTrigger): PriceAlertRowDetailView
       { id: "note", label: "Operator note", value: trigger.note ?? "No operator note", tone: trigger.note ? "default" : "muted" },
       { id: "alert-id", label: "Alert ID", value: trigger.alertId, tone: "muted" }
     ],
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: trigger.symbol }),
     quoteAriaLabel: `Open live quotes for ${trigger.symbol}`,
     action: trigger.acknowledged
       ? null
@@ -938,7 +1046,7 @@ function buildAlertDetail(alert: PriceAlert): PriceAlertRowDetailViewModel {
       { id: "snoozed-until", label: "Snoozed until", value: isSnoozed ? formatPriceAlertTimestamp(alert.snoozedUntil) : "—", tone: isSnoozed ? "warning" : "muted" },
       { id: "note", label: "Operator note", value: alert.note ?? "No operator note", tone: alert.note ? "default" : "muted" }
     ],
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: alert.symbol }),
     quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
     action: {
       ...primaryAction,

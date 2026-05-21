@@ -1,4 +1,4 @@
-import { workspacePath } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type { SessionInfo, SystemOverviewResponse, WorkspaceKey, WorkspaceSummary } from "@/types";
 
 interface PlaceholderActionDefinition {
@@ -95,19 +95,19 @@ const placeholderGuidance: Partial<
         id: "trading-readiness",
         label: "Review trading readiness",
         detail: "Check active sessions, orders, fills, replay evidence, and promotion blockers.",
-        route: "/trading"
+        route: WORKSTATION_ROUTE_CATALOG.trading
       },
       {
         id: "accounting-ledger",
         label: "Review ledger continuity",
         detail: "Inspect reconciliation, cash-flow, and Security Master evidence tied to positions.",
-        route: "/accounting"
+        route: WORKSTATION_ROUTE_CATALOG.accounting
       },
       {
         id: "strategy-runs",
         label: "Inspect strategy runs",
         detail: "Compare run output before accepting portfolio attribution as operator-ready.",
-        route: "/strategy"
+        route: WORKSTATION_ROUTE_CATALOG.strategy
       }
     ]
   },
@@ -140,19 +140,19 @@ const placeholderGuidance: Partial<
         id: "data-providers",
         label: "Review provider setup",
         detail: "Check provider health, backfills, and symbol readiness before changing integrations.",
-        route: "/data"
+        route: WORKSTATION_ROUTE_CATALOG.data
       },
       {
         id: "trading-session",
         label: "Check session readiness",
         detail: "Confirm the active paper/live operating posture before adjusting workstation setup.",
-        route: "/trading"
+        route: WORKSTATION_ROUTE_CATALOG.trading
       },
       {
         id: "accounting-controls",
         label: "Review control evidence",
         detail: "Check trust-gate and reconciliation posture before treating setup as complete.",
-        route: "/accounting"
+        route: WORKSTATION_ROUTE_CATALOG.accounting
       }
     ]
   }
@@ -163,13 +163,13 @@ const fallbackActions: PlaceholderActionDefinition[] = [
     id: "trading-readiness",
     label: "Review trading readiness",
     detail: "Use the trading cockpit as the primary operator readiness surface.",
-    route: "/trading"
+    route: WORKSTATION_ROUTE_CATALOG.trading
   },
   {
     id: "strategy-runs",
     label: "Review strategy runs",
     detail: "Use the strategy surface for current run and promotion evidence.",
-    route: "/strategy"
+    route: WORKSTATION_ROUTE_CATALOG.strategy
   }
 ];
 

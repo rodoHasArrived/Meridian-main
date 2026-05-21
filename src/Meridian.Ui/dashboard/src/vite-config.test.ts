@@ -18,6 +18,8 @@ import {
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
+  STRATEGY_ENGINE_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   executionAuditEndpoint,
   executionSessionEndpoint,
@@ -295,6 +297,73 @@ describe("Vite Meridian API proxy", () => {
         expect.objectContaining({ name: "includeFees", typeName: "bool" })
       ]
     });
+  });
+
+  it("serves Strategy Designer evidence fixtures for no-host browser previews", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const templatesResponse = new FakeResponse();
+    const fieldCatalogResponse = new FakeResponse();
+    const draftsResponse = new FakeResponse();
+    const draftResponse = new FakeResponse();
+    const runBacktestResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: STRATEGY_DESIGNER_API_ENDPOINTS.templates, headers: { accept: "application/json" } } as IncomingMessage,
+      templatesResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog, headers: { accept: "application/json" } } as IncomingMessage,
+      fieldCatalogResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: STRATEGY_DESIGNER_API_ENDPOINTS.drafts, headers: { accept: "application/json" } } as IncomingMessage,
+      draftsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: `${STRATEGY_DESIGNER_API_ENDPOINTS.drafts}/strategy-designer-fixture-1`, headers: { accept: "application/json" } } as IncomingMessage,
+      draftResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    const mutationResult = await bypass(
+      { method: "POST", url: STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest, headers: { accept: "application/json" } } as IncomingMessage,
+      runBacktestResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(templatesResponse.statusCode).toBe(200);
+    expect(templatesResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(templatesResponse.body)).toEqual([
+      expect.objectContaining({
+        templateId: "quality-momentum-rotation",
+        document: expect.objectContaining({ documentId: "strategy-designer-fixture-1" })
+      })
+    ]);
+    expect(fieldCatalogResponse.statusCode).toBe(200);
+    expect(JSON.parse(fieldCatalogResponse.body)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fieldId: "MOMENTUM_63D", isEnabled: true }),
+      expect.objectContaining({ fieldId: "AMX_PRIVATE_SCORE", disabledReason: "No Meridian canonical source" })
+    ]));
+    expect(draftsResponse.statusCode).toBe(200);
+    expect(JSON.parse(draftsResponse.body)).toEqual([
+      expect.objectContaining({ documentId: "strategy-designer-fixture-1", validationSummary: "Fixture draft passes no-host validation." })
+    ]);
+    expect(draftResponse.statusCode).toBe(200);
+    expect(JSON.parse(draftResponse.body)).toMatchObject({
+      documentId: "strategy-designer-fixture-1",
+      cells: expect.arrayContaining([expect.objectContaining({ cellId: "momentum-score" })])
+    });
+    expect(mutationResult).toBeUndefined();
+    expect(runBacktestResponse.writableEnded).toBe(false);
+  });
+
+  it("exposes Strategy Engine endpoints through the typed catalog", () => {
+    expect(STRATEGY_ENGINE_API_ENDPOINTS.definitions).toBe("/api/workstation/strategy/engine/definitions");
+    expect(STRATEGY_ENGINE_API_ENDPOINTS.validateRun).toBe("/api/workstation/strategy/engine/validate-run");
   });
 
   it("serves Covered Call preview fixtures for no-host strategy demos without opening run mutations", async () => {

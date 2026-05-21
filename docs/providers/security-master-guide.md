@@ -1,6 +1,6 @@
 # Security Master Guide
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-05-19
 **Owner:** Core Team
 **Scope:** Engineering / Operations / Product
 **Review Cadence:** When asset class coverage or API changes
@@ -9,7 +9,7 @@
 
 ## Overview
 
-Security Master is the event-sourced golden record for all financial instruments (securities) in the Meridian platform. It provides a centralized, version-controlled, audit-trailed definition of securities across 14 asset classes, supporting trading execution, backtesting, and portfolio reconciliation.
+Security Master is the event-sourced golden record for all financial instruments (securities) in the Meridian platform. It provides a centralized, version-controlled, audit-trailed definition of securities across the supported public, cash, derivative, and private/security fallback asset classes, supporting trading execution, backtesting, ledger workflows, reconciliation, and report-pack evidence.
 
 **Key capabilities:**
 
@@ -19,6 +19,8 @@ Security Master is the event-sourced golden record for all financial instruments
 - **Version-based concurrency** — Optimistic locking prevents concurrent amendment conflicts
 - **Corporate actions** — Immutable record of dividends, splits, mergers, and other adjustments
 - **Trading parameters** — Lot size, tick size, and trading status for order routing and fill models
+- **Structured validation** — Read-only validation reports surface severity, issue code, affected fields, suggested action, and evidence links before downstream workflows rely on a record
+- **Trust snapshot projections** — Workstation trust snapshots now bundle validation posture, identifier/provider-mapping coverage, and schema-compatibility context beside the selected security
 - **Full-text search** — Query by display name, issuer, or identifier with filtering by asset class and status
 
 ---
@@ -64,7 +66,7 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'security_
 
 ## Asset Class Coverage
 
-Security Master supports 14 asset classes:
+Security Master currently supports these asset classes:
 
 | Asset Class | Description | Key Terms |
 |-------------|-------------|-----------|
@@ -81,6 +83,10 @@ Security Master supports 14 asset classes:
 | **Repo** | Repurchase agreements | Counterparty, start/end dates, repo rate, collateral type |
 | **Swap** | Interest rate and other swaps | Legs (fixed/floating), maturity, currency |
 | **DirectLoan** | Direct lending / syndicated loans | Borrower, maturity, covenants |
+| **Commodity** | Commodity spot or reference instruments | Commodity type, denomination, contract size |
+| **CryptoCurrency** | Crypto currency pairs | Base currency, quote currency, network |
+| **Cfd** | Contracts for difference | Underlying asset class, leverage |
+| **Warrant** | Listed or private warrants | Underlying ID, warrant type, strike, expiry |
 | **CashSweep** | Cash sweep programs | Program name, sweep vehicle, sweep frequency, target account type |
 | **OtherSecurity** | Fallback for unmapped instruments | Category, sub-type, maturity, issuer |
 
@@ -102,11 +108,28 @@ GET /api/security-master/{securityId}
 ```
 Returns full economic definition. Returns 404 if not found.
 
+### Validate Security
+```
+GET /api/security-master/{securityId}/validation
+```
+Returns a `SecurityValidationReportDto` without mutating the record. The report includes:
+
+- `severity`: `Info`, `Warning`, `Error`, or `Critical`
+- `code`: stable issue code such as `SM_DUPLICATE_CANONICAL_IDENTIFIER`
+- `title` and `message`: operator-readable issue description
+- `affectedFields`: fields such as `identifiers.Isin` or `assetSpecificTerms.strike`
+- `suggestedAction`: the next remediation step
+- `evidenceLinks`: related Security Master records or evidence packet targets when available
+
+Validation currently checks common record shape, effective-date windows, identifier presence and primary-identifier rules, duplicate canonical identifiers, provider-symbol conflicts, provenance freshness, pricing-source metadata, accounting-classification metadata, and registry-backed asset-class term rules.
+
 ### Resolve by Identifier
 ```
 POST /api/security-master/resolve
 ```
 Resolves by ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, or custom identifier.
+The request can also carry `asOfUtc` so effective-dated identifiers resolve against a historical or
+forward-looking point in time instead of always using the current clock.
 
 ### Search Securities
 ```
@@ -143,6 +166,16 @@ Adds or updates an external identifier (provider symbol mapping).
 GET /api/security-master/{securityId}/trading-parameters
 ```
 Returns lot size, tick size, and trading status for order routing and fill models.
+
+### Get Workstation Trust Snapshot
+```
+GET /api/workstation/security-master/securities/{securityId}/trust-snapshot
+```
+Returns the selected-security workstation projection used by retained desktop governance workflows. In addition to trust posture, history, and downstream impact, the snapshot now includes:
+
+- `validationReport` — read-only blocking/advisory Security Master validation issues
+- `identifierSummary` — active identifiers, aliases, and provider-mapping coverage
+- `schemaCompatibility` — legacy asset-specific schema version plus normalized economic-terms schema version
 
 ### Get Corporate Actions
 ```
@@ -190,6 +223,12 @@ When enabled:
 - Historical bar closes adjusted backward for splits and dividends
 - Position sizes adjusted forward on split ex-dates
 - Corporate action events applied in sequence by ex-date
+
+## Validation Integration
+
+`SecurityValidationService` is the reusable backend seam for modules that need Security Master trust checks without invoking a create/amend/deactivate workflow. It uses `AssetClassValidatorRegistry` so asset-class-specific rules remain modular. Downstream services should consume the validation report before accepting Security Master data for strategy-run inputs, lots and positions, ledger classification, reconciliation breaks, valuation/report-pack evidence, or governed approvals.
+
+Blocking issues are `Error` or `Critical`; `Warning` issues identify stale, incomplete, or governance-sensitive metadata that may require operator review before a workflow is promoted.
 
 ---
 

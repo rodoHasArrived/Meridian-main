@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
+using Microsoft.Extensions.Logging;
 using Meridian.Wpf.Copy;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -24,6 +25,7 @@ public sealed class WelcomePageViewModel : BindableBase
     private readonly WpfServices.StatusService _statusService;
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.ConfigService _configService;
+    private readonly ILogger<WelcomePageViewModel> _logger;
 
     private string _connectionStatusText = "Disconnected";
     public string ConnectionStatusText { get => _connectionStatusText; private set => SetProperty(ref _connectionStatusText, value); }
@@ -39,6 +41,9 @@ public sealed class WelcomePageViewModel : BindableBase
 
     private string _storagePathText = "./data";
     public string StoragePathText { get => _storagePathText; private set => SetProperty(ref _storagePathText, value); }
+
+    private string _dataHealthIndicatorText = "Data confidence normal";
+    public string DataHealthIndicatorText { get => _dataHealthIndicatorText; private set => SetProperty(ref _dataHealthIndicatorText, value); }
 
     public IReadOnlyList<WelcomeWorkspaceCard> WorkspaceCards { get; }
     private IReadOnlyList<WelcomeReadinessItem> _readinessItems = Array.Empty<WelcomeReadinessItem>();
@@ -75,13 +80,15 @@ public sealed class WelcomePageViewModel : BindableBase
         WpfServices.NotificationService notificationService,
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
-        WpfServices.ConfigService configService)
+        WpfServices.ConfigService configService,
+        ILogger<WelcomePageViewModel> logger)
     {
         _navigationService = navigationService;
         _notificationService = notificationService;
         _statusService = statusService;
         _connectionService = connectionService;
         _configService = configService;
+        _logger = logger;
 
         WorkspaceCards = CreateWorkspaceCards();
 
@@ -114,6 +121,7 @@ public sealed class WelcomePageViewModel : BindableBase
         var symbolCount = 0;
         var storagePath = "./data";
         var configuredDataRoot = "data";
+        var fallbackWarnings = new List<string>();
 
         if (isConnected)
         {
@@ -124,9 +132,11 @@ public sealed class WelcomePageViewModel : BindableBase
                     ? providerInfo.ActiveProvider
                     : "Provider connected";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 providerText = "Provider connected";
+                fallbackWarnings.Add("provider-status-unavailable");
+                _logger.LogWarning(ex, "Welcome overview using provider fallback. FallbackPath: {FallbackPath}; IsConnected: {IsConnected}", "provider-status", isConnected);
             }
         }
 
@@ -135,9 +145,11 @@ public sealed class WelcomePageViewModel : BindableBase
             var symbols = await _configService.GetSymbolsAsync();
             symbolCount = symbols?.Length ?? 0;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             symbolCount = 0;
+            fallbackWarnings.Add("symbol-inventory-unavailable");
+            _logger.LogWarning(ex, "Welcome overview using symbol fallback. FallbackPath: {FallbackPath}", "symbol-inventory");
         }
 
         try
@@ -148,13 +160,15 @@ public sealed class WelcomePageViewModel : BindableBase
                 : config.DataRoot;
             storagePath = _configService.ResolveDataRoot(config);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             storagePath = "./data";
             configuredDataRoot = "data";
+            fallbackWarnings.Add("storage-path-unavailable");
+            _logger.LogWarning(ex, "Welcome overview using storage fallback. FallbackPath: {FallbackPath}", "storage-path");
         }
 
-        ApplyOverviewSnapshot(isConnected, providerText, symbolCount, storagePath, configuredDataRoot);
+        ApplyOverviewSnapshot(isConnected, providerText, symbolCount, storagePath, configuredDataRoot, fallbackWarnings);
     }
 
     internal void ApplyOverviewSnapshotForTests(
@@ -162,9 +176,10 @@ public sealed class WelcomePageViewModel : BindableBase
         string connectionProviderText,
         int symbolCount,
         string storagePath,
-        string configuredDataRoot = "data")
+        string configuredDataRoot = "data",
+        IReadOnlyCollection<string>? fallbackWarnings = null)
     {
-        ApplyOverviewSnapshot(isConnected, connectionProviderText, symbolCount, storagePath, configuredDataRoot);
+        ApplyOverviewSnapshot(isConnected, connectionProviderText, symbolCount, storagePath, configuredDataRoot, fallbackWarnings);
     }
 
     private void ApplyOverviewSnapshot(
@@ -172,7 +187,8 @@ public sealed class WelcomePageViewModel : BindableBase
         string connectionProviderText,
         int symbolCount,
         string storagePath,
-        string configuredDataRoot)
+        string configuredDataRoot,
+        IReadOnlyCollection<string>? fallbackWarnings = null)
     {
         var successBrush = GetResource("SuccessColorBrush", Brushes.LimeGreen);
         var mutedBrush = GetResource("ConsoleTextMutedBrush", Brushes.Gray);
@@ -188,6 +204,7 @@ public sealed class WelcomePageViewModel : BindableBase
         ConnectionProviderText = normalizedProviderText;
         SymbolsCountText = symbolCount.ToString();
         StoragePathText = normalizedStoragePath;
+        DataHealthIndicatorText = BuildDataHealthIndicatorText(fallbackWarnings);
 
         ReadinessItems = BuildReadinessItems(
             isConnected,
@@ -203,6 +220,16 @@ public sealed class WelcomePageViewModel : BindableBase
             symbolCount,
             normalizedStoragePath,
             configuredDataRoot);
+    }
+
+    private static string BuildDataHealthIndicatorText(IReadOnlyCollection<string>? fallbackWarnings)
+    {
+        if (fallbackWarnings is null || fallbackWarnings.Count == 0)
+        {
+            return "Data confidence normal";
+        }
+
+        return $"Data stale/unavailable: {string.Join(", ", fallbackWarnings)}";
     }
 
     private void NavigateToPage(string? pageTag)
@@ -327,7 +354,8 @@ public sealed class WelcomePageViewModel : BindableBase
         string connectionProviderText,
         int symbolCount,
         string storagePath,
-        string configuredDataRoot)
+        string configuredDataRoot,
+        IReadOnlyCollection<string>? fallbackWarnings = null)
     {
         var isDefaultStorage = IsDefaultStoragePath(configuredDataRoot);
         var connectedBrush = GetResource("SuccessColorBrush", Brushes.LimeGreen);
@@ -421,7 +449,8 @@ public sealed class WelcomePageViewModel : BindableBase
         bool isConnected,
         int symbolCount,
         string storagePath,
-        string configuredDataRoot)
+        string configuredDataRoot,
+        IReadOnlyCollection<string>? fallbackWarnings = null)
     {
         var successBrush = GetResource("SuccessColorBrush", Brushes.LimeGreen);
         var successBackgroundBrush = GetResource(

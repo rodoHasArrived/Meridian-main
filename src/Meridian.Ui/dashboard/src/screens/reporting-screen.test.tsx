@@ -139,10 +139,10 @@ describe("ReportingScreen", () => {
     expect(within(task).getByRole("list", { name: "Selected report-pack export actions" })).toBeInTheDocument();
     const excelPreviewLink = within(task).getByRole("link", { name: "Preview Excel export payload" });
     expect(excelPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=excel");
-    expect(excelPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-excel-preview-status");
+    expect(excelPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-excel-preview-report-pack-task-status");
     expect(within(task).getByText("Opens the current export payload preview in a new browser tab.")).toHaveAttribute(
       "id",
-      "reporting-action-excel-preview-status"
+      "reporting-action-excel-preview-report-pack-task-status"
     );
     const excelProfile = within(task).getByRole("button", { name: "Select Excel for report-pack approval" });
     const auditProfile = within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" });
@@ -156,7 +156,15 @@ describe("ReportingScreen", () => {
     expect(auditProfile).toHaveAttribute("aria-expanded", "false");
     expect(auditProfile).toHaveAttribute("tabindex", "-1");
     expect(within(task).getByLabelText("Excel export preview uses GET")).toHaveTextContent("GET");
-    expect(within(task).getByRole("button", { name: "Run Excel export analysis" })).toBeEnabled();
+    const gatedExcelExport = within(task).getByRole("button", {
+      name: "Run Excel export analysis unavailable until required evidence is attached"
+    });
+    expect(gatedExcelExport).toBeDisabled();
+    expect(gatedExcelExport).toHaveAttribute(
+      "title",
+      "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
+    );
+    expect(within(task).getByLabelText("Excel export analysis is gated by missing evidence")).toHaveTextContent("Gated");
     expect(within(task).getByRole("link", { name: "GET /api/fund-structure/report-packs for Report-pack catalog" })).toHaveAttribute(
       "href",
       "/api/fund-structure/report-packs"
@@ -185,10 +193,11 @@ describe("ReportingScreen", () => {
     );
     const auditPreviewLink = within(task).getByRole("link", { name: "Preview Audit Pack export payload" });
     expect(auditPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
-    expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-status");
+    expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-report-pack-task-status");
     expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
       "Reference"
     );
+    expect(within(task).getByRole("button", { name: "Run Audit Pack export analysis" })).toBeEnabled();
 
     await user.click(within(task).getByRole("button", { name: "Run Audit Pack export analysis" }));
 
@@ -199,6 +208,27 @@ describe("ReportingScreen", () => {
         body: JSON.stringify({ profileId: "audit-pack" })
       })
     );
+  });
+
+  it("keeps report-pack task and inspector action descriptions uniquely identified", () => {
+    const { container } = renderWithRouter(<ReportingScreen data={governance} />, {
+      initialEntries: ["/reporting/report-packs"]
+    });
+
+    const task = screen.getByRole("region", { name: "Report-pack approval task" });
+    expect(within(task).getByRole("link", { name: "Preview Excel export payload" })).toHaveAttribute(
+      "aria-describedby",
+      "reporting-action-excel-preview-report-pack-task-status"
+    );
+    expect(screen.getByRole("link", { name: "Open Excel report-pack evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Excel export actions" }))
+      .toHaveTextContent("Opens the current export payload preview in a new browser tab.");
+
+    const ids = Array.from(container.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
+    const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+    expect(duplicateIds).toEqual([]);
+    expect(container.querySelector("#reporting-action-excel-preview-profile-detail-status")).toBeInTheDocument();
+    expect(container.querySelector("#reporting-action-excel-preview-report-pack-task-status")).toBeInTheDocument();
   });
 
   it("surfaces VM-owned running export feedback in the report-pack task", async () => {
@@ -233,20 +263,21 @@ describe("ReportingScreen", () => {
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
-    await user.click(within(task).getByRole("button", { name: "Run Excel export analysis" }));
+    await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
+    await user.click(within(task).getByRole("button", { name: "Run Audit Pack export analysis" }));
 
-    const runningButton = within(task).getByRole("button", { name: "Run Excel export analysis" });
+    const runningButton = within(task).getByRole("button", { name: "Run Audit Pack export analysis" });
     expect(runningButton).toBeDisabled();
     expect(runningButton).toHaveAttribute("aria-busy", "true");
-    expect(runningButton).toHaveAttribute("title", "Excel export is already running.");
+    expect(runningButton).toHaveAttribute("title", "Audit Pack export is already running.");
     expect(runningButton).toHaveTextContent("Running export…");
-    expect(within(task).getByLabelText("Excel export is running")).toHaveTextContent("Running");
-    expect(within(task).getByText("Excel export is running. Wait for the result before starting another export.")).toBeInTheDocument();
+    expect(within(task).getByLabelText("Audit Pack export is running")).toHaveTextContent("Running");
+    expect(within(task).getByText("Audit Pack export is running. Wait for the result before starting another export.")).toBeInTheDocument();
 
     releaseFetch();
     await waitFor(() => {
       expect(screen.getByRole("status", { name: "Reporting export status" })).toHaveTextContent(
-        "Excel export completed — 1 file generated."
+        "Audit Pack export completed — 1 file generated."
       );
     });
   });
@@ -357,6 +388,34 @@ describe("ReportingScreen", () => {
     expect(within(exportStatus).getByText("20")).toBeInTheDocument();
     expect(within(exportStatus).getByText("SPY markdown")).toBeInTheDocument();
     expect(within(exportStatus).getByText(/audit\/export-1\.md/)).toBeInTheDocument();
+  });
+
+  it("renders structured backend validation detail for export failures", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({
+        title: "Validation failed",
+        detail: "One or more validation errors occurred.",
+        errors: {
+          profileId: ["Profile is required."],
+          approvalReason: ["Approval reason must cite packet evidence."]
+        }
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+
+    await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
+    await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
+
+    const exportStatus = await screen.findByRole("status", { name: "Reporting export status" });
+    expect(within(exportStatus).getByText("Audit Pack export failed. One or more validation errors occurred.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Endpoint returned 400 for /api/export/analysis.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Validation failed")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("profileId: Profile is required.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("approvalReason: Approval reason must cite packet evidence.")).toBeInTheDocument();
   });
 
   it("renders explicit empty states for missing reporting profiles and pack targets", () => {

@@ -10,6 +10,7 @@ public sealed class EvidenceGraphService
     private readonly EvidenceTemplateRegistry _templateRegistry;
     private readonly IEnumerable<IEvidenceContributor> _contributors;
     private readonly IWorkflowActionCatalog? _actionCatalog;
+    private readonly EvidencePacketValidationService _validationService;
     private readonly ILogger<EvidenceGraphService> _logger;
 
     public EvidenceGraphService(
@@ -17,13 +18,15 @@ public sealed class EvidenceGraphService
         EvidenceTemplateRegistry templateRegistry,
         IEnumerable<IEvidenceContributor> contributors,
         ILogger<EvidenceGraphService> logger,
-        IWorkflowActionCatalog? actionCatalog = null)
+        IWorkflowActionCatalog? actionCatalog = null,
+        EvidencePacketValidationService? validationService = null)
     {
         _subjectResolver = subjectResolver ?? throw new ArgumentNullException(nameof(subjectResolver));
         _templateRegistry = templateRegistry ?? throw new ArgumentNullException(nameof(templateRegistry));
         _contributors = contributors ?? throw new ArgumentNullException(nameof(contributors));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _actionCatalog = actionCatalog;
+        _validationService = validationService ?? new EvidencePacketValidationService();
     }
 
     public Task<IReadOnlyList<EvidenceSubjectDto>> ListSubjectsAsync(CancellationToken ct = default)
@@ -115,32 +118,31 @@ public sealed class EvidenceGraphService
             warnings.Add($"No evidence contributors support subject kind '{subject.SubjectKind}'.");
         }
 
-        var validatedEdges = ValidateEdges(edges, nodes, warnings);
         var nodeList = nodes.Values
             .OrderBy(static node => node.Kind, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static node => node.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var workflowId = ResolveWorkflowId(subject.SubjectKind);
         var template = _templateRegistry.GetTemplate(workflowId);
-        if (template?.NoOrphanRule == true && nodeList.Length > 1)
-        {
-            ApplyNoOrphanWarnings(nodeList, validatedEdges, warnings);
-        }
+        var validation = _validationService.Validate(
+            nodeList,
+            edges,
+            requiredIds,
+            template?.NoOrphanRule == true);
 
         foreach (var action in ResolveEvidenceActions())
         {
             actions[action.ActionId] = action;
         }
 
-        var completeness = BuildCompleteness(nodeList, requiredIds);
         return new EvidencePacketDto(
             Subject: subject,
             GeneratedAt: generatedAt,
             Nodes: nodeList,
-            Edges: validatedEdges,
-            Completeness: completeness,
+            Edges: validation.Edges,
+            Completeness: validation.Completeness,
             Actions: actions.Values.OrderBy(static action => action.ActionId, StringComparer.OrdinalIgnoreCase).ToArray(),
-            Warnings: warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            Warnings: warnings.Concat(validation.Warnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
     }
 
     public async Task<EvidenceGraphDto?> GetGraphAsync(
@@ -182,108 +184,4 @@ public sealed class EvidenceGraphService
             _ => string.Empty
         };
 
-    private static IReadOnlyList<EvidenceEdgeDto> ValidateEdges(
-        IEnumerable<EvidenceEdgeDto> candidateEdges,
-        IReadOnlyDictionary<string, EvidenceNodeDto> nodes,
-        List<string> warnings)
-    {
-        var validated = new List<EvidenceEdgeDto>();
-        foreach (var edge in candidateEdges)
-        {
-            if (!nodes.ContainsKey(edge.FromId) || !nodes.ContainsKey(edge.ToId))
-            {
-                warnings.Add($"Evidence edge '{edge.FromId}' -> '{edge.ToId}' references a missing node.");
-                continue;
-            }
-
-            validated.Add(edge);
-        }
-
-        return validated
-            .GroupBy(static edge => $"{edge.FromId}\n{edge.ToId}\n{edge.Relationship}", StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
-    }
-
-    private static void ApplyNoOrphanWarnings(
-        IReadOnlyList<EvidenceNodeDto> nodes,
-        IReadOnlyList<EvidenceEdgeDto> edges,
-        List<string> warnings)
-    {
-        var linked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var edge in edges)
-        {
-            linked.Add(edge.FromId);
-            linked.Add(edge.ToId);
-        }
-
-        foreach (var orphan in nodes.Where(node => !linked.Contains(node.EvidenceId)).Skip(1))
-        {
-            warnings.Add($"Evidence node '{orphan.EvidenceId}' is not linked into the packet graph.");
-        }
-    }
-
-    private static EvidenceCompletenessDto BuildCompleteness(
-        IReadOnlyList<EvidenceNodeDto> nodes,
-        IReadOnlySet<string> requiredIds)
-    {
-        var nodeLookup = nodes.ToDictionary(static node => node.EvidenceId, StringComparer.OrdinalIgnoreCase);
-        var required = requiredIds.Count > 0
-            ? requiredIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray()
-            : nodes.Select(static node => node.EvidenceId).ToArray();
-        var ready = new List<string>();
-        var missing = new List<string>();
-        var stale = new List<string>();
-        var blockers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var requiredId in required)
-        {
-            if (!nodeLookup.TryGetValue(requiredId, out var node))
-            {
-                missing.Add(requiredId);
-                continue;
-            }
-
-            if (node.Status == EvidenceStatusDto.Ready)
-            {
-                ready.Add(requiredId);
-            }
-
-            if (node.Status is EvidenceStatusDto.Missing)
-            {
-                missing.Add(requiredId);
-            }
-
-            if (node.Status is EvidenceStatusDto.Stale || node.Freshness.IsStale)
-            {
-                stale.Add(requiredId);
-            }
-
-            if (node.Status is EvidenceStatusDto.Blocked or EvidenceStatusDto.ReviewRequired)
-            {
-                foreach (var workItemId in node.RelatedWorkItemIds)
-                {
-                    blockers.Add(workItemId);
-                }
-            }
-        }
-
-        var score = required.Length == 0
-            ? 100
-            : (int)Math.Round(ready.Count * 100d / required.Length, MidpointRounding.AwayFromZero);
-        var status =
-            missing.Count > 0 || blockers.Count > 0 ? EvidenceStatusDto.Blocked :
-            stale.Count > 0 ? EvidenceStatusDto.Stale :
-            ready.Count == required.Length ? EvidenceStatusDto.Ready :
-            EvidenceStatusDto.ReviewRequired;
-
-        return new EvidenceCompletenessDto(
-            Score: score,
-            Status: status,
-            RequiredIds: required,
-            ReadyIds: ready.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray(),
-            MissingIds: missing.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray(),
-            StaleIds: stale.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray(),
-            BlockingWorkItemIds: blockers.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray());
-    }
 }

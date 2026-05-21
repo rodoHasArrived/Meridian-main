@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="LedgerTypes.fs" />
+    <Compile Include="AccrualTypes.fs" />
     <Compile Include="JournalValidation.fs" />
     <Compile Include="Posting.fs" />
     <!-- Break and run metadata types — no dependencies on Reconciliation.fs -->

@@ -110,8 +110,9 @@ security detail frame.
 
 - Search, selection, empty states, loading text, disabled reasons, and live-region copy belong in
   view models.
-- Preserve keyboard selection on table rows with `Enter` and `Space`; do not rely on pointer-only
-  row activation.
+- Preserve keyboard selection on table rows with `Enter` and `Space`, and preserve row-to-row
+  navigation with `Up Arrow`, `Down Arrow`, `Home`, and `End`; do not rely on pointer-only row
+  activation.
 - Keep destructive or live-like actions gated. Import, bulk edit, export, and override actions need
   an explicit disabled reason or confirmation state until a real backing workflow exists.
 - Prefer one dense detail route over separate disconnected tabs. Section navigation can be shown as

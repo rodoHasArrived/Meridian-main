@@ -28,7 +28,10 @@ describe("WorkspaceHeader", () => {
     expect(screen.queryByLabelText("paper environment")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Trading workspace status Review")).toHaveTextContent("Review");
     expect(screen.getByLabelText("Session Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
-    expect(screen.getByRole("button", { name: "Refreshing Trading workspace data" })).toBeDisabled();
+    const refreshButton = screen.getByRole("button", { name: "Refreshing Trading workspace data" });
+    expect(refreshButton).toBeDisabled();
+    expect(refreshButton).toHaveAttribute("title", "Trading workspace data is refreshing.");
+    expect(refreshButton.querySelector("svg")).toHaveClass("animate-spin");
     expect(screen.getByRole("button", { name: "Open workspace command palette" })).toHaveTextContent(
       "Open command palette"
     );

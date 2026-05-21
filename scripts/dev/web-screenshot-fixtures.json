@@ -291,6 +291,151 @@
         }
       ]
     },
+    "/api/workstation/strategy/designer/templates": [
+      {
+        "templateId": "quality-momentum-rotation",
+        "name": "Quality momentum rotation",
+        "description": "Rank liquid equities by momentum, quality, and volatility before risk-gate review.",
+        "category": "Equity rotation",
+        "sourcePrototype": "Strategy Designer screenshot fixture",
+        "tags": ["momentum", "quality", "risk-gate"],
+        "document": {
+          "documentId": "strategy-designer-fixture-1",
+          "name": "Quality momentum rotation",
+          "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
+          "version": "1.0",
+          "datasetReference": "fixture://strategy-designer/quality-momentum",
+          "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+          "cells": [
+            {
+              "cellId": "universe",
+              "label": "Liquid equity universe",
+              "kind": "universe",
+              "purpose": "Seed the candidate universe with liquid large-cap equities.",
+              "source": "Provider historical bars / security master",
+              "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
+              "parameters": { "minimumDollarVolume": "25000000" },
+              "disabledReason": null
+            },
+            {
+              "cellId": "momentum-score",
+              "label": "Momentum score",
+              "kind": "score",
+              "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
+              "source": "Meridian factor library",
+              "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
+              "parameters": { "lookback": "63" },
+              "disabledReason": null
+            }
+          ],
+          "transitions": [
+            {
+              "transitionId": "universe-to-score",
+              "fromCellId": "universe",
+              "toCellId": "momentum-score",
+              "kind": "filter",
+              "condition": "avgDollarVolume20d >= 25000000",
+              "maxIterations": null,
+              "rationale": "Keep low-liquidity symbols out of the scoring pass."
+            }
+          ],
+          "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+          "createdAt": "2026-05-15T15:00:00Z",
+          "updatedAt": "2026-05-15T15:00:00Z"
+        }
+      }
+    ],
+    "/api/workstation/strategy/designer/field-catalog": [
+      {
+        "fieldId": "PRICE",
+        "label": "Price",
+        "source": "Provider historical bars / live quotes",
+        "dataSet": "market-data",
+        "typeName": "decimal",
+        "description": "Canonical last or close price resolved through Meridian providers.",
+        "isEnabled": true,
+        "disabledReason": null,
+        "synonyms": ["close", "last", "bar.close"]
+      },
+      {
+        "fieldId": "MOMENTUM_63D",
+        "label": "63-day momentum",
+        "source": "Provider historical bars",
+        "dataSet": "market-data",
+        "typeName": "decimal",
+        "description": "Return over the last 63 trading sessions.",
+        "isEnabled": true,
+        "disabledReason": null,
+        "synonyms": ["return", "trend"]
+      },
+      {
+        "fieldId": "AMX_PRIVATE_SCORE",
+        "label": "AMX private score",
+        "source": "External research upload",
+        "dataSet": "research-import",
+        "typeName": "decimal",
+        "description": "Analyst model extension field kept disabled until provenance is attached.",
+        "isEnabled": false,
+        "disabledReason": "No Meridian canonical source",
+        "synonyms": ["analyst", "custom", "amx"]
+      }
+    ],
+    "/api/workstation/strategy/designer/drafts": [
+      {
+        "documentId": "strategy-designer-fixture-1",
+        "name": "Quality momentum rotation",
+        "version": "1.0",
+        "datasetReference": "fixture://strategy-designer/quality-momentum",
+        "cellCount": 2,
+        "transitionCount": 1,
+        "updatedAt": "2026-05-15T15:00:00Z",
+        "validationSummary": "Fixture draft passes no-host validation."
+      }
+    ],
+    "/api/workstation/strategy/designer/drafts/strategy-designer-fixture-1": {
+      "documentId": "strategy-designer-fixture-1",
+      "name": "Quality momentum rotation",
+      "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
+      "version": "1.0",
+      "datasetReference": "fixture://strategy-designer/quality-momentum",
+      "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+      "cells": [
+        {
+          "cellId": "universe",
+          "label": "Liquid equity universe",
+          "kind": "universe",
+          "purpose": "Seed the candidate universe with liquid large-cap equities.",
+          "source": "Provider historical bars / security master",
+          "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
+          "parameters": { "minimumDollarVolume": "25000000" },
+          "disabledReason": null
+        },
+        {
+          "cellId": "momentum-score",
+          "label": "Momentum score",
+          "kind": "score",
+          "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
+          "source": "Meridian factor library",
+          "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
+          "parameters": { "lookback": "63" },
+          "disabledReason": null
+        }
+      ],
+      "transitions": [
+        {
+          "transitionId": "universe-to-score",
+          "fromCellId": "universe",
+          "toCellId": "momentum-score",
+          "kind": "filter",
+          "condition": "avgDollarVolume20d >= 25000000",
+          "maxIterations": null,
+          "rationale": "Keep low-liquidity symbols out of the scoring pass."
+        }
+      ],
+      "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+      "createdAt": "2026-05-15T15:00:00Z",
+      "updatedAt": "2026-05-15T15:00:00Z"
+    },
     "/api/workstation/accounting": {
       "metrics": [
         { "id": "breaks", "label": "Open Breaks", "value": "2", "delta": "+1", "tone": "warning" },

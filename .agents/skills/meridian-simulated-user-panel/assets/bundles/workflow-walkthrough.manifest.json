@@ -1,0 +1,32 @@
+{
+  "schema_version": "2026-04-14",
+  "mode": "release_gate",
+  "artifact_type": "workflow-walkthrough",
+  "artifact_paths": [
+    "artifacts/desktop-workflows/example-run/manifest.json",
+    "artifacts/desktop-workflows/example-run/screenshots/01-step.png",
+    "artifacts/desktop-workflows/example-run/results.json"
+  ],
+  "artifact_summary": "Repeatable operator walkthrough backed by manifest, screenshots, and smoke output.",
+  "persona_set": {
+    "panel": "operations-controls",
+    "required_roles": [
+      "Fund Operations Lead",
+      "Owner-Operator"
+    ]
+  },
+  "focus_areas": [
+    "workflow_fit",
+    "trust_and_controls",
+    "release_readiness"
+  ],
+  "constraints": [
+    "Do not assume undocumented steps outside the manifest."
+  ],
+  "success_criteria": [
+    "The flow is completable without hidden prerequisites.",
+    "A failure state is visible and recoverable.",
+    "The operator can explain the current state at each step."
+  ],
+  "decision_deadline": "before the release candidate"
+}

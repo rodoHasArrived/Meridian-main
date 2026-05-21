@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Config;
+using Meridian.Application.Config.Credentials;
+using Meridian.Application.Services;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
@@ -7,12 +9,16 @@ using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Tests.Ui;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class ProviderFactoryCredentialContextTests
 {
     [Fact]
@@ -28,6 +34,43 @@ public sealed class ProviderFactoryCredentialContextTests
             });
 
         context.Get("POLYGON_API_KEY").Should().Be("config-polygon-key");
+    }
+
+    [Fact]
+    public async Task StoredProviderCredentialResolver_CreateContext_UsesEncryptedStoreBeforeConfigFallback()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-factory-store", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            await store.SaveAsync(new ProviderCredentialSaveRequest(
+                "polygon",
+                new Dictionary<string, string?>
+                {
+                    ["ApiKey"] = "stored-polygon-key"
+                },
+                Actor: "test"));
+            var resolver = new StoredProviderCredentialResolver(
+                store,
+                new EnvironmentCredentialResolver());
+
+            var context = resolver.CreateContext(
+                typeof(PolygonHistoricalDataProvider),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["POLYGON_API_KEY"] = "config-polygon-key"
+                });
+
+            context.Get("POLYGON_API_KEY").Should().Be("stored-polygon-key");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
     }
 
     [Fact]
@@ -70,6 +113,81 @@ public sealed class ProviderFactoryCredentialContextTests
             new ContextRequest(typeof(FredHistoricalDataProvider), ["FRED_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(NasdaqDataLinkHistoricalDataProvider), ["NASDAQ_DATA_LINK_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateBackfillProviders_WithConfiguredFreeProviderSet_IsDeterministicAndCapabilityAligned()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Yahoo: new YahooFinanceConfig(Enabled: true),
+                        Nasdaq: new NasdaqDataLinkConfig(Enabled: true, ApiKey: "cfg-nasdaq-key"),
+                        Stooq: new StooqConfig(Enabled: true),
+                        Tiingo: new TiingoConfig(Enabled: true, ApiToken: "cfg-tiingo-token"),
+                        AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: "cfg-alpha-key"),
+                        Finnhub: new FinnhubConfig(Enabled: true, ApiKey: "cfg-finnhub-key"),
+                        Fred: new FredConfig(Enabled: true, ApiKey: "cfg-fred-key")))),
+            resolver);
+
+        var first = factory.CreateBackfillProviders();
+        var second = factory.CreateBackfillProviders();
+
+        first.Select(p => p.Name).Should().Equal(second.Select(p => p.Name),
+            "backfill provider ordering should remain deterministic for parity/backfill planning");
+        first.Should().ContainSingle(p => p is YahooFinanceHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is NasdaqDataLinkHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is StooqHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is TiingoHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is AlphaVantageHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is FinnhubHistoricalDataProvider);
+        first.Should().ContainSingle(p => p is FredHistoricalDataProvider);
+    }
+
+    [Fact]
+    public void CreateBackfillProviders_UsesTopLevelAlpacaConfigWhenBackfillConfigIsEmpty()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Alpaca: new AlpacaOptions(
+                    KeyId: "top-level-alpaca-key",
+                    SecretKey: "top-level-alpaca-secret",
+                    Feed: "delayed_sip"),
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Alpaca: new AlpacaBackfillConfig()))),
+            resolver);
+
+        var providers = factory.CreateBackfillProviders();
+
+        providers.Should().ContainSingle(p => p is AlpacaHistoricalDataProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
+    }
+
+    [Fact]
+    public void CreateBackfillProviders_UsesAlpacaApcaEnvironmentAliases()
+    {
+        using var env = new AlpacaEnvironmentScope();
+        env.SetProcessAndUser("ALPACA_KEY_ID", null);
+        env.SetProcessAndUser("ALPACA_SECRET_KEY", null);
+        env.SetProcessAndUser("APCA_API_KEY_ID", "apca-alpaca-key");
+        env.SetProcessAndUser("APCA_API_SECRET_KEY", "apca-alpaca-secret");
+
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Alpaca: new AlpacaBackfillConfig()))),
+            resolver);
+
+        var providers = factory.CreateBackfillProviders();
+
+        providers.Should().ContainSingle(p => p is AlpacaHistoricalDataProvider);
     }
 
     [Fact]
@@ -127,4 +245,67 @@ public sealed class ProviderFactoryCredentialContextTests
     }
 
     private sealed record ContextRequest(Type ProviderType, IReadOnlyList<string> CredentialNames);
+
+    private sealed class AlpacaEnvironmentScope : IDisposable
+    {
+        private static readonly string[] Names =
+        [
+            "ALPACA_KEY_ID",
+            "ALPACA_SECRET_KEY",
+            "APCA_API_KEY_ID",
+            "APCA_API_SECRET_KEY",
+            "ALPACA__KEYID",
+            "ALPACA__SECRETKEY"
+        ];
+
+        private readonly Dictionary<string, string?> _processValues = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string?> _userValues = new(StringComparer.Ordinal);
+
+        public AlpacaEnvironmentScope()
+        {
+            foreach (var name in Names)
+            {
+                _processValues[name] = Environment.GetEnvironmentVariable(name);
+                _userValues[name] = ReadUser(name);
+            }
+        }
+
+        public void SetProcessAndUser(string name, string? value)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+            TrySetUser(name, value);
+        }
+
+        public void Dispose()
+        {
+            foreach (var name in Names)
+            {
+                Environment.SetEnvironmentVariable(name, _processValues[name]);
+                TrySetUser(name, _userValues[name]);
+            }
+        }
+
+        private static string? ReadUser(string name)
+        {
+            try
+            {
+                return Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                return null;
+            }
+        }
+
+        private static void TrySetUser(string name, string? value)
+        {
+            try
+            {
+                Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
+            }
+            catch (PlatformNotSupportedException)
+            {
+            }
+        }
+    }
 }

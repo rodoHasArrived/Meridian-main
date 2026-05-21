@@ -119,18 +119,21 @@ describe("ResearchScreen", () => {
     expect(firstStudy).toHaveAttribute("aria-controls", "plottool-selected-study-detail");
     expect(firstStudy).toHaveAttribute("aria-expanded", "true");
     expect(secondStudy).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByLabelText("Selected: Mean Reversion FX")).toBeInTheDocument();
 
     await user.click(secondStudy);
 
     expect(secondStudy).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Index Momentum" })).toBeInTheDocument();
     expect(screen.getByText("Completed study retained in the PlotTool workstation. Completed backtest run.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Selected: Index Momentum")).toBeInTheDocument();
 
     firstStudy.focus();
     await user.keyboard("{Enter}");
 
     expect(firstStudy).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Selected: Mean Reversion FX")).toBeInTheDocument();
   });
 
   it("switches to the PlotTool statistics view", async () => {
@@ -412,8 +415,13 @@ describe("ResearchScreen", () => {
         { symbol: "AAPL", baseQuantity: 0, targetQuantity: 100, basePnl: 0, targetPnl: 250, changeType: "Added" }
       ],
       removedPositions: [],
-      modifiedPositions: [],
-      parameterChanges: [{ key: "lookback", baseValue: "20", targetValue: "30" }],
+      modifiedPositions: [
+        { symbol: "MSFT", baseQuantity: 25, targetQuantity: 40, basePnl: 120, targetPnl: 180, changeType: "Modified" }
+      ],
+      parameterChanges: [
+        { key: "lookback", baseValue: "20", targetValue: "30" },
+        { key: "threshold", baseValue: "1.5", targetValue: "2.0" }
+      ],
       metrics: {
         netPnlDelta: 1200,
         totalReturnDelta: 0.01,
@@ -441,11 +449,30 @@ describe("ResearchScreen", () => {
       .toBeInTheDocument();
     expect(screen.getByLabelText("Run diff metric summary")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /Net P&L delta \+\$1,200/ })).toBeInTheDocument();
-    expect(screen.getByLabelText("1 position change returned")).toBeInTheDocument();
-    expect(screen.getByRole("listitem", { name: "AAPL Added. Qty +100. P&L +$250." })).toBeInTheDocument();
-    expect(screen.getByText("Qty +100")).toBeInTheDocument();
-    expect(screen.getByText("lookback")).toBeInTheDocument();
-    expect(screen.getByRole("listitem", { name: "lookback changed from 20 to 30." })).toHaveTextContent("20 -> 30");
+    expect(screen.getByRole("table", { name: "Position diff rows" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Parameter diff rows" })).toBeInTheDocument();
+    expect(screen.getByLabelText("2 position changes returned")).toBeInTheDocument();
+    const aaplRow = screen.getByRole("row", { name: "Inspect AAPL added position diff" });
+    const msftRow = screen.getByRole("row", { name: "Inspect MSFT modified position diff" });
+    expect(aaplRow).toHaveAttribute("aria-controls", "strategy-run-diff-selected-position-detail");
+    expect(aaplRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected position diff detail for AAPL" }))
+      .toHaveTextContent("Base quantity");
+    expect(screen.getAllByText("Qty +100").length).toBeGreaterThan(0);
+
+    await user.click(msftRow);
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected position diff detail for MSFT" }))
+      .toHaveTextContent("Target quantity");
+
+    const lookbackRow = screen.getByRole("row", { name: "Inspect lookback parameter diff" });
+    const thresholdRow = screen.getByRole("row", { name: "Inspect threshold parameter diff" });
+    expect(lookbackRow).toHaveAttribute("aria-controls", "strategy-run-diff-selected-parameter-detail");
+    expect(lookbackRow).toHaveAttribute("aria-expanded", "true");
+    await user.click(thresholdRow);
+    expect(thresholdRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected parameter diff detail for threshold" }))
+      .toHaveTextContent("1.5 -> 2.0");
     expect(api.diffRuns).toHaveBeenCalledOnce();
   });
 
@@ -480,10 +507,10 @@ describe("ResearchScreen", () => {
     await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("No position changes returned for this diff.")).toBeInTheDocument();
+      expect(screen.getAllByText("No position changes returned for this diff.").length).toBeGreaterThan(0);
     });
-    expect(screen.getByRole("listitem", { name: "lookback changed from Unavailable to Unavailable." }))
-      .toHaveTextContent("Unavailable -> Unavailable");
+    expect(screen.getByRole("row", { name: "Inspect lookback parameter diff" }))
+      .toHaveTextContent(/lookback\s*Unavailable\s*Unavailable/);
   });
 
   it("loads and displays promotion history when history button is clicked", async () => {
@@ -633,6 +660,84 @@ describe("ResearchScreen", () => {
       expect(api.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 125000);
     });
     expect(screen.getByText("Paper session created - session session-1")).toBeInTheDocument();
+  });
+
+  it("keeps paper-session setup visible and locked while creation is pending", async () => {
+    vi.spyOn(api, "evaluatePromotion").mockResolvedValue({
+      runId: "run-2",
+      strategyId: "run-2",
+      strategyName: "Index Momentum",
+      sourceMode: "backtest",
+      targetMode: "paper",
+      isEligible: true,
+      sharpeRatio: 1.25,
+      maxDrawdownPercent: -0.04,
+      totalReturn: 0.08,
+      reason: "Promotion gates passed.",
+      found: true,
+      ready: true
+    });
+    const pendingSession = createDeferred<Awaited<ReturnType<typeof api.createPaperSession>>>();
+    vi.spyOn(api, "createPaperSession").mockReturnValue(pendingSession.promise);
+
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
+    await user.click(screen.getByRole("button", { name: /promote to paper/i }));
+
+    const cashInput = await screen.findByLabelText("Initial cash ($)");
+    const acknowledgement = screen.getByRole("checkbox", {
+      name: "I reviewed the promotion gates and paper-capital impact."
+    });
+    await user.click(acknowledgement);
+    await user.click(screen.getByRole("button", { name: "Start paper session from selected strategy run" }));
+
+    await waitFor(() => {
+      expect(api.createPaperSession).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAttribute(
+      "title",
+      "Paper-session creation is already running; wait before changing capital."
+    );
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAttribute(
+      "aria-describedby",
+      "promote-initial-cash-help promote-initial-cash-disabled-reason"
+    );
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription(
+      /Paper-session creation is already running\..*wait before changing capital\./s
+    );
+    expect(acknowledgement).toBeDisabled();
+    expect(acknowledgement).toHaveAttribute(
+      "title",
+      "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(acknowledgement).toHaveAttribute(
+      "aria-describedby",
+      "promote-paper-session-acknowledgement-disabled-reason"
+    );
+    expect(acknowledgement).toHaveAccessibleDescription(
+      "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(screen.getByRole("button", { name: /Start paper session unavailable: Paper-session creation is already running/i }))
+      .toHaveTextContent("Starting paper session...");
+    expect(screen.getByRole("button", {
+      name: "Paper-session creation is already running; wait for the session result before closing setup."
+    })).toBeDisabled();
+
+    await act(async () => {
+      pendingSession.resolve({
+        sessionId: "session-pending",
+        strategyId: "run-2",
+        strategyName: "Index Momentum",
+        initialCash: 100000,
+        createdAt: "2026-05-09T00:00:00Z",
+        closedAt: null,
+        isActive: true
+      });
+      await pendingSession.promise;
+    });
   });
 
   it("discards pending promotion evaluation when the selected run changes", async () => {

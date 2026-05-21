@@ -415,7 +415,7 @@ public sealed class ActivityFeedService
         }
         catch
         {
-            // Ignore load errors
+            System.Diagnostics.Trace.TraceWarning("Failed to load activity feed entries from {0}", _activityLogPath);
         }
     }
 
@@ -430,11 +430,11 @@ public sealed class ActivityFeedService
             }
 
             var json = JsonSerializer.Serialize(_activities.ToList(), _jsonOptions);
-            await File.WriteAllTextAsync(_activityLogPath, json);
+            await File.WriteAllTextAsync(_activityLogPath, json, ct);
         }
         catch
         {
-            // Ignore save errors
+            System.Diagnostics.Trace.TraceWarning("Failed to persist activity feed entries to {0}", _activityLogPath);
         }
     }
 
