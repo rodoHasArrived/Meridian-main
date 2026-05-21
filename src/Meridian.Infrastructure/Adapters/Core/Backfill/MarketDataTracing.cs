@@ -21,6 +21,32 @@ internal static class MarketDataTracing
         return activity;
     }
 
+    public static Activity? StartBackfillFetchActivity(string provider, string symbol)
+    {
+        var activity = Source.StartActivity(
+            $"BackfillFetch.{provider}",
+            ActivityKind.Client);
+
+        activity?.SetTag("backfill.provider", provider);
+        activity?.SetTag("market.symbol", symbol);
+        activity?.SetTag("operation.type", "backfill_fetch");
+
+        return activity;
+    }
+
+    public static Activity? StartBackfillStorageActivity(string symbol, int barCount)
+    {
+        var activity = Source.StartActivity(
+            "BackfillStorage.WriteBars",
+            ActivityKind.Producer);
+
+        activity?.SetTag("market.symbol", symbol);
+        activity?.SetTag("event.count", barCount);
+        activity?.SetTag("operation.type", "backfill_storage_write");
+
+        return activity;
+    }
+
     public static void RecordError(Activity? activity, Exception ex)
     {
         if (activity == null)
