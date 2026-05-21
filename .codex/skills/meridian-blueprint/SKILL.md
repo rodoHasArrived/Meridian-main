@@ -7,7 +7,10 @@ description: Create implementation-ready technical blueprints for Meridian featu
 
 Turn one Meridian idea into a design another engineer can implement without making core architectural decisions from scratch.
 
-Read `../_shared/project-context.md` before naming types, interfaces, files, or commands. Read [`references/blueprint-patterns.md`](references/blueprint-patterns.md) when the request needs naming conventions, DI patterns, ADR reminders, or MVVM examples.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before naming
+types, interfaces, files, or commands. Read
+[`references/blueprint-patterns.md`](references/blueprint-patterns.md) when the request needs
+naming conventions, DI patterns, ADR reminders, or MVVM examples.
 
 ## Workflow
 

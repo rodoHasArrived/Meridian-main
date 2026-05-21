@@ -1584,7 +1584,6 @@ public static partial class WorkstationEndpoints
             string? mode,
             StrategyRunStatus? status,
             string? strategyId,
-            StrategyRunTimelineProjection? projection,
             int? limit,
             HttpContext context) =>
         {
@@ -1601,17 +1600,37 @@ public static partial class WorkstationEndpoints
                 StrategyId: strategyId,
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
-            if (projection == StrategyRunTimelineProjection.Lineage)
-            {
-                var lineageTimeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(lineageTimeline, jsonOptions);
-            }
-
             var timeline = await readService.GetMergedTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
         .WithName("GetWorkstationMergedRunTimeline")
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
+        .Produces(501);
+
+        group.MapGet("/runs/lineage-timeline", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var query = new StrategyRunHistoryQuery(
+                Modes: modes,
+                Status: status,
+                StrategyId: strategyId,
+                Limit: Math.Clamp(limit ?? 100, 1, 500));
+
+            var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(timeline, jsonOptions);
+        })
+        .WithName("GetWorkstationRunLineageTimeline")
         .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
@@ -1657,7 +1676,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
+            var comparison = await readService.GetRunComparisonDtosAsync(runIds, ct: context.RequestAborted).ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareStrategyRuns")

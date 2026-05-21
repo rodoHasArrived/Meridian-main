@@ -4367,6 +4367,44 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_RunLineageTimeline_ShouldExposeDedicatedLineageContract()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "lineage-endpoint-backtest",
+            strategyId: "s-lineage-endpoint",
+            strategyName: "Lineage Endpoint Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 20, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildRun(
+            runId: "lineage-endpoint-paper",
+            strategyId: "s-lineage-endpoint",
+            strategyName: "Lineage Endpoint Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)) with
+            {
+                ParentRunId = "lineage-endpoint-backtest"
+            });
+
+        var client = app.GetTestClient();
+        using var timeline = await ReadJsonAsync(client, "/api/workstation/runs/lineage-timeline?mode=paper,backtest&limit=10");
+        var rows = timeline.RootElement.EnumerateArray().ToArray();
+
+        rows.Should().HaveCount(4);
+        rows[0].GetProperty("runId").GetString().Should().Be("lineage-endpoint-backtest");
+        rows[0].GetProperty("eventType").GetString().Should().Be("RunStarted");
+        rows[1].GetProperty("eventType").GetString().Should().Be("RunCompleted");
+        rows[2].GetProperty("runId").GetString().Should().Be("lineage-endpoint-paper");
+        rows[2].GetProperty("parentCanonicalRunKey").GetString().Should().Be("lineage-endpoint-backtest");
+        rows.Should().OnlyContain(row => row.TryGetProperty("canonicalRunKey", out _));
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_DiffRuns_ShouldReturnPositionAndMetricDeltas()
     {
         await using var app = await CreateAppAsync(services =>

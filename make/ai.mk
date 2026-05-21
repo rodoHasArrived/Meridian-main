@@ -6,6 +6,7 @@
         ai-verify ai-report \
         ai-maintenance-light ai-maintenance-full \
         ai-arch-check ai-arch-check-summary ai-arch-check-json \
+        ai-codex-skills-check \
         ai-docs-freshness ai-docs-drift ai-docs-sync-report \
         ai-docs-archive ai-docs-archive-execute \
         skill-list skill-resources skill-scripts skill-chains skill-resource \
@@ -73,6 +74,10 @@ ai-arch-check-summary: ## One-line architecture compliance summary (clean / viol
 
 ai-arch-check-json: ## Architecture compliance check with JSON output (for CI / tooling)
 	@$(AI_ARCH_CHECK) --src src/ --json check
+
+ai-codex-skills-check: ## Validate Codex skill catalog, metadata, docs, and execution contract links
+	@echo "$(BLUE)Checking Codex skill consistency...$(NC)"
+	@python3 build/scripts/docs/check-codex-skills.py --summary
 
 ai-docs-freshness: ## Check staleness of AI documentation files
 	@echo "$(BLUE)Checking AI doc freshness...$(NC)"

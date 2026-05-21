@@ -15,7 +15,8 @@ Write tests that simulate what the system will actually experience in production
 be grounded in a named, real-world market scenario and must exercise at least the full relevant
 code path — not just a single method in isolation.
 
-Read `../_shared/project-context.md` before choosing the test project. Read
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before choosing
+the test project. Read
 `references/test-patterns.md` for the component-to-test-project mapping and the Market Scenario
 Catalog.
 

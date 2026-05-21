@@ -10,8 +10,13 @@ import type {
   DataOperationsExportRecord,
   DataOperationsProviderRecord,
   DataOperationsWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderCredentialVerificationResult,
   ProviderKind,
   ProviderKindMeta,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ProviderSetupRequest,
   ProviderSetupResult
 } from "@/types";
@@ -121,6 +126,15 @@ export interface ProviderSetupLifecycleServices {
   onConfigured?: () => Promise<void> | void;
 }
 
+export interface DataOperationsProviderEvidence {
+  providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
+  onProviderRoutingRefresh?: () => Promise<void> | void;
+}
+
 export interface DataOperationsEmptyState {
   title: string;
   description: string;
@@ -163,21 +177,68 @@ export interface DataOperationsExportSectionState extends DataOperationsSectionS
 }
 
 export interface DataOperationsProviderSectionState extends DataOperationsSectionState<DataOperationsProviderRow> {
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger";
+  commandActions: DataOperationsProviderCommandActionState[];
+  providerOptions: DataOperationsProviderOptionState[];
+  summaryCards: DataOperationsProviderSummaryCardState[];
   tableLabel: string;
   description: string;
   detailPanelId: string;
   selectedRowId: string | null;
   selectedDetail: DataOperationsProviderDetailState | null;
   detailEmptyState: DataOperationsEmptyState | null;
+  diagnosticsSummary: string;
+  refreshAction: {
+    label: string;
+    ariaLabel: string;
+    busy: boolean;
+    disabled: boolean;
+    disabledReason: string | null;
+  };
+}
+
+export interface DataOperationsProviderCommandActionState {
+  id: "add" | "refresh" | "diagnostics" | "settings";
+  label: string;
+  ariaLabel: string;
+  href: string | null;
+  variant: "default" | "outline";
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
+export interface DataOperationsProviderOptionState {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export interface DataOperationsProviderSummaryCardState {
+  id: "health" | "credentials" | "verification" | "latency" | "workflows" | "action";
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
 }
 
 export interface DataOperationsProviderRow {
+  providerId: string;
   provider: string;
   rowId: string;
   detailPanelId: string;
   status: DataOperationsProviderRecord["status"];
   rowClassName: DataOperationsStatusRowClassName;
   capability: string;
+  credentialText: string;
+  verificationText: string;
+  lastSuccessfulText: string;
+  affectedWorkflowsText: string;
+  actionLabel: string;
+  actionHref: string;
   latencyText: string;
   trustScoreText: string;
   signalSourceText: string;
@@ -232,6 +293,7 @@ export interface DataOperationsBackfillDetailState {
 
 export interface DataOperationsProviderDetailState {
   id: string;
+  providerId: string;
   title: string;
   subtitle: string;
   description: string;
@@ -239,9 +301,43 @@ export interface DataOperationsProviderDetailState {
   status: DataOperationsProviderRecord["status"];
   statusTone: "success" | "warning" | "danger";
   fields: DataOperationsDetailField[];
+  overviewFields: DataOperationsDetailField[];
+  credentialFields: DataOperationsDetailField[];
+  diagnostics: DataOperationsProviderDiagnosticRow[];
+  activeTab: DataOperationsProviderTabId;
+  tabs: DataOperationsProviderTabState[];
+  verifyAction: DataOperationsProviderVerifyActionState;
   actionText: string;
   reasonCodeText: string;
   gateImpactText: string;
+}
+
+export type DataOperationsProviderTabId = "overview" | "credentials" | "diagnostics";
+
+export interface DataOperationsProviderTabState {
+  id: DataOperationsProviderTabId;
+  label: string;
+  selected: boolean;
+  ariaControls: string;
+}
+
+export interface DataOperationsProviderDiagnosticRow {
+  id: string;
+  label: string;
+  status: "pass" | "warning" | "fail" | "pending";
+  statusLabel: string;
+  detail: string;
+}
+
+export interface DataOperationsProviderVerifyActionState {
+  label: string;
+  ariaLabel: string;
+  busy: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  details: string[];
 }
 
 export interface DataOperationsExportRow {
@@ -585,9 +681,11 @@ export function useDataOperationsViewModel(
   data: DataOperationsWorkspaceResponse | null,
   pathname: string,
   services: BackfillTriggerServices = defaultBackfillServices,
-  providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle
+  providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle,
+  providerEvidence: DataOperationsProviderEvidence = {}
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [selectedProviderTab, setSelectedProviderTab] = useState<DataOperationsProviderTabId>("overview");
   const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
   const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -606,6 +704,11 @@ export function useDataOperationsViewModel(
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
   const providerSetupCommandRevisionRef = useRef(0);
+  const [providerVerifyProviderId, setProviderVerifyProviderId] = useState<string | null>(null);
+  const [providerVerifyBusy, setProviderVerifyBusy] = useState(false);
+  const [providerVerifyResult, setProviderVerifyResult] = useState<ProviderCredentialVerificationResult | null>(null);
+  const [providerVerifyError, setProviderVerifyError] = useState<ApiErrorDisplay | null>(null);
+  const providerVerifyCommandRevisionRef = useRef(0);
   const configuredBackfillProviders = useMemo(
     () => data?.providers ?? [],
     [data?.providers]
@@ -634,6 +737,7 @@ export function useDataOperationsViewModel(
   useEffect(() => () => {
     backfillCommandRevisionRef.current += 1;
     providerSetupCommandRevisionRef.current += 1;
+    providerVerifyCommandRevisionRef.current += 1;
   }, []);
 
   const workstream = useMemo(() => resolveDataOperationsWorkstream(pathname), [pathname]);
@@ -641,7 +745,7 @@ export function useDataOperationsViewModel(
     () => resolveSelectedProvider(data?.providers ?? [], selectedProviderId),
     [data, selectedProviderId]
   );
-  const selectedProviderRowId = selectedProvider ? buildProviderRowId(selectedProvider.provider) : null;
+  const selectedProviderRowId = selectedProvider ? buildProviderRowId(selectedProvider.provider) : selectedProviderId;
   const selectedBackfill = useMemo(
     () => resolveSelectedBackfill(data?.backfills ?? [], selectedBackfillId),
     [data, selectedBackfillId]
@@ -656,9 +760,29 @@ export function useDataOperationsViewModel(
       selectedBackfill?.jobId ?? null,
       workstream,
       selectedProviderRowId,
-      selectedExport?.exportId ?? null
+      selectedExport?.exportId ?? null,
+      providerEvidence,
+      selectedProviderTab,
+      buildProviderVerifyActionState(
+        providerVerifyBusy,
+        providerVerifyProviderId,
+        providerVerifyResult,
+        providerVerifyError
+      )
     ),
-    [data, selectedBackfill?.jobId, selectedExport?.exportId, selectedProviderRowId, workstream]
+    [
+      data,
+      providerEvidence,
+      providerVerifyBusy,
+      providerVerifyError,
+      providerVerifyProviderId,
+      providerVerifyResult,
+      selectedBackfill?.jobId,
+      selectedExport?.exportId,
+      selectedProviderRowId,
+      selectedProviderTab,
+      workstream
+    ]
   );
   const loadingState = useMemo(
     () => buildDataOperationsLoadingState(workstream),
@@ -897,6 +1021,55 @@ export function useDataOperationsViewModel(
     }
   }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm, providerSetupLifecycle]);
 
+  const nextProviderVerifyCommandRevision = useCallback(() => {
+    const revision = providerVerifyCommandRevisionRef.current + 1;
+    providerVerifyCommandRevisionRef.current = revision;
+    return revision;
+  }, []);
+
+  const isCurrentProviderVerifyCommand = useCallback((revision: number) => (
+    providerVerifyCommandRevisionRef.current === revision
+  ), []);
+
+  const verifySelectedProvider = useCallback(async () => {
+    const providerId = presentation.providerSection.selectedDetail?.providerId;
+    if (!providerId) {
+      setProviderVerifyError(buildDataOperationsErrorState("Select a provider before running verification."));
+      return;
+    }
+
+    const commandRevision = nextProviderVerifyCommandRevision();
+    setProviderVerifyProviderId(providerId);
+    setProviderVerifyBusy(true);
+    setProviderVerifyResult(null);
+    setProviderVerifyError(null);
+
+    try {
+      const response = await workstationApi.verifyProviderConnection(providerId);
+      if (!isCurrentProviderVerifyCommand(commandRevision)) {
+        return;
+      }
+
+      setProviderVerifyResult(response);
+      if (providerEvidence.onProviderRoutingRefresh) {
+        try {
+          void Promise.resolve(providerEvidence.onProviderRoutingRefresh()).catch(() => undefined);
+        } catch {
+          // Verification remains complete even if the follow-up refresh cannot start.
+        }
+      }
+    } catch (err) {
+      if (!isCurrentProviderVerifyCommand(commandRevision)) {
+        return;
+      }
+      setProviderVerifyError(buildDataOperationsErrorState(err, "Provider verification failed."));
+    } finally {
+      if (isCurrentProviderVerifyCommand(commandRevision)) {
+        setProviderVerifyBusy(false);
+      }
+    }
+  }, [isCurrentProviderVerifyCommand, nextProviderVerifyCommandRevision, providerEvidence, presentation.providerSection.selectedDetail?.providerId]);
+
   const providerSetupDialogState = useMemo(
     () => buildProviderSetupDialogState(providerPhase, providerForm, providerSetupResult),
     [providerPhase, providerForm, providerSetupResult]
@@ -909,6 +1082,9 @@ export function useDataOperationsViewModel(
     selectedProviderId,
     selectedProviderRowId,
     selectProvider: setSelectedProviderId,
+    selectedProviderTab,
+    selectProviderTab: setSelectedProviderTab,
+    verifySelectedProvider,
     selectedBackfill,
     selectedBackfillId,
     selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
@@ -999,7 +1175,10 @@ export function buildDataOperationsPresentationState(
   selectedBackfillId: string | null,
   workstream: "overview" | "backfills" = "overview",
   selectedProviderId: string | null = null,
-  selectedExportId: string | null = null
+  selectedExportId: string | null = null,
+  providerEvidence: DataOperationsProviderEvidence = {},
+  selectedProviderTab: DataOperationsProviderTabId = "overview",
+  providerVerifyAction: DataOperationsProviderVerifyActionState = buildProviderVerifyActionState(false, null, null, null)
 ): DataOperationsPresentationState {
   const providers = data?.providers ?? [];
   const backfills = data?.backfills ?? [];
@@ -1013,7 +1192,13 @@ export function buildDataOperationsPresentationState(
     : null;
 
   return {
-    providerSection: buildProviderSection(providers, selectedProviderId),
+    providerSection: buildProviderSection(
+      providers,
+      selectedProviderId,
+      providerEvidence,
+      selectedProviderTab,
+      providerVerifyAction
+    ),
     backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
     exportSection: buildExportSection(exports, selectedExportId),
     selectedBackfillDetail,
@@ -1085,57 +1270,153 @@ export function buildRouteFocusCardState({
 
 export function buildProviderSection(
   providers: DataOperationsProviderRecord[],
-  selectedProviderId: string | null = null
+  selectedProviderId: string | null = null,
+  evidence: DataOperationsProviderEvidence = {},
+  selectedTab: DataOperationsProviderTabId = "overview",
+  verifyAction: DataOperationsProviderVerifyActionState = buildProviderVerifyActionState(false, null, null, null)
 ): DataOperationsProviderSectionState {
-  const selectedProvider = resolveSelectedProvider(providers, selectedProviderId);
-  const selectedRowId = selectedProvider ? buildProviderRowId(selectedProvider.provider) : null;
+  const records = buildProviderCenterRecords(providers, evidence);
+  const selectedRecord = resolveSelectedProviderCenterRecord(records, selectedProviderId);
+  const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
+  const rows = records.map((record) => buildProviderRow(record, selectedRowId));
+  const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
+  const blockedCount = rows.filter((row) => row.statusTone === "danger").length;
+  const warningCount = rows.filter((row) => row.statusTone === "warning").length;
+  const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
+  const statusLabel = rows.length === 0
+    ? "No providers"
+    : blockedCount > 0
+      ? `${blockedCount} blocked`
+      : warningCount > 0
+        ? `${warningCount} need review`
+        : "Continuity ready";
 
   return {
-    rows: providers.map((provider) => buildProviderRow(provider, selectedRowId)),
-    hasRows: providers.length > 0,
-    tableLabel: "Provider health",
-    description: "Provider trust, latency, gate impact, and recommended recovery actions.",
+    title: "Provider Management",
+    subtitle: "Configure, verify, monitor, and route market-data and brokerage providers used by Meridian.",
+    statusLabel,
+    statusTone: rows.length === 0 ? "warning" : blockedCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success",
+    commandActions: [
+      {
+        id: "add",
+        label: "Add Provider",
+        ariaLabel: "Configure a new data or brokerage provider",
+        href: null,
+        variant: "default",
+        disabled: false,
+        disabledReason: null,
+        busy: false
+      },
+      {
+        id: "refresh",
+        label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
+        ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
+        href: null,
+        variant: "outline",
+        disabled: Boolean(evidence.providerRoutingRefreshing),
+        disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null,
+        busy: Boolean(evidence.providerRoutingRefreshing)
+      },
+      {
+        id: "diagnostics",
+        label: "Run Diagnostics",
+        ariaLabel: selectedDetail ? `Run diagnostics for ${selectedDetail.title}` : "Run diagnostics for the selected provider",
+        href: null,
+        variant: "outline",
+        disabled: !selectedDetail,
+        disabledReason: selectedDetail ? null : "Select a provider before running diagnostics.",
+        busy: verifyAction.busy
+      },
+      {
+        id: "settings",
+        label: "Open Settings",
+        ariaLabel: "Open provider settings and credential management",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        variant: "outline",
+        disabled: false,
+        disabledReason: null,
+        busy: false
+      }
+    ],
+    providerOptions: rows.map((row) => ({
+      value: row.rowId,
+      label: `${row.provider} — ${row.status} — ${row.capability}`,
+      description: `${row.credentialText}; ${row.verificationText}; ${row.affectedWorkflowsText}`
+    })),
+    summaryCards: buildProviderSummaryCards(selectedDetail, rows, verifiedCount),
+    rows,
+    hasRows: records.length > 0,
+    tableLabel: "Configured providers",
+    description: "Configured, verified, routed, and fallback-active provider posture for downstream workflows.",
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     selectedRowId,
-    selectedDetail: buildSelectedProviderDetail(providers, selectedRowId),
-    detailEmptyState: providers.length === 0
+    selectedDetail,
+    detailEmptyState: records.length === 0
       ? {
           title: "No provider selected",
-          description: "Configure a provider before inspecting trust evidence, latency, gate impact, or recovery actions."
+          description: "Configure a provider before inspecting credential state, routing evidence, diagnostics, or recovery actions."
         }
       : null,
+    diagnosticsSummary: selectedDetail
+      ? selectedDetail.diagnostics.map((item) => `${item.label}: ${item.statusLabel}`).join("; ")
+      : "Select a provider before running diagnostics.",
+    refreshAction: {
+      label: evidence.providerRoutingRefreshing ? "Refreshing..." : "Refresh Status",
+      ariaLabel: evidence.providerRoutingRefreshing ? "Provider status refresh in progress" : "Refresh provider status and routing evidence",
+      busy: Boolean(evidence.providerRoutingRefreshing),
+      disabled: Boolean(evidence.providerRoutingRefreshing),
+      disabledReason: evidence.providerRoutingRefreshing ? "Provider routing refresh is already in progress." : null
+    },
     emptyState: {
       title: "No providers configured",
-      description: "Check provider configuration or run provider detection before relying on live, backfill, or export data."
+      description: "Add a provider before relying on live quotes, historical backfill, brokerage, Security Master, or export data."
     }
   };
 }
 
 export function buildProviderRow(
-  provider: DataOperationsProviderRecord,
+  provider: DataOperationsProviderRecord | DataOperationsProviderCenterRecord,
   selectedProviderId: string | null = null
 ): DataOperationsProviderRow {
-  const rowId = buildProviderRowId(provider.provider);
-  const latencyText = formatProviderValue(provider.latency, "Latency not reported");
-  const trustScoreText = formatProviderValue(provider.trustScore, "Trust score not reported");
-  const signalSourceText = formatProviderValue(provider.signalSource, "Signal source not reported");
-  const reasonCodeText = formatProviderValue(provider.reasonCode, "Reason code not reported");
-  const recommendedActionText = formatProviderValue(provider.recommendedAction, "No operator action reported");
-  const gateImpactText = formatProviderValue(provider.gateImpact, "No gate impact reported");
+  const record = isProviderCenterRecord(provider) ? provider : buildProviderCenterRecordFromWorkspace(provider);
+  const rowId = buildProviderCenterRowId(record);
+  const providerRecord = record.workspaceProvider;
+  const connection = record.connection;
+  const trust = record.trustSnapshot;
+  const bindings = record.bindings;
+  const latencyText = formatProviderValue(providerRecord?.latency, formatLastGoodProviderResponse(connection));
+  const trustScoreText = trust ? `${Math.round(trust.score)}% · ${trust.healthStatus}` : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
+  const signalSourceText = trust?.signals.length ? trust.signals.join(", ") : formatProviderValue(providerRecord?.signalSource, "Signal source not reported");
+  const reasonCodeText = formatProviderValue(providerRecord?.reasonCode, connection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
+  const recommendedActionText = connection
+    ? providerRoutingRecommendedAction(connection, trust, bindings, connection.enabled)
+    : formatProviderValue(providerRecord?.recommendedAction, "No operator action reported");
+  const gateImpactText = formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(connection, trust));
   const selected = rowId === selectedProviderId;
-  const statusTone = resolveProviderStatusTone(provider.status);
+  const status = resolveProviderDisplayStatus(record);
+  const statusTone = resolveProviderStatusTone(status);
+  const credentialText = connection ? providerCredentialLabel(connection.credentialState) : "Not reported";
+  const verificationText = connection ? providerVerificationLabel(connection.verificationState) : providerRoutingVerificationLabel(record.routingConnection, trust);
+  const affectedWorkflows = resolveProviderWorkflows(record);
 
   return {
-    provider: provider.provider,
+    providerId: record.providerId,
+    provider: record.displayName,
     rowId,
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
-    status: provider.status,
+    status,
     rowClassName: providerRowClassName(statusTone),
-    capability: provider.capability,
+    capability: resolveProviderCapability(record),
+    credentialText,
+    verificationText,
+    lastSuccessfulText: formatLastGoodProviderResponse(connection),
+    affectedWorkflowsText: affectedWorkflows.join(", "),
+    actionLabel: connection?.providerId === "alpaca" ? "Manage Alpaca" : "View Details",
+    actionHref: connection?.actionHref || `/settings#provider-${record.providerId}-connection`,
     latencyText,
     trustScoreText,
     signalSourceText,
-    note: provider.note,
+    note: providerRecord?.note ?? recommendedActionText,
     statusTone,
     trustFields: [
       {
@@ -1165,47 +1446,664 @@ export function buildProviderRow(
     selected,
     expanded: selected,
     ariaLabel: [
-      `${selected ? "Selected" : "Inspect"} provider ${provider.provider}`,
-      `Status ${provider.status}`,
-      provider.capability,
-      provider.note,
+      `${selected ? "Selected" : "Inspect"} provider ${record.displayName}`,
+      `Status ${status}`,
+      resolveProviderCapability(record),
+      providerRecord?.note ?? recommendedActionText,
+      `Credential ${credentialText}`,
+      `Verification ${verificationText}`,
       `Latency ${latencyText}`,
       `Trust score ${trustScoreText}`,
       `Gate impact ${gateImpactText}`,
       `Recommended action ${recommendedActionText}`
     ].join(". "),
-    selectAriaLabel: `Inspect provider ${provider.provider}`,
+    selectAriaLabel: `Inspect provider ${record.displayName}`,
     detailDescription: selected
-      ? `Selected provider ${provider.provider}; the provider detail panel is expanded for this row.`
-      : `Inspect provider ${provider.provider}; activation updates the shared provider detail panel.`
+      ? `Selected provider ${record.displayName}; the provider detail panel is expanded for this row.`
+      : `Inspect provider ${record.displayName}; activation updates the shared provider detail panel.`
   };
 }
 
 export function buildSelectedProviderDetail(
-  providers: DataOperationsProviderRecord[],
-  selectedProviderId: string | null
+  providers: DataOperationsProviderRecord[] | DataOperationsProviderCenterRecord[],
+  selectedProviderId: string | null,
+  selectedTab: DataOperationsProviderTabId = "overview",
+  verifyAction: DataOperationsProviderVerifyActionState = buildProviderVerifyActionState(false, null, null, null)
 ): DataOperationsProviderDetailState | null {
-  const selected = resolveSelectedProvider(providers, selectedProviderId);
+  const records = providers.length > 0 && isProviderCenterRecord(providers[0])
+    ? providers as DataOperationsProviderCenterRecord[]
+    : (providers as DataOperationsProviderRecord[]).map(buildProviderCenterRecordFromWorkspace);
+  const selected = resolveSelectedProviderCenterRecord(records, selectedProviderId);
 
   if (!selected) {
     return null;
   }
 
-  const row = buildProviderRow(selected, buildProviderRowId(selected.provider));
+  const rowId = buildProviderCenterRowId(selected);
+  const row = buildProviderRow(selected, rowId);
+  const overviewFields = buildProviderOverviewFields(selected, row);
+  const credentialFields = buildProviderCredentialFieldsForDetail(selected, row);
+  const diagnostics = buildProviderDiagnostics(selected);
 
   return {
     id: DATA_PROVIDER_DETAIL_PANEL_ID,
-    title: selected.provider,
-    subtitle: selected.capability,
-    description: `${selected.note} ${row.gateImpactText}.`,
-    ariaLabel: `Provider detail for ${selected.provider}: ${selected.status}. ${selected.capability}. ${row.recommendedActionText}`,
-    status: selected.status,
+    providerId: selected.providerId,
+    title: selected.displayName,
+    subtitle: row.capability,
+    description: `${row.note} ${row.gateImpactText}.`,
+    ariaLabel: `Provider detail for ${selected.displayName}: ${row.status}. ${row.capability}. ${row.recommendedActionText}`,
+    status: row.status,
     statusTone: row.statusTone,
-    fields: row.trustFields,
+    fields: overviewFields,
+    overviewFields,
+    credentialFields,
+    diagnostics,
+    activeTab: selectedTab,
+    tabs: (["overview", "credentials", "diagnostics"] satisfies DataOperationsProviderTabId[]).map((tab) => ({
+      id: tab,
+      label: tab === "overview" ? "Overview" : tab === "credentials" ? "Credentials" : "Diagnostics",
+      selected: selectedTab === tab,
+      ariaControls: `${DATA_PROVIDER_DETAIL_PANEL_ID}-${tab}`
+    })),
+    verifyAction: selected.connection ? verifyAction : {
+      ...verifyAction,
+      disabled: true,
+      disabledReason: "This provider row does not have a credential connection record yet.",
+      ariaLabel: `Provider verification unavailable for ${selected.displayName}`
+    },
     actionText: row.recommendedActionText,
     reasonCodeText: row.reasonCodeText,
     gateImpactText: row.gateImpactText
   };
+}
+
+export interface DataOperationsProviderCenterRecord {
+  providerId: string;
+  displayName: string;
+  workspaceProvider: DataOperationsProviderRecord | null;
+  connection: ProviderConnectionRow | null;
+  routingConnection: ProviderRoutingConnection | null;
+  bindings: ProviderRoutingBinding[];
+  trustSnapshot: ProviderRoutingTrustSnapshot | null;
+}
+
+function isProviderCenterRecord(value: unknown): value is DataOperationsProviderCenterRecord {
+  return Boolean(value && typeof value === "object" && "providerId" in value && "displayName" in value && "workspaceProvider" in value);
+}
+
+function buildProviderCenterRecords(
+  providers: DataOperationsProviderRecord[],
+  evidence: DataOperationsProviderEvidence
+): DataOperationsProviderCenterRecord[] {
+  const providerConnections = evidence.providerConnections ?? [];
+  const routingConnections = evidence.providerRoutingConnections ?? [];
+  const routingBindings = evidence.providerRoutingBindings ?? [];
+  const trustSnapshots = evidence.providerRoutingTrustSnapshots ?? [];
+  const matchedWorkspace = new Set<string>();
+  const matchedRouting = new Set<string>();
+
+  const records = providerConnections.map((connection) => {
+    const workspaceProvider = findWorkspaceProviderForConnection(connection, providers);
+    if (workspaceProvider) {
+      matchedWorkspace.add(normalizeProviderToken(workspaceProvider.provider));
+    }
+
+    const routingConnection = findRoutingConnectionForProviderConnection(connection, routingConnections);
+    if (routingConnection) {
+      matchedRouting.add(normalizeProviderToken(routingConnection.connectionId));
+    }
+
+    return buildProviderCenterRecord({
+      providerId: connection.providerId,
+      displayName: connection.displayName,
+      workspaceProvider,
+      connection,
+      routingConnection,
+      routingBindings,
+      trustSnapshots
+    });
+  });
+
+  for (const provider of providers) {
+    if (!matchedWorkspace.has(normalizeProviderToken(provider.provider))) {
+      records.push(buildProviderCenterRecordFromWorkspace(provider));
+    }
+  }
+
+  for (const routingConnection of routingConnections) {
+    if (!matchedRouting.has(normalizeProviderToken(routingConnection.connectionId))) {
+      records.push(buildProviderCenterRecord({
+        providerId: routingConnection.connectionId,
+        displayName: routingConnection.displayName,
+        workspaceProvider: null,
+        connection: null,
+        routingConnection,
+        routingBindings,
+        trustSnapshots
+      }));
+    }
+  }
+
+  return records;
+}
+
+function buildProviderCenterRecord({
+  providerId,
+  displayName,
+  workspaceProvider,
+  connection,
+  routingConnection,
+  routingBindings,
+  trustSnapshots
+}: {
+  providerId: string;
+  displayName: string;
+  workspaceProvider: DataOperationsProviderRecord | null;
+  connection: ProviderConnectionRow | null;
+  routingConnection: ProviderRoutingConnection | null;
+  routingBindings: ProviderRoutingBinding[];
+  trustSnapshots: ProviderRoutingTrustSnapshot[];
+}): DataOperationsProviderCenterRecord {
+  const connectionId = routingConnection?.connectionId ?? connection?.providerId ?? providerId;
+  return {
+    providerId,
+    displayName,
+    workspaceProvider,
+    connection,
+    routingConnection,
+    bindings: routingBindings.filter((binding) => normalizeProviderToken(binding.connectionId) === normalizeProviderToken(connectionId)),
+    trustSnapshot: trustSnapshots.find((snapshot) => normalizeProviderToken(snapshot.connectionId) === normalizeProviderToken(connectionId)) ?? null
+  };
+}
+
+function buildProviderCenterRecordFromWorkspace(provider: DataOperationsProviderRecord): DataOperationsProviderCenterRecord {
+  return {
+    providerId: normalizeProviderToken(provider.provider) || provider.provider,
+    displayName: provider.provider,
+    workspaceProvider: provider,
+    connection: null,
+    routingConnection: null,
+    bindings: [],
+    trustSnapshot: null
+  };
+}
+
+function findWorkspaceProviderForConnection(
+  connection: ProviderConnectionRow,
+  providers: DataOperationsProviderRecord[]
+): DataOperationsProviderRecord | null {
+  const providerId = normalizeProviderToken(connection.providerId);
+  const displayName = normalizeProviderToken(connection.displayName);
+  return providers.find((provider) => {
+    const normalized = normalizeProviderToken(provider.provider);
+    return normalized === providerId || normalized === displayName || normalized.includes(providerId) || providerId.includes(normalized);
+  }) ?? null;
+}
+
+function findRoutingConnectionForProviderConnection(
+  connection: ProviderConnectionRow,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderToken(connection.providerId);
+  const displayName = normalizeProviderToken(connection.displayName);
+  return routingConnections.find((routingConnection) => {
+    const connectionId = normalizeProviderToken(routingConnection.connectionId);
+    const familyId = normalizeProviderToken(routingConnection.providerFamilyId);
+    const routingName = normalizeProviderToken(routingConnection.displayName);
+    return connectionId === providerId ||
+      familyId === providerId ||
+      routingName === displayName ||
+      connectionId.includes(providerId) ||
+      providerId.includes(familyId);
+  }) ?? null;
+}
+
+function resolveSelectedProviderCenterRecord(
+  records: DataOperationsProviderCenterRecord[],
+  selectedProviderId: string | null
+): DataOperationsProviderCenterRecord | null {
+  if (records.length === 0) {
+    return null;
+  }
+
+  if (!selectedProviderId) {
+    return records[0];
+  }
+
+  const normalized = normalizeProviderToken(selectedProviderId.replace(/^provider-row-/, ""));
+  return records.find((record) =>
+    normalizeProviderToken(buildProviderCenterRowId(record)) === normalizeProviderToken(selectedProviderId) ||
+    normalizeProviderToken(record.providerId) === normalized ||
+    normalizeProviderToken(record.displayName) === normalized) ?? records[0];
+}
+
+function buildProviderCenterRowId(record: DataOperationsProviderCenterRecord): string {
+  return buildProviderRowId(record.connection?.providerId ?? record.routingConnection?.connectionId ?? record.displayName);
+}
+
+function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderRecord["status"] {
+  if (record.connection) {
+    switch (record.connection.health) {
+      case "Healthy":
+        return "Healthy";
+      case "Blocked":
+        return "Blocked";
+      case "Degraded":
+        return "Degraded";
+      case "Warning":
+        return "Warning";
+      default:
+        return record.workspaceProvider?.status ?? "Warning";
+    }
+  }
+
+  if (record.trustSnapshot) {
+    return record.trustSnapshot.isHealthy ? "Healthy" : "Degraded";
+  }
+
+  return record.workspaceProvider?.status ?? "Warning";
+}
+
+function resolveProviderCapability(record: DataOperationsProviderCenterRecord): string {
+  if (record.connection) {
+    switch (record.connection.capability) {
+      case "DataAndBrokerage":
+        return "Data + Brokerage";
+      case "Brokerage":
+        return "Brokerage";
+      default:
+        return "Data";
+    }
+  }
+
+  const bindingCapabilities = record.bindings.map((binding) => formatProviderRoutingCapability(binding.capability));
+  if (bindingCapabilities.length > 0) {
+    return uniqueStrings(bindingCapabilities).slice(0, 2).join(" + ");
+  }
+
+  return record.workspaceProvider?.capability ?? record.routingConnection?.connectionType ?? "Provider";
+}
+
+function resolveProviderWorkflows(record: DataOperationsProviderCenterRecord): string[] {
+  if (record.connection?.affectedWorkflows.length) {
+    return record.connection.affectedWorkflows;
+  }
+
+  const workflows = record.bindings.map((binding) => formatProviderRoutingCapability(binding.capability));
+  if (workflows.length > 0) {
+    return uniqueStrings(workflows);
+  }
+
+  return ["Workflow impact not declared"];
+}
+
+function buildProviderSummaryCards(
+  detail: DataOperationsProviderDetailState | null,
+  rows: DataOperationsProviderRow[],
+  verifiedCount: number
+): DataOperationsProviderSummaryCardState[] {
+  if (!detail) {
+    return [
+      { id: "health", label: "Connection Health", value: "No provider", detail: "Add or select a provider.", tone: "warning" },
+      { id: "credentials", label: "Credential State", value: "Unavailable", detail: "No credential record loaded.", tone: "warning" },
+      { id: "verification", label: "Verification State", value: "Unavailable", detail: "Verification needs a provider row.", tone: "warning" },
+      { id: "latency", label: "Latency / Last Response", value: "Not reported", detail: "No response evidence loaded.", tone: "default" },
+      { id: "workflows", label: "Affected Workflows", value: "None", detail: "No downstream workflow impact loaded.", tone: "default" },
+      { id: "action", label: "Recommended Action", value: "Add provider", detail: "Configure a provider before routing workflows.", tone: "warning" }
+    ];
+  }
+
+  const health = findField(detail.overviewFields, "health") ?? detail.status;
+  const credential = findField(detail.credentialFields, "credential-state") ?? "Not reported";
+  const verification = findField(detail.credentialFields, "verification-state") ?? "Not reported";
+  const latency = findField(detail.overviewFields, "last-response") ?? "Not reported";
+  const workflows = findField(detail.overviewFields, "workflows") ?? "Workflow impact not declared";
+  return [
+    { id: "health", label: "Connection Health", value: health, detail: detail.description, tone: detail.statusTone },
+    { id: "credentials", label: "Credential State", value: credential, detail: `${verifiedCount}/${rows.length} providers are verified or credential-free.`, tone: credentialToneFromLabel(credential) },
+    { id: "verification", label: "Verification State", value: verification, detail: "Verification is separate from configured state.", tone: verificationToneFromLabel(verification) },
+    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful heartbeat or reported latency.", tone: "default" },
+    { id: "workflows", label: "Affected Workflows", value: workflows, detail: "Workflow impact before routing changes.", tone: "default" },
+    { id: "action", label: "Recommended Action", value: detail.actionText, detail: detail.gateImpactText, tone: detail.statusTone }
+  ];
+}
+
+function buildProviderOverviewFields(
+  record: DataOperationsProviderCenterRecord,
+  row: DataOperationsProviderRow
+): DataOperationsDetailField[] {
+  const connection = record.connection;
+  return [
+    { id: "health", label: "Current health", value: row.status },
+    { id: "capability", label: "Capability", value: row.capability },
+    { id: "connection-state", label: "Connection state", value: connection ? row.status : "Routing evidence only" },
+    { id: "credential-state", label: "Credential state", value: row.credentialText },
+    { id: "verification-state", label: "Verification", value: row.verificationText },
+    { id: "last-verified", label: "Last verified", value: formatUtcMinute(connection?.lastVerifiedAt) },
+    { id: "last-response", label: "Last successful call", value: row.lastSuccessfulText },
+    { id: "last-failure", label: "Last failure", value: formatUtcMinute(connection?.lastFailureAt) },
+    { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
+    { id: "fallback", label: "Fallback", value: connection?.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(record.bindings) },
+    { id: "workflows", label: "Affected workflows", value: row.affectedWorkflowsText },
+    { id: "trust-score", label: "Trust score", value: row.trustScoreText }
+  ];
+}
+
+function buildProviderCredentialFieldsForDetail(
+  record: DataOperationsProviderCenterRecord,
+  row: DataOperationsProviderRow
+): DataOperationsDetailField[] {
+  const connection = record.connection;
+  return [
+    { id: "credential-source", label: "Credential source", value: connection ? providerCredentialSourceLabel(connection.credentialSource) : "Routing API only" },
+    { id: "credential-state", label: "Credential state", value: row.credentialText },
+    { id: "verification-state", label: "Verification state", value: row.verificationText },
+    { id: "masked-key", label: "Masked key preview", value: connection?.maskedKeyPreview ?? "Hidden after save" },
+    { id: "environment", label: "Environment", value: connection?.environment ? connection.environment.toUpperCase() : providerRoutingEnvironmentLabel(record.routingConnection) },
+    { id: "external-account", label: "External account ID", value: connection?.externalAccountId ?? record.routingConnection?.externalAccountId ?? "Not linked" },
+    { id: "safe-action", label: "Safe action", value: connection ? "Verify credentials through the shared provider route." : "Open Settings to configure credentials first." }
+  ];
+}
+
+function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): DataOperationsProviderDiagnosticRow[] {
+  const connection = record.connection;
+  const hasCredentialRecord = Boolean(connection);
+  const credentialPass = connection?.credentialState === "Verified" || connection?.credentialState === "NotRequired" || connection?.credentialState === "Configured";
+  const verificationPass = connection?.verificationState === "Verified" || connection?.verificationState === "NotRequired";
+  const endpointPass = record.trustSnapshot?.isHealthy ?? connection?.health === "Healthy";
+  return [
+    {
+      id: "credential-presence",
+      label: "Credential presence",
+      status: !hasCredentialRecord ? "pending" : credentialPass ? "pass" : "fail",
+      statusLabel: !hasCredentialRecord ? "Not loaded" : credentialPass ? "Pass" : "Fail",
+      detail: !hasCredentialRecord ? "No credential connection row is loaded for this provider." : providerCredentialLabel(connection!.credentialState)
+    },
+    {
+      id: "credential-verification",
+      label: "Credential verification",
+      status: !hasCredentialRecord ? "pending" : verificationPass ? "pass" : "warning",
+      statusLabel: !hasCredentialRecord ? "Not loaded" : verificationPass ? "Pass" : "Review",
+      detail: !hasCredentialRecord ? "Verification requires a configured provider connection." : providerVerificationLabel(connection!.verificationState)
+    },
+    {
+      id: "endpoint-reachable",
+      label: "Endpoint reachable",
+      status: endpointPass ? "pass" : "pending",
+      statusLabel: endpointPass ? "Pass" : "Placeholder",
+      detail: record.trustSnapshot ? `${Math.round(record.trustSnapshot.score)}% trust snapshot` : "Provider-specific endpoint probes are not part of this MVP."
+    },
+    {
+      id: "quote-test",
+      label: "Sample quote test",
+      status: "pending",
+      statusLabel: "Placeholder",
+      detail: "Quote diagnostics will use provider-specific checks in a follow-up phase."
+    },
+    {
+      id: "backfill-test",
+      label: "Sample backfill test",
+      status: "pending",
+      statusLabel: "Placeholder",
+      detail: "Backfill diagnostics will use provider-specific checks in a follow-up phase."
+    },
+    {
+      id: "reference-test",
+      label: "Reference lookup test",
+      status: "pending",
+      statusLabel: "Placeholder",
+      detail: "Reference-data diagnostics will use provider-specific checks in a follow-up phase."
+    }
+  ];
+}
+
+function buildProviderVerifyActionState(
+  busy: boolean,
+  providerId: string | null,
+  result: ProviderCredentialVerificationResult | null,
+  error: ApiErrorDisplay | null
+): DataOperationsProviderVerifyActionState {
+  if (busy) {
+    return {
+      label: "Verifying...",
+      ariaLabel: providerId ? `Provider verification in progress for ${providerId}` : "Provider verification in progress",
+      busy: true,
+      disabled: true,
+      disabledReason: "Provider verification is already running.",
+      statusLabel: "Verification running.",
+      statusTone: "default",
+      details: []
+    };
+  }
+
+  if (error) {
+    return {
+      label: "Run Verification",
+      ariaLabel: "Run provider credential verification",
+      busy: false,
+      disabled: false,
+      disabledReason: null,
+      statusLabel: error.summary,
+      statusTone: "danger",
+      details: error.details
+    };
+  }
+
+  if (result) {
+    return {
+      label: "Run Verification",
+      ariaLabel: `Run provider credential verification for ${result.providerId}`,
+      busy: false,
+      disabled: false,
+      disabledReason: null,
+      statusLabel: result.success ? "Verification passed." : "Verification needs review.",
+      statusTone: result.success ? "success" : "warning",
+      details: [
+        result.lastError,
+        result.externalAccountId ? `External account: ${result.externalAccountId}` : null,
+        ...result.warnings
+      ].filter((value): value is string => Boolean(value))
+    };
+  }
+
+  return {
+    label: "Run Verification",
+    ariaLabel: "Run provider credential verification",
+    busy: false,
+    disabled: false,
+    disabledReason: null,
+    statusLabel: "Credential verification can be run from this tab.",
+    statusTone: "default",
+    details: []
+  };
+}
+
+function providerCredentialLabel(value: ProviderConnectionRow["credentialState"]): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function providerVerificationLabel(value: ProviderConnectionRow["verificationState"]): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    case "NotVerified":
+      return "Not verified";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function providerCredentialSourceLabel(value: ProviderConnectionRow["credentialSource"]): string {
+  switch (value) {
+    case "LocalEncryptedStore":
+      return "Encrypted local store";
+    case "ExternalVaultReference":
+      return "External vault reference";
+    case "NotRequired":
+      return "Not required";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function providerRoutingVerificationLabel(
+  connection: ProviderRoutingConnection | null,
+  trust: ProviderRoutingTrustSnapshot | null
+): string {
+  if (trust?.isCertificationFresh) {
+    return "Certified";
+  }
+
+  if (connection?.productionReady) {
+    return "Production ready";
+  }
+
+  return connection ? "Certification pending" : "Not reported";
+}
+
+function providerRoutingRecommendedAction(
+  connection: ProviderRoutingConnection,
+  trust: ProviderRoutingTrustSnapshot | null,
+  bindings: ProviderRoutingBinding[],
+  enabled: boolean
+): string {
+  if (!enabled) {
+    return "Enable the routing connection before selecting it for provider workflows.";
+  }
+
+  if (bindings.length === 0) {
+    return "Add a provider-routing binding before selecting this connection.";
+  }
+
+  if (!connection.productionReady) {
+    return "Run provider certification before production routing.";
+  }
+
+  if (trust && !trust.isHealthy) {
+    return "Inspect provider health before routing new workflow traffic.";
+  }
+
+  return "Provider routing is ready for supported capabilities.";
+}
+
+function providerGateImpactText(
+  connection: ProviderRoutingConnection | null,
+  trust: ProviderRoutingTrustSnapshot | null
+): string {
+  if (!connection) {
+    return "No routing gate loaded";
+  }
+
+  if (!connection.enabled) {
+    return "Disabled for routing";
+  }
+
+  if (!connection.productionReady) {
+    return "Certification needed";
+  }
+
+  if (trust && !trust.isHealthy) {
+    return "Health gate needs review";
+  }
+
+  return "No gate impact reported";
+}
+
+function providerRoutingFallbackLabel(bindings: ProviderRoutingBinding[]): string {
+  const count = bindings.reduce((total, binding) => total + binding.failoverConnectionIds.length, 0);
+  return count > 0 ? `${count} fallback route${count === 1 ? "" : "s"}` : "No fallback active";
+}
+
+function providerRoutingEnvironmentLabel(connection: ProviderRoutingConnection | null): string {
+  if (!connection) {
+    return "Not set";
+  }
+
+  if (connection.connectionMode.toLowerCase().includes("paper")) {
+    return "PAPER";
+  }
+
+  if (connection.connectionMode.toLowerCase().includes("live")) {
+    return "LIVE";
+  }
+
+  return connection.connectionMode;
+}
+
+function formatProviderRoutingCapability(value: string): string {
+  switch (value) {
+    case "RealtimeMarketData":
+      return "Live quotes";
+    case "HistoricalBars":
+      return "Historical backfill";
+    case "ReferenceData":
+      return "Reference data";
+    case "BrokerageOrders":
+      return "Brokerage/order routing";
+    case "PortfolioSync":
+      return "Portfolio sync";
+    case "ReportingExport":
+      return "Reporting exports";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function formatLastGoodProviderResponse(connection: ProviderConnectionRow | null): string {
+  return formatUtcMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
+}
+
+function formatUtcMinute(value: string | null | undefined): string {
+  if (!value) {
+    return "Never";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short"
+  }).format(date);
+}
+
+function normalizeProviderToken(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return values.filter((value, index) => values.indexOf(value) === index);
+}
+
+function findField(fields: DataOperationsDetailField[], id: string): string | null {
+  return fields.find((field) => field.id === id)?.value ?? null;
+}
+
+function credentialToneFromLabel(value: string): DataOperationsProviderSummaryCardState["tone"] {
+  return value === "Verified" || value === "Not required"
+    ? "success"
+    : value === "Missing" || value === "Partial" || value === "Invalid"
+      ? "danger"
+      : "warning";
+}
+
+function verificationToneFromLabel(value: string): DataOperationsProviderSummaryCardState["tone"] {
+  return value === "Verified" || value === "Not required"
+    ? "success"
+    : value === "Failed"
+      ? "danger"
+      : "warning";
 }
 
 export function buildBackfillSection(

@@ -7,7 +7,9 @@ description: Generate high-value ideas for Meridian features, UX improvements, a
 
 Generate ideas that feel native to Meridian's current platform and product direction, not generic trading-app feature lists.
 
-Read `../_shared/project-context.md` before proposing implementation hooks or naming concrete abstractions. Read `references/competitive-landscape.md` when the user asks for differentiation, market positioning, or competitor-informed ideas.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before proposing
+implementation hooks or naming concrete abstractions. Read `references/competitive-landscape.md`
+when the user asks for differentiation, market positioning, or competitor-informed ideas.
 
 ## Workflow
 

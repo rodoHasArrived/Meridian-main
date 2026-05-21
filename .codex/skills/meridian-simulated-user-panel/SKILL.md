@@ -15,7 +15,8 @@ description: >
 Run artifact-driven Meridian product reviews that can behave as a `design_partner`,
 `release_gate`, or `usability_lab` depending on the request.
 
-Read `../_shared/project-context.md` before making claims about current Meridian capabilities.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before making
+claims about current Meridian capabilities.
 Read `references/review-contract.md` before choosing the output shape. Read
 `references/personas.md` before choosing a panel. Read `references/review-modes.md` when the best
 mode or focus area is unclear. Read `references/artifact-bundles.md` when the review depends on

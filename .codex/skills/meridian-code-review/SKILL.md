@@ -7,7 +7,9 @@ description: Review Meridian code for bugs, regressions, architecture drift, mis
 
 Review Meridian changes with a bug-finding mindset first. Prefer findings over summary, and ground every finding in Meridian's architecture rules.
 
-Read `../_shared/project-context.md` before reviewing. If the change touches a highly specialized area, inspect the relevant source files and tests before drawing conclusions.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before reviewing.
+If the change touches a highly specialized area, inspect the relevant source files and tests before
+drawing conclusions.
 
 ## Review Order
 

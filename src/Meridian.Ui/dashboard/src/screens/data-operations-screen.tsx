@@ -2,6 +2,8 @@ import {
   CheckCircle2,
   DatabaseZap,
   FileOutput,
+  KeyRound,
+  MonitorCheck,
   Plus,
   RadioTower,
   RefreshCcw,
@@ -37,15 +39,29 @@ import type {
   DataOperationsExportDetailState,
   DataOperationsExportRow,
   DataOperationsLoadingState,
+  DataOperationsProviderDiagnosticRow,
   DataOperationsProviderDetailState,
   DataOperationsProviderRow,
   DataOperationsRouteFocusCardState,
+  DataOperationsProviderSummaryCardState,
   ProviderSetupNextActionState
 } from "@/screens/data-operations-screen.view-model";
+import type {
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot
+} from "@/types";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
+  providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
   onProviderSetupConfigured?: () => Promise<void> | void;
+  onProviderRoutingRefresh?: () => Promise<void> | void;
 }
 
 const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
@@ -72,8 +88,18 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     )
   },
   {
+    id: "credential",
+    label: "Credential",
+    render: (provider) => <span className="text-xs text-muted-foreground">{provider.credentialText}</span>
+  },
+  {
+    id: "verification",
+    label: "Verification",
+    render: (provider) => <span className="text-xs text-muted-foreground">{provider.verificationText}</span>
+  },
+  {
     id: "latency",
-    label: "Latency",
+    label: "Last good",
     render: (provider) => <span className="font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
   },
   {
@@ -88,8 +114,8 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "gate",
-    label: "Gate impact",
-    render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.gateImpactText}</span>
+    label: "Workflows",
+    render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.affectedWorkflowsText}</span>
   }
 ];
 
@@ -173,14 +199,38 @@ const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
   }
 ];
 
-export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOperationsScreenProps) {
+export function DataOperationsScreen({
+  data,
+  providerConnections = null,
+  providerRoutingConnections = null,
+  providerRoutingBindings = null,
+  providerRoutingTrustSnapshots = null,
+  providerRoutingRefreshing = false,
+  onProviderSetupConfigured,
+  onProviderRoutingRefresh
+}: DataOperationsScreenProps) {
   const { pathname } = useLocation();
   const workspace = workspaceForPath(pathname);
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
   );
-  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle);
+  const providerEvidence = useMemo(() => ({
+    providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    providerRoutingRefreshing,
+    onProviderRoutingRefresh
+  }), [
+    onProviderRoutingRefresh,
+    providerConnections,
+    providerRoutingBindings,
+    providerRoutingConnections,
+    providerRoutingRefreshing,
+    providerRoutingTrustSnapshots
+  ]);
+  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -249,20 +299,78 @@ export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOp
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
         <Card aria-labelledby="data-provider-health-title" className="xl:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <CardTitle id="data-provider-health-title">Provider health</CardTitle>
-                <CardDescription>Current data-source posture for security, market, and export coverage.</CardDescription>
+                <div className="eyebrow-label">Provider management</div>
+                <CardTitle id="data-provider-health-title" className="mt-2 flex items-center gap-2">
+                  <MonitorCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.providerSection.title}
+                </CardTitle>
+                <CardDescription className="mt-2">{vm.providerSection.subtitle}</CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={vm.openProviderSetup} aria-label="Configure a new data provider">
-                <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                Add provider
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant={vm.providerSection.statusTone === "danger" ? "danger" : vm.providerSection.statusTone === "warning" ? "warning" : "success"}
+                  dot={vm.providerSection.statusTone === "success"}
+                >
+                  {vm.providerSection.statusLabel}
+                </Badge>
+                {vm.providerSection.commandActions.map((action) => (
+                  action.href ? (
+                    <Button key={action.id} asChild size="sm" variant={action.variant}>
+                      <Link to={action.href} aria-label={action.ariaLabel}>
+                        <ProviderCommandIcon actionId={action.id} busy={action.busy} />
+                        {action.label}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      key={action.id}
+                      size="sm"
+                      variant={action.variant}
+                      onClick={() => {
+                        if (action.id === "add") vm.openProviderSetup();
+                        if (action.id === "refresh") void onProviderRoutingRefresh?.();
+                        if (action.id === "diagnostics") void vm.verifySelectedProvider();
+                      }}
+                      disabled={action.disabled}
+                      disabledReason={action.disabledReason}
+                      busy={action.busy}
+                      aria-label={action.ariaLabel}
+                    >
+                      <ProviderCommandIcon actionId={action.id} busy={action.busy} />
+                      {action.label}
+                    </Button>
+                  )
+                ))}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {vm.providerSection.hasRows ? (
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.42fr)]">
+              <>
+                <label htmlFor="configured-provider-selector" className="grid gap-1 text-sm font-medium text-muted-foreground">
+                  Configured Provider
+                  <select
+                    id="configured-provider-selector"
+                    className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    value={vm.providerSection.selectedRowId ?? ""}
+                    onChange={(event) => vm.selectProvider(event.target.value)}
+                    aria-label="Configured provider"
+                  >
+                    {vm.providerSection.providerOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                  {vm.providerSection.summaryCards.map((card) => (
+                    <ProviderSummaryCard key={card.id} card={card} />
+                  ))}
+                </div>
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.46fr)]">
                 <DenseDataTable
                   columns={providerHealthColumns}
                   rows={vm.providerSection.rows}
@@ -281,8 +389,12 @@ export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOp
                 <ProviderDetailPanel
                   detail={vm.providerSection.selectedDetail}
                   emptyState={vm.providerSection.detailEmptyState}
+                  activeTab={vm.selectedProviderTab}
+                  onTabSelect={vm.selectProviderTab}
+                  onVerify={vm.verifySelectedProvider}
                 />
               </div>
+              </>
             ) : (
               <ProviderEmptyState state={vm.providerSection.emptyState} onSetup={vm.openProviderSetup} />
             )}
@@ -372,6 +484,37 @@ export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOp
 }
 
 type DataOperationsVm = ReturnType<typeof useDataOperationsViewModel>;
+
+function ProviderCommandIcon({
+  actionId,
+  busy
+}: {
+  actionId: "add" | "refresh" | "diagnostics" | "settings";
+  busy: boolean;
+}) {
+  if (actionId === "add") return <Plus className="h-3.5 w-3.5" aria-hidden="true" />;
+  if (actionId === "refresh") return <RefreshCcw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden="true" />;
+  if (actionId === "diagnostics") return <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />;
+  return <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />;
+}
+
+function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCardState }) {
+  const toneClass = card.tone === "success"
+    ? "border-success/30 bg-success/10"
+    : card.tone === "warning"
+      ? "border-warning/35 bg-warning/10"
+      : card.tone === "danger"
+        ? "border-danger/35 bg-danger/10"
+        : "border-border/70 bg-secondary/25";
+
+  return (
+    <div className={cn("min-w-0 rounded-md border px-3 py-3", toneClass)}>
+      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
+      <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
+      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+    </div>
+  );
+}
 
 function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingState }) {
   return (

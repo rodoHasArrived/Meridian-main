@@ -9,9 +9,10 @@ Use this skill when the task is to retire stale material without losing useful h
 
 Read these in order:
 1. `../_shared/project-context.md`
-2. `../../../archive/docs/README.md`
-3. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
-4. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
+2. `../_shared/codex-execution-contract.md`
+3. `../../../archive/docs/README.md`
+4. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
+5. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
 
 ## Definition of Done
 

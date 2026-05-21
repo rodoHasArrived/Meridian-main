@@ -488,27 +488,27 @@ public sealed record StrategyRunTimelineEntry(
 
 /// <summary>Cross-mode transition metadata for lineage timeline events.</summary>
 public sealed record StrategyRunCrossModeTransitionMetadata(
-    StrategyRunMode? SourceMode,
-    StrategyRunMode? TargetMode,
-    string? SourceRunId,
-    string? TargetRunId,
-    string? PromotionReference,
-    string? ReplayAuditReference,
-    DateTimeOffset? ReplayVerifiedAt,
-    bool HasReplayAudit);
+    StrategyRunMode? SourceMode = null,
+    StrategyRunMode? TargetMode = null,
+    string? SourceRunId = null,
+    string? TargetRunId = null,
+    string? PromotionReference = null,
+    string? ReplayAuditReference = null,
+    DateTimeOffset? ReplayVerifiedAt = null,
+    bool? HasReplayAudit = null);
 
 /// <summary>Lineage timeline event grouped by canonical run identity.</summary>
 public sealed record StrategyRunLineageTimelineEntry(
-    string CanonicalRunKey,
-    string? ParentCanonicalRunKey,
-    string RunId,
-    string StrategyId,
-    string StrategyName,
-    StrategyRunMode Mode,
-    StrategyRunStatus Status,
-    DateTimeOffset EventTimestamp,
-    StrategyRunLineageEventType EventType,
-    string? PromotionDecision,
+    string? CanonicalRunKey = null,
+    string? ParentCanonicalRunKey = null,
+    string? RunId = null,
+    string? StrategyId = null,
+    string? StrategyName = null,
+    StrategyRunMode? Mode = null,
+    StrategyRunStatus? Status = null,
+    DateTimeOffset? EventTimestamp = null,
+    StrategyRunLineageEventType? EventType = null,
+    string? PromotionDecision = null,
     StrategyRunCrossModeTransitionMetadata? CrossModeTransition = null);
 
 /// <summary>

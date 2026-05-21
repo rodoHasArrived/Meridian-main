@@ -7,7 +7,9 @@ description: Build or extend Meridian market data providers. Use when the user a
 
 Build provider code that fits Meridian's provider contracts, rate-limiting rules, serialization patterns, and DI structure on the first pass.
 
-Read `../_shared/project-context.md` before starting. Read `references/provider-patterns.md` when you need skeletons, file layout, or compliance reminders.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before starting.
+Read `references/provider-patterns.md` when you need skeletons, file layout, or compliance
+reminders.
 
 ## Choose the Provider Type First
 

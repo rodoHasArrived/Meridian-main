@@ -11,8 +11,9 @@ Deliver production-ready code changes and leave documentation in a consistent, c
 > **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md)
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
 
-Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md`
-before writing docs. Read `references/evaluation-harness.md` before finalizing output.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before coding.
+Read `references/documentation-routing.md` before writing docs. Read
+`references/evaluation-harness.md` before finalizing output.
 
 ## Definition of Done
 
@@ -22,6 +23,7 @@ A task delivered by this skill is complete when **all** of the following are tru
 - [ ] **Tests cover the change:** tests for happy path, failure path, and cancellation/disposal exist or are cited as a gap.
 - [ ] **Validation evidence is explicit:** the final response includes exact commands and their pass/fail results.
 - [ ] **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
+- [ ] **AI tooling gates pass for AI/tooling changes:** run `make ai-verify`, run `make ai-arch-check`, and confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step.
 - [ ] **Rubric score >= 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
 - [ ] **Performance-sensitive paths are annotated:** any hot path touched by the change includes an explicit note on allocation, async, or buffering risk.
 - [ ] **Summary is traceable:** the closing summary links requirement -> files changed -> validation artifact -> doc update.
@@ -35,6 +37,38 @@ A task delivered by this skill is complete when **all** of the following are tru
 5. Update related documentation; if missing, add docs in the correct doc area.
 6. Run the evaluation harness and report pass/fail with evidence.
 7. Summarize code and docs updates and call out residual risk.
+
+## Execution Discipline
+
+Use these gates before and during implementation.
+
+### Concurrent Implementation Gate
+
+- Check `git status --short` before editing and treat unrelated changes as user-owned.
+- Split concurrent work only across disjoint files, projects, or subsystems with explicit ownership.
+- Keep one coordinator responsible for integrating worker results, resolving conflicts, and running final validation.
+- Do not assign overlapping write scopes unless the overlap is intentionally sequenced and documented.
+- Avoid broad shared-output builds during parallel work. For concurrent .NET builds, use isolated output through `python3 build/python/cli/buildctl.py build --isolation-key codex-<task>`.
+
+### Narrow Validation Gate
+
+- Run the smallest command that covers the touched layer before broadening.
+- Prefer filtered `dotnet test`, package-local dashboard commands, doc-only checks, and `--no-build` after a valid isolated build.
+- Use `npm --prefix src/Meridian.Ui/dashboard ...` for browser-workstation validation and avoid WPF checks unless WPF or shared desktop contracts changed.
+- Treat broad `make test`, full solution builds, full Vitest runs, and release packaging checks as escalation paths, not the default proof for narrow edits.
+
+### Cosmetic Churn Gate
+
+- Skip capitalization, uncapitalization, whitespace, punctuation, and wording-only edits unless they fix canonical naming, broken docs, accessibility text, lint/test failures, API contract names, or user-visible copy correctness.
+- Do not run broad formatters to normalize files outside the task scope.
+- If a tempting cosmetic cleanup is intentionally skipped, mention it only when it clarifies scope control.
+
+### Naming and Boundary Preflight
+
+- Use PascalCase C# file names that match the primary type.
+- Prefix interface files with `I`; name tests `{SourceName}Tests.cs`; name endpoint files `{Feature}Endpoints.cs`.
+- Keep shared DTOs in `Contracts`, provider abstractions in `ProviderSdk`, configuration in `Core/Config`, and UI-specific contracts in `Ui.Services/Contracts`.
+- Preserve project boundaries: `Contracts` must not reference other projects, `Ui.Services` must not reference `Application`, and lower layers must not depend on higher orchestration layers.
 
 ## Requirement Type Detection
 
@@ -65,7 +99,7 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - Inspect only the relevant Meridian project instincts when local learned behavior would help. Treat each instinct as a hint to verify against the current repo state before turning it into instructions.
 - Keep the main skill file concise and imperative. Move detailed material into `references/`, deterministic helpers into `scripts/`, and output resources into `assets/`.
 - Preserve host-specific metadata rules. For repo-local Codex skills, keep frontmatter to `name` and `description`. For portable Claude packages, preserve the metadata required by that host.
-- Keep mirrored Codex, Claude, and GitHub agent guidance aligned when a shared workflow or policy changes.
+- Keep mirrored Codex, Claude, and GitHub agent guidance aligned only when a shared workflow or policy changes. If the user scopes the work to Codex only, update the Codex skill, Codex catalog, and `agents/openai.yaml` metadata without widening into Claude or GitHub surfaces.
 - Avoid auxiliary docs inside skill folders unless they directly support execution or are required by the host format.
 - If `agents/openai.yaml` exists, regenerate or update it so the UI-facing metadata still matches the skill instructions.
 - Run `python build/scripts/docs/check-ai-inventory.py --summary` after Codex skill metadata or shared-context edits, and run representative tests for any added or changed scripts.
@@ -95,6 +129,15 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - When runtime config or persistence semantics change, update the AI-facing docs and shared context in the same change: the relevant `docs/ai/*` pages, `../_shared/project-context.md`, and any mirrored Codex, Claude, or GitHub agent files that teach the affected workflow.
 - Keep documentation concrete: what changed, why, and how to use or operate it.
 
+## AI Tooling Gates
+
+For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistant-workflow changes, classify validation as required, advisory, or maintenance/reporting.
+
+- Required quality gates: `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step in `.github/workflows/ci.yml`.
+- Advisory tooling: `make ai-audit*`, `make ai-report`, `make ai-docs-freshness`, `make ai-docs-drift`, `make ai-docs-sync-report`, `make ai-arch-check-summary`, and `make ai-arch-check-json`.
+- Maintenance/reporting tooling: `make ai-maintenance-light`, `make ai-maintenance-full`, `make ai-docs-archive`, and `make ai-docs-archive-execute`.
+- Keep the root `make help` grouping aligned with this split so contributors can tell blocking gates from optional tooling.
+
 ## Automation Scripts
 
 Use bundled scripts to keep execution fast and consistent:
@@ -119,5 +162,28 @@ Before finishing, confirm:
 - [ ] code compiles or tests pass for the touched surface
 - [ ] performance-sensitive changes were reviewed with explicit notes
 - [ ] docs were updated, or newly added in the correct location
+- [ ] AI/tooling changes ran `make ai-verify`, `make ai-arch-check`, and confirmed the CI contract-drift step
+- [ ] final response includes a Code + Docs Sync Matrix with code change, doc owner, doc update status, and validation result
 - [ ] evaluation harness was completed with a rubric score summary (>= 8/10, no category at 0)
 - [ ] summary includes validation commands and any residual risk
+
+Use this response structure for implementation turns:
+
+```md
+**Implemented**
+- Code: <behavior-level changes>
+- Docs: <updated docs or "No docs needed: <reason>">
+
+**Validation**
+- Required gates: <commands/results>
+- Narrow checks: <commands/results>
+- Advisory checks: <commands/results or "not run: <reason>">
+
+**Concurrency And Scope**
+- Work split: <none | worker ownership>
+- Isolation: <build/test isolation used>
+- Skipped churn: <cosmetic edits intentionally avoided>
+
+**Residual Risk**
+- <real remaining blocker or gap>
+```

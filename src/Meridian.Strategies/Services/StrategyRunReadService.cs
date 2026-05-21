@@ -116,7 +116,7 @@ public sealed class StrategyRunReadService
         return runs
             .GroupBy(static run => run.Identity?.CanonicalRunKey ?? run.RunId, StringComparer.Ordinal)
             .SelectMany(BuildLineageTimelineEntries)
-            .OrderBy(static entry => entry.EventTimestamp)
+            .OrderBy(static entry => entry.EventTimestamp ?? DateTimeOffset.MinValue)
             .ThenBy(static entry => entry.CanonicalRunKey, StringComparer.Ordinal)
             .ThenBy(static entry => entry.RunId, StringComparer.Ordinal)
             .ThenBy(static entry => entry.EventType)
@@ -976,7 +976,7 @@ public sealed class StrategyRunReadService
         var attributionTask = GetAttributionAsync(runId, ct);
         var drawdownTask = GetEquityCurveAsync(runId, ct);
         var tradeTask = GetFillsAsync(runId, ct);
-        var cashFlowTask = _cashFlowProjectionService?.GetAsync(runId, ct) ?? Task.FromResult<RunCashFlowSummary?>(null);
+        var cashFlowTask = _cashFlowProjectionService?.GetAsync(runId, ct: ct) ?? Task.FromResult<RunCashFlowSummary?>(null);
 
         await Task.WhenAll(attributionTask, drawdownTask, tradeTask, cashFlowTask).ConfigureAwait(false);
 
@@ -1002,9 +1002,6 @@ public sealed class StrategyRunReadService
             return cashFlow.Currency;
         }
 
-        var firstFillCurrency = run.Metrics?.Fills
-            .FirstOrDefault(static fill => !string.IsNullOrWhiteSpace(fill.Currency))
-            ?.Currency;
-        return string.IsNullOrWhiteSpace(firstFillCurrency) ? "USD" : firstFillCurrency;
+        return "USD";
     }
 }

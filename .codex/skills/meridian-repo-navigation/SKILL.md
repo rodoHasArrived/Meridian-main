@@ -9,8 +9,9 @@ Use this skill first when the main problem is orientation inside Meridian's size
 
 Read these in order:
 1. `../_shared/project-context.md`
-2. `../../../docs/ai/generated/repo-navigation.md`
-3. `../../../docs/ai/navigation/README.md`
+2. `../_shared/codex-execution-contract.md`
+3. `../../../docs/ai/generated/repo-navigation.md`
+4. `../../../docs/ai/navigation/README.md`
 
 If MCP access is available, prefer the generated navigation resources/tools before broad codebase searching:
 - `mdc://repo-navigation/quick-start`

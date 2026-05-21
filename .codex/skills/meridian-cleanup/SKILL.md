@@ -7,7 +7,9 @@ description: Clean up Meridian code and docs without changing observable behavio
 
 Make Meridian easier to maintain without turning a cleanup pass into a feature, architecture, or behavior change.
 
-Read `../_shared/project-context.md` before editing. If the cleanup touches specialized rules, inspect the nearest source, tests, and existing agent guidance in `.github/agents/cleanup-agent.md`.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before editing.
+If the cleanup touches specialized rules, inspect the nearest source, tests, and existing agent
+guidance in `.github/agents/cleanup-agent.md`.
 
 ## Workflow
 

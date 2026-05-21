@@ -7,7 +7,9 @@ description: Create, refresh, and reconcile Meridian roadmap, delivery-plan, opp
 
 Turn Meridian status, plan, and codebase signals into a roadmap another teammate can use to prioritize work.
 
-Read `../_shared/project-context.md` first. Read `references/roadmap-source-map.md` before deciding what is complete, what is still open, what new opportunities exist, or what the end-state product should be.
+Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` first. Read
+`references/roadmap-source-map.md` before deciding what is complete, what is still open, what new
+opportunities exist, or what the end-state product should be.
 
 ## Workflow
 
