@@ -1,0 +1,94 @@
+name: Provider Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      date_stamp:
+        description: >
+          Date stamp for output directory (YYYY-MM-DD).
+          Defaults to today (UTC) when left blank.
+        required: false
+        default: ""
+      skip_wave1:
+        description: Skip Wave 1 validation and only regenerate the DK1 packet and sign-off template.
+        required: false
+        type: boolean
+        default: false
+      candidate_kernel_version:
+        description: Candidate kernel version label for degradation calibration (leave blank to skip calibration).
+        required: false
+        default: ""
+      baseline_kernel_version:
+        description: Baseline kernel version label for degradation calibration.
+        required: false
+        default: "default"
+  schedule:
+    - cron: "0 6 * * 1"  # Every Monday at 06:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-validation-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  run-validation:
+    name: Wave 1 Provider Validation + DK1 Evidence Bundle
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Run provider validation evidence bundle
+        shell: pwsh
+        run: |
+          $bundleArgs = @()
+          if ('${{ inputs.date_stamp }}' -ne '') {
+            $bundleArgs += '-DateStamp', '${{ inputs.date_stamp }}'
+          }
+          if ('${{ inputs.skip_wave1 }}' -eq 'true') {
+            $bundleArgs += '-SkipWave1'
+          }
+          if ('${{ inputs.candidate_kernel_version }}' -ne '') {
+            $bundleArgs += '-CandidateKernelVersion', '${{ inputs.candidate_kernel_version }}'
+          }
+          if ('${{ inputs.baseline_kernel_version }}' -ne '' -and '${{ inputs.baseline_kernel_version }}' -ne 'default') {
+            $bundleArgs += '-BaselineKernelVersion', '${{ inputs.baseline_kernel_version }}'
+          }
+          & scripts/dev/run-provider-validation-evidence-bundle.ps1 @bundleArgs
+
+      - name: Upload provider validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: provider-validation-evidence-${{ github.run_number }}
+          path: artifacts/provider-validation/_automation/
+          if-no-files-found: ignore
+          retention-days: 30

@@ -1,0 +1,71 @@
+name: IB API Smoke Build
+
+on:
+  pull_request:
+    paths:
+      - "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/**"
+      - "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
+      - ".github/workflows/ibapi-smoke.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/**"
+      - "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
+      - ".github/workflows/ibapi-smoke.yml"
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Build configuration.
+        required: false
+        type: choice
+        default: Release
+        options:
+          - Release
+          - Debug
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ibapi-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  ibapi-smoke:
+    name: IB API Adapter Smoke Build
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Run IB API smoke build
+        shell: pwsh
+        run: >
+          scripts/dev/build-ibapi-smoke.ps1
+          -Configuration ${{ inputs.configuration || 'Release' }}
