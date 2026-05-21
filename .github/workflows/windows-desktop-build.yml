@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 1
 
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v5.2.0
@@ -114,5 +115,14 @@ jobs:
         with:
           name: windows-desktop-test-results-${{ github.run_number }}
           path: artifacts/test-results/wpf/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload desktop smoke publish artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: windows-desktop-smoke-${{ github.run_number }}
+          path: artifacts/publish/desktop-smoke/
           if-no-files-found: ignore
           retention-days: 14

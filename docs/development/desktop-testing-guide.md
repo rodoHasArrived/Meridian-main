@@ -14,7 +14,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1 -SkipRestore -SkipBuild -SkipTestBuild -SkipLaunchSmoke -EmitJson
 
 # Inner-loop WPF build plus focused tests
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
 
 # Launch the fixture-backed desktop shell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture
@@ -63,7 +63,7 @@ Use `-Configuration Release` to match release build behavior, `-Profile <workflo
 Use the development validation wrapper when you need the Release WPF build command to be repeatable during active desktop work:
 
 ```bash
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
 ```
 
 This wrapper encodes the serialized WPF build lane that avoids common shared-output and compiler-server contention:
@@ -78,22 +78,22 @@ Common variants:
 
 ```bash
 # Build only, matching the serialized Release shell command
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -BuildOnly
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -BuildOnly
 
 # Restore first when packages or generated assets changed
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Restore
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
 
 # Run a different focused WPF slice after the build
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Filter "FullyQualifiedName~TradingWorkspaceShellPageTests"
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Filter "FullyQualifiedName~TradingWorkspaceShellPageTests"
 
 # Proceed even when another repo-owned dotnet build/test is active
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -AllowConcurrentDotnet
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -AllowConcurrentDotnet
 
 # Run the broader non-integration WPF test set through the same serialized build path
-pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Filter "Category!=Integration&FullyQualifiedName!~Integration"
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Filter "Category!=Integration&FullyQualifiedName!~Integration"
 ```
 
-Use `make desktop-test-dev` for the default wrapper. Keep `desktop-dev.ps1` as the environment/bootstrap check plus bounded fixture launch proof, and use `test-wpf-dev.ps1` as the faster inner-loop validation after restore has already succeeded.
+Use `make desktop-test-dev` for the default wrapper. Keep `desktop-dev.ps1` as the environment/bootstrap check plus bounded fixture launch proof, and use `validate-wpf-dev.ps1` as the faster inner-loop validation after restore has already succeeded.
 
 ### 3. Run Desktop Tests
 

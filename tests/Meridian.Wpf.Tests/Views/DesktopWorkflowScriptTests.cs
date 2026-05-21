@@ -240,7 +240,7 @@ public sealed class DesktopWorkflowScriptTests
     [Fact]
     public void WpfDevelopmentTestScript_ShouldUseSerializedBuildAndFocusedTestDefaults()
     {
-        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\test-wpf-dev.ps1"));
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
         var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
@@ -274,9 +274,9 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
 
         makefile.Should().Contain("desktop-test-dev:");
-        makefile.Should().Contain("scripts/dev/test-wpf-dev.ps1");
+        makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");
 
-        guide.Should().Contain("pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1");
+        guide.Should().Contain("pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1");
         guide.Should().Contain("make desktop-test-dev");
         guide.Should().Contain("-AllowConcurrentDotnet");
         guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
