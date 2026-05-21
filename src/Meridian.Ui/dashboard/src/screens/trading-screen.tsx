@@ -407,7 +407,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId: data?.brokerage?.account ?? undefined });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const orderTicket = useOrderTicketViewModel({
