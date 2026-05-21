@@ -219,9 +219,9 @@ public sealed class BackfillWorkerService : IDisposable
 
         activity?.SetTag("backfill.job_id", request.JobId);
         activity?.SetTag("backfill.request_id", request.RequestId);
-        var loggingCorrelationId = activity?.TraceId.ToString() ?? request.RequestId;
-        var requestLog = _log
-            .ForContext("CorrelationId", loggingCorrelationId)
+        var correlationId = activity?.TraceId.ToString() ?? request.RequestId;
+        var scopedLog = _log
+            .ForContext("CorrelationId", correlationId)
             .ForContext("BackfillJobId", request.JobId)
             .ForContext("BackfillRequestId", request.RequestId)
             .ForContext("Symbol", request.Symbol);
@@ -231,7 +231,7 @@ public sealed class BackfillWorkerService : IDisposable
             // Check offline-first mode
             if (_appConfig.OfflineFirstMode && _connectivityProbe != null && !_connectivityProbe.IsOnline)
             {
-                requestLog.Warning("Offline mode: queueing backfill for {Symbol} until connectivity restored", request.Symbol);
+                scopedLog.Warning("Offline mode: queueing backfill for {Symbol} until connectivity restored", request.Symbol);
                 activity?.SetTag("backfill.outcome", "offline_queued");
                 await _requestQueue.EnqueueAsync(request, ct).ConfigureAwait(false);
                 return;
@@ -243,7 +243,7 @@ public sealed class BackfillWorkerService : IDisposable
             {
                 try
                 {
-                    requestLog.Debug("Processing request: {Symbol} {From}-{To} via {Provider} (attempt {Attempt})",
+                    scopedLog.Debug("Processing request: {Symbol} {From}-{To} via {Provider} (attempt {Attempt})",
                         request.Symbol, request.FromDate, request.ToDate, request.AssignedProvider, retryAttempt + 1);
 
                     // Fetch data from provider
@@ -291,7 +291,7 @@ public sealed class BackfillWorkerService : IDisposable
                         var delay = providerDelay ?? CalculateBackoff(retryAttempt, RateLimitBaseDelay, RateLimitMaxDelay);
 
                         activity?.SetTag("backfill.retry_count", retryAttempt);
-                        requestLog.Information(
+                        scopedLog.Information(
                             "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
                             request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
                             providerDelay.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
@@ -300,7 +300,7 @@ public sealed class BackfillWorkerService : IDisposable
                         continue;
                     }
 
-                    requestLog.Warning(
+                    scopedLog.Warning(
                         "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
                         request.Symbol, request.AssignedProvider, retryAttempt);
 
@@ -330,7 +330,7 @@ public sealed class BackfillWorkerService : IDisposable
                             var delay = retryAfter ?? CalculateBackoff(retryAttempt, RateLimitBaseDelay, RateLimitMaxDelay);
 
                             activity?.SetTag("backfill.retry_count", retryAttempt);
-                            requestLog.Information(
+                            scopedLog.Information(
                                 "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
                                 request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
                                 retryAfter.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
@@ -339,7 +339,7 @@ public sealed class BackfillWorkerService : IDisposable
                             continue;
                         }
 
-                        requestLog.Warning(
+                        scopedLog.Warning(
                             "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
                             request.Symbol, request.AssignedProvider, retryAttempt);
                     }
