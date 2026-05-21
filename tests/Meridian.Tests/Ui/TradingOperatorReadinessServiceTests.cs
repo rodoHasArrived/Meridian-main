@@ -567,4 +567,24 @@ public sealed class TradingOperatorReadinessServiceTests
                 $"{kind} route mapping is a compatibility contract for operator inbox deep-links");
         }
     }
+
+
+    [Theory]
+    [InlineData("alpaca", "/settings#alpaca-provider-setup")]
+    [InlineData("ALPACA", "/settings#alpaca-provider-setup")]
+    [InlineData("ib", "/settings#ibkr-provider-setup")]
+    [InlineData("ibkr", "/settings#ibkr-provider-setup")]
+    [InlineData("interactive-brokers", "/settings#ibkr-provider-setup")]
+    [InlineData("stocksharp", "/settings#stocksharp-provider-setup")]
+    [InlineData("robinhood", "/settings#robinhood-provider-setup")]
+    [InlineData("unknown-provider", "/settings#provider-connection-center")]
+    [InlineData("", "/settings#provider-connection-center")]
+    public void ProviderConnectionRouteMapper_ShouldResolveProviderAwareRoutesWithFallback(string providerId, string expectedRoute)
+    {
+        var route = ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId);
+
+        route.Should().Be(expectedRoute);
+    }
+
+
 }
