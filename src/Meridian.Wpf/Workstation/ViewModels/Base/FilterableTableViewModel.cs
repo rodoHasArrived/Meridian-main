@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
-public class FilterableTableViewModel<TRow> : TableViewModel<TRow>
+public sealed class FilterableTableViewModel<TRow> : TableViewModel<TRow>
 {
     private readonly ObservableCollection<TRow> _allRows = [];
     private string _filterQuery = string.Empty;

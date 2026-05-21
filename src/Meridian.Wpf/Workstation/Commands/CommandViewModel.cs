@@ -4,7 +4,7 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Workstation.Commands;
 
-public class CommandViewModel : BindableBase
+public sealed class CommandViewModel : BindableBase
 {
     private string _id = string.Empty;
     private string _label = string.Empty;

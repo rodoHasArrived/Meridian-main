@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
-public class TableViewModel<TRow> : Meridian.Wpf.ViewModels.BindableBase
+public abstract class TableViewModel<TRow> : Meridian.Wpf.ViewModels.BindableBase
 {
     private bool _hasRows;
 
