@@ -165,14 +165,9 @@ public static class LedgerEndpoints
             CloseLedgerPeriodRequest request,
             HttpContext context) =>
         {
-            if (!HasLedgerClosePermission(context))
+            if (!TryGetLedgerCloseActor(context, out var actor))
             {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveActor(context, out var actor))
-            {
-                return Results.Unauthorized();
+                return Results.Forbid();
             }
 
             var service = ResolveService(context);
@@ -185,7 +180,13 @@ public static class LedgerEndpoints
             {
                 var trustedRequest = request with { ClosedBy = actor };
                 var result = await service
-                    .ClosePeriodAsync(periodId, trustedRequest, context.RequestAborted)
+                    .ClosePeriodAsync(
+                        periodId,
+                        request with
+                        {
+                            ClosedBy = actor
+                        },
+                        context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -235,4 +236,27 @@ public static class LedgerEndpoints
             LedgerBookValidationException or LedgerPeriodTransitionException => Results.BadRequest(new { error = exception.Message }),
             _ => Results.Problem(exception.Message)
         };
+
+    private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
+    {
+        actor = string.Empty;
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is not string username ||
+            string.IsNullOrWhiteSpace(username))
+        {
+            return false;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
+        {
+            return false;
+        }
+
+        if (role is not UserRole.Admin and not UserRole.Accounting)
+        {
+            return false;
+        }
+
+        actor = username.Trim();
+        return true;
+    }
 }

@@ -4,8 +4,10 @@ using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
 using Meridian.Domain.Events;
+using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 

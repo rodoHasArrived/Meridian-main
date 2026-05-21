@@ -2,14 +2,32 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "source-doc.v1.schema.json",
   "type": "object",
-  "required": ["name", "status", "health", "priority", "evidence_posture", "completion_term"],
+  "required": ["id", "name", "owner", "status", "health", "priority", "evidence_posture", "completion_term", "exit_criteria", "links", "created_at", "last_updated"],
   "properties": {
-    "name": {"type": "string"},
+    "id": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1},
+    "summary": {"type": "string"},
+    "owner": {
+      "type": "object",
+      "required": ["team", "accountable"],
+      "properties": {
+        "team": {"type": "string", "minLength": 1},
+        "accountable": {"type": "string", "minLength": 1},
+        "reviewers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
     "status": {"$ref": "shared-enums.v1.schema.json#/$defs/status"},
     "health": {"$ref": "shared-enums.v1.schema.json#/$defs/health"},
     "priority": {"$ref": "shared-enums.v1.schema.json#/$defs/priority"},
     "evidence_posture": {"$ref": "shared-enums.v1.schema.json#/$defs/evidence_posture"},
-    "completion_term": {"$ref": "shared-enums.v1.schema.json#/$defs/completion_term"}
+    "completion_term": {"$ref": "shared-enums.v1.schema.json#/$defs/completion_term"},
+    "exit_criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "links": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "created_at": {"type": "string", "format": "date-time"},
+    "last_updated": {"type": "string", "format": "date-time"},
+    "notes": {"type": "string"},
+    "extensions": {"type": "object", "propertyNames": {"pattern": "^x-"}}
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

@@ -22,9 +22,14 @@ public static class OptionChainEndpoints
             [FromServices] IOptionChainImportService importService,
             CancellationToken ct) =>
         {
-            if (!HasModifySecurityMasterPermission(context))
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
             {
-                return EndpointHelpers.Forbidden();
+                return Results.Forbid();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
             }
 
             var imported = await importService.ImportSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -34,7 +39,6 @@ public static class OptionChainEndpoints
         .Accepts<OptionChainSnapshot>("application/json")
         .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.ReferenceDataOptionChainSnapshot, async (

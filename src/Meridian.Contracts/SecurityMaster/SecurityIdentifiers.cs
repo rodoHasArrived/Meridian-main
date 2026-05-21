@@ -10,6 +10,8 @@ public enum SecurityIdentifierKind
     Cusip,
     Sedol,
     Figi,
+    /// <summary>OCC/OSI listed-option contract symbol such as AAPL240621C00150000.</summary>
+    OccOptionSymbol,
     ProviderSymbol,
     InternalCode,
     /// <summary>Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting.</summary>

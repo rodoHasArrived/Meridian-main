@@ -791,6 +791,11 @@ public sealed class OperationsContinuityWorkflow
                 ReportPackReadiness.EvidenceLinks);
         }
 
+        if (!IsRequestedReportPackReady(request.ReportPackId))
+        {
+            return CreateReportPackMismatchBlocker(request.ReportPackId);
+        }
+
         return null;
     }
 
@@ -850,6 +855,11 @@ public sealed class OperationsContinuityWorkflow
                 OperationsGateKeyDto.Approval,
                 "Error",
                 []);
+        }
+
+        if (!IsRequestedReportPackReady(request.ReportPackId))
+        {
+            return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
         return null;
@@ -933,6 +943,11 @@ public sealed class OperationsContinuityWorkflow
                 ReportPackReadiness.EvidenceLinks);
         }
 
+        if (!IsRequestedReportPackReady(request.ReportPackId))
+        {
+            return CreateReportPackMismatchBlocker(request.ReportPackId);
+        }
+
         return null;
     }
 
@@ -941,6 +956,19 @@ public sealed class OperationsContinuityWorkflow
         EnsureUtc(now);
         IsClosed = true;
     }
+
+    private bool IsRequestedReportPackReady(string? reportPackId) =>
+        ReportPackReadiness.IsReady &&
+        !string.IsNullOrWhiteSpace(ReportPackReadiness.ReportPackId) &&
+        string.Equals(ReportPackReadiness.ReportPackId, reportPackId, StringComparison.Ordinal);
+
+    private OperationsWorkflowBlockerDto CreateReportPackMismatchBlocker(string? reportPackId) =>
+        new(
+            "REPORT_PACK_ID_MISMATCH",
+            $"Requested report pack '{reportPackId}' does not match the ready report pack '{ReportPackReadiness.ReportPackId}'.",
+            OperationsGateKeyDto.Approval,
+            "Error",
+            ReportPackReadiness.EvidenceLinks);
 
     public OperationsWorkflowBlockerDto? GetReopenTransitionBlocker(OperationsReopenWorkflowRequestDto request)
     {
@@ -1121,6 +1149,30 @@ public sealed class OperationsContinuityWorkflow
                 request.ReportPackId,
                 request.ReportPackReady == true ? null : "Report pack is not ready for approval or close.",
                 evidenceLinks);
+
+            if (request.ReportPackReady == false)
+            {
+                ApprovalGate = ApprovalGate.WithStatus(
+                    OperationsGateStatusDto.ReviewRequired,
+                    [
+                        new OperationsWorkflowBlockerDto(
+                            "REPORT_PACK_NOT_READY",
+                            "Workflow approval requires a linked ready report pack.",
+                            OperationsGateKeyDto.Approval,
+                            "Error",
+                            evidenceLinks)
+                    ],
+                    NextActionsForGate(OperationsGateKeyDto.Approval, OperationsGateStatusDto.ReviewRequired));
+            }
+            else if (request.ReportPackReady == true &&
+                ApprovalGate.Status == OperationsGateStatusDto.ReviewRequired &&
+                ApprovalGate.Blockers.All(static blocker => blocker.Code == "REPORT_PACK_NOT_READY"))
+            {
+                ApprovalGate = ApprovalGate.WithStatus(
+                    OperationsGateStatusDto.NotStarted,
+                    blockers: [],
+                    nextActions: []);
+            }
         }
     }
 

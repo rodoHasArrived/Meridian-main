@@ -81,12 +81,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }
 
         var (periodStart, periodEnd) = ResolvePeriod(detail);
+        var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         return new SecurityMasterAccountingEventRequest(
             request.RunId,
             periodStart,
             periodEnd,
             securities,
             resolvedPositions,
+            FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
             AmountTolerance: request.AmountTolerance);
     }
 
@@ -187,6 +189,70 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }
 
         return new SecurityAccountingRule(classification.Trim(), "GAAP");
+    }
+
+    private static IReadOnlyList<SecurityFactorScheduleEntry> BuildFactorSchedule(
+        IEnumerable<SecurityEconomicDefinitionRecord> definitions,
+        DateOnly periodStart,
+        DateOnly periodEnd)
+    {
+        var entries = new List<SecurityFactorScheduleEntry>();
+        foreach (var definition in definitions)
+        {
+            foreach (var schedule in EnumerateFactorScheduleArrays(definition))
+            {
+                foreach (var item in schedule.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    var asOfDate = ReadDate(item, "asOfDate") ??
+                        ReadDate(item, "factorDate") ??
+                        ReadDate(item, "date");
+                    var priorFactor = ReadDecimal(item, "priorFactor") ??
+                        ReadDecimal(item, "previousFactor");
+                    var currentFactor = ReadDecimal(item, "currentFactor") ??
+                        ReadDecimal(item, "factor");
+                    if (asOfDate is null ||
+                        asOfDate < periodStart ||
+                        asOfDate > periodEnd ||
+                        priorFactor is null ||
+                        currentFactor is null)
+                    {
+                        continue;
+                    }
+
+                    entries.Add(new SecurityFactorScheduleEntry(
+                        definition.SecurityId,
+                        asOfDate.Value,
+                        priorFactor.Value,
+                        currentFactor.Value,
+                        ReadString(item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
+                        ReadString(item, "evidenceLink") ?? ReadString(item, "evidenceId") ?? ReadString(item, "evidenceRoute")));
+                }
+            }
+        }
+
+        return entries
+            .OrderBy(static entry => entry.SecurityId)
+            .ThenBy(static entry => entry.AsOfDate)
+            .ToArray();
+    }
+
+    private static IEnumerable<JsonElement> EnumerateFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
+    {
+        if (TryGetArray(definition.EconomicTerms, "factorSchedule", out var rootSchedule))
+        {
+            yield return rootSchedule;
+        }
+
+        var structuredProduct = GetObject(definition.EconomicTerms, "structuredProduct");
+        if (TryGetArray(structuredProduct, "factorSchedule", out var structuredSchedule))
+        {
+            yield return structuredSchedule;
+        }
     }
 
     private static (DateOnly PeriodStart, DateOnly PeriodEnd) ResolvePeriod(StrategyRunDetail detail)
@@ -292,6 +358,19 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }
 
         return value;
+    }
+
+    private static bool TryGetArray(JsonElement? element, string propertyName, out JsonElement value)
+    {
+        if (element is { ValueKind: JsonValueKind.Object } objectElement &&
+            objectElement.TryGetProperty(propertyName, out value) &&
+            value.ValueKind == JsonValueKind.Array)
+        {
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     private static string? ReadString(JsonElement? element, string propertyName)

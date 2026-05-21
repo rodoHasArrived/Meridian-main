@@ -1,3 +1,5 @@
+using Meridian.Contracts.Configuration;
+
 namespace Meridian.Contracts.Workstation;
 
 // ── PR-03: Typed workstation bootstrap payload DTOs ─────────────────────────
@@ -309,3 +311,81 @@ public sealed record WorkstationPortfolioPayload(
     WorkstationTradingBrokerageState Brokerage,
     IReadOnlyList<WorkstationPortfolioRunRow> Runs,
     object? CashFlow);
+
+// ---------------------------------------------------------------------------
+// /api/workstation/data and /api/workstation/data-operations
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// Compact provider diagnostic row embedded in the Data workspace provider center.
+/// </summary>
+public sealed record WorkstationDataProviderDiagnostic(
+    string Id,
+    string Label,
+    string Status,
+    string StatusLabel,
+    string Detail);
+
+/// <summary>
+/// Compact routing summary embedded in a Data workspace provider row.
+/// </summary>
+public sealed record WorkstationDataProviderRoutingSummary(
+    string? ConnectionId,
+    string? ProviderFamilyId,
+    bool? ProductionReady,
+    bool? CertificationFresh,
+    int BindingCount,
+    int FallbackRouteCount,
+    string? HealthStatus);
+
+/// <summary>
+/// Provider-center row returned by the Data workspace bootstrap payload.
+/// </summary>
+public sealed record WorkstationDataProviderRecord(
+    string ProviderId,
+    string DisplayName,
+    string Status,
+    string Capability,
+    string Latency,
+    string Note,
+    string TrustScore,
+    string SignalSource,
+    string ReasonCode,
+    string RecommendedAction,
+    string GateImpact,
+    ProviderConnectionRowDto? ConnectionSummary,
+    WorkstationDataProviderRoutingSummary? RoutingSummary,
+    IReadOnlyList<WorkstationDataProviderDiagnostic> Diagnostics);
+
+/// <summary>
+/// Backfill row returned by the Data workspace bootstrap payload.
+/// </summary>
+public sealed record WorkstationDataBackfillRecord(
+    string JobId,
+    string Scope,
+    string Provider,
+    string Status,
+    string Progress,
+    string UpdatedAt);
+
+/// <summary>
+/// Export row returned by the Data workspace bootstrap payload.
+/// </summary>
+public sealed record WorkstationDataExportRecord(
+    string ExportId,
+    string Profile,
+    string Target,
+    string Status,
+    string Rows,
+    string UpdatedAt);
+
+/// <summary>
+/// Typed payload returned by <c>GET /api/workstation/data</c> and
+/// <c>GET /api/workstation/data-operations</c>.
+/// </summary>
+public sealed record WorkstationDataOperationsPayload(
+    IReadOnlyList<WorkstationMetricCard> Metrics,
+    IReadOnlyList<WorkstationDataProviderRecord> Providers,
+    IReadOnlyList<WorkstationDataBackfillRecord> Backfills,
+    IReadOnlyList<WorkstationDataExportRecord> Exports,
+    object KernelObservability);

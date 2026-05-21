@@ -8,10 +8,14 @@ import {
   CheckCircle2,
   ListPlus,
   LineChart,
+  Pause,
   RefreshCw,
+  RotateCcw,
   Search,
   Send,
-  TrendingUp
+  Ticket,
+  TrendingUp,
+  X
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,11 +25,13 @@ import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
+import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   computeIntradayMetrics,
   useLiveQuotesScreenViewModel,
+  type LiveMarketDataCommandId,
+  type LiveMarketDataWorkspaceViewModel,
   type LiveQuotesBboPanelViewModel,
   type LiveQuotesDepthLadderViewModel,
   type LiveQuotesDepthLevelViewModel,
@@ -43,13 +49,24 @@ export { computeIntradayMetrics };
 export function LiveQuotesScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const vm = useLiveQuotesScreenViewModel(
-    { getLiveQuote, getLiveTrades, getLiveOrderbook, submitOrder },
+    { getLiveQuote, getLiveTrades, getLiveOrderbook, getLiveQuotesSnapshot, submitOrder },
     {
       routeSymbol: searchParams.get("symbol") ?? "",
-      setRouteSymbol: (symbol) => setSearchParams({ symbol }, { replace: true })
+      routeSymbols: searchParams.get("symbols") ?? undefined,
+      setRouteSymbol: (symbol) => setSearchParams(symbol ? { symbol } : {}, { replace: true }),
+      setRouteSymbols: (symbols, selectedSymbol) => {
+        const next = new URLSearchParams();
+        if (selectedSymbol) {
+          next.set("symbol", selectedSymbol);
+        }
+        if (symbols.length > 1) {
+          next.set("symbols", symbols.join(","));
+        }
+        setSearchParams(next, { replace: true });
+      }
     }
   );
-  const { activeSymbol, lookup: symbolLookupVm, market: marketVm, quickTrade } = vm;
+  const { activeSymbol, lookup: symbolLookupVm, market: marketVm, quickTrade, workspace: workspaceVm } = vm;
   const session = marketVm.sessionStats;
 
   return (
@@ -59,10 +76,10 @@ export function LiveQuotesScreen() {
           <div className="eyebrow-label">Data Lane</div>
           <CardTitle className="flex items-center gap-2">
             <LineChart className="h-5 w-5 text-primary" />
-            Live quotes & order book
+            {workspaceVm.title}
           </CardTitle>
           <CardDescription>
-            Look up live bid/ask, recent trades, and L2 depth for any subscribed symbol. Refreshes every {vm.pollIntervalSecondsLabel}s.
+            {workspaceVm.description} Refreshes every {vm.pollIntervalSecondsLabel}s unless paused.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,8 +108,31 @@ export function LiveQuotesScreen() {
                 disabledReason={symbolLookupVm.command.disabledReason}
                 aria-label={symbolLookupVm.command.ariaLabel}
               >
+                <ListPlus className="h-4 w-4" aria-hidden="true" />
+                <span className="ml-1.5">
                 {symbolLookupVm.command.label}
+                </span>
               </Button>
+              <WorkspaceCommandButton
+                id="remove-symbol"
+                workspace={workspaceVm}
+                icon={<X className="h-4 w-4" aria-hidden="true" />}
+              />
+              <WorkspaceCommandButton
+                id="pin-set"
+                workspace={workspaceVm}
+                icon={<ListPlus className="h-4 w-4" aria-hidden="true" />}
+              />
+              <WorkspaceCommandButton
+                id="pause-updates"
+                workspace={workspaceVm}
+                icon={<Pause className="h-4 w-4" aria-hidden="true" />}
+              />
+              <WorkspaceCommandButton
+                id="reset-layout"
+                workspace={workspaceVm}
+                icon={<RotateCcw className="h-4 w-4" aria-hidden="true" />}
+              />
               <Button asChild variant="outline" size="sm">
                 <Link to="/data/watchlist" aria-label="Open symbol watchlist">
                   <ListPlus className="h-4 w-4" aria-hidden="true" />
@@ -136,21 +176,57 @@ export function LiveQuotesScreen() {
           >
             {symbolLookupVm.status.message}
           </p>
-          {activeSymbol ? (
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">{activeSymbol}</span>
-              {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
-              {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
-              <span>Last update {marketVm.lastUpdateLabel}</span>
-            </div>
-          ) : null}
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground" aria-label="Market status strip">
+            {workspaceVm.marketStatusBadges.map((badge) => (
+              <Badge key={badge.id} variant={badge.tone === "success" ? "success" : badge.tone === "warning" ? "warning" : badge.tone === "danger" ? "danger" : "outline"} aria-label={badge.ariaLabel}>
+                {badge.label}: {badge.value}
+              </Badge>
+            ))}
+            <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
+            {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
+            {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+            {activeSymbol ? <span>Selected {activeSymbol}; last update {marketVm.lastUpdateLabel}</span> : null}
+          </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Quote matrix</CardTitle>
+            <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PanelStateMessage state={workspaceVm.snapshotState} />
+            <div className="mt-3">
+              <QuoteMatrixGrid workspace={workspaceVm} />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Selected symbol detail</CardTitle>
+            <CardDescription>{workspaceVm.selectedDetail.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <EntitySummary
+              eyebrow="Selected symbol"
+              title={workspaceVm.selectedDetail.title}
+              subtitle={workspaceVm.selectedDetail.subtitle}
+              description={workspaceVm.diagnostics.summary}
+              status={<Badge variant={workspaceVm.selectedDetail.statusTone === "success" ? "success" : workspaceVm.selectedDetail.statusTone === "warning" ? "warning" : workspaceVm.selectedDetail.statusTone === "danger" ? "danger" : "outline"}>{workspaceVm.selectedDetail.statusLabel}</Badge>}
+              fields={workspaceVm.selectedDetail.fields}
+              ariaLabel={workspaceVm.selectedDetail.ariaLabel}
+              actions={<WorkspaceDetailActions workspace={workspaceVm} />}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       {!activeSymbol ? (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Enter a symbol above to see live BBO, recent trades, and L2 depth.
+            No symbol selected. Load the starter set, import from the watchlist, or enter symbols above to see live BBO, trade tape, and latency diagnostics.
           </CardContent>
         </Card>
       ) : (
@@ -195,7 +271,7 @@ export function LiveQuotesScreen() {
             vm={quickTrade}
           />
 
-          <Card>
+          <Card id="order-book">
             <CardHeader>
               <CardTitle className="text-base">Order book (L2)</CardTitle>
               <CardDescription>{marketVm.orderbookDescription}</CardDescription>
@@ -216,7 +292,7 @@ export function LiveQuotesScreen() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="trade-tape">
             <CardHeader>
               <CardTitle className="text-base">Recent trades</CardTitle>
               <CardDescription>{marketVm.tradesDescription}</CardDescription>
@@ -232,6 +308,20 @@ export function LiveQuotesScreen() {
               )}
             </CardContent>
           </Card>
+
+          <Card id="latency-diagnostics">
+            <CardHeader>
+              <CardTitle className="text-base">Latency and throughput diagnostics</CardTitle>
+              <CardDescription>{workspaceVm.diagnostics.summary}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {workspaceVm.diagnostics.items.map((item) => (
+                  <MetricRow key={item.id} label={item.label} value={item.value} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
         </>
       )}
@@ -244,6 +334,167 @@ function MetricRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-baseline justify-between border-b border-border/40 py-2 text-sm">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function WorkspaceCommandButton({
+  id,
+  workspace,
+  icon
+}: {
+  id: LiveMarketDataCommandId;
+  workspace: LiveMarketDataWorkspaceViewModel;
+  icon: React.ReactNode;
+}) {
+  const command = workspace.commands[id];
+  const onClick = () => {
+    switch (id) {
+      case "remove-symbol":
+        workspace.removeSelectedSymbol();
+        return;
+      case "pin-set":
+        workspace.pinSymbolSet();
+        return;
+      case "pause-updates":
+        workspace.togglePaused();
+        return;
+      case "reset-layout":
+        workspace.loadStarterSet();
+        return;
+      default:
+        return;
+    }
+  };
+
+  if (command.href) {
+    return (
+      <Button asChild variant="outline" size="sm">
+        <Link to={command.href} aria-label={command.ariaLabel}>
+          {icon}
+          <span className="ml-1.5">{command.label}</span>
+        </Link>
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={onClick}
+      disabled={command.disabled}
+      disabledReason={command.disabledReason}
+      aria-label={command.ariaLabel}
+      aria-pressed={command.pressed}
+    >
+      {icon}
+      <span className="ml-1.5">{command.label}</span>
+    </Button>
+  );
+}
+
+const quoteMatrixColumns: DenseDataTableColumn<LiveMarketDataWorkspaceViewModel["matrixRows"][number]>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono font-semibold",
+    render: (row) => row.symbol
+  },
+  {
+    id: "bid",
+    label: "Bid",
+    align: "right",
+    className: "font-mono text-positive",
+    render: (row) => row.bidLabel
+  },
+  {
+    id: "ask",
+    label: "Ask",
+    align: "right",
+    className: "font-mono text-danger",
+    render: (row) => row.askLabel
+  },
+  {
+    id: "last",
+    label: "Last",
+    align: "right",
+    className: "font-mono",
+    render: (row) => row.lastLabel
+  },
+  {
+    id: "spread",
+    label: "Spread",
+    align: "right",
+    className: "font-mono",
+    render: (row) => row.spreadLabel
+  },
+  {
+    id: "provider",
+    label: "Provider",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.providerLabel
+  },
+  {
+    id: "quality",
+    label: "State",
+    render: (row) => (
+      <span className={quoteMatrixToneClass[row.stateTone]}>
+        {row.stateLabel}
+      </span>
+    )
+  },
+  {
+    id: "latency",
+    label: "Latency",
+    className: "font-mono text-muted-foreground",
+    render: (row) => row.quoteAgeLabel
+  }
+];
+
+const quoteMatrixToneClass = {
+  success: "text-positive",
+  warning: "text-warning",
+  danger: "text-danger",
+  default: "text-muted-foreground"
+} as const;
+
+function QuoteMatrixGrid({ workspace }: { workspace: LiveMarketDataWorkspaceViewModel }) {
+  return (
+    <DenseDataTable
+      columns={quoteMatrixColumns}
+      rows={workspace.matrixRows}
+      getRowId={(row) => row.id}
+      getRowAriaLabel={(row) => row.ariaLabel}
+      getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+      onRowSelect={(row) => workspace.selectSymbol(row.symbol)}
+      selectedRowId={workspace.selectedSymbol}
+      emptyText={workspace.matrixEmptyText}
+      ariaLabel={workspace.matrixTableLabel}
+      caption="Arrow-key through symbols, then press Enter or Space to inspect the selected quote row."
+    />
+  );
+}
+
+function WorkspaceDetailActions({ workspace }: { workspace: LiveMarketDataWorkspaceViewModel }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <WorkspaceCommandButton
+        id="open-order-book"
+        workspace={workspace}
+        icon={<LineChart className="h-3.5 w-3.5" aria-hidden="true" />}
+      />
+      <WorkspaceCommandButton
+        id="open-replay"
+        workspace={workspace}
+        icon={<RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />}
+      />
+      <WorkspaceCommandButton
+        id="open-ticket"
+        workspace={workspace}
+        icon={<Ticket className="h-3.5 w-3.5" aria-hidden="true" />}
+      />
     </div>
   );
 }
@@ -491,7 +742,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
   const limitPriceDisabledReasonId = `${fields.limitPrice.id}-disabled-reason`;
   const acknowledgementDisabledReasonId = `${reviewAcknowledgement.id}-disabled-reason`;
   return (
-    <Card>
+    <Card id="quick-ticket">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <TrendingUp className="h-4 w-4 text-primary" aria-hidden="true" />

@@ -1,79 +1,110 @@
 # Source Documentation Standard
 
-## Purpose
+Source documentation explains code ownership in plain English for maintainers, operators, and AI agents.
 
-This standard defines required documentation artifacts for source modules and the lifecycle transitions that affect module ownership, pathing, and roadmap traceability.
+## Core artifacts
 
-## Core Artifacts
-
-Every source module must be represented in:
+Every registered source module is represented in:
 
 - `docs/source/data/source-modules.yml`
 - `docs/source/data/source-readme-coverage.yml`
-- The owning `src/**/README.md` file(s)
+- The owning `src/**/README.md`
+- `docs/source/data/source-readme-ignore.yml` when a subtree should be skipped by README discovery
 
-## README Template Contract (Mandatory)
+## Required source README front matter
 
-Every README referenced by `docs/source/data/source-readme-coverage.yml` must include the following contract exactly.
+```markdown
+---
+doc_type: source-readme
+doc_schema: meridian.source-readme
+doc_schema_version: "1.0.0"
+module_id: SRC-UI-DASHBOARD
+path: src/Meridian.Ui/dashboard
+status: active
+owner_lane: Workstation Shell and UX
+last_reviewed: 2026-05-20
+---
+```
 
-### 1) Front matter keys (YAML)
+## Required sections
 
-A YAML front matter block must exist at the top of the file, delimited by `---` and containing:
+Each registered source README must include these headings:
 
-- `module_id`
-- `owner`
-- `status`
-- `last_verified`
+- `## Purpose`
+- `## Layer responsibility`
+- `## Key folders and files`
+- `## Important workflows`
+- `## Diagrams`
+- `## Roadmap traceability`
+- `## TODO checklist`
+- `## Validation`
+- `## Change rules`
+- `## Related docs`
 
-### 2) Required section headings (exact `##` headings)
+Humans own the prose. Generators own only marked blocks under roadmap traceability and TODO checklist.
 
-The README body must include all of the following headings exactly:
+## Optional conditional sections
 
-- `## Module Purpose`
-- `## Ownership and Runtime`
-- `## Dependencies and Integrations`
-- `## Operational Notes`
+Add these sections only when they provide real module-specific value. They are not required by the
+validator and should not be added as empty boilerplate.
 
-### 3) Generated block markers (exact strings)
+| Section | Use when |
+| --- | --- |
+| `## Plans and roadmap` | The module is tied to active plans, waves, or migration work beyond generated traceability. |
+| `## End-user value` | The module has user-visible operator, fund-accounting, research, or governance value. |
+| `## Benchmarks and performance` | The module owns hot paths, benchmark commands, throughput claims, or latency-sensitive behavior. |
+| `## Operational evidence` | The module emits audit artifacts, dashboards, packets, runbooks, or sign-off evidence. |
+| `## Security and credentials` | The module handles secrets, credentials, auth boundaries, or secret-safe validation. |
+| `## API and contract notes` | The module owns endpoint, DTO, protocol, MCP, provider, or SDK contracts. |
+| `## Migration and archive notes` | The module has retained-support, deprecation, migration, or archive context. |
 
-The README body must include the generated overview block markers exactly as shown below and in this order:
+## Generated blocks
 
-- `<!-- GENERATED:MODULE_OVERVIEW BEGIN -->`
-- `<!-- GENERATED:MODULE_OVERVIEW END -->`
+```markdown
+<!-- source-roadmap-traceability:begin module=SRC-UI-DASHBOARD -->
+Generated content.
+<!-- source-roadmap-traceability:end -->
 
-## Lifecycle Transition Contract
+<!-- source-todos:begin module=SRC-UI-DASHBOARD -->
+Generated content.
+<!-- source-todos:end -->
+```
 
-`docs/source/data/source-readme-coverage.yml` must declare transition records using these values:
+Run validation locally:
 
-- `added`
-- `moved`
-- `split`
-- `merged`
-- `deprecated`
-- `archived`
+```bash
+python3 build/scripts/docs/mark-stale-docs.py --write --summary
+python3 build/scripts/docs/validate-source-readmes.py --summary
+python3 build/scripts/docs/render-source-docs.py --summary
+python3 build/scripts/docs/validate-doc-hashes.py --summary
+```
 
-Each transition record must include roadmap linkage fields:
+Run `python3 build/scripts/docs/validate-doc-hashes.py --write --summary` only after confirming
+source changes and README/registry updates are intentionally aligned.
 
-- `roadmap.id` (stable plan/workstream identifier)
-- `roadmap.url` (link to the active plan/status artifact)
-- `roadmap.status` (`planned`, `in-progress`, `completed`, `archived`)
+## Stale-doc workflow
 
-### Required updates by transition type
+Use the stale-doc marker before updating source documentation after code changes:
 
-| Transition | `source-modules.yml` | `source-readme-coverage.yml` | `src/**/README.md` | Roadmap linkage |
-|---|---|---|---|---|
-| `added` | Add new unique module entry with canonical path. | Add new coverage entry with `exists=true` and initial transition. | Add/expand module section and responsibilities. | Add roadmap link for the owning workstream. |
-| `moved` | Update canonical path and preserve module ID. | Append transition with `from_path` and `to_path`; mark old path superseded. | Update old and new README references to avoid stale paths. | Keep same roadmap ID, update status/note for move execution. |
-| `split` | Keep origin entry and add child module IDs referencing `split_from`. | Record origin `split` transition and child `added` transitions. | Update origin README scope and add child README ownership notes. | Link all child modules to the same or successor roadmap item. |
-| `merged` | Mark source module IDs merged into target; keep target active path. | Add `merged` transitions for source IDs with `merged_into`. | Remove duplicated sections from source README and consolidate in target README. | Update roadmap status for merge completion and consolidation scope. |
-| `deprecated` | Mark module state as deprecated with successor or sunset date. | Add `deprecated` transition with rationale and retirement milestone. | Add deprecation banner/notes and migration destination. | Set roadmap status to in-progress/completed for retirement plan. |
-| `archived` | Move module state to archived and lock canonical path/history. | Add `archived` transition and reference archive location. | Update active README to point to archive; archive README if moved. | Set roadmap status to archived/completed with closure evidence. |
+```bash
+python3 build/scripts/docs/mark-stale-docs.py --write --summary
+python3 build/scripts/docs/sync-source-readmes.py --create-missing --stale-only --summary
+python3 build/scripts/docs/render-source-docs.py --stale-only --summary
+```
 
-## Validator Expectations
+`docs/source/generated/stale-docs.json` is the machine-readable work queue. It records the module
+ID, path, README, hash-drift reason, and recommended action. Refresh
+`docs/source/generated/source-hash-manifest.json` only after the stale module docs have been
+reviewed or updated.
 
-`tools/source_docs/validate_source_readmes.py` enforces:
+## Folder-tree README sync
 
-- canonical module path existence (`source-modules.yml`)
-- unique module IDs (`source-modules.yml`)
-- stale README path detection after moves/renames (`source-readme-coverage.yml` transitions)
-- README template contract checks with precise error messages containing module ID, README path, and missing contract element
+Use `sync-source-readmes.py --tree` when a module needs README coverage below the module root.
+
+```bash
+python3 build/scripts/docs/sync-source-readmes.py --tree --max-depth 2 --summary
+python3 build/scripts/docs/sync-source-readmes.py --tree --create-missing --max-depth 2 --summary
+```
+
+The tree mode is intentionally opt-in. It scans only configured `tree_roots`, skips build outputs,
+dependencies, generated assets, and any path matched by `docs/source/data/source-readme-ignore.yml`.

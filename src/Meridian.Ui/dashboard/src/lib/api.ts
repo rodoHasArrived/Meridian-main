@@ -187,6 +187,7 @@ import {
   workstationSecurityMasterIdentityEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingReadinessEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
@@ -414,8 +415,9 @@ export function getTradingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
 }
 
-export function getTradingReadiness(options: ApiRequestOptions = {}) {
-  return getJson<TradingOperatorReadiness>(WORKSTATION_API_ENDPOINTS.tradingReadiness, options);
+export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
+  const { fundAccountId, ...requestOptions } = options;
+  return getJson<TradingOperatorReadiness>(workstationTradingReadinessEndpoint(fundAccountId), requestOptions);
 }
 
 export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
@@ -529,6 +531,7 @@ export interface ApprovePromotionRequest {
   runId: string;
   approvedBy: string;
   approvalReason: string;
+  approvalChecklist?: string[];
   reviewNotes?: string;
   manualOverrideId?: string;
 }

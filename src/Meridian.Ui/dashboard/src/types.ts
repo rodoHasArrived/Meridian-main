@@ -962,8 +962,10 @@ export interface ResearchPlotToolPayload {
 }
 
 export interface DataOperationsProviderRecord {
+  providerId?: string;
+  displayName?: string;
   provider: string;
-  status: "Healthy" | "Warning" | "Degraded";
+  status: "Healthy" | "Warning" | "Degraded" | "Blocked";
   capability: string;
   latency: string;
   note: string;
@@ -972,6 +974,27 @@ export interface DataOperationsProviderRecord {
   reasonCode?: string;
   recommendedAction?: string;
   gateImpact?: string;
+  connectionSummary?: ProviderConnectionRow | null;
+  routingSummary?: DataOperationsProviderRoutingSummary | null;
+  diagnostics?: DataOperationsProviderDiagnosticSummary[] | null;
+}
+
+export interface DataOperationsProviderRoutingSummary {
+  connectionId: string | null;
+  providerFamilyId: string | null;
+  productionReady: boolean | null;
+  certificationFresh: boolean | null;
+  bindingCount: number;
+  fallbackRouteCount: number;
+  healthStatus: string | null;
+}
+
+export interface DataOperationsProviderDiagnosticSummary {
+  id: string;
+  label: string;
+  status: "pass" | "warning" | "fail" | "pending";
+  statusLabel: string;
+  detail: string;
 }
 
 export interface DataOperationsBackfillRecord {

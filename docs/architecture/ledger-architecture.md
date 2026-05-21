@@ -181,12 +181,29 @@ and it refuses submission until broker intake, Security Master, and ledger posti
 passed and reconciliation has reached a completed or reviewable posture. Rejected approval
 submissions return structured blockers and do not append audit records or mutate the workflow
 snapshot.
+Once a report pack is marked ready through gate posture, submit, approve, and close commands must
+reference that same report-pack id; mismatches return `REPORT_PACK_ID_MISMATCH` without appending
+an audit event or mutating the workflow snapshot.
+When gate posture reports that a report pack exists but is not ready, the aggregate projects a
+`REPORT_PACK_NOT_READY` blocker onto the Approval gate with the linked evidence. That keeps
+approval and close guidance server-derived for both browser and retained WPF clients.
 
 The reconciliation command can carry Security Master coverage issue counts, Security Master
 accounting issue counts, expected-event counts, and journal-preview counts directly from
 reconciliation output. `OperationsContinuityWorkflow` applies those counts to the Security Master
 gate during the reconciliation transition, so unresolved Security Master coverage or
 accounting-term problems block the close lane without requiring UI-side status derivation.
+`OperationsContinuityReconciliationBridge` also preserves the underlying Security Master coverage
+and accounting issue rows as workflow break cases, using stable issue codes such as
+`SM_RECON_SECURITY_UNRESOLVED`, `ACCRUAL_AMOUNT_MISMATCH`, and
+`FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and retained WPF clients the same
+server-authored blocker detail behind the aggregate counts.
+The shared `OperationsWorkflowContractMatrix` also publishes the production blocker and issue code
+vocabulary for broker intake, Security Master accounting coverage, accrual reconciliation, factor
+paydowns, ledger posting, reconciliation evidence, approval, and close blockers. Security Master
+accounting event generation distinguishes a missing factor schedule from a stale prior-period
+factor source so the continuity gate can route factor-paydown remediation without UI-side
+classification.
 
 For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a

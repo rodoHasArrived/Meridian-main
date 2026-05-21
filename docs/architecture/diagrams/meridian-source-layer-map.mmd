@@ -1,0 +1,48 @@
+flowchart LR
+  Contracts["Contracts"]
+  Core["Core"]
+  Domain["Domain"]
+  Application["Application"]
+  UiServices["UI Services"]
+  UiShared["UI Shared"]
+  Dashboard["Browser Dashboard"]
+  Wpf["WPF Retained"]
+  Contracts --> Core
+  Contracts --> Domain
+  Core --> Application
+  Application --> UiServices
+  UiShared --> Dashboard
+  UiShared --> Wpf
+  UiServices --> Dashboard
+  UiServices --> Wpf
+
+%% Registered modules
+%% SRC-APP: src/Meridian.Application
+%% SRC-BACKTESTING: src/Meridian.Backtesting
+%% SRC-BACKTESTING-SDK: src/Meridian.Backtesting.Sdk
+%% SRC-CONTRACTS: src/Meridian.Contracts
+%% SRC-CORE: src/Meridian.Core
+%% SRC-DOMAIN: src/Meridian.Domain
+%% SRC-EXECUTION: src/Meridian.Execution
+%% SRC-EXECUTION-SDK: src/Meridian.Execution.Sdk
+%% SRC-FSHARP: src/Meridian.FSharp
+%% SRC-FSHARP-DIRECTLENDING: src/Meridian.FSharp.DirectLending.Aggregates
+%% SRC-FSHARP-LEDGER: src/Meridian.FSharp.Ledger
+%% SRC-FSHARP-TRADING: src/Meridian.FSharp.Trading
+%% SRC-HOST: src/Meridian
+%% SRC-IBAPI-SMOKESTUB: src/Meridian.IbApi.SmokeStub
+%% SRC-INFRASTRUCTURE: src/Meridian.Infrastructure
+%% SRC-INFRASTRUCTURE-CPPTRADER: src/Meridian.Infrastructure.CppTrader
+%% SRC-LEDGER: src/Meridian.Ledger
+%% SRC-MCP: src/Meridian.Mcp
+%% SRC-MCP-SERVER: src/Meridian.McpServer
+%% SRC-PROVIDER-SDK: src/Meridian.ProviderSdk
+%% SRC-QUANTSCRIPT: src/Meridian.QuantScript
+%% SRC-RISK: src/Meridian.Risk
+%% SRC-STORAGE: src/Meridian.Storage
+%% SRC-STRATEGIES: src/Meridian.Strategies
+%% SRC-UI: src/Meridian.Ui
+%% SRC-UI-DASHBOARD: src/Meridian.Ui/dashboard
+%% SRC-UI-SERVICES: src/Meridian.Ui.Services
+%% SRC-UI-SHARED: src/Meridian.Ui.Shared
+%% SRC-WPF: src/Meridian.Wpf

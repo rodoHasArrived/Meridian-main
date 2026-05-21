@@ -11,10 +11,11 @@ This document is the master index for AI guidance in the Meridian repository. It
 | Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
+| Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
-| Codex repo-local skills | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
+| Codex repo-local skills | [`codex/README.md`](codex/README.md) | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---
@@ -36,6 +37,10 @@ The generated navigation artifacts are the canonical orientation surface:
 | [`generated/repo-navigation.md`](generated/repo-navigation.md) | Human-readable digest of subsystems, routes, symbols, and dependency highlights |
 | [`navigation/README.md`](navigation/README.md) | Hand-authored routing workflow and usage guidance |
 
+For source edits, assistants must also read the nearest registered source README and use
+`docs/source/data/source-modules.yml` to identify module ownership, roadmap traceability, diagrams,
+TODOs, and validation commands.
+
 ---
 
 ## Resource Hierarchy
@@ -51,6 +56,7 @@ The generated navigation artifacts are the canonical orientation surface:
 Validate AI catalog consistency with:
 
 ```bash
+python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
@@ -89,6 +95,7 @@ Located mainly in `docs/ai/claude/`.
 | --- | --- |
 | [`agents/README.md`](agents/README.md) | GitHub and Claude agent overview, including navigation agents |
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview for `.agents/skills/` and `.claude/skills/` |
+| [`codex/README.md`](codex/README.md) | Codex repo-local skill workflow, execution gates, and validation tooling |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
 | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skill catalog |
 
@@ -112,10 +119,11 @@ Located mainly in `docs/ai/claude/`.
 | Repo orientation | [`generated/repo-navigation.json`](generated/repo-navigation.json) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md), [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills) |
-| Codex skill catalog | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) |
+| Codex skill catalog | [`codex/README.md`](codex/README.md), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) |
 | Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
 | AI inventory drift checks | [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `build/scripts/docs/check-ai-inventory.py` |
+| Roadmap/source registry sync | [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) |
 
 ### Adding a New AI Resource
 
@@ -138,3 +146,14 @@ tool-specific rule file to carry shared Meridian policy.
 ---
 
 _Last Updated: 2026-05-20_
+
+## Drift failure remediation
+
+1. Run TODO scan and validation:
+   - `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json`
+   - `python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/`
+2. For missing IDs, add a new entry in `docs/source/todo-registry.json` and update the TODO comment with `TODO-ID` and `OWNER` metadata.
+3. Run AI contract drift check:
+   - `python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
+4. If drift exists, copy canonical policy content into each mirror path and rerun checks.
+

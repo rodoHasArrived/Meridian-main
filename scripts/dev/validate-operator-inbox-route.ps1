@@ -40,79 +40,6 @@ $sharedArgs = Get-MeridianBuildArguments `
     -TargetFramework $Framework `
     -EnableFullWpfBuild
 
-function Format-CommandText {
-    param([Parameter(Mandatory = $true)][string[]]$Command)
-
-    return ($Command | ForEach-Object {
-            if ($_ -match "\s") { '"{0}"' -f $_ } else { $_ }
-        }) -join " "
-}
-
-function Get-RepoOwnedTestHostProcess {
-    $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'testhost.exe'" -ErrorAction SilentlyContinue)
-    if ($processes.Count -eq 0) {
-        return @()
-    }
-
-    return @(
-        $processes | Where-Object {
-            ($_.ExecutablePath -and $_.ExecutablePath.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) -or
-            ($_.CommandLine -and $_.CommandLine.IndexOf($repoRoot, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) -or
-            ($_.CommandLine -and $_.CommandLine.IndexOf("Meridian.Wpf.Tests", [System.StringComparison]::OrdinalIgnoreCase) -ge 0)
-        }
-    )
-}
-
-function Stop-RepoOwnedTestHostProcess {
-    $repoTestHosts = @(Get-RepoOwnedTestHostProcess)
-    if ($repoTestHosts.Count -eq 0) {
-        return @()
-    }
-
-    foreach ($repoTestHost in $repoTestHosts) {
-        Write-Host "Stopping stale repo-owned testhost PID $($repoTestHost.ProcessId)..." -ForegroundColor Yellow
-        Stop-Process -Id $repoTestHost.ProcessId -Force -ErrorAction Stop
-    }
-
-    Start-Sleep -Milliseconds 750
-    return $repoTestHosts
-}
-
-function Invoke-LoggedStep {
-    param(
-        [Parameter(Mandatory = $true)][string]$Name,
-        [Parameter(Mandatory = $true)][string[]]$Command,
-        [Parameter(Mandatory = $true)][string]$LogPath
-    )
-
-    Write-Host "==> $Name" -ForegroundColor Cyan
-    Write-Host ("    " + (Format-CommandText -Command $Command))
-
-    $output = @()
-    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $previousErrorActionPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-
-    try {
-        & $Command[0] @($Command[1..($Command.Count - 1)]) 2>&1 |
-            Tee-Object -FilePath $LogPath |
-            ForEach-Object { $output += $_ }
-    }
-    finally {
-        $ErrorActionPreference = $previousErrorActionPreference
-        $stopwatch.Stop()
-    }
-
-    return [ordered]@{
-        name = $Name
-        command = Format-CommandText -Command $Command
-        exitCode = $LASTEXITCODE
-        durationSeconds = [Math]::Round($stopwatch.Elapsed.TotalSeconds, 2)
-        logPath = $LogPath
-        tail = ($output | Select-Object -Last 25) -join [Environment]::NewLine
-    }
-}
-
 $buildCommand = @(
     "dotnet",
     "build",
@@ -135,34 +62,17 @@ $testCommand = @(
 ) + $sharedArgs
 
 $steps = New-Object System.Collections.Generic.List[object]
-$retryReason = $null
-$stoppedTestHostPids = @()
+$retryEvents = New-Object System.Collections.Generic.List[object]
 
-$buildLogPath = Join-Path $summaryDir "build.log"
-$buildStep = Invoke-LoggedStep -Name "Build isolated WPF operator inbox route slice" -Command $buildCommand -LogPath $buildLogPath
-$steps.Add($buildStep) | Out-Null
-
-if ($buildStep.exitCode -ne 0) {
-    $staleRepoTestHosts = @(Get-RepoOwnedTestHostProcess)
-    if ($staleRepoTestHosts.Count -gt 0) {
-        $retryReason = "build failed while repo-owned testhost processes were still running"
-        $stoppedTestHostPids = @($staleRepoTestHosts | Select-Object -ExpandProperty ProcessId)
-        Stop-RepoOwnedTestHostProcess | Out-Null
-
-        $retryLogPath = Join-Path $summaryDir "build-retry.log"
-        $buildRetryStep = Invoke-LoggedStep -Name "Retry isolated WPF operator inbox route build after testhost cleanup" -Command $buildCommand -LogPath $retryLogPath
-        $steps.Add($buildRetryStep) | Out-Null
-        $buildStep = $buildRetryStep
-    }
-}
+$buildStep = Invoke-MeridianStepWithTestHostRetry -Name "Build isolated WPF operator inbox route slice" -Command $buildCommand -LogName "build.log" -SummaryDir $summaryDir -RepoRoot $repoRoot -Steps $steps -RetryEvents $retryEvents
 
 if ($buildStep.exitCode -eq 0) {
-    $testLogPath = Join-Path $summaryDir "test.log"
-    $testStep = Invoke-LoggedStep -Name "Run operator inbox route test slice" -Command $testCommand -LogPath $testLogPath
-    $steps.Add($testStep) | Out-Null
+    Invoke-MeridianStepWithTestHostRetry -Name "Run operator inbox route test slice" -Command $testCommand -LogName "test.log" -SummaryDir $summaryDir -RepoRoot $repoRoot -Steps $steps -RetryEvents $retryEvents | Out-Null
 }
 
 $failedSteps = @($steps | Where-Object { $_.exitCode -ne 0 })
+$retryReason = if ($retryEvents.Count -gt 0) { $retryEvents[0].reason } else { $null }
+$stoppedTestHostPids = if ($retryEvents.Count -gt 0) { @($retryEvents[0].stoppedTestHostPids) } else { @() }
 $summary = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
     configuration = $Configuration

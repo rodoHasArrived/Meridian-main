@@ -307,6 +307,100 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void SearchWorkspaceFilters_ShouldNarrowLoadedResults_AndExposeMappingGaps()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            using var viewModel = CreateViewModel(
+                navigation,
+                new StubWorkstationSecurityMasterApiClient());
+
+            var equity = CreateTrustSnapshot(Guid.Parse("12121212-1111-1111-1111-111111111111")).Security with
+            {
+                Classification = CreateTrustSnapshot(Guid.Parse("12121212-1111-1111-1111-111111111111")).Security.Classification with
+                {
+                    MatchedProvider = "polygon",
+                    MatchedIdentifierKind = "Ticker",
+                    MatchedIdentifierValue = "AAPL"
+                }
+            };
+            var bondBase = CreateTrustSnapshot(Guid.Parse("23232323-2222-2222-2222-222222222222")).Security;
+            var bond = bondBase with
+            {
+                DisplayName = "UST 10Y",
+                Classification = bondBase.Classification with
+                {
+                    AssetClass = "Treasury",
+                    PrimaryIdentifierKind = "Cusip",
+                    PrimaryIdentifierValue = "91282CJZ5",
+                    MatchedProvider = "bloomberg",
+                    MatchedIdentifierKind = "Cusip",
+                    MatchedIdentifierValue = "91282CJZ5"
+                },
+                EconomicDefinition = bondBase.EconomicDefinition with
+                {
+                    SubType = "Treasury",
+                    AssetFamily = "Rates"
+                }
+            };
+            var unmappedBase = CreateTrustSnapshot(Guid.Parse("34343434-3333-3333-3333-333333333333")).Security;
+            var unmapped = unmappedBase with
+            {
+                DisplayName = "Internal Direct Loan",
+                Classification = unmappedBase.Classification with
+                {
+                    AssetClass = "Direct Loan",
+                    PrimaryIdentifierKind = "LoanId",
+                    PrimaryIdentifierValue = "DL-001"
+                },
+                EconomicDefinition = unmappedBase.EconomicDefinition with
+                {
+                    SubType = "Unitranche",
+                    AssetFamily = "Private Credit"
+                }
+            };
+
+            viewModel.Results.Add(equity);
+            viewModel.Results.Add(bond);
+            viewModel.Results.Add(unmapped);
+            viewModel.SelectedSecurity = equity;
+
+            viewModel.FilteredResults.Should().HaveCount(3);
+            viewModel.MappingHealthSummaryText.Should().Contain("2 mapped");
+            viewModel.AssetClassFilterOptions.Should().Contain("All asset classes");
+            viewModel.AssetClassFilterOptions.Should().Contain("Direct Loan");
+            viewModel.AssetClassFilterOptions.Should().Contain("Equity");
+            viewModel.AssetClassFilterOptions.Should().Contain("Treasury");
+            viewModel.ProviderFilterOptions.Should().Contain("All providers");
+            viewModel.ProviderFilterOptions.Should().Contain("bloomberg");
+            viewModel.ProviderFilterOptions.Should().Contain("polygon");
+
+            viewModel.SelectedAssetClassFilter = "Treasury";
+
+            viewModel.FilteredResults.Should().ContainSingle().Which.SecurityId.Should().Be(bond.SecurityId);
+            viewModel.SelectedSecurity.Should().BeNull();
+            viewModel.SearchFilterSummaryText.Should().Contain("asset class: Treasury");
+
+            viewModel.SelectedAssetClassFilter = "All asset classes";
+            viewModel.ShowMappingGapsOnly = true;
+
+            viewModel.FilteredResults.Should().ContainSingle().Which.SecurityId.Should().Be(unmapped.SecurityId);
+            viewModel.SearchFilterSummaryText.Should().Contain("mapping gaps only");
+
+            viewModel.ResetSearchFiltersCommand.Execute(null);
+
+            viewModel.ShowMappingGapsOnly.Should().BeFalse();
+            viewModel.SelectedAssetClassFilter.Should().Be("All asset classes");
+            viewModel.SelectedProviderFilter.Should().Be("All providers");
+            viewModel.FilteredResults.Should().HaveCount(3);
+        });
+    }
+
+    [Fact]
     public void SecurityMasterPageSource_BindsSearchRecoveryAction()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
@@ -316,6 +410,12 @@ public sealed class SecurityMasterViewModelTests
         xaml.Should().Contain("SecurityMasterSearchButton");
         xaml.Should().Contain("SecurityMasterSearchRecoveryCard");
         xaml.Should().Contain("SecurityMasterSearchRecoveryClearButton");
+        xaml.Should().Contain("SecurityMasterFilterWorkbench");
+        xaml.Should().Contain("SecurityMasterAssetClassFilter");
+        xaml.Should().Contain("SecurityMasterProviderFilter");
+        xaml.Should().Contain("SecurityMasterMappingGapFilter");
+        xaml.Should().Contain("SecurityMasterResetFiltersButton");
+        xaml.Should().Contain("ItemsSource=\"{Binding FilteredResults}\"");
         xaml.Should().Contain("<KeyBinding Key=\"Enter\"");
         xaml.Should().Contain("Command=\"{Binding SearchCommand}\"");
         xaml.Should().NotContain("Search_Click");
@@ -327,6 +427,7 @@ public sealed class SecurityMasterViewModelTests
         viewModel.Should().Contain("SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);");
         viewModel.Should().Contain("private bool CanSearch()");
         viewModel.Should().Contain("ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);");
+        viewModel.Should().Contain("ResetSearchFiltersCommand = new RelayCommand(ResetSearchWorkspaceFilters, () => HasActiveSearchWorkspaceFilters);");
         viewModel.Should().Contain("private void OnClearSearch()");
     }
 
@@ -612,6 +713,40 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_ShouldProjectScheduleAndLotModelIntoCoverageAndEvidence()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("abababab-1111-1111-1111-111111111111");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => CreateTrustSnapshot(securityId)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            viewModel.CompanyCoverageFields.Should().Contain(field =>
+                field.Label == "Schedule model" &&
+                field.Value.Contains("Factor-aware cash-flow support", StringComparison.OrdinalIgnoreCase));
+            viewModel.CompanyCoverageFields.Should().Contain(field =>
+                field.Label == "Lot model" &&
+                field.Value.Contains("factor-adjusted exposure", StringComparison.OrdinalIgnoreCase));
+            viewModel.PrintEvidenceItems.Should().Contain(item =>
+                item.Title == "Schedule model" &&
+                item.Destination.Contains("Schedule source", StringComparison.OrdinalIgnoreCase));
+            viewModel.PrintEvidenceItems.Should().Contain(item =>
+                item.Title == "Lot model" &&
+                item.Destination.Contains("Lot/open-position guidance", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)
     {
         for (var index = 0; index < attempts; index++)
@@ -827,7 +962,26 @@ public sealed class SecurityMasterViewModelTests
                     Metadata: JsonSerializer.SerializeToElement(new { source = "test" }))
             ],
             CorporateActions: effectiveCorporateActions,
-            RetrievedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero));
+            RetrievedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero))
+        {
+            ScheduleSummary = new SecurityMasterScheduleSummaryDto(
+                SupportsCashflowSchedule: true,
+                SupportsFactorHistory: true,
+                HasEconomicScheduleTerms: true,
+                CurrentFactor: 0.9825m,
+                CurrentFactorDate: new DateOnly(2026, 4, 19),
+                NextLifecycleDate: new DateOnly(2031, 12, 15),
+                SourceSummary: "Schedules follow golden-edm record EDM-123 as of 2026-04-20 09:30 UTC.",
+                Summary: "Factor-aware cash-flow support is available. Current factor 0.9825 as of 2026-04-19."),
+            LotModel = new SecurityMasterLotModelDto(
+                QuantityModel: "FactorAdjustedFace",
+                LotSize: 1m,
+                ContractMultiplier: null,
+                UsesFaceValue: true,
+                SupportsFactorAdjustedExposure: true,
+                RequiresResolvedSecurityId: true,
+                Summary: "Lots should reconcile by current face using factor-adjusted exposure (lot size 1).")
+        };
     }
 
     private static SecurityMasterConflictAssessmentDto CreateAssessment(

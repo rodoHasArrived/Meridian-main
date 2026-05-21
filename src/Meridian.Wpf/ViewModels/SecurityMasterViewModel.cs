@@ -27,6 +27,9 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 {
+    private const string AllAssetClassesFilterLabel = "All asset classes";
+    private const string AllProvidersFilterLabel = "All providers";
+
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ITradingParametersBackfillService _backfillService;
@@ -39,12 +42,16 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
     private readonly bool _hasPolygonApiKey;
+    private bool _isRefreshingSearchWorkspaceFilters;
     private CancellationTokenSource? _cts;
     private CancellationTokenSource? _workflowCts;
     private Task? _workflowPollingTask;
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
+    public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults { get; } = new();
+    public ObservableCollection<string> AssetClassFilterOptions { get; } = new();
+    public ObservableCollection<string> ProviderFilterOptions { get; } = new();
     public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
     public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
     public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups { get; } = new();
@@ -86,6 +93,45 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _activeOnly, value))
             {
                 RaiseSearchDerivedStateChanged();
+            }
+        }
+    }
+
+    private string _selectedAssetClassFilter = AllAssetClassesFilterLabel;
+    public string SelectedAssetClassFilter
+    {
+        get => _selectedAssetClassFilter;
+        set
+        {
+            if (SetProperty(ref _selectedAssetClassFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            {
+                ApplySearchWorkspaceFilters();
+            }
+        }
+    }
+
+    private string _selectedProviderFilter = AllProvidersFilterLabel;
+    public string SelectedProviderFilter
+    {
+        get => _selectedProviderFilter;
+        set
+        {
+            if (SetProperty(ref _selectedProviderFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            {
+                ApplySearchWorkspaceFilters();
+            }
+        }
+    }
+
+    private bool _showMappingGapsOnly;
+    public bool ShowMappingGapsOnly
+    {
+        get => _showMappingGapsOnly;
+        set
+        {
+            if (SetProperty(ref _showMappingGapsOnly, value) && !_isRefreshingSearchWorkspaceFilters)
+            {
+                ApplySearchWorkspaceFilters();
             }
         }
     }
@@ -639,13 +685,22 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
 
-    public int ResultCount => Results.Count;
+    public int LoadedResultCount => Results.Count;
+
+    public int ResultCount => FilteredResults.Count;
 
     public bool HasSearchQuery => !string.IsNullOrWhiteSpace(SearchQuery);
 
-    public bool HasSearchResults => Results.Count > 0;
+    public bool HasSearchResults => FilteredResults.Count > 0;
 
-    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && Results.Count == 0;
+    public bool HasLoadedResults => Results.Count > 0;
+
+    public bool HasActiveSearchWorkspaceFilters =>
+        !string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal) ||
+        !string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal) ||
+        ShowMappingGapsOnly;
+
+    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && ResultCount == 0;
 
     public string SearchRecoveryTitle
     {
@@ -654,6 +709,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (!_securityMasterRuntimeStatus.IsAvailable)
             {
                 return "Security Master unavailable";
+            }
+
+            if (HasLoadedResults && HasActiveSearchWorkspaceFilters)
+            {
+                return "No results match the current filters";
             }
 
             return HasSearchQuery
@@ -671,6 +731,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 return _securityMasterRuntimeStatus.AvailabilityDescription;
             }
 
+            if (HasLoadedResults && HasActiveSearchWorkspaceFilters)
+            {
+                return "Reset the asset-class or provider filters, or turn off mapping-gap mode to bring loaded results back into scope.";
+            }
+
             return ActiveOnly
                 ? "Try all-status search, check the identifier, or import the security universe."
                 : "Check the identifier, broaden the symbol or name, or import the security universe.";
@@ -685,9 +750,17 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SearchResultCountLabel => ResultCount switch
     {
-        0 => _hasSearchAttempted ? "No matches loaded" : "Ready to search",
-        1 => "1 match loaded",
-        _ => $"{ResultCount} matches loaded"
+        0 => _hasSearchAttempted
+            ? HasLoadedResults && HasActiveSearchWorkspaceFilters
+                ? $"0 of {LoadedResultCount} matches shown"
+                : "No matches loaded"
+            : "Ready to search",
+        1 => HasActiveSearchWorkspaceFilters && LoadedResultCount != 1
+            ? "1 filtered match shown"
+            : "1 match loaded",
+        _ => HasActiveSearchWorkspaceFilters
+            ? $"{ResultCount} of {LoadedResultCount} matches shown"
+            : $"{ResultCount} matches loaded"
     };
 
     public string SearchMetaLabel
@@ -697,6 +770,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (!_hasSearchAttempted)
             {
                 return "Search issuers, identifiers, venues, and provider-linked aliases from one desktop command deck.";
+            }
+
+            if (HasLoadedResults && HasActiveSearchWorkspaceFilters)
+            {
+                return ResultCount > 0
+                    ? "Local desktop filters are narrowing the loaded result set without re-querying the backend."
+                    : "Loaded results are currently hidden by the active asset-class, provider, or mapping-gap filters.";
             }
 
             if (HasSearchResults)
@@ -712,7 +792,60 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    public string SearchStatusChipLabel => ActiveOnly ? "Active only" : "All statuses";
+    public string SearchStatusChipLabel => HasActiveSearchWorkspaceFilters
+        ? "Filtered view"
+        : ActiveOnly ? "Active only" : "All statuses";
+
+    public string SearchFilterSummaryText
+    {
+        get
+        {
+            if (!HasLoadedResults)
+            {
+                return "Load search results to refine by asset class, provider mapping, or mapping health.";
+            }
+
+            if (!HasActiveSearchWorkspaceFilters)
+            {
+                return $"Showing all {LoadedResultCount} loaded result{(LoadedResultCount == 1 ? string.Empty : "s")}.";
+            }
+
+            var parts = new List<string>();
+            if (!string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal))
+            {
+                parts.Add($"asset class: {SelectedAssetClassFilter}");
+            }
+
+            if (!string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal))
+            {
+                parts.Add($"provider: {SelectedProviderFilter}");
+            }
+
+            if (ShowMappingGapsOnly)
+            {
+                parts.Add("mapping gaps only");
+            }
+
+            return $"Showing {ResultCount} of {LoadedResultCount} loaded results • {string.Join(" • ", parts)}";
+        }
+    }
+
+    public string MappingHealthSummaryText
+    {
+        get
+        {
+            if (!HasLoadedResults)
+            {
+                return "Provider mapping health appears after a search.";
+            }
+
+            var mappedCount = Results.Count(HasProviderMapping);
+            var missingCount = LoadedResultCount - mappedCount;
+            return missingCount == 0
+                ? $"{mappedCount} result{(mappedCount == 1 ? string.Empty : "s")} mapped across provider aliases."
+                : $"{mappedCount} mapped • {missingCount} with provider or identifier coverage gaps.";
+        }
+    }
 
     public string SearchDeckLeadText => SelectedSecurity is null
         ? "Search, validate, and publish Meridian-ready security profiles without leaving the Data workspace."
@@ -1100,6 +1233,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IRelayCommand CloseImportResultCommand { get; }
     public IAsyncRelayCommand SearchCommand { get; }
     public IRelayCommand ClearSearchCommand { get; }
+    public IRelayCommand ResetSearchFiltersCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
     public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }
@@ -1183,6 +1317,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
+        ResetSearchFiltersCommand = new RelayCommand(ResetSearchWorkspaceFilters, () => HasActiveSearchWorkspaceFilters);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
         RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
         RefreshSelectedTrustSnapshotCommand = new AsyncRelayCommand(
@@ -1220,7 +1355,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             () => HasActiveImpactLink("reportPack"));
         CopySelectedIdentifierCommand = new RelayCommand(CopySelectedIdentifier, () => !string.IsNullOrWhiteSpace(SelectedIdentifier));
 
-        Results.CollectionChanged += (_, _) => RaiseSearchDerivedStateChanged();
+        Results.CollectionChanged += (_, _) => RefreshSearchWorkspaceState();
         CorporateActions.CollectionChanged += (_, _) => RaiseSelectionDerivedStateChanged();
         OpenConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
         ConflictGroups.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
@@ -1302,17 +1437,23 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(ResultCount));
         RaisePropertyChanged(nameof(HasSearchQuery));
         RaisePropertyChanged(nameof(HasSearchResults));
+        RaisePropertyChanged(nameof(HasLoadedResults));
         RaisePropertyChanged(nameof(IsSearchRecoveryVisible));
         RaisePropertyChanged(nameof(SearchRecoveryTitle));
         RaisePropertyChanged(nameof(SearchRecoveryDetail));
         RaisePropertyChanged(nameof(SearchScopeText));
+        RaisePropertyChanged(nameof(LoadedResultCount));
         RaisePropertyChanged(nameof(SearchResultCountLabel));
         RaisePropertyChanged(nameof(SearchMetaLabel));
         RaisePropertyChanged(nameof(SearchStatusChipLabel));
+        RaisePropertyChanged(nameof(HasActiveSearchWorkspaceFilters));
+        RaisePropertyChanged(nameof(SearchFilterSummaryText));
+        RaisePropertyChanged(nameof(MappingHealthSummaryText));
         RaisePropertyChanged(nameof(SearchDeckLeadText));
         RaisePropertyChanged(nameof(SearchDeckDetailText));
         SearchCommand?.NotifyCanExecuteChanged();
         ClearSearchCommand?.NotifyCanExecuteChanged();
+        ResetSearchFiltersCommand?.NotifyCanExecuteChanged();
     }
 
     private bool CanSearch()
@@ -1327,6 +1468,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _cts = null;
         _hasSearchAttempted = false;
 
+        ResetSearchWorkspaceFilters();
         SearchQuery = string.Empty;
         Results.Clear();
         SelectedSecurity = null;
@@ -1445,6 +1587,104 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasLedgerImpactLink));
         RaisePropertyChanged(nameof(HasReconciliationImpactLink));
         RaisePropertyChanged(nameof(HasReportPackImpactLink));
+    }
+
+    private void RefreshSearchWorkspaceState()
+    {
+        RefreshSearchWorkspaceFilterOptions();
+        ApplySearchWorkspaceFilters();
+    }
+
+    private void RefreshSearchWorkspaceFilterOptions()
+    {
+        _isRefreshingSearchWorkspaceFilters = true;
+
+        try
+        {
+            var assetClassOptions = Results
+                .Select(result => result.Classification.AssetClass)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            assetClassOptions.Insert(0, AllAssetClassesFilterLabel);
+            ReplaceCollection(AssetClassFilterOptions, assetClassOptions);
+
+            var providerOptions = Results
+                .Select(GetMatchedProvider)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            providerOptions.Insert(0, AllProvidersFilterLabel);
+            ReplaceCollection(ProviderFilterOptions, providerOptions);
+
+            if (!assetClassOptions.Contains(SelectedAssetClassFilter, StringComparer.OrdinalIgnoreCase))
+            {
+                SelectedAssetClassFilter = AllAssetClassesFilterLabel;
+            }
+
+            if (!providerOptions.Contains(SelectedProviderFilter, StringComparer.OrdinalIgnoreCase))
+            {
+                SelectedProviderFilter = AllProvidersFilterLabel;
+            }
+        }
+        finally
+        {
+            _isRefreshingSearchWorkspaceFilters = false;
+        }
+    }
+
+    private void ApplySearchWorkspaceFilters()
+    {
+        IEnumerable<SecurityMasterWorkstationDto> filteredResults = Results;
+
+        if (!string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal))
+        {
+            filteredResults = filteredResults.Where(result =>
+                string.Equals(result.Classification.AssetClass, SelectedAssetClassFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal))
+        {
+            filteredResults = filteredResults.Where(result =>
+                string.Equals(GetMatchedProvider(result), SelectedProviderFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (ShowMappingGapsOnly)
+        {
+            filteredResults = filteredResults.Where(result => !HasProviderMapping(result));
+        }
+
+        ReplaceCollection(FilteredResults, filteredResults);
+
+        if (SelectedSecurity is not null &&
+            !FilteredResults.Any(result => result.SecurityId == SelectedSecurity.SecurityId))
+        {
+            SelectedSecurity = null;
+            HistoryText = string.Empty;
+            ClearSelectedSecurityAssuranceState();
+        }
+
+        RaiseSearchDerivedStateChanged();
+    }
+
+    private void ResetSearchWorkspaceFilters()
+    {
+        _isRefreshingSearchWorkspaceFilters = true;
+
+        try
+        {
+            SelectedAssetClassFilter = AllAssetClassesFilterLabel;
+            SelectedProviderFilter = AllProvidersFilterLabel;
+            ShowMappingGapsOnly = false;
+        }
+        finally
+        {
+            _isRefreshingSearchWorkspaceFilters = false;
+        }
+
+        ApplySearchWorkspaceFilters();
     }
 
     private void ClearSelectedSecurityAssuranceState()
@@ -2236,6 +2476,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Trust posture", $"{snapshot.TrustPosture.Tone} • {snapshot.TrustPosture.TrustScore}/100"),
             new SecurityMasterPresentationField("Validation", BuildValidationSummaryText(snapshot)),
             new SecurityMasterPresentationField("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Schedule model", BuildScheduleSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Lot model", BuildLotModelSummaryText(snapshot)),
             new SecurityMasterPresentationField("Trading readiness", snapshot.TrustPosture.TradingParametersStatus),
             new SecurityMasterPresentationField("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot)),
             new SecurityMasterPresentationField("Corporate actions", snapshot.TrustPosture.CorporateActionReadiness),
@@ -2271,6 +2513,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterEvidenceItem("Winning source", GoldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
             new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
             new SecurityMasterEvidenceItem("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot), "Identifier resolution"),
+            new SecurityMasterEvidenceItem("Schedule model", BuildScheduleSummaryText(snapshot), FormatScheduleSourceLabel(snapshot.ScheduleSummary)),
+            new SecurityMasterEvidenceItem("Lot model", BuildLotModelSummaryText(snapshot), "Lot/open-position guidance"),
             new SecurityMasterEvidenceItem("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot), "Snapshot projection"),
             new SecurityMasterEvidenceItem("Latest audit event", LatestHistoryEventText, "History stream"),
             new SecurityMasterEvidenceItem("Downstream scope", snapshot.DownstreamImpact.Summary, PrintDistributionText)
@@ -2305,8 +2549,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private static string BuildIdentifierCoverageSummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.";
 
+    private static string BuildScheduleSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.";
+
+    private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
+
+    private static string FormatScheduleSourceLabel(SecurityMasterScheduleSummaryDto? summary)
+        => string.IsNullOrWhiteSpace(summary?.SourceSummary)
+            ? "Schedule source"
+            : $"Schedule source: {summary.SourceSummary}";
+
     private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
+
+    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
+        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
+           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
+
+    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
+        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
 
     private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
     {

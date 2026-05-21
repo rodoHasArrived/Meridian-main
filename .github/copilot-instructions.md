@@ -60,6 +60,8 @@ Always do the following before opening a PR:
 4. Update docs when behavior, interfaces, or workflows change.
 5. Keep PR title/body in sync with final implemented behavior.
 6. Keep provider-specific guidance aligned with `docs/ai/assistant-workflow-contract.md`.
+7. When editing `src/**`, read the nearest source README and keep `docs/source/data/*.yml`
+   synchronized when module ownership, validation, roadmap mapping, diagrams, or TODO scope changes.
 
 ## 4) Build and test commands
 
@@ -98,6 +100,7 @@ Relevant examples:
 - `.github/instructions/wpf.instructions.md` for WPF/MVVM files.
 - `.github/instructions/dotnet-tests.instructions.md` for C# test changes.
 - `.github/instructions/docs.instructions.md` for Markdown edits.
+- `.github/instructions/source-documentation.instructions.md` for source README and registry sync.
 
 ## 7) Related resources
 

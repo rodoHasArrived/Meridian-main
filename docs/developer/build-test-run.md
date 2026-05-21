@@ -6,6 +6,17 @@
 
 Use the narrowest command that covers your change.
 
+## Canonical lane matrix
+
+| Lane | Use when | Maps to |
+| --- | --- | --- |
+| `bootstrap` | Initial setup, machine drift recovery, or local environment refresh. | `make setup-dev` |
+| `verify-fast` | Most day-to-day validation before pushing commits. | `make pre-pr` |
+| `verify-full` | Broad confidence checks before requesting review. | `make pre-pr-full` |
+| `verify-docs` | Docs/workflow-doc updates and lane-vocabulary drift checks. | `make docs-lint`, `make check-workflow-docs-parity`, `make check-status-delivery-claims`, `python3 build/scripts/docs/check-known-lanes.py` |
+| `verify-desktop` | Retained desktop shell changes or shared-contract checks needing WPF confidence. | `make desktop-build`, `make desktop-test` |
+| `verify-release` | Publish smoke and release packaging validation work. | `make publish` |
+
 ## Build
 
 ```powershell
@@ -64,6 +75,16 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
+The `Maintenance` workflow also enforces a **metadata integrity gate** for tooling manifests via:
+
+```bash
+python3 build/scripts/validate-tooling-metadata.py
+```
+
+PR branch protection should require the `Maintenance / Workflow Hygiene` check so dependency and
+tooling metadata changes (including `.github/dependabot.yml`, `package.json`, `Makefile`, and
+`make/*.mk`) cannot merge without this validation.
+
 The `Windows Desktop Build` workflow mirrors a Windows-only WPF build and test pass:
 
 ```powershell
@@ -97,4 +118,48 @@ Retained WPF shell:
 
 ```powershell
 pwsh ./scripts/dev/run-desktop.ps1
+```
+
+## AI/TODO governance checks
+
+Use these deterministic remediation commands when CI reports policy drift.
+
+### Required AI quality gates
+
+```bash
+make ai-verify
+make ai-arch-check
+python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+```
+
+### Advisory AI tooling
+
+```bash
+make ai-audit
+make ai-audit-code
+make ai-audit-docs
+make ai-audit-tests
+make ai-audit-ai-docs
+make ai-report
+make ai-docs-freshness
+make ai-docs-drift
+make ai-docs-sync-report
+make ai-arch-check-summary
+make ai-arch-check-json
+```
+
+### Maintenance/reporting AI tooling
+
+```bash
+make ai-maintenance-light
+make ai-maintenance-full
+make ai-docs-archive
+make ai-docs-archive-execute
+```
+
+### TODO registry checks
+
+```bash
+python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
+python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
 ```

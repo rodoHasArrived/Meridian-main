@@ -34,6 +34,7 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
 
         var normalizedIdentifierKind = request.IdentifierKind;
         var normalizedIdentifierValue = request.IdentifierValue;
+        var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(request.Venue);
         var lookupPath = "none";
         SecurityDetailDto? detail = null;
 
@@ -105,7 +106,7 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             CoverageStatus: WorkstationSecurityCoverageStatus.Resolved,
             MatchedIdentifierKind: normalizedIdentifierKind,
             MatchedIdentifierValue: normalizedIdentifierValue,
-            MatchedProvider: request.Venue,
+            MatchedProvider: normalizedProvider.Length == 0 ? null : normalizedProvider,
             ResolutionReason: request.Source,
             LookupPath: lookupPath,
             LookupSource: request.Source,

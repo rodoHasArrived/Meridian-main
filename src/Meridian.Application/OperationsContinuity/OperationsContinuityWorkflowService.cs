@@ -525,7 +525,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     ]);
             }
 
-            if (!TryBuildJournalWrite(request, out var builtJournalWrite, out var journalBlockers))
+            if (!TryBuildJournalWrite(workflow, request, out var builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
                     "VALIDATION_FAILED",
@@ -1145,6 +1145,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     }
 
     private static bool TryBuildJournalWrite(
+        OperationsContinuityWorkflow workflow,
         OperationsLedgerPostRequestDto request,
         out LedgerJournalEntryWrite journalWrite,
         out IReadOnlyList<OperationsWorkflowBlockerDto> blockers)
@@ -1165,7 +1166,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             return false;
         }
 
-        var validationBlockers = ValidateJournalCandidate(candidate, request.EvidenceLinks);
+        var validationBlockers = ValidateJournalCandidate(workflow, request, candidate, request.EvidenceLinks);
         if (validationBlockers.Count > 0)
         {
             blockers = validationBlockers;
@@ -1241,6 +1242,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     }
 
     private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateJournalCandidate(
+        OperationsContinuityWorkflow workflow,
+        OperationsLedgerPostRequestDto request,
         OperationsLedgerJournalCandidateDto candidate,
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
     {
@@ -1254,6 +1257,15 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         if (candidate.PeriodId == Guid.Empty)
         {
             blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_REQUIRED", "Ledger journal candidate period id is required.", evidence));
+        }
+        else if (TryResolveWorkflowPeriodGuid(workflow.PeriodId, out var workflowPeriodId) && candidate.PeriodId != workflowPeriodId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_MISMATCH", "Ledger journal candidate period id must match the workflow period.", evidence));
+        }
+
+        if (candidate.AggregateId != Guid.Empty && candidate.AggregateId != workflow.FundAccountId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH", "Ledger journal candidate aggregate id must match the workflow fund account.", evidence));
         }
 
         if (candidate.Timestamp == default)
@@ -1287,8 +1299,21 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             }
         }
 
+        var totalDebits = candidate.Lines?.Sum(static line => line.Debit) ?? 0m;
+        var totalCredits = candidate.Lines?.Sum(static line => line.Credit) ?? 0m;
+        if (Math.Abs(totalDebits - totalCredits) > 0.000001m)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_DRAFT_IMBALANCED",
+                "Ledger journal candidate debit and credit totals must balance before posting.",
+                evidence));
+        }
+
         return blockers;
     }
+
+    private static bool TryResolveWorkflowPeriodGuid(string workflowPeriodId, out Guid resolvedPeriodId) =>
+        Guid.TryParse(workflowPeriodId, out resolvedPeriodId);
 
     private static OperationsWorkflowBlockerDto CreateJournalCandidateBlocker(
         string code,

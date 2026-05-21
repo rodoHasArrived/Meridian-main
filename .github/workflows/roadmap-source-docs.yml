@@ -3,15 +3,32 @@ name: Roadmap Source Docs
 on:
   pull_request:
     paths:
-      - 'docs/**'
-      - 'tools/roadmap/**'
-      - '.github/workflows/roadmap-source-docs.yml'
+      - "docs/roadmap/**"
+      - "docs/source/**"
+      - "docs/status/**"
+      - "docs/architecture/**"
+      - "src/**/README.md"
+      - "build/scripts/docs/**"
+      - ".github/workflows/roadmap-source-docs.yml"
+      - ".github/instructions/source-documentation.instructions.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/roadmap/**"
+      - "docs/source/**"
+      - "src/**/README.md"
+      - "build/scripts/docs/**"
   workflow_dispatch:
-    inputs:
-      phase:
-        description: 'Declared roadmap phase (PR0..PR9)'
-        required: false
-        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roadmap-source-docs-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -20,10 +37,16 @@ env:
   PYTHONUNBUFFERED: '1'
 
 jobs:
-  scope-gate:
+  validate-roadmap-source-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -59,11 +82,31 @@ jobs:
       - uses: actions/checkout@v4
       - name: Schema validation placeholder
         run: echo "Run roadmap schema validation here"
+          python-version: "3.12"
 
-  render:
-    runs-on: ubuntu-latest
-    needs: [scope-gate, schema]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Render docs placeholder
-        run: echo "Run roadmap render pipeline here"
+      - name: Validate roadmap registry
+        run: python3 build/scripts/docs/validate-roadmap-registry.py --summary
+
+      - name: Validate source READMEs
+        run: python3 build/scripts/docs/validate-source-readmes.py --summary
+
+      - name: Scan source TODOs
+        run: python3 build/scripts/docs/scan-source-todos.py --summary
+
+      - name: Render roadmap docs
+        run: python3 build/scripts/docs/render-roadmap-docs.py --summary
+
+      - name: Render source docs
+        run: python3 build/scripts/docs/render-source-docs.py --summary
+
+      - name: Render diagrams
+        run: |
+          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
+          python3 build/scripts/docs/render-source-diagrams.py --summary
+
+      - name: Check generated docs are current
+        run: |
+          git diff --exit-code
+
+      - name: Check whitespace
+        run: git diff --check

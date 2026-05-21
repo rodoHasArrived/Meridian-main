@@ -66,7 +66,11 @@ public sealed record OperatorInboxDto(
     int CriticalCount,
     int WarningCount,
     int ReviewCount,
-    string Summary);
+    string Summary)
+{
+    /// <summary>Compatibility alias for workstation readiness callers that still use the readiness work-item name.</summary>
+    public IReadOnlyList<OperatorWorkItemDto> WorkItems => Items;
+}
 
 public sealed record TradingAcceptanceGateDto(
     string GateId,

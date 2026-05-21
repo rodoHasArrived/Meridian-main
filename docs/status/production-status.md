@@ -1,8 +1,8 @@
 # Meridian - Production Status
 
-**Version:** 1.7.8
-**Last Updated:** 2026-05-20
-**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, and WPF Data shell module deltas are support evidence, not readiness exits
+**Version:** 1.7.9
+**Last Updated:** 2026-05-21
+**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Strategy Engine pre-run definitions/validation, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, WPF Data shell module deltas, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls are support evidence, not readiness exits
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
 Readiness claim wording in this document must follow [`readiness-claim-language-policy.md`](readiness-claim-language-policy.md).
@@ -35,6 +35,13 @@ repairing preserved configs that reference missing provider sections. Browser UX
 surfaces expired-session and forbidden-role API failures explicitly and exposes disabled form
 reasons through accessible field support text. These reduce operational risk, but W2-W4 remain
 `In Progress`.
+
+2026-05-21 contract/docs note: Strategy Engine definitions and validate-run endpoints now provide
+pre-run blocking/diagnostic evidence for Covered Call and visual-designer workflows, additive
+workstation continuity guards protect shared ledger/reconciliation/strategy payloads, the provider
+capability matrix is the canonical adapter-readiness follow-up surface, and structured
+roadmap/source registries plus stale-doc/hash checks reduce documentation drift. These are
+production-discipline improvements, not W2-W4 readiness exits.
 
 ---
 
@@ -84,8 +91,8 @@ and controlled live-readiness remain open.
 
 | Capability | Maturity | Notes |
 | --- | --- | --- |
-| Core event pipeline | Complete | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
-| Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
+| Core event pipeline | Complete | Channel-based processing with durable-streaming backpressure, metrics, validation, dual-path hot ingress, and storage fan-out |
+| Storage layer | Complete | JSONL/Parquet composite sink with WAL, bounded JSONL batch persistence on the market-data path, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
 | Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, replay-audit metadata, promotion seam, risk/control audit explainability, canonical promotion approval checklist, DK1 trust-gate projection, acceptance gates, and the shared trading-readiness contract are in code |

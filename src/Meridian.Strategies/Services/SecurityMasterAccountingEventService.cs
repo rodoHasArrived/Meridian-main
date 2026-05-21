@@ -74,6 +74,17 @@ public sealed record SecurityFactorScheduleEntry(
     string Source,
     string? EvidenceLink = null);
 
+internal sealed record FactorScheduleCoverageIssue(string Code, Func<string, string> Message)
+{
+    public static FactorScheduleCoverageIssue Missing { get; } = new(
+        "FACTOR_SCHEDULE_MISSING",
+        symbol => $"Security '{symbol}' is factor-based and requires a factor schedule before expected principal paydowns can be generated.");
+
+    public static FactorScheduleCoverageIssue Stale { get; } = new(
+        "FACTOR_STALE",
+        symbol => $"Security '{symbol}' factor schedule does not include a current-period factor for expected principal paydown generation.");
+}
+
 public sealed record SecurityActualCashActivity(
     string SourceName,
     string? ExternalTransactionId,
@@ -173,14 +184,15 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             }
 
             GenerateFixedCouponEvents(request, security, position, events, accruals, previews);
-            if (RequiresFactorSchedule(security) && !HasFactorScheduleForPeriod(request, security.SecurityId))
+            if (RequiresFactorSchedule(security) &&
+                GetFactorScheduleCoverageStatus(request, security.SecurityId) is { } factorScheduleStatus)
             {
                 issues.Add(CreateIssue(
-                    "FACTOR_SCHEDULE_MISSING",
+                    factorScheduleStatus.Code,
                     "security-master",
                     security.Symbol,
                     position.AccountId,
-                    $"Security '{security.Symbol}' is factor-based and requires a factor schedule before expected principal paydowns can be generated.",
+                    factorScheduleStatus.Message(security.Symbol),
                     ReconciliationBreakSeverity.High));
                 continue;
             }
@@ -250,12 +262,31 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             currentFace < originalFace;
     }
 
-    private static bool HasFactorScheduleForPeriod(SecurityMasterAccountingEventRequest request, Guid securityId) =>
-        (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
-            .Any(entry =>
-                entry.SecurityId == securityId &&
-                entry.AsOfDate >= request.PeriodStart &&
-                entry.AsOfDate <= request.PeriodEnd);
+    private static FactorScheduleCoverageIssue? GetFactorScheduleCoverageStatus(
+        SecurityMasterAccountingEventRequest request,
+        Guid securityId)
+    {
+        var entries = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
+            .Where(entry => entry.SecurityId == securityId)
+            .ToArray();
+        if (entries.Length == 0)
+        {
+            return FactorScheduleCoverageIssue.Missing;
+        }
+
+        var hasPeriodFactor = entries.Any(entry =>
+            entry.AsOfDate >= request.PeriodStart &&
+            entry.AsOfDate <= request.PeriodEnd);
+        if (hasPeriodFactor)
+        {
+            return null;
+        }
+
+        var latestFactor = entries.Max(static entry => entry.AsOfDate);
+        return latestFactor < request.PeriodStart
+            ? FactorScheduleCoverageIssue.Stale
+            : FactorScheduleCoverageIssue.Missing;
+    }
 
     private static IReadOnlyList<SecurityMasterAccountingIssueDto> ValidateFixedIncomeCoverage(
         SecurityMasterAccountingSecurity security,

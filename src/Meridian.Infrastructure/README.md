@@ -1,0 +1,66 @@
+---
+doc_type: source-readme
+doc_schema: meridian.source-readme
+doc_schema_version: "1.0.0"
+module_id: SRC-INFRASTRUCTURE
+path: src/Meridian.Infrastructure
+status: active
+owner_lane: Data Confidence and Validation
+last_reviewed: 2026-05-20
+---
+
+# src/Meridian.Infrastructure
+
+## Purpose
+
+Infrastructure contains provider adapters, HTTP integration, ETL adapters, resilience helpers, and concrete data-source implementations.
+
+## Layer responsibility
+
+This layer owns external integration details while depending on lower contracts and provider abstractions. It must not depend on application orchestration.
+
+## Key folders and files
+
+- `Adapters/` - provider and data-source adapters.
+- `Http/` and `Resilience/` - transport and retry support.
+- `Etl/` and `DataSources/` - import/export and source-specific plumbing.
+
+## Important workflows
+
+Use this module for provider implementation, external service integration, and adapter behavior.
+
+## Diagrams
+
+See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
+
+## Roadmap traceability
+
+<!-- source-roadmap-traceability:begin module=SRC-INFRASTRUCTURE -->
+| Roadmap item | Title |
+| --- | --- |
+| `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `W2-TRD-001` | Paper trading cockpit reliability |
+| `W6-LIVE-001` | Live-readiness governance |
+<!-- source-roadmap-traceability:end -->
+
+## TODO checklist
+
+<!-- source-todos:begin module=SRC-INFRASTRUCTURE -->
+- No registry-backed TODOs are open for this module.
+<!-- source-todos:end -->
+
+## Validation
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+```
+
+## Change rules
+
+Do not add an Infrastructure to Application dependency. Provider abstractions should remain in ProviderSdk or Contracts.
+
+## Related docs
+
+- `docs/providers/`
+- `docs/architecture/module-map.md`
+- `docs/status/provider-validation-matrix.md`

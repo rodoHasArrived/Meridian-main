@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.document-index.v1",
+  "type": "object",
+  "required": ["schema", "documents"],
+  "properties": {
+    "schema": { "type": "object" },
+    "documents": { "type": "array" }
+  },
+  "additionalProperties": false
+}

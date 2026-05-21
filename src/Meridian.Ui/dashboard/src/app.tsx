@@ -363,7 +363,13 @@ function AppShell() {
                   <Route path="/data/*" element={(
                     <DataOperationsScreen
                       data={dataOperations}
+                      providerConnections={providerConnections}
+                      providerRoutingConnections={providerRoutingConnections}
+                      providerRoutingBindings={providerRoutingBindings}
+                      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+                      providerRoutingRefreshing={providerRoutingRefreshing}
                       onProviderSetupConfigured={refreshProviderRouting}
+                      onProviderRoutingRefresh={refreshProviderRouting}
                     />
                   )} />
                   <Route path="/settings/*" element={(

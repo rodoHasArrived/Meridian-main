@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.16
-**Date:** 2026-05-20
+**Version:** 1.7.17
+**Date:** 2026-05-21
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -51,7 +51,7 @@ These modules describe Meridian's sellable product direction. They are conservat
 | Decision Memory | 📝 | Planned decision record with evidence used, approver, rationale, expected result, later outcome, related exceptions, and review date. Current approval metadata is support evidence only. |
 | No Orphan Evidence Rule | 🔄 | Evidence packet graph validation now warns when nodes are not linked into the packet graph. A governed cross-artifact rule that every retained artifact links to a run, account, fund, strategy, instrument, reconciliation case, report pack, approval, or other subject remains planned. |
 | Operator Readiness Console | 🔄 | Read-only browser support exists at `/trading/readiness` using shared readiness payloads, full-console checkpoint gates, and report-pack readiness cautioning. BrokerageSync blockers now route to the Settings provider setup repair anchor instead of a passive brokerage-sync review page. The browser command palette now loads shared workflow library/preset commands with hash-aware routing for the Alpaca setup anchor. Data and Trading routes now add live quote, order-book, selectable recent-trade detail, watchlist, local Price Alerts, order-ticket staging, selectable Recent Fills detail, quick-trade accepted/rejected readiness handoffs, and historical-chart context that can support readiness review, but manager command-center scope, SLA aging, and report-pack lifecycle controls remain open. |
-| Strategy / Promotion Passport | 🔄 | Promotion checklist and review-packet support exist, and the browser Strategy workspace now includes a visual Strategy Designer support surface for multi-leg payoff/participation exploration with backend action metadata that separates browser-openable GET evidence from reference-only POST validation, preview, and run-backtest commands, plus Covered Call chain-preview, saved-run-history, and selectable trade-timeline detail support evidence. A canonical passport projection with owner, approved use, required evidence, open exceptions, and approval history remains planned. |
+| Strategy / Promotion Passport | 🔄 | Promotion checklist and review-packet support exist, and the browser Strategy workspace now includes a visual Strategy Designer support surface for multi-leg payoff/participation exploration with backend action metadata that separates browser-openable GET evidence from reference-only POST validation, preview, and run-backtest commands, plus Covered Call chain-preview, saved-run-history, and selectable trade-timeline detail support evidence. A shared Strategy Engine pre-run foundation now adds explicit strategy definitions, typed parameter schemas, data-dependency policy, request validation, evidence hashes, and workstation definitions/validate-run endpoints for Covered Call and visual designer flows. A canonical passport projection with owner, approved use, required evidence, open exceptions, and approval history remains planned. |
 | Proof of Strategy Certificate | 📝 | Planned static certificate for one strategy version or run showing identity, version hash, parameters, approved universe, data trust, backtest, paper, replay, risk, ledger consistency, blockers, and approval history. |
 | Data Trust Passport | 🔄 | DK1 provider trust packets, validation evidence, freshness/completeness posture, and data-quality services provide support evidence. Dataset-level passport projection remains planned. |
 | Meridian Data Trust | 🔄 | Commercial package for provider confidence, coverage heatmaps, stale-data warnings, symbol mappings, corporate-action completeness, replay readiness, and validation evidence. Current DK1/data-quality posture is support evidence only. |
@@ -78,10 +78,10 @@ Evidence-backed narrative, client-facing commentary drafting, and evidence-aware
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
-| Event Pipeline (`System.Threading.Channels`) | ✅ | Bounded channel, backpressure, 100 K capacity, nanosecond timing |
+| Event Pipeline (`System.Threading.Channels`) | ✅ | Durable-streaming bounded channel, explicit backpressure (`Wait`), 50 K capacity, adaptive batch consume, and nanosecond timing |
 | Injectable `IEventMetrics` | ✅ | Static dependency removed; `TracedEventMetrics` decorator available |
 | `CompositeSink` fan-out | ✅ | Per-sink fault isolation; JSONL + Parquet simultaneously |
-| Write-Ahead Log (WAL) | ✅ | SHA-256 checksums, streaming recovery, uncommitted-size warnings |
+| Write-Ahead Log (WAL) | ✅ | SHA-256 checksums, streaming recovery, uncommitted-size warnings, and sink flush before commit |
 | Provider Registry & DI | ✅ | `[DataSource]` scanning, `ProviderRegistry`, `ServiceCompositionRoot` |
 | Config Validation Pipeline | ✅ | `ConfigValidationPipeline` with composable stages; obsoletes `ConfigValidationHelper` |
 | Graceful Shutdown | ✅ | `GracefulShutdownService`, provider disconnect, flush-to-disk before exit |
@@ -670,6 +670,7 @@ These areas are part of the documented implementation scope even though they are
 | QuantScript library/project | ✅ | `src/Meridian.QuantScript` — Roslyn scripting API, PriceSeries/ReturnSeries domain types, StatisticsEngine, BacktestProxy, QuantDataContext, PlotQueue |
 | QuantScript WPF editor/surface | ✅ | `QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics/Run History tabs, ScottPlot charting, local execution-history evidence, and Research handoffs for mirrored runs |
 | QuantScript browser Quant Lab surface | ⚠️ | `/strategy/quant-lab` and `/api/quant/run`, `/api/quant/parameters`, and `/api/quant/templates` now provide a gated browser execution path with parameter side-panel support, Security Master wiring, and plot rendering including heatmap/candlestick evidence. Plot geometry, ticks, unsupported states, labels, and reusable helpers now live in a view-model module for focused coverage, and Quant Notebook helpers can execute cells through the same Quant run path and fetch historical bars through shared data APIs; broader strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open |
+| Strategy Engine pre-run foundation | ⚠️ | `src/Meridian.Contracts/StrategyEngine`, `StrategyEngineRegistry`, `StrategyEngineValidationService`, and `/api/workstation/strategy/engine/definitions` plus `/api/workstation/strategy/engine/validate-run` provide shared definitions, data dependencies, parameter validation, evidence hashing, and browser workstation validation for Covered Call and visual designer flows. This is execution-control support evidence; durable strategy passport approval, persisted sweep grouping, full Backtest Studio unification, and operator acceptance remain open. |
 | QuantScript tests/sample scripts/docs | ✅ | `tests/Meridian.QuantScript.Tests` (compiler, runner, stats, plot-queue); `scripts/example-sharpe.csx` sample script |
 | L3 reconstruction timeline | ðŸ“ | Planned deterministic replay + merged timeline for queue inference |
 | L3 inference model | ðŸ“ | Planned probabilistic queue-ahead inference with confidence scoring |
@@ -735,5 +736,5 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-05-19_
+_Last Updated: 2026-05-21_
 

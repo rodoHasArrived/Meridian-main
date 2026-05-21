@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Controls;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
@@ -37,6 +38,18 @@ public partial class ProviderHealthPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) =>
         await _viewModel.RefreshAsync();
+
+    private void AddProvider_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.OpenAddProviderWizard();
+
+    private void OpenSettings_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.OpenProviderSettings();
+
+    private void RunDiagnostics_Click(object sender, RoutedEventArgs e) =>
+        _viewModel.RunSelectedProviderDiagnostics();
+
+    private async void OnProviderManagementCommandInvoked(object sender, WorkstationCommandInvokedEventArgs e) =>
+        await _viewModel.ExecuteProviderManagementCommandAsync(e.Command.Id);
 
     private async void ProviderAction_Click(object sender, RoutedEventArgs e)
     {

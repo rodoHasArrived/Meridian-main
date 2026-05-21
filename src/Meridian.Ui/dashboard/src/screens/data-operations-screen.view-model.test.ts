@@ -42,7 +42,11 @@ import type {
   DataOperationsBackfillRecord,
   DataOperationsExportRecord,
   DataOperationsProviderRecord,
-  DataOperationsWorkspaceResponse
+  DataOperationsWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot
 } from "@/types";
 
 const backfills: DataOperationsBackfillRecord[] = [
@@ -78,6 +82,8 @@ const preview: BackfillTriggerResult = {
 
 const providers: DataOperationsProviderRecord[] = [
   {
+    providerId: "polygon",
+    displayName: "Polygon.io",
     provider: "Polygon",
     status: "Healthy",
     capability: "Streaming equities",
@@ -92,6 +98,8 @@ const providers: DataOperationsProviderRecord[] = [
 ];
 
 const alpacaProvider: DataOperationsProviderRecord = {
+  providerId: "alpaca",
+  displayName: "Alpaca",
   provider: "Alpaca",
   status: "Healthy",
   capability: "Historical bars",
@@ -114,6 +122,67 @@ const exports: DataOperationsExportRecord[] = [
     updatedAt: "4m ago"
   }
 ];
+
+const polygonConnection: ProviderConnectionRow = {
+  providerId: "polygon",
+  displayName: "Polygon.io",
+  capability: "Data",
+  credentialState: "Verified",
+  credentialSource: "LocalEncryptedStore",
+  verificationState: "Verified",
+  health: "Warning",
+  fallbackActive: true,
+  lastVerifiedAt: "2026-05-20T18:20:00Z",
+  lastSuccessfulAt: "2026-05-20T18:25:00Z",
+  lastFailureAt: "2026-05-20T17:00:00Z",
+  lastError: "Rate-limit pressure is elevated.",
+  maskedKeyPreview: "pk_live_****7F3A",
+  environment: "live",
+  externalAccountId: "acct-provider-01",
+  affectedWorkflows: ["Research", "Backfill"],
+  recommendedAction: "Verify credentials before routing dependent workflows.",
+  actionHref: "/settings#provider-polygon"
+};
+
+const polygonRoutingConnection: ProviderRoutingConnection = {
+  connectionId: "polygon",
+  providerFamilyId: "polygon",
+  displayName: "Polygon.io",
+  connectionType: "Data",
+  connectionMode: "Live",
+  enabled: true,
+  credentialReference: "local:polygon",
+  institutionId: null,
+  externalAccountId: null,
+  scope: null,
+  tags: ["market-data"],
+  description: "Polygon market data",
+  productionReady: true
+};
+
+const polygonRoutingBinding: ProviderRoutingBinding = {
+  bindingId: "binding-polygon-bars",
+  capability: "HistoricalBars",
+  connectionId: "polygon",
+  target: null,
+  priority: 10,
+  enabled: true,
+  failoverConnectionIds: ["yahoo"],
+  safetyModeOverride: null,
+  notes: null
+};
+
+const polygonTrustSnapshot: ProviderRoutingTrustSnapshot = {
+  connectionId: "polygon",
+  providerFamilyId: "polygon",
+  score: 82,
+  isHealthy: false,
+  healthStatus: "Warning",
+  isProductionReady: true,
+  isCertificationFresh: true,
+  signals: ["fallback-active"],
+  decision: null
+};
 
 describe("data-operations-screen view model", () => {
   it("derives route-aware loading state with operator recovery actions", () => {
@@ -473,7 +542,7 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.description).toContain("Provider trust");
     expect(providerSection.detailPanelId).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.selectedRowId).toBe("provider-row-polygon");
-    expect(providerSection.selectedDetail?.title).toBe("Polygon");
+    expect(providerSection.selectedDetail?.title).toBe("Polygon.io");
     expect(providerSection.selectedDetail?.id).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.rows[0].statusTone).toBe("success");
     expect(providerSection.rows[0].rowClassName).toBe("bg-success/5");
@@ -481,8 +550,8 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.rows[0].selected).toBe(true);
     expect(providerSection.rows[0].expanded).toBe(true);
     expect(providerSection.rows[0].detailPanelId).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
-    expect(providerSection.rows[0].ariaLabel).toContain("Selected provider Polygon");
-    expect(providerSection.rows[0].selectAriaLabel).toBe("Inspect provider Polygon");
+    expect(providerSection.rows[0].ariaLabel).toContain("Selected provider Polygon.io");
+    expect(providerSection.rows[0].selectAriaLabel).toBe("Inspect provider Polygon.io");
     expect(providerSection.rows[0].trustFields).toContainEqual({
       id: "trust-score",
       label: "Trust score",
@@ -532,6 +601,139 @@ describe("data-operations-screen view model", () => {
     expect(exportSection.selectedDetail?.actionText).toContain("Attach export");
     expect(buildExportSection([]).emptyState.title).toBe("No exports available");
     expect(buildExportSection([]).detailEmptyState?.title).toBe("No export selected");
+  });
+
+  it("merges provider connections, routing bindings, and trust evidence into provider management rows", () => {
+    const providerSection = buildProviderSection(
+      providers,
+      "provider-row-polygon",
+      {
+        providerConnections: [polygonConnection],
+        providerRoutingConnections: [polygonRoutingConnection],
+        providerRoutingBindings: [polygonRoutingBinding],
+        providerRoutingTrustSnapshots: [polygonTrustSnapshot]
+      },
+      "credentials"
+    );
+
+    expect(providerSection.title).toBe("Provider Management");
+    expect(providerSection.providerOptions).toEqual([
+      expect.objectContaining({
+        value: "provider-row-polygon",
+        label: "Polygon.io — Warning — Data"
+      })
+    ]);
+    expect(providerSection.rows).toHaveLength(1);
+    expect(providerSection.rows[0]).toMatchObject({
+      provider: "Polygon.io",
+      status: "Warning",
+      credentialText: "Verified",
+      verificationText: "Verified",
+      affectedWorkflowsText: "Research, Backfill",
+      actionLabel: "View Details"
+    });
+    expect(providerSection.rows[0].trustFields).toContainEqual({
+      id: "trust-score",
+      label: "Trust score",
+      value: "82% · Warning"
+    });
+    expect(providerSection.summaryCards).toContainEqual(expect.objectContaining({
+      id: "credentials",
+      label: "Credential State",
+      value: "Verified"
+    }));
+    expect(providerSection.selectedDetail?.activeTab).toBe("credentials");
+    expect(providerSection.selectedDetail?.credentialFields).toContainEqual({
+      id: "masked-key",
+      label: "Masked key preview",
+      value: "pk_live_****7F3A"
+    });
+    expect(providerSection.selectedDetail?.credentialFields).not.toContainEqual(expect.objectContaining({
+      value: expect.stringContaining("local:polygon")
+    }));
+    expect(providerSection.selectedDetail?.diagnostics).toContainEqual(expect.objectContaining({
+      id: "backfill-test",
+      status: "pending",
+      statusLabel: "Placeholder"
+    }));
+  });
+
+  it("surfaces verification command state without mutating provider rows", () => {
+    const providerSection = buildProviderSection(
+      providers,
+      "provider-row-polygon",
+      { providerConnections: [polygonConnection] },
+      "diagnostics",
+      {
+        label: "Run Verification",
+        ariaLabel: "Run provider credential verification for polygon",
+        busy: false,
+        disabled: false,
+        disabledReason: null,
+        statusLabel: "Verification passed.",
+        statusTone: "success",
+        details: ["External account: acct-provider-01"]
+      }
+    );
+
+    expect(providerSection.selectedDetail?.activeTab).toBe("diagnostics");
+    expect(providerSection.selectedDetail?.verifyAction).toMatchObject({
+      label: "Run Verification",
+      statusLabel: "Verification passed.",
+      statusTone: "success"
+    });
+    expect(providerSection.selectedDetail?.verifyAction.details).toEqual(["External account: acct-provider-01"]);
+    expect(providerSection.rows[0].credentialText).toBe("Verified");
+  });
+
+  it("uses direct workstation provider-center diagnostics when the payload includes them", () => {
+    const providerSection = buildProviderSection(
+      [
+        {
+          ...providers[0],
+          connectionSummary: polygonConnection,
+          diagnostics: [
+            {
+              id: "provider-health",
+              label: "Provider health",
+              status: "warning",
+              statusLabel: "Warning",
+              detail: "Latency drift is elevated for Polygon."
+            }
+          ]
+        }
+      ],
+      "provider-row-polygon",
+      {},
+      "diagnostics"
+    );
+
+    expect(providerSection.selectedDetail?.diagnostics).toEqual([
+      {
+        id: "provider-health",
+        label: "Provider health",
+        status: "warning",
+        statusLabel: "Warning",
+        detail: "Latency drift is elevated for Polygon."
+      }
+    ]);
+    expect(providerSection.selectedDetail?.diagnosticsEmptyState).toBeNull();
+  });
+
+  it("shows a diagnostics empty state when shared provider evidence has not loaded yet", () => {
+    const providerSection = buildProviderSection(
+      providers,
+      "provider-row-polygon",
+      {},
+      "diagnostics"
+    );
+
+    expect(providerSection.selectedDetail?.diagnosticsEmptyState).toEqual({
+      title: "Diagnostics not loaded yet",
+      description: "Load credential or routing evidence before Meridian can run provider-specific verification, quote probes, or backfill checks."
+    });
+    expect(providerSection.selectedDetail?.verifyAction.disabled).toBe(true);
+    expect(providerSection.selectedDetail?.verifyAction.disabledReason).toBe("This provider row does not have a credential connection record yet.");
   });
 
   it("selects export detail rows by export id or table row id", () => {

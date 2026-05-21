@@ -31,21 +31,6 @@ internal sealed class DiagnosticsFeatureRegistration : IServiceFeatureRegistrati
             return new JsonlMarketDataStore(config.DataRoot);
         });
 
-        // Diagnostic bundle generator
-        services.AddSingleton<DiagnosticBundleService>(sp =>
-        {
-            var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = configStore.Load();
-            var metrics = sp.GetService<IEventMetrics>();
-            return new DiagnosticBundleService(
-                config.DataRoot,
-                metrics is null ? null : metrics.GetSnapshot,
-                () => configStore.Load());
-        });
-
-        // Sample data generator
-        services.AddSingleton<SampleDataGenerator>();
-
         // Error tracker
         services.AddSingleton<ErrorTracker>(sp =>
         {
@@ -53,6 +38,28 @@ internal sealed class DiagnosticsFeatureRegistration : IServiceFeatureRegistrati
             var config = configStore.Load();
             return new ErrorTracker(config.DataRoot);
         });
+
+        // Shutdown diagnostics
+        services.AddSingleton<ShutdownDiagnosticsService>();
+
+        // Diagnostic bundle generator
+        services.AddSingleton<DiagnosticBundleService>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var config = configStore.Load();
+            var metrics = sp.GetService<IEventMetrics>();
+            var errorTracker = sp.GetService<ErrorTracker>();
+            var shutdownDiagnostics = sp.GetService<ShutdownDiagnosticsService>();
+            return new DiagnosticBundleService(
+                config.DataRoot,
+                metrics is null ? null : metrics.GetSnapshot,
+                () => configStore.Load(),
+                errorTracker is null ? null : () => errorTracker.GetLastErrors(10),
+                shutdownDiagnostics is null ? null : () => shutdownDiagnostics.GetSnapshot());
+        });
+
+        // Sample data generator
+        services.AddSingleton<SampleDataGenerator>();
 
         // API documentation service
         services.AddSingleton<ApiDocumentationService>();
