@@ -534,6 +534,38 @@ let ``SecurityMasterSnapshotWrapper serializes current equity payload and identi
     wrapper.Currency |> should equal "USD"
 
 [<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` () =
+    let maturity = DateOnly(2034, 9, 15)
+    let bondTerms = {
+        Maturity = maturity
+        IssueDate = Some (DateOnly(2024, 9, 15))
+        Coupon = BondCouponStructure.Floating("SOFR", Some 150m, Some 7.25m, Some 0.75m, Some "ACT/360")
+        IsCallable = true
+        CallDate = Some (DateOnly(2030, 9, 15))
+        IssuerName = Some "Meridian Capital"
+        Seniority = Some "Senior Unsecured"
+        Subclass = BondSubclass.FloatingRate
+    }
+    let command = createValidCommand () |> mapKind (fun _ -> SecurityKind.Bond bondTerms)
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    payload.GetProperty("couponType").GetString() |> should equal "Floating"
+    payload.GetProperty("floatingIndex").GetString() |> should equal "SOFR"
+    payload.GetProperty("spreadBps").GetDecimal() |> should equal 150m
+    payload.GetProperty("capRate").GetDecimal() |> should equal 7.25m
+    payload.GetProperty("floorRate").GetDecimal() |> should equal 0.75m
+    payload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
+
+[<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
     let record = createSecurityRecord (Some classification)
