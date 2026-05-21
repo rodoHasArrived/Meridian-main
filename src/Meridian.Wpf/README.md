@@ -1,14 +1,68 @@
 ---
-id: meridian-wpf-retained
-title: Meridian WPF (Retained Scope)
-layer: wpf_retained
-state: retained_support
-canonical_path: src/Meridian.Wpf
-architecture_boundary: retained-desktop-shell-and-compatibility
-roadmap_anchor: W4-governance-productization
+doc_type: source-readme
+doc_schema: meridian.source-readme
+doc_schema_version: "1.0.0"
+module_id: SRC-WPF
+path: src/Meridian.Wpf
+status: retained_support
+owner_lane: Workstation Shell and UX
+last_reviewed: 2026-05-20
 ---
 
 # Meridian - WPF Desktop Application
+
+## Purpose
+
+The WPF project is Meridian's retained desktop support lane. It preserves compatibility, regression coverage, and existing workstation workflows while new operator UI development happens in the browser workstation.
+
+## Layer responsibility
+
+This layer owns WPF shell behavior, MVVM view models, XAML pages, retained desktop workflow automation, and regression support. Shared contracts and read models belong in `src/Meridian.Contracts`, `src/Meridian.Ui.Shared`, or `src/Meridian.Ui.Services`.
+
+## Key folders and files
+
+- `Views/` and `ViewModels/` - retained desktop screens and MVVM state.
+- `Services/` - desktop navigation, workflow, shell, and automation support.
+- `App.xaml.cs` and `MainWindow.xaml` - desktop application startup and shell root.
+
+## Important workflows
+
+Use this module for retained WPF fixes, compatibility work, and desktop regression coverage. Do not route new product UI scope here unless the roadmap explicitly reopens desktop-first work.
+
+## Diagrams
+
+See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
+
+## Roadmap traceability
+
+<!-- source-roadmap-traceability:begin module=SRC-WPF -->
+| Roadmap item | Title |
+| --- | --- |
+| `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `W4-RPT-001` | Governed report pack readiness |
+<!-- source-roadmap-traceability:end -->
+
+## TODO checklist
+
+<!-- source-todos:begin module=SRC-WPF -->
+- No registry-backed TODOs are open for this module.
+<!-- source-todos:end -->
+
+## Validation
+
+```bash
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+```
+
+## Change rules
+
+Keep WPF changes tied to retained support, shared contract regression, or explicit roadmap approval. Browser workstation work belongs in `src/Meridian.Ui/dashboard/`.
+
+## Related docs
+
+- `docs/development/desktop-testing-guide.md`
+- `docs/development/wpf-implementation-notes.md`
+- `docs/plans/web-ui-development-pivot.md`
 
 This is the WPF (.NET 10) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
 

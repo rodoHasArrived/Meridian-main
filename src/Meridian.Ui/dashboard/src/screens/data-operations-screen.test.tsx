@@ -9,7 +9,14 @@ import {
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-operations-screen.view-model";
 import { renderWithRouter } from "@/test/render";
-import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse, ProviderSetupResult } from "@/types";
+import type {
+  BackfillProgressResponse,
+  BackfillTriggerResult,
+  DataOperationsWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderCredentialVerificationResult,
+  ProviderSetupResult
+} from "@/types";
 
 const data: DataOperationsWorkspaceResponse = {
   metrics: [
@@ -60,6 +67,38 @@ const data: DataOperationsWorkspaceResponse = {
       updatedAt: "4m ago"
     }
   ]
+};
+
+const polygonConnection: ProviderConnectionRow = {
+  providerId: "polygon",
+  displayName: "Polygon.io",
+  capability: "Data",
+  credentialState: "Verified",
+  credentialSource: "LocalEncryptedStore",
+  verificationState: "Verified",
+  health: "Healthy",
+  fallbackActive: false,
+  lastVerifiedAt: "2026-05-20T18:20:00Z",
+  lastSuccessfulAt: "2026-05-20T18:25:00Z",
+  lastFailureAt: null,
+  lastError: null,
+  maskedKeyPreview: "pk_live_****7F3A",
+  environment: "paper",
+  externalAccountId: null,
+  affectedWorkflows: ["Research", "Backfill"],
+  recommendedAction: "Keep provider active.",
+  actionHref: "/settings#provider-polygon"
+};
+
+const successfulVerification: ProviderCredentialVerificationResult = {
+  providerId: "polygon",
+  success: true,
+  verificationState: "Verified",
+  health: "Healthy",
+  lastVerifiedAt: "2026-05-20T18:30:00Z",
+  lastError: null,
+  externalAccountId: "acct-provider-01",
+  warnings: []
 };
 
 describe("DataOperationsScreen", () => {
@@ -179,6 +218,33 @@ describe("DataOperationsScreen", () => {
     expect(polygonProvider).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Route fresh requests");
     expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Reason: LATENCY_ELEVATED");
+  });
+
+  it("runs provider verification from the selected provider diagnostics tab", async () => {
+    const user = userEvent.setup();
+    const verifyProviderConnection = vi.spyOn(api, "verifyProviderConnection").mockResolvedValueOnce(successfulVerification);
+    const refreshProviderRouting = vi.fn();
+
+    renderWithRouter(
+      <DataOperationsScreen
+        data={data}
+        providerConnections={[polygonConnection]}
+        onProviderRoutingRefresh={refreshProviderRouting}
+      />,
+      { initialEntries: ["/data"] }
+    );
+
+    expect(screen.getByRole("combobox")).toHaveValue("provider-row-polygon");
+
+    await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
+    await user.click(screen.getByRole("button", { name: /run provider credential verification/i }));
+
+    await waitFor(() => expect(verifyProviderConnection).toHaveBeenCalledWith("polygon"));
+    await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("Verification passed.")).toBeInTheDocument();
+    expect(screen.getByText("External account: acct-provider-01")).toBeInTheDocument();
+
+    verifyProviderConnection.mockRestore();
   });
 
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {

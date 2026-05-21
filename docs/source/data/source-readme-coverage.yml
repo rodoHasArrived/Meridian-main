@@ -1,111 +1,151 @@
-schema_version: 1
+schema:
+  id: meridian.readme-coverage
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
 
-readme_coverage:
-  modules:
-    - module_id: meridian-host
-      module_path: src/Meridian
-      readme_path: src/Meridian/README.md
-      exists: true
-      lifecycle_state: active
-      transition:
-        type: added
-        recorded_on: 2026-05-20
-        roadmap:
-          id: W2-paper-trading-cockpit
-          url: docs/plans/paper-trading-cockpit-reliability-sprint.md
-          status: in-progress
-
-    - module_id: meridian-application
-      module_path: src/Meridian.Application
-      readme_path: src/Meridian.Application/README.md
-      exists: true
-      lifecycle_state: active
-      transition:
-        type: added
-        recorded_on: 2026-05-20
-        roadmap:
-          id: W3-research-to-paper-continuity
-          url: docs/plans/waves-2-4-operator-readiness-addendum.md
-          status: planned
-
-    - module_id: meridian-contracts
-      module_path: src/Meridian.Contracts
-      readme_path: src/Meridian.Contracts/README.md
-      exists: true
-      lifecycle_state: active
-      transition:
-        type: added
-        recorded_on: 2026-05-20
-        roadmap:
-          id: W3-research-to-paper-continuity
-          url: docs/plans/waves-2-4-operator-readiness-addendum.md
-          status: planned
-
-    - module_id: meridian-ui-services
-      module_path: src/Meridian.Ui.Services
-      readme_path: src/Meridian.Ui.Services/README.md
-      exists: true
-      lifecycle_state: active
-      transition:
-        type: added
-        recorded_on: 2026-05-20
-        roadmap:
-          id: W2-paper-trading-cockpit
-          url: docs/plans/paper-trading-cockpit-reliability-sprint.md
-          status: in-progress
-
-    - module_id: meridian-ui-shared
-      module_path: src/Meridian.Ui.Shared
-      readme_path: src/Meridian.Ui.Shared/README.md
-      exists: true
-      lifecycle_state: active
-      transition:
-        type: added
-        recorded_on: 2026-05-20
-        roadmap:
-          id: W2-paper-trading-cockpit
-          url: docs/plans/paper-trading-cockpit-reliability-sprint.md
-          status: in-progress
-
-    - module_id: meridian-ui-dashboard
-      module_path: src/Meridian.Ui/dashboard
-      readme_path: src/Meridian.Ui/dashboard/README.md
-      exists: true
-      lifecycle_state: active
-      transition:
-        type: moved
-        recorded_on: 2026-05-20
-        from_path: src/Meridian.Wpf
-        to_path: src/Meridian.Ui/dashboard
-        roadmap:
-          id: W2-paper-trading-cockpit
-          url: docs/plans/web-ui-development-pivot.md
-          status: in-progress
-        notes: Browser workstation is the active operator UI lane.
-
-    - module_id: meridian-wpf-retained
-      module_path: src/Meridian.Wpf
-      readme_path: src/Meridian.Wpf/README.md
-      exists: true
-      lifecycle_state: retained_support
-      transition:
-        type: deprecated
-        recorded_on: 2026-05-20
-        roadmap:
-          id: W4-governance-productization
-          url: docs/plans/current-direction-and-status.md
-          status: in-progress
-        notes: New product UI work is paused; retained for compatibility and regression support.
-
-lifecycle_transition_contract:
-  allowed_transitions:
-    - added
-    - moved
-    - split
-    - merged
-    - deprecated
-    - archived
-  required_roadmap_fields:
-    - roadmap.id
-    - roadmap.url
-    - roadmap.status
+modules:
+  - module_id: SRC-HOST
+    path: src/Meridian
+    readme: src/Meridian/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-APP
+    path: src/Meridian.Application
+    readme: src/Meridian.Application/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-CONTRACTS
+    path: src/Meridian.Contracts
+    readme: src/Meridian.Contracts/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-CORE
+    path: src/Meridian.Core
+    readme: src/Meridian.Core/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-DOMAIN
+    path: src/Meridian.Domain
+    readme: src/Meridian.Domain/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-PROVIDER-SDK
+    path: src/Meridian.ProviderSdk
+    readme: src/Meridian.ProviderSdk/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-INFRASTRUCTURE
+    path: src/Meridian.Infrastructure
+    readme: src/Meridian.Infrastructure/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-INFRASTRUCTURE-CPPTRADER
+    path: src/Meridian.Infrastructure.CppTrader
+    readme: src/Meridian.Infrastructure.CppTrader/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-STORAGE
+    path: src/Meridian.Storage
+    readme: src/Meridian.Storage/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-EXECUTION
+    path: src/Meridian.Execution
+    readme: src/Meridian.Execution/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-EXECUTION-SDK
+    path: src/Meridian.Execution.Sdk
+    readme: src/Meridian.Execution.Sdk/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-RISK
+    path: src/Meridian.Risk
+    readme: src/Meridian.Risk/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-STRATEGIES
+    path: src/Meridian.Strategies
+    readme: src/Meridian.Strategies/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-BACKTESTING
+    path: src/Meridian.Backtesting
+    readme: src/Meridian.Backtesting/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-BACKTESTING-SDK
+    path: src/Meridian.Backtesting.Sdk
+    readme: src/Meridian.Backtesting.Sdk/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-LEDGER
+    path: src/Meridian.Ledger
+    readme: src/Meridian.Ledger/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-FSHARP
+    path: src/Meridian.FSharp
+    readme: src/Meridian.FSharp/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-FSHARP-DIRECTLENDING
+    path: src/Meridian.FSharp.DirectLending.Aggregates
+    readme: src/Meridian.FSharp.DirectLending.Aggregates/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-FSHARP-LEDGER
+    path: src/Meridian.FSharp.Ledger
+    readme: src/Meridian.FSharp.Ledger/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-FSHARP-TRADING
+    path: src/Meridian.FSharp.Trading
+    readme: src/Meridian.FSharp.Trading/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-QUANTSCRIPT
+    path: src/Meridian.QuantScript
+    readme: src/Meridian.QuantScript/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-MCP
+    path: src/Meridian.Mcp
+    readme: src/Meridian.Mcp/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-MCP-SERVER
+    path: src/Meridian.McpServer
+    readme: src/Meridian.McpServer/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-IBAPI-SMOKESTUB
+    path: src/Meridian.IbApi.SmokeStub
+    readme: src/Meridian.IbApi.SmokeStub/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-UI
+    path: src/Meridian.Ui
+    readme: src/Meridian.Ui/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-UI-SERVICES
+    path: src/Meridian.Ui.Services
+    readme: src/Meridian.Ui.Services/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-UI-SHARED
+    path: src/Meridian.Ui.Shared
+    readme: src/Meridian.Ui.Shared/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-UI-DASHBOARD
+    path: src/Meridian.Ui/dashboard
+    readme: src/Meridian.Ui/dashboard/README.md
+    status: covered
+    last_reviewed: 2026-05-20
+  - module_id: SRC-WPF
+    path: src/Meridian.Wpf
+    readme: src/Meridian.Wpf/README.md
+    status: covered
+    last_reviewed: 2026-05-20

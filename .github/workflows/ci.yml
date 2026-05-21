@@ -174,7 +174,7 @@ jobs:
         run: npm --prefix src/Meridian.Ui/dashboard run build
 
   source-doc-determinism:
-    name: verify-docs (source docs determinism)
+    name: verify-docs (roadmap/source docs)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -189,11 +189,17 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install renderer dependencies
-        run: python3 -m pip install -r tools/source_docs/requirements-render.txt
+      - name: Validate roadmap registry
+        run: python3 build/scripts/docs/validate-roadmap-registry.py --summary
 
-      - name: Render + determinism gate
+      - name: Validate source READMEs
+        run: python3 build/scripts/docs/validate-source-readmes.py --summary
+
+      - name: Scan source TODOs
+        run: python3 build/scripts/docs/scan-source-todos.py --summary
+
+      - name: Render + drift gate
         run: |
-          python3 tools/source_docs/render_source_docs.py
-          python3 tools/source_docs/check_source_determinism.py
-          git diff -- docs/generated/source --exit-code
+          python3 build/scripts/docs/render-roadmap-docs.py --summary
+          python3 build/scripts/docs/render-source-docs.py --summary
+          git diff -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src --exit-code

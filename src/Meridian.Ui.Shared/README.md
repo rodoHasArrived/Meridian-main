@@ -1,25 +1,65 @@
 ---
-id: meridian-ui-shared
-title: Meridian UI Shared
-layer: ui_shared
-state: active
-canonical_path: src/Meridian.Ui.Shared
-architecture_boundary: shared-ui-read-models-and-contract-shims
-roadmap_anchor: W2-paper-trading-cockpit
+doc_type: source-readme
+doc_schema: meridian.source-readme
+doc_schema_version: "1.0.0"
+module_id: SRC-UI-SHARED
+path: src/Meridian.Ui.Shared
+status: active
+owner_lane: Workstation Shell and UX
+last_reviewed: 2026-05-20
 ---
 
-# Meridian UI Shared
+# src/Meridian.Ui.Shared
 
 ## Purpose
-Shared UI read models, compatibility shims, and cross-surface data structures.
 
-## Responsibilities
-- Define shared operator-facing projection types.
-- Support consistent dashboard and retained desktop data contracts.
+UI Shared contains shared read models and compatibility shims used by browser workstation and retained WPF surfaces.
 
-## Key dependencies
-- `src/Meridian.Contracts`
-- Consumers in `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and `src/Meridian.Wpf`
+## Layer responsibility
 
-## Notes
-Preserve cross-surface compatibility when evolving shared read models.
+This layer keeps cross-surface UI contracts stable so active browser work and retained desktop support can consume the same operator-facing projections.
+
+## Key folders and files
+
+- Shared UI read-model definitions.
+- Compatibility types that bridge browser and retained desktop consumers.
+
+## Important workflows
+
+Use this module when a UI-facing contract must be shared across the browser dashboard and retained WPF shell.
+
+## Diagrams
+
+See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
+
+## Roadmap traceability
+
+<!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
+| Roadmap item | Title |
+| --- | --- |
+| `W2-TRD-001` | Paper trading cockpit reliability |
+| `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `W4-RPT-001` | Governed report pack readiness |
+<!-- source-roadmap-traceability:end -->
+
+## TODO checklist
+
+<!-- source-todos:begin module=SRC-UI-SHARED -->
+- No registry-backed TODOs are open for this module.
+<!-- source-todos:end -->
+
+## Validation
+
+```bash
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
+```
+
+## Change rules
+
+Preserve compatibility for both browser and retained desktop consumers. Avoid surface-specific behavior that belongs in `src/Meridian.Ui/dashboard` or `src/Meridian.Wpf`.
+
+## Related docs
+
+- `docs/architecture/module-map.md`
+- `docs/plans/web-ui-development-pivot.md`
+- `docs/source/generated/source-module-index.md`

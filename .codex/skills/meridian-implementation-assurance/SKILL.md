@@ -15,6 +15,28 @@ Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md
 Read `references/documentation-routing.md` before writing docs. Read
 `references/evaluation-harness.md` before finalizing output.
 
+## Use When
+
+Use this skill when Codex must implement, refactor, certify, or roll out Meridian work with
+explicit validation evidence, docs synchronization, and residual-risk reporting.
+
+Trigger examples:
+
+- "Implement this plan and prove it with the required gates."
+- "Certify this provider change is complete."
+- "Update the AI skill catalog and verify drift checks."
+
+## Do Not Use When
+
+Use `meridian-blueprint` when the user only wants a design, `meridian-code-review` when the user
+only wants findings, and `meridian-brainstorm` when the user is still exploring options.
+
+Non-trigger examples:
+
+- "Write a technical blueprint only."
+- "Review this diff for bugs."
+- "Brainstorm product bets for next quarter."
+
 ## Definition of Done
 
 A task delivered by this skill is complete when **all** of the following are true:
@@ -37,6 +59,18 @@ A task delivered by this skill is complete when **all** of the following are tru
 5. Update related documentation; if missing, add docs in the correct doc area.
 6. Run the evaluation harness and report pass/fail with evidence.
 7. Summarize code and docs updates and call out residual risk.
+
+## Handoffs
+
+- Receive selected plans from `meridian-blueprint`, actionable fixes from `meridian-code-review`, and test gaps from `meridian-test-writer`.
+- Hand provider-specific implementation details to `meridian-provider-builder` before final assurance when the provider contract itself is still being built.
+- Hand archive classification to `meridian-archive-organizer` before certifying archive or structure changes.
+
+## Validation
+
+- Run the narrowest command that proves the touched surface, then broaden only when risk justifies it.
+- For AI/tooling changes, run `check-codex-skills.py`, `check-ai-inventory.py`, `validate-skill-packages.py`, implementation-assurance eval dry-run, and `git diff --check`.
+- Confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step when AI workflow behavior changes.
 
 ## Execution Discipline
 
@@ -166,6 +200,12 @@ Before finishing, confirm:
 - [ ] final response includes a Code + Docs Sync Matrix with code change, doc owner, doc update status, and validation result
 - [ ] evaluation harness was completed with a rubric score summary (>= 8/10, no category at 0)
 - [ ] summary includes validation commands and any residual risk
+
+## Output Standards
+
+Use this skill's final response structure unless the user requested a narrower report. Include
+implemented behavior, docs sync, required gates, narrow checks, advisory checks, concurrency/scope,
+and residual risk.
 
 Use this response structure for implementation turns:
 

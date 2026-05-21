@@ -200,6 +200,8 @@ export interface DataOperationsProviderSectionState extends DataOperationsSectio
   };
 }
 
+export type DataOperationsProviderStatus = DataOperationsProviderRecord["status"] | "Blocked";
+
 export interface DataOperationsProviderCommandActionState {
   id: "add" | "refresh" | "diagnostics" | "settings";
   label: string;
@@ -230,7 +232,7 @@ export interface DataOperationsProviderRow {
   provider: string;
   rowId: string;
   detailPanelId: string;
-  status: DataOperationsProviderRecord["status"];
+  status: DataOperationsProviderStatus;
   rowClassName: DataOperationsStatusRowClassName;
   capability: string;
   credentialText: string;
@@ -298,7 +300,7 @@ export interface DataOperationsProviderDetailState {
   subtitle: string;
   description: string;
   ariaLabel: string;
-  status: DataOperationsProviderRecord["status"];
+  status: DataOperationsProviderStatus;
   statusTone: "success" | "warning" | "danger";
   fields: DataOperationsDetailField[];
   overviewFields: DataOperationsDetailField[];
@@ -422,6 +424,8 @@ export type DataOperationsStatusRowClassName =
 export interface ProviderSetupFormState {
   kind: ProviderKind | string;
   displayName: string;
+  environment?: "paper" | "live" | "sandbox" | "custom";
+  liveAcknowledged?: boolean;
   apiKey: string;
   apiSecret: string;
   endpoint: string;
@@ -437,6 +441,8 @@ export interface ProviderSetupDialogState {
   providerKindField: ProviderSetupSelectFieldState;
   selectedProviderSummary: ProviderSetupSummaryState;
   displayNameField: ProviderSetupTextFieldState;
+  environmentField: ProviderSetupEnvironmentFieldState;
+  liveAcknowledgement: ProviderSetupLiveAcknowledgementState;
   credentialFields: ProviderSetupCredentialFieldState[];
   capabilityOptions: ProviderSetupCapabilityOptionState[];
   closeButtonLabel: string;
@@ -509,6 +515,33 @@ export interface ProviderSetupTextFieldState {
   value: string;
   disabled: boolean;
   disabledReason: string | null;
+}
+
+export interface ProviderSetupEnvironmentOptionState {
+  value: NonNullable<ProviderSetupFormState["environment"]>;
+  label: string;
+}
+
+export interface ProviderSetupEnvironmentFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  description: string;
+  value: NonNullable<ProviderSetupFormState["environment"]>;
+  options: ProviderSetupEnvironmentOptionState[];
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface ProviderSetupLiveAcknowledgementState {
+  id: string;
+  label: string;
+  detail: string;
+  visible: boolean;
+  checked: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+  ariaLabel: string;
 }
 
 export interface ProviderSetupCredentialFieldState {
@@ -600,6 +633,8 @@ export const ALL_CAPABILITIES: Array<{ id: string; label: string; description: s
 const defaultProviderSetupForm: ProviderSetupFormState = {
   kind: "yahoo",
   displayName: "Yahoo Finance",
+  environment: "paper",
+  liveAcknowledged: false,
   apiKey: "",
   apiSecret: "",
   endpoint: "",
@@ -941,7 +976,7 @@ export function useDataOperationsViewModel(
     setProviderPhase("idle");
   }, [nextProviderSetupCommandRevision, providerPhase]);
 
-  const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities">, value: string) => {
+  const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities" | "liveAcknowledged">, value: string) => {
     setProviderForm((current) => {
       if (field === "kind") {
         const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === value);
@@ -949,14 +984,22 @@ export function useDataOperationsViewModel(
           ...current,
           kind: value,
           displayName: meta?.label ?? current.displayName,
+          environment: value === "alpaca" ? "paper" : current.environment,
+          liveAcknowledged: false,
           apiKey: "",
           apiSecret: "",
           endpoint: meta?.needsEndpoint ? current.endpoint : "",
           capabilities: meta?.defaultCapabilities ?? current.capabilities
         };
       }
-      return { ...current, [field]: value };
+      return { ...current, [field]: value, liveAcknowledged: field === "environment" && value !== "live" ? false : current.liveAcknowledged };
     });
+    setProviderSetupResult(null);
+    setProviderSetupError(null);
+  }, []);
+
+  const setProviderLiveAcknowledged = useCallback((value: boolean) => {
+    setProviderForm((current) => ({ ...current, liveAcknowledged: value }));
     setProviderSetupResult(null);
     setProviderSetupError(null);
   }, []);
@@ -991,7 +1034,8 @@ export function useDataOperationsViewModel(
       apiKey: providerForm.apiKey.trim() || null,
       apiSecret: providerForm.apiSecret.trim() || null,
       endpoint: providerForm.endpoint.trim() || null,
-      capabilities: providerForm.capabilities
+      capabilities: providerForm.capabilities,
+      environment: providerForm.environment
     };
 
     try {
@@ -1115,6 +1159,7 @@ export function useDataOperationsViewModel(
     closeProviderSetup,
     providerForm,
     updateProviderForm,
+    setProviderLiveAcknowledged,
     toggleProviderCapability,
     providerPhase,
     providerSetupResult,
@@ -1300,7 +1345,7 @@ export function buildProviderSection(
       {
         id: "add",
         label: "Add Provider",
-        ariaLabel: "Configure a new data or brokerage provider",
+        ariaLabel: "Configure a new data provider",
         href: null,
         variant: "default",
         disabled: false,
@@ -1346,8 +1391,8 @@ export function buildProviderSection(
     summaryCards: buildProviderSummaryCards(selectedDetail, rows, verifiedCount),
     rows,
     hasRows: records.length > 0,
-    tableLabel: "Configured providers",
-    description: "Configured, verified, routed, and fallback-active provider posture for downstream workflows.",
+    tableLabel: "Provider health",
+    description: "Provider trust, credential, routing, fallback, and verification posture for downstream workflows.",
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     selectedRowId,
     selectedDetail,
@@ -1384,14 +1429,16 @@ export function buildProviderRow(
   const connection = record.connection;
   const trust = record.trustSnapshot;
   const bindings = record.bindings;
-  const latencyText = formatProviderValue(providerRecord?.latency, formatLastGoodProviderResponse(connection));
+  const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
   const trustScoreText = trust ? `${Math.round(trust.score)}% · ${trust.healthStatus}` : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
   const signalSourceText = trust?.signals.length ? trust.signals.join(", ") : formatProviderValue(providerRecord?.signalSource, "Signal source not reported");
-  const reasonCodeText = formatProviderValue(providerRecord?.reasonCode, connection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
-  const recommendedActionText = connection
-    ? providerRoutingRecommendedAction(connection, trust, bindings, connection.enabled)
+  const reasonCodeText = formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
+  const recommendedActionText = record.routingConnection
+    ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
+    : connection
+      ? connection.recommendedAction
     : formatProviderValue(providerRecord?.recommendedAction, "No operator action reported");
-  const gateImpactText = formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(connection, trust));
+  const gateImpactText = formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(record.routingConnection, trust));
   const selected = rowId === selectedProviderId;
   const status = resolveProviderDisplayStatus(record);
   const statusTone = resolveProviderStatusTone(status);
@@ -1681,7 +1728,7 @@ function buildProviderCenterRowId(record: DataOperationsProviderCenterRecord): s
   return buildProviderRowId(record.connection?.providerId ?? record.routingConnection?.connectionId ?? record.displayName);
 }
 
-function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderRecord["status"] {
+function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderStatus {
   if (record.connection) {
     switch (record.connection.health) {
       case "Healthy":
@@ -1779,9 +1826,9 @@ function buildProviderOverviewFields(
     { id: "connection-state", label: "Connection state", value: connection ? row.status : "Routing evidence only" },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
     { id: "verification-state", label: "Verification", value: row.verificationText },
-    { id: "last-verified", label: "Last verified", value: formatUtcMinute(connection?.lastVerifiedAt) },
+    { id: "last-verified", label: "Last verified", value: formatProviderUtcMinute(connection?.lastVerifiedAt) },
     { id: "last-response", label: "Last successful call", value: row.lastSuccessfulText },
-    { id: "last-failure", label: "Last failure", value: formatUtcMinute(connection?.lastFailureAt) },
+    { id: "last-failure", label: "Last failure", value: formatProviderUtcMinute(connection?.lastFailureAt) },
     { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
     { id: "fallback", label: "Fallback", value: connection?.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(record.bindings) },
     { id: "workflows", label: "Affected workflows", value: row.affectedWorkflowsText },
@@ -2055,10 +2102,10 @@ function formatProviderRoutingCapability(value: string): string {
 }
 
 function formatLastGoodProviderResponse(connection: ProviderConnectionRow | null): string {
-  return formatUtcMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
+  return formatProviderUtcMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
 }
 
-function formatUtcMinute(value: string | null | undefined): string {
+function formatProviderUtcMinute(value: string | null | undefined): string {
   if (!value) {
     return "Never";
   }
@@ -2924,13 +2971,13 @@ function buildProviderRowId(provider: string): string {
 }
 
 function resolveProviderStatusTone(
-  status: DataOperationsProviderRecord["status"]
+  status: DataOperationsProviderStatus
 ): DataOperationsProviderRow["statusTone"] {
   if (status === "Healthy") {
     return "success";
   }
 
-  if (status === "Degraded") {
+  if (status === "Degraded" || status === "Blocked") {
     return "danger";
   }
 
@@ -3020,6 +3067,10 @@ export function validateProviderSetupForm(form: ProviderSetupFormState): string 
     return `Enter a valid http or https endpoint URL for ${meta.label ?? "this provider"}.`;
   }
 
+  if (form.environment === "live" && !form.liveAcknowledged) {
+    return "Acknowledge live provider access before configuring a live provider.";
+  }
+
   if (form.capabilities.length === 0) {
     return "Select at least one capability for this provider.";
   }
@@ -3028,11 +3079,15 @@ export function validateProviderSetupForm(form: ProviderSetupFormState): string 
 }
 
 export function clearProviderSetupCredentials(form: ProviderSetupFormState): ProviderSetupFormState {
-  return {
+  const next: ProviderSetupFormState = {
     ...form,
     apiKey: "",
     apiSecret: ""
   };
+  if (form.environment === "live" || form.liveAcknowledged !== undefined) {
+    next.liveAcknowledged = form.environment === "live" ? false : Boolean(form.liveAcknowledged);
+  }
+  return next;
 }
 
 export function buildProviderSetupDialogState(
@@ -3071,6 +3126,31 @@ export function buildProviderSetupDialogState(
       value: form.displayName,
       disabled: submitting,
       disabledReason: fieldDisabledReason
+    },
+    environmentField: {
+      id: "provider-setup-environment",
+      label: "Environment",
+      ariaLabel: "Provider environment",
+      description: "Keep paper or sandbox selected until the provider is verified and safe to route.",
+      value: form.environment ?? "paper",
+      options: [
+        { value: "paper", label: "Paper" },
+        { value: "live", label: "Live" },
+        { value: "sandbox", label: "Sandbox" },
+        { value: "custom", label: "Custom" }
+      ],
+      disabled: submitting,
+      disabledReason: fieldDisabledReason
+    },
+    liveAcknowledgement: {
+      id: "provider-setup-live-acknowledgement",
+      label: "I understand this provider may access live brokerage or real-money account data.",
+      detail: "Live provider setup stays gated until this acknowledgement is checked.",
+      visible: form.environment === "live",
+      checked: Boolean(form.liveAcknowledged),
+      disabled: submitting,
+      disabledReason: fieldDisabledReason,
+      ariaLabel: "Acknowledge live provider access before setup"
     },
     credentialFields: buildProviderCredentialFields(form, providerMeta, fieldDisabledReason),
     capabilityOptions: ALL_CAPABILITIES.map((capability) => ({

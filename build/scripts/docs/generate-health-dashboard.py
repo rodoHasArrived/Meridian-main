@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -49,7 +50,7 @@ from dashboard_rendering import (
 # ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS: frozenset[str] = frozenset(
-    {".git", ".github", "node_modules", "bin", "obj", "__pycache__", ".vs"}
+    {".git", ".github", ".agents", ".claude", ".codex", "archive", "artifacts", "node_modules", "bin", "obj", "__pycache__", ".vs"}
 )
 
 STALE_THRESHOLD_DAYS: int = 90
@@ -166,6 +167,8 @@ def _file_mtime_utc(path: Path) -> datetime:
 
 def _last_modified(path: Path, root: Path) -> datetime:
     """Best-effort last-modified date: git commit date or file mtime."""
+    if os.environ.get("MERIDIAN_DOC_HEALTH_USE_GIT") != "1":
+        return _file_mtime_utc(path)
     git_date = _git_last_commit_date(path, root)
     if git_date is not None:
         # Ensure timezone-aware
@@ -341,13 +344,14 @@ def analyse(root: Path) -> HealthMetrics:
     root = root.resolve()
     now = datetime.now(tz=timezone.utc)
 
-    # Discover all Markdown files, respecting exclusions.
+    # Discover all Markdown files while pruning excluded directories before descent.
     md_files: list[Path] = []
-    for md_path in root.rglob("*.md"):
-        if _should_skip(md_path.relative_to(root)):
-            continue
-        if md_path.is_file():
-            md_files.append(md_path)
+    for current, dirs, files in os.walk(root):
+        dirs[:] = [directory for directory in dirs if directory not in EXCLUDE_DIRS]
+        current_path = Path(current)
+        for file_name in files:
+            if file_name.endswith(".md"):
+                md_files.append(current_path / file_name)
 
     # Per-file analysis.
     file_infos: list[FileInfo] = []
@@ -550,7 +554,7 @@ def generate_markdown_from_json_payload(payload: dict) -> str:
     return render_markdown_from_json(
         json_payload=payload,
         render_body=_render_markdown_body_from_payload,
-        data_sources=["repo markdown (*.md)", "git commit metadata"],
+        data_sources=["repo markdown (*.md)", "file modification metadata"],
     )
 
 
@@ -639,7 +643,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
         print("Error: --output requires --json-output so markdown is rendered from canonical JSON.", file=sys.stderr)
         return 1
 
-    if not any(root.rglob("*.md")):
+    has_markdown = False
+    for current, dirs, files in os.walk(root):
+        dirs[:] = [directory for directory in dirs if directory not in EXCLUDE_DIRS]
+        if any(file_name.endswith(".md") for file_name in files):
+            has_markdown = True
+            break
+
+    if not has_markdown:
         print("Error: missing required markdown evidence input (*.md files).", file=sys.stderr)
         return 1
 

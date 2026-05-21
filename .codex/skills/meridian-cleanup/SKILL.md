@@ -11,6 +11,28 @@ Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md
 If the cleanup touches specialized rules, inspect the nearest source, tests, and existing agent
 guidance in `.github/agents/cleanup-agent.md`.
 
+## Use When
+
+Use this skill for focused maintainability work that must preserve observable behavior.
+
+Trigger examples:
+
+- "Remove dead code from this provider area."
+- "Tidy this dashboard view model without changing behavior."
+- "Clean up stale docs paths and duplicate sections."
+
+## Do Not Use When
+
+Use `meridian-code-review` for a findings-only review, `meridian-archive-organizer` for moving
+retired material into `archive/`, and `meridian-blueprint` when the work is an architectural
+redesign.
+
+Non-trigger examples:
+
+- "Review this PR and list bugs."
+- "Archive this superseded roadmap snapshot."
+- "Design a new provider orchestration layer."
+
 ## Workflow
 
 1. Confirm the cleanup scope from the prompt or infer the smallest safe target area.
@@ -18,6 +40,18 @@ guidance in `.github/agents/cleanup-agent.md`.
 3. Pick the cleanup category: dead code, duplication, safe anti-pattern, log hygiene, stale docs, or code-behind noise.
 4. Apply the smallest reviewable change set that preserves behavior.
 5. Run the narrowest relevant validation command and report any remaining risk.
+
+## Handoffs
+
+- Hand off to `meridian-code-review` when cleanup uncovers a likely behavioral bug.
+- Hand off to `meridian-archive-organizer` when stale material should move to `archive/`.
+- Hand off to `meridian-implementation-assurance` when the cleanup changes AI tooling, docs contracts, or a shared workflow and needs formal evidence.
+
+## Validation
+
+- Run the narrowest command covering the touched surface: focused `dotnet test`, project build, dashboard test/build, docs checker, or skill checker.
+- For docs-only cleanup, run link/search validation and `git diff --check`.
+- State clearly when validation is skipped because the cleanup is analysis-only.
 
 ## Guardrails
 

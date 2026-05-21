@@ -16,6 +16,14 @@ CODEX_DOCS_README = REPO_ROOT / "docs" / "ai" / "codex" / "README.md"
 CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "ci.yml"
 SHARED_CONTEXT_MARKER = "../_shared/project-context.md"
 EXECUTION_CONTRACT_MARKER = "../_shared/codex-execution-contract.md"
+REQUIRED_SECTIONS = (
+    "## Use When",
+    "## Do Not Use When",
+    "## Workflow",
+    "## Handoffs",
+    "## Validation",
+    "## Output Standards",
+)
 
 
 @dataclass(frozen=True)
@@ -77,6 +85,22 @@ def validate_skill(skill_dir: Path, catalog_text: str, docs_text: str) -> list[F
     if EXECUTION_CONTRACT_MARKER not in skill_text:
         findings.append(
             Finding("error", repo_relative(skill_md), "Skill does not reference the Codex execution contract.")
+        )
+
+    for heading in REQUIRED_SECTIONS:
+        if heading not in skill_text:
+            findings.append(
+                Finding("error", repo_relative(skill_md), f"Skill is missing required section {heading}.")
+            )
+
+    if "Trigger examples:" not in skill_text:
+        findings.append(
+            Finding("error", repo_relative(skill_md), "Skill is missing lightweight trigger examples.")
+        )
+
+    if "Non-trigger examples:" not in skill_text:
+        findings.append(
+            Finding("error", repo_relative(skill_md), "Skill is missing lightweight non-trigger examples.")
         )
 
     if add_missing_file_finding(findings, openai_yaml):

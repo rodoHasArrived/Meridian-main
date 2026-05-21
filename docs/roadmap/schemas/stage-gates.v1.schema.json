@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.stage-gates.v1",
+  "type": "object",
+  "required": ["schema", "stage_gates"],
+  "properties": {
+    "schema": { "type": "object" },
+    "stage_gates": { "type": "array" }
+  },
+  "additionalProperties": false
+}

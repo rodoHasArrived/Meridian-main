@@ -3,59 +3,63 @@ name: Roadmap Source Docs
 on:
   pull_request:
     paths:
-      - 'docs/**'
-      - 'tools/roadmap/**'
-      - 'tools/source_docs/**'
-      - '.github/workflows/roadmap-source-docs.yml'
+      - "docs/roadmap/**"
+      - "docs/source/**"
+      - "docs/status/**"
+      - "docs/architecture/**"
+      - "src/**/README.md"
+      - "build/scripts/docs/**"
+      - ".github/workflows/roadmap-source-docs.yml"
+      - ".github/instructions/source-documentation.instructions.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/roadmap/**"
+      - "docs/source/**"
+      - "src/**/README.md"
+      - "build/scripts/docs/**"
   workflow_dispatch:
-    inputs:
-      phase:
-        description: 'Declared roadmap phase (PR0..PR9)'
-        required: false
-        type: string
 
 env:
   PYTHONUNBUFFERED: '1'
 
 jobs:
-  scope-gate:
+  validate-roadmap-source-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
-        with:
-          fetch-depth: 0
-      - name: Enforce phase scope
-        env:
-          DISPATCH_PHASE: ${{ inputs.phase }}
-          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-          BASE_REF: ${{ github.event.pull_request.base.sha || 'origin/main' }}
-          HEAD_REF: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          python3 tools/roadmap/enforce_phase_scope.py \
-            --dispatch-phase "$DISPATCH_PHASE" \
-            --labels "$PR_LABELS" \
-            --pr-body "$PR_BODY" \
-            --base-ref "$BASE_REF" \
-            --head-ref "$HEAD_REF"
 
-  schema-and-render:
-    runs-on: ubuntu-latest
-    needs: scope-gate
-    steps:
-      - uses: actions/checkout@v6.0.2
       - name: Set up Python
         uses: actions/setup-python@v6.2.0
         with:
-          python-version: '3.12'
-      - name: Install renderer dependencies
-        run: python3 -m pip install -r tools/source_docs/requirements-render.txt
-      - name: Validate source docs
-        run: python3 tools/source_docs/validate_source_readmes.py
+          python-version: "3.12"
+
+      - name: Validate roadmap registry
+        run: python3 build/scripts/docs/validate-roadmap-registry.py --summary
+
+      - name: Validate source READMEs
+        run: python3 build/scripts/docs/validate-source-readmes.py --summary
+
+      - name: Scan source TODOs
+        run: python3 build/scripts/docs/scan-source-todos.py --summary
+
+      - name: Render roadmap docs
+        run: python3 build/scripts/docs/render-roadmap-docs.py --summary
+
       - name: Render source docs
-        run: python3 tools/source_docs/render_source_docs.py
-      - name: Determinism parity check
-        run: python3 tools/source_docs/check_source_determinism.py
-      - name: Drift gate (generated output must be committed)
+        run: python3 build/scripts/docs/render-source-docs.py --summary
+
+      - name: Render diagrams
         run: |
-          git diff -- docs/generated/source --exit-code
+          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
+          python3 build/scripts/docs/render-source-diagrams.py --summary
+
+      - name: Check generated docs are current
+        run: |
+          git diff --exit-code
+
+      - name: Check whitespace
+        run: git diff --check

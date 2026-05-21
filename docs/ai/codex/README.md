@@ -30,15 +30,37 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Write scenario-first Meridian tests |
 
+## Routing Model
+
+Use `.codex/skills/` as the canonical repo-local Codex skill set. Keep public skill names stable and
+route by task phase:
+
+| Lane | Skill | Boundary |
+| --- | --- | --- |
+| Orient | `meridian-repo-navigation` | Route first, name owner files/docs, then exit. |
+| Ideate | `meridian-brainstorm` | Generate product or architecture options, not a build spec. |
+| Plan | `meridian-blueprint` | Turn one selected idea into an implementation-ready design. |
+| Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence, docs sync, and gates. |
+| Review | `meridian-code-review` | Findings first; no patching unless explicitly requested. |
+| Test | `meridian-test-writer` | Add scenario-first tests in the correct test lane. |
+| Provider | `meridian-provider-builder` | Build providers and hand off to assurance for rollout proof. |
+| Archive | `meridian-archive-organizer` | Classify stale material and update archive/navigation evidence. |
+| Roadmap | `meridian-roadmap-strategist` | Reconcile status, waves, opportunities, and target state. |
+| Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code or duplication. |
+| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and explicit evidence. |
+
 ## Required Gates For Codex AI/Tooling Changes
 
 Run or account for these gates when Codex skill, catalog, prompt, docs automation, or AI workflow
 behavior changes:
 
 ```bash
+make ai-codex-skills-check
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
+python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
+git diff --check
 make ai-verify
 make ai-arch-check
 ```
@@ -74,11 +96,21 @@ Maintenance/reporting:
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
+- Before editing `src/**`, read the nearest registered source README and identify the module in
+  `docs/source/data/source-modules.yml`.
+- For meaningful source behavior, workflow, validation, diagram, ownership, or TODO changes, update
+  the nearest source README plus `docs/source/data/*.yml` records in the same change.
+- Never hand-edit generated docs under `docs/roadmap/generated/` or `docs/source/generated/`;
+  update registry data or renderers and regenerate.
 - Update shared Claude, GitHub, or portable skill surfaces only when the requested change is
   explicitly cross-provider.
 - Keep every current Codex skill linked to `_shared/project-context.md` and
   `_shared/codex-execution-contract.md`.
+- Keep every current Codex skill structured around `Use When`, `Do Not Use When`, `Workflow`,
+  `Handoffs`, `Validation`, and `Output Standards`, with trigger and non-trigger examples.
 - Keep `agents/openai.yaml` present for every current Codex skill.
+- Keep `.agents/skills/` and `.claude/skills/` as host-neutral mirrors; do not widen Codex-only
+  structure changes into portable packages unless the workflow itself is shared.
 - Skip purposeless cosmetic churn unless it fixes canonical naming, broken docs, accessibility,
   lint/test failures, API contract names, or user-visible correctness.
 
@@ -87,6 +119,10 @@ Maintenance/reporting:
 Use the Codex skill checker for fast local drift detection:
 
 ```bash
+make ai-codex-skills-check
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/codex-skills-check.json
+python3 build/scripts/docs/validate-roadmap-registry.py --summary
+python3 build/scripts/docs/validate-source-readmes.py --summary
+python3 build/scripts/docs/scan-source-todos.py --summary
 ```

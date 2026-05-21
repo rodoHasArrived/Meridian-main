@@ -4401,7 +4401,10 @@ public sealed class WorkstationEndpointsTests
         rows[1].GetProperty("eventType").GetString().Should().Be("RunCompleted");
         rows[2].GetProperty("runId").GetString().Should().Be("lineage-endpoint-paper");
         rows[2].GetProperty("parentCanonicalRunKey").GetString().Should().Be("lineage-endpoint-backtest");
-        rows.Should().OnlyContain(row => row.TryGetProperty("canonicalRunKey", out _));
+        foreach (var row in rows)
+        {
+            row.TryGetProperty("canonicalRunKey", out var _).Should().BeTrue();
+        }
     }
 
     [Fact]

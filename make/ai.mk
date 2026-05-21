@@ -8,6 +8,7 @@
         ai-arch-check ai-arch-check-summary ai-arch-check-json \
         ai-codex-skills-check \
         ai-docs-freshness ai-docs-drift ai-docs-sync-report \
+        ai-docs-map ai-docs-map-check ai-plan-checklists-check \
         ai-docs-archive ai-docs-archive-execute \
         skill-list skill-resources skill-scripts skill-chains skill-resource \
         skill-run skill-chain skill-run-chain skill-validate skill-run-eval \
@@ -91,6 +92,23 @@ ai-docs-sync-report: ## Generate AI docs sync report (markdown)
 	@echo "$(BLUE)Generating AI docs sync report...$(NC)"
 	@$(AI_DOCS) sync-report --output docs/generated/ai-docs-sync-report.md
 	@echo "$(GREEN)Report written to docs/generated/ai-docs-sync-report.md$(NC)"
+
+ai-docs-map: ## Generate AI navigation plus roadmap/source documentation maps
+	@python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
+	@python3 build/scripts/docs/render-roadmap-docs.py --summary
+	@python3 build/scripts/docs/render-source-docs.py --summary
+	@echo "$(GREEN)AI documentation maps generated$(NC)"
+
+ai-docs-map-check: ## Validate roadmap/source registries, README coverage, TODOs, and AI inventory
+	@python3 build/scripts/docs/validate-roadmap-registry.py --summary
+	@python3 build/scripts/docs/validate-source-readmes.py --summary
+	@python3 build/scripts/docs/scan-source-todos.py --summary
+	@python3 build/scripts/docs/validate-doc-hashes.py --summary
+	@python3 build/scripts/docs/check-ai-inventory.py --summary
+	@echo "$(GREEN)AI documentation map checks complete$(NC)"
+
+ai-plan-checklists-check: ## Advisory check for plan documents with implementation checklists
+	@python3 build/scripts/docs/check-plan-checklists.py --summary
 
 ai-docs-archive: ## Preview stale docs that could be archived
 	@echo "$(BLUE)Scanning for archive candidates...$(NC)"

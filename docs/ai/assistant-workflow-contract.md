@@ -62,6 +62,23 @@ Every assistant and automation should use the same high-level flow:
 8. **Report evidence.** Summaries must include what changed, why, affected files, validation
    commands, and any residual risks.
 
+## Source Documentation And Roadmap Sync
+
+When editing `src/**`, assistants must:
+
+1. Read the nearest `src/**/README.md`.
+2. Read `docs/architecture/module-map.md` before changing dependencies or boundaries.
+3. Identify the module ID from `docs/source/data/source-modules.yml`.
+4. Link meaningful feature, workflow, or behavior changes to a roadmap item ID.
+5. Update the nearest source README when behavior, workflow, validation command, module boundary,
+   diagram, or TODO scope changes.
+6. Update `docs/source/data/source-modules.yml` when module ownership, validation, roadmap mapping,
+   layer, diagram, or README path changes.
+7. Update `docs/source/data/source-todos.yml` for module-local follow-up.
+8. Update `docs/source/data/diagram-index.yml` when adding or replacing diagrams.
+9. Never hand-edit generated docs outside approved generated blocks.
+10. Run the narrowest validation command and report the result.
+
 ---
 
 ## Safety Rules Shared By All Providers
@@ -93,6 +110,7 @@ Every assistant and automation should use the same high-level flow:
 | --- | --- | --- |
 | Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
+| Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |

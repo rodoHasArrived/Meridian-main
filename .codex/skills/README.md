@@ -5,7 +5,8 @@ skills for the current AI workflow and should stay aligned with Meridian's brows
 workstation direction, retained WPF support, fund-management/trading-platform scope, and no-mobile
 development policy.
 
-Last verified against `README.md` and `docs/status/ROADMAP.md`: 2026-05-13.
+Last verified against `README.md`, `docs/status/ROADMAP.md`, and
+`docs/ai/assistant-workflow-contract.md`: 2026-05-21.
 
 ## Current Skills
 
@@ -22,6 +23,25 @@ Last verified against `README.md` and `docs/status/ROADMAP.md`: 2026-05-13.
 | `meridian-roadmap-strategist` | [`SKILL.md`](meridian-roadmap-strategist/SKILL.md) | Refresh roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel` | [`SKILL.md`](meridian-simulated-user-panel/SKILL.md) | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | [`SKILL.md`](meridian-test-writer/SKILL.md) | Write scenario-first Meridian tests |
+
+## Routing Model
+
+Pick the narrowest lane that answers the request, then hand off only when the next phase is
+different work:
+
+| Lane | Skill | Boundary |
+| --- | --- | --- |
+| Orient | `meridian-repo-navigation` | Route first, name owner files/docs, then exit. |
+| Ideate | `meridian-brainstorm` | Generate options and tradeoffs; do not write specs. |
+| Plan | `meridian-blueprint` | Turn one selected idea into a code-ready design. |
+| Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence and docs sync. |
+| Review | `meridian-code-review` | Findings first; no implementation unless asked. |
+| Test | `meridian-test-writer` | Add scenario-first tests in the right project. |
+| Provider | `meridian-provider-builder` | Build provider adapters, then use assurance for rollout proof. |
+| Archive | `meridian-archive-organizer` | Classify stale material and preserve useful history. |
+| Roadmap | `meridian-roadmap-strategist` | Reconcile plans, delivery waves, and target state. |
+| Cleanup | `meridian-cleanup` | Preserve behavior while improving maintainability. |
+| Simulated user review | `meridian-simulated-user-panel` | Run persona-backed critique from concrete artifacts. |
 
 ## Shared Resources
 
@@ -40,6 +60,10 @@ Last verified against `README.md` and `docs/status/ROADMAP.md`: 2026-05-13.
 - Every current Codex skill must reference `_shared/project-context.md` and
   `_shared/codex-execution-contract.md` so execution behavior stays consistent without duplicating
   the full contract in each skill.
+- Every current Codex skill must include these decision sections: `Use When`, `Do Not Use When`,
+  `Workflow`, `Handoffs`, `Validation`, and `Output Standards`.
+- Every current Codex skill must include lightweight trigger and non-trigger examples so routing
+  boundaries remain inspectable without running a full eval harness.
 - Treat `src/Meridian.Ui/dashboard/` and `/workstation/` as the default operator UI surface for
   new browser-facing work. WPF guidance is retained support unless the user explicitly asks for
   desktop compatibility work.
@@ -58,6 +82,9 @@ Last verified against `README.md` and `docs/status/ROADMAP.md`: 2026-05-13.
   after changing repo-local Codex skills, their `agents/openai.yaml` metadata, or Codex docs.
 - Validate catalog drift with `python build/scripts/docs/check-ai-inventory.py --summary` after
   changing Codex skill metadata or shared context.
+- Preserve `.agents/skills/` and `.claude/skills/` as host-neutral mirrors. Update them only when
+  the changed workflow is shared across hosts, not when the change is Codex-specific structure or
+  execution guidance.
 
 ## Recommended Flow
 

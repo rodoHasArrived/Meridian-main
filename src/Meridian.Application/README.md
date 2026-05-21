@@ -1,25 +1,66 @@
 ---
-id: meridian-application
-title: Meridian Application
-layer: application
-state: active
-canonical_path: src/Meridian.Application
-architecture_boundary: orchestrators-commands-and-use-cases
-roadmap_anchor: W3-research-to-paper-continuity
+doc_type: source-readme
+doc_schema: meridian.source-readme
+doc_schema_version: "1.0.0"
+module_id: SRC-APP
+path: src/Meridian.Application
+status: active
+owner_lane: Runtime Host
+last_reviewed: 2026-05-20
 ---
 
-# Meridian Application
+# src/Meridian.Application
 
 ## Purpose
-Application-layer use cases, orchestration services, and command handlers.
 
-## Responsibilities
-- Coordinate workflows across providers, storage, and execution subsystems.
-- Expose command and use-case entry points used by host and APIs.
+The application layer coordinates Meridian use cases, command handlers, orchestration services, and pipeline workflows.
 
-## Key dependencies
-- `src/Meridian.Contracts`
-- Infrastructure/provider abstractions consumed via interfaces.
+## Layer responsibility
 
-## Notes
-Keep orchestration here; avoid leaking transport/UI concerns into this layer.
+This layer should express application behavior and orchestration without owning shared DTO definitions, UI rendering, provider adapter implementation, or storage engine internals.
+
+## Key folders and files
+
+- `Commands/` - CLI and operator command implementations.
+- `Composition/` - application service registration.
+- Pipeline and workflow services - runtime coordination across lower-level contracts and infrastructure.
+
+## Important workflows
+
+Use this module for workflow orchestration, command behavior, readiness coordination, and service-level validation.
+
+## Diagrams
+
+See `DIA-ASSURANCE-LOOP` and paper-readiness diagrams in `docs/source/data/diagram-index.yml`.
+
+## Roadmap traceability
+
+<!-- source-roadmap-traceability:begin module=SRC-APP -->
+| Roadmap item | Title |
+| --- | --- |
+| `W2-TRD-001` | Paper trading cockpit reliability |
+| `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
+| `W3-CONT-001` | Research to paper continuity |
+<!-- source-roadmap-traceability:end -->
+
+## TODO checklist
+
+<!-- source-todos:begin module=SRC-APP -->
+- No registry-backed TODOs are open for this module.
+<!-- source-todos:end -->
+
+## Validation
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+```
+
+## Change rules
+
+Respect layer boundaries: application code can depend on lower layers and contracts, but domain, core, and contracts must not depend back on application code.
+
+## Related docs
+
+- `docs/architecture/module-map.md`
+- `docs/HELP.md`
+- `docs/source/generated/source-roadmap-traceability.md`

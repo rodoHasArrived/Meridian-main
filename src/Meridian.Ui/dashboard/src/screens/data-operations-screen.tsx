@@ -306,7 +306,10 @@ export function DataOperationsScreen({
                   <MonitorCheck className="h-5 w-5 text-primary" aria-hidden="true" />
                   {vm.providerSection.title}
                 </CardTitle>
-                <CardDescription className="mt-2">{vm.providerSection.subtitle}</CardDescription>
+                <div className="mt-1 text-xs font-medium text-muted-foreground">Provider health</div>
+                <CardDescription className="mt-2">
+                  Provider health, credential verification, routing, and fallback posture. {vm.providerSection.subtitle}
+                </CardDescription>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
@@ -356,7 +359,7 @@ export function DataOperationsScreen({
                     className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     value={vm.providerSection.selectedRowId ?? ""}
                     onChange={(event) => vm.selectProvider(event.target.value)}
-                    aria-label="Configured provider"
+                    aria-label="Configured Provider"
                   >
                     {vm.providerSection.providerOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -588,10 +591,16 @@ function ProviderEmptyState({
 
 function ProviderDetailPanel({
   detail,
-  emptyState
+  emptyState,
+  activeTab,
+  onTabSelect,
+  onVerify
 }: {
   detail: DataOperationsProviderDetailState | null;
   emptyState: DataOperationsEmptyState | null;
+  activeTab: DataOperationsProviderDetailState["activeTab"];
+  onTabSelect: (tab: DataOperationsProviderDetailState["activeTab"]) => void;
+  onVerify: () => void;
 }) {
   if (!detail) {
     return (
@@ -634,8 +643,97 @@ function ProviderDetailPanel({
         </Badge>
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {detail.fields.map((field) => (
+      <div className="mt-3 flex flex-wrap gap-1" role="tablist" aria-label={`${detail.title} provider detail tabs`}>
+        {detail.tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={tab.selected}
+            aria-controls={tab.ariaControls}
+            className={cn(
+              "rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+              tab.selected
+                ? "border-primary/40 bg-primary/[0.08] text-foreground"
+                : "border-border/70 bg-secondary/20 text-muted-foreground hover:bg-secondary/35"
+            )}
+            onClick={() => onTabSelect(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <ProviderDetailTabPanel detail={detail} activeTab={activeTab} onVerify={onVerify} />
+    </aside>
+  );
+}
+
+function ProviderDetailTabPanel({
+  detail,
+  activeTab,
+  onVerify
+}: {
+  detail: DataOperationsProviderDetailState;
+  activeTab: DataOperationsProviderDetailState["activeTab"];
+  onVerify: () => void;
+}) {
+  if (activeTab === "credentials") {
+    return (
+      <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
+        <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+          {detail.credentialFields.map((field) => (
+            <FieldTile key={field.id} field={field} />
+          ))}
+        </dl>
+        <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+          <div className="eyebrow-label">Secret handling</div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            Raw secrets are never displayed after submit. Use Settings to replace or clear stored values.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === "diagnostics") {
+    return (
+      <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-diagnostics`} role="tabpanel" className="mt-3 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+          <div className="min-w-0">
+            <div className="eyebrow-label">Diagnostics</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.verifyAction.statusLabel}</p>
+            {detail.verifyAction.details.length > 0 ? (
+              <ul className="mt-2 grid gap-1 text-xs leading-5 text-muted-foreground">
+                {detail.verifyAction.details.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            ) : null}
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void onVerify()}
+            disabled={detail.verifyAction.disabled}
+            disabledReason={detail.verifyAction.disabledReason}
+            busy={detail.verifyAction.busy}
+            aria-label={detail.verifyAction.ariaLabel}
+          >
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            {detail.verifyAction.label}
+          </Button>
+        </div>
+        <div className="grid gap-2">
+          {detail.diagnostics.map((diagnostic) => (
+            <ProviderDiagnosticRow key={diagnostic.id} diagnostic={diagnostic} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
+      <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.overviewFields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
       </dl>
@@ -645,7 +743,27 @@ function ProviderDetailPanel({
         <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {detail.reasonCodeText}</p>
         <p className="mt-1 font-mono text-[11px] text-muted-foreground">Gate: {detail.gateImpactText}</p>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+function ProviderDiagnosticRow({ diagnostic }: { diagnostic: DataOperationsProviderDiagnosticRow }) {
+  const variant = diagnostic.status === "pass"
+    ? "success"
+    : diagnostic.status === "fail"
+      ? "danger"
+      : diagnostic.status === "warning"
+        ? "warning"
+        : "outline";
+
+  return (
+    <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-xs font-semibold text-foreground">{diagnostic.label}</div>
+        <Badge variant={variant}>{diagnostic.statusLabel}</Badge>
+      </div>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{diagnostic.detail}</p>
+    </div>
   );
 }
 
@@ -920,6 +1038,53 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   disabledReasonId={`${vm.providerSetupDialogState.displayNameField.id}-disabled-reason`}
                 />
               </label>
+
+              <label htmlFor={vm.providerSetupDialogState.environmentField.id} className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.environmentField.label}
+                <select
+                  id={vm.providerSetupDialogState.environmentField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerSetupDialogState.environmentField.value}
+                  aria-label={vm.providerSetupDialogState.environmentField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.environmentField.disabled}
+                  aria-describedby={joinDescribedByIds(
+                    `${vm.providerSetupDialogState.environmentField.id}-description`,
+                    `${vm.providerSetupDialogState.environmentField.id}-disabled-reason`
+                  )}
+                  onChange={(e) => vm.updateProviderForm("environment", e.target.value)}
+                >
+                  {vm.providerSetupDialogState.environmentField.options.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <FieldSupportText
+                  helpId={`${vm.providerSetupDialogState.environmentField.id}-description`}
+                  helpText={vm.providerSetupDialogState.environmentField.description}
+                  disabledReason={vm.providerSetupDialogState.environmentField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.environmentField.id}-disabled-reason`}
+                />
+              </label>
+
+              {vm.providerSetupDialogState.liveAcknowledgement.visible ? (
+                <label
+                  htmlFor={vm.providerSetupDialogState.liveAcknowledgement.id}
+                  className="flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-2.5 text-sm"
+                >
+                  <input
+                    id={vm.providerSetupDialogState.liveAcknowledgement.id}
+                    type="checkbox"
+                    className="mt-0.5 shrink-0 accent-[hsl(var(--live-env))]"
+                    checked={vm.providerSetupDialogState.liveAcknowledgement.checked}
+                    disabled={vm.providerSetupDialogState.liveAcknowledgement.disabled}
+                    aria-label={vm.providerSetupDialogState.liveAcknowledgement.ariaLabel}
+                    onChange={(event) => vm.setProviderLiveAcknowledged(event.currentTarget.checked)}
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-live-env">{vm.providerSetupDialogState.liveAcknowledgement.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{vm.providerSetupDialogState.liveAcknowledgement.detail}</span>
+                  </span>
+                </label>
+              ) : null}
 
               {vm.providerSetupDialogState.credentialFields.map((field) => (
                 <label key={field.id} htmlFor={field.id} className="grid gap-1 text-sm">

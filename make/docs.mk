@@ -2,7 +2,7 @@
 # Documentation
 # =============================================================================
 
-.PHONY: verify-docs docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
+.PHONY: verify-docs docs docs-health docs-source-readmes-sync gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
         update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims generate-icons generate-diagrams
 
@@ -12,6 +12,22 @@ docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentatio
 verify-docs: docs-lint check-workflow-docs-parity check-status-delivery-claims ## Canonical lane: docs command, workflow, and status-claim validation
 	@python3 build/scripts/docs/check-known-lanes.py
 	@echo "$(GREEN)Documentation lane verification complete$(NC)"
+
+docs-health: ## Validate and render roadmap/source docs health artifacts
+	@python3 build/scripts/docs/validate-roadmap-registry.py --summary
+	@python3 build/scripts/docs/validate-source-readmes.py --summary
+	@python3 build/scripts/docs/scan-source-todos.py --summary
+	@python3 build/scripts/docs/render-roadmap-docs.py --summary
+	@python3 build/scripts/docs/render-source-docs.py --summary
+	@python3 build/scripts/docs/validate-doc-hashes.py --write --summary
+	@python3 build/scripts/docs/validate-doc-hashes.py --summary
+	@python3 build/scripts/docs/generate-health-dashboard.py --output docs/status/doc-health-dashboard.md --json-output docs/status/doc-health-dashboard.json --summary
+	@echo "$(GREEN)Documentation health lane complete$(NC)"
+
+docs-source-readmes-sync: ## Create missing source READMEs from docs/source/data/source-modules.yml
+	@python3 build/scripts/docs/sync-source-readmes.py --create-missing --summary
+	@python3 build/scripts/docs/render-source-docs.py --summary
+	@python3 build/scripts/docs/validate-source-readmes.py --summary
 
 gen-context: ## Generate project-context.md from code annotations
 	@echo "$(BLUE)Generating project context from code...$(NC)"

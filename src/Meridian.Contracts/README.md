@@ -1,25 +1,67 @@
 ---
-id: meridian-contracts
-title: Meridian Contracts
-layer: contracts
-state: active
-canonical_path: src/Meridian.Contracts
-architecture_boundary: shared-dtos-and-transport-contracts
-roadmap_anchor: W3-research-to-paper-continuity
+doc_type: source-readme
+doc_schema: meridian.source-readme
+doc_schema_version: "1.0.0"
+module_id: SRC-CONTRACTS
+path: src/Meridian.Contracts
+status: active
+owner_lane: Contract Compatibility
+last_reviewed: 2026-05-20
 ---
 
-# Meridian Contracts
+# src/Meridian.Contracts
 
 ## Purpose
-Shared contracts and DTOs used across host, services, desktop, and dashboard surfaces.
 
-## Responsibilities
-- Define stable transport payloads and shared schema objects.
-- Provide compatibility-safe contracts for inter-module integration.
+Contracts contains shared DTOs and compatibility types used across host, application, UI services, browser dashboard, retained WPF, and integration seams.
 
-## Key dependencies
-- Consumers in host, UI services, shared UI read models, and clients.
-- Serialization/runtime libraries required for DTO transport.
+## Layer responsibility
 
-## Notes
-Treat additive and breaking changes as cross-module compatibility work.
+This project is the shared contract layer. It must remain dependency-light and must not reference higher-level projects.
+
+## Key folders and files
+
+- DTO and model definitions used by workstation endpoints and shared operator surfaces.
+- Compatibility records used by browser and retained desktop consumers.
+
+## Important workflows
+
+Contract changes affect multiple consumers. Treat additive DTO fields, enum growth, serialization behavior, and breaking changes as cross-module work.
+
+## Diagrams
+
+See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
+
+## Roadmap traceability
+
+<!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
+| Roadmap item | Title |
+| --- | --- |
+| `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `W2-TRD-001` | Paper trading cockpit reliability |
+| `W3-CONT-001` | Research to paper continuity |
+| `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `W4-RPT-001` | Governed report pack readiness |
+<!-- source-roadmap-traceability:end -->
+
+## TODO checklist
+
+<!-- source-todos:begin module=SRC-CONTRACTS -->
+- No registry-backed TODOs are open for this module.
+<!-- source-todos:end -->
+
+## Validation
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+```
+
+## Change rules
+
+`Contracts` must not reference other Meridian projects. Shared DTOs belong here only when multiple layers need the same transport or compatibility contract.
+
+## Related docs
+
+- `docs/architecture/module-map.md`
+- `docs/status/contract-compatibility-matrix.md`
+- `docs/source/generated/source-module-index.md`
