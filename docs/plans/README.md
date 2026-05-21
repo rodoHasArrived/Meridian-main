@@ -115,6 +115,7 @@ These are active or consciously deferred engineering tracks. They should not com
 | [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | Optional L3 inference and queue-aware execution simulation plan |
 | [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Optional QuantScript, L3, and multi-instance follow-on roadmap |
 | [assembly-performance-roadmap.md](assembly-performance-roadmap.md) | Optional advanced-performance track after operator-readiness needs justify it |
+| [desktop-shell-modularity-roadmap.md](desktop-shell-modularity-roadmap.md) | Active desktop-shell modularity and extensibility roadmap for phased WPF shell architecture improvements |
 
 ## Archived Or Superseded Planning Context
 
@@ -129,8 +130,10 @@ The following files were removed from the active plans tree because they are com
 | [../../archive/docs/plans/backtesting-quantscript-improvement-plan-2026-04.md](../../archive/docs/plans/backtesting-quantscript-improvement-plan-2026-04.md) | Superseded by the Research trust/velocity and Backtest Studio plans plus delivered QuantScript baseline |
 | [../../archive/docs/plans/meridian-analytics-productization-blueprint.md](../../archive/docs/plans/meridian-analytics-productization-blueprint.md) | Superseded by the evidence-backed investment-operations plan and browser-first productization path |
 | [../../archive/docs/plans/approach-b-plus-v2-implementation-plan.md](../../archive/docs/plans/approach-b-plus-v2-implementation-plan.md) | Superseded by the active structured roadmap/source registries, docs automation, and stale-doc/hash validation path |
+| [../../archive/docs/plans/approach-b-plus-v2-governance.md](../../archive/docs/plans/approach-b-plus-v2-governance.md) | Historical phase-sequencing governance contract retained as implementation context after the docs-mesh rollout completed |
 | [../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md](../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md) | Superseded by delivered Covered Call support evidence plus active Strategy Engine, options, and Backtest Studio planning |
 | [../../archive/docs/plans/readability-refactor-baseline.md](../../archive/docs/plans/readability-refactor-baseline.md), [../../archive/docs/plans/readability-refactor-roadmap.md](../../archive/docs/plans/readability-refactor-roadmap.md), [../../archive/docs/plans/readability-refactor-technical-design-pack.md](../../archive/docs/plans/readability-refactor-technical-design-pack.md) | Historical readability baseline and draft design pack; active cleanup guidance now lives in the codebase cleanup roadmap |
+| [../../archive/docs/summaries/performance-todo-2026-05-21.md](../../archive/docs/summaries/performance-todo-2026-05-21.md) | Dated performance TODO snapshot with environment-specific benchmark blockage notes moved out of active planning |
 | [../../archive/docs/assessments/meridian-main-differentiation-report-2026-04-29.md](../../archive/docs/assessments/meridian-main-differentiation-report-2026-04-29.md) | Dated differentiation report superseded by the active evidence-backed investment-operations plan |
 | [../../archive/docs/plans/workstation-release-readiness-blueprint.md](../../archive/docs/plans/workstation-release-readiness-blueprint.md), [../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md](../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md) | Historical browser-workstation release checklist and sprint backlog |
 
