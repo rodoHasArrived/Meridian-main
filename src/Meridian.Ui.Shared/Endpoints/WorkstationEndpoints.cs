@@ -2902,7 +2902,8 @@ public static partial class WorkstationEndpoints
         // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
-        var connectionRows = providerConnectionLifecycle is not null
+        var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
+        var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
             ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
         var routingConnections = routingConnectionService is not null
