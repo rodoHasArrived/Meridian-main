@@ -124,7 +124,7 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
-            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -156,7 +156,8 @@ public static class ExecutionEndpoints
                 return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
             }
 
-            if (TryRejectClientControlledExecutionMetadata(request, jsonOptions) is { } brokerAccountFailure)
+            var canManageOrders = HasExecutionTradingPermission(context, UserPermission.ManageOrders);
+            if (TryRejectClientControlledExecutionMetadata(request, jsonOptions, canManageOrders) is { } brokerAccountFailure)
             {
                 return brokerAccountFailure;
             }
@@ -1246,9 +1247,17 @@ public static class ExecutionEndpoints
 
     private static IResult? TryRejectClientControlledExecutionMetadata(
         OrderRequest request,
-        JsonSerializerOptions jsonOptions)
+        JsonSerializerOptions jsonOptions,
+        bool canManageOrders)
     {
         if (!ContainsServerOwnedExecutionMetadata(request.Metadata))
+        {
+            return null;
+        }
+
+        if (canManageOrders
+            && ContainsRestrictedBrokerRoutingMetadata(request.Metadata)
+            && !ContainsExecutionControlOverrideMetadata(request.Metadata))
         {
             return null;
         }
@@ -1290,12 +1299,27 @@ public static class ExecutionEndpoints
             return false;
         }
 
-        return metadata.Keys.Any(static key => key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
+        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
             || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
             || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
             || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
             || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
             || key.Equals("alpaca:broker_account_id", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool ContainsExecutionControlOverrideMetadata(IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null || metadata.Count == 0)
+        {
+            return false;
+        }
+
+        return metadata.Keys.Any(static key => key.Equals("manualOverrideId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("manual_override_id", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("executionControlOverrideId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("execution_control_override_id", StringComparison.OrdinalIgnoreCase));
     }
 
     private static Dictionary<string, string> MergeMetadata(

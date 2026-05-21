@@ -317,7 +317,37 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
-    public async Task SubmitOrder_WithoutManageOrdersPermission_ReturnsForbidden()
+    public async Task SubmitOrder_WithoutExecuteTradesPermission_ReturnsForbidden()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance));
+        }, permissions: UserPermission.None);
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            timeInForce = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadata_WithoutManageOrdersPermission_ReturnsBadRequest()
     {
         var tempRoot = CreateTempRoot();
         await using var app = await CreateAppAsync(services =>
@@ -340,14 +370,23 @@ public sealed class ExecutionGovernanceEndpointsTests
             side = 0,
             type = 0,
             timeInForce = 0,
-            quantity = 1
+            quantity = 1,
+            metadata = new Dictionary<string, string>
+            {
+                ["broker_account_id"] = "acct-123"
+            }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = JsonSerializer.Deserialize<OrderResult>(
+            await response.Content.ReadAsStringAsync(),
+            JsonOptions());
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
     }
 
     [Fact]
-    public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadataAlias_ReturnsBadRequest()
+    public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadata_WithManageOrdersPermission_ReturnsCreated()
     {
         var tempRoot = CreateTempRoot();
         await using var app = await CreateAppAsync(services =>
@@ -377,12 +416,12 @@ public sealed class ExecutionGovernanceEndpointsTests
             }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = JsonSerializer.Deserialize<OrderResult>(
             await response.Content.ReadAsStringAsync(),
             JsonOptions());
         result.Should().NotBeNull();
-        result!.Success.Should().BeFalse();
+        result!.Success.Should().BeTrue();
     }
 
     [Fact]
