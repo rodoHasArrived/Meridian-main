@@ -501,7 +501,13 @@ public sealed record RunComparisonDto(
     DateTimeOffset LastUpdatedAt,
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
     bool HasLedger = false,
-    bool HasAuditTrail = false);
+    bool HasAuditTrail = false,
+    string ContinuityStatus = "Unknown",
+    int ReconciliationBreakCount = 0,
+    ReconciliationBreakSeverity ReconciliationHighestSeverity = ReconciliationBreakSeverity.Info,
+    bool HasLedgerEntryCoverage = false,
+    string LedgerCoverageStatus = "Missing",
+    string CashFlowHealth = "Missing");
 
 // ---------------------------------------------------------------------------
 // Track C drill-in models

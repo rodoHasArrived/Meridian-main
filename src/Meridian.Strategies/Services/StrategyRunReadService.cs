@@ -10,6 +10,15 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class StrategyRunReadService
 {
+    private const string ContinuityStatusHealthy = "Healthy";
+    private const string ContinuityStatusWarning = "Warning";
+    private const string ContinuityStatusMissing = "Missing";
+    private const string ContinuityStatusUnknown = "Unknown";
+    private const string LedgerCoverageStatusCovered = "Covered";
+    private const string LedgerCoverageStatusMissing = "Missing";
+    private const string CashFlowHealthHealthy = "Healthy";
+    private const string CashFlowHealthMissing = "Missing";
+
     private static readonly IReadOnlyDictionary<string, string> EmptyParameters = new Dictionary<string, string>();
     private static readonly IReadOnlyDictionary<string, StrategyPromotionRecord> EmptyPromotionLookup =
         new Dictionary<string, StrategyPromotionRecord>(StringComparer.Ordinal);
@@ -215,6 +224,7 @@ public sealed class StrategyRunReadService
 
     public async Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(
         IEnumerable<string> runIds,
+        bool governanceFirst = false,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(runIds);
@@ -234,6 +244,7 @@ public sealed class StrategyRunReadService
         foreach (var run in runs)
         {
             var metrics = run.Metrics?.Metrics;
+            var continuity = BuildComparisonContinuity(run);
             results.Add(new RunComparisonDto(
                 RunId: run.RunId,
                 ParentRunId: run.ParentRunId,
@@ -267,14 +278,61 @@ public sealed class StrategyRunReadService
                 LastUpdatedAt: GetLastUpdatedAt(run),
                 PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
-                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference)));
+                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
+                ContinuityStatus: continuity.ContinuityStatus,
+                ReconciliationBreakCount: continuity.ReconciliationBreakCount,
+                ReconciliationHighestSeverity: continuity.HighestSeverity,
+                HasLedgerEntryCoverage: continuity.HasLedgerEntryCoverage,
+                LedgerCoverageStatus: continuity.LedgerCoverageStatus,
+                CashFlowHealth: continuity.CashFlowHealth));
         }
 
-        return results
-            .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
-            .ThenBy(static run => run.RunId, StringComparer.Ordinal)
-            .ToArray();
+        var ordered = governanceFirst
+            ? results
+                .OrderByDescending(static run => run.ReconciliationBreakCount)
+                .ThenByDescending(static run => run.ReconciliationHighestSeverity)
+                .ThenBy(static run => run.ContinuityStatus, StringComparer.Ordinal)
+                .ThenByDescending(static run => run.FinalEquity ?? decimal.MinValue)
+                .ThenBy(static run => run.RunId, StringComparer.Ordinal)
+            : results
+                .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
+                .ThenBy(static run => run.RunId, StringComparer.Ordinal);
+
+        return ordered.ToArray();
     }
+
+    private static ComparisonContinuitySignals BuildComparisonContinuity(StrategyRunEntry run)
+    {
+        var hasLedgerReference = !string.IsNullOrWhiteSpace(run.LedgerReference);
+        var ledgerEntryCount = run.Metrics?.Ledger?.Journal?.Count ?? 0;
+        var hasLedgerEntryCoverage = hasLedgerReference && ledgerEntryCount > 0;
+        var cashFlowEntries = run.Metrics?.CashFlows?.Count ?? 0;
+        var hasCashFlowCoverage = cashFlowEntries > 0;
+        var hasAuditTrail = !string.IsNullOrWhiteSpace(run.AuditReference);
+
+        var continuityStatus = (hasLedgerEntryCoverage, hasCashFlowCoverage, hasAuditTrail) switch
+        {
+            (true, true, true) => ContinuityStatusHealthy,
+            (false, false, false) => ContinuityStatusMissing,
+            _ => ContinuityStatusWarning
+        };
+
+        return new ComparisonContinuitySignals(
+            ContinuityStatus: string.IsNullOrWhiteSpace(continuityStatus) ? ContinuityStatusUnknown : continuityStatus,
+            ReconciliationBreakCount: 0,
+            HighestSeverity: ReconciliationBreakSeverity.Info,
+            HasLedgerEntryCoverage: hasLedgerEntryCoverage,
+            LedgerCoverageStatus: hasLedgerEntryCoverage ? LedgerCoverageStatusCovered : LedgerCoverageStatusMissing,
+            CashFlowHealth: hasCashFlowCoverage ? CashFlowHealthHealthy : CashFlowHealthMissing);
+    }
+
+    private sealed record ComparisonContinuitySignals(
+        string ContinuityStatus,
+        int ReconciliationBreakCount,
+        ReconciliationBreakSeverity HighestSeverity,
+        bool HasLedgerEntryCoverage,
+        string LedgerCoverageStatus,
+        string CashFlowHealth);
 
     public async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default)
     {
