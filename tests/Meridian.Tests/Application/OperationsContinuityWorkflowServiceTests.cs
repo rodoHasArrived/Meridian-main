@@ -801,6 +801,31 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectJournalCandidateThatDoesNotMatchWorkflowContext()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out _, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate(workflow.FundAccountId) with
+        {
+            AggregateId = Guid.NewGuid()
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PostLedgerEntriesAsync_ShouldLeaveWorkflowUnchangedWhenTransactionalCommitFails()
     {
         var derivation = new OperationsStatusDerivationService();
