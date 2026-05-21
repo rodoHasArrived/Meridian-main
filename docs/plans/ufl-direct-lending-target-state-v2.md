@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-21
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl direct lending target state v2** and document explicit in-scope vs out-of-scope items.
@@ -46,15 +46,15 @@ This is a specialized, implementation-ready vertical slice beneath the broader g
 - PostgreSQL is already an approved operational-database direction in the active planning set.
 - Existing F# ledger work under `src/Meridian.FSharp.Ledger/` and governance/read-model work under `src/Meridian.Strategies/` are the nearest active repo anchors.
 
-### Proposed UFL-specific additions
+### Current and target UFL-specific deltas
 
-- New direct-lending bounded-context projects under `src/Ufl.*` are proposed, not existing.
-- Sharpino-backed aggregates would own contract and servicing write models.
-- Existing governance planning remains the umbrella; `UFL` becomes the first deep lending implementation slice inside that umbrella.
+- Meridian now ships an active direct-lending slice under `Meridian.*` projects with HTTP endpoints, PostgreSQL persistence, replay/rebuild flows, projections, and integration tests.
+- Sharpino-backed aggregates remain a target-state write-model direction, not the current implementation baseline.
+- Existing governance planning remains the umbrella; `UFL` direct lending stays the deepest implementation slice inside that umbrella.
 
-### Suggested Meridian mapping if implemented in-place
+### Current Meridian implementation mapping
 
-If the team chooses not to introduce `src/Ufl.*` projects immediately, the closest current repo anchors are:
+The current repo anchors are:
 
 - F# domain kernels in `src/Meridian.FSharp/Domain/`
 - accounting and reconciliation kernels in `src/Meridian.FSharp.Ledger/`
@@ -63,6 +63,18 @@ If the team chooses not to introduce `src/Ufl.*` projects immediately, the close
 - storage, migrations, and PostgreSQL integration in `src/Meridian.Storage/`
 - HTTP and workstation endpoints in `src/Meridian.Ui.Shared/`
 - browser workstation UX in `src/Meridian.Ui/dashboard/`, with retained WPF compatibility in `src/Meridian.Wpf/`
+
+## Current Implementation Snapshot (2026-05-21)
+
+The current Meridian baseline now includes:
+
+- direct-lending endpoints in `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` spanning contracts, servicing, projections, cash/allocation reads, fees, write-offs, prepayment penalties, journals, reconciliation, servicer reports, rebuild checkpoints, portfolio summary, and full rebuild operations;
+- service and orchestration layers in `src/Meridian.Application/DirectLending/` with command metadata ingestion, event-lineage writes, projection workflows, outbox dispatch, and rebuild support;
+- PostgreSQL-backed stores and migration runner support in `src/Meridian.Storage/DirectLending/` with normalized projection tables and workflow-audit persistence;
+- direct-lending DTOs/options/contracts in `src/Meridian.Contracts/DirectLending/`, plus shared serialization contexts in `src/Meridian.Ui.Shared/Serialization/DirectLendingJsonContext.cs`;
+- active validation coverage in `tests/Meridian.DirectLending.Tests/`, `tests/Meridian.Tests/Application/DirectLendingServiceTests.cs`, and `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`.
+
+Use this document as a target-state package that extends the baseline above rather than replacing it.
 
 ## Scope
 
@@ -919,60 +931,90 @@ Phase 2 extends the platform for production-grade servicing complexity:
 
 ## 8. Target API Surface
 
-### 8.1 Contract
+### 8.1 Implemented baseline endpoints
+
+Contract and history:
 
 - `POST /api/loans`
-- `PUT /api/loans/{loanId}/terms`
-- `POST /api/loans/{loanId}/activate`
-- `POST /api/loans/{loanId}/suspend`
-- `POST /api/loans/{loanId}/close`
 - `GET /api/loans/{loanId}`
 - `GET /api/loans/{loanId}/history`
+- `POST /api/loans/{loanId}/rebuild-state`
 - `GET /api/loans/{loanId}/terms-versions`
+- `PUT /api/loans/{loanId}/terms`
+- `POST /api/loans/{loanId}/activate`
 
-### 8.2 Servicing
+Servicing and related operations:
 
+- `GET /api/loans/{loanId}/servicing-state`
 - `POST /api/loans/{loanId}/drawdowns`
+- `POST /api/loans/{loanId}/rate-resets`
+- `POST /api/loans/{loanId}/payments/principal`
 - `POST /api/loans/{loanId}/payments`
 - `POST /api/loans/{loanId}/fees`
-- `POST /api/loans/{loanId}/rate-resets`
+- `POST /api/loans/{loanId}/writeoffs`
+- `POST /api/loans/{loanId}/prepayment-penalties`
 - `POST /api/loans/{loanId}/accruals/daily`
-- `GET /api/loans/{loanId}/servicing-state`
-- `GET /api/loans/{loanId}/servicing-revisions`
-- `GET /api/loans/{loanId}/servicing-revisions/{revisionNo}`
-- `GET /api/loans/{loanId}/servicing-revisions/{revisionNo}/sources`
+- `GET /api/loans/{loanId}/cash-transactions`
+- `GET /api/loans/{loanId}/payment-allocations`
+- `GET /api/loans/{loanId}/fee-balances`
 
-### 8.3 Servicer ingestion
+Projection, accounting, and reconciliation:
 
-- `POST /api/servicer-reports`
-- `GET /api/servicer-reports/{batchId}`
-- `GET /api/servicer-reports/{batchId}/position-lines`
-- `GET /api/servicer-reports/{batchId}/transaction-lines`
-
-### 8.4 Projection
-
+- `GET /api/loans/{loanId}/projections/contract`
+- `GET /api/loans/{loanId}/projections/terms-versions`
+- `GET /api/loans/{loanId}/projections/servicing`
+- `GET /api/loans/{loanId}/projections/drawdown-lots`
+- `GET /api/loans/{loanId}/projections/revisions`
+- `GET /api/loans/{loanId}/projections/accruals`
 - `POST /api/loans/{loanId}/projections`
 - `GET /api/loans/{loanId}/projections`
-- `GET /api/projections/{projectionRunId}`
 - `GET /api/projections/{projectionRunId}/flows`
-
-### 8.5 Accounting
-
-- `GET /api/loans/{loanId}/accruals`
 - `GET /api/loans/{loanId}/journals`
 - `POST /api/journals/{journalEntryId}/post`
-
-### 8.6 Reconciliation
-
 - `POST /api/loans/{loanId}/reconcile`
 - `GET /api/loans/{loanId}/reconciliation-runs`
 - `GET /api/reconciliation/{runId}/results`
 - `GET /api/reconciliation/exceptions`
 - `POST /api/reconciliation/exceptions/{exceptionId}/resolve`
 
-## 9. Proposed Repo Structure
+Servicer ingestion and platform operations:
 
-These paths are proposed additions for the direct-lending bounded context.
+- `POST /api/servicer-reports`
+- `GET /api/servicer-reports/{batchId}`
+- `GET /api/servicer-reports/{batchId}/position-lines`
+- `GET /api/servicer-reports/{batchId}/transaction-lines`
+- `GET /api/loans/rebuild-checkpoints`
+- `POST /api/loans/rebuild-all`
+- `GET /api/loans/portfolio`
+
+### 8.2 Target-state additions not yet delivered
+
+- explicit suspend/close/default command endpoints with stable operator workflows;
+- richer revision-source drill-down endpoints (for example, first-class revision-source query routes);
+- stronger route-level versioning for future breaking schema shifts;
+- period-lock command/query endpoints that align accounting-close controls with direct-lending operations;
+- projection lineage and scenario-comparison endpoints that let operators compare baseline vs what-if runs;
+- bulk portfolio servicing and reconciliation endpoints for controlled, replay-safe operational batches.
+
+### 8.3 Candidate expansion routes for next delivery waves
+
+The following routes make the "more functionality" path concrete while staying within this package's in-scope boundaries:
+
+- `POST /api/loans/{loanId}/status/suspend`
+- `POST /api/loans/{loanId}/status/default`
+- `POST /api/loans/{loanId}/status/close`
+- `GET /api/loans/{loanId}/servicing-revisions`
+- `GET /api/loans/{loanId}/servicing-revisions/{revisionNo}/sources`
+- `POST /api/loans/{loanId}/projections/what-if`
+- `GET /api/projections/{projectionRunId}/lineage`
+- `POST /api/accounting/periods/{periodKey}/lock`
+- `POST /api/accounting/periods/{periodKey}/unlock`
+- `POST /api/loans/portfolio/reconcile`
+- `POST /api/servicer-reports/{batchId}/reprocess`
+
+## 9. Reference Extraction Structure (Optional Future State)
+
+These paths are an optional future extraction structure if the team later splits direct lending into dedicated `Ufl.*` projects. The current implementation remains under `Meridian.*` projects.
 
 ```text
 src/
