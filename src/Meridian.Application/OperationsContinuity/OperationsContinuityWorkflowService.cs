@@ -525,6 +525,15 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     ]);
             }
 
+            var workflowJournalBlockers = ValidateJournalCandidateAgainstWorkflow(workflow, request, evidence);
+            if (workflowJournalBlockers.Count > 0)
+            {
+                return Failure(
+                    "VALIDATION_FAILED",
+                    "Ledger journal candidate does not match the active workflow context.",
+                    workflowJournalBlockers);
+            }
+
             if (!TryBuildJournalWrite(request, out var builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
@@ -1285,6 +1294,45 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     $"Ledger journal candidate account type '{line.AccountType}' is invalid.",
                     evidence));
             }
+        }
+
+        return blockers;
+    }
+
+    private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateJournalCandidateAgainstWorkflow(
+        OperationsContinuityWorkflow workflow,
+        OperationsLedgerPostRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidence)
+    {
+        var candidate = request.JournalCandidate;
+        if (candidate is null)
+        {
+            return [];
+        }
+
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (candidate.AggregateId != workflow.FundAccountId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH",
+                "Ledger journal candidate aggregate id must match the workflow fund account.",
+                evidence));
+        }
+
+        if (candidate.PeriodId != workflow.PeriodId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_JOURNAL_PERIOD_ID_MISMATCH",
+                "Ledger journal candidate period id must match the workflow period.",
+                evidence));
+        }
+
+        if (candidate.PostingKind != request.PostingKind)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_JOURNAL_POSTING_KIND_MISMATCH",
+                "Ledger journal candidate posting kind must match the posting request.",
+                evidence));
         }
 
         return blockers;

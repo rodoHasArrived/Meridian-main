@@ -349,7 +349,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             PostingKind: "period-close",
             PeriodOpen: true,
             Rationale: "Posted validated accounting journals",
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow)));
         var reconciled = await service.RunReconciliationAsync(workflowId, new OperationsReconciliationRunRequestDto(
             posted.Workflow!.Version,
             "ops-user",
@@ -647,7 +647,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         var journalStore = new RecordingLedgerJournalStore();
         var service = CreateService(out _, out var auditStore, journalStore);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
-        var candidate = CreateJournalCandidate();
+        var candidate = CreateJournalCandidate(workflow);
 
         var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
             workflow.Version,
@@ -680,7 +680,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow)));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("LEDGER_JOURNAL_STORE_UNAVAILABLE");
@@ -705,7 +705,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             ledgerJournalStore: null,
             transactionalCommitStore: commitStore);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
-        var candidate = CreateJournalCandidate();
+        var candidate = CreateJournalCandidate(workflow);
 
         var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
             workflow.Version,
@@ -722,6 +722,31 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().Contain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectJournalCandidateThatDoesNotMatchWorkflowContext()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out _, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate(workflow) with
+        {
+            AggregateId = Guid.NewGuid()
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
     }
 
     [Fact]
@@ -750,7 +775,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow)));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("LEDGER_JOURNAL_APPEND_REJECTED");
@@ -818,7 +843,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-unbalanced",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate() with
+            JournalCandidate: CreateJournalCandidate(workflow) with
             {
                 Lines =
                 [
@@ -1114,7 +1139,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             PostingKind: "period-close",
             PeriodOpen: true,
             Rationale: "Attempt to post after close",
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(closed)));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -1305,15 +1330,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow)));
         return posted.Workflow!;
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate() =>
+    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(OperationsContinuityWorkflowDto workflow) =>
         new(
             JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
-            PeriodId: Guid.NewGuid(),
+            AggregateId: workflow.FundAccountId,
+            PeriodId: workflow.PeriodId,
             Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             Description: "Operations continuity month-end posting",
             Lines:
