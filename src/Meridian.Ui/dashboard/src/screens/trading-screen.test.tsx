@@ -552,6 +552,7 @@ describe("TradingScreen", () => {
       runId: "run-1",
       approvedBy: "operator-7",
       approvalReason: "Meets risk constraints",
+      approvalChecklist: ["DK1_TRUST_PACKET_REVIEWED", "RUN_LINEAGE_REVIEWED", "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED", "RISK_CONTROLS_REVIEWED"],
       reviewNotes: "Checked replay consistency",
       manualOverrideId: "override-9"
     });

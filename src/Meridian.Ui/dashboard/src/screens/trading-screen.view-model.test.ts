@@ -24,6 +24,7 @@ import {
   formatReadinessStatusValue,
   mapBrokerageSyncLevel,
   mapReadinessStatusLevel,
+  paperPromotionApprovalChecklist,
   updateOrderTicketForm,
   validatePaperSessionForm,
   validateOrderTicketForm,
@@ -1390,7 +1391,8 @@ describe("trading promotion gate view model", () => {
         ...emptyPromotionGateForm,
         runId: " run-1 ",
         approvedBy: " operator-7 ",
-        approvalReason: " Meets risk constraints "
+        approvalReason: " Meets risk constraints ",
+        approvalChecklist: paperPromotionApprovalChecklist
       },
       busy: false,
       phase: "idle",
@@ -1469,6 +1471,7 @@ describe("trading promotion gate view model", () => {
       runId: "run-1",
       approvedBy: "operator-7",
       approvalReason: "Meets risk constraints",
+      approvalChecklist: undefined,
       reviewNotes: undefined,
       manualOverrideId: "override-9"
     });
@@ -1669,7 +1672,8 @@ describe("trading promotion gate view model", () => {
           ...emptyPromotionGateForm,
           runId: "run-from-session-001",
           approvedBy: "operator-qa",
-          approvalReason: "Session replay verified and portfolio consistent"
+          approvalReason: "Session replay verified and portfolio consistent",
+          approvalChecklist: paperPromotionApprovalChecklist
         },
         busy: false,
         phase: "idle",
