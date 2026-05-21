@@ -82,6 +82,8 @@ const preview: BackfillTriggerResult = {
 
 const providers: DataOperationsProviderRecord[] = [
   {
+    providerId: "polygon",
+    displayName: "Polygon.io",
     provider: "Polygon",
     status: "Healthy",
     capability: "Streaming equities",
@@ -96,6 +98,8 @@ const providers: DataOperationsProviderRecord[] = [
 ];
 
 const alpacaProvider: DataOperationsProviderRecord = {
+  providerId: "alpaca",
+  displayName: "Alpaca",
   provider: "Alpaca",
   status: "Healthy",
   capability: "Historical bars",
@@ -680,6 +684,40 @@ describe("data-operations-screen view model", () => {
     });
     expect(providerSection.selectedDetail?.verifyAction.details).toEqual(["External account: acct-provider-01"]);
     expect(providerSection.rows[0].credentialText).toBe("Verified");
+  });
+
+  it("uses direct workstation provider-center diagnostics when the payload includes them", () => {
+    const providerSection = buildProviderSection(
+      [
+        {
+          ...providers[0],
+          connectionSummary: polygonConnection,
+          diagnostics: [
+            {
+              id: "provider-health",
+              label: "Provider health",
+              status: "warning",
+              statusLabel: "Warning",
+              detail: "Latency drift is elevated for Polygon."
+            }
+          ]
+        }
+      ],
+      "provider-row-polygon",
+      {},
+      "diagnostics"
+    );
+
+    expect(providerSection.selectedDetail?.diagnostics).toEqual([
+      {
+        id: "provider-health",
+        label: "Provider health",
+        status: "warning",
+        statusLabel: "Warning",
+        detail: "Latency drift is elevated for Polygon."
+      }
+    ]);
+    expect(providerSection.selectedDetail?.diagnosticsEmptyState).toBeNull();
   });
 
   it("shows a diagnostics empty state when shared provider evidence has not loaded yet", () => {

@@ -2440,7 +2440,10 @@ export function resolveSelectedProvider(
   selectedProviderId: string | null
 ): DataOperationsProviderRecord | null {
   return providers.find((provider) => (
-    provider.provider === selectedProviderId || buildProviderRowId(provider.provider) === selectedProviderId
+    provider.providerId === selectedProviderId ||
+    provider.provider === selectedProviderId ||
+    (provider.displayName ?? provider.provider) === selectedProviderId ||
+    buildProviderRowId(provider.providerId ?? provider.displayName ?? provider.provider) === selectedProviderId
   )) ?? providers[0] ?? null;
 }
 

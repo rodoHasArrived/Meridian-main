@@ -109,9 +109,9 @@ public sealed class StrategyRunContinuityServiceTests
         var readService = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
         var reconciliationRepository = new InMemoryReconciliationRunRepository();
         var reconciliationService = new ReconciliationRunService(
-            readService,
-            new ReconciliationProjectionService(),
-            reconciliationRepository);
+            runReadService: readService,
+            projectionService: new ReconciliationProjectionService(),
+            repository: reconciliationRepository);
         await reconciliationService.RunAsync(new ReconciliationRunRequest("continuity-root"));
 
         var continuityService = new StrategyRunContinuityService(
@@ -163,9 +163,9 @@ public sealed class StrategyRunContinuityServiceTests
             readService,
             new CashFlowProjectionService(store),
             new ReconciliationRunService(
-                readService,
-                new ReconciliationProjectionService(),
-                new InMemoryReconciliationRunRepository()));
+                runReadService: readService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: new InMemoryReconciliationRunRepository()));
 
         var continuity = await continuityService.GetRunContinuityAsync("continuity-warning");
 
@@ -238,7 +238,13 @@ public sealed class StrategyRunContinuityServiceTests
 
         var readService = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
         var repo = new InMemoryReconciliationRunRepository();
-        var continuityService = new StrategyRunContinuityService(readService, new CashFlowProjectionService(store), new ReconciliationRunService(readService, new ReconciliationProjectionService(), repo));
+        var continuityService = new StrategyRunContinuityService(
+            readService,
+            new CashFlowProjectionService(store),
+            new ReconciliationRunService(
+                runReadService: readService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: repo));
 
         await repo.SaveAsync(new ReconciliationRunDetail(
             new ReconciliationRunSummary("recon-open", runId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 0, 1, 1, false, 0.01m, 5, 0, false, 0, 0, 0, 0, 0, false),
@@ -427,9 +433,9 @@ public sealed class StrategyRunContinuityServiceTests
             readService,
             new CashFlowProjectionService(store),
             new ReconciliationRunService(
-                readService,
-                new ReconciliationProjectionService(),
-                new InMemoryReconciliationRunRepository()));
+                runReadService: readService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: new InMemoryReconciliationRunRepository()));
     }
 
     private static StrategyPromotionRecord BuildPromotionRecord(string runId, string sourceRunId, string? targetRunId)

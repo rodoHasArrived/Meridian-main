@@ -115,9 +115,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -292,9 +292,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -407,9 +407,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -555,9 +555,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -683,9 +683,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,

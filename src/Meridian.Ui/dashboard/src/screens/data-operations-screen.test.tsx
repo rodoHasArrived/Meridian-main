@@ -27,6 +27,8 @@ const data: DataOperationsWorkspaceResponse = {
   ],
   providers: [
     {
+      providerId: "polygon",
+      displayName: "Polygon.io",
       provider: "Polygon",
       status: "Healthy",
       capability: "Streaming equities",
@@ -187,6 +189,8 @@ describe("DataOperationsScreen", () => {
       providers: [
         ...data.providers,
         {
+          providerId: "databento",
+          displayName: "Databento",
           provider: "Databento",
           status: "Degraded",
           capability: "Historical futures",

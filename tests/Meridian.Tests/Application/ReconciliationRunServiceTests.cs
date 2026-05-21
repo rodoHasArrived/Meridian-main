@@ -605,10 +605,10 @@ public sealed class ReconciliationRunServiceTests
             : new LedgerReadService(securityReferenceLookup);
         var runReadService = new StrategyRunReadService(strategyRepository, portfolioReadService, ledgerReadService);
         return new ReconciliationRunService(
-            runReadService,
-            new ReconciliationProjectionService(),
-            repository,
-            bankTransactionSource,
+            runReadService: runReadService,
+            projectionService: new ReconciliationProjectionService(),
+            repository: repository,
+            bankTransactionSource: bankTransactionSource,
             securityValidationGate: securityValidationGate,
             securityMasterAccountingEventService: securityMasterAccountingEventService,
             securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter);

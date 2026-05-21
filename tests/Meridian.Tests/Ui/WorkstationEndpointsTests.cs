@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.Config.Credentials;
 using Meridian.Application.Monitoring;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
@@ -545,24 +546,106 @@ public sealed class WorkstationEndpointsTests
         var providers = dataOperations.RootElement.GetProperty("providers");
         providers.GetArrayLength().Should().Be(2);
 
-        var healthy = providers[0];
+        var healthy = providers.EnumerateArray()
+            .First(provider => provider.GetProperty("providerId").GetString() == "yahoo");
         healthy.GetProperty("provider").GetString().Should().Be("yahoo");
+        healthy.GetProperty("displayName").GetString().Should().NotBeNullOrWhiteSpace();
         healthy.GetProperty("status").GetString().Should().Be("Healthy");
         healthy.GetProperty("trustScore").GetString().Should().Be("96%");
         healthy.GetProperty("reasonCode").GetString().Should().Be("HEALTHY_BASELINE");
         healthy.GetProperty("recommendedAction").GetString().Should().Contain("no DK1 action");
+        healthy.GetProperty("diagnostics").GetArrayLength().Should().BeGreaterThan(0);
 
-        var degraded = providers[1];
+        var degraded = providers.EnumerateArray()
+            .First(provider => provider.GetProperty("providerId").GetString() == "alpaca");
         degraded.GetProperty("provider").GetString().Should().Be("alpaca");
+        degraded.GetProperty("displayName").GetString().Should().NotBeNullOrWhiteSpace();
         degraded.GetProperty("status").GetString().Should().Be("Degraded");
         degraded.GetProperty("trustScore").GetString().Should().Be("62%");
         degraded.GetProperty("signalSource").GetString().Should().Be("Provider quote/trade stream health telemetry");
         degraded.GetProperty("reasonCode").GetString().Should().Be("PROVIDER_STREAM_DEGRADED");
         degraded.GetProperty("recommendedAction").GetString().Should().Contain("Verify provider connectivity");
         degraded.GetProperty("gateImpact").GetString().Should().Be("Critical");
+        degraded.GetProperty("connectionSummary").ValueKind.Should().Be(JsonValueKind.Object);
+        degraded.GetProperty("diagnostics").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("id").GetString() == "provider-health" &&
+                item.GetProperty("statusLabel").GetString() == "Degraded");
 
         using var data = await ReadJsonAsync(client, "/api/workstation/data");
         data.RootElement.GetProperty("providers").GetArrayLength().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsPayload_ShouldAggregateMultipleRoutingConnectionsByProviderFamily()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-summary", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var dataRoot = Path.Combine(root, "data");
+        Directory.CreateDirectory(dataRoot);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, JsonSerializer.Serialize(new { dataRoot }));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+            services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(dataRoot));
+            services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
+            services.AddSingleton<ProviderConnectionLifecycleService>();
+            services.AddSingleton<ProviderConnectionService>();
+            services.AddSingleton<ProviderBindingService>();
+        });
+
+        var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
+        var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
+
+        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-paper",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Alpaca Paper",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Paper",
+            Enabled: true,
+            ProductionReady: false));
+        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-live",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Alpaca Live",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ProductionReady: true));
+
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-paper-historical",
+            Capability: nameof(ProviderCapabilityKind.HistoricalBars),
+            ConnectionId: "alpaca-paper",
+            FailoverConnectionIds: ["alpaca-live"]));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-live-realtime",
+            Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
+            ConnectionId: "alpaca-live"));
+
+        using var dataOperations = await ReadJsonAsync(client: app.GetTestClient(), "/api/workstation/data-operations");
+        var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
+
+        providers.Count(provider => provider.GetProperty("providerId").GetString() == "alpaca").Should().Be(1);
+
+        var alpaca = providers.First(provider => provider.GetProperty("providerId").GetString() == "alpaca");
+        alpaca.GetProperty("connectionSummary").ValueKind.Should().Be(JsonValueKind.Object);
+        var routingSummary = alpaca.GetProperty("routingSummary");
+        routingSummary.GetProperty("connectionId").GetString().Should().Be("alpaca-live");
+        routingSummary.GetProperty("providerFamilyId").GetString().Should().Be("alpaca");
+        routingSummary.GetProperty("productionReady").GetBoolean().Should().BeTrue();
+        routingSummary.GetProperty("bindingCount").GetInt32().Should().Be(2);
+        routingSummary.GetProperty("fallbackRouteCount").GetInt32().Should().Be(1);
+
+        alpaca.GetProperty("diagnostics").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("id").GetString() == "routing-readiness" &&
+                item.GetProperty("detail").GetString()!.Contains("Bindings 2; fallback routes 1; production ready True.", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -2976,7 +3059,7 @@ public sealed class WorkstationEndpointsTests
         await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon"));
 
         var client = app.GetTestClient();
-        var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-recon"));
+        var response = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("run-recon"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
@@ -2985,13 +3068,16 @@ public sealed class WorkstationEndpointsTests
         created.Summary.BreakCount.Should().Be(0);
         created.Matches.Should().Contain(match => match.CheckId == "cash-balance");
 
-        var latestResponse = await client.GetAsync("/api/workstation/runs/run-recon/reconciliation");
+        var latestResponse = await client.GetAsync(UiApiRoutes.RunsReconciliation.Replace("{runId}", "run-recon"));
         latestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var latest = await latestResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         latest.Should().NotBeNull();
         latest!.Summary.ReconciliationRunId.Should().Be(created.Summary.ReconciliationRunId);
 
-        var byIdResponse = await client.GetAsync($"/api/workstation/reconciliation/runs/{created.Summary.ReconciliationRunId}");
+        var byIdResponse = await client.GetAsync(
+            UiApiRoutes.ReconciliationRunById.Replace(
+                "{reconciliationRunId}",
+                created.Summary.ReconciliationRunId));
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var byId = await byIdResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         byId.Should().NotBeNull();
@@ -3011,10 +3097,10 @@ public sealed class WorkstationEndpointsTests
 
         var client = app.GetTestClient();
 
-        var createResponse = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("missing-run"));
+        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("missing-run"));
         createResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
-        var latestResponse = await client.GetAsync("/api/workstation/runs/missing-run/reconciliation");
+        var latestResponse = await client.GetAsync(UiApiRoutes.RunsReconciliation.Replace("{runId}", "missing-run"));
         latestResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -3050,7 +3136,7 @@ public sealed class WorkstationEndpointsTests
             breakCount: 0));
 
         var client = app.GetTestClient();
-        var historyResponse = await client.GetAsync("/api/workstation/runs/run-history/reconciliation/history");
+        var historyResponse = await client.GetAsync(UiApiRoutes.RunsReconciliationHistory.Replace("{runId}", "run-history"));
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var history = await historyResponse.Content.ReadFromJsonAsync<List<ReconciliationRunSummary>>();
@@ -3079,7 +3165,7 @@ public sealed class WorkstationEndpointsTests
         await store.RecordRunAsync(BuildReconciliationReadyRun("run-no-history"));
 
         var client = app.GetTestClient();
-        var response = await client.GetAsync("/api/workstation/runs/run-no-history/reconciliation/history");
+        var response = await client.GetAsync(UiApiRoutes.RunsReconciliationHistory.Replace("{runId}", "run-no-history"));
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -3108,7 +3194,7 @@ public sealed class WorkstationEndpointsTests
         await store.RecordRunAsync(BuildReconciliationMismatchRun("run-breaks"));
 
         var client = app.GetTestClient();
-        var response = await client.PostAsJsonAsync("/api/workstation/reconciliation/runs", new ReconciliationRunRequest("run-breaks"));
+        var response = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("run-breaks"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);

@@ -942,7 +942,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetOperationsContinuityLedgerPreview");
 
 
-        group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -959,7 +959,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/runs/{reconciliationRunId}", async (string reconciliationRunId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -976,7 +976,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/reconciliation", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliation), async (string runId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -993,7 +993,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/reconciliation/history", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliationHistory), async (string runId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -3033,14 +3033,18 @@ public static partial class WorkstationEndpoints
             static connection => NormalizeProviderKey(connection.ProviderId),
             static connection => connection,
             StringComparer.OrdinalIgnoreCase);
-        var routingLookup = routingConnections.ToDictionary(
-            static connection => NormalizeProviderKey(connection.ProviderFamilyId),
-            static connection => connection,
-            StringComparer.OrdinalIgnoreCase);
-        var trustLookup = trustSnapshots.ToDictionary(
-            static snapshot => NormalizeProviderKey(snapshot.ProviderFamilyId),
-            static snapshot => snapshot,
-            StringComparer.OrdinalIgnoreCase);
+        var routingLookup = routingConnections
+            .GroupBy(static connection => NormalizeProviderKey(connection.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<ProviderConnectionDto>)group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var trustLookup = trustSnapshots
+            .GroupBy(static snapshot => NormalizeProviderKey(snapshot.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<ProviderTrustSnapshotDto>)group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
         var bindingLookup = routingBindings
             .GroupBy(static binding => NormalizeProviderKey(binding.ConnectionId), StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => (IReadOnlyList<ProviderBindingDto>)group.ToArray(), StringComparer.OrdinalIgnoreCase);
@@ -3061,15 +3065,22 @@ public static partial class WorkstationEndpoints
             providerIds.Add(providerId);
         }
 
+        foreach (var providerId in trustLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
         return providerIds
             .Select(providerId =>
             {
                 metricLookup.TryGetValue(providerId, out var metrics);
                 connectionLookup.TryGetValue(providerId, out var connection);
-                routingLookup.TryGetValue(providerId, out var routingConnection);
-                trustLookup.TryGetValue(providerId, out var trustSnapshot);
+                routingLookup.TryGetValue(providerId, out var routingConnectionsForProvider);
+                trustLookup.TryGetValue(providerId, out var trustSnapshotsForProvider);
 
-                var bindings = ResolveRoutingBindings(bindingLookup, routingConnection);
+                var routingConnection = SelectRepresentativeRoutingConnection(routingConnectionsForProvider);
+                var trustSnapshot = SelectRepresentativeTrustSnapshot(trustSnapshotsForProvider, routingConnection?.ConnectionId);
+                var bindings = ResolveRoutingBindings(bindingLookup, routingConnectionsForProvider);
                 var rationale = metrics is not null
                     ? BuildProviderTrustRationale(metrics)
                     : BuildProviderTrustRationaleFromConnection(connection, routingConnection, trustSnapshot);
@@ -3155,16 +3166,67 @@ public static partial class WorkstationEndpoints
 
     private static IReadOnlyList<ProviderBindingDto> ResolveRoutingBindings(
         IReadOnlyDictionary<string, IReadOnlyList<ProviderBindingDto>> bindingLookup,
-        ProviderConnectionDto? routingConnection)
+        IReadOnlyList<ProviderConnectionDto>? routingConnections)
     {
-        if (routingConnection is null)
+        if (routingConnections is null || routingConnections.Count == 0)
         {
             return [];
         }
 
-        return bindingLookup.TryGetValue(NormalizeProviderKey(routingConnection.ConnectionId), out var bindings)
-            ? bindings
-            : [];
+        var bindings = new List<ProviderBindingDto>();
+        foreach (var routingConnection in routingConnections)
+        {
+            if (bindingLookup.TryGetValue(NormalizeProviderKey(routingConnection.ConnectionId), out var connectionBindings))
+            {
+                bindings.AddRange(connectionBindings);
+            }
+        }
+
+        return bindings
+            .DistinctBy(static binding => binding.BindingId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static ProviderConnectionDto? SelectRepresentativeRoutingConnection(
+        IReadOnlyList<ProviderConnectionDto>? routingConnections)
+    {
+        if (routingConnections is null || routingConnections.Count == 0)
+        {
+            return null;
+        }
+
+        return routingConnections
+            .OrderByDescending(static connection => connection.Enabled)
+            .ThenByDescending(static connection => connection.ProductionReady)
+            .ThenBy(static connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static ProviderTrustSnapshotDto? SelectRepresentativeTrustSnapshot(
+        IReadOnlyList<ProviderTrustSnapshotDto>? trustSnapshots,
+        string? preferredConnectionId)
+    {
+        if (trustSnapshots is null || trustSnapshots.Count == 0)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(preferredConnectionId))
+        {
+            var exactMatch = trustSnapshots.FirstOrDefault(snapshot =>
+                snapshot.ConnectionId.Equals(preferredConnectionId, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch is not null)
+            {
+                return exactMatch;
+            }
+        }
+
+        return trustSnapshots
+            .OrderByDescending(static snapshot => snapshot.IsHealthy)
+            .ThenByDescending(static snapshot => snapshot.IsProductionReady)
+            .ThenByDescending(static snapshot => snapshot.Score)
+            .ThenBy(static snapshot => snapshot.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
     }
 
     private static string ResolveDataProviderDisplayName(
