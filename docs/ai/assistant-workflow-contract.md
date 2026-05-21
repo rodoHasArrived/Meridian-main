@@ -44,7 +44,7 @@ Every assistant and automation should use the same high-level flow:
    and resources before broad recursive search.
 3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
-4. **Preserve architecture boundaries.** Follow the current browser-first operator UI framing,
+4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as retained compatibility aliases rather than new root workspaces.

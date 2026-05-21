@@ -56,7 +56,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs and cross-layer contracts used by host, services, dashboard, and retained WPF.
+    purpose: Shared DTOs and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W1-DATA-001
@@ -598,7 +598,7 @@ modules:
     layer: UI Surface
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Active browser-first operator workstation.
+    purpose: Active browser operator workstation.
     readme: src/Meridian.Ui/dashboard/README.md
     roadmap_items:
       - W2-TRD-001
@@ -620,11 +620,11 @@ modules:
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
-    name: Retained WPF workstation
-    layer: Retained UI Surface
-    status: retained_support
+    name: WPF workstation
+    layer: UI Surface
+    status: active
     owner_lane: Workstation Shell and UX
-    purpose: Retained desktop shell for compatibility, regression coverage, and existing WPF workflows.
+    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
       - W4-RECON-001

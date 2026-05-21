@@ -7,7 +7,8 @@ root Meridian Design System package.
 - [Design System Usage](../design/design-system-usage.md)
 - [Web UI Development Pivot](../plans/web-ui-development-pivot.md)
 
-Prefer `src/Meridian.Ui/dashboard/` for new operator-facing browser work and
-keep retained WPF changes scoped to compatibility, regression repair, or shared
-contract support.
+Use `src/Meridian.Ui/dashboard/` for browser workstation work and `src/Meridian.Wpf/`
+for Windows desktop workstation work. Keep business behavior in shared contracts,
+local/web API endpoints, or shared read models before composing it into either
+operator surface.
 

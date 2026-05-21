@@ -99,7 +99,7 @@ Cover these areas when relevant:
 - the major workspaces or product surfaces
 - how research, backtesting, paper trading, live trading, portfolio, and ledger experiences connect
 - what is first-class versus supporting infrastructure
-- why new operator-facing UI should land in the browser workstation while WPF remains retained support
+- why operator-facing UI should stay behind shared contracts before composition into the browser or WPF workstation
 - what optional capabilities remain optional
 
 ## Output Shapes

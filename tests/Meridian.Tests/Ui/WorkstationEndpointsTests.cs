@@ -742,7 +742,8 @@ public sealed class WorkstationEndpointsTests
 
         providers.Should().NotBeEmpty();
         providers.Should().OnlyContain(provider =>
-            provider.GetProperty("connectionSummary").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
+            provider.GetProperty("connectionSummary").ValueKind == JsonValueKind.Null ||
+            provider.GetProperty("connectionSummary").ValueKind == JsonValueKind.Undefined);
     }
 
     [Fact]
