@@ -1687,6 +1687,23 @@ public sealed class WorkstationEndpointsTests
             readiness.WorkItems.Should().Contain(item =>
                 item.Kind == OperatorWorkItemKindDto.PromotionReview &&
                 item.Tone == OperatorWorkItemToneDto.Warning);
+
+            // Contract-level matrix for required readiness dimensions and deterministic critical-before-warning triage.
+            trustGate.TryGetProperty("status", out var trustGateStatus).Should().BeTrue();
+            trustGate.TryGetProperty("operatorSignoffStatus", out var trustGateSignoffStatus).Should().BeTrue();
+            trustGateStatus.ValueKind.Should().Be(JsonValueKind.String);
+            trustGateSignoffStatus.ValueKind.Should().Be(JsonValueKind.String);
+            promotion.TryGetProperty("approvalChecklist", out var promotionChecklist).Should().BeTrue();
+            promotionChecklist.ValueKind.Should().Be(JsonValueKind.Array);
+            root.TryGetProperty("activeSession", out var activeSession).Should().BeTrue();
+            activeSession.ValueKind.Should().Be(JsonValueKind.Object);
+            root.TryGetProperty("brokerageSync", out var brokerageSync).Should().BeTrue();
+            brokerageSync.ValueKind.Should().Be(JsonValueKind.Null);
+            var firstCritical = readiness.WorkItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Critical);
+            var firstWarning = readiness.WorkItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Warning);
+            firstCritical.Should().BeGreaterOrEqualTo(0);
+            firstWarning.Should().BeGreaterOrEqualTo(0);
+            firstCritical.Should().BeLessThan(firstWarning, "critical readiness blockers should be triaged before warning items");
         }
         finally
         {
