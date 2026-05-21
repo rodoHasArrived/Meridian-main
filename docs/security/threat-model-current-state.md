@@ -38,7 +38,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 - `LoginSessionMiddleware`, `AuthEndpoints`, `LoginSessionService`, and `UserProfileRegistry` implement session auth and role/permission context propagation.
 - `UserPermission` + `RolePermissions` are now operational (not purely descriptive), and many write/admin endpoints use permission gates.
 - Residual concerns:
-  - Session cookies still do not set `Secure`.
+  - Session cookies still do not set `Secure` (open remediation item; treat TLS + secure-cookie enablement as required for non-local deployments).
   - Credentials remain plaintext environment secrets.
   - Sessions are in-memory and reset on process restart.
   - Some endpoint groups still lack explicit permission checks (for example configuration and direct-lending routes), so authenticated overreach remains plausible where gates are absent.
@@ -49,7 +49,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 
 ### CSRF and browser security
 - SameSite=Strict cookies reduce cross-site cookie send behavior and React surfaces avoid obvious unsafe HTML injection patterns.
-- No explicit anti-forgery token workflow is visible for cookie-authenticated mutations.
+- No explicit anti-forgery token workflow is visible for cookie-authenticated mutations (known defense-in-depth gap; treat as an accepted risk only for tightly local/isolated deployments until token-based CSRF protection is added).
 
 ### Secrets and configuration exposure
 - Sensitive masking is now applied in config payloads (`ConfigEndpoints` uses `SensitiveValueMasker` for Alpaca key/secret fields).
@@ -62,7 +62,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
   - Workstation static asset serving now enforces full-path containment before file reads.
   - Packaging delete/download enforce package-directory containment against traversal.
 - Residual review targets:
-  - Packaging list endpoint accepts a user-supplied `directory` value.
+  - Packaging list endpoint accepts a user-supplied `directory` value; current checks reject traversal (`..`, null-byte) but do not constrain reads to a fixed base directory.
   - Storage migration and admin maintenance accept user-supplied path arrays.
   - Replay and import flows still process user-selected file paths and should be treated as high-value abuse surfaces.
 
