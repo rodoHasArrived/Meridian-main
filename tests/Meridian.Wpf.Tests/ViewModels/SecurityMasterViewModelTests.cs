@@ -713,6 +713,40 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_ShouldProjectScheduleAndLotModelIntoCoverageAndEvidence()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("abababab-1111-1111-1111-111111111111");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => CreateTrustSnapshot(securityId)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            viewModel.CompanyCoverageFields.Should().Contain(field =>
+                field.Label == "Schedule model" &&
+                field.Value.Contains("Factor-aware cash-flow support", StringComparison.OrdinalIgnoreCase));
+            viewModel.CompanyCoverageFields.Should().Contain(field =>
+                field.Label == "Lot model" &&
+                field.Value.Contains("factor-adjusted exposure", StringComparison.OrdinalIgnoreCase));
+            viewModel.PrintEvidenceItems.Should().Contain(item =>
+                item.Title == "Schedule model" &&
+                item.Destination.Contains("Schedule source", StringComparison.OrdinalIgnoreCase));
+            viewModel.PrintEvidenceItems.Should().Contain(item =>
+                item.Title == "Lot model" &&
+                item.Destination.Contains("Lot/open-position guidance", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)
     {
         for (var index = 0; index < attempts; index++)
@@ -928,7 +962,26 @@ public sealed class SecurityMasterViewModelTests
                     Metadata: JsonSerializer.SerializeToElement(new { source = "test" }))
             ],
             CorporateActions: effectiveCorporateActions,
-            RetrievedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero));
+            RetrievedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero))
+        {
+            ScheduleSummary = new SecurityMasterScheduleSummaryDto(
+                SupportsCashflowSchedule: true,
+                SupportsFactorHistory: true,
+                HasEconomicScheduleTerms: true,
+                CurrentFactor: 0.9825m,
+                CurrentFactorDate: new DateOnly(2026, 4, 19),
+                NextLifecycleDate: new DateOnly(2031, 12, 15),
+                SourceSummary: "Schedules follow golden-edm record EDM-123 as of 2026-04-20 09:30 UTC.",
+                Summary: "Factor-aware cash-flow support is available. Current factor 0.9825 as of 2026-04-19."),
+            LotModel = new SecurityMasterLotModelDto(
+                QuantityModel: "FactorAdjustedFace",
+                LotSize: 1m,
+                ContractMultiplier: null,
+                UsesFaceValue: true,
+                SupportsFactorAdjustedExposure: true,
+                RequiresResolvedSecurityId: true,
+                Summary: "Lots should reconcile by current face using factor-adjusted exposure (lot size 1).")
+        };
     }
 
     private static SecurityMasterConflictAssessmentDto CreateAssessment(

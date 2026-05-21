@@ -849,13 +849,7 @@ public sealed class MainShellViewModelTests
             await WaitForConditionAsync(() => vm.OperatorInboxSummary.Contains("No operator work items", StringComparison.Ordinal));
 
             vm.OperatorInboxButtonText.Should().Be("Queue");
-<<<<<<< Updated upstream
-            vm.OperatorInboxSummary.Should().NotContain(
-                "run history",
-                options => options.WithComparison(StringComparison.OrdinalIgnoreCase));
-=======
             vm.OperatorInboxSummary.Contains("run history", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
->>>>>>> Stashed changes
         });
     }
 

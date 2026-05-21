@@ -26,6 +26,24 @@ public sealed class OperationsContinuityWorkflowServiceTests
         OperationsWorkflowContractMatrix.BlockerCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
         OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
         OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => OperationsWorkflowContractMatrix.BlockerCodes.Contains(code));
+        OperationsWorkflowContractMatrix.BlockerCodes.Should().Contain([
+            "BROKER_STATEMENT_MISSING",
+            "BROKER_TRANSACTION_TYPE_UNKNOWN",
+            "SM_FACTOR_SCHEDULE_MISSING",
+            "SM_VALUATION_SOURCE_MISSING",
+            "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
+            "RECONCILIATION_EXTERNAL_EVIDENCE_MISSING_LEDGER_POSTING",
+            "APPROVAL_METADATA_REQUIRED",
+            "REPORT_PACK_ID_MISMATCH"
+        ]);
+        OperationsWorkflowContractMatrix.IssueCodes.Should().Contain([
+            "ACCRUAL_DAY_COUNT_MISSING",
+            "ACCRUAL_LEDGER_POSTING_MISSING",
+            "ACCRUAL_EXTERNAL_EVIDENCE_MISSING",
+            "FACTOR_STALE",
+            "FACTOR_PAYDOWN_LEDGER_MISSING",
+            "SECURITY_SCHEDULE_MISSING"
+        ]);
 
         var sampleBlocker = new OperationsWorkflowBlockerDto(
             OperationsWorkflowContractMatrix.BlockerCodes.First(),
@@ -435,6 +453,40 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task SubmitForApprovalAsync_ShouldRejectMismatchedReadyReportPackWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran expected-vs-actual reconciliation",
+            BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
+            reconciled.Workflow!.Version,
+            "ops-user",
+            ReportPackReady: true,
+            ReportPackId: "report-pack-ready",
+            Rationale: "Report pack is ready"));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            posture.Workflow!.Version,
+            "ops-user",
+            "reviewer",
+            "Submit approval against a different report pack",
+            "report-pack-different"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REPORT_PACK_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task SubmitForApprovalAsync_ShouldRejectBeforePrerequisiteGatesPassWithoutAppendingAudit()
     {
         var service = CreateService(out _, out var auditStore);
@@ -827,7 +879,43 @@ public sealed class OperationsContinuityWorkflowServiceTests
             }));
 
         result.Success.Should().BeFalse();
-        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_DRAFT_UNBALANCED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_DRAFT_IMBALANCED");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldNotAppendAuditOrMutateWorkflowWhenJournalCandidateIsInvalid()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out var repository, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-invalid-candidate",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate() with
+            {
+                PeriodId = Guid.Empty
+            }));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_JOURNAL_PERIOD_ID_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.LedgerPosting);
+        journalStore.Appended.Should().BeEmpty();
+
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.Version.Should().Be(workflow.Version);
+        persisted.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Validated);
+        persisted.LedgerPostingGate.Status.Should().Be(OperationsGateStatusDto.InProgress);
+
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]
@@ -993,6 +1081,29 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ApproveWorkflowAsync_ShouldRejectMismatchedReadyReportPack()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approve against a different report pack",
+            "report-pack-different"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REPORT_PACK_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task RejectWorkflowAsync_ShouldRouteLedgerMismatchBackToLedgerDraft()
     {
         var service = CreateService(out _, out var auditStore);
@@ -1074,6 +1185,34 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         close.Success.Should().BeFalse();
         close.Blockers.Should().Contain(blocker => blocker.Code == "OPERATIONS_GATES_NOT_PASSED");
+    }
+
+    [Fact]
+    public async Task CloseWorkflowAsync_ShouldRejectMismatchedReadyReportPackWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1"));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close using a mismatched report pack",
+            "report-pack-different"));
+
+        close.Success.Should().BeFalse();
+        close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        close.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REPORT_PACK_ID_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]

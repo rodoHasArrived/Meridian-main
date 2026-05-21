@@ -28,8 +28,9 @@ This project is the shared contract layer. It must remain dependency-light and m
 
 Contract changes affect multiple consumers. Treat additive DTO fields, enum growth, serialization behavior, and breaking changes as cross-module work.
 The Operations Continuity contract matrix also publishes stable blocker/issue code vocabularies for
-Security Master accounting-event coverage, accrual mismatch, and factor-paydown reconciliation
-posture so browser, retained WPF, and backend tests can share the same semantics.
+broker intake, Security Master accounting-event coverage, accrual mismatch, factor-paydown
+reconciliation posture, ledger posting, approval, and close blockers so browser, retained WPF, and
+backend tests can share the same semantics.
 
 ## Diagrams
 

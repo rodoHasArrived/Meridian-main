@@ -255,6 +255,7 @@ Examples:
 `RunMat` exposes output-line count plus idle, streaming, and no-output guidance beside the existing Last Run and resolved-executable panels.
 `QuantScript` renders its retained execution history in the workbench so notebook users can inspect parameters, outputs, mirrored backtest evidence, and run-browser handoffs without leaving the page.
 `RunCashFlow` hides empty ladder/event grids and explains whether the operator needs to select a run, recover missing run evidence, or accept that a retained run produced no cash-flow rows.
+`RunRisk` hides empty volatility and attribution panes behind view-model-owned guidance for no selected run, missing retained runs, short equity histories, and missing symbol attribution.
 
 ## Development Notes
 

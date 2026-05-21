@@ -342,7 +342,11 @@
                                 <TextBlock Text="Asset Class" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
                                 <ComboBox ItemsSource="{Binding EditVm.AssetClasses}"
                                           SelectedItem="{Binding EditVm.AssetClass, UpdateSourceTrigger=PropertyChanged}"
-                                          IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                                          IsEnabled="{Binding EditVm.CanChangeAssetClass}" />
+                                <TextBlock Text="{Binding EditVm.AssetClassEditabilityHint}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Margin="0,0,12,12">
                                 <TextBlock Text="Currency" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
@@ -354,7 +358,11 @@
                                 <TextBlock Text="Identifier Kind" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
                                 <ComboBox ItemsSource="{Binding EditVm.IdentifierKinds}"
                                           SelectedItem="{Binding EditVm.PrimaryIdentifierKind, UpdateSourceTrigger=PropertyChanged}"
-                                          IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                                          IsEnabled="{Binding EditVm.CanEditPrimaryIdentifier}" />
+                                <TextBlock Text="{Binding EditVm.PrimaryIdentifierEditabilityHint}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Margin="0,0,12,12">
                                 <TextBlock Text="Identifier Value" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />

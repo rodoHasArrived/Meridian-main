@@ -11,6 +11,8 @@ public sealed class RuntimeDiagnosticRedactorTests
     [InlineData("secretKey=paper-secret-value", "paper-secret-value")]
     [InlineData("connectionString=Server=db;Password=pwd123", "pwd123")]
     [InlineData("request=/v2/orders?api_key=query-secret&accountId=ACCT-123456", "query-secret")]
+    [InlineData("callback=https://operator:url-secret@example.invalid/orders?client_secret=query-secret", "url-secret")]
+    [InlineData("callback=https://operator:url-secret@example.invalid/orders?client_secret=query-secret", "query-secret")]
     [InlineData("{\"accountNumber\":\"ACCT-654321\",\"token\":\"json-token\"}", "ACCT-654321")]
     public void SanitizeText_RedactsSecretsAndAccountIdentifiers(string input, string sensitiveValue)
     {

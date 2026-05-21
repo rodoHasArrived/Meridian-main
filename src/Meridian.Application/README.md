@@ -28,6 +28,16 @@ This layer should express application behavior and orchestration without owning 
 ## Important workflows
 
 Use this module for workflow orchestration, command behavior, readiness coordination, and service-level validation.
+Operations Continuity workflow orchestration lives under `OperationsContinuity/`; keep gate posture,
+approval blockers, ledger-posting safeguards, audit writes, and server-side status derivation in
+that application-layer aggregate/service rather than workstation clients.
+Runtime diagnostics live under `Services/` and `Monitoring/`; diagnostic bundle generation should
+export sanitized summaries, metrics, and recent tracked errors without raw provider payloads,
+credentials, account identifiers, or portfolio/trade detail.
+Shutdown lifecycle coordination in `GracefulShutdownService` and `GracefulShutdownHandler` should
+keep structured operation names, correlation IDs, elapsed timings, recovery actions, and sanitized
+failure reasons together so operators can diagnose incomplete flushes, duplicate shutdown requests,
+and disposal failures without exposing secrets.
 
 ## Diagrams
 

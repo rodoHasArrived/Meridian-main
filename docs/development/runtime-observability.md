@@ -45,6 +45,7 @@ Never log or export:
 - Full raw provider payloads, market-data payloads, portfolio holdings, order details, or statement rows unless explicitly redacted and debug-gated.
 
 Diagnostic bundles and live diagnostics endpoints must sanitize logs, configuration summaries, environment variables, query strings, tracked error messages, stack traces, contexts, and storage listings before exporting support data. If a diagnostic feature cannot safely redact a field, omit the field and include a non-sensitive count or status instead.
+URL user-info credentials and credential-like query keys such as `client_secret`, `refresh_token`, `password`, and `credential` must be redacted before logs or bundle files leave the process.
 
 ## Performance Rules
 
@@ -74,12 +75,25 @@ Startup and shutdown should emit information-level milestones with elapsed time 
 - Logs flushed
 - Shutdown complete
 
+The shared startup orchestrator emits `runtime.startup.sequence` with one correlation ID spanning
+command dispatch, validation, runtime selection, and mode execution. Each phase reports
+`StartupPhase`, `ElapsedMs`, and `Outcome`; phases exceeding the startup budget are warning-level
+events with a recovery action. Config paths in these startup diagnostics are sanitized before
+logging so account identifiers or credential-like query values are not exposed.
+
 Warn when startup or shutdown phases exceed their expected budget, when a background service fails to stop, when a provider cannot disconnect cleanly, or when a channel consumer does not exit before timeout.
 
 `GracefulShutdownService` emits the `runtime.shutdown.flush` operation when hosted buffers are
 flushed. Use its `CorrelationId` to connect the shutdown-request log, per-component flush timings,
 and the final outcome summary. The summary reports succeeded, failed, cancelled, and missing
 flushes plus a recovery action when buffered data may need verification.
+
+`GracefulShutdownHandler` emits the `runtime.shutdown.sequence` operation for process-signal and
+manual shutdown flows that coordinate callbacks, producer cancellation, flushes, and disposal. It
+uses one correlation ID across start, progress, flush, dispose, timeout, duplicate-request, and
+completion diagnostics. Operator-supplied shutdown messages and exception messages are sanitized
+before they are written to logs or returned in shutdown warnings, so credential-like values and
+account identifiers do not leak through lifecycle diagnostics.
 
 ## Provider Health
 
@@ -134,6 +148,7 @@ Support bundles may include:
 - Sanitized configuration summary.
 - Sanitized recent logs.
 - Metrics snapshot.
+- Sanitized recent tracked errors from the in-process `ErrorTracker`.
 - Storage shape and disk-space summary.
 - Redacted Meridian/provider-related environment variables.
 
@@ -141,6 +156,14 @@ Bundles must exclude secrets and account numbers. Use status, counts, and masked
 When `IEventMetrics` is registered, `metrics.json` and `runtime-summary.json` must include the
 same aggregate event counters used by `/api/diagnostics/metrics` so support bundles can explain
 pipeline throughput without requiring a live repro.
+The summary includes published, dropped, rejected, trade, quote, depth-update, historical-bar,
+events/sec, type-specific rate, latency-sample, latency, GC, and heap counters. These are aggregate
+diagnostic values only and must not include raw event payloads, account identifiers, provider
+responses, portfolio values, or order details.
+When `ErrorTracker` is registered, `recent-errors.json` and the `runtime-summary.json` `errors`
+block must include only sanitized error IDs, timestamps, levels, exception types, messages, stack
+traces, contexts, and inner-exception messages. Secrets, credential query parameters, authorization
+headers, and account identifiers must be redacted before the bundle is written.
 
 ## Validation Expectations
 

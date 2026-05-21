@@ -3,7 +3,7 @@ alter table __SCHEMA__.securities
 
 update __SCHEMA__.securities
 set normalized_primary_identifier_value = case
-    when primary_identifier_kind in ('Isin', 'Cusip', 'Sedol', 'Figi', 'Lei', 'Wkn', 'Cik')
+    when primary_identifier_kind in ('Isin', 'Cusip', 'Sedol', 'Figi', 'OccOptionSymbol', 'Lei', 'Wkn', 'Cik')
         then regexp_replace(upper(btrim(primary_identifier_value)), '[^A-Z0-9]', '', 'g')
     when primary_identifier_kind = 'Valoren'
         then regexp_replace(upper(btrim(primary_identifier_value)), '[^0-9]', '', 'g')
@@ -23,7 +23,7 @@ alter table __SCHEMA__.security_identifiers
 
 update __SCHEMA__.security_identifiers
 set normalized_identifier_value = case
-        when identifier_kind in ('Isin', 'Cusip', 'Sedol', 'Figi', 'Lei', 'Wkn', 'Cik')
+        when identifier_kind in ('Isin', 'Cusip', 'Sedol', 'Figi', 'OccOptionSymbol', 'Lei', 'Wkn', 'Cik')
             then regexp_replace(upper(btrim(identifier_value)), '[^A-Z0-9]', '', 'g')
         when identifier_kind = 'Valoren'
             then regexp_replace(upper(btrim(identifier_value)), '[^0-9]', '', 'g')
@@ -45,7 +45,7 @@ alter table __SCHEMA__.security_aliases
 
 update __SCHEMA__.security_aliases
 set normalized_alias_value = case
-        when alias_kind in ('Isin', 'Cusip', 'Sedol', 'Figi', 'Lei', 'Wkn', 'Cik')
+        when alias_kind in ('Isin', 'Cusip', 'Sedol', 'Figi', 'OccOptionSymbol', 'Lei', 'Wkn', 'Cik')
             then regexp_replace(upper(btrim(alias_value)), '[^A-Z0-9]', '', 'g')
         when alias_kind = 'Valoren'
             then regexp_replace(upper(btrim(alias_value)), '[^0-9]', '', 'g')

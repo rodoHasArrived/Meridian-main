@@ -127,6 +127,8 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SecurityMasterProviderSymbolMappingDto[]))]
 [JsonSerializable(typeof(List<SecurityMasterProviderSymbolMappingDto>))]
 [JsonSerializable(typeof(SecurityMasterSchemaCompatibilityDto))]
+[JsonSerializable(typeof(SecurityMasterScheduleSummaryDto))]
+[JsonSerializable(typeof(SecurityMasterLotModelDto))]
 [JsonSerializable(typeof(SecurityMasterDownstreamImpactDto))]
 [JsonSerializable(typeof(SecurityMasterImpactLinkDto))]
 [JsonSerializable(typeof(SecurityMasterRecommendedActionDto))]

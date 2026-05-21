@@ -1287,6 +1287,16 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             }
         }
 
+        var totalDebits = candidate.Lines?.Sum(static line => line.Debit) ?? 0m;
+        var totalCredits = candidate.Lines?.Sum(static line => line.Credit) ?? 0m;
+        if (Math.Abs(totalDebits - totalCredits) > 0.000001m)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_DRAFT_IMBALANCED",
+                "Ledger journal candidate debit and credit totals must balance before posting.",
+                evidence));
+        }
+
         return blockers;
     }
 

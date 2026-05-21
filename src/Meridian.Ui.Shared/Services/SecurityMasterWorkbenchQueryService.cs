@@ -106,6 +106,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var recommendedActions = BuildRecommendedActions(detail, trustPosture, assessments, downstreamImpact, validationReport);
         var identifierSummary = BuildIdentifierSummary(detail);
         var schemaCompatibility = BuildSchemaCompatibility(detail, economic);
+        var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource);
+        var lotModel = BuildLotModel(detail, economic, trading);
 
         return new SecurityMasterTrustSnapshotDto(
             SecurityId: detail.SecurityId,
@@ -136,7 +138,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         {
             ValidationReport = validationReport,
             IdentifierSummary = identifierSummary,
-            SchemaCompatibility = schemaCompatibility
+            SchemaCompatibility = schemaCompatibility,
+            ScheduleSummary = scheduleSummary,
+            LotModel = lotModel
         };
     }
 
@@ -976,19 +980,43 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         SecurityDetailDto detail,
         SecurityEconomicDefinitionRecord? economic)
     {
-        var legacySchemaVersion = TryGetSchemaVersion(detail.AssetSpecificTerms) ?? 1;
-        var economicSchemaVersion = economic is null ? 0 : TryGetSchemaVersion(economic.EconomicTerms) ?? 2;
+        var legacySchemaVersion = TryGetSchemaVersion(detail.AssetSpecificTerms) ?? SecurityMasterSchemaVersions.LegacyAssetSpecificTerms;
+        var economicSchemaVersion = economic is null ? 0 : TryGetSchemaVersion(economic.EconomicTerms) ?? SecurityMasterSchemaVersions.EconomicTerms;
         var hasLegacyTerms = HasJsonContent(detail.AssetSpecificTerms);
         var hasEconomicTerms = economic is not null && HasJsonContent(economic.EconomicTerms);
         var hasClassificationPayload = economic is not null && HasJsonContent(economic.Classification);
+        var hasSupportedLegacySchema = !hasLegacyTerms || legacySchemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms;
+        var hasSupportedEconomicSchema = !hasEconomicTerms || economicSchemaVersion == SecurityMasterSchemaVersions.EconomicTerms;
 
-        var summary = hasLegacyTerms && hasEconomicTerms
-            ? $"Legacy schema v{legacySchemaVersion} and economic schema v{economicSchemaVersion} are both available for compatibility-safe projections."
-            : hasLegacyTerms
-                ? $"Legacy schema v{legacySchemaVersion} remains the authoritative workstation projection payload."
-                : hasEconomicTerms
-                    ? $"Economic schema v{economicSchemaVersion} is available without a legacy asset-specific payload."
-                    : "No structured schema payloads were rebuilt for the selected security.";
+        string summary;
+        if (!hasSupportedLegacySchema && !hasSupportedEconomicSchema)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} and economic schema v{economicSchemaVersion} differ from the supported workstation versions v{SecurityMasterSchemaVersions.LegacyAssetSpecificTerms}/v{SecurityMasterSchemaVersions.EconomicTerms}; compatibility review is required.";
+        }
+        else if (!hasSupportedLegacySchema)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} differs from supported workstation schema v{SecurityMasterSchemaVersions.LegacyAssetSpecificTerms}; compatibility review is required.";
+        }
+        else if (!hasSupportedEconomicSchema)
+        {
+            summary = $"Economic schema v{economicSchemaVersion} differs from supported workstation schema v{SecurityMasterSchemaVersions.EconomicTerms}; compatibility review is required.";
+        }
+        else if (hasLegacyTerms && hasEconomicTerms)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} and economic schema v{economicSchemaVersion} are both available for compatibility-safe projections.";
+        }
+        else if (hasLegacyTerms)
+        {
+            summary = $"Legacy schema v{legacySchemaVersion} remains the authoritative workstation projection payload.";
+        }
+        else if (hasEconomicTerms)
+        {
+            summary = $"Economic schema v{economicSchemaVersion} is available without a legacy asset-specific payload.";
+        }
+        else
+        {
+            summary = "No structured schema payloads were rebuilt for the selected security.";
+        }
 
         return new SecurityMasterSchemaCompatibilityDto(
             AssetClass: detail.AssetClass,
@@ -997,6 +1025,119 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             HasLegacyAssetSpecificTerms: hasLegacyTerms,
             HasEconomicTerms: hasEconomicTerms,
             HasClassificationPayload: hasClassificationPayload,
+            Summary: summary);
+    }
+
+    private static SecurityMasterScheduleSummaryDto BuildScheduleSummary(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic,
+        IReadOnlyList<CorporateActionDto> corporateActions,
+        WinningSourceInfo? winningSource)
+    {
+        var assetCapability = GetAssetCapability(detail.AssetClass);
+        var economicTerms = economic?.EconomicTerms;
+        var supportsFactorHistory = economicTerms.HasValue && TryGetPropertyCaseInsensitive(economicTerms.Value, "structuredProduct", out _);
+        var supportsCashflowSchedule =
+            supportsFactorHistory
+            || economicTerms.HasValue && (
+                TryGetPropertyCaseInsensitive(economicTerms.Value, "coupon", out _)
+                || TryGetPropertyCaseInsensitive(economicTerms.Value, "payment", out _)
+                || TryGetPropertyCaseInsensitive(economicTerms.Value, "redemption", out _)
+                || TryGetPropertyCaseInsensitive(economicTerms.Value, "call", out _))
+            || assetCapability.SupportsCashflowScheduleByDefault;
+
+        var currentFactor = TryGetNestedJsonDecimal(economicTerms, "structuredProduct", "factor");
+        var currentFactorDate = TryGetNestedJsonDateOnly(economicTerms, "structuredProduct", "factorDate");
+        var maturityDate = TryGetNestedJsonDateOnly(economicTerms, "maturity", "maturityDate");
+        var firstCallDate = TryGetNestedJsonDateOnly(economicTerms, "call", "firstCallDate");
+        var nextCorporateAction = corporateActions
+            .Where(static action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .OrderBy(static action => action.ExDate)
+            .Select(static action => (DateOnly?)action.ExDate)
+            .FirstOrDefault();
+        var nextLifecycleDate = new[] { nextCorporateAction, firstCallDate, maturityDate }
+            .Where(static value => value.HasValue)
+            .Select(static value => value!.Value)
+            .OrderBy(static value => value)
+            .Cast<DateOnly?>()
+            .FirstOrDefault();
+
+        var sourceSummary = winningSource is null
+            ? "Schedule source metadata unavailable."
+            : string.IsNullOrWhiteSpace(winningSource.SourceRecordId)
+                ? $"Schedules follow {winningSource.SourceSystem} as of {winningSource.AsOf?.UtcDateTime:yyyy-MM-dd HH:mm 'UTC'}."
+                : $"Schedules follow {winningSource.SourceSystem} record {winningSource.SourceRecordId} as of {winningSource.AsOf?.UtcDateTime:yyyy-MM-dd HH:mm 'UTC'}.";
+
+        string summary;
+        if (!supportsCashflowSchedule && !supportsFactorHistory)
+        {
+            summary = "Selected security does not expose cash-flow or factor schedule terms in the current projection.";
+        }
+        else if (supportsFactorHistory && currentFactor.HasValue)
+        {
+            summary = currentFactorDate.HasValue
+                ? $"Factor-aware cash-flow support is available. Current factor {currentFactor.Value:0.########} as of {currentFactorDate.Value:yyyy-MM-dd}."
+                : $"Factor-aware cash-flow support is available. Current factor {currentFactor.Value:0.########}.";
+        }
+        else if (supportsCashflowSchedule)
+        {
+            summary = nextLifecycleDate.HasValue
+                ? $"Cash-flow schedule support is available. Next lifecycle date {nextLifecycleDate.Value:yyyy-MM-dd}."
+                : "Cash-flow schedule support is available from the current economic terms.";
+        }
+        else
+        {
+            summary = "Factor history is available without a projected cash-flow schedule.";
+        }
+
+        return new SecurityMasterScheduleSummaryDto(
+            SupportsCashflowSchedule: supportsCashflowSchedule,
+            SupportsFactorHistory: supportsFactorHistory,
+            HasEconomicScheduleTerms: economicTerms.HasValue && HasJsonContent(economicTerms.Value),
+            CurrentFactor: currentFactor,
+            CurrentFactorDate: currentFactorDate,
+            NextLifecycleDate: nextLifecycleDate,
+            SourceSummary: sourceSummary,
+            Summary: summary);
+    }
+
+    private static SecurityMasterLotModelDto BuildLotModel(
+        SecurityDetailDto detail,
+        SecurityEconomicDefinitionRecord? economic,
+        TradingParametersDto? trading)
+    {
+        var assetCapability = GetAssetCapability(detail.AssetClass);
+        var economicTerms = economic?.EconomicTerms;
+        var hasStructuredFactor = TryGetNestedJsonDecimal(economicTerms, "structuredProduct", "factor").HasValue;
+        var multiplier =
+            trading?.ContractMultiplier
+            ?? TryGetJsonDecimal(detail.AssetSpecificTerms, "multiplier")
+            ?? TryGetNestedJsonDecimal(economicTerms, "contract", "multiplier");
+        var lotSize = trading?.LotSize ?? TryGetJsonDecimal(detail.CommonTerms, "lotSize");
+
+        var quantityModel =
+            hasStructuredFactor ? "FactorAdjustedFace" :
+            assetCapability.UsesFaceValueLots ? "FaceValue" :
+            multiplier is > 0m ? "ContractUnits" :
+            "Units";
+
+        var summary = quantityModel switch
+        {
+            "FactorAdjustedFace" => $"Lots should reconcile by current face using factor-adjusted exposure{FormatLotSizeSuffix(lotSize)}.",
+            "FaceValue" => $"Lots should reconcile by face/par exposure{FormatLotSizeSuffix(lotSize)}.",
+            "ContractUnits" => multiplier is > 0m
+                ? $"Lots should reconcile in contract units with multiplier {multiplier:0.########}{FormatLotSizeSuffix(lotSize)}."
+                : $"Lots should reconcile in contract units{FormatLotSizeSuffix(lotSize)}.",
+            _ => $"Lots should reconcile in whole or fractional units{FormatLotSizeSuffix(lotSize)}."
+        };
+
+        return new SecurityMasterLotModelDto(
+            QuantityModel: quantityModel,
+            LotSize: lotSize,
+            ContractMultiplier: multiplier,
+            UsesFaceValue: assetCapability.UsesFaceValueLots,
+            SupportsFactorAdjustedExposure: hasStructuredFactor,
+            RequiresResolvedSecurityId: true,
             Summary: summary);
     }
 
@@ -1538,10 +1679,65 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return null;
     }
 
+    private static decimal? TryGetJsonDecimal(JsonElement element, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(element, propertyName, out var property))
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var decimalValue))
+        {
+            return decimalValue;
+        }
+
+        if (property.ValueKind == JsonValueKind.String
+            && decimal.TryParse(property.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static decimal? TryGetNestedJsonDecimal(JsonElement? element, string objectName, string propertyName)
+    {
+        if (!element.HasValue
+            || !TryGetPropertyCaseInsensitive(element.Value, objectName, out var nested)
+            || nested.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        return TryGetJsonDecimal(nested, propertyName);
+    }
+
+    private static DateOnly? TryGetNestedJsonDateOnly(JsonElement? element, string objectName, string propertyName)
+    {
+        if (!element.HasValue
+            || !TryGetPropertyCaseInsensitive(element.Value, objectName, out var nested)
+            || nested.ValueKind != JsonValueKind.Object
+            || !TryGetPropertyCaseInsensitive(nested, propertyName, out var property)
+            || property.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return DateOnly.TryParse(property.GetString(), out var parsed) ? parsed : null;
+    }
+
     private static string? FormatNullableDecimal(decimal? value)
         => value.HasValue
             ? value.Value.ToString(CultureInfo.InvariantCulture)
             : null;
+
+    private static string FormatLotSizeSuffix(decimal? lotSize)
+        => lotSize is > 0m
+            ? $" (lot size {lotSize:0.########})"
+            : string.Empty;
+
+    private static SecurityAssetClassDescriptor GetAssetCapability(string assetClass)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass);
 
     private static bool IsIdentifierActive(DateTimeOffset validFrom, DateTimeOffset? validTo, DateTimeOffset asOf)
         => validFrom <= asOf && (!validTo.HasValue || validTo.Value > asOf);

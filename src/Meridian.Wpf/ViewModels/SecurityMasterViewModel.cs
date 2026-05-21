@@ -2476,6 +2476,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Trust posture", $"{snapshot.TrustPosture.Tone} • {snapshot.TrustPosture.TrustScore}/100"),
             new SecurityMasterPresentationField("Validation", BuildValidationSummaryText(snapshot)),
             new SecurityMasterPresentationField("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Schedule model", BuildScheduleSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Lot model", BuildLotModelSummaryText(snapshot)),
             new SecurityMasterPresentationField("Trading readiness", snapshot.TrustPosture.TradingParametersStatus),
             new SecurityMasterPresentationField("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot)),
             new SecurityMasterPresentationField("Corporate actions", snapshot.TrustPosture.CorporateActionReadiness),
@@ -2511,6 +2513,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterEvidenceItem("Winning source", GoldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
             new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
             new SecurityMasterEvidenceItem("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot), "Identifier resolution"),
+            new SecurityMasterEvidenceItem("Schedule model", BuildScheduleSummaryText(snapshot), FormatScheduleSourceLabel(snapshot.ScheduleSummary)),
+            new SecurityMasterEvidenceItem("Lot model", BuildLotModelSummaryText(snapshot), "Lot/open-position guidance"),
             new SecurityMasterEvidenceItem("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot), "Snapshot projection"),
             new SecurityMasterEvidenceItem("Latest audit event", LatestHistoryEventText, "History stream"),
             new SecurityMasterEvidenceItem("Downstream scope", snapshot.DownstreamImpact.Summary, PrintDistributionText)
@@ -2544,6 +2548,17 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private static string BuildIdentifierCoverageSummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.";
+
+    private static string BuildScheduleSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.";
+
+    private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
+
+    private static string FormatScheduleSourceLabel(SecurityMasterScheduleSummaryDto? summary)
+        => string.IsNullOrWhiteSpace(summary?.SourceSummary)
+            ? "Schedule source"
+            : $"Schedule source: {summary.SourceSummary}";
 
     private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";

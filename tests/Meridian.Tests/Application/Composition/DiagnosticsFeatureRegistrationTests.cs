@@ -39,12 +39,22 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
 
         await using var provider = services.BuildServiceProvider();
         var bundleService = provider.GetRequiredService<DiagnosticBundleService>();
+        var errorTracker = provider.GetRequiredService<ErrorTracker>();
+        errorTracker.RecordError(new TrackedError
+        {
+            Id = "err-registration",
+            Timestamp = DateTimeOffset.UtcNow,
+            Level = "ERROR",
+            Message = "Provider failed token=registration-secret",
+            Context = "diagnostic-bundle?accountNumber=ACCT-123456"
+        });
 
         var result = await bundleService.GenerateAsync(new DiagnosticBundleOptions(
             IncludeRuntimeSummary: true,
             IncludeSystemInfo: false,
             IncludeConfiguration: false,
             IncludeMetrics: true,
+            IncludeTrackedErrors: true,
             IncludeLogs: false,
             IncludeStorageInfo: false,
             IncludeEnvironmentVariables: false));
@@ -52,10 +62,17 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
         result.Success.Should().BeTrue(result.Message);
         using var archive = ZipFile.OpenRead(result.ZipPath!);
         using var metricsDocument = await JsonDocument.ParseAsync(archive.GetEntry("metrics.json")!.Open());
+        using var errorsDocument = await JsonDocument.ParseAsync(archive.GetEntry("recent-errors.json")!.Open());
         using var summaryDocument = await JsonDocument.ParseAsync(archive.GetEntry("runtime-summary.json")!.Open());
 
         metricsDocument.RootElement.GetProperty("published").GetInt64().Should().Be(1);
+        errorsDocument.RootElement.GetProperty("errors").EnumerateArray()
+            .Should()
+            .Contain(error => error.GetProperty("id").GetString() == "err-registration");
+        errorsDocument.RootElement.GetRawText().Should().NotContain("registration-secret");
+        errorsDocument.RootElement.GetRawText().Should().NotContain("ACCT-123456");
         summaryDocument.RootElement.GetProperty("metrics").GetProperty("available").GetBoolean().Should().BeTrue();
+        summaryDocument.RootElement.GetProperty("errors").GetProperty("available").GetBoolean().Should().BeTrue();
     }
 
     [Fact]

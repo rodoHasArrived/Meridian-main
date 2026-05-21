@@ -259,6 +259,76 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
     }
 
     [Fact]
+    public async Task GetByIdentifierAsync_ResolvesOccOptionSymbol_FromNormalizedUniverseFallback()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = new SecurityProjectionRecord(
+            SecurityId: securityId,
+            AssetClass: "Option",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Apple Jun 2024 150 Call",
+            Currency: "USD",
+            PrimaryIdentifierKind: "OccOptionSymbol",
+            PrimaryIdentifierValue: "aapl 240621 c00150000",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Apple Jun 2024 150 Call",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                underlyingId = Guid.NewGuid(),
+                putCall = "Call",
+                strike = 150m,
+                expiry = new DateOnly(2024, 6, 21),
+                multiplier = 100m
+            }),
+            Provenance: JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "test",
+                updatedBy = "codex",
+                asOf = DateTimeOffset.UtcNow
+            }),
+            Version: 3,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.OccOptionSymbol,
+                    "aapl 240621 c00150000",
+                    true,
+                    DateTimeOffset.UtcNow.AddDays(-30))
+            ],
+            Aliases: Array.Empty<SecurityAliasDto>());
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.OccOptionSymbol,
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns((SecurityProjectionRecord?)null);
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns([projection]);
+
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.OccOptionSymbol,
+            "AAPL240621C00150000",
+            null);
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers.Should().ContainSingle();
+        result.Identifiers[0].NormalizedValue.Should().Be("AAPL240621C00150000");
+    }
+
+    [Fact]
     public async Task GetByIdentifierAsync_UsesNormalizedValueAndProvider_BeforeUniverseFallback()
     {
         var securityId = Guid.NewGuid();

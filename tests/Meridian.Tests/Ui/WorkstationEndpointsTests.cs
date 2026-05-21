@@ -471,8 +471,7 @@ public sealed class WorkstationEndpointsTests
             $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
             $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
             $"/api/workstation/operations/continuity/{workflowId}/approval/reject",
-            $"/api/workstation/operations/continuity/{workflowId}/close",
-            $"/api/workstation/operations/continuity/{workflowId}/reopen"
+            $"/api/workstation/operations/continuity/{workflowId}/close"
         };
 
         foreach (var endpoint in endpoints)
@@ -482,6 +481,9 @@ public sealed class WorkstationEndpointsTests
             using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
             json.RootElement.GetProperty("errors").GetProperty("request")[0].GetString().Should().NotBeNullOrWhiteSpace();
         }
+
+        var reopenResponse = await client.PostAsync($"/api/workstation/operations/continuity/{workflowId}/reopen", content: null);
+        reopenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -3995,9 +3997,130 @@ public sealed class WorkstationEndpointsTests
         snapshot.SchemaCompatibility.EconomicTermsSchemaVersion.Should().Be(2);
         snapshot.SchemaCompatibility.HasLegacyAssetSpecificTerms.Should().BeTrue();
         snapshot.SchemaCompatibility.HasEconomicTerms.Should().BeTrue();
+        snapshot.ScheduleSummary.Should().NotBeNull();
+        snapshot.ScheduleSummary!.SupportsCashflowSchedule.Should().BeTrue();
+        snapshot.ScheduleSummary.SupportsFactorHistory.Should().BeTrue();
+        snapshot.ScheduleSummary.CurrentFactor.Should().Be(0.9825m);
+        snapshot.ScheduleSummary.CurrentFactorDate.Should().Be(new DateOnly(2026, 5, 1));
+        snapshot.LotModel.Should().NotBeNull();
+        snapshot.LotModel!.QuantityModel.Should().Be("FactorAdjustedFace");
+        snapshot.LotModel.UsesFaceValue.Should().BeTrue();
+        snapshot.LotModel.SupportsFactorAdjustedExposure.Should().BeTrue();
         snapshot.RecommendedActions.Should().Contain(action =>
             action.Kind == SecurityMasterRecommendedActionKind.EditSelectedSecurity &&
             action.Detail.Contains("blocking validation issue", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldFlagUnsupportedSchemaCompatibilityInSummary()
+    {
+        var securityId = Guid.Parse("57575757-5757-5757-5757-575757575757");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Legacy Structured Note", "LSN-01"),
+            new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Bond",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Legacy Structured Note",
+                Currency: "USD",
+                CommonTerms: JsonSerializer.SerializeToElement(new
+                {
+                    issuerName = "Legacy Trust",
+                    countryOfRisk = "US"
+                }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 5,
+                    maturity = "2031-12-15"
+                }),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Cusip,
+                        "000000AA1",
+                        true,
+                        new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero))
+                ],
+                Aliases: [],
+                Version: 4,
+                EffectiveFrom: new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            new SecurityEconomicDefinitionRecord(
+                SecurityId: securityId,
+                AssetClass: "FixedIncome",
+                AssetFamily: "StructuredCredit",
+                SubType: "StructuredNote",
+                TypeName: "Legacy Structured Note",
+                IssuerType: "Trust",
+                RiskCountry: "US",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Legacy Structured Note",
+                Currency: "USD",
+                Classification: JsonSerializer.SerializeToElement(new
+                {
+                    assetClass = "FixedIncome"
+                }),
+                CommonTerms: JsonSerializer.SerializeToElement(new
+                {
+                    issuerName = "Legacy Trust",
+                    countryOfRisk = "US"
+                }),
+                EconomicTerms: JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 9,
+                    maturity = new
+                    {
+                        maturityDate = "2031-12-15"
+                    }
+                }),
+                Provenance: JsonSerializer.SerializeToElement(new
+                {
+                    sourceSystem = "legacy-edm",
+                    asOf = "2026-05-20T10:00:00Z",
+                    updatedBy = "workflow.bot"
+                }),
+                Version: 4,
+                EffectiveFrom: new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null,
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Cusip,
+                        "000000AA1",
+                        true,
+                        new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero))
+                ],
+                LegacyAssetClass: "Bond",
+                LegacyAssetSpecificTerms: JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 5,
+                    maturity = "2031-12-15"
+                })));
+        queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(
+                services,
+                queryService,
+                new StubSecurityMasterConflictService([]),
+                new StubSecurityValidationService());
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.SchemaCompatibility.Should().NotBeNull();
+        snapshot.SchemaCompatibility!.LegacyAssetSpecificTermsSchemaVersion.Should().Be(5);
+        snapshot.SchemaCompatibility.EconomicTermsSchemaVersion.Should().Be(9);
+        snapshot.SchemaCompatibility.Summary.Should().ContainEquivalentOf("compatibility review is required");
     }
 
     [Fact]

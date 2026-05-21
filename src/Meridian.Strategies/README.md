@@ -32,7 +32,8 @@ Use this module for strategy run evidence, promotion lineage, and research-to-pa
 Reconciliation also projects Security Master accounting inputs for Operations Continuity: fixed
 coupon accruals, expected journal previews, and factor-schedule principal paydowns are generated
 from resolved Security Master economic definitions before ledger/reconciliation gate posture is
-reported.
+reported. Factor-based instruments distinguish missing schedules from stale prior-period factor
+evidence so accounting operations can route principal-paydown blockers precisely.
 
 ## Diagrams
 
