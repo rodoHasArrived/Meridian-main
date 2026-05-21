@@ -1584,6 +1584,7 @@ public static partial class WorkstationEndpoints
             string? mode,
             StrategyRunStatus? status,
             string? strategyId,
+            StrategyRunTimelineProjection? projection,
             int? limit,
             HttpContext context) =>
         {
@@ -1594,18 +1595,24 @@ public static partial class WorkstationEndpoints
             }
 
             var modes = ParseModes(mode);
-            var timeline = await readService.GetMergedTimelineAsync(
-                    new StrategyRunHistoryQuery(
-                        Modes: modes,
-                        Status: status,
-                        StrategyId: strategyId,
-                        Limit: Math.Clamp(limit ?? 100, 1, 500)),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var query = new StrategyRunHistoryQuery(
+                Modes: modes,
+                Status: status,
+                StrategyId: strategyId,
+                Limit: Math.Clamp(limit ?? 100, 1, 500));
+
+            if (projection == StrategyRunTimelineProjection.Lineage)
+            {
+                var lineageTimeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(lineageTimeline, jsonOptions);
+            }
+
+            var timeline = await readService.GetMergedTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
         .WithName("GetWorkstationMergedRunTimeline")
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
+        .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
         group.MapGet("/runs/sweeps", async (int? limit, HttpContext context) =>

@@ -443,6 +443,27 @@ public sealed record StrategyRunComparison(
     bool HasLedger = false,
     bool HasAuditTrail = false);
 
+
+
+/// <summary>Projection mode for workstation run timeline queries.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunTimelineProjection>))]
+public enum StrategyRunTimelineProjection : byte
+{
+    Flat,
+    Lineage
+}
+
+/// <summary>Promotion/lineage event type emitted on strategy run timelines.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunLineageEventType>))]
+public enum StrategyRunLineageEventType : byte
+{
+    RunStarted,
+    RunCompleted,
+    PromotionDecision,
+    CrossModeTransition,
+    ReplayVerified
+}
+
 /// <summary>Filter options used for workstation run history retrieval.</summary>
 public sealed record StrategyRunHistoryQuery(
     IReadOnlyList<StrategyRunMode>? Modes = null,
@@ -463,6 +484,33 @@ public sealed record StrategyRunTimelineEntry(
     decimal? NetPnl,
     decimal? TotalReturn,
     int FillCount);
+
+
+/// <summary>Cross-mode transition metadata for lineage timeline events.</summary>
+public sealed record StrategyRunCrossModeTransitionMetadata(
+    StrategyRunMode? SourceMode,
+    StrategyRunMode? TargetMode,
+    string? SourceRunId,
+    string? TargetRunId,
+    string? PromotionReference,
+    string? ReplayAuditReference,
+    DateTimeOffset? ReplayVerifiedAt,
+    bool HasReplayAudit);
+
+/// <summary>Lineage timeline event grouped by canonical run identity.</summary>
+public sealed record StrategyRunLineageTimelineEntry(
+    string CanonicalRunKey,
+    string? ParentCanonicalRunKey,
+    string RunId,
+    string StrategyId,
+    string StrategyName,
+    StrategyRunMode Mode,
+    StrategyRunStatus Status,
+    DateTimeOffset EventTimestamp,
+    StrategyRunLineageEventType EventType,
+    string? PromotionDecision,
+    StrategyRunCrossModeTransitionMetadata? CrossModeTransition = null);
+
 /// <summary>
 /// Normalized cross-mode run comparison DTO that includes the full set of
 /// <c>BacktestMetrics</c> fields plus equity curve data and parentage chain info.

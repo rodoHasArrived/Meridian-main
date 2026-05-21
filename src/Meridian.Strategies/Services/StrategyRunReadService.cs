@@ -102,6 +102,24 @@ public sealed class StrategyRunReadService
             .ToArray();
     }
 
+    public async Task<IReadOnlyList<StrategyRunLineageTimelineEntry>> GetLineageTimelineAsync(
+        StrategyRunHistoryQuery query,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var runs = await GetRunsAsync(query, ct).ConfigureAwait(false);
+
+        return runs
+            .GroupBy(static run => run.Identity?.CanonicalRunKey ?? run.RunId, StringComparer.Ordinal)
+            .SelectMany(BuildLineageTimelineEntries)
+            .OrderBy(static entry => entry.EventTimestamp)
+            .ThenBy(static entry => entry.CanonicalRunKey, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.RunId, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.EventType)
+            .ToArray();
+    }
+
     public async Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
@@ -444,6 +462,106 @@ public sealed class StrategyRunReadService
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
             AuditReference: run.AuditReference);
     }
+
+    private static IEnumerable<StrategyRunLineageTimelineEntry> BuildLineageTimelineEntries(
+        IGrouping<string, StrategyRunSummary> lineageGroup)
+    {
+        foreach (var run in lineageGroup)
+        {
+            var canonicalRunKey = run.Identity?.CanonicalRunKey ?? run.RunId;
+            var parentCanonicalRunKey = run.Identity?.ParentCanonicalRunKey;
+            var promotionDecision = run.Identity?.PromotionDecision;
+            var replayAuditReference = run.Identity?.ReplayAuditReference;
+            var replayVerifiedAt = run.Identity?.ReplayVerifiedAt;
+            var sourceRunId = run.Identity?.PromotionSourceRunId;
+            var targetRunId = run.Identity?.PromotionTargetRunId;
+
+            yield return new StrategyRunLineageTimelineEntry(
+                CanonicalRunKey: canonicalRunKey,
+                ParentCanonicalRunKey: parentCanonicalRunKey,
+                RunId: run.RunId,
+                StrategyId: run.StrategyId,
+                StrategyName: run.StrategyName,
+                Mode: run.Mode,
+                Status: run.Status,
+                EventTimestamp: run.StartedAt,
+                EventType: StrategyRunLineageEventType.RunStarted,
+                PromotionDecision: promotionDecision,
+                CrossModeTransition: BuildTransitionMetadata(run.Mode, run.Mode, sourceRunId, targetRunId, run.Promotion?.AuditReference, replayAuditReference, replayVerifiedAt, run.Identity?.HasReplayAudit ?? false));
+
+            if (run.CompletedAt is { } completedAt)
+            {
+                yield return new StrategyRunLineageTimelineEntry(
+                    CanonicalRunKey: canonicalRunKey,
+                    ParentCanonicalRunKey: parentCanonicalRunKey,
+                    RunId: run.RunId,
+                    StrategyId: run.StrategyId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    EventTimestamp: completedAt,
+                    EventType: StrategyRunLineageEventType.RunCompleted,
+                    PromotionDecision: promotionDecision,
+                    CrossModeTransition: null);
+            }
+
+            if (!string.IsNullOrWhiteSpace(promotionDecision))
+            {
+                var targetMode = run.Promotion?.SuggestedNextMode;
+                var eventType = targetMode.HasValue && targetMode.Value != run.Mode
+                    ? StrategyRunLineageEventType.CrossModeTransition
+                    : StrategyRunLineageEventType.PromotionDecision;
+
+                yield return new StrategyRunLineageTimelineEntry(
+                    CanonicalRunKey: canonicalRunKey,
+                    ParentCanonicalRunKey: parentCanonicalRunKey,
+                    RunId: run.RunId,
+                    StrategyId: run.StrategyId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    EventTimestamp: run.LastUpdatedAt,
+                    EventType: eventType,
+                    PromotionDecision: promotionDecision,
+                    CrossModeTransition: BuildTransitionMetadata(run.Mode, targetMode, sourceRunId, targetRunId, run.Promotion?.AuditReference, replayAuditReference, replayVerifiedAt, run.Identity?.HasReplayAudit ?? false));
+            }
+
+            if ((run.Identity?.HasReplayAudit ?? false) && replayVerifiedAt is { } verifiedAt)
+            {
+                yield return new StrategyRunLineageTimelineEntry(
+                    CanonicalRunKey: canonicalRunKey,
+                    ParentCanonicalRunKey: parentCanonicalRunKey,
+                    RunId: run.RunId,
+                    StrategyId: run.StrategyId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    EventTimestamp: verifiedAt,
+                    EventType: StrategyRunLineageEventType.ReplayVerified,
+                    PromotionDecision: promotionDecision,
+                    CrossModeTransition: BuildTransitionMetadata(run.Mode, run.Mode, sourceRunId, targetRunId, run.Promotion?.AuditReference, replayAuditReference, replayVerifiedAt, true));
+            }
+        }
+    }
+
+    private static StrategyRunCrossModeTransitionMetadata BuildTransitionMetadata(
+        StrategyRunMode? sourceMode,
+        StrategyRunMode? targetMode,
+        string? sourceRunId,
+        string? targetRunId,
+        string? promotionReference,
+        string? replayAuditReference,
+        DateTimeOffset? replayVerifiedAt,
+        bool hasReplayAudit) =>
+        new(
+            SourceMode: sourceMode,
+            TargetMode: targetMode,
+            SourceRunId: sourceRunId,
+            TargetRunId: targetRunId,
+            PromotionReference: promotionReference,
+            ReplayAuditReference: replayAuditReference,
+            ReplayVerifiedAt: replayVerifiedAt,
+            HasReplayAudit: hasReplayAudit);
 
     internal IReadOnlyList<StrategyRunContinuityWarning> GetPortfolioContinuityWarnings(StrategyRunDetail run) =>
         _portfolioReadService.BuildContinuityWarnings(run.Summary.RunId, run.Portfolio);
