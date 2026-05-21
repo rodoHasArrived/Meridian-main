@@ -1868,11 +1868,11 @@ public sealed class WorkstationEndpointsTests
             activeSession.ValueKind.Should().Be(JsonValueKind.Object);
             root.TryGetProperty("brokerageSync", out var brokerageSync).Should().BeTrue();
             brokerageSync.ValueKind.Should().Be(JsonValueKind.Null);
-            var workItems = readiness.WorkItems.ToList();
-            var firstCritical = workItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Critical);
-            var firstWarning = workItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Warning);
-            firstCritical.Should().BeGreaterOrEqualTo(0);
-            firstWarning.Should().BeGreaterOrEqualTo(0);
+            var readinessWorkItems = readiness.WorkItems.ToList();
+            var firstCritical = readinessWorkItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Critical);
+            var firstWarning = readinessWorkItems.FindIndex(item => item.Tone == OperatorWorkItemToneDto.Warning);
+            firstCritical.Should().BeGreaterThanOrEqualTo(0);
+            firstWarning.Should().BeGreaterThanOrEqualTo(0);
             firstCritical.Should().BeLessThan(firstWarning, "critical readiness blockers should be triaged before warning items");
         }
         finally
