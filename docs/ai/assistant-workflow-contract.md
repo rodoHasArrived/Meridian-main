@@ -139,8 +139,8 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep shared project context mirrored across `.codex/skills/_shared/project-context.md`,
       `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`
       when current project framing changes.
-- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
-      retained WPF support only when needed, and visible root workspaces limited to `Trading`,
+- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
+      WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - [ ] Keep the **No mobile development lane** policy mirrored in the root assistant entrypoints,
       Copilot guide, and shared Codex/Claude project-context files so mobile clients are not
