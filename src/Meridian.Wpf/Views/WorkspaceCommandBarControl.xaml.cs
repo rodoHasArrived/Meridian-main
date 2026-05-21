@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
@@ -30,6 +31,12 @@ public partial class WorkspaceCommandBarControl : UserControl
             typeof(WorkspaceCommandBarControl),
             new PropertyMetadata(false));
 
+    public static readonly DependencyProperty CommandInvokedCommandProperty =
+        DependencyProperty.Register(
+            nameof(CommandInvokedCommand),
+            typeof(ICommand),
+            typeof(WorkspaceCommandBarControl));
+
     public WorkspaceCommandBarControl()
     {
         InitializeComponent();
@@ -50,10 +57,17 @@ public partial class WorkspaceCommandBarControl : UserControl
         set => SetValue(IsCompactSurfaceProperty, value);
     }
 
+    public ICommand? CommandInvokedCommand
+    {
+        get => (ICommand?)GetValue(CommandInvokedCommandProperty);
+        set => SetValue(CommandInvokedCommandProperty, value);
+    }
+
     private void OnPrimaryCommandClick(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
         {
+            ExecuteCommandRouting(command);
             CommandInvoked?.Invoke(this, new WorkspaceCommandInvokedEventArgs(command));
         }
     }
@@ -92,8 +106,20 @@ public partial class WorkspaceCommandBarControl : UserControl
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
         {
+            ExecuteCommandRouting(command);
             CommandInvoked?.Invoke(this, new WorkspaceCommandInvokedEventArgs(command));
         }
+    }
+
+    private void ExecuteCommandRouting(WorkspaceCommandItem command)
+    {
+        var routedCommand = CommandInvokedCommand;
+        if (routedCommand?.CanExecute(command) != true)
+        {
+            return;
+        }
+
+        routedCommand.Execute(command);
     }
 
     private static void OnCommandGroupChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

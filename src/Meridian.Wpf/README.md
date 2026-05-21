@@ -23,6 +23,7 @@ This layer owns WPF shell behavior, MVVM view models, XAML pages, retained deskt
 
 - `Views/` and `ViewModels/` - retained desktop screens and MVVM state.
 - `Services/` - desktop navigation, workflow, shell, and automation support.
+- `Workstation/` - shared workstation primitives, layout contracts, command/state models, and base view-model building blocks for reusable shell composition.
 - `App.xaml.cs` and `MainWindow.xaml` - desktop application startup and shell root.
 
 ## Important workflows
