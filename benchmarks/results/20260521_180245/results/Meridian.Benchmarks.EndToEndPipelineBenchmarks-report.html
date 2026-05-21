@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.EndToEndPipelineBenchmarks-20260521-180628</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.4 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.300
+  [Host]   : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  ShortRun : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                           </th><th>EventCount</th><th>Mean  </th><th>Error </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Stage1_2_Channel_BatchDrain</td><td>1000</td><td>85.93 &mu;s</td><td>13.259 &mu;s</td><td>0.727 &mu;s</td><td>0.80</td><td>0.01</td><td>1</td><td>0.8545</td><td>-</td><td>-</td><td>13.73 KB</td><td>0.86</td>
+</tr><tr><td>Stage1_ChannelOnly</td><td>1000</td><td>106.83 &mu;s</td><td>7.604 &mu;s</td><td>0.417 &mu;s</td><td>1.00</td><td>0.00</td><td>2</td><td>0.9766</td><td>-</td><td>-</td><td>16.04 KB</td><td>1.00</td>
+</tr><tr><td>Stage1_2_3_Utf8Bytes_Serialize</td><td>1000</td><td>1,265.63 &mu;s</td><td>330.372 &mu;s</td><td>18.109 &mu;s</td><td>11.85</td><td>0.15</td><td>3</td><td>46.8750</td><td>-</td><td>-</td><td>790.19 KB</td><td>49.25</td>
+</tr><tr><td>Stage1_2_3_Channel_BatchDrain_Serialize</td><td>1000</td><td>1,325.33 &mu;s</td><td>104.816 &mu;s</td><td>5.745 &mu;s</td><td>12.41</td><td>0.06</td><td>3</td><td>74.2188</td><td>1.9531</td><td>-</td><td>1226.71 KB</td><td>76.45</td>
+</tr><tr><td>Stage1_2_3_4_FullPipeline_MemoryStream</td><td>1000</td><td>1,654.83 &mu;s</td><td>252.454 &mu;s</td><td>13.838 &mu;s</td><td>15.49</td><td>0.12</td><td>4</td><td>250.0000</td><td>250.0000</td><td>250.0000</td><td>2047.2 KB</td><td>127.59</td>
+</tr><tr><td>Stage1_2_Channel_BatchDrain</td><td>10000</td><td>670.35 &mu;s</td><td>53.883 &mu;s</td><td>2.954 &mu;s</td><td>0.80</td><td>0.02</td><td>1</td><td>6.8359</td><td>0.9766</td><td>-</td><td>117.27 KB</td><td>0.77</td>
+</tr><tr><td>Stage1_ChannelOnly</td><td>10000</td><td>836.17 &mu;s</td><td>349.184 &mu;s</td><td>19.140 &mu;s</td><td>1.00</td><td>0.03</td><td>2</td><td>9.7656</td><td>6.8359</td><td>6.8359</td><td>152.65 KB</td><td>1.00</td>
+</tr><tr><td>Stage1_2_3_Utf8Bytes_Serialize</td><td>10000</td><td>11,640.68 &mu;s</td><td>456.721 &mu;s</td><td>25.034 &mu;s</td><td>13.93</td><td>0.28</td><td>3</td><td>484.3750</td><td>31.2500</td><td>31.2500</td><td>7990.28 KB</td><td>52.34</td>
+</tr><tr><td>Stage1_2_3_Channel_BatchDrain_Serialize</td><td>10000</td><td>12,391.12 &mu;s</td><td>4,255.177 &mu;s</td><td>233.241 &mu;s</td><td>14.82</td><td>0.38</td><td>3</td><td>750.0000</td><td>31.2500</td><td>31.2500</td><td>12371.31 KB</td><td>81.04</td>
+</tr><tr><td>Stage1_2_3_4_FullPipeline_MemoryStream</td><td>10000</td><td>15,572.53 &mu;s</td><td>3,677.168 &mu;s</td><td>201.558 &mu;s</td><td>18.63</td><td>0.43</td><td>4</td><td>1656.2500</td><td>906.2500</td><td>906.2500</td><td>17703.72 KB</td><td>115.98</td>
+</tr></tbody></table>
+</body>
+</html>
