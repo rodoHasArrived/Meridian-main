@@ -16,7 +16,6 @@ Add-CodexPatternFindings $findings $root $files '\.ToList\(\)|\.ToArray\(\)' 'ma
 Add-CodexPatternFindings $findings $root $files 'new\s+(DispatcherTimer|Timer|System\.Threading\.Timer)' 'timer-lifecycle' 'Timer allocation found; verify interval, stop/dispose, and lifecycle ownership.' Warning
 Add-CodexPatternFindings $findings $root $files '\+=\s*[^;]+;' 'event-subscription' 'Event subscription found; verify unsubscribe, weak event, or disposable lifecycle.' Info
 Add-CodexPatternFindings $findings $root $files 'Task\.Run\(|async\s+void|_\s*=\s*[^;]*Async\(' 'unsupervised-async' 'Potential unsupervised async work; verify cancellation, exception handling, and lifecycle ownership.' Warning
-Add-CodexPatternFindings $findings $root $files 'CancellationToken' 'cancellation-token-present' 'Cancellation token marker found; verify it is forwarded to provider, I/O, and long-running calls.' Info
 Add-CodexPatternFindings $findings $root $files 'EnableRowVirtualization="False"|VirtualizingPanel\.IsVirtualizing="False"' 'disabled-virtualization' 'Virtualization appears disabled; verify the dataset is small and bounded.' Warning
 
 Write-CodexFindingReport -Title 'Codex Resource Review' -Findings $findings.ToArray() -MarkdownPath $MarkdownPath

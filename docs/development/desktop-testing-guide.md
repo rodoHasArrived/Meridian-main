@@ -13,6 +13,9 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 # Fast script/profile check without restore or build
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1 -SkipRestore -SkipBuild -SkipTestBuild -EmitJson
 
+# Inner-loop WPF build plus focused tests
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
+
 # Launch the fixture-backed desktop shell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture
 
@@ -21,6 +24,7 @@ make desktop-build                # Build WPF desktop app
 
 # Run tests
 make desktop-test                 # Run all desktop-focused tests
+make desktop-test-dev             # Run serialized WPF dev build plus focused tests
 dotnet test tests/Meridian.Wpf.Tests        # WPF service tests (Windows only)
 dotnet test tests/Meridian.Ui.Tests         # Shared UI service tests (Windows only)
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
@@ -50,7 +54,41 @@ Use `-Configuration Release` to match release build behavior, `-Profile <workflo
 
 **Actionable Fix Messages**: The script provides specific instructions for any missing components.
 
-### 2. Run Desktop Tests
+### 2. Run The WPF Development Loop
+
+Use the development validation wrapper when you need the Release WPF build command to be repeatable during active desktop work:
+
+```bash
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1
+```
+
+This wrapper encodes the serialized WPF build lane that avoids common shared-output and compiler-server contention:
+
+```bash
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal
+```
+
+The default run builds `src/Meridian.Wpf/Meridian.Wpf.csproj`, builds `tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj`, and runs the focused `DesktopWorkflowScriptTests` slice with `--no-build`. It writes logs plus JSON and Markdown summaries under `artifacts/wpf-validation/dev-loop/<timestamp>/`, uses the existing restored `obj/` graph by default to match the no-restore inner-loop command, and retries once after stopping only stale repo-owned `testhost.exe` processes if a build step fails while one is still running. Use `-Restore` when packages, generated assets, or intermediate output changed; that path restores first and uses isolated output under `artifacts/bin/<wpf-dev-test-*>` and `artifacts/obj/<wpf-dev-test-*>` unless `-NoIsolation` is also supplied.
+
+Common variants:
+
+```bash
+# Build only, matching the serialized Release shell command
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -BuildOnly
+
+# Restore first when packages or generated assets changed
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Restore
+
+# Run a different focused WPF slice after the build
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Filter "FullyQualifiedName~TradingWorkspaceShellPageTests"
+
+# Run the broader non-integration WPF test set through the same serialized build path
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1 -Filter "Category!=Integration&FullyQualifiedName!~Integration"
+```
+
+Use `make desktop-test-dev` for the default wrapper. Keep `desktop-dev.ps1` as the environment/bootstrap check and use `test-wpf-dev.ps1` as the faster inner-loop validation after restore has already succeeded.
+
+### 3. Run Desktop Tests
 
 ```bash
 # Run all desktop-focused tests (platform-aware)

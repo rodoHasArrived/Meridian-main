@@ -238,6 +238,42 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void WpfDevelopmentTestScript_ShouldUseSerializedBuildAndFocusedTestDefaults()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\test-wpf-dev.ps1"));
+        var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
+        var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
+
+        script.Should().Contain("[string]$Filter = \"FullyQualifiedName~DesktopWorkflowScriptTests\"");
+        script.Should().Contain("[switch]$BuildOnly");
+        script.Should().Contain("[switch]$Restore");
+        script.Should().Contain("New-MeridianBuildIsolationKey -Prefix \"wpf-dev-test\"");
+        script.Should().Contain("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot");
+        script.Should().Contain("/m:1");
+        script.Should().Contain("/nr:false");
+        script.Should().Contain("/p:BuildInParallel=false");
+        script.Should().Contain("/p:UseSharedCompilation=false");
+        script.Should().Contain("/p:EnableWindowsTargeting=true");
+        script.Should().Contain("/p:EnableFullWpfBuild=true");
+        script.Should().Contain("/p:WindowsPackageType=None");
+        script.Should().Contain("dotnet\",");
+        script.Should().Contain("\"build\"");
+        script.Should().Contain("$wpfProject");
+        script.Should().Contain("$wpfTestsProject");
+        script.Should().Contain("\"test\"");
+        script.Should().Contain("--no-build");
+        script.Should().Contain("Stop-RepoOwnedTestHostProcess");
+        script.Should().Contain("wpf-dev-test-validation.json");
+
+        makefile.Should().Contain("desktop-test-dev:");
+        makefile.Should().Contain("scripts/dev/test-wpf-dev.ps1");
+
+        guide.Should().Contain("pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/test-wpf-dev.ps1");
+        guide.Should().Contain("make desktop-test-dev");
+        guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
+    }
+
+    [Fact]
     public void DesktopDevBootstrap_ShouldUseSharedDesktopToolingAndCurrentCommands()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-dev.ps1"));

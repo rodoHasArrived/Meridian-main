@@ -13,6 +13,8 @@ $wpfFiles = @(Get-CodexFiles -Root $root -Directories @('src/Meridian.Wpf') -Ext
 $viewFiles = @($wpfFiles | Where-Object { $_.FullName -match '\\Views\\' -and $_.Extension -eq '.xaml' })
 $viewModelFiles = @($wpfFiles | Where-Object { $_.FullName -match '\\ViewModels\\' -and $_.Name -like '*ViewModel.cs' })
 $codeBehindFiles = @($wpfFiles | Where-Object { $_.Name -like '*.xaml.cs' })
+$wpfTestFiles = @(Get-ChildItem -LiteralPath (Join-Path $root 'tests/Meridian.Wpf.Tests') -Recurse -File -Filter '*Tests.cs' -ErrorAction SilentlyContinue)
+$wpfTestText = ($wpfTestFiles | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
 
 foreach ($file in $viewFiles) {
     $lines = Get-CodexLineCount $file.FullName
@@ -28,8 +30,7 @@ foreach ($file in $viewModelFiles) {
     }
 
     $className = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
-    $testMatches = @(Get-ChildItem -LiteralPath (Join-Path $root 'tests/Meridian.Wpf.Tests') -Recurse -File -Filter '*Tests.cs' -ErrorAction SilentlyContinue | Select-String -Pattern ([regex]::Escape($className)) -Quiet)
-    if ($testMatches.Count -eq 0) {
+    if ($wpfTestText -notmatch [regex]::Escape($className)) {
         $findings.Add((New-CodexFinding -Severity Info -Rule 'missing-view-model-test-reference' -Path (Get-CodexRelativePath $root $file.FullName) -Message "No WPF test references $className. Verify coverage before changing behavior."))
     }
 }

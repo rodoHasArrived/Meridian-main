@@ -122,10 +122,14 @@ function Write-CodexFindingReport {
     Write-Host ("Findings: {0} error(s), {1} warning(s), {2} info item(s)." -f $errorCount, $warningCount, $infoCount)
 
     if ($Findings.Count -gt 0) {
-        $Findings |
+        $displayFindings = @($Findings |
             Sort-Object Severity, Path, Line, Rule |
-            Select-Object Severity, Rule, Path, Line, Message |
+            Select-Object -First 100 Severity, Rule, Path, Line, Message)
+        $displayFindings |
             Format-Table -AutoSize
+        if ($Findings.Count -gt $displayFindings.Count) {
+            Write-Host ("Console output truncated to first {0} finding(s); Markdown report contains all findings." -f $displayFindings.Count)
+        }
     }
 
     if ($MarkdownPath) {
