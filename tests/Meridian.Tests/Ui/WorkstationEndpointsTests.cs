@@ -2013,7 +2013,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldEmitOnlyLatestRunActionableReviewPacketBlockers()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -2044,7 +2044,30 @@ public sealed class WorkstationEndpointsTests
 
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item =>
+            item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+        inbox.Items.Should().NotContain(item =>
             item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}");
+
+        var newestReviewPacket = await app
+            .GetTestClient()
+            .GetFromJsonAsync<StrategyRunReviewPacketDto>(
+                $"/api/workstation/runs/{newestRunId}/review-packet",
+                ServerJsonOptions);
+        var olderReviewPacket = await app
+            .GetTestClient()
+            .GetFromJsonAsync<StrategyRunReviewPacketDto>(
+                $"/api/workstation/runs/{olderRunId}/review-packet",
+                ServerJsonOptions);
+
+        newestReviewPacket.Should().NotBeNull();
+        olderReviewPacket.Should().NotBeNull();
+        newestReviewPacket!.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+        olderReviewPacket!.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
     }
 
     [Fact]

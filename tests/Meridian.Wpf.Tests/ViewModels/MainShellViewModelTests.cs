@@ -831,6 +831,62 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void OperatorInboxPresentation_FiltersToLatestRunActionableItemsOnly()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var latestRunId = "run-latest-actionable";
+            var historicalRunId = "run-historical-only";
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: $"promotion-review-{latestRunId}",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Latest run requires promotion review",
+                        Detail: "The newest run is waiting for operator approval.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        RunId: latestRunId,
+                        TargetRoute: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", latestRunId),
+                        TargetPageTag: "TradingShell"),
+                    new OperatorWorkItemDto(
+                        WorkItemId: $"promotion-history-{historicalRunId}",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Historical run review (history only)",
+                        Detail: "A prior run remains visible in review history.",
+                        Tone: OperatorWorkItemToneDto.Info,
+                        CreatedAt: DateTimeOffset.UtcNow.AddMinutes(-15),
+                        RunId: historicalRunId,
+                        TargetRoute: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", historicalRunId),
+                        TargetPageTag: "TradingShell"),
+                    new OperatorWorkItemDto(
+                        WorkItemId: "promotion-review-informational-latest",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Informational-only advisory",
+                        Detail: "No action needed for this item.",
+                        Tone: OperatorWorkItemToneDto.Info,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxButtonText.Should().Be("Queue (1)");
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Warning);
+            vm.OperatorInboxPrimaryLabel.Should().Be("Latest run requires promotion review");
+            vm.OperatorInboxSummary.Should().NotContain("informational", StringComparison.OrdinalIgnoreCase);
+        });
+    }
+
+    [Fact]
     public void OperatorInboxPresentation_WhenClientFails_DegradesToNotificationCenter()
     {
         WpfTestThread.Run(async () =>
