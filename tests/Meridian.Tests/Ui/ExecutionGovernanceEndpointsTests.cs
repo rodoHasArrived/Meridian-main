@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -127,6 +128,29 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Actor == "ops" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-clear");
+    }
+
+    [Fact]
+    public async Task ControlsEndpoints_RejectMutation_WhenPermissionMissing()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+        });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Test-Permissions", "readonly");
+
+        var response = await client.PostAsync(
+            "/api/execution/controls/circuit-breaker",
+            JsonContent(new { isOpen = true, reason = "unauthorized mutation" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -294,6 +318,17 @@ public sealed class ExecutionGovernanceEndpointsTests
         configureServices(builder.Services);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            var permissions = string.Equals(
+                context.Request.Headers["X-Test-Permissions"],
+                "readonly",
+                StringComparison.OrdinalIgnoreCase)
+                ? RolePermissions.For(UserRole.ReadOnly)
+                : RolePermissions.For(UserRole.Admin);
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            await next().ConfigureAwait(false);
+        });
         app.MapExecutionEndpoints(JsonOptions());
         await app.StartAsync();
         return app;

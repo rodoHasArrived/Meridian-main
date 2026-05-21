@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -275,6 +276,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/circuit-breaker", async (UpdateExecutionCircuitBreakerRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -293,6 +299,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -326,6 +337,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -994,6 +1010,18 @@ public static class ExecutionEndpoints
         }
 
         return "operator";
+    }
+
+    private static bool HasExecutionControlPermission(HttpContext context)
+    {
+        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var permissionValue) ||
+            permissionValue is not UserPermission permissions)
+        {
+            return false;
+        }
+
+        const UserPermission required = UserPermission.ManageOrders;
+        return (permissions & required) == required;
     }
 
     private static Dictionary<string, string> MergeMetadata(
