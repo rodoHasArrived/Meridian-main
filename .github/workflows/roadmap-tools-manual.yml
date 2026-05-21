@@ -1,0 +1,93 @@
+name: Roadmap Tools (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: "Script to run"
+        required: true
+        default: "validate"
+        type: choice
+        options:
+          - validate
+          - validate-roadmap-file
+          - render
+          - enforce-phase-scope
+          - all
+      roadmap_path:
+        description: "Path to roadmap YAML (used by validate-roadmap-file and render)"
+        required: false
+        default: "docs/roadmap/data/roadmap-items.yml"
+      render_output:
+        description: "Output path for render (used by render)"
+        required: false
+        default: "artifacts/roadmap.normalized.yml"
+      phase:
+        description: "Phase for enforce-phase-scope (PR0..PR9)"
+        required: false
+        default: "PR0"
+      base_ref:
+        description: "Base ref for enforce-phase-scope diff"
+        required: false
+        default: "origin/main"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roadmap-tools-manual-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  roadmap-tools:
+    name: Run roadmap tools
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate fixture enums
+        if: ${{ inputs.script == 'validate' || inputs.script == 'all' }}
+        run: python3 tools/roadmap/validate_roadmap.py
+
+      - name: Validate roadmap evidence file
+        if: ${{ inputs.script == 'validate-roadmap-file' || inputs.script == 'all' }}
+        run: python3 tools/roadmap/validate_roadmap.py --roadmap "${{ inputs.roadmap_path }}"
+
+      - name: Render roadmap docs (normalize)
+        if: ${{ inputs.script == 'render' || inputs.script == 'all' }}
+        run: |
+          mkdir -p "$(dirname "${{ inputs.render_output }}")"
+          python3 tools/roadmap/render_roadmap_docs.py \
+            "${{ inputs.roadmap_path }}" \
+            "${{ inputs.render_output }}"
+
+      - name: Upload render output
+        if: ${{ inputs.script == 'render' || inputs.script == 'all' }}
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: roadmap-normalized
+          path: ${{ inputs.render_output }}
+          if-no-files-found: warn
+
+      - name: Enforce phase scope
+        if: ${{ inputs.script == 'enforce-phase-scope' || inputs.script == 'all' }}
+        run: |
+          python3 tools/roadmap/enforce_phase_scope.py \
+            --dispatch-phase "${{ inputs.phase }}" \
+            --base-ref "${{ inputs.base_ref }}" \
+            --head-ref HEAD \
+            --json
