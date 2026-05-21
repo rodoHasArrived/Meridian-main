@@ -87,7 +87,7 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         Brush errorBrush)
     {
         _messagingService = messagingService;
-        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        _dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _infoBrush = infoBrush;
         _successBrush = successBrush;
         _errorBrush = errorBrush;
