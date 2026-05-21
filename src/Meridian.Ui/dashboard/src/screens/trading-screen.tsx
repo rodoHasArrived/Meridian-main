@@ -403,6 +403,14 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
+function resolveFieldDisabledReasonId(fieldId: string, disabledReason: string | null, formRequirementText: string): string | undefined {
+  if (!disabledReason || disabledReason === formRequirementText) {
+    return undefined;
+  }
+
+  return `${fieldId}-disabled-reason`;
+}
+
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
@@ -465,6 +473,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
     promotionApprovedBy: promotionGate.form.approvedBy,
     promotionApprovalReason: promotionGate.form.approvalReason
   });
+  const strategyDisabledReasonId = resolveFieldDisabledReasonId(
+    paperSessions.strategyIdField.id,
+    paperSessions.strategyIdField.disabledReason,
+    paperSessions.formRequirementText
+  );
+  const initialCashDisabledReasonId = resolveFieldDisabledReasonId(
+    paperSessions.initialCashField.id,
+    paperSessions.initialCashField.disabledReason,
+    paperSessions.formRequirementText
+  );
 
   return (
     <div className="space-y-8">
@@ -1027,10 +1045,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       aria-label={paperSessions.strategyIdField.ariaLabel}
                       aria-describedby={joinDescribedByIds(
                         paperSessions.strategyIdField.describedBy,
-                        paperSessions.strategyIdField.disabledReason
-                        && paperSessions.strategyIdField.disabledReason !== paperSessions.formRequirementText
-                          ? `${paperSessions.strategyIdField.id}-disabled-reason`
-                          : undefined
+                        strategyDisabledReasonId
                       )}
                       disabled={paperSessions.strategyIdField.disabled}
                       error={paperSessions.strategyIdField.invalid}
@@ -1039,12 +1054,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     />
                     <FieldSupportText
                       disabledReason={paperSessions.strategyIdField.disabledReason}
-                      disabledReasonId={
-                        paperSessions.strategyIdField.disabledReason
-                        && paperSessions.strategyIdField.disabledReason !== paperSessions.formRequirementText
-                          ? `${paperSessions.strategyIdField.id}-disabled-reason`
-                          : undefined
-                      }
+                      disabledReasonId={strategyDisabledReasonId}
                     />
                   </div>
                   <div className="space-y-1">
@@ -1061,10 +1071,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       aria-label={paperSessions.initialCashField.ariaLabel}
                       aria-describedby={joinDescribedByIds(
                         paperSessions.initialCashField.describedBy,
-                        paperSessions.initialCashField.disabledReason
-                        && paperSessions.initialCashField.disabledReason !== paperSessions.formRequirementText
-                          ? `${paperSessions.initialCashField.id}-disabled-reason`
-                          : undefined
+                        initialCashDisabledReasonId
                       )}
                       disabled={paperSessions.initialCashField.disabled}
                       error={paperSessions.initialCashField.invalid}
@@ -1074,12 +1081,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     />
                     <FieldSupportText
                       disabledReason={paperSessions.initialCashField.disabledReason}
-                      disabledReasonId={
-                        paperSessions.initialCashField.disabledReason
-                        && paperSessions.initialCashField.disabledReason !== paperSessions.formRequirementText
-                          ? `${paperSessions.initialCashField.id}-disabled-reason`
-                          : undefined
-                      }
+                      disabledReasonId={initialCashDisabledReasonId}
                     />
                   </div>
                 </div>
