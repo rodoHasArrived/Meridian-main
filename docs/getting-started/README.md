@@ -27,7 +27,7 @@ If you prefer the plain .NET path:
 git clone https://github.com/rodoHasArrived/Meridian-main.git
 cd Meridian-main
 dotnet restore
-dotnet build Meridian.sln
+dotnet build Meridian.sln /p:EnableWindowsTargeting=true
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
