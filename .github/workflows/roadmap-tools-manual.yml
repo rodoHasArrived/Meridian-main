@@ -65,15 +65,20 @@ jobs:
 
       - name: Validate roadmap evidence file
         if: ${{ inputs.script == 'validate-roadmap-file' || inputs.script == 'all' }}
-        run: python3 tools/roadmap/validate_roadmap.py --roadmap "${{ inputs.roadmap_path }}"
+        env:
+          ROADMAP_PATH: ${{ inputs.roadmap_path }}
+        run: python3 tools/roadmap/validate_roadmap.py --roadmap "$ROADMAP_PATH"
 
       - name: Render roadmap docs (normalize)
         if: ${{ inputs.script == 'render' || inputs.script == 'all' }}
+        env:
+          ROADMAP_PATH: ${{ inputs.roadmap_path }}
+          RENDER_OUTPUT: ${{ inputs.render_output }}
         run: |
-          mkdir -p "$(dirname "${{ inputs.render_output }}")"
+          mkdir -p -- "$(dirname -- "$RENDER_OUTPUT")"
           python3 tools/roadmap/render_roadmap_docs.py \
-            "${{ inputs.roadmap_path }}" \
-            "${{ inputs.render_output }}"
+            "$ROADMAP_PATH" \
+            "$RENDER_OUTPUT"
 
       - name: Upload render output
         if: ${{ inputs.script == 'render' || inputs.script == 'all' }}
@@ -85,9 +90,12 @@ jobs:
 
       - name: Enforce phase scope
         if: ${{ inputs.script == 'enforce-phase-scope' || inputs.script == 'all' }}
+        env:
+          DISPATCH_PHASE: ${{ inputs.phase }}
+          BASE_REF: ${{ inputs.base_ref }}
         run: |
           python3 tools/roadmap/enforce_phase_scope.py \
-            --dispatch-phase "${{ inputs.phase }}" \
-            --base-ref "${{ inputs.base_ref }}" \
+            --dispatch-phase "$DISPATCH_PHASE" \
+            --base-ref "$BASE_REF" \
             --head-ref HEAD \
             --json
