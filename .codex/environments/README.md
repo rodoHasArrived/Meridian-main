@@ -9,8 +9,9 @@ The matching Codex environment config lives in `.codex/environments/environment.
 
 ## Script Access
 
-Codex has workspace write access for this repository, including the full `scripts/` tree.
-You can execute repository scripts directly, for example:
+Codex runs with workspace write sandboxing for this repository, and script execution may require
+operator approval depending on the active approval policy.
+You can execute repository scripts (after approval when prompted), for example:
 
 ```bash
 bash scripts/ai/setup.sh
