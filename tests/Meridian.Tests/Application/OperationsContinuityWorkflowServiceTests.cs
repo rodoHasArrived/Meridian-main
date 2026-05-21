@@ -366,7 +366,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             PostingKind: "period-close",
             PeriodOpen: true,
             Rationale: "Posted validated accounting journals",
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(validated.Workflow!.FundAccountId)));
         var reconciled = await service.RunReconciliationAsync(workflowId, new OperationsReconciliationRunRequestDto(
             posted.Workflow!.Version,
             "ops-user",
@@ -781,7 +781,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             ledgerJournalStore: null,
             transactionalCommitStore: commitStore);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
-        var candidate = CreateJournalCandidate();
+        var candidate = CreateJournalCandidate(workflow.FundAccountId);
 
         var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
             workflow.Version,
@@ -826,7 +826,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId)));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("LEDGER_JOURNAL_APPEND_REJECTED");
@@ -893,7 +893,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-unbalanced",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate() with
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId) with
             {
                 Lines =
                 [
@@ -920,7 +920,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-invalid-candidate",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate() with
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId) with
             {
                 PeriodId = Guid.Empty
             }));
