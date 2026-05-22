@@ -363,12 +363,17 @@ public sealed class ChiefOfStaffSessionService : IChiefOfStaffSessionService
         {
             _logger.LogWarning(ex, "Chief of Staff runtime execution failed for session {SessionId}.", sessionId);
             fallbackWarnings.Add($"Runtime execution failed: {ex.Message}");
+            var payload = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["status"] = "runtime-unavailable",
+                ["detail"] = ex.Message
+            };
             runtimeResponse = new ChiefOfStaffRuntimeResponseDto(
                 IntentKind: intent,
                 MarkdownSummary: "Chief of Staff runtime is unavailable. Resolve runtime connectivity and retry.",
                 StructuredPayload: JsonSerializer.SerializeToElement(
-                    (object)new { status = "runtime-unavailable", detail = ex.Message },
-                    ChiefOfStaffJsonContext.Default.Object),
+                    payload,
+                    ChiefOfStaffJsonContext.Default.DictionaryStringString),
                 Recommendations: [],
                 Actions: [],
                 EvidenceBundle: null,
@@ -401,7 +406,6 @@ public sealed class ChiefOfStaffSessionService : IChiefOfStaffSessionService
             RoutedWorkflowReferences: evidenceBundle.RelatedWorkflowIds,
             Warnings: allWarnings);
 
-        _sessions[sessionId] = session;
         if (_optionsMonitor.CurrentValue.EnableTraceRetention)
         {
             var traceEnvelope = new ChiefOfStaffTraceEnvelopeDto(
@@ -416,6 +420,7 @@ public sealed class ChiefOfStaffSessionService : IChiefOfStaffSessionService
             await _traceStore.SaveAsync(traceEnvelope, ct).ConfigureAwait(false);
         }
 
+        _sessions[sessionId] = session;
         return session;
     }
 

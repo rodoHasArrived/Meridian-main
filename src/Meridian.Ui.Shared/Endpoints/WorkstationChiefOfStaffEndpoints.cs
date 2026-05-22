@@ -144,12 +144,20 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Chief of Staff session service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            if (request is null)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = ["A Chief of Staff trace export request payload is required."]
+                });
+            }
+
             try
             {
                 var export = await service
                     .ExportTraceAsync(
                         sessionId,
-                        request ?? new ChiefOfStaffTraceExportRequestDto("system"),
+                        request,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(export, jsonOptions);

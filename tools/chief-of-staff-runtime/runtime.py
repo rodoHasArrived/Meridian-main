@@ -72,7 +72,7 @@ class EvidenceAggregationNode:
 
 class RecommendationSynthesisNode:
     def run(self, request: RuntimeRequest, intent_kind: str, evidence: dict[str, Any]) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]]]:
-        action_id = f"cos-action-{uuid.uuid4().hex[:12]}"
+        action_id = f"cos-action-{uuid.uuid4().hex}"
         action = {
             "actionId": action_id,
             "label": "Review recommended next step",
@@ -84,7 +84,7 @@ class RecommendationSynthesisNode:
             "evidencePrerequisites": [],
         }
         recommendation = {
-            "recommendationId": f"cos-rec-{uuid.uuid4().hex[:12]}",
+            "recommendationId": f"cos-rec-{uuid.uuid4().hex}",
             "title": "Chief of Staff recommendation",
             "detail": "Review evidence and confirm whether to route this action.",
             "tone": "Warning",
