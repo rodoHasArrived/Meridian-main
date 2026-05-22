@@ -44,7 +44,6 @@ class SummarizeDesktopWorkflowBundleTests(unittest.TestCase):
                     str(manifest_path),
                 ]
             )
-
             result = subprocess.run(
                 command,
                 cwd=REPO_ROOT,
