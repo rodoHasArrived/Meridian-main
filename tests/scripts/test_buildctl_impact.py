@@ -65,9 +65,8 @@ class ImpactPlannerTests(unittest.TestCase):
     def test_safety_gates_always_present_for_docs_only_change(self) -> None:
         plan = self._plan(["docs/status/README.md"])
         gate_names = {g.name for g in plan.safety_gates}
-        self.assertIn("lint", gate_names)
-        self.assertIn("known-lanes", gate_names)
-        self.assertIn("ai-contract-drift", gate_names)
+        expected = {"lint", "workflow-hygiene", "known-lanes", "ai-contract-drift", "warning-suppressions"}
+        self.assertEqual(gate_names, expected, "All five safety gates must always be present")
 
     def test_safety_gates_always_present_with_no_changed_files(self) -> None:
         plan = self._plan([])
@@ -215,6 +214,7 @@ class ImpactPlannerTests(unittest.TestCase):
         plan = self._plan(["src/Meridian.Core/Foo.cs"])
         with tempfile.NamedTemporaryFile(mode="r", suffix=".txt", delete=False) as tmp:
             tmp_path = tmp.name
+        self.addCleanup(lambda: Path(tmp_path).unlink(missing_ok=True))
         _emit_github_outputs(plan, tmp_path)
         content = Path(tmp_path).read_text(encoding="utf-8")
         lines = dict(line.split("=", 1) for line in content.splitlines() if "=" in line)
@@ -225,6 +225,7 @@ class ImpactPlannerTests(unittest.TestCase):
         plan = self._plan([], all_lanes=True)
         with tempfile.NamedTemporaryFile(mode="r", suffix=".txt", delete=False) as tmp:
             tmp_path = tmp.name
+        self.addCleanup(lambda: Path(tmp_path).unlink(missing_ok=True))
         _emit_github_outputs(plan, tmp_path)
         content = Path(tmp_path).read_text(encoding="utf-8")
         lines = dict(line.split("=", 1) for line in content.splitlines() if "=" in line)

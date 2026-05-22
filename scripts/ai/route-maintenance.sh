@@ -155,9 +155,12 @@ fi
 # ── Execute via impact plan when available, else fall back to legacy scripts ──
 if [[ -f .ai/impact-plan.sh ]]; then
     log "Executing impact plan: .ai/impact-plan.sh"
-    exec bash .ai/impact-plan.sh
+    bash .ai/impact-plan.sh
+    exit $?
 elif [[ "$MODE" == "full" ]]; then
-    exec bash scripts/ai/maintenance-full.sh
+    bash scripts/ai/maintenance-full.sh
+    exit $?
 else
-    exec bash scripts/ai/maintenance-light.sh
+    bash scripts/ai/maintenance-light.sh
+    exit $?
 fi
