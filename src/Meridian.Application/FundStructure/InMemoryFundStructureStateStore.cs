@@ -1,0 +1,14 @@
+namespace Meridian.Application.FundStructure;
+
+public sealed class InMemoryFundStructureStateStore : IFundStructureStateStore
+{
+    private string? _json;
+
+    public string? Load() => _json;
+
+    public Task SaveAsync(string json, CancellationToken ct)
+    {
+        _json = json;
+        return Task.CompletedTask;
+    }
+}
