@@ -13,3 +13,9 @@ surface but still explain a migration or compatibility decision.
 
 Active source remains under `src/`. Files here are reference material only and should not be
 reintroduced without moving them back into the correct active project and validating the build.
+
+
+## Search Defaults
+
+- Repository-wide `rg` searches exclude `archive/**` via repo-root `.rgignore` to reduce maintenance noise.
+- Include archived files explicitly when needed, for example: `rg --no-ignore -g 'archive/**' "pattern"`.
