@@ -6,9 +6,7 @@ Meridian is a .NET 10 fund-management and trading-platform codebase in active de
 
 Current local project path: `D:\Meridian-main`.
 
-## Meridian in Plain English
-
-Meridian is meant to be the "operating system" for running an investment fund with confidence.
+Meridian is meant to be the system for running an investment fund with confidence.
 
 In practical terms, it helps a team:
 
