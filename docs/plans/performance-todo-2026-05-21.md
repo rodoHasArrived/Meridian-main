@@ -23,7 +23,7 @@ Use this order to get fast signal first, then deeper coverage:
 2. Full bottleneck sweep:
    - `./benchmarks/run-bottleneck-benchmarks.sh`
 3. Collector-heavy throughput focus:
-   - `./benchmarks/run-bottleneck-benchmarks.sh --filter CollectorBenchmarks`
+   - `./benchmarks/run-bottleneck-benchmarks.sh --filter Collector`
 4. Pipeline throughput focus:
    - `./benchmarks/run-bottleneck-benchmarks.sh --filter EndToEndPipelineBenchmarks`
 5. WAL hot-path focus:
