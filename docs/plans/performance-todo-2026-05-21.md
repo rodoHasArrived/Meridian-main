@@ -29,8 +29,9 @@ Use this order to get fast signal first, then deeper coverage:
 5. WAL hot-path focus:
    - `./benchmarks/run-bottleneck-benchmarks.sh --filter WalChecksumBenchmarks`
 6. Budget enforcement checks:
-   - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category=Performance" --logger "console;verbosity=normal"`
-   - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AllocationBudgetIntegrationTests" --logger "console;verbosity=normal"`
+   - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "Category=Performance" --logger "console;verbosity=normal"`
+   - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~AllocationBudgetIntegrationTests" --logger "console;verbosity=normal"`
+   - On non-Windows hosts, append `/p:EnableWindowsTargeting=true` to the above `dotnet test` commands.
 
 Archive all outputs under `artifacts/benchmarks/<yyyy-mm-dd>/` and include machine/runtime metadata.
 
