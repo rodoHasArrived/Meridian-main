@@ -17,7 +17,7 @@ flowchart LR
   Application --> Execution["Execution and risk"]
   Application --> UiServices["UI services and shared endpoints"]
   UiServices --> Web["Browser workstation"]
-  UiServices --> Wpf["Retained WPF shell"]
+  UiServices --> Wpf["WPF desktop shell"]
 ```
 
 ## Layer Responsibilities
@@ -40,7 +40,6 @@ flowchart LR
   must not depend on UI projects.
 - Browser workstation logic should prefer view-model/read-model seams instead of
   hardcoding workflow state in React components.
-- WPF remains retained support; do not add new desktop-first product lanes unless
-  the roadmap or user explicitly reopens that work.
+- WPF is the active desktop shell; new desktop workflow lanes are expected and encouraged.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.

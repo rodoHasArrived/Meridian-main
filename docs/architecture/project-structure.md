@@ -29,7 +29,7 @@ artifacts.
 | `src/Meridian.Mcp*/` | Active source code | MCP hosts and tool surfaces |
 | `src/Meridian.Ui/dashboard/` | Active source code | Browser-first operator workstation |
 | `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` | Active source code | Shared UI services, endpoints, and read models |
-| `src/Meridian.Wpf/` | Retained active source code | Compatibility and regression support for WPF |
+| `src/Meridian.Wpf/` | Active source code | Active desktop shell for operator workflows |
 
 ## Tests And Validation
 

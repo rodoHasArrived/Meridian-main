@@ -190,7 +190,7 @@ returns `AUDIT_CHAIN_MISSING` or `AUDIT_CHAIN_INVALID` on the Approval gate with
 audit event or mutating the workflow snapshot.
 When gate posture reports that a report pack exists but is not ready, the aggregate projects a
 `REPORT_PACK_NOT_READY` blocker onto the Approval gate with the linked evidence. That keeps
-approval and close guidance server-derived for both browser and retained WPF clients.
+approval and close guidance server-derived for both browser and WPF desktop clients.
 
 The reconciliation command can carry Security Master coverage issue counts, Security Master
 accounting issue counts, expected-event counts, and journal-preview counts directly from
@@ -200,7 +200,7 @@ accounting-term problems block the close lane without requiring UI-side status d
 `OperationsContinuityReconciliationBridge` also preserves the underlying Security Master coverage
 and accounting issue rows as workflow break cases, using stable issue codes such as
 `SM_RECON_SECURITY_UNRESOLVED`, `ACCRUAL_AMOUNT_MISMATCH`, and
-`FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and retained WPF clients the same
+`FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and WPF desktop clients the same
 server-authored blocker detail behind the aggregate counts.
 The shared `OperationsWorkflowContractMatrix` also publishes the production blocker and issue code
 vocabulary for broker intake, Security Master accounting coverage, accrual reconciliation, factor

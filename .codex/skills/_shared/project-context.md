@@ -203,7 +203,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
 - `src/Meridian.Wpf/Shell/`: WPF shell route, launch, session, refresh, and presentation seams
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained shell compatibility view model and migration anchor
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: WPF desktop shell view model and workstation navigation anchor
 
 ## Review Guardrails
 

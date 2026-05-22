@@ -9,9 +9,7 @@ forking behavior.
 - New operator UI work belongs in `src/Meridian.Ui/dashboard/`.
 - Shared workstation endpoint and read-model support belongs in
   `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
-- `src/Meridian.Wpf/` is retained for compatibility, regression repair, and
-  shared-contract validation. Treat new WPF product work as archivable unless
-  the roadmap or user explicitly reopens it.
+- `src/Meridian.Wpf/` is the active desktop UI for operator workflows.
 
 ## View-Model Ownership
 

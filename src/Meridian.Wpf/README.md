@@ -8,15 +8,15 @@ last_verified: 2026-05-21
 # Meridian WPF (Retained Scope)
 
 ## Module Purpose
-Retained desktop shell and compatibility surface for operator workflows that still run in WPF.
+Active desktop shell for operator workflows.
 
 ## Ownership and Runtime
 - Owner: Meridian
-- Runtime lane: Meridian WPF (Retained Scope)
+- Runtime lane: Meridian WPF (Active Desktop Shell)
 
 ## Dependencies and Integrations
 - Provide desktop shell navigation and route hosting for retained workflows.
-- Maintain compatibility posture alongside active browser workstation delivery.
+- Maintain alignment with shared contracts alongside active browser workstation delivery.
 - Dependency: `src/Meridian.Ui.Services`
 - Dependency: `src/Meridian.Ui.Shared`
 

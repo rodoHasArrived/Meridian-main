@@ -2,13 +2,13 @@
 
 ## Overview
 
-Meridian now uses a browser-first operator workstation plus retained desktop and local API support surfaces:
+Meridian uses a browser-first operator workstation plus WPF desktop shell and local API surfaces:
 
 1. **Browser workstation (`src/Meridian.Ui/dashboard`)** for new operator-facing workflow delivery, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`.
-2. **WPF Desktop (`Meridian.Wpf`)** for retained Windows compatibility, regression coverage, and shared-contract support.
+2. **WPF Desktop (`Meridian.Wpf`)** as the active Windows desktop shell for operator workflows.
 3. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
 
-These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, retained desktop shell, the local host, and reusable UI functionality.
+These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, WPF desktop shell, the local host, and reusable UI functionality.
 
 ## Layer Diagram
 
@@ -17,8 +17,8 @@ These surfaces share contracts and application logic through shared libraries, w
 │                          UI Host Layer                                    │
 │  ┌────────────────────────────┐     ┌──────────────────────────────────┐  │
 │  │ Browser workstation        │     │ Meridian.Wpf + src/Meridian     │  │
-│  │ (active operator UI)       │     │ (retained desktop + API host)   │  │
-│  │ - React/Vite dashboard     │     │ - XAML compatibility shell      │  │
+│  │ (active operator UI)       │     │ (active desktop + API host)   │  │
+│  │ - React/Vite dashboard     │     │ - XAML desktop shell      │  │
 │  │ - /workstation assets      │     │ - localhost APIs + Swagger      │  │
 │  └──────────────┬─────────────┘     └──────────────────┬───────────────┘  │
 └─────────────────┼────────────────────────────────────────┼──────────────────┘
@@ -58,7 +58,7 @@ These surfaces share contracts and application logic through shared libraries, w
 - Builds static workstation assets served from `src/Meridian.Ui/wwwroot/workstation/`.
 - Consumes shared contracts, workstation endpoints, and browser view models instead of WPF shell state.
 
-### `src/Meridian.Wpf/` (Retained desktop host)
+### `src/Meridian.Wpf/` (Active desktop host)
 
 - Owns XAML views, viewmodels, and WPF shell/navigation.
 - Registers DI container and composes page/service graph.
@@ -121,7 +121,7 @@ Route/View (React)
    → Application services
 ```
 
-### Retained WPF path
+### WPF path
 
 ```
 View/Page (WPF)
@@ -143,10 +143,10 @@ HTTP Request
 ## Why this layering
 
 - Keeps each host thin and focused on platform concerns.
-- Keeps the desktop-local API host aligned with the browser workstation and retained desktop shell without duplicating business workflow logic.
+- Keeps the desktop-local API host aligned with the browser workstation and WPF desktop shell without duplicating business workflow logic.
 - Preserves reusable business-facing UI logic in shared libraries.
 - Supports local tooling and automation against the same APIs without coupling them to WPF code.
 
 ---
 
-*Last Updated: 2026-05-12*
+*Last Updated: 2026-05-22*

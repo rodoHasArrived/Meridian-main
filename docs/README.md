@@ -136,7 +136,7 @@ Use the documents below to manage that path:
 17. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 The 2026-05-18 documentation refresh consolidates the active planning entry point and preserves the
-current interpretation: browser workstation first for new operator UI, WPF retained as support,
+current interpretation: browser workstation is the parallel new-operator-UI surface, WPF is the active desktop shell,
 Waves 2-4 as the core operator-ready path, Wave 5-6 as later work, and mobile-specific product
 lanes out of scope.
 

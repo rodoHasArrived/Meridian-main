@@ -5,7 +5,7 @@ description: >
   code paths end-to-end, rather than arbitrarily calling individual methods. Use when the user
   asks for tests, coverage, missing unit tests, regression tests, integration tests, validation
   for Meridian providers, storage, pipelines, services, browser dashboard view models/components,
-  retained WPF view models, UI services, execution code, F# interop, or when they describe a market event (e.g. "flash crash", "session open",
+  WPF desktop view models, UI services, execution code, F# interop, or when they describe a market event (e.g. "flash crash", "session open",
   "feed interruption") and want to know how the system handles it.
 ---
 
