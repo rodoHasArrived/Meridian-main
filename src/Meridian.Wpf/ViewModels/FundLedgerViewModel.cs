@@ -17,6 +17,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly IFundReconciliationWorkbenchService _fundReconciliationWorkbenchService;
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
+    private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
 
     private string _title = "Fund Operations";
     private string _statusText = "Select a fund profile to inspect fund operations.";
@@ -108,21 +109,6 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService ?? throw new ArgumentNullException(nameof(fundOperationsWorkspaceReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
 
-        TrialBalance = [];
-        Journal = [];
-        Accounts = [];
-        BankSnapshots = [];
-        PortfolioPositions = [];
-        CashFlowEntries = [];
-        CashFlowBuckets = [];
-        VisibleTrialBalance = [];
-        VisibleJournal = [];
-        LedgerDimensions = [];
-        ReconciliationRuns = [];
-        CashFinancingHighlights = [];
-        AuditTrail = [];
-        ReportPackAssetSections = [];
-
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo("GovernanceShell"));
         OpenRunLedgerCommand = new RelayCommand(OpenLatestRunLedger);
@@ -159,33 +145,35 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         }
     }
 
-    public ObservableCollection<FundTrialBalanceLine> TrialBalance { get; }
+    public ObservableCollection<FundTrialBalanceLine> TrialBalance => _collectionsSection.TrialBalance;
 
-    public ObservableCollection<FundJournalLine> Journal { get; }
+    public ObservableCollection<FundJournalLine> Journal => _collectionsSection.Journal;
 
-    public ObservableCollection<FundAccountSummary> Accounts { get; }
+    public ObservableCollection<FundAccountSummary> Accounts => _collectionsSection.Accounts;
 
-    public ObservableCollection<BankAccountSnapshot> BankSnapshots { get; }
+    public ObservableCollection<BankAccountSnapshot> BankSnapshots => _collectionsSection.BankSnapshots;
 
-    public ObservableCollection<FundPortfolioPosition> PortfolioPositions { get; }
+    public ObservableCollection<FundPortfolioPosition> PortfolioPositions => _collectionsSection.PortfolioPositions;
 
-    public ObservableCollection<CashFlowEntryDto> CashFlowEntries { get; }
+    public ObservableCollection<CashFlowEntryDto> CashFlowEntries => _collectionsSection.CashFlowEntries;
 
-    public ObservableCollection<CashLadderBucketDto> CashFlowBuckets { get; }
+    public ObservableCollection<CashLadderBucketDto> CashFlowBuckets => _collectionsSection.CashFlowBuckets;
 
-    public ObservableCollection<FundTrialBalanceLine> VisibleTrialBalance { get; }
+    public ObservableCollection<FundTrialBalanceLine> VisibleTrialBalance => _collectionsSection.VisibleTrialBalance;
 
-    public ObservableCollection<FundJournalLine> VisibleJournal { get; }
+    public ObservableCollection<FundJournalLine> VisibleJournal => _collectionsSection.VisibleJournal;
 
-    public ObservableCollection<FundLedgerDimensionView> LedgerDimensions { get; }
+    public ObservableCollection<FundLedgerDimensionView> LedgerDimensions => _collectionsSection.LedgerDimensions;
 
-    public ObservableCollection<FundReconciliationItem> ReconciliationRuns { get; }
+    public ObservableCollection<FundReconciliationItem> ReconciliationRuns => _collectionsSection.ReconciliationRuns;
 
-    public ObservableCollection<string> CashFinancingHighlights { get; }
+    public ObservableCollection<string> CashFinancingHighlights => _collectionsSection.CashFinancingHighlights;
 
-    public ObservableCollection<FundAuditEntry> AuditTrail { get; }
+    public ObservableCollection<FundAuditEntry> AuditTrail => _collectionsSection.AuditTrail;
 
-    public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; }
+    public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
+
+    internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     public IAsyncRelayCommand RefreshCommand { get; }
 

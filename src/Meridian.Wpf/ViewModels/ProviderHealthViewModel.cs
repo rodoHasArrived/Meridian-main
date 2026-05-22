@@ -36,6 +36,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly ProviderHealthCollectionsSectionViewModel _collectionsSection = new();
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
@@ -46,12 +47,12 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     private bool _isDisposed;
 
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<ProviderStatusModel> StreamingProviders { get; } = new();
-    public ObservableCollection<BackfillProviderModel> BackfillProviders { get; } = new();
-    public ObservableCollection<ConnectionEventModel> ConnectionHistory { get; } = new();
-    public ObservableCollection<ProviderManagementRowModel> ProviderManagementRows { get; } = new();
-    public ObservableCollection<ProviderManagementSummaryCardModel> ProviderManagementSummaryCards { get; } = new();
-    public ObservableCollection<WorkstationMetricModel> ProviderMetricTiles { get; } = new();
+    public ObservableCollection<ProviderStatusModel> StreamingProviders => _collectionsSection.StreamingProviders;
+    public ObservableCollection<BackfillProviderModel> BackfillProviders => _collectionsSection.BackfillProviders;
+    public ObservableCollection<ConnectionEventModel> ConnectionHistory => _collectionsSection.ConnectionHistory;
+    public ObservableCollection<ProviderManagementRowModel> ProviderManagementRows => _collectionsSection.ProviderManagementRows;
+    public ObservableCollection<ProviderManagementSummaryCardModel> ProviderManagementSummaryCards => _collectionsSection.ProviderManagementSummaryCards;
+    public ObservableCollection<WorkstationMetricModel> ProviderMetricTiles => _collectionsSection.ProviderMetricTiles;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     private string _connectedCount = "0";
@@ -170,7 +171,9 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Provider Health";
-    public ObservableCollection<ActionEntry> Actions { get; } = new();
+    public ObservableCollection<ActionEntry> Actions => _collectionsSection.Actions;
+
+    internal ProviderHealthCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,
