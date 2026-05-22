@@ -6743,7 +6743,7 @@
     {
       "category": "broken-doc-link",
       "severity": "warning",
-      "file": "archive/docs/desktop-end-user-improvements.md",
+      "file": "archive/docs/assessments/desktop-end-user-improvements.md",
       "line": 3017,
       "message": "Broken internal link: desktop-improvements-executive-summary.md",
       "fix_hint": "Update the link target or remove the dead link."
