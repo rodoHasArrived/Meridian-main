@@ -33,7 +33,9 @@ Use this order to get fast signal first, then deeper coverage:
    - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~AllocationBudgetIntegrationTests" --logger "console;verbosity=normal"`
    - On non-Windows hosts, append `/p:EnableWindowsTargeting=true` to the above `dotnet test` commands.
 
-Archive all outputs under `artifacts/benchmarks/<yyyy-mm-dd>/` and include machine/runtime metadata.
+Archive benchmark evidence under `artifacts/benchmarks/<yyyy-mm-dd>/`, but note that the current bottleneck runner writes its results under `benchmarks/results/<timestamp>/` and the benchmarks project may also persist JSON history under `~/.meridian-benchmarks/`.
+
+For each run, copy or mirror the relevant outputs from those locations into `artifacts/benchmarks/<yyyy-mm-dd>/` and include machine/runtime metadata so the retained artifact set is complete and reproducible.
 
 ## Higher-velocity benchmark profile (to add next)
 
