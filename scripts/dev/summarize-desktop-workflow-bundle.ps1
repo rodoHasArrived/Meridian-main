@@ -33,8 +33,11 @@ if (Test-Path -LiteralPath $resolvedManifestPath) {
 }
 
 $manifestRunError = $null
-if ($null -ne $manifest -and $null -ne $manifest.run -and $manifest.run.PSObject.Properties.Name -contains 'error') {
-    $manifestRunError = [string]$manifest.run.error
+if ($null -ne $manifest -and $null -ne $manifest.run) {
+    $runErrorProperty = $manifest.run.PSObject.Properties['error']
+    if ($null -ne $runErrorProperty -and -not [string]::IsNullOrWhiteSpace([string]$runErrorProperty.Value)) {
+        $manifestRunError = [string]$runErrorProperty.Value
+    }
 }
 
 $firstFailingStage = $stageEntries | Where-Object { $_.status -eq 'failed' } | Select-Object -First 1
