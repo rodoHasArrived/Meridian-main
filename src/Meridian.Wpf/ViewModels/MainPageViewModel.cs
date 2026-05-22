@@ -37,19 +37,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly OperatorInboxViewModel _operatorInboxPresentation;
     private readonly WorkflowSummaryStripViewModel _workflowSummaryStrip;
     private readonly ShellRefreshCoordinator _shellRefreshCoordinator;
-    private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
-    private readonly ObservableCollection<ShellNavigationItem> _secondaryNavigationItems = [];
-    private readonly ObservableCollection<ShellNavigationItem> _overflowNavigationItems = [];
-    private readonly ObservableCollection<ShellNavigationItem> _relatedWorkflowItems = [];
-    private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
-    private readonly ObservableCollection<WorkspaceTileItem> _workspaceTiles = [];
-    private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
-    private readonly ObservableCollection<BoundedWindowMode> _windowModes =
-    [
-        BoundedWindowMode.Focused,
-        BoundedWindowMode.DockFloat,
-        BoundedWindowMode.WorkbenchPreset
-    ];
+    private readonly MainPageNavigationSectionViewModel _navigationSection = new();
 
     private bool _suppressNavigation;
     private bool _suppressOperatingContextSelection;
@@ -108,29 +96,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         SplitPane = new SplitPaneViewModel(shellRouteRegistry);
         PaneHost = SplitPane;
-        CommandPalette = _commandPalette;
-        OperatorInbox = _operatorInboxPresentation;
-        WorkflowSummaryStrip = _workflowSummaryStrip;
-        CommandPalettePages = _commandPalette.Pages;
-        PrimaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_primaryNavigationItems);
-        SecondaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_secondaryNavigationItems);
-        OverflowNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_overflowNavigationItems);
-        RelatedWorkflowItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_relatedWorkflowItems);
-        RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
-        WorkspaceTiles = new ReadOnlyObservableCollection<WorkspaceTileItem>(_workspaceTiles);
-        OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
-        WorkflowSummaries = _workflowSummaryStrip.Summaries;
-        SecondaryWorkflowSummaries = _workflowSummaryStrip.SecondarySummaries;
-        WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
-        NavigationSection = new MainPageNavigationSectionViewModel(
-            PrimaryNavigationItems,
-            SecondaryNavigationItems,
-            OverflowNavigationItems,
-            RelatedWorkflowItems,
-            RecentPages,
-            WorkspaceTiles,
-            OperatingContexts,
-            WindowModes);
         WorkflowSection = new MainPageWorkflowSectionViewModel(
             _commandPalette,
             _operatorInboxPresentation,
@@ -180,39 +145,39 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public INavigationService NavigationService => _navigationService;
 
-    public CommandPaletteViewModel CommandPalette { get; }
+    public CommandPaletteViewModel CommandPalette => _commandPalette;
 
-    public OperatorInboxViewModel OperatorInbox { get; }
+    public OperatorInboxViewModel OperatorInbox => _operatorInboxPresentation;
 
-    public WorkflowSummaryStripViewModel WorkflowSummaryStrip { get; }
+    public WorkflowSummaryStripViewModel WorkflowSummaryStrip => _workflowSummaryStrip;
 
     public PaneHostViewModel PaneHost { get; }
 
     public SplitPaneViewModel SplitPane { get; }
 
-    public ReadOnlyObservableCollection<ShellCommandPaletteEntry> CommandPalettePages { get; }
+    public ReadOnlyObservableCollection<ShellCommandPaletteEntry> CommandPalettePages => WorkflowSection.CommandPalettePages;
 
-    public ReadOnlyObservableCollection<ShellNavigationItem> PrimaryNavigationItems { get; }
+    public ReadOnlyObservableCollection<ShellNavigationItem> PrimaryNavigationItems => _navigationSection.PrimaryNavigationItems;
 
-    public ReadOnlyObservableCollection<ShellNavigationItem> SecondaryNavigationItems { get; }
+    public ReadOnlyObservableCollection<ShellNavigationItem> SecondaryNavigationItems => _navigationSection.SecondaryNavigationItems;
 
-    public ReadOnlyObservableCollection<ShellNavigationItem> OverflowNavigationItems { get; }
+    public ReadOnlyObservableCollection<ShellNavigationItem> OverflowNavigationItems => _navigationSection.OverflowNavigationItems;
 
-    public ReadOnlyObservableCollection<ShellNavigationItem> RelatedWorkflowItems { get; }
+    public ReadOnlyObservableCollection<ShellNavigationItem> RelatedWorkflowItems => _navigationSection.RelatedWorkflowItems;
 
-    public ReadOnlyObservableCollection<RecentPageEntry> RecentPages { get; }
+    public ReadOnlyObservableCollection<RecentPageEntry> RecentPages => _navigationSection.RecentPages;
 
-    public ReadOnlyObservableCollection<WorkspaceTileItem> WorkspaceTiles { get; }
+    public ReadOnlyObservableCollection<WorkspaceTileItem> WorkspaceTiles => _navigationSection.WorkspaceTiles;
 
-    public ReadOnlyObservableCollection<WorkstationOperatingContext> OperatingContexts { get; }
+    public ReadOnlyObservableCollection<WorkstationOperatingContext> OperatingContexts => _navigationSection.OperatingContexts;
 
-    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries { get; }
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries => WorkflowSection.WorkflowSummaries;
 
-    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries { get; }
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries => WorkflowSection.SecondaryWorkflowSummaries;
 
-    public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
+    public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes => _navigationSection.WindowModes;
 
-    internal MainPageNavigationSectionViewModel NavigationSection { get; }
+    internal MainPageNavigationSectionViewModel NavigationSection => _navigationSection;
 
     internal MainPageWorkflowSectionViewModel WorkflowSection { get; }
 
@@ -425,11 +390,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public bool IsGovernanceWorkspaceActive => IsAccountingWorkspaceActive;
 
-    public bool HasSecondaryNavigation => _secondaryNavigationItems.Count > 0;
+    public bool HasSecondaryNavigation => _navigationSection.SecondaryItems.Count > 0;
 
-    public bool HasOverflowNavigation => _overflowNavigationItems.Count > 0;
+    public bool HasOverflowNavigation => _navigationSection.OverflowItems.Count > 0;
 
-    public bool HasRelatedWorkflows => _relatedWorkflowItems.Count > 0;
+    public bool HasRelatedWorkflows => _navigationSection.RelatedWorkflowNavItems.Count > 0;
 
     public string CurrentPageTag
     {
@@ -575,9 +540,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ? "Switch Context"
         : "Choose Context";
 
-    public string RecentPagesSummaryText => _recentPages.Count == 0
+    public string RecentPagesSummaryText => _navigationSection.RecentPageItems.Count == 0
         ? $"No recent {WorkspaceHeading.ToLowerInvariant()} workflows"
-        : $"{_recentPages.Count} recent {WorkspaceHeading.ToLowerInvariant()} workflow{(_recentPages.Count == 1 ? string.Empty : "s")}";
+        : $"{_navigationSection.RecentPageItems.Count} recent {WorkspaceHeading.ToLowerInvariant()} workflow{(_navigationSection.RecentPageItems.Count == 1 ? string.Empty : "s")}";
 
     public string CurrentWorkspaceHomePageTag => GetWorkspaceHomePageTag(CurrentWorkspace);
 
@@ -625,16 +590,16 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void RefreshWorkspaceTiles()
     {
-        _workspaceTiles.Clear();
+        _navigationSection.WorkspaceTileItems.Clear();
         foreach (var workspace in ShellNavigationCatalog.Workspaces)
         {
-            _workspaceTiles.Add(new WorkspaceTileItem(workspace, IsCurrentWorkspace(workspace.Id)));
+            _navigationSection.WorkspaceTileItems.Add(new WorkspaceTileItem(workspace, IsCurrentWorkspace(workspace.Id)));
         }
     }
 
     private void RefreshWorkspaceTileSelection()
     {
-        foreach (var tile in _workspaceTiles)
+        foreach (var tile in _navigationSection.WorkspaceTileItems)
         {
             tile.IsActive = IsCurrentWorkspace(tile.WorkspaceId);
         }
@@ -945,28 +910,28 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .ToArray();
 
         ReplaceCollection(
-            _primaryNavigationItems,
+            _navigationSection.PrimaryItems,
             workspacePages
                 .Where(page => page.VisibilityTier == ShellNavigationVisibilityTier.Primary)
                 .Select(page => ToNavigationItem(page))
                 .ToArray());
 
         ReplaceCollection(
-            _secondaryNavigationItems,
+            _navigationSection.SecondaryItems,
             workspacePages
                 .Where(page => page.VisibilityTier == ShellNavigationVisibilityTier.Secondary)
                 .Select(page => ToNavigationItem(page, includeVisibilityLabel: true))
                 .ToArray());
 
         ReplaceCollection(
-            _overflowNavigationItems,
+            _navigationSection.OverflowItems,
             workspacePages
                 .Where(page => page.VisibilityTier == ShellNavigationVisibilityTier.Overflow)
                 .Select(page => ToNavigationItem(page, includeVisibilityLabel: true))
                 .ToArray());
 
         ReplaceCollection(
-            _relatedWorkflowItems,
+            _navigationSection.RelatedWorkflowNavItems,
             ShellNavigationCatalog.GetRelatedPages(CurrentPageTag)
                 .Where(page => _navigationService.IsPageRegistered(page.PageTag))
                 .Where(page => !string.Equals(page.PageTag, CurrentPageTag, StringComparison.OrdinalIgnoreCase))
@@ -996,8 +961,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .Select(pageTag => new RecentPageEntry(pageTag!, GetPageDisplayName(pageTag!)))
             .ToArray();
 
-        ReplaceCollection(_recentPages, recent);
-        RecentPagesEmptyVisibility = _recentPages.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ReplaceCollection(_navigationSection.RecentPageItems, recent);
+        RecentPagesEmptyVisibility = _navigationSection.RecentPageItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         RaisePropertyChanged(nameof(RecentPagesSummaryText));
     }
 
@@ -1069,15 +1034,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _suppressOperatingContextSelection = true;
         try
         {
-            _operatingContexts.Clear();
+            _navigationSection.OperatingContextItems.Clear();
             foreach (var context in _operatingContextService.Contexts)
             {
-                _operatingContexts.Add(context);
+                _navigationSection.OperatingContextItems.Add(context);
             }
 
-            SelectedOperatingContext = _operatingContexts.FirstOrDefault(context =>
+            SelectedOperatingContext = _navigationSection.OperatingContextItems.FirstOrDefault(context =>
                                           string.Equals(context.ContextKey, _operatingContextService.CurrentContext?.ContextKey, StringComparison.OrdinalIgnoreCase))
-                                      ?? _operatingContexts.FirstOrDefault(context =>
+                                      ?? _navigationSection.OperatingContextItems.FirstOrDefault(context =>
                                           string.Equals(context.ContextKey, _operatingContextService.LastSelectedOperatingContextKey, StringComparison.OrdinalIgnoreCase));
         }
         finally

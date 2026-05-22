@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Shell.ViewModels;
@@ -7,24 +8,26 @@ namespace Meridian.Wpf.ViewModels;
 
 internal sealed class MainPageNavigationSectionViewModel
 {
-    public MainPageNavigationSectionViewModel(
-        ReadOnlyObservableCollection<ShellNavigationItem> primaryNavigationItems,
-        ReadOnlyObservableCollection<ShellNavigationItem> secondaryNavigationItems,
-        ReadOnlyObservableCollection<ShellNavigationItem> overflowNavigationItems,
-        ReadOnlyObservableCollection<ShellNavigationItem> relatedWorkflowItems,
-        ReadOnlyObservableCollection<MainPageViewModel.RecentPageEntry> recentPages,
-        ReadOnlyObservableCollection<MainPageViewModel.WorkspaceTileItem> workspaceTiles,
-        ReadOnlyObservableCollection<WorkstationOperatingContext> operatingContexts,
-        ReadOnlyObservableCollection<BoundedWindowMode> windowModes)
+    internal ObservableCollection<ShellNavigationItem> PrimaryItems { get; } = [];
+    internal ObservableCollection<ShellNavigationItem> SecondaryItems { get; } = [];
+    internal ObservableCollection<ShellNavigationItem> OverflowItems { get; } = [];
+    internal ObservableCollection<ShellNavigationItem> RelatedWorkflowNavItems { get; } = [];
+    internal ObservableCollection<MainPageViewModel.RecentPageEntry> RecentPageItems { get; } = [];
+    internal ObservableCollection<MainPageViewModel.WorkspaceTileItem> WorkspaceTileItems { get; } = [];
+    internal ObservableCollection<WorkstationOperatingContext> OperatingContextItems { get; } = [];
+    internal ObservableCollection<BoundedWindowMode> WindowModeItems { get; }
+
+    internal MainPageNavigationSectionViewModel()
     {
-        PrimaryNavigationItems = primaryNavigationItems;
-        SecondaryNavigationItems = secondaryNavigationItems;
-        OverflowNavigationItems = overflowNavigationItems;
-        RelatedWorkflowItems = relatedWorkflowItems;
-        RecentPages = recentPages;
-        WorkspaceTiles = workspaceTiles;
-        OperatingContexts = operatingContexts;
-        WindowModes = windowModes;
+        WindowModeItems = [BoundedWindowMode.Focused, BoundedWindowMode.DockFloat, BoundedWindowMode.WorkbenchPreset];
+        PrimaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(PrimaryItems);
+        SecondaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(SecondaryItems);
+        OverflowNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(OverflowItems);
+        RelatedWorkflowItems = new ReadOnlyObservableCollection<ShellNavigationItem>(RelatedWorkflowNavItems);
+        RecentPages = new ReadOnlyObservableCollection<MainPageViewModel.RecentPageEntry>(RecentPageItems);
+        WorkspaceTiles = new ReadOnlyObservableCollection<MainPageViewModel.WorkspaceTileItem>(WorkspaceTileItems);
+        OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(OperatingContextItems);
+        WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(WindowModeItems);
     }
 
     public ReadOnlyObservableCollection<ShellNavigationItem> PrimaryNavigationItems { get; }
@@ -52,4 +55,8 @@ internal sealed class MainPageWorkflowSectionViewModel
     public CommandPaletteViewModel CommandPalette { get; }
     public OperatorInboxViewModel OperatorInbox { get; }
     public WorkflowSummaryStripViewModel WorkflowSummaryStrip { get; }
+
+    public ReadOnlyObservableCollection<ShellCommandPaletteEntry> CommandPalettePages => CommandPalette.Pages;
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries => WorkflowSummaryStrip.Summaries;
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries => WorkflowSummaryStrip.SecondarySummaries;
 }
