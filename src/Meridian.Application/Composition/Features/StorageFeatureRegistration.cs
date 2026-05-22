@@ -282,7 +282,28 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.TryAddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
-        services.TryAddSingleton(_ => new FundOperationsPersistenceOptions());
+        services.TryAddSingleton<FundOperationsPersistenceOptions>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var config = configStore.Load();
+            var persistenceConfig = config.FundOperationsPersistence;
+            if (persistenceConfig?.DomainModes is null or { Count: 0 })
+                return new FundOperationsPersistenceOptions();
+
+            var domainModes = new Dictionary<FundOperationsDomain, DomainCutoverMode>();
+            foreach (var (key, value) in persistenceConfig.DomainModes)
+            {
+                if (Enum.TryParse<FundOperationsDomain>(key, ignoreCase: true, out var domain))
+                {
+                    var readMode = Enum.TryParse<DomainReadMode>(value.ReadMode, ignoreCase: true, out var rm)
+                        ? rm
+                        : DomainReadMode.LegacyInMemory;
+                    domainModes[domain] = new DomainCutoverMode(value.ShadowWritesEnabled, readMode);
+                }
+            }
+
+            return new FundOperationsPersistenceOptions { DomainModes = domainModes };
+        });
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
             _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure)));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
