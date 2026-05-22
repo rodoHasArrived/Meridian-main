@@ -120,10 +120,19 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
         script.Should().Contain("Invoke-MeridianRetry");
         script.Should().Contain("function Wait-MeridianWindow");
+        script.Should().Contain("function New-ScreenNavigationRegistry");
+        script.Should().Contain("function Invoke-ScreenNavigation");
+        script.Should().Contain("function Wait-ScreenReady");
+        script.Should().Contain("function Test-ScreenReadiness");
+        script.Should().Contain("function Invoke-ScreenCapture");
+        script.Should().Contain("function Select-ScreenNavigationMethod");
         script.Should().Contain("function Invoke-NavigateWithKeyboard");
         script.Should().Contain("function Invoke-NavigateWithMouse");
         script.Should().Contain("Retrying '$SearchTerm' navigation with mouse automation fallback.");
-        script.Should().Contain("Capturing '$search' from the detected shell window.");
+        script.Should().Contain("Capturing '$($Screen.searchTerm)' from the detected shell window.");
+        script.Should().Contain("$screenRegistry = New-ScreenNavigationRegistry");
+        script.Should().Contain("$screenResult = Invoke-ScreenCapture");
+        script.Should().Contain("Desktop screenshot summary: success={0}, warnings={1}, failures={2}");
         script.Should().Contain("$stdoutPath = Join-Path $OutputDir \"wpf-startup-stdout-$runStamp.log\"");
         script.Should().Contain("$stderrPath = Join-Path $OutputDir \"wpf-startup-stderr-$runStamp.log\"");
         script.Should().NotContain("$stdoutPath = 'wpf-startup-stdout.log'");
@@ -131,11 +140,15 @@ public sealed class DesktopWorkflowScriptTests
 
         var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'shared/retry.ps1')", StringComparison.Ordinal);
         var retryIndex = script.IndexOf("Invoke-MeridianRetry", StringComparison.Ordinal);
+        var registryIndex = script.IndexOf("function New-ScreenNavigationRegistry", StringComparison.Ordinal);
+        var captureIndex = script.IndexOf("function Invoke-ScreenCapture", StringComparison.Ordinal);
         var keyboardIndex = script.IndexOf("function Invoke-NavigateWithKeyboard", StringComparison.Ordinal);
         var mouseIndex = script.IndexOf("function Invoke-NavigateWithMouse", StringComparison.Ordinal);
 
         importIndex.Should().BeGreaterThan(0);
         retryIndex.Should().BeGreaterThan(importIndex);
+        registryIndex.Should().BeGreaterThan(0);
+        captureIndex.Should().BeGreaterThan(registryIndex);
         keyboardIndex.Should().BeGreaterThan(0);
         mouseIndex.Should().BeGreaterThan(keyboardIndex);
     }
