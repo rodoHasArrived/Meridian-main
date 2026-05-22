@@ -6,7 +6,7 @@ I ran multiple benchmark entry points, including the broad/full lane and a colle
 
 1. `make bench-quick`
 2. `./benchmarks/run-bottleneck-benchmarks.sh`
-3. `./benchmarks/run-bottleneck-benchmarks.sh --quick --filter CollectorBenchmarks`
+3. `./benchmarks/run-bottleneck-benchmarks.sh --quick --filter Collector`
 
 All three fail immediately in this container with the same prerequisite error:
 
