@@ -291,8 +291,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
 
         services.TryAddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
-        services.TryAddSingleton<IDirectLendingQueryService, InMemoryDirectLendingService>();
-        services.TryAddSingleton<IDirectLendingCommandService, InMemoryDirectLendingService>();
         services.TryAddSingleton<IBankingService, InMemoryBankingService>();
         services.TryAddSingleton<IMoneyMarketFundService, InMemoryMoneyMarketFundService>();
         services.TryAddSingleton<IMmfLiquidityService>(sp => (IMmfLiquidityService)sp.GetRequiredService<IMoneyMarketFundService>());
