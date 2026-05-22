@@ -111,13 +111,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     public FrameworkElement CreatePageContent(
         string pageTag,
         object? parameter = null,
-        WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked)
+        WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked,
+        IServiceScope? workspaceScope = null)
     {
         var pageType = GetPageType(pageTag)
             ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
 
         var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
-        return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode);
+        return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode, workspaceScope?.ServiceProvider);
     }
 
     /// <inheritdoc />
@@ -255,9 +256,11 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         string pageTag,
         Type pageType,
         object? parameter,
-        WorkspaceChromePresentationMode presentationMode)
+        WorkspaceChromePresentationMode presentationMode,
+        IServiceProvider? scopedProvider = null)
     {
-        var page = CreatePage(pageType);
+        var serviceProvider = scopedProvider ?? _serviceProvider;
+        var page = CreatePage(pageType, serviceProvider);
         if (page is IWorkspaceShellPageContextAware contextAware)
         {
             contextAware.ApplyWorkspaceShellPageTag(pageTag);
@@ -268,16 +271,16 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             throw new InvalidOperationException($"Page '{pageType.Name}' is not a FrameworkElement.");
         }
 
-        _serviceProvider?.GetService<IViewModelViewResolver>()?.AutoWire(element, _serviceProvider);
+        serviceProvider?.GetService<IViewModelViewResolver>()?.AutoWire(element, serviceProvider);
         ApplyNavigationParameter(page, parameter);
 
-        if (_serviceProvider is not null &&
+        if (serviceProvider is not null &&
             page is Page wpfPage &&
             ShouldWrapWithWorkspaceChrome(pageTag, pageType))
         {
             return new WorkspaceDeepPageHostPage(
                 this,
-                _serviceProvider?.GetService<WorkspaceShellContextService>(),
+                serviceProvider.GetService<WorkspaceShellContextService>(),
                 pageTag,
                 wpfPage,
                 parameter,
@@ -302,11 +305,11 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         return ShellNavigationCatalog.GetPage(pageTag) is not null;
     }
 
-    private object CreatePage(Type pageType)
+    private object CreatePage(Type pageType, IServiceProvider? serviceProvider)
     {
-        if (_serviceProvider != null)
+        if (serviceProvider != null)
         {
-            return _serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(_serviceProvider, pageType);
+            return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
         }
 
         try

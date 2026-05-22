@@ -247,7 +247,12 @@ public partial class App : System.Windows.Application
 
         // ── Onboarding / workspace services ──────────────────────────────────
         services.AddSingleton<Meridian.Ui.Services.OnboardingTourService>(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
-        services.AddSingleton<WpfServices.WorkspaceService>(_ => WpfServices.WorkspaceService.Instance);
+        services.AddSingleton(sp =>
+        {
+            var workspaceService = WpfServices.WorkspaceService.Instance;
+            workspaceService.SetServiceScopeFactory(sp.GetRequiredService<IServiceScopeFactory>());
+            return workspaceService;
+        });
         services.AddSingleton<Meridian.Ui.Services.AlertService>(_ => Meridian.Ui.Services.AlertService.Instance);
         services.AddSingleton<WpfServices.FundContextService>(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());

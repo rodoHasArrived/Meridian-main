@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -155,6 +157,25 @@ public sealed class NavigationServiceTests : IDisposable
         var catalogPages = ShellNavigationCatalog.GetRegisteredPageTags().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         registeredPages.Should().BeEquivalentTo(catalogPages);
+    }
+
+    [Fact]
+    public void CreatePageContent_WithWorkspaceScope_ShouldResolvePageFromScope()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var scopedPage = new WorkspaceCapabilityHomePage();
+            var services = new ServiceCollection();
+            services.AddSingleton(scopedPage);
+
+            using var provider = services.BuildServiceProvider();
+            using var scope = provider.CreateScope();
+
+            var content = service.CreatePageContent("PortfolioShell", workspaceScope: scope);
+
+            content.Should().BeSameAs(scopedPage);
+        });
     }
 
     [Fact]

@@ -111,7 +111,11 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
         try
         {
-            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
+            var pageContent = _navigationService.CreatePageContent(
+                pageTag,
+                parameter,
+                WorkspaceChromePresentationMode.Docked,
+                _workspaceService.ActiveWorkspaceScope);
             dockManager.LoadPage(BuildPageKey(pageTag, parameter), ShellNavigationCatalog.GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
         }
         catch (Exception ex)

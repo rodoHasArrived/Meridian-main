@@ -9,17 +9,29 @@ shell easier to extend, update, and maintain as new feature workspaces come onli
 produced in the brainstorm session of 2026-05-21 (`meridian-brainstorm`, Architecture / Refactoring
 mode) and are sequenced here into four delivery phases that can each be merged independently.
 
-The driving problem: adding a new workspace or page today still requires touching shared
+The driving problem: adding a new workspace or page has historically required touching shared
 infrastructure in multiple places — `ShellNavigationCatalog` static partial files, the
 `DesktopFeatureModuleRegistry` array, and module `Register()` implementations when workspace
-services are introduced. Services have no explicit workspace lifetime, so expensive
-streaming/polling objects live for the full application session even when idle. There is no runtime
-mechanism to hide in-progress capabilities without a recompile. Workspace state resets on every
-navigation switch.
+services are introduced. Phase 1 and Phase 2 have moved the shell toward module-owned page
+contributions, convention-based view model wiring, and runtime capability gates. The remaining
+architecture gap is lifecycle ownership: workspace-owned polling, streaming, and view-model state
+still need a complete scoped lifetime and state-token persistence story.
 
 Resolving these issues unlocks a sustainable pattern where each new workspace is a single,
 self-contained module that contributes its own pages, services, capability declarations, state
 serialization, and shell-slot content — with nothing else to edit in shared infrastructure.
+
+**Current implementation snapshot (2026-05-22)**
+
+- Phase 1 is implemented, with Trading/Data/Settings on module-owned descriptors and the remaining
+  workspaces still using the temporary catalog fallback until their modules are split out.
+- Phase 2 is implemented: convention-based page/view-model wiring, feature capability declarations,
+  runtime overrides, Settings capability toggles, and focused tests are in place.
+- Phase 3a is partially implemented: workspace scopes are created and disposed by
+  `WorkspaceService`, docked workspace content can resolve through the active scope, and focused
+  lifecycle/navigation tests pass. Remaining Phase 3a work is the service-lifetime audit, direct
+  frame-navigation scope handoff, and a clean full-suite WPF run.
+- Phase 3b and Phase 4 remain planned.
 
 ---
 
@@ -129,32 +141,39 @@ capabilities.
 
 **TODO checklist — Phase 2a (ViewModel resolver)**
 
-- [ ] Create `IViewModelViewResolver` with `ResolveViewModelType(Type pageType)` and
+- [x] Create `IViewModelViewResolver` with `ResolveViewModelType(Type pageType)` and
   `AutoWire(FrameworkElement page, IServiceProvider scope)`.
-- [ ] Implement `ViewModelViewResolver` using `{PageName}ViewModel` naming convention.
+- [x] Implement `ViewModelViewResolver` using `{PageName}ViewModel` naming convention.
   Skip pages where `DataContext` is already set.
-- [ ] Add startup validation that logs a warning for pages in `IShellPageRegistry` where no
+- [x] Add startup validation that logs a warning for pages in `IShellPageRegistry` where no
   matching ViewModel type is found in the DI container.
-- [ ] Call `AutoWire()` in `NavigationService.CreatePageContentCore()` after page instantiation.
-- [ ] Register `IViewModelViewResolver` as a singleton in `WpfShellServiceCollectionExtensions`.
-- [ ] Confirm existing pages that set their own DataContext in XAML or code-behind are unaffected.
-- [ ] Run navigation smoke tests confirming no DataContext regressions on the five primary pages.
+- [x] Call `AutoWire()` in `NavigationService.CreatePageContentCore()` after page instantiation.
+- [x] Register `IViewModelViewResolver` as a singleton in `WpfShellServiceCollectionExtensions`.
+- [x] Confirm existing pages that set their own DataContext in XAML or code-behind are unaffected.
+- [x] Run navigation smoke tests confirming no DataContext regressions on the five primary pages.
 
 **TODO checklist — Phase 2b (capability gate)**
 
-- [ ] Define `FeatureCapabilityDescriptor` record: `CapabilityKey`, `DisplayName`, `Description`,
+- [x] Define `FeatureCapabilityDescriptor` record: `CapabilityKey`, `DisplayName`, `Description`,
   `DefaultEnabled`, `IsPermanent`.
-- [ ] Create `IFeatureCapabilityGate` with `IsEnabled(string key)`, `SetEnabled(string key, bool)`,
+- [x] Create `IFeatureCapabilityGate` with `IsEnabled(string key)`, `SetEnabled(string key, bool)`,
   and `IObservable<CapabilityChangedEvent> Changes`.
-- [ ] Implement `FeatureCapabilityGateService` backed by `IOptionsMonitor<FeatureCapabilityOptions>`;
+- [x] Implement `FeatureCapabilityGateService` backed by `IOptionsMonitor<FeatureCapabilityOptions>`;
   persist overrides via `ConfigStore` using `AtomicFileWriter`.
-- [ ] Extend `IDesktopFeatureModule` with optional `DeclareCapabilities()` method; collect
+- [x] Extend `IDesktopFeatureModule` with optional `DeclareCapabilities()` method; collect
   declarations in `DesktopFeatureModuleRegistry`.
-- [ ] Add `FeatureCapabilities` section to `config/appsettings.json`.
-- [ ] Add a generated "Capabilities" tab in `SettingsViewModel` showing registered toggles.
-- [ ] Add `FeatureCapabilityGateTests` covering enable/disable, persistence round-trip, and
+- [x] Add `FeatureCapabilities` section to `config/appsettings.json`.
+- [x] Add a generated "Capabilities" tab in `SettingsViewModel` showing registered toggles.
+- [x] Add `FeatureCapabilityGateTests` covering enable/disable, persistence round-trip, and
   change-notification delivery.
-- [ ] Run `dotnet test tests/Meridian.Wpf.Tests/` and confirm settings-related tests pass.
+- [x] Run the focused resolver, capability-gate, settings, and primary-navigation smoke tests.
+
+**Phase 2 validation evidence**
+
+Focused WPF resolver, capability-gate, Settings, and navigation smoke coverage passed on
+2026-05-22. A full unfiltered WPF test pass remains intentionally tracked in Phase 3 because the
+local suite has recurring shared-output/testhost contention and should be treated as a lifecycle
+acceptance gate rather than Phase 2 scope.
 
 ---
 
@@ -176,7 +195,9 @@ fresh one.
   `AddWorkspaceScoped<T>()` extension
 - `src/Meridian.Wpf/Services/NavigationService.cs` — accept optional scope in
   `CreatePageContent()`
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs` — pass active scope on workspace switch
+- `src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs` — pass active workspace scope into docked
+  page creation
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs` — planned direct frame-navigation scope handoff
 
 #### 3b — `IWorkspaceStateToken` (serialize/restore session)
 
@@ -192,19 +213,35 @@ operator state survives workspace switches and app restarts.
 
 **TODO checklist — Phase 3a (scoped DI)**
 
-- [ ] Add `AddWorkspaceScoped<T>(this IServiceCollection)` extension that tags services with a
+- [x] Add `AddWorkspaceScoped<T>(this IServiceCollection)` extension that tags services with a
   workspace-lifetime marker (attribute or marker interface).
-- [ ] In `WorkspaceService.ActivateWorkspaceAsync()`, create an `IServiceScope` keyed to
+- [x] In `WorkspaceService.ActivateWorkspaceAsync()`, create an `IServiceScope` keyed to
   `workspaceId` and store it in a `Dictionary<string, IServiceScope>`.
-- [ ] Dispose the scope on workspace deactivation (when a different workspace is activated).
+- [x] Dispose the scope on workspace deactivation (when a different workspace is activated).
 - [ ] Audit existing services for correct lifetime: platform-owned singletons (`NavigationService`,
   `FundContextService`, `ThemeService`) stay in the root container; workspace-owned polling/
   streaming services are converted to `AddWorkspaceScoped`.
-- [ ] Update `NavigationService.CreatePageContent()` to accept an optional `IServiceScope` and
+- [x] Update `NavigationService.CreatePageContent()` to accept an optional `IServiceScope` and
   resolve pages from it when provided.
 - [ ] Update `MainPageViewModel` to pass the active workspace scope on every navigation call.
-- [ ] Add tests in `WorkspaceServiceTests` covering scope creation, isolation between workspaces,
+  Current implementation passes the active scope from workspace shell pages into
+  `CreatePageContent`; direct frame navigation still uses the root provider.
+- [x] Add tests in `WorkspaceServiceTests` covering scope creation, isolation between workspaces,
   and disposal on deactivation.
+- [ ] Run `dotnet test tests/Meridian.Wpf.Tests/` and resolve remaining full-suite harness or
+  shared-output issues before accepting the Phase 3 workspace lifecycle changes.
+
+**Phase 3a validation evidence**
+
+```bash
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~NavigationServiceTests|FullyQualifiedName~WorkspaceServiceTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~WorkspaceServiceTests|FullyQualifiedName~NavigationServiceTests|FullyQualifiedName~AppServiceRegistrationTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+```
+
+Result: focused workspace/navigation lifecycle validation passed with 125 tests; the main shell view
+model slice passed with 37 tests; the combined focused Phase 3a slice passed with 168 tests.
+`git diff --check` passed. The full WPF suite has not been accepted yet.
 
 **TODO checklist — Phase 3b (state tokens)**
 

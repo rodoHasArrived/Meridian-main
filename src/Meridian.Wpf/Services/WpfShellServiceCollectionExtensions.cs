@@ -14,6 +14,25 @@ namespace Meridian.Wpf.Services;
 
 public static class WpfShellServiceCollectionExtensions
 {
+    public static IServiceCollection AddWorkspaceScoped<TService>(this IServiceCollection services)
+        where TService : class, IWorkspaceScopedService
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddScoped<TService>();
+        return services;
+    }
+
+    public static IServiceCollection AddWorkspaceScoped<TService, TImplementation>(this IServiceCollection services)
+        where TService : class
+        where TImplementation : class, TService, IWorkspaceScopedService
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddScoped<TService, TImplementation>();
+        return services;
+    }
+
     public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services)
         => AddMeridianWpfShell(services, configuration: null);
 

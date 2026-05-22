@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
+using Microsoft.Extensions.DependencyInjection;
 using SessionState = Meridian.Ui.Services.SessionState;
 using UiServices = Meridian.Ui.Services;
 using WidgetPosition = Meridian.Ui.Services.WidgetPosition;
@@ -34,7 +35,9 @@ public sealed class WorkspaceService
     private readonly List<WorkspaceTemplate> _workspaces = new();
     private readonly Dictionary<string, SessionState> _sessionsByFundProfileId = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, WorkstationLayoutState> _workspaceLayouts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, IServiceScope> _workspaceScopes = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _stateGate = new(1, 1);
+    private IServiceScopeFactory? _serviceScopeFactory;
     private bool _isInitialized;
 
     public static WorkspaceService Instance => _instance.Value;
@@ -44,6 +47,7 @@ public sealed class WorkspaceService
     }
 
     public WorkspaceTemplate? ActiveWorkspace => WithStateLock(() => _activeWorkspace);
+    public IServiceScope? ActiveWorkspaceScope => WithStateLock(() => _activeWorkspace is null ? null : GetWorkspaceScopeCore(_activeWorkspace.Id));
     public SessionState? LastSession => WithStateLock(() => _lastSession);
     public IReadOnlyList<WorkspaceTemplate> Workspaces => WithStateLock(() => _workspaces.ToList().AsReadOnly());
     public string? LastSelectedFundProfileId { get; private set; }
@@ -156,6 +160,16 @@ public sealed class WorkspaceService
 
         return ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag.Trim());
     }
+
+    public void SetServiceScopeFactory(IServiceScopeFactory? serviceScopeFactory)
+        => WithStateLock(() => _serviceScopeFactory = serviceScopeFactory);
+
+    public IServiceScope? GetWorkspaceScope(string workspaceId)
+        => WithStateLock(() =>
+        {
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            return GetWorkspaceScopeCore(normalizedWorkspaceId);
+        });
 
     /// <summary>
     /// Persisted workspace data container.
@@ -372,26 +386,44 @@ public sealed class WorkspaceService
 
     public async Task ActivateWorkspaceAsync(string workspaceId, CancellationToken ct = default)
     {
-        var activatedWorkspace = await WithStateLockAsync(async () =>
+        IServiceScope? scopeToDispose = null;
+        WorkspaceTemplate? activatedWorkspace = null;
+        try
         {
-            await EnsureInitializedAsync(ct).ConfigureAwait(false);
-
-            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
-            var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
-            if (workspace is null)
+            activatedWorkspace = await WithStateLockAsync(async () =>
             {
-                return null;
-            }
+                await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
-            PersistActiveWorkspaceSnapshot();
-            _activeWorkspace = workspace;
-            workspace.LastActivatedAt = DateTime.UtcNow;
-            _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
-                ?? RestoreSessionForWorkspace(workspace, pendingSession);
-            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
-            return workspace;
-        }, ct).ConfigureAwait(false);
+                var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+                var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
+                if (workspace is null)
+                {
+                    return null;
+                }
+
+                if (_activeWorkspace is not null &&
+                    !string.Equals(_activeWorkspace.Id, workspace.Id, StringComparison.OrdinalIgnoreCase) &&
+                    _workspaceScopes.Remove(_activeWorkspace.Id, out var previousScope))
+                {
+                    scopeToDispose = previousScope;
+                }
+
+                EnsureWorkspaceScopeCore(workspace.Id);
+
+                var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
+                PersistActiveWorkspaceSnapshot();
+                _activeWorkspace = workspace;
+                workspace.LastActivatedAt = DateTime.UtcNow;
+                _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
+                    ?? RestoreSessionForWorkspace(workspace, pendingSession);
+                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+                return workspace;
+            }, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            scopeToDispose?.Dispose();
+        }
 
         if (activatedWorkspace is not null)
         {
@@ -948,11 +980,38 @@ public sealed class WorkspaceService
             _workspaces.Clear();
             _dockLayouts.Clear();
             _workspaceLayouts.Clear();
+            foreach (var scope in _workspaceScopes.Values)
+            {
+                scope.Dispose();
+            }
+
+            _workspaceScopes.Clear();
+            _serviceScopeFactory = null;
             WorkspaceCreated = null;
             WorkspaceUpdated = null;
             WorkspaceDeleted = null;
             WorkspaceActivated = null;
         });
+
+    private IServiceScope? GetWorkspaceScopeCore(string workspaceId)
+        => _workspaceScopes.TryGetValue(workspaceId, out var scope) ? scope : null;
+
+    private IServiceScope? EnsureWorkspaceScopeCore(string workspaceId)
+    {
+        if (_serviceScopeFactory is null)
+        {
+            return null;
+        }
+
+        if (_workspaceScopes.TryGetValue(workspaceId, out var existingScope))
+        {
+            return existingScope;
+        }
+
+        var scope = _serviceScopeFactory.CreateScope();
+        _workspaceScopes[workspaceId] = scope;
+        return scope;
+    }
 
     private static void MergeMissingPages(WorkspaceTemplate workspace, IEnumerable<WorkspacePage> builtInPages)
     {
