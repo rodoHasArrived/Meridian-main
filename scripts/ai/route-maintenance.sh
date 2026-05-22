@@ -118,7 +118,7 @@ cat >.ai/maintenance-route.json <<EOF
 EOF
 
 # ── Build impact-based execution plan ─────────────────────────────────────────
-if have python3 && [[ -f build/python/cli/buildctl.py ]]; then
+if command -v python3 >/dev/null 2>&1 && [[ -f build/python/cli/buildctl.py ]]; then
     ALL_LANES_FLAG=""
     [[ "$MODE" == "full" ]] && ALL_LANES_FLAG="--all-lanes"
 
