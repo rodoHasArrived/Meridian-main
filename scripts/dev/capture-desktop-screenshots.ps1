@@ -34,6 +34,7 @@ $fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfil
 $retentionDays = [int](Get-MeridianWorkflowProfileValue -Table $retentionProfile -Key 'maxAgeDays' -Fallback 14)
 $retentionLatest = [int](Get-MeridianWorkflowProfileValue -Table $retentionProfile -Key 'retainLatest' -Fallback 10)
 $script:MeridianProcessId = 0
+$script:MeridianProcess = $null
 $resolvedProjectPath = if ([System.IO.Path]::IsPathRooted($ProjectPath)) {
   [System.IO.Path]::GetFullPath($ProjectPath)
 }
@@ -50,10 +51,37 @@ function Assert-Command {
   }
 }
 
+function Get-MeridianWindowFromProcess {
+  param(
+    [System.Diagnostics.Process]$Process
+  )
+
+  if ($null -eq $Process -or $Process.HasExited) {
+    return $null
+  }
+
+  try {
+    $Process.Refresh()
+    if ($Process.MainWindowHandle -ne [System.IntPtr]::Zero) {
+      return [System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)
+    }
+  } catch {
+    # Ignore transient process/window state while WPF is navigating.
+  }
+
+  return $null
+}
+
 function Find-MeridianWindow {
   param(
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
     [int]$ProcessId = 0
   )
+
+  $processWindow = Get-MeridianWindowFromProcess -Process $Process
+  if ($null -ne $processWindow) {
+    return $processWindow
+  }
 
   $targetProcessId = if ($ProcessId -gt 0) {
     $ProcessId
@@ -347,6 +375,8 @@ function Invoke-Navigate {
     [Parameter(Mandatory = $true)]
     [System.Windows.Automation.AutomationElement]$Window,
 
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+
     [Parameter(Mandatory = $true)]
     [string]$SearchTerm
   )
@@ -362,7 +392,7 @@ function Invoke-Navigate {
     )
 
     $inputEl = Wait-ForElement -Attempts 15 -DelayMilliseconds 250 -Finder {
-      $currentWindow = Find-MeridianWindow
+      $currentWindow = Find-MeridianWindow -Process $Process
       if (-not $currentWindow) {
         $currentWindow = $Window
       }
@@ -372,12 +402,20 @@ function Invoke-Navigate {
     }
 
     if (-not $inputEl) {
+      $root = [System.Windows.Automation.AutomationElement]::RootElement
+      $inputEl = Wait-ForElement -Attempts 6 -DelayMilliseconds 250 -Finder {
+        return $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
+      }
+    }
+
+    if (-not $inputEl) {
       Write-Warning "Command palette input not found for '$SearchTerm'."
       [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
       return $false
     }
 
     $valuePattern = $inputEl.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern) -as [System.Windows.Automation.ValuePattern]
+    $valuePattern.SetValue('')
     $valuePattern.SetValue($SearchTerm)
     Start-Sleep -Milliseconds 400
 
@@ -432,6 +470,7 @@ if (-not (Test-Path $exePath)) {
 Write-Host "Starting $exePath in fixture mode..."
 $proc = Start-Process -FilePath $exePath -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Normal
 $script:MeridianProcessId = $proc.Id
+$script:MeridianProcess = $proc
 
 try {
   $window = $null
@@ -451,7 +490,7 @@ try {
         }
       }
 
-      $candidateWindow = Find-MeridianWindow
+      $candidateWindow = Find-MeridianWindow -Process $proc
       if ($null -eq $candidateWindow) {
         return [pscustomobject]@{
           ready = $false
@@ -482,7 +521,7 @@ try {
     Write-Warning 'Unable to enter the fund profile selector. Continuing without page navigation.'
   }
 
-  $window = Find-MeridianWindow
+  $window = Find-MeridianWindow -Process $proc
   if ($window) {
     Maximize-MeridianWindow -Window $window
   }
@@ -510,13 +549,17 @@ try {
     $search = $entry.Value
 
     if (-not $window) {
+      $window = Find-MeridianWindow -Process $proc
+    }
+
+    if (-not $window) {
       Write-Warning "Skipping '$search' because the main window reference was lost."
       continue
     }
 
     Write-Host "Navigating to '$search' ..."
-    $ok = Invoke-Navigate -Window $window -SearchTerm $search
-    $window = Find-MeridianWindow
+    $ok = Invoke-Navigate -Window $window -Process $proc -SearchTerm $search
+    $window = Find-MeridianWindow -Process $proc
 
     if ($window -and $ok) {
       $targetPath = Join-Path $OutputDir "wpf-$slug.png"
@@ -528,7 +571,7 @@ try {
         -JitterMs 180 `
         -TelemetrySink $retryTelemetry `
         -Predicate {
-          $candidateWindow = Find-MeridianWindow
+          $candidateWindow = Find-MeridianWindow -Process $proc
           if ($null -eq $candidateWindow) {
             return [pscustomobject]@{
               ready = $false
@@ -581,6 +624,7 @@ try {
 }
 finally {
   $script:MeridianProcessId = 0
+  $script:MeridianProcess = $null
   $retryReport = [ordered]@{
     generatedAt = (Get-Date).ToString('o')
     outputDirectory = $OutputDir
