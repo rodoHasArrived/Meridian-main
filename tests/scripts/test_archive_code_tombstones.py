@@ -35,12 +35,16 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
             *self.repo_root.rglob("Directory.Build.targets"),
         ]
 
-        archive_tokens = ("archive/code/src", "archive\\code\\src")
+        archive_token = "archive/code/src"
         for file_path in sorted(set(candidate_files)):
             text = file_path.read_text(encoding="utf-8")
+            normalized_text = text.replace("\\", "/").lower()
             relative = file_path.relative_to(self.repo_root).as_posix()
-            for token in archive_tokens:
-                self.assertNotIn(token, text, f"{relative} must not include archived code path {token!r}.")
+            self.assertNotIn(
+                archive_token,
+                normalized_text,
+                f"{relative} must not include archived code path {archive_token!r}.",
+            )
 
 
 if __name__ == "__main__":
