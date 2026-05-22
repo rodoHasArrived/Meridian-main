@@ -14,6 +14,10 @@ surface but still explain a migration or compatibility decision.
 Active source remains under `src/`. Files here are reference material only and should not be
 reintroduced without moving them back into the correct active project and validating the build.
 
+## Retired Native Host Prototypes
+
+- `native/cpptrader-host/` - archived native C++ host scaffold retained for historical reference.
+
 ## Guardrails
 
 - `archive/code/src/` files must remain comment-only tombstones with the `ARCHIVE TOMBSTONE`
