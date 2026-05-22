@@ -22,6 +22,7 @@ Shared contracts and DTOs used across host, services, desktop, and dashboard sur
 
 ## Operational Notes
 Treat additive and breaking changes as cross-module compatibility work.
+Chief of Staff orchestration payloads for workstation surfaces live under `Workstation/ChiefOfStaffDtos.cs`.
 
 <!-- GENERATED:MODULE_OVERVIEW BEGIN -->
 Generated overview content is maintained by documentation automation.

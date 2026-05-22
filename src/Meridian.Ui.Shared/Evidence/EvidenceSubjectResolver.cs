@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -12,6 +13,7 @@ public sealed class EvidenceSubjectResolver
     public const string ReportPackKind = "report-pack";
     public const string ProviderTrustKind = "provider-trust";
     public const string AnalysisExportKind = "analysis-export";
+    public const string ChiefOfStaffSessionKind = "chief-of-staff-session";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -20,7 +22,8 @@ public sealed class EvidenceSubjectResolver
         ReconciliationReviewKind,
         ReportPackKind,
         ProviderTrustKind,
-        AnalysisExportKind
+        AnalysisExportKind,
+        ChiefOfStaffSessionKind
     };
 
     private readonly IServiceProvider _services;
@@ -71,6 +74,21 @@ public sealed class EvidenceSubjectResolver
                 Workspace: ResolveWorkspace(run.Mode),
                 Route: $"/strategy?runId={Uri.EscapeDataString(run.RunId)}",
                 PageTag: "StrategyRuns")));
+        }
+
+        var cosService = _services.GetService<IChiefOfStaffSessionService>();
+        if (cosService is not null)
+        {
+            var sessions = await cosService
+                .ListSessionsAsync(new ChiefOfStaffSessionQueryDto(Limit: 100), ct)
+                .ConfigureAwait(false);
+            subjects.AddRange(sessions.Select(session => new EvidenceSubjectDto(
+                SubjectId: session.SessionId.ToString("N"),
+                SubjectKind: ChiefOfStaffSessionKind,
+                Label: $"Chief of Staff: {session.OperatorRequest}",
+                Workspace: ResolveWorkspace(session.IntentKind),
+                Route: $"/api/workstation/chief-of-staff/sessions/{session.SessionId:D}",
+                PageTag: "ChiefOfStaffPanel")));
         }
 
         return subjects
@@ -146,10 +164,26 @@ public sealed class EvidenceSubjectResolver
                 Workspace: "Reporting",
                 Route: "/reporting",
                 PageTag: "ReportingShell"),
+            ChiefOfStaffSessionKind => new EvidenceSubjectDto(
+                SubjectId: subjectId,
+                SubjectKind: ChiefOfStaffSessionKind,
+                Label: $"Chief of Staff session {subjectId}",
+                Workspace: "Strategy",
+                Route: $"/api/workstation/chief-of-staff/sessions/{Uri.EscapeDataString(subjectId)}",
+                PageTag: "ChiefOfStaffPanel"),
             _ => null
         };
     }
 
     private static string ResolveWorkspace(StrategyRunMode mode)
         => mode is StrategyRunMode.Paper or StrategyRunMode.Live ? "Trading" : "Strategy";
+
+    private static string ResolveWorkspace(ChiefOfStaffIntentKindDto intentKind)
+        => intentKind switch
+        {
+            ChiefOfStaffIntentKindDto.AccountingReconciliationReview => "Accounting",
+            ChiefOfStaffIntentKindDto.TradingReadinessReview => "Trading",
+            ChiefOfStaffIntentKindDto.ReportPackApproval => "Reporting",
+            _ => "Strategy"
+        };
 }

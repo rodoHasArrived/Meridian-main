@@ -23,6 +23,7 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ReportPackEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ProviderTrustEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ExportEvidenceContributor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ChiefOfStaffEvidenceContributor>());
         return services;
     }
 }
