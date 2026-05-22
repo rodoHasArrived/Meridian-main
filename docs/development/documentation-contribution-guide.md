@@ -567,7 +567,7 @@ When documentation becomes outdated:
    ```
 
 2. **Move to `archive/docs/`** when no longer relevant
-3. **Add an entry to [archive/docs/README.md](../archive/README.md)** explaining why archived
+3. **Add an entry to [archive/docs/README.md](../../archive/docs/README.md)** explaining why archived
 
 ---
 
