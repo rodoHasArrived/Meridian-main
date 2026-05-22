@@ -33,10 +33,13 @@ if (Test-Path -LiteralPath $resolvedManifestPath) {
 }
 
 $manifestRunError = $null
-if ($null -ne $manifest -and $null -ne $manifest.run) {
-    $runErrorProperty = $manifest.run.PSObject.Properties['error']
-    if ($null -ne $runErrorProperty -and -not [string]::IsNullOrWhiteSpace([string]$runErrorProperty.Value)) {
-        $manifestRunError = [string]$runErrorProperty.Value
+if ($null -ne $manifest) {
+    $runProperty = $manifest.PSObject.Properties['run']
+    if ($null -ne $runProperty) {
+        $runErrorProperty = $runProperty.Value.PSObject.Properties['error']
+        if ($null -ne $runErrorProperty -and -not [string]::IsNullOrWhiteSpace([string]$runErrorProperty.Value)) {
+            $manifestRunError = [string]$runErrorProperty.Value
+        }
     }
 }
 
