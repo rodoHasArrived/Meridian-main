@@ -4,6 +4,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.CashFlowInterop;
 using Meridian.Storage.Archival;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.FundStructure;
 
@@ -11,7 +12,7 @@ namespace Meridian.Application.FundStructure;
 /// Thread-safe governance structure service backed by an in-memory working set
 /// with optional durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundStructureService : IFundStructureService
+public sealed class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
 {
     private static readonly StringComparer AssignmentComparer = StringComparer.OrdinalIgnoreCase;
     private const string DefaultCashFlowCurrency = "USD";
