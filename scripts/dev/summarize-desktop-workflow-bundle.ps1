@@ -32,12 +32,17 @@ if (Test-Path -LiteralPath $resolvedManifestPath) {
     $manifest = Get-Content -LiteralPath $resolvedManifestPath -Raw | ConvertFrom-Json
 }
 
+$manifestRunError = $null
+if ($null -ne $manifest -and $null -ne $manifest.run -and $manifest.run.PSObject.Properties.Name -contains 'error') {
+    $manifestRunError = [string]$manifest.run.error
+}
+
 $firstFailingStage = $stageEntries | Where-Object { $_.status -eq 'failed' } | Select-Object -First 1
 $topFailureCause = if ($null -ne $firstFailingStage -and -not [string]::IsNullOrWhiteSpace($firstFailingStage.message)) {
     [string]$firstFailingStage.message
 }
-elseif ($null -ne $manifest -and $null -ne $manifest.run -and -not [string]::IsNullOrWhiteSpace($manifest.run.error)) {
-    [string]$manifest.run.error
+elseif (-not [string]::IsNullOrWhiteSpace($manifestRunError)) {
+    $manifestRunError
 }
 else {
     'No failure recorded.'
