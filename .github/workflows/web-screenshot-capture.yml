@@ -54,6 +54,7 @@ jobs:
         run: npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
 
       - name: Capture web screenshots
+        continue-on-error: true
         env:
           OUTPUT_DIR: ${{ inputs.output_dir }}
           ROUTES_CONFIG: ${{ inputs.config }}
@@ -62,14 +63,35 @@ jobs:
             --output-dir "$OUTPUT_DIR" \
             --config "$ROUTES_CONFIG"
 
+      - name: Log web screenshot capture status
+        if: ${{ always() }}
+        env:
+          OUTPUT_DIR: ${{ inputs.output_dir }}
+        run: |
+          if [ ! -d "$OUTPUT_DIR" ]; then
+            echo "::warning::Web screenshot output directory '$OUTPUT_DIR' was not created."
+            exit 0
+          fi
+
+          COUNT=$(find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l | tr -d ' ')
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No web screenshots were captured under '$OUTPUT_DIR'."
+          else
+            echo "[INFO] Captured $COUNT web screenshot(s) in '$OUTPUT_DIR'."
+          fi
+
       - name: Commit and push results
-        if: ${{ inputs.commit == true }}
+        if: ${{ always() && inputs.commit == true }}
         env:
           OUTPUT_DIR: ${{ inputs.output_dir }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- "$OUTPUT_DIR"
+          if [ -d "$OUTPUT_DIR" ]; then
+            git add -- "$OUTPUT_DIR"
+          else
+            echo "::warning::Output path '$OUTPUT_DIR' does not exist; nothing to stage."
+          fi
           if git diff --cached --quiet; then
             echo "[INFO] No changes to commit."
           else
@@ -78,7 +100,7 @@ jobs:
           fi
 
       - name: Upload screenshot artifacts
-        if: ${{ inputs.commit != true }}
+        if: ${{ always() && inputs.commit != true }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}

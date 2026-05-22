@@ -62,18 +62,40 @@ jobs:
           /p:EnableFullWpfBuild=true
 
       - name: Capture desktop screenshots
+        continue-on-error: true
         shell: pwsh
         run: >
           scripts/dev/capture-desktop-screenshots.ps1
           -OutputDir "${{ inputs.output_dir }}"
 
+      - name: Log desktop screenshot capture status
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          $outputDir = "${{ inputs.output_dir }}"
+          if (-not (Test-Path -LiteralPath $outputDir)) {
+            Write-Warning "Desktop screenshot output directory '$outputDir' was not created."
+            return
+          }
+
+          $captures = @(Get-ChildItem -LiteralPath $outputDir -Filter '*.png' -File -ErrorAction SilentlyContinue)
+          if ($captures.Count -eq 0) {
+            Write-Warning "No desktop screenshots were captured under '$outputDir'."
+          } else {
+            Write-Host "[INFO] Captured $($captures.Count) desktop screenshot(s) in '$outputDir'."
+          }
+
       - name: Commit and push results
-        if: ${{ inputs.commit == true }}
+        if: ${{ always() && inputs.commit == true }}
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- "${{ inputs.output_dir }}"
+          if (Test-Path -LiteralPath "${{ inputs.output_dir }}") {
+            git add -- "${{ inputs.output_dir }}"
+          } else {
+            Write-Warning "Output path '${{ inputs.output_dir }}' does not exist; nothing to stage."
+          }
           $changed = git diff --cached --name-only
           if ($changed) {
             git commit -m "chore: refresh desktop screenshot catalog [skip ci]"
@@ -83,7 +105,7 @@ jobs:
           }
 
       - name: Upload screenshot artifacts
-        if: ${{ inputs.commit != true }}
+        if: ${{ always() && inputs.commit != true }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: desktop-screenshots-${{ github.run_number }}
