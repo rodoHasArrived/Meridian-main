@@ -731,7 +731,7 @@ try {
 
   $pages = [ordered]@{
     'dashboard' = 'System Overview'
-    'providers' = 'Providers'
+    'providers' = 'Provider'
     'provider-health' = 'Provider Health'
     'backfill' = 'Backfill'
     'symbols' = 'Symbols'
