@@ -165,6 +165,29 @@ function Wait-ForElement {
   return $null
 }
 
+function Wait-MeridianWindow {
+  param(
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+    [int]$TimeoutSec = 8
+  )
+
+  $deadline = (Get-Date).AddSeconds($TimeoutSec)
+  while ((Get-Date) -lt $deadline) {
+    if ($null -ne $Process -and $Process.HasExited) {
+      return $null
+    }
+
+    $window = Find-MeridianWindow -Process $Process
+    if ($null -ne $window) {
+      return $window
+    }
+
+    Start-Sleep -Milliseconds 250
+  }
+
+  return $null
+}
+
 function Ensure-EnteredFundProfile {
   param(
     [Parameter(Mandatory = $true)]
@@ -370,7 +393,64 @@ function Save-WindowCapture {
   }
 }
 
-function Invoke-Navigate {
+function Find-NavigationElementByName {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Window,
+
+    [Parameter(Mandatory = $true)]
+    [string]$Name
+  )
+
+  $nameCond = New-Object System.Windows.Automation.PropertyCondition(
+    [System.Windows.Automation.AutomationElement]::NameProperty,
+    $Name
+  )
+  $listItemCond = New-Object System.Windows.Automation.AndCondition(
+    $nameCond,
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+      [System.Windows.Automation.ControlType]::ListItem
+    ))
+  )
+  $buttonCond = New-Object System.Windows.Automation.AndCondition(
+    $nameCond,
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+      [System.Windows.Automation.ControlType]::Button
+    ))
+  )
+
+  $element = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $listItemCond)
+  if ($element) { return $element }
+
+  $element = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $buttonCond)
+  if ($element) { return $element }
+
+  return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $nameCond)
+}
+
+function Invoke-ElementMouseClick {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Element
+  )
+
+  try {
+    $point = $Element.GetClickablePoint()
+    [NativeDesktopInput]::SetCursorPos([int]$point.X, [int]$point.Y) | Out-Null
+    Start-Sleep -Milliseconds 75
+    [NativeDesktopInput]::mouse_event([NativeDesktopInput]::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, [System.UIntPtr]::Zero)
+    Start-Sleep -Milliseconds 25
+    [NativeDesktopInput]::mouse_event([NativeDesktopInput]::MOUSEEVENTF_LEFTUP, 0, 0, 0, [System.UIntPtr]::Zero)
+    Start-Sleep -Milliseconds 200
+    return $true
+  } catch {
+    return $false
+  }
+}
+
+function Invoke-NavigateWithKeyboard {
   param(
     [Parameter(Mandatory = $true)]
     [System.Windows.Automation.AutomationElement]$Window,
@@ -385,6 +465,7 @@ function Invoke-Navigate {
     Activate-MeridianWindow | Out-Null
 
     [System.Windows.Forms.SendKeys]::SendWait('^k')
+    Start-Sleep -Milliseconds 300
 
     $cond = New-Object System.Windows.Automation.PropertyCondition(
       [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
@@ -392,7 +473,7 @@ function Invoke-Navigate {
     )
 
     $inputEl = Wait-ForElement -Attempts 15 -DelayMilliseconds 250 -Finder {
-      $currentWindow = Find-MeridianWindow -Process $Process
+      $currentWindow = Wait-MeridianWindow -Process $Process -TimeoutSec 2
       if (-not $currentWindow) {
         $currentWindow = $Window
       }
@@ -402,9 +483,39 @@ function Invoke-Navigate {
     }
 
     if (-not $inputEl) {
-      $root = [System.Windows.Automation.AutomationElement]::RootElement
-      $inputEl = Wait-ForElement -Attempts 6 -DelayMilliseconds 250 -Finder {
-        return $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
+      $commandPaletteButtonCond = New-Object System.Windows.Automation.AndCondition(
+        (New-Object System.Windows.Automation.PropertyCondition(
+          [System.Windows.Automation.AutomationElement]::NameProperty,
+          'Open Command Palette'
+        )),
+        (New-Object System.Windows.Automation.PropertyCondition(
+          [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+          [System.Windows.Automation.ControlType]::Button
+        ))
+      )
+      $commandPaletteButton = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $commandPaletteButtonCond)
+      if ($commandPaletteButton) {
+        try {
+          $paletteInvoke = $commandPaletteButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern) -as [System.Windows.Automation.InvokePattern]
+          if ($paletteInvoke) {
+            $paletteInvoke.Invoke()
+          }
+          else {
+            Invoke-ElementMouseClick -Element $commandPaletteButton | Out-Null
+          }
+        } catch {
+          Invoke-ElementMouseClick -Element $commandPaletteButton | Out-Null
+        }
+
+        $inputEl = Wait-ForElement -Attempts 12 -DelayMilliseconds 250 -Finder {
+          $currentWindow = Wait-MeridianWindow -Process $Process -TimeoutSec 2
+          if (-not $currentWindow) {
+            $currentWindow = $Window
+          }
+
+          if (-not $currentWindow) { return $null }
+          return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
+        }
       }
     }
 
@@ -415,17 +526,92 @@ function Invoke-Navigate {
     }
 
     $valuePattern = $inputEl.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern) -as [System.Windows.Automation.ValuePattern]
-    $valuePattern.SetValue('')
-    $valuePattern.SetValue($SearchTerm)
-    Start-Sleep -Milliseconds 400
+    if ($valuePattern) {
+      $valuePattern.SetValue('')
+      $valuePattern.SetValue($SearchTerm)
+    }
+    else {
+      try { $inputEl.SetFocus() } catch {}
+      [System.Windows.Forms.SendKeys]::SendWait('^a')
+      [System.Windows.Forms.SendKeys]::SendWait('{BACKSPACE}')
+      [System.Windows.Forms.SendKeys]::SendWait($SearchTerm)
+    }
 
+    Start-Sleep -Milliseconds 400
     [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-    Start-Sleep -Milliseconds 1000
+    Start-Sleep -Milliseconds 900
     return $true
   } catch {
-    Write-Warning "Navigation failed for '$SearchTerm': $_"
+    Write-Warning "Keyboard navigation failed for '$SearchTerm': $_"
     return $false
   }
+}
+
+function Invoke-NavigateWithMouse {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Window,
+
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+
+    [Parameter(Mandatory = $true)]
+    [string]$SearchTerm
+  )
+
+  try {
+    Activate-MeridianWindow | Out-Null
+    $currentWindow = Wait-MeridianWindow -Process $Process -TimeoutSec 4
+    if (-not $currentWindow) {
+      $currentWindow = $Window
+    }
+
+    if (-not $currentWindow) {
+      return $false
+    }
+
+    $targetElement = Find-NavigationElementByName -Window $currentWindow -Name $SearchTerm
+    if (-not $targetElement) {
+      return $false
+    }
+
+    $selectionPattern = $targetElement.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern) -as [System.Windows.Automation.SelectionItemPattern]
+    if ($selectionPattern) {
+      $selectionPattern.Select()
+      Start-Sleep -Milliseconds 400
+      return $true
+    }
+
+    $invokePattern = $targetElement.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern) -as [System.Windows.Automation.InvokePattern]
+    if ($invokePattern) {
+      $invokePattern.Invoke()
+      Start-Sleep -Milliseconds 400
+      return $true
+    }
+
+    return (Invoke-ElementMouseClick -Element $targetElement)
+  } catch {
+    Write-Warning "Mouse navigation failed for '$SearchTerm': $_"
+    return $false
+  }
+}
+
+function Invoke-Navigate {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Window,
+
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+
+    [Parameter(Mandatory = $true)]
+    [string]$SearchTerm
+  )
+
+  if (Invoke-NavigateWithKeyboard -Window $Window -Process $Process -SearchTerm $SearchTerm) {
+    return $true
+  }
+
+  Write-Warning "Retrying '$SearchTerm' navigation with mouse automation fallback."
+  return (Invoke-NavigateWithMouse -Window $Window -Process $Process -SearchTerm $SearchTerm)
 }
 
 Assert-Command -Name 'dotnet'
@@ -434,6 +620,22 @@ Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 [void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
 [void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class NativeDesktopInput
+{
+    public const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+    public const uint MOUSEEVENTF_LEFTUP = 0x0004;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetCursorPos(int x, int y);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
+}
+"@
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
@@ -458,8 +660,9 @@ if ($fixtureRequired) {
   $env:MDC_FIXTURE_MODE = '1'
 }
 $exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $Configuration -Framework $Framework -BinaryName $ExeName -IsolationKey $buildIsolationKey
-$stdoutPath = 'wpf-startup-stdout.log'
-$stderrPath = 'wpf-startup-stderr.log'
+$runStamp = (Get-Date).ToString('yyyyMMddHHmmss')
+$stdoutPath = Join-Path $OutputDir "wpf-startup-stdout-$runStamp.log"
+$stderrPath = Join-Path $OutputDir "wpf-startup-stderr-$runStamp.log"
 $retryTelemetry = New-Object System.Collections.ArrayList
 $retryTelemetryPath = Join-Path $OutputDir 'retry-telemetry.json'
 
@@ -549,7 +752,7 @@ try {
     $search = $entry.Value
 
     if (-not $window) {
-      $window = Find-MeridianWindow -Process $proc
+      $window = Wait-MeridianWindow -Process $proc -TimeoutSec 8
     }
 
     if (-not $window) {
@@ -557,9 +760,15 @@ try {
       continue
     }
 
-    Write-Host "Navigating to '$search' ..."
-    $ok = Invoke-Navigate -Window $window -Process $proc -SearchTerm $search
-    $window = Find-MeridianWindow -Process $proc
+    $ok = $true
+    if ($slug -eq 'dashboard') {
+      Write-Host "Capturing '$search' from the detected shell window."
+    } else {
+      Write-Host "Navigating to '$search' ..."
+      $ok = Invoke-Navigate -Window $window -Process $proc -SearchTerm $search
+    }
+
+    $window = Wait-MeridianWindow -Process $proc -TimeoutSec 8
 
     if ($window -and $ok) {
       $targetPath = Join-Path $OutputDir "wpf-$slug.png"

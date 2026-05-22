@@ -119,12 +119,25 @@ public sealed class DesktopWorkflowScriptTests
 
         script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
         script.Should().Contain("Invoke-MeridianRetry");
+        script.Should().Contain("function Wait-MeridianWindow");
+        script.Should().Contain("function Invoke-NavigateWithKeyboard");
+        script.Should().Contain("function Invoke-NavigateWithMouse");
+        script.Should().Contain("Retrying '$SearchTerm' navigation with mouse automation fallback.");
+        script.Should().Contain("Capturing '$search' from the detected shell window.");
+        script.Should().Contain("$stdoutPath = Join-Path $OutputDir \"wpf-startup-stdout-$runStamp.log\"");
+        script.Should().Contain("$stderrPath = Join-Path $OutputDir \"wpf-startup-stderr-$runStamp.log\"");
+        script.Should().NotContain("$stdoutPath = 'wpf-startup-stdout.log'");
+        script.Should().NotContain("$stderrPath = 'wpf-startup-stderr.log'");
 
         var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'shared/retry.ps1')", StringComparison.Ordinal);
         var retryIndex = script.IndexOf("Invoke-MeridianRetry", StringComparison.Ordinal);
+        var keyboardIndex = script.IndexOf("function Invoke-NavigateWithKeyboard", StringComparison.Ordinal);
+        var mouseIndex = script.IndexOf("function Invoke-NavigateWithMouse", StringComparison.Ordinal);
 
         importIndex.Should().BeGreaterThan(0);
         retryIndex.Should().BeGreaterThan(importIndex);
+        keyboardIndex.Should().BeGreaterThan(0);
+        mouseIndex.Should().BeGreaterThan(keyboardIndex);
     }
 
     [Fact]
