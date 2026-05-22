@@ -155,7 +155,7 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep generated AI inventory reports portable; they must not include local absolute repository
       paths, secrets, or machine-only identifiers.
 - [ ] Keep active AI docs from linking to retired GitHub Actions workflow paths. Point to current
-      local scripts or `docs/archive/workflows/legacy-github-actions-2026-05-18.md` instead.
+      local scripts or `archive/docs/workflows/legacy-github-actions-2026-05-18.md` instead.
 - [ ] Keep canonical GitHub documentation links pointed at `rodoHasArrived/Meridian-main`; historical
       issue or workflow-run evidence links may retain their original repository if they are evidence.
 - [ ] Run targeted validation and record the command result.

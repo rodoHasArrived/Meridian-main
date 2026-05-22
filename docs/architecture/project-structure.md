@@ -55,7 +55,7 @@ artifacts.
 | --- | --- | --- |
 | `docs/` | Active documentation | Maintained architecture, development, operations, status, plans, and references |
 | `docs/prompts/` | Active documentation | Maintained prompt, agent, and automation guidance indexes |
-| `docs/archive/` | Historical reference only | Superseded docs-tree material retained for traceability |
+| `archive/docs/` | Historical reference only | Superseded docs-tree material retained for traceability |
 | `Meridian Design System/` | Active design-system assets | Local source of truth for visual foundations, previews, governance tests, and icons |
 | `archive/` | Historical reference only | Legacy superseded docs/code kept for traceability |
 | `docs/generated/` | Generated documentation | Regenerate by script; do not hand edit generated sections |

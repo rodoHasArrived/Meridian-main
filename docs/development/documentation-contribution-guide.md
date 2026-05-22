@@ -46,7 +46,7 @@ Documentation debt is real. When making code changes:
 - Update related documentation in the same PR
 - Mark deprecated information clearly
 - Archive outdated documents rather than deleting them
-- Use `docs/archive/` for historical records consolidated from the active docs tree. Legacy
+- Use `archive/docs/` for historical records consolidated from the active docs tree. Legacy
   root `archive/docs/` links remain historical references until they are intentionally migrated.
 
 ### 4. Make It Findable
@@ -142,7 +142,7 @@ Is it a step-by-step guide for end users or operators?
                             Is it a targeted code-quality or hygiene audit?
                             ├── Yes → docs/audits/
                             └── No →
-                                Is it superseded or historical? → docs/archive/
+                                Is it superseded or historical? → archive/docs/
 ```
 
 ### Quick Lookup
@@ -163,7 +163,7 @@ Is it a step-by-step guide for end users or operators?
 | Security vulnerabilities, known issues | `security/` |
 | AI assistant guides and known errors | `ai/` |
 | Auto-generated output (do not edit) | `generated/` |
-| Outdated / superseded content | `docs/archive/` |
+| Outdated / superseded content | `archive/docs/` |
 | Diagrams (DOT/Graphviz) | `diagrams/` |
 | UML diagrams (PlantUML) | `diagrams/uml/` |
 
@@ -361,7 +361,7 @@ Add provider by implementing interface.
 ### Special Cases
 
 - **ADRs**: Use format `NNN-short-title.md` (e.g., `001-provider-abstraction.md`)
-- **Archived**: Preserve original names and add a note in `docs/archive/README.md`
+- **Archived**: Preserve original names and add a note in `archive/docs/README.md`
 - **Generated**: Prefix with `generated-` or use `generated/` directory
 
 ---
@@ -566,8 +566,8 @@ When documentation becomes outdated:
    > Archived on 2026-02-12.
    ```
 
-2. **Move to `docs/archive/`** when no longer relevant
-3. **Add an entry to [docs/archive/README.md](../archive/README.md)** explaining why archived
+2. **Move to `archive/docs/`** when no longer relevant
+3. **Add an entry to [archive/docs/README.md](../archive/README.md)** explaining why archived
 
 ---
 
