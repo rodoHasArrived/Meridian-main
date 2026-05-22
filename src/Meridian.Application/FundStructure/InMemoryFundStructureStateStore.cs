@@ -8,6 +8,7 @@ public sealed class InMemoryFundStructureStateStore : IFundStructureStateStore
 
     public Task SaveAsync(string json, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         _json = json;
         return Task.CompletedTask;
     }
