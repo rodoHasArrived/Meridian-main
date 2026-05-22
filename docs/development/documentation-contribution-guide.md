@@ -47,7 +47,7 @@ Documentation debt is real. When making code changes:
 - Mark deprecated information clearly
 - Archive outdated documents rather than deleting them
 - Use `archive/docs/` for historical records consolidated from the active docs tree. Legacy
-  root `archive/docs/` links remain historical references until they are intentionally migrated.
+  `docs/archive/` links remain historical references until they are intentionally migrated.
 
 ### 4. Make It Findable
 
