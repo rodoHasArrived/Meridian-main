@@ -44,6 +44,13 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;
 
+    public IReadOnlyList<FeatureCapabilityDescriptor> DeclareCapabilities() =>
+    [
+        new("desktop.settings.workspace", "Settings workspace", "Preferences, credentials, diagnostics, service management, notifications, and support surfaces.", true, true),
+        new("desktop.settings.capabilities", "Capability toggles", "Generated capability-control tab for module-declared desktop feature switches.", true, true),
+        new("desktop.settings.workflow-library", "Workflow library", "Reusable workflow catalog and action launch surface in Settings.", true, false)
+    ];
+
     public WorkspaceCapabilityDescriptor DescribeWorkspace()
         => ShellNavigationCatalog.BuildCapability(
             WorkspaceCopyCatalog.Settings.Descriptor,

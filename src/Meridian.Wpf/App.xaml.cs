@@ -34,6 +34,7 @@ using Meridian.Ui.Services.Services;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -149,7 +150,7 @@ public partial class App : System.Windows.Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                ConfigureServices(services);
+                ConfigureServices(services, context.Configuration);
             })
             .Build();
         WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
@@ -159,6 +160,8 @@ public partial class App : System.Windows.Application
 
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
+        Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
+            .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
 
         // Handle unhandled exceptions gracefully
         DispatcherUnhandledException += OnDispatcherUnhandledException;
@@ -207,7 +210,7 @@ public partial class App : System.Windows.Application
     /// C1: DI-first registration — services registered by interface where possible.
     /// Pages registered as transient for constructor injection via NavigationService.
     /// </summary>
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
@@ -322,7 +325,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<MainWindow>();
 
         // ── Catalog-driven WPF shell pages and shell services ───────────────
-        services.AddMeridianWpfShell();
+        services.AddMeridianWpfShell(configuration);
 
         // ── Additional pages not yet catalog-backed ─────────────────────────
         services.AddTransient<FundProfileSelectionPage>();

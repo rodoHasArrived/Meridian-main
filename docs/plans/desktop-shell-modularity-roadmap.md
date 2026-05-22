@@ -1,6 +1,6 @@
 # Desktop Shell Modularity & Extensibility Roadmap
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-22
 
 ## Summary
 
@@ -49,33 +49,48 @@ contract and a runtime-assembled page registry.
 - New: `src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs`
 - Tests: `tests/Meridian.Wpf.Tests/` — update `ShellNavigationCatalogTests` to bootstrap via modules
 
+**Status:** Implemented on 2026-05-21. The runtime registry and module-owned
+Trading/Data/Settings descriptors are in place; Portfolio, Accounting, Reporting, and Strategy
+remain on the temporary fallback path until their feature modules are split out.
+
 **TODO checklist — Phase 1**
 
-- [ ] Extend `IDesktopFeatureModule` with two new optional methods:
+- [x] Extend `IDesktopFeatureModule` with two new optional methods:
   `IReadOnlyList<ShellPageDescriptor> DescribePages()` and
   `WorkspaceCapabilityDescriptor? DescribeWorkspace()`.
-- [ ] Create `IShellPageRegistry` with `Pages`, `WorkspaceCapabilities`, and
+- [x] Create `IShellPageRegistry` with `Pages`, `WorkspaceCapabilities`, and
   `WorkspaceShells` read properties.
-- [ ] Create `ShellPageRegistryBuilder` that accepts `Contribute(IEnumerable<ShellPageDescriptor>)`
+- [x] Create `ShellPageRegistryBuilder` that accepts `Contribute(IEnumerable<ShellPageDescriptor>)`
   and `ContributeCapability(WorkspaceCapabilityDescriptor)` calls, then emits an
   `IShellPageRegistry` via `Build()`.
-- [ ] Call `ShellPageRegistryBuilder` from `DesktopFeatureModuleRegistry.AddMeridianWpfFeatureModules()`
+- [x] Call `ShellPageRegistryBuilder` from `DesktopFeatureModuleRegistry.AddMeridianWpfFeatureModules()`
   so all module page contributions are collected before the DI container is built.
-- [ ] Wire `ShellNavigationCatalog`'s lazy builders (`BuildPages`, `BuildWorkspaceShells`,
+- [x] Wire `ShellNavigationCatalog`'s lazy builders (`BuildPages`, `BuildWorkspaceShells`,
   `BuildWorkspaceCapabilities`) to read from the assembled `IShellPageRegistry` instead of
   the existing static partial arrays. Keep the partial files as temporary fallback until
   each workspace migrates.
-- [ ] Migrate `TradingFeatureModule` to implement `DescribePages()` carrying the contents of
+- [x] Migrate `TradingFeatureModule` to implement `DescribePages()` carrying the contents of
   `ShellNavigationCatalog.Trading.cs`. Delete the partial file when complete.
-- [ ] Migrate `DataFeatureModule` and `SettingsFeatureModule` in the same way.
-- [ ] Update `NavigationService.RegisterAllPages()` to read from `IShellPageRegistry`
+- [x] Migrate `DataFeatureModule` and `SettingsFeatureModule` in the same way.
+- [x] Update `NavigationService.RegisterAllPages()` to read from `IShellPageRegistry`
   instead of `ShellNavigationCatalog.Pages` directly.
-- [ ] Update `ShellNavigationCatalogTests` to bootstrap via the module registry; assert page
+- [x] Update `ShellNavigationCatalogTests` to bootstrap via the module registry; assert page
   counts and tag uniqueness from the assembled registry.
-- [ ] Add a startup validator in `DesktopShellCoordinator` that logs a warning for any
+- [x] Add a startup validator in `DesktopShellCoordinator` that logs a warning for any
   `WorkspaceCapabilityDescriptor` declared in a module but missing a matching DI registration.
-- [ ] Run `dotnet test tests/Meridian.Wpf.Tests/ /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true`
-  and confirm `ShellNavigationCatalogTests` and `NavigationServiceTests` still pass.
+- [x] Run focused WPF validation and confirm `ShellNavigationCatalogTests` and
+  `NavigationServiceTests` still pass. Full unfiltered `tests/Meridian.Wpf.Tests` timed out
+  locally after six minutes without a completed result; rerun in a quiet build window before using
+  full-suite completion as release evidence.
+
+**Phase 1 validation evidence**
+
+```bash
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:UseSharedCompilation=false -maxcpucount:1 -v:minimal
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ShellNavigationCatalogTests|FullyQualifiedName~NavigationServiceTests|FullyQualifiedName~AppServiceRegistrationTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:UseSharedCompilation=false -maxcpucount:1 --logger "console;verbosity=minimal"
+```
+
+Result: build passed; focused WPF validation passed with 70 tests.
 
 ---
 

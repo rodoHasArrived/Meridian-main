@@ -56,7 +56,8 @@ public sealed record AppConfig(
     bool OfflineFirstMode = false,
     string? PluginsPath = null,
     bool CoLocationProfile = false,
-    ProviderConnectionsConfig? ProviderConnections = null
+    ProviderConnectionsConfig? ProviderConnections = null,
+    FeatureCapabilityOptions? FeatureCapabilities = null
 );
 
 /// <summary>

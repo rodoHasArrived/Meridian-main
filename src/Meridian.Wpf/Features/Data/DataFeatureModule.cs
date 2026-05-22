@@ -52,6 +52,13 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;
 
+    public IReadOnlyList<FeatureCapabilityDescriptor> DeclareCapabilities() =>
+    [
+        new("desktop.data.workspace", "Data workspace", "Provider setup, backfill, storage, quality, and data catalog workstation surfaces.", true, true),
+        new("desktop.data.security-master", "Security master", "Reference-data review, security lifecycle readiness, and vendor-symbol mapping workbench.", true, false),
+        new("desktop.data.retention", "Retention assurance", "Archive health, storage optimization, and retention-policy assurance surfaces.", true, false)
+    ];
+
     public WorkspaceCapabilityDescriptor DescribeWorkspace()
         => ShellNavigationCatalog.BuildCapability(
             WorkspaceCopyCatalog.Data.Descriptor,

@@ -10,4 +10,6 @@ public interface IDesktopFeatureModule
     IReadOnlyList<ShellPageDescriptor> DescribePages() => Array.Empty<ShellPageDescriptor>();
 
     WorkspaceCapabilityDescriptor? DescribeWorkspace() => null;
+
+    IReadOnlyList<FeatureCapabilityDescriptor> DeclareCapabilities() => Array.Empty<FeatureCapabilityDescriptor>();
 }

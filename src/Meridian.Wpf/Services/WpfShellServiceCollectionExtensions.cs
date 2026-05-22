@@ -7,6 +7,7 @@ using Meridian.Wpf.Shell.Session;
 using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
@@ -14,10 +15,15 @@ namespace Meridian.Wpf.Services;
 public static class WpfShellServiceCollectionExtensions
 {
     public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services)
+        => AddMeridianWpfShell(services, configuration: null);
+
+    public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services, IConfiguration? configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IShellRouteRegistry, ShellRouteRegistry>();
+        services.AddSingleton<ViewModelViewResolver>();
+        services.AddSingleton<IViewModelViewResolver>(sp => sp.GetRequiredService<ViewModelViewResolver>());
         services.AddSingleton<IWindowStateStore, WindowStateStore>();
         services.AddSingleton<DesktopShellSessionService>();
         services.AddSingleton<DesktopLaunchRouter>();
@@ -41,7 +47,14 @@ public static class WpfShellServiceCollectionExtensions
             sp.GetRequiredService<WorkspaceShellContextService>(),
             sp.GetService<WorkstationWorkflowSummaryService>(),
             sp.GetService<Meridian.Strategies.Services.PromotionService>()));
-        services.AddMeridianWpfFeatureModules();
+        if (configuration is null)
+        {
+            services.AddMeridianWpfFeatureModules();
+        }
+        else
+        {
+            services.AddMeridianWpfFeatureModules(configuration);
+        }
         AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.GovernanceWorkspaceShellStateProvider));
         AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.GovernanceWorkspaceShellViewModel));
         AddTransientIfMissing(services, typeof(Meridian.Wpf.Views.GovernanceWorkspaceShellPage));

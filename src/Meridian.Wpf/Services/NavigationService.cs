@@ -263,12 +263,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             contextAware.ApplyWorkspaceShellPageTag(pageTag);
         }
 
-        ApplyNavigationParameter(page, parameter);
-
         if (page is not FrameworkElement element)
         {
             throw new InvalidOperationException($"Page '{pageType.Name}' is not a FrameworkElement.");
         }
+
+        _serviceProvider?.GetService<IViewModelViewResolver>()?.AutoWire(element, _serviceProvider);
+        ApplyNavigationParameter(page, parameter);
 
         if (_serviceProvider is not null &&
             page is Page wpfPage &&
