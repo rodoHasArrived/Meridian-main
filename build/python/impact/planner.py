@@ -146,7 +146,12 @@ class ImpactPlanner:
                 check=False,
             )
         if result.returncode != 0:
-            return []
+            stderr = result.stderr.strip()
+            stdout = result.stdout.strip()
+            details = stderr or stdout or "git diff produced no diagnostic output"
+            raise RuntimeError(
+                f"failed to compute changed files between {base!r} and {head!r}: {details}"
+            )
         return [f for f in result.stdout.strip().splitlines() if f]
 
     def plan(
