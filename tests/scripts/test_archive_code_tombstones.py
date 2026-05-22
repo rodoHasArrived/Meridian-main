@@ -11,7 +11,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
         self.archive_code_root = self.repo_root / "archive" / "code" / "src"
-        self.archive_token = self.archive_code_root.relative_to(self.repo_root).as_posix().lower()
+        self.normalized_archive_path = self.archive_code_root.relative_to(self.repo_root).as_posix().lower()
 
     def test_archive_code_files_are_comment_only_tombstones(self) -> None:
         files = sorted(
@@ -28,8 +28,8 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
 
             self.assertIn("ARCHIVE TOMBSTONE", text, f"{relative} must contain the tombstone marker.")
 
-            content_lines = [line for line in text.splitlines() if line.strip()]
-            for line in content_lines:
+            non_empty_lines = [line for line in text.splitlines() if line.strip()]
+            for line in non_empty_lines:
                 stripped = line.lstrip()
                 self.assertTrue(
                     stripped.startswith(self.COMMENT_PREFIXES),
@@ -50,9 +50,9 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
             normalized_text = text.replace("\\", "/").lower()
             relative = file_path.relative_to(self.repo_root).as_posix()
             self.assertNotIn(
-                self.archive_token,
+                self.normalized_archive_path,
                 normalized_text,
-                f"{relative} must not include archived code path {self.archive_token!r}.",
+                f"{relative} must not include archived code path {self.normalized_archive_path!r}.",
             )
 
 
