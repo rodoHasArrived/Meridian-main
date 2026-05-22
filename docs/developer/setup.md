@@ -47,3 +47,18 @@ dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 For full repository conventions, see
 [docs/development/repository-organization-guide.md](../development/repository-organization-guide.md)
 and [docs/development/repository-rule-set.md](../development/repository-rule-set.md).
+
+## Production-safe domain persistence defaults
+
+Meridian now treats in-memory domain services as **explicit local-only opt-ins**.
+Production-safe startup defaults require persistence-backed services for:
+
+- Fund Structure (`IFundStructureService`)
+- Fund Accounts (`IFundAccountService`)
+- Direct Lending (`IDirectLendingService`)
+- Banking (`IBankingService`)
+- Money Market / Treasury (`IMoneyMarketFundService`, `IMmfLiquidityService`)
+
+Set `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only for non-production fixture/dev workflows.
+If `DOTNET_ENVIRONMENT` or `ASPNETCORE_ENVIRONMENT` is `Production`, startup now fails fast when
+an in-memory governance profile is requested.

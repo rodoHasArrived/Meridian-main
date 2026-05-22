@@ -1,6 +1,7 @@
 using Meridian.Application.Config;
 using Meridian.Application.Accounts;
 using Meridian.Application.Backtesting;
+using Meridian.Application.Banking;
 using Meridian.Application.Commodities;
 using Meridian.Application.CertificatesOfDeposit;
 using Meridian.Application.CryptoCurrency;
@@ -19,6 +20,7 @@ using Meridian.Application.Options;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
+using Meridian.Application.Treasury;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Domain;
@@ -241,9 +243,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddHostedService<DailyAccrualWorker>();
         }
 
-        // Fund accounts and governance structure: keep the in-memory working set, but
-        // persist local-first snapshots under the configured storage root so operator
-        // setup survives restarts while the deeper Postgres governance wave remains future work.
+        var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
+
+        if (!useInMemoryGovernanceServices)
+        {
+            throw new InvalidOperationException(
+                "Production-safe startup requires persistence-backed governance domain services. " +
+                "Set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+        }
+
+        // Local fixture/dev profile: keep in-memory working sets persisted to local snapshots.
         services.TryAddSingleton<IFundAccountService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
@@ -280,7 +289,37 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.TryAddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+
+        services.TryAddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
+        services.TryAddSingleton<IDirectLendingQueryService, InMemoryDirectLendingService>();
+        services.TryAddSingleton<IDirectLendingCommandService, InMemoryDirectLendingService>();
+        services.TryAddSingleton<IBankingService, InMemoryBankingService>();
+        services.TryAddSingleton<IMoneyMarketFundService, InMemoryMoneyMarketFundService>();
+        services.TryAddSingleton<IMmfLiquidityService>(sp => (IMmfLiquidityService)sp.GetRequiredService<IMoneyMarketFundService>());
+
         return services;
+    }
+
+    private static bool IsInMemoryGovernanceProfileEnabled()
+    {
+        var explicitOptIn = ParseBool("MERIDIAN_USE_INMEMORY_GOVERNANCE", false);
+        if (!explicitOptIn)
+        {
+            return false;
+        }
+
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? "Production";
+
+        if (string.Equals(environment, "Production", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "In-memory governance services are forbidden in Production. " +
+                "Unset MERIDIAN_USE_INMEMORY_GOVERNANCE or run in a non-production environment.");
+        }
+
+        return true;
     }
 
     private static SecurityMasterOptions CreateSecurityMasterOptions()
