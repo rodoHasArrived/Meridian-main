@@ -175,8 +175,6 @@ short current command paths from `C:\Dev\Meridian-main`.
 ## Archive
 
 Historical and superseded material consolidated during docs cleanup now lives under `archive/docs/`.
-Older root-level archive links under `archive/docs/` remain valid historical references until those
-records are migrated intentionally.
 
 - [Docs archive overview](archive/README.md)
 
