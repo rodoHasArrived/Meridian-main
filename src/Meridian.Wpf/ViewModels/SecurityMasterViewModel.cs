@@ -47,32 +47,39 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private CancellationTokenSource? _workflowCts;
     private Task? _workflowPollingTask;
 
+    private readonly SecurityMasterSearchSectionViewModel _searchSection = new();
+    private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
+    private readonly SecurityMasterScheduleAndOpenLotSectionViewModel _scheduleSection = new();
+    private readonly SecurityMasterPrintSectionViewModel _printSection = new();
+    private readonly SecurityMasterSearchWorkspaceService _searchWorkspaceService = new();
+    private readonly SecurityMasterPrintProjectionService _printProjectionService = new();
+
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
-    public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults { get; } = new();
-    public ObservableCollection<string> AssetClassFilterOptions { get; } = new();
-    public ObservableCollection<string> ProviderFilterOptions { get; } = new();
-    public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
-    public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
-    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups { get; } = new();
-    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates { get; } = new();
-    public ObservableCollection<SecurityMasterConflict> FilteredConflicts { get; } = new();
-    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions { get; } = new();
-    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields { get; } = new();
-    public ObservableCollection<SecurityValidationIssueDto> ValidationIssues { get; } = new();
-    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields { get; } = new();
-    public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents { get; } = new();
-    public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory { get; } = new();
-    public ObservableCollection<SecurityMasterScheduleProvenanceDto> ScheduleBookProvenanceHistory { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> OpenLotReadModelFields { get; } = new();
-    public ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows { get; } = new();
-    public ObservableCollection<SecurityMasterOpenLotProvenanceDto> OpenLotProvenanceHistory { get; } = new();
-    public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections { get; } = new();
-    public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems { get; } = new();
-    public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems { get; } = new();
+    public ObservableCollection<SecurityMasterWorkstationDto> Results => _searchSection.Results;
+    public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults => _searchSection.FilteredResults;
+    public ObservableCollection<string> AssetClassFilterOptions => _searchSection.AssetClassFilterOptions;
+    public ObservableCollection<string> ProviderFilterOptions => _searchSection.ProviderFilterOptions;
+    public ObservableCollection<CorporateActionDto> CorporateActions => _printSection.CorporateActions;
+    public ObservableCollection<SecurityMasterConflict> OpenConflicts => _conflictSection.OpenConflicts;
+    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups => _conflictSection.ConflictGroups;
+    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates => _conflictSection.ProvenanceCandidates;
+    public ObservableCollection<SecurityMasterConflict> FilteredConflicts => _conflictSection.FilteredConflicts;
+    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions => _conflictSection.RecommendedActions;
+    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks => _conflictSection.DownstreamImpactLinks;
+    public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields => _printSection.CompanyProfileFields;
+    public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields => _printSection.CompanyCoverageFields;
+    public ObservableCollection<SecurityValidationIssueDto> ValidationIssues => _scheduleSection.ValidationIssues;
+    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems => _scheduleSection.ChangeHistoryItems;
+    public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields => _scheduleSection.ScheduleBookFields;
+    public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents => _scheduleSection.ScheduleBookEvents;
+    public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory => _scheduleSection.ScheduleBookFactorHistory;
+    public ObservableCollection<SecurityMasterScheduleProvenanceDto> ScheduleBookProvenanceHistory => _scheduleSection.ScheduleBookProvenanceHistory;
+    public ObservableCollection<SecurityMasterPresentationField> OpenLotReadModelFields => _scheduleSection.OpenLotReadModelFields;
+    public ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows => _scheduleSection.OpenLotRows;
+    public ObservableCollection<SecurityMasterOpenLotProvenanceDto> OpenLotProvenanceHistory => _scheduleSection.OpenLotProvenanceHistory;
+    public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections => _printSection.PrintSections;
+    public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems => _printSection.PrintChecklistItems;
+    public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems => _printSection.PrintEvidenceItems;
 
     /// <summary>
     /// Static list of corporate action types available for recording.
@@ -1785,22 +1792,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var assetClassOptions = Results
-                .Select(result => result.Classification.AssetClass)
-                .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            assetClassOptions.Insert(0, AllAssetClassesFilterLabel);
+            var assetClassOptions = _searchWorkspaceService.BuildAssetClassOptions(Results, AllAssetClassesFilterLabel);
             ReplaceCollection(AssetClassFilterOptions, assetClassOptions);
 
-            var providerOptions = Results
-                .Select(GetMatchedProvider)
-                .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            providerOptions.Insert(0, AllProvidersFilterLabel);
+            var providerOptions = _searchWorkspaceService.BuildProviderOptions(
+                Results,
+                AllProvidersFilterLabel,
+                GetMatchedProvider);
             ReplaceCollection(ProviderFilterOptions, providerOptions);
 
             if (!assetClassOptions.Contains(SelectedAssetClassFilter, StringComparer.OrdinalIgnoreCase))
@@ -1821,25 +1819,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ApplySearchWorkspaceFilters()
     {
-        IEnumerable<SecurityMasterWorkstationDto> filteredResults = Results;
-
-        if (!string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal))
-        {
-            filteredResults = filteredResults.Where(result =>
-                string.Equals(result.Classification.AssetClass, SelectedAssetClassFilter, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal))
-        {
-            filteredResults = filteredResults.Where(result =>
-                string.Equals(GetMatchedProvider(result), SelectedProviderFilter, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (ShowMappingGapsOnly)
-        {
-            filteredResults = filteredResults.Where(result => !HasProviderMapping(result));
-        }
-
+        var filteredResults = _searchWorkspaceService.ApplyFilters(
+            Results,
+            SelectedAssetClassFilter,
+            SelectedProviderFilter,
+            ShowMappingGapsOnly,
+            AllAssetClassesFilterLabel,
+            AllProvidersFilterLabel,
+            GetMatchedProvider,
+            HasProviderMapping);
         ReplaceCollection(FilteredResults, filteredResults);
 
         if (SelectedSecurity is not null &&
@@ -2779,35 +2767,35 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void PopulatePrintPresentation(SecurityMasterTrustSnapshotDto snapshot)
     {
-        ReplaceCollection(PrintSections,
-        [
-            new SecurityMasterPrintSectionItem("Overview deck", "Search outcome, trust posture, and downstream scope stay on the first page.", "01"),
-            new SecurityMasterPrintSectionItem("Company context", "Issuer profile, country risk, listing, and settlement cues support review.", "02"),
-            new SecurityMasterPrintSectionItem("Corporate actions", "Upcoming events and readiness notes follow the company brief.", "03"),
-            new SecurityMasterPrintSectionItem("Evidence trail", "Winning source, audit history, and delivery routing close the packet.", "04")
-        ]);
-
-        ReplaceCollection(PrintChecklistItems,
-        [
-            new SecurityMasterChecklistItem("Canonical identifiers attested", "Data operations", snapshot.TrustPosture.HasOpenConflicts ? "Review" : "Ready"),
-            new SecurityMasterChecklistItem("Validation blockers cleared", "Security master", snapshot.ValidationReport?.HasBlockingIssues == true ? "Review" : "Ready"),
-            new SecurityMasterChecklistItem("Trading parameters complete", "Trading operations", snapshot.TrustPosture.TradingParametersComplete ? "Ready" : "Review"),
-            new SecurityMasterChecklistItem("Corporate actions reviewed", "Fund operations", snapshot.TrustPosture.CorporateActionsTrusted ? "Ready" : "Review"),
-            new SecurityMasterChecklistItem("Distribution lane confirmed", "Reporting", snapshot.DownstreamImpact.Severity is SecurityMasterImpactSeverity.None or SecurityMasterImpactSeverity.Low ? "Ready" : "Draft")
-        ]);
-
-        ReplaceCollection(PrintEvidenceItems,
-        [
-            new SecurityMasterEvidenceItem("Winning source", GoldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
-            new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
-            new SecurityMasterEvidenceItem("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot), "Identifier resolution"),
-            new SecurityMasterEvidenceItem("Schedule model", BuildScheduleSummaryText(snapshot), FormatScheduleSourceLabel(snapshot)),
-            new SecurityMasterEvidenceItem("Lot model", BuildLotModelSummaryText(snapshot), "Lot/open-position guidance"),
-            new SecurityMasterEvidenceItem("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot), "Snapshot projection"),
-            new SecurityMasterEvidenceItem("Latest audit event", LatestHistoryEventText, "History stream"),
-            new SecurityMasterEvidenceItem("Downstream scope", snapshot.DownstreamImpact.Summary, PrintDistributionText)
-        ]);
+        var projection = _printProjectionService.BuildProjection(
+            snapshot,
+            GoldenCopySourceText,
+            LatestHistoryEventText,
+            PrintDistributionText);
+        ReplaceCollection(PrintSections, projection.Sections);
+        ReplaceCollection(PrintChecklistItems, projection.ChecklistItems);
+        ReplaceCollection(PrintEvidenceItems, projection.EvidenceItems);
     }
+
+    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
+        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
+           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
+
+    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
+        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
+
+    private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
+    {
+        collection.Clear();
+        foreach (var value in values)
+        {
+            collection.Add(value);
+        }
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim()
+           ?? string.Empty;
 
     private static string BuildValidationSummaryText(SecurityMasterTrustSnapshotDto snapshot)
     {
@@ -2843,33 +2831,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.OpenLotReadModel?.Summary ?? snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
 
-    private static string FormatScheduleSourceLabel(SecurityMasterTrustSnapshotDto snapshot)
-        => string.IsNullOrWhiteSpace(snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary)
-            ? "Schedule source"
-            : $"Schedule source: {snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary}";
-
     private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
-
-    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
-        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
-           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
-
-    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
-        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
-
-    private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
-    {
-        collection.Clear();
-        foreach (var value in values)
-        {
-            collection.Add(value);
-        }
-    }
-
-    private static string FirstNonEmpty(params string?[] values)
-        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim()
-           ?? string.Empty;
 
     private static string FormatNullableDate(DateOnly? value)
         => value?.ToString("yyyy-MM-dd") ?? "Unavailable";

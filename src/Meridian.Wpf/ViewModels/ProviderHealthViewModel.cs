@@ -172,6 +172,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     public string PageTitle => "Provider Health";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
+    public ProviderHealthCollectionsSectionViewModel CollectionsSection { get; }
+
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,
         WpfServices.ConnectionService connectionService,
@@ -192,6 +194,14 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         ProviderManagementCommandGroup = BuildProviderManagementCommandGroup();
         CommandGroup = ProviderManagementCommandGroup;
         ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
+        CollectionsSection = new ProviderHealthCollectionsSectionViewModel(
+            StreamingProviders,
+            BackfillProviders,
+            ConnectionHistory,
+            ProviderManagementRows,
+            ProviderManagementSummaryCards,
+            ProviderMetricTiles,
+            Actions);
         UpdateProviderMetricTiles();
     }
 

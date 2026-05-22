@@ -122,6 +122,21 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFinancingHighlights = [];
         AuditTrail = [];
         ReportPackAssetSections = [];
+        CollectionsSection = new FundLedgerCollectionsSectionViewModel(
+            TrialBalance,
+            Journal,
+            Accounts,
+            BankSnapshots,
+            PortfolioPositions,
+            CashFlowEntries,
+            CashFlowBuckets,
+            VisibleTrialBalance,
+            VisibleJournal,
+            LedgerDimensions,
+            ReconciliationRuns,
+            CashFinancingHighlights,
+            AuditTrail,
+            ReportPackAssetSections);
 
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo("GovernanceShell"));
@@ -186,6 +201,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public ObservableCollection<FundAuditEntry> AuditTrail { get; }
 
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; }
+
+    public FundLedgerCollectionsSectionViewModel CollectionsSection { get; }
 
     public IAsyncRelayCommand RefreshCommand { get; }
 

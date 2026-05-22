@@ -122,6 +122,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         WorkflowSummaries = _workflowSummaryStrip.Summaries;
         SecondaryWorkflowSummaries = _workflowSummaryStrip.SecondarySummaries;
         WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
+        NavigationSection = new MainPageNavigationSectionViewModel(
+            PrimaryNavigationItems,
+            SecondaryNavigationItems,
+            OverflowNavigationItems,
+            RelatedWorkflowItems,
+            RecentPages,
+            WorkspaceTiles,
+            OperatingContexts,
+            WindowModes);
+        WorkflowSection = new MainPageWorkflowSectionViewModel(
+            _commandPalette,
+            _operatorInboxPresentation,
+            _workflowSummaryStrip);
 
         SelectWorkspaceCommand = new RelayCommand<string>(workspace => SelectWorkspace(workspace, navigateToHome: true));
         NavigateToPageCommand = new RelayCommand<string>(NavigateToPage);
@@ -198,6 +211,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries { get; }
 
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
+
+    public MainPageNavigationSectionViewModel NavigationSection { get; }
+
+    public MainPageWorkflowSectionViewModel WorkflowSection { get; }
 
     public IRelayCommand<string> SelectWorkspaceCommand { get; }
 
