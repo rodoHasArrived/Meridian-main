@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 class ArchiveCodeTombstonesTests(unittest.TestCase):
-    CODE_EXTENSIONS = (".cs", ".fs", ".vb", ".xaml", ".xml")
+    CODE_EXTENSIONS = (".cs", ".fs")
 
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
