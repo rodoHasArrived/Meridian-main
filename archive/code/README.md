@@ -14,6 +14,15 @@ surface but still explain a migration or compatibility decision.
 Active source remains under `src/`. Files here are reference material only and should not be
 reintroduced without moving them back into the correct active project and validating the build.
 
+## Guardrails
+
+- `archive/code/src/` files must remain comment-only tombstones with the `ARCHIVE TOMBSTONE`
+  marker.
+- Active build surfaces (`*.sln`, `*.csproj`, `*.fsproj`, `Directory.Build.*`) must not include
+  `archive/code/src/`.
+- The repository enforcement check lives in
+  `tests/scripts/test_archive_code_tombstones.py`.
+
 
 ## Search Defaults
 
