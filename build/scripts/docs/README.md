@@ -309,7 +309,7 @@ Generates documentation health metrics with scoring.
 
 ```bash
 python3 generate-health-dashboard.py \
-  --output docs/status/health-dashboard.md \
+  --output docs/status/doc-health-dashboard.md \
   --json-output health.json
 ```
 

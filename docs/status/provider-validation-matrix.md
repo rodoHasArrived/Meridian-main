@@ -90,7 +90,7 @@ Each generated summary now restates the active provider rows, the DK1 pilot repl
 the cross-cutting checkpoint and Parquet closures, and the deferred-provider inventory so the
 automation output matches the authoritative Wave 1 posture described in this matrix.
 
-The DK1 sample-set contract is maintained in [`dk1-pilot-parity-runbook.md`](./dk1-pilot-parity-runbook.md)
+The DK1 sample-set contract is maintained in [`dk1-pilot-parity-runbook.md`](./evidence/dk1-pilot-parity-runbook.md)
 and emitted as `pilotReplaySampleSet` in the generated JSON summary. The DK1 packet generator
 validates those required samples, links the trust-rationale mapping and baseline-threshold review
 documents, checks those documents for the required DK1 reason codes, payload fields, threshold

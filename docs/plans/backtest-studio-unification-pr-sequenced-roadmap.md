@@ -35,7 +35,7 @@ Use this with:
 - [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md)
 - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
 - [../status/ROADMAP.md](../status/ROADMAP.md)
-- [../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+- [../status/FULL_IMPLEMENTATION_TODO.md](../status/FULL_IMPLEMENTATION_TODO.md)
 
 ## How to Use This Document
 

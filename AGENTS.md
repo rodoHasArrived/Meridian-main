@@ -23,7 +23,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/operations/provider-degradation-calibration.md` for provider calibration inputs and promotion-gate outputs.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
-- `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
+- `docs/status/evidence/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
 - `docs/status/contract-compatibility-matrix.md` for shared contract compatibility gates.
 - `docs/status/FEATURE_INVENTORY.md` for current feature inventory and retained local web/API scope.

@@ -9,7 +9,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 **Canonical tracking documents (not merged here):**
 
 - [`ROADMAP.md`](ROADMAP.md) — wave-structured delivery roadmap and core operator-readiness gates
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — normalized active implementation backlog aligned to the roadmap
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) — normalized active implementation backlog aligned to the roadmap
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking with legacy milestone tags retained for traceability
 - [`production-status.md`](production-status.md) — current development / pilot-ready posture and readiness caveats
 
