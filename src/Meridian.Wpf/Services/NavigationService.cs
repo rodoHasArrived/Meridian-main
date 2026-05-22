@@ -7,6 +7,7 @@ using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -91,7 +92,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// <inheritdoc />
     protected override void RegisterAllPages()
     {
-        foreach (var page in ShellNavigationCatalog.Pages)
+        IShellPageRegistry pageRegistry = ShellPageRegistryBuilder.BuildDefault();
+        foreach (var page in pageRegistry.Pages)
         {
             RegisterPage(page.PageTag, page.PageType);
 

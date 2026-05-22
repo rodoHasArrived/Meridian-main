@@ -22,6 +22,9 @@ Browser-based operator workstation frontend for active web UI delivery.
 
 ## Operational Notes
 This is the active operator UI lane; keep shared contract parity with retained desktop.
+Security Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
+`openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
+review.
 
 <!-- GENERATED:MODULE_OVERVIEW BEGIN -->
 Generated overview content is maintained by documentation automation.

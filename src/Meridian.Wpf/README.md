@@ -22,6 +22,9 @@ Retained desktop shell and compatibility surface for operator workflows that sti
 
 ## Operational Notes
 Keep retained desktop support aligned with shared contracts and governance posture.
+The retained Security Master page projects the workstation trust snapshot's `scheduleBook` and
+`openLotReadModel` payloads into operator-visible schedule, factor, provenance, and open-lot review
+sections.
 
 <!-- GENERATED:MODULE_OVERVIEW BEGIN -->
 Generated overview content is maintained by documentation automation.

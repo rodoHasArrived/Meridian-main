@@ -11,19 +11,16 @@ public static partial class ShellNavigationCatalog
     public static IReadOnlyList<WorkspaceShellDescriptor> Workspaces
         => WorkspaceCapabilities.Select(static capability => capability.Workspace).ToArray();
 
-    private static IReadOnlyList<WorkspaceCapabilityDescriptor> BuildWorkspaceCapabilities()
+    internal static IReadOnlyList<WorkspaceCapabilityDescriptor> BuildFallbackWorkspaceCapabilities()
         =>
         [
-            BuildCapability(WorkspaceCopyCatalog.Trading.Descriptor, "TradingShell", TradingWorkspaceShellDefinition, TradingPages),
             BuildCapability(WorkspaceCopyCatalog.Portfolio.Descriptor, "PortfolioShell", PortfolioWorkspaceShellDefinition, PortfolioPages),
             BuildCapability(WorkspaceCopyCatalog.Accounting.Descriptor, "AccountingShell", AccountingWorkspaceShellDefinition, AccountingPages),
             BuildCapability(WorkspaceCopyCatalog.Reporting.Descriptor, "ReportingShell", ReportingWorkspaceShellDefinition, ReportingPages),
-            BuildCapability(WorkspaceCopyCatalog.Strategy.Descriptor, "StrategyShell", StrategyWorkspaceShellDefinition, StrategyPages),
-            BuildCapability(WorkspaceCopyCatalog.Data.Descriptor, "DataShell", DataWorkspaceShellDefinition, DataPages),
-            BuildCapability(WorkspaceCopyCatalog.Settings.Descriptor, "SettingsShell", SettingsWorkspaceShellDefinition, SettingsPages)
+            BuildCapability(WorkspaceCopyCatalog.Strategy.Descriptor, "StrategyShell", StrategyWorkspaceShellDefinition, StrategyPages)
         ];
 
-    private static WorkspaceCapabilityDescriptor BuildCapability(
+    internal static WorkspaceCapabilityDescriptor BuildCapability(
         WorkspaceDescriptorCopy copy,
         string homePageTag,
         WorkspaceShellDefinition shellDefinition,
@@ -38,6 +35,18 @@ public static partial class ShellNavigationCatalog
                 TileSummary: copy.TileSummary),
             shellDefinition,
             pages);
+
+    private static readonly ShellPageDescriptor[] PortfolioPages =
+    [
+        Page<WorkspaceCapabilityHomePage>("PortfolioShell", "Portfolio Workspace", "Review account, aggregate, fund, lending, and import workflows.", "portfolio", "Launchpad", "\uE821", 0, ShellNavigationVisibilityTier.Primary, ["portfolio", "home", "workspace", "accounts"], ["AccountPortfolio", "AggregatePortfolio", "FundPortfolio", "FundAccounts"]),
+        Page<AccountPortfolioPage>("AccountPortfolio", "Account portfolio", "Review account positions and allocation changes.", "portfolio", "Accounts", "\uE821", 10, ShellNavigationVisibilityTier.Primary, ["account", "portfolio", "review"], ["AggregatePortfolio", "FundPortfolio", "PositionBlotter"]),
+        Page<AggregatePortfolioPage>("AggregatePortfolio", "Aggregate portfolio", "Monitor exposure across all accounts.", "portfolio", "Accounts", "\uE821", 20, ShellNavigationVisibilityTier.Primary, ["aggregate", "portfolio", "monitor"], ["AccountPortfolio", "FundPortfolio", "RunPortfolio"]),
+        Page<RunPortfolioPage>("RunPortfolio", "Run portfolio", "Review holdings, exposures, and weights for the selected run.", "portfolio", "Run Inspectors", "\uE821", 30, ShellNavigationVisibilityTier.Primary, ["portfolio", "positions", "review"], ["RunLedger", "RunCashFlow", "AccountingShell"], ["PortfolioInspector"]),
+        Page<FundLedgerPage>("FundPortfolio", "Fund portfolio", "Inspect fund-scoped positions and exposure detail.", "portfolio", "Fund", "\uE821", 40, ShellNavigationVisibilityTier.Secondary, ["fund portfolio", "exposure"], ["FundAccounts", "FundCashFinancing", "AggregatePortfolio"]),
+        Page<FundAccountsPage>("FundAccounts", "Fund accounts", "Inspect account balances, routing, and reconciliation readiness.", "portfolio", "Fund", "\uE8C7", 50, ShellNavigationVisibilityTier.Secondary, ["accounts", "balances"], ["FundPortfolio", "FundBanking", "FundReconciliation"]),
+        Page<PortfolioImportPage>("PortfolioImport", "Portfolio import", "Import external portfolio snapshots for reconciliation.", "portfolio", "Import", "\uE8B5", 60, ShellNavigationVisibilityTier.Secondary, ["import", "portfolio", "reconcile"], ["AccountPortfolio", "FundPortfolio", "Symbols"]),
+        Page<DirectLendingPage>("DirectLending", "Direct lending", "Review lending positions and configure credit workflows.", "portfolio", "Specialty", "\uE8C7", 70, ShellNavigationVisibilityTier.Overflow, ["lending", "credit", "configure"], ["FundPortfolio", "AccountingShell"])
+    ];
 
     private static readonly WorkspaceShellDefinition TradingWorkspaceShellDefinition =
         new(

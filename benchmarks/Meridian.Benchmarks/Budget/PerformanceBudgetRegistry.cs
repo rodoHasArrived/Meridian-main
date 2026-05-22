@@ -109,6 +109,33 @@ public static class PerformanceBudgetRegistry
         RequiresSimd: true);
 
     // -----------------------------------------------------------------------
+    // Alpaca wire-message parsing — 20260521 JsonParsingBenchmarks
+    // Source-generated System.Text.Json path used by streaming provider ingestion.
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Alpaca trade wire-message parse using the source-generated Alpaca context.
+    /// 20260521 JsonParsingBenchmarks measured ~701.5 ns and 384 B/op.
+    /// Budget leaves modest CI/runtime headroom while guarding against falling back
+    /// to heavier document/reflection parsing.
+    /// </summary>
+    public static readonly IPerformanceBudget AlpacaParseTradeSourceGenerated = new PerformanceBudget(
+        StageName: "AlpacaParse_Trade_SourceGenerated",
+        MaxAllocatedBytesPerEvent: 512,
+        MaxMeanNanosPerEvent: 900);
+
+    /// <summary>
+    /// Alpaca quote wire-message parse using the source-generated Alpaca context.
+    /// 20260521 JsonParsingBenchmarks measured ~918.3 ns and 472 B/op.
+    /// Budget leaves modest CI/runtime headroom while guarding the higher-volume
+    /// quote ingestion path.
+    /// </summary>
+    public static readonly IPerformanceBudget AlpacaParseQuoteSourceGenerated = new PerformanceBudget(
+        StageName: "AlpacaParse_Quote_SourceGenerated",
+        MaxAllocatedBytesPerEvent: 640,
+        MaxMeanNanosPerEvent: 1200);
+
+    // -----------------------------------------------------------------------
     // Export helpers
     // -----------------------------------------------------------------------
 

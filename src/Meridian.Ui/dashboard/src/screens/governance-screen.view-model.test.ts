@@ -10,6 +10,9 @@ import {
   buildGovernanceTrialBalanceViewState,
   buildSecurityScheduleRows,
   buildSecuritySchedulesViewState,
+  buildSecurityOpenLotReadModelViewState,
+  buildSecurityOpenLotRows,
+  mapScheduleBookToCashFlowScheduleEvents,
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
@@ -47,6 +50,7 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   SecurityIdentityDrillIn,
+  SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
 
@@ -219,6 +223,174 @@ const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
   }
 ];
 
+const securityTrustSnapshot: SecurityMasterTrustSnapshot = {
+  securityId: "sec-1",
+  retrievedAtUtc: "2026-05-21T15:00:00Z",
+  scheduleSummary: {
+    supportsCashflowSchedule: true,
+    supportsFactorHistory: true,
+    hasEconomicScheduleTerms: true,
+    currentFactor: 0.9,
+    currentFactorDate: "2026-11-15",
+    nextLifecycleDate: "2031-12-15",
+    sourceSummary: "Schedule source EDM-123 is current.",
+    summary: "Schedule book includes current cash-flow and factor evidence."
+  },
+  lotModel: {
+    quantityModel: "FactorAdjustedFace",
+    lotSize: 1,
+    contractMultiplier: null,
+    usesFaceValue: true,
+    supportsFactorAdjustedExposure: true,
+    requiresResolvedSecurityId: true,
+    summary: "Open lots reconcile by factor-adjusted face."
+  },
+  scheduleBook: {
+    supportsCashflowSchedule: true,
+    supportsFactorHistory: true,
+    hasEconomicScheduleTerms: true,
+    currency: "USD",
+    currentFactor: 0.9,
+    currentFactorDate: "2026-11-15",
+    nextLifecycleDate: "2031-12-15",
+    sourceSummary: "Schedule source EDM-123 is current.",
+    summary: "Schedule book includes current cash-flow and factor evidence.",
+    events: [
+      {
+        eventId: "sched-1-coupon",
+        eventType: "Coupon",
+        effectiveDate: "2026-05-15",
+        payDate: "2026-05-15",
+        accrualStartDate: "2025-11-15",
+        accrualEndDate: "2026-05-15",
+        expectedAmount: 26250,
+        actualAmount: 26250,
+        varianceAmount: 0,
+        factorStart: 1,
+        factorEnd: 1,
+        currency: "USD",
+        postingStatus: "Posted",
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Trustee schedule matched.",
+        isDerivedFromEconomicTerms: true,
+        isCurrentProjection: false
+      },
+      {
+        eventId: "sched-1-paydown",
+        eventType: "Paydown",
+        effectiveDate: "2026-11-15",
+        payDate: "2026-11-15",
+        accrualStartDate: "2026-05-15",
+        accrualEndDate: "2026-11-15",
+        expectedAmount: 126250,
+        actualAmount: 124900,
+        varianceAmount: -1350,
+        factorStart: 1,
+        factorEnd: 0.9,
+        currency: "USD",
+        postingStatus: "Variance",
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Expected-versus-actual variance.",
+        isDerivedFromEconomicTerms: true,
+        isCurrentProjection: true
+      }
+    ],
+    factorHistory: [
+      {
+        pointId: "factor-1",
+        effectiveDate: "2026-11-15",
+        factor: 0.9,
+        previousFactor: 1,
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Trustee factor update.",
+        isCurrentFactor: true
+      }
+    ],
+    provenanceHistory: [
+      {
+        provenanceId: "schedule-source-1",
+        category: "Schedule",
+        summary: "Loaded from golden EDM schedule source.",
+        effectiveDate: "2026-05-15",
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Trustee schedule matched.",
+        streamVersion: 4,
+        eventType: "SecurityAmended"
+      }
+    ]
+  },
+  openLotReadModel: {
+    quantityModel: "FactorAdjustedFace",
+    lotSize: 1,
+    contractMultiplier: null,
+    usesFaceValue: true,
+    supportsFactorAdjustedExposure: true,
+    requiresResolvedSecurityId: true,
+    currentFactor: 0.9,
+    currentFactorDate: "2026-11-15",
+    asOfUtc: "2026-05-21T15:00:00Z",
+    summary: "Open lots reconcile by factor-adjusted face for account scope Fund Alpha.",
+    lots: [
+      {
+        securityId: "sec-1",
+        portfolioId: "portfolio-alpha",
+        runId: "run-42",
+        accountScopeId: "acct-alpha",
+        accountScopeDisplayName: "Fund Alpha - Main",
+        vehicleScopeId: null,
+        vehicleScopeDisplayName: null,
+        lotId: "lot-1",
+        symbol: "AAPL",
+        tradeDate: "2026-04-20T14:30:00Z",
+        settleDate: "2026-04-22T00:00:00Z",
+        originalQuantity: 100000,
+        currentQuantity: 95000,
+        originalFace: 100000,
+        currentFace: 95000,
+        factorAdjustedQuantity: 85500,
+        factorAdjustedFace: 85500,
+        costBasis: 99000,
+        entryPrice: 99,
+        unrealizedPnl: 1250,
+        currency: "USD",
+        lotStatus: "Open",
+        sourceSystem: "ledger",
+        sourceRecordId: "LOT-1",
+        asOfUtc: "2026-05-21T15:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Latest paper ledger lot.",
+        isLongTerm: false,
+        notes: "Primary scoped lot."
+      }
+    ],
+    provenanceHistory: [
+      {
+        provenanceId: "lot-source-1",
+        runId: "run-42",
+        portfolioId: "portfolio-alpha",
+        accountScopeId: "acct-alpha",
+        accountScopeDisplayName: "Fund Alpha - Main",
+        sourceSystem: "ledger",
+        sourceRecordId: "LOT-1",
+        asOfUtc: "2026-05-21T15:00:00Z",
+        summary: "Lot sourced from latest ledger read model."
+      }
+    ]
+  }
+};
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -246,6 +418,7 @@ function createSecurityMasterDrillInServices(
   return {
     getCorporateActions: vi.fn().mockResolvedValue([] as CorporateAction[]),
     getTradingParameters: vi.fn().mockResolvedValue(tradingParameters),
+    getTrustSnapshot: vi.fn().mockResolvedValue(securityTrustSnapshot),
     ...overrides
   };
 }
@@ -1119,6 +1292,96 @@ describe("governance-screen view model", () => {
     });
   });
 
+  it("maps trust snapshot scheduleBook into operator schedule rows", () => {
+    const mapped = mapScheduleBookToCashFlowScheduleEvents("sec-1", securityTrustSnapshot);
+    const state = buildSecuritySchedulesViewState({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Fixed Income",
+      schedules: mapped,
+      selectedRowId: "sched-1-paydown",
+      factorHistoryCount: securityTrustSnapshot.scheduleBook?.factorHistory.length ?? 0,
+      provenanceCount: securityTrustSnapshot.scheduleBook?.provenanceHistory.length ?? 0,
+      sourceSummary: securityTrustSnapshot.scheduleBook?.sourceSummary ?? null
+    });
+
+    expect(mapped).toHaveLength(2);
+    expect(mapped[1]).toMatchObject({
+      eventId: "sched-1-paydown",
+      paymentDate: "2026-11-15",
+      expectedAmount: 126250,
+      actualAmount: 124900,
+      postingStatus: "Variance",
+      auditReference: "golden-edm · EDM-123",
+      note: "Expected-versus-actual variance."
+    });
+    expect(state.description).toContain("Schedule source EDM-123 is current.");
+    expect(state.toolbarItems).toEqual(expect.arrayContaining([
+      { id: "factor", label: "Factor rows", value: "2" },
+      { id: "sources", label: "Sources", value: "1" }
+    ]));
+  });
+
+  it("derives open-lot read-model rows, detail, and empty/error states", () => {
+    const readModel = securityTrustSnapshot.openLotReadModel ?? null;
+    const rows = buildSecurityOpenLotRows(readModel, "lot-1");
+    const state = buildSecurityOpenLotReadModelViewState({
+      securityId: "sec-1",
+      readModel,
+      selectedRowId: "lot-1"
+    });
+
+    expect(rows[0]).toMatchObject({
+      rowId: "lot-1",
+      tradeDateLabel: "2026-04-20",
+      settleDateLabel: "2026-04-22",
+      quantityLabel: "95,000",
+      faceLabel: "95,000",
+      factorAdjustedLabel: "85,500",
+      costBasisLabel: "99,000 USD",
+      unrealizedPnlLabel: "+1,250 USD",
+      scopeLabel: "Fund Alpha - Main",
+      statusTone: "success",
+      isExpanded: true
+    });
+    expect(state).toMatchObject({
+      title: "Open lot read model",
+      tableLabel: "Open lot read model for sec-1",
+      selectedRowId: "lot-1",
+      hasRows: true,
+      statusAnnouncement: "1 open lot loaded for sec-1."
+    });
+    expect(state.selectedDetail).toMatchObject({
+      title: "lot-1",
+      statusLabel: "Open",
+      ariaLabel: "Open lot detail for lot-1 on AAPL"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Factor-adjusted exposure", value: "85,500", tone: "success" },
+      { label: "Source", value: "ledger · LOT-1" }
+    ]));
+
+    expect(buildSecurityOpenLotReadModelViewState({
+      securityId: "sec-1",
+      readModel: null,
+      selectedRowId: null,
+      loading: true
+    })).toMatchObject({
+      loadingText: "Loading open lot read model...",
+      statusAnnouncement: "Loading open lot read model for sec-1."
+    });
+    expect(buildSecurityOpenLotReadModelViewState({
+      securityId: "sec-1",
+      readModel: null,
+      selectedRowId: null,
+      error: "Trust snapshot offline"
+    })).toMatchObject({
+      errorText: "Trust snapshot offline",
+      errorDetails: [],
+      statusAnnouncement: "Open lot read model error: Trust snapshot offline"
+    });
+  });
+
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {
     const staleIdentity = deferred<SecurityIdentityDrillIn>();
     const latestIdentity = deferred<SecurityIdentityDrillIn>();
@@ -1163,12 +1426,14 @@ describe("governance-screen view model", () => {
     const identity = deferred<SecurityIdentityDrillIn>();
     const corporateActions = deferred<CorporateAction[]>();
     const parameters = deferred<TradingParameters>();
+    const trustSnapshot = deferred<SecurityMasterTrustSnapshot>();
     const services = createSecurityMasterServices({
       getIdentity: vi.fn().mockReturnValue(identity.promise)
     });
     const drillInServices = createSecurityMasterDrillInServices({
       getCorporateActions: vi.fn().mockReturnValue(corporateActions.promise),
-      getTradingParameters: vi.fn().mockReturnValue(parameters.promise)
+      getTradingParameters: vi.fn().mockReturnValue(parameters.promise),
+      getTrustSnapshot: vi.fn().mockReturnValue(trustSnapshot.promise)
     });
 
     const { result, rerender } = renderHook(
@@ -1188,16 +1453,19 @@ describe("governance-screen view model", () => {
     expect(result.current.identity).toBeNull();
     expect(result.current.corporateActionsLoading).toBe(false);
     expect(result.current.tradingParametersLoading).toBe(false);
+    expect(result.current.trustSnapshotLoading).toBe(false);
 
     await act(async () => {
       identity.resolve(securityIdentity);
       corporateActions.resolve([]);
       parameters.resolve(tradingParameters);
-      await Promise.all([identity.promise, corporateActions.promise, parameters.promise]);
+      trustSnapshot.resolve(securityTrustSnapshot);
+      await Promise.all([identity.promise, corporateActions.promise, parameters.promise, trustSnapshot.promise]);
     });
 
     expect(result.current.identity).toBeNull();
     expect(result.current.selectedSecurityId).toBeNull();
+    expect(result.current.trustSnapshot).toBeNull();
   });
 
   it("surfaces search failures and counts open conflicts for badges", () => {
@@ -1283,6 +1551,7 @@ describe("governance-screen view model", () => {
       conflictsLoading: false,
       corporateActions,
       securitySchedules: cashFlowSchedules,
+      openLotReadModel: securityTrustSnapshot.openLotReadModel ?? null,
       tradingParameters
     });
 
@@ -1302,6 +1571,7 @@ describe("governance-screen view model", () => {
     expect(state.detailSections).toEqual(expect.arrayContaining([
       { id: "overview", label: "Overview", value: "1 identifier", active: true },
       { id: "schedules", label: "Schedules", value: "2 cash-flow events" },
+      { id: "lots", label: "Open lots", value: "1 lot" },
       { id: "controls", label: "Controls", value: "Trading set" },
       { id: "audit", label: "Audit", value: "1 conflict" }
     ]));

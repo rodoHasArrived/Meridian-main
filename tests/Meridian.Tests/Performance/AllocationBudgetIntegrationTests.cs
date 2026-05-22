@@ -1,5 +1,6 @@
 using System.IO;
 using Meridian.Application.Pipeline;
+using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
@@ -50,6 +51,8 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     private const long WalChecksumSmallMaxBytes = 0;
     private const long WalChecksumMediumMaxBytes = 0;
     private const long WalChecksumLargeMaxBytes = 1024;
+    private const long AlpacaParseTradeSourceGeneratedMaxBytes = 512;
+    private const long AlpacaParseQuoteSourceGeneratedMaxBytes = 640;
 
     public AllocationBudgetIntegrationTests()
     {
@@ -267,6 +270,58 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
             allocated <= WalChecksumLargeMaxBytes,
             $"WalChecksum_Large allocated {allocated} bytes; budget is {WalChecksumLargeMaxBytes} bytes. " +
             $"ArrayPool.Rent should not materially increase managed heap allocations beyond the array header.");
+    }
+
+    // -----------------------------------------------------------------------
+    // Alpaca wire-message parse — source-generated System.Text.Json context
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void AlpacaParse_Trade_SourceGenerated_AllocatesWithinBudget()
+    {
+        // Arrange — matches JsonParsingBenchmarks.ParseTrade_SourceGenerated.
+        var json = """
+            {"T":"t","S":"SPY","p":450.25,"s":100,"t":"2024-01-15T14:30:00Z","x":"NYSE","i":12345}
+            """u8.ToArray();
+        _ = HighPerformanceJson.ParseAlpacaTrade(json);
+        ForceGc();
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        _ = HighPerformanceJson.ParseAlpacaTrade(json);
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert
+        var allocated = after - before;
+        Assert.True(
+            allocated <= AlpacaParseTradeSourceGeneratedMaxBytes,
+            $"AlpacaParse_Trade_SourceGenerated allocated {allocated} bytes; budget is {AlpacaParseTradeSourceGeneratedMaxBytes} bytes. " +
+            $"The source-generated Alpaca trade parser should stay near the 20260521 benchmark result of 384 B/op.");
+    }
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void AlpacaParse_Quote_SourceGenerated_AllocatesWithinBudget()
+    {
+        // Arrange — matches JsonParsingBenchmarks.ParseQuote_SourceGenerated.
+        var json = """
+            {"T":"q","S":"SPY","bp":450.24,"bs":200,"ap":450.26,"as":150,"t":"2024-01-15T14:30:00Z","bx":"NYSE","ax":"ARCA"}
+            """u8.ToArray();
+        _ = HighPerformanceJson.ParseAlpacaQuote(json);
+        ForceGc();
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        _ = HighPerformanceJson.ParseAlpacaQuote(json);
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert
+        var allocated = after - before;
+        Assert.True(
+            allocated <= AlpacaParseQuoteSourceGeneratedMaxBytes,
+            $"AlpacaParse_Quote_SourceGenerated allocated {allocated} bytes; budget is {AlpacaParseQuoteSourceGeneratedMaxBytes} bytes. " +
+            $"The source-generated Alpaca quote parser should stay near the 20260521 benchmark result of 472 B/op.");
     }
 
     // -----------------------------------------------------------------------

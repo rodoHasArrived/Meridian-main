@@ -8,6 +8,7 @@ import {
   getRunTrialBalance,
   getSecurityConflicts,
   getSecurityIdentity,
+  getSecurityTrustSnapshot,
   getTradingParameters,
   runAnalysisExport,
   resolveReconciliationBreak,
@@ -42,6 +43,9 @@ import type {
   SecurityIdentifierEntry,
   SecurityMasterConflict,
   SecurityMasterEntry,
+  SecurityMasterOpenLot,
+  SecurityMasterOpenLotReadModel,
+  SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
 
@@ -206,15 +210,8 @@ export interface CorporateActionsViewState {
 }
 
 export type SecurityScheduleFamily = "bond" | "structured" | "fund" | "derivative";
-export type SecurityScheduleEventType =
-  | "Coupon"
-  | "Principal"
-  | "Paydown"
-  | "Maturity"
-  | "Call"
-  | "Distribution"
-  | "FactorUpdate";
-export type SecuritySchedulePostingStatus = "Posted" | "Pending" | "Variance" | "Forecast";
+export type SecurityScheduleEventType = string;
+export type SecuritySchedulePostingStatus = string;
 
 export interface SecurityCashFlowScheduleEvent {
   eventId: string;
@@ -294,6 +291,9 @@ export interface SecuritySchedulesViewState {
   detailEmptyTitle: string;
   detailEmptyText: string;
   detailEmptyAriaLabel: string;
+  loadingText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
   hasRows: boolean;
   statusAnnouncement: string;
 }
@@ -310,9 +310,66 @@ export interface TradingParametersViewState {
   statusAnnouncement: string;
 }
 
+export interface SecurityOpenLotRowViewModel extends SecurityMasterOpenLot {
+  rowId: string;
+  tradeDateLabel: string;
+  settleDateLabel: string;
+  quantityLabel: string;
+  faceLabel: string;
+  factorAdjustedLabel: string;
+  costBasisLabel: string;
+  entryPriceLabel: string;
+  unrealizedPnlLabel: string;
+  scopeLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "outline";
+  ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface SecurityOpenLotDetailViewState {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "outline";
+  fields: SecurityScheduleDetailFieldViewModel[];
+}
+
+export interface SecurityOpenLotReadModelViewState {
+  securityId: string;
+  title: string;
+  description: string;
+  summary: string;
+  asOfLabel: string;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  toolbarAriaLabel: string;
+  toolbarItems: SecurityScheduleToolbarItemViewModel[];
+  rows: SecurityOpenLotRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: SecurityOpenLotDetailViewState | null;
+  emptyText: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  loadingText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  hasRows: boolean;
+  statusAnnouncement: string;
+}
+
 export interface SecurityMasterDrillInServices {
   getCorporateActions: (securityId: string) => Promise<CorporateAction[]>;
   getTradingParameters: (securityId: string) => Promise<TradingParameters>;
+  getTrustSnapshot: (securityId: string) => Promise<SecurityMasterTrustSnapshot>;
 }
 
 export interface SecuritySearchResultColumnViewModel {
@@ -355,7 +412,7 @@ export interface SecurityMasterPageMetricViewModel {
 }
 
 export interface SecurityMasterDetailSectionViewModel {
-  id: "overview" | "schedules" | "controls" | "audit";
+  id: "overview" | "schedules" | "lots" | "controls" | "audit";
   label: string;
   value: string;
   active?: boolean;
@@ -863,7 +920,8 @@ const defaultGovernanceReportingServices: GovernanceReportingServices = {
 
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
   getCorporateActions: (securityId) => getCorporateActions(securityId),
-  getTradingParameters: (securityId) => getTradingParameters(securityId)
+  getTradingParameters: (securityId) => getTradingParameters(securityId),
+  getTrustSnapshot: (securityId) => getSecurityTrustSnapshot(securityId)
 };
 
 const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> = {
@@ -1084,6 +1142,10 @@ export function useSecurityMasterViewModel(
   const [corporateActionsError, setCorporateActionsError] = useState<ApiErrorDisplay | null>(null);
   const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
   const [selectedScheduleEventId, setSelectedScheduleEventId] = useState<string | null>(null);
+  const [selectedOpenLotId, setSelectedOpenLotId] = useState<string | null>(null);
+  const [trustSnapshot, setTrustSnapshot] = useState<SecurityMasterTrustSnapshot | null>(null);
+  const [trustSnapshotLoading, setTrustSnapshotLoading] = useState(false);
+  const [trustSnapshotError, setTrustSnapshotError] = useState<ApiErrorDisplay | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
   const [tradingParametersError, setTradingParametersError] = useState<ApiErrorDisplay | null>(null);
@@ -1131,6 +1193,10 @@ export function useSecurityMasterViewModel(
     setCorporateActionsError(null);
     setSelectedCorporateActionId(null);
     setSelectedScheduleEventId(null);
+    setSelectedOpenLotId(null);
+    setTrustSnapshot(null);
+    setTrustSnapshotLoading(false);
+    setTrustSnapshotError(null);
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
@@ -1178,6 +1244,10 @@ export function useSecurityMasterViewModel(
       setCorporateActionsError(null);
       setSelectedCorporateActionId(null);
       setSelectedScheduleEventId(null);
+      setSelectedOpenLotId(null);
+      setTrustSnapshot(null);
+      setTrustSnapshotLoading(false);
+      setTrustSnapshotError(null);
       setTradingParameters(null);
       setTradingParametersLoading(false);
       setTradingParametersError(null);
@@ -1187,6 +1257,8 @@ export function useSecurityMasterViewModel(
     let cancelled = false;
     setCorporateActionsLoading(true);
     setCorporateActionsError(null);
+    setTrustSnapshotLoading(true);
+    setTrustSnapshotError(null);
     setTradingParametersLoading(true);
     setTradingParametersError(null);
 
@@ -1205,6 +1277,24 @@ export function useSecurityMasterViewModel(
       .finally(() => {
         if (!cancelled) {
           setCorporateActionsLoading(false);
+        }
+      });
+
+    drillInServices.getTrustSnapshot(selectedSecurityId)
+      .then((snapshot) => {
+        if (!cancelled) {
+          setTrustSnapshot(snapshot);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setTrustSnapshot(null);
+          setTrustSnapshotError(describeApiError(err, "Trust snapshot failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTrustSnapshotLoading(false);
         }
       });
 
@@ -1239,6 +1329,10 @@ export function useSecurityMasterViewModel(
     setSearchError(null);
     setSelectedCorporateActionId(null);
     setSelectedScheduleEventId(null);
+    setSelectedOpenLotId(null);
+    setTrustSnapshot(null);
+    setTrustSnapshotLoading(false);
+    setTrustSnapshotError(null);
     identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
@@ -1294,6 +1388,10 @@ export function useSecurityMasterViewModel(
     setCorporateActionsError(null);
     setSelectedCorporateActionId(null);
     setSelectedScheduleEventId(null);
+    setSelectedOpenLotId(null);
+    setTrustSnapshot(null);
+    setTrustSnapshotLoading(false);
+    setTrustSnapshotError(null);
     setTradingParameters(null);
     setTradingParametersError(null);
 
@@ -1384,10 +1482,17 @@ export function useSecurityMasterViewModel(
     ),
     [corporateActions, corporateActionsError, corporateActionsLoading, selectedCorporateActionId, selectedSecurityId]
   );
-  const securitySchedules = useMemo(
-    () => resolveSecurityScheduleEvents(selectedSecurityId),
-    [selectedSecurityId]
-  );
+  const securitySchedules = useMemo(() => {
+    if (trustSnapshot?.scheduleBook) {
+      return mapScheduleBookToCashFlowScheduleEvents(selectedSecurityId, trustSnapshot);
+    }
+
+    if (trustSnapshot || trustSnapshotLoading || trustSnapshotError) {
+      return [];
+    }
+
+    return resolveSecurityScheduleEvents(selectedSecurityId);
+  }, [selectedSecurityId, trustSnapshot, trustSnapshotError, trustSnapshotLoading]);
   const securityScheduleRows = useMemo(
     () => buildSecurityScheduleRows(securitySchedules, selectedScheduleEventId),
     [securitySchedules, selectedScheduleEventId]
@@ -1410,7 +1515,12 @@ export function useSecurityMasterViewModel(
       displayName: identity?.displayName ?? selectedSearchResult?.displayName ?? null,
       assetClass: identity?.assetClass ?? selectedSearchResult?.classification.assetClass ?? null,
       schedules: securitySchedules,
-      selectedRowId: selectedScheduleEventId
+      selectedRowId: selectedScheduleEventId,
+      loading: trustSnapshotLoading,
+      error: trustSnapshotError,
+      factorHistoryCount: trustSnapshot?.scheduleBook?.factorHistory.length ?? 0,
+      provenanceCount: trustSnapshot?.scheduleBook?.provenanceHistory.length ?? 0,
+      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null
     }),
     [
       identity?.assetClass,
@@ -1419,7 +1529,42 @@ export function useSecurityMasterViewModel(
       selectedScheduleEventId,
       selectedSearchResult?.classification.assetClass,
       selectedSearchResult?.displayName,
-      selectedSecurityId
+      selectedSecurityId,
+      trustSnapshot,
+      trustSnapshotError,
+      trustSnapshotLoading
+    ]
+  );
+  const openLotRows = useMemo(
+    () => buildSecurityOpenLotRows(trustSnapshot?.openLotReadModel ?? null, selectedOpenLotId),
+    [selectedOpenLotId, trustSnapshot?.openLotReadModel]
+  );
+  useEffect(() => {
+    if (openLotRows.length === 0) {
+      if (selectedOpenLotId !== null) {
+        setSelectedOpenLotId(null);
+      }
+      return;
+    }
+
+    if (!selectedOpenLotId || !openLotRows.some((row) => row.rowId === selectedOpenLotId)) {
+      setSelectedOpenLotId(openLotRows[0].rowId);
+    }
+  }, [openLotRows, selectedOpenLotId]);
+  const openLotReadModelView = useMemo(
+    () => buildSecurityOpenLotReadModelViewState({
+      securityId: selectedSecurityId,
+      readModel: trustSnapshot?.openLotReadModel ?? null,
+      selectedRowId: selectedOpenLotId,
+      loading: trustSnapshotLoading,
+      error: trustSnapshotError
+    }),
+    [
+      selectedOpenLotId,
+      selectedSecurityId,
+      trustSnapshot?.openLotReadModel,
+      trustSnapshotError,
+      trustSnapshotLoading
     ]
   );
   const tradingParametersView = useMemo(
@@ -1445,6 +1590,9 @@ export function useSecurityMasterViewModel(
       conflictsLoading,
       corporateActions,
       securitySchedules,
+      openLotReadModel: trustSnapshot?.openLotReadModel ?? null,
+      trustSnapshotLoading,
+      trustSnapshotError,
       tradingParameters
     }),
     [
@@ -1452,6 +1600,9 @@ export function useSecurityMasterViewModel(
       conflictsLoading,
       corporateActions,
       securitySchedules,
+      trustSnapshot?.openLotReadModel,
+      trustSnapshotError,
+      trustSnapshotLoading,
       identity,
       identityLoading,
       query,
@@ -1502,6 +1653,13 @@ export function useSecurityMasterViewModel(
     securityScheduleRows,
     schedulesView,
     selectScheduleEvent: setSelectedScheduleEventId,
+    trustSnapshot,
+    trustSnapshotLoading,
+    trustSnapshotErrorText: trustSnapshotError?.summary ?? null,
+    trustSnapshotErrorDetails: trustSnapshotError?.details ?? [],
+    openLotRows,
+    openLotReadModelView,
+    selectOpenLot: setSelectedOpenLotId,
     tradingParameters,
     tradingParametersView,
     tradingParametersLoading,
@@ -2021,6 +2179,9 @@ export function buildSecurityMasterPageViewState({
   conflictsLoading,
   corporateActions,
   securitySchedules,
+  openLotReadModel,
+  trustSnapshotLoading = false,
+  trustSnapshotError = null,
   tradingParameters
 }: {
   query: string;
@@ -2035,6 +2196,9 @@ export function buildSecurityMasterPageViewState({
   conflictsLoading: boolean;
   corporateActions: CorporateAction[] | null;
   securitySchedules?: SecurityCashFlowScheduleEvent[] | null;
+  openLotReadModel?: SecurityMasterOpenLotReadModel | null;
+  trustSnapshotLoading?: boolean;
+  trustSnapshotError?: ApiErrorDisplay | string | null;
   tradingParameters: TradingParameters | null;
 }): SecurityMasterPageViewState {
   const hasQuery = query.trim().length > 0;
@@ -2059,6 +2223,15 @@ export function buildSecurityMasterPageViewState({
       ? formatCount(securitySchedules.length, "cash-flow event")
       : corporateActionLabel
     : corporateActionLabel;
+  const openLotLabel = trustSnapshotError
+    ? "Error"
+    : trustSnapshotLoading
+      ? "Loading"
+      : openLotReadModel
+        ? formatCount(openLotReadModel.lots.length, "lot")
+        : selectedSecurityId
+          ? "No lots"
+          : "No selection";
 
   return {
     ariaLabel: "Security Master command deck",
@@ -2115,6 +2288,7 @@ export function buildSecurityMasterPageViewState({
     detailSections: [
       { id: "overview", label: "Overview", value: identifiersLabel, active: true },
       { id: "schedules", label: "Schedules", value: scheduleLabel },
+      { id: "lots", label: "Open lots", value: openLotLabel },
       { id: "controls", label: "Controls", value: tradingParameters ? "Trading set" : selectedSecurityId ? "Pending" : "No selection" },
       { id: "audit", label: "Audit", value: openConflictCount > 0 ? formatCount(openConflictCount, "conflict") : aliasesLabel }
     ]
@@ -3757,6 +3931,37 @@ export function resolveSecurityScheduleEvents(securityId: string | null): Securi
   return (securityScheduleFixtures[securityId] ?? []).map((event) => ({ ...event }));
 }
 
+export function mapScheduleBookToCashFlowScheduleEvents(
+  securityId: string | null,
+  snapshot: SecurityMasterTrustSnapshot | null
+): SecurityCashFlowScheduleEvent[] {
+  const scheduleBook = snapshot?.scheduleBook ?? null;
+  if (!securityId || !scheduleBook) {
+    return [];
+  }
+
+  return scheduleBook.events.map((event) => ({
+    eventId: event.eventId,
+    securityId,
+    scheduleFamily: event.factorStart !== null || event.factorEnd !== null ? "structured" : "bond",
+    eventType: event.eventType,
+    paymentDate: event.payDate ?? event.effectiveDate,
+    accrualStartDate: event.accrualStartDate,
+    accrualEndDate: event.accrualEndDate,
+    couponRatePct: null,
+    expectedAmount: event.expectedAmount,
+    actualAmount: event.actualAmount,
+    principalAmount: null,
+    interestAmount: null,
+    factorStart: event.factorStart,
+    factorEnd: event.factorEnd,
+    currency: event.currency || scheduleBook.currency,
+    postingStatus: event.postingStatus,
+    auditReference: formatScheduleEventSource(event.sourceSystem, event.sourceRecordId),
+    note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null)
+  }));
+}
+
 export function buildSecurityScheduleRows(
   schedules: SecurityCashFlowScheduleEvent[] | null,
   selectedRowId: string | null = null
@@ -3801,14 +4006,26 @@ export function buildSecuritySchedulesViewState({
   displayName,
   assetClass,
   schedules,
-  selectedRowId
+  selectedRowId,
+  loading = false,
+  error = null,
+  factorHistoryCount = 0,
+  provenanceCount = 0,
+  sourceSummary = null
 }: {
   securityId: string | null;
   displayName: string | null;
   assetClass: string | null;
   schedules: SecurityCashFlowScheduleEvent[] | null;
   selectedRowId: string | null;
+  loading?: boolean;
+  error?: string | ApiErrorDisplay | null;
+  factorHistoryCount?: number;
+  provenanceCount?: number;
+  sourceSummary?: string | null;
 }): SecuritySchedulesViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
   const displaySecurityId = securityId ?? "selected security";
   const displayNameLabel = displayName?.trim() || displaySecurityId;
   const displayAssetClass = assetClass?.trim() || "Unclassified";
@@ -3823,7 +4040,9 @@ export function buildSecuritySchedulesViewState({
   return {
     securityId: displaySecurityId,
     title: "Cash-flow and factor schedules",
-    description: `${displayNameLabel} schedule events stay attached to the selected ${displayAssetClass} reference record for payment, posting, variance, and audit review.`,
+    description: sourceSummary?.trim()
+      ? `${displayNameLabel} schedule events stay attached to the selected ${displayAssetClass} reference record. ${sourceSummary}`
+      : `${displayNameLabel} schedule events stay attached to the selected ${displayAssetClass} reference record for payment, posting, variance, and audit review.`,
     tableLabel: `Cash-flow and factor schedules for ${displaySecurityId}`,
     tableCaption: `Cash-flow and factor schedule evidence for ${displaySecurityId}; select a row to inspect event detail.`,
     detailPanelId: "security-schedule-detail-panel",
@@ -3832,7 +4051,8 @@ export function buildSecuritySchedulesViewState({
       { id: "events", label: "Events", value: String(eventCount), active: eventCount > 0 },
       { id: "pending", label: "Pending", value: String(pendingCount) },
       { id: "variance", label: "Variance", value: String(varianceCount) },
-      { id: "factor", label: "Factor rows", value: String(factorCount) }
+      { id: "factor", label: "Factor rows", value: String(Math.max(factorCount, factorHistoryCount)) },
+      { id: "sources", label: "Sources", value: String(provenanceCount) }
     ],
     rows,
     selectedRowId: effectiveSelectedRowId,
@@ -3841,10 +4061,17 @@ export function buildSecuritySchedulesViewState({
     detailEmptyTitle: "No schedule event selected",
     detailEmptyText: "Select a schedule row to inspect payment dates, expected and actual amounts, factors, posting state, and audit evidence.",
     detailEmptyAriaLabel: "No cash-flow schedule event selected",
+    loadingText: loading ? "Loading schedule book..." : null,
+    errorText,
+    errorDetails: normalizedError?.details ?? [],
     hasRows: eventCount > 0,
-    statusAnnouncement: eventCount > 0
-      ? `${eventCount} cash-flow schedule ${eventCount === 1 ? "event" : "events"} loaded for ${displaySecurityId}.`
-      : ""
+    statusAnnouncement: errorText
+      ? `Schedule book error: ${errorText}`
+      : loading
+        ? `Loading schedule book for ${displaySecurityId}.`
+        : eventCount > 0
+          ? `${eventCount} cash-flow schedule ${eventCount === 1 ? "event" : "events"} loaded for ${displaySecurityId}.`
+          : ""
   };
 }
 
@@ -3976,6 +4203,153 @@ function buildCorporateActionDetailViewState(
   };
 }
 
+export function buildSecurityOpenLotRows(
+  readModel: SecurityMasterOpenLotReadModel | null,
+  selectedRowId: string | null = null
+): SecurityOpenLotRowViewModel[] {
+  const detailPanelId = "security-open-lot-detail-panel";
+  const rows = readModel?.lots ?? [];
+  const effectiveSelectedRowId = selectedRowId && rows.some((lot) => lot.lotId === selectedRowId)
+    ? selectedRowId
+    : rows[0]?.lotId ?? null;
+
+  return rows.map((lot) => {
+    const isSelected = lot.lotId === effectiveSelectedRowId;
+    const scopeLabel = formatOpenLotScope(lot);
+    const quantityLabel = formatQuantity(lot.currentQuantity);
+    const faceLabel = lot.currentFace !== null ? formatQuantity(lot.currentFace) : "—";
+    const factorAdjustedLabel = lot.factorAdjustedQuantity !== null
+      ? formatQuantity(lot.factorAdjustedQuantity)
+      : lot.factorAdjustedFace !== null
+        ? formatQuantity(lot.factorAdjustedFace)
+        : "—";
+    const costBasisLabel = formatScheduleAmount(lot.costBasis, lot.currency);
+    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatSignedScheduleAmount(lot.unrealizedPnl, lot.currency) : "—";
+    const statusTone = openLotStatusTone(lot.lotStatus);
+
+    return {
+      ...lot,
+      rowId: lot.lotId,
+      tradeDateLabel: formatSecurityDate(lot.tradeDate),
+      settleDateLabel: formatSecurityDate(lot.settleDate),
+      quantityLabel,
+      faceLabel,
+      factorAdjustedLabel,
+      costBasisLabel,
+      entryPriceLabel: formatScheduleAmount(lot.entryPrice, lot.currency),
+      unrealizedPnlLabel,
+      scopeLabel,
+      statusLabel: lot.lotStatus || "Unknown",
+      statusTone,
+      ariaLabel: `Open lot ${lot.lotId} for ${lot.symbol}, ${scopeLabel}, quantity ${quantityLabel}, cost ${costBasisLabel}, status ${lot.lotStatus}`,
+      selectAriaLabel: `Inspect open lot ${lot.lotId} for ${lot.symbol}`,
+      detailPanelId,
+      isExpanded: isSelected
+    };
+  });
+}
+
+export function buildSecurityOpenLotReadModelViewState({
+  securityId,
+  readModel,
+  selectedRowId,
+  loading = false,
+  error = null
+}: {
+  securityId: string | null;
+  readModel: SecurityMasterOpenLotReadModel | null;
+  selectedRowId: string | null;
+  loading?: boolean;
+  error?: string | ApiErrorDisplay | null;
+}): SecurityOpenLotReadModelViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
+  const displaySecurityId = securityId ?? "selected security";
+  const rows = buildSecurityOpenLotRows(readModel, selectedRowId);
+  const effectiveSelectedRowId = rows.find((row) => row.rowId === selectedRowId)?.rowId ?? rows[0]?.rowId ?? null;
+  const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
+  const lotCount = rows.length;
+  const longTermCount = rows.filter((row) => row.isLongTerm).length;
+  const factorAdjustedCount = rows.filter((row) => row.factorAdjustedQuantity !== null || row.factorAdjustedFace !== null).length;
+  const provenanceCount = readModel?.provenanceHistory.length ?? 0;
+
+  return {
+    securityId: displaySecurityId,
+    title: "Open lot read model",
+    description: `Open lots for ${displaySecurityId} stay tied to run, account, cost, quantity, and factor-adjusted exposure evidence.`,
+    summary: readModel?.summary ?? "Open lot read model is unavailable for the selected security.",
+    asOfLabel: readModel?.asOfUtc ? formatDateTimeLabel(readModel.asOfUtc) : "—",
+    tableLabel: `Open lot read model for ${displaySecurityId}`,
+    tableCaption: `Open lots for ${displaySecurityId}; select a row to inspect source, account, and exposure detail.`,
+    detailPanelId: "security-open-lot-detail-panel",
+    toolbarAriaLabel: `Open lot posture for ${displaySecurityId}`,
+    toolbarItems: [
+      { id: "lots", label: "Lots", value: String(lotCount), active: lotCount > 0 },
+      { id: "long-term", label: "Long term", value: String(longTermCount) },
+      { id: "factor", label: "Factor adj.", value: String(factorAdjustedCount) },
+      { id: "sources", label: "Sources", value: String(provenanceCount) }
+    ],
+    rows,
+    selectedRowId: effectiveSelectedRowId,
+    selectedDetail: selectedRow ? buildSecurityOpenLotDetailViewState(selectedRow, readModel) : null,
+    emptyText: `No open lots are available for ${displaySecurityId}.`,
+    detailEmptyTitle: "No open lot selected",
+    detailEmptyText: "Select an open lot to inspect quantity model, cost, account scope, source record, and provenance.",
+    detailEmptyAriaLabel: "No open lot selected",
+    loadingText: loading ? "Loading open lot read model..." : null,
+    errorText,
+    errorDetails: normalizedError?.details ?? [],
+    hasRows: lotCount > 0,
+    statusAnnouncement: errorText
+      ? `Open lot read model error: ${errorText}`
+      : loading
+        ? `Loading open lot read model for ${displaySecurityId}.`
+        : lotCount > 0
+          ? `${lotCount} open ${lotCount === 1 ? "lot" : "lots"} loaded for ${displaySecurityId}.`
+          : ""
+  };
+}
+
+function buildSecurityOpenLotDetailViewState(
+  row: SecurityOpenLotRowViewModel,
+  readModel: SecurityMasterOpenLotReadModel | null
+): SecurityOpenLotDetailViewState {
+  const quantityModel = readModel?.quantityModel || "Unspecified quantity model";
+  const factor = readModel?.currentFactor !== null && readModel?.currentFactor !== undefined
+    ? readModel.currentFactor.toFixed(6)
+    : "—";
+
+  return {
+    id: row.detailPanelId,
+    eyebrow: "Open lot detail",
+    title: row.lotId,
+    subtitle: `${row.symbol} · ${row.scopeLabel}`,
+    description: `${row.lotStatus} lot using ${quantityModel}; current quantity ${row.quantityLabel}.`,
+    ariaLabel: `Open lot detail for ${row.lotId} on ${row.symbol}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    fields: [
+      { label: "Run", value: row.runId },
+      { label: "Portfolio", value: row.portfolioId },
+      { label: "Account", value: row.accountScopeDisplayName ?? row.accountScopeId ?? "—", tone: row.accountScopeId ? "default" : "warning" },
+      { label: "Vehicle", value: row.vehicleScopeDisplayName ?? row.vehicleScopeId ?? "—" },
+      { label: "Trade date", value: row.tradeDateLabel },
+      { label: "Settle date", value: row.settleDateLabel, tone: row.settleDate ? "default" : "warning" },
+      { label: "Original quantity", value: formatQuantity(row.originalQuantity) },
+      { label: "Current quantity", value: row.quantityLabel },
+      { label: "Current face", value: row.faceLabel },
+      { label: "Factor-adjusted exposure", value: row.factorAdjustedLabel, tone: row.factorAdjustedLabel === "—" ? "warning" : "success" },
+      { label: "Current factor", value: factor },
+      { label: "Cost basis", value: row.costBasisLabel },
+      { label: "Entry price", value: row.entryPriceLabel },
+      { label: "Unrealized P&L", value: row.unrealizedPnlLabel, tone: row.unrealizedPnl === null ? "warning" : row.unrealizedPnl >= 0 ? "success" : "danger" },
+      { label: "Source", value: formatScheduleEventSource(row.sourceSystem, row.sourceRecordId) },
+      { label: "Source reason", value: row.sourceReason ?? "—" },
+      { label: "Notes", value: row.notes ?? "—" }
+    ]
+  };
+}
+
 export function buildTradingParametersViewState(
   params: TradingParameters | null,
   loading: boolean,
@@ -4020,7 +4394,7 @@ export function buildTradingParametersViewState(
 }
 
 function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
-  const labels: Record<SecurityScheduleEventType, string> = {
+  const labels: Record<string, string> = {
     Coupon: "Coupon",
     Principal: "Principal",
     Paydown: "Paydown",
@@ -4030,18 +4404,18 @@ function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): 
     FactorUpdate: "Factor update"
   };
 
-  return labels[eventType];
+  return labels[eventType] ?? eventType;
 }
 
 function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
-  const labels: Record<SecuritySchedulePostingStatus, string> = {
+  const labels: Record<string, string> = {
     Posted: "Posted",
     Pending: "Pending",
     Variance: "Variance review",
     Forecast: "Forecast"
   };
 
-  return labels[status];
+  return labels[status] ?? status;
 }
 
 function securitySchedulePostingTone(
@@ -4062,6 +4436,11 @@ function securitySchedulePostingTone(
   return "outline";
 }
 
+function formatScheduleEventSource(sourceSystem: string, sourceRecordId: string | null | undefined): string {
+  const source = sourceSystem?.trim() || "Unknown source";
+  return sourceRecordId?.trim() ? `${source} · ${sourceRecordId}` : source;
+}
+
 function formatScheduleAmount(value: number | null, currency: string): string {
   if (value === null || !Number.isFinite(value)) {
     return "—";
@@ -4073,6 +4452,52 @@ function formatScheduleAmount(value: number | null, currency: string): string {
     minimumFractionDigits: 0
   });
   return `${prefix}${amount} ${currency}`;
+}
+
+function formatSignedScheduleAmount(value: number, currency: string): string {
+  if (!Number.isFinite(value)) {
+    return "—";
+  }
+
+  if (value === 0) {
+    return `0 ${currency}`;
+  }
+
+  const sign = value > 0 ? "+" : "-";
+  return `${sign}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+}
+
+function formatQuantity(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) {
+    return "—";
+  }
+
+  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+}
+
+function formatOpenLotScope(lot: SecurityMasterOpenLot): string {
+  return lot.accountScopeDisplayName?.trim()
+    || lot.accountScopeId?.trim()
+    || lot.vehicleScopeDisplayName?.trim()
+    || lot.vehicleScopeId?.trim()
+    || lot.portfolioId;
+}
+
+function openLotStatusTone(status: string): SecurityOpenLotRowViewModel["statusTone"] {
+  const normalized = status.trim().toLowerCase();
+  if (normalized === "open" || normalized === "active") {
+    return "success";
+  }
+
+  if (normalized === "closed" || normalized === "settled") {
+    return "outline";
+  }
+
+  if (normalized === "blocked" || normalized === "failed") {
+    return "danger";
+  }
+
+  return "warning";
 }
 
 function formatScheduleVariance(expected: number | null, actual: number | null, currency: string): string {

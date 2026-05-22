@@ -1,5 +1,7 @@
 using Meridian.Ui.Services;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
 
 namespace Meridian.Wpf.Tests.Models;
 
@@ -119,6 +121,36 @@ public sealed class ShellNavigationCatalogTests
 
         diagnostics.Should().NotBeNull();
         diagnostics!.WorkspaceId.Should().Be("settings");
+    }
+
+    [Fact]
+    public void ModuleRegistry_ShouldAssembleCanonicalCatalogPagesAndUniqueTags()
+    {
+        var registry = ShellPageRegistryBuilder.BuildDefault();
+
+        registry.WorkspaceCapabilities
+            .Select(static capability => capability.Workspace.Id)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+        registry.Pages.Count.Should().Be(ShellNavigationCatalog.Pages.Count);
+        registry.WorkspaceShells.Count.Should().Be(ShellNavigationCatalog.WorkspaceShells.Count);
+        registry.Pages.Select(static page => page.PageTag)
+            .Should()
+            .OnlyHaveUniqueItems("page tags are route keys in the assembled shell registry");
+
+        var aliasCollisions = registry.Pages
+            .SelectMany(static page => page.Aliases.Select(alias => (Alias: alias, PageTag: page.PageTag)))
+            .GroupBy(static entry => entry.Alias, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Select(entry => entry.PageTag).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1)
+            .Select(static group => group.Key)
+            .ToArray();
+
+        aliasCollisions.Should().BeEmpty("aliases should resolve to exactly one canonical page");
+        DesktopFeatureModuleRegistry.GetModules()
+            .SelectMany(static module => module.DescribePages())
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["TradingShell", "DataShell", "SettingsShell"]);
     }
 
     [Fact]

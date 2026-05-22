@@ -69,6 +69,7 @@ import type {
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
+  SecurityMasterTrustSnapshot,
   SessionInfo,
   SystemEventRecord,
   SystemOverviewResponse,
@@ -793,7 +794,7 @@ export function getSecurityEconomicDefinition(securityId: string) {
 }
 
 export function getSecurityTrustSnapshot(securityId: string) {
-  return getJson<unknown>(workstationSecurityMasterTrustSnapshotEndpoint(securityId));
+  return getJson<SecurityMasterTrustSnapshot>(workstationSecurityMasterTrustSnapshotEndpoint(securityId));
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {

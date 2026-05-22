@@ -61,6 +61,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields { get; } = new();
+    public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields { get; } = new();
+    public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents { get; } = new();
+    public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory { get; } = new();
+    public ObservableCollection<SecurityMasterScheduleProvenanceDto> ScheduleBookProvenanceHistory { get; } = new();
+    public ObservableCollection<SecurityMasterPresentationField> OpenLotReadModelFields { get; } = new();
+    public ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows { get; } = new();
+    public ObservableCollection<SecurityMasterOpenLotProvenanceDto> OpenLotProvenanceHistory { get; } = new();
     public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections { get; } = new();
     public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems { get; } = new();
     public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems { get; } = new();
@@ -526,15 +533,43 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public SecurityMasterTrustSnapshotDto? SelectedTrustSnapshot
     {
         get => _selectedTrustSnapshot;
-        private set => SetProperty(ref _selectedTrustSnapshot, value);
+        private set
+        {
+            if (SetProperty(ref _selectedTrustSnapshot, value))
+            {
+                RaiseScheduleAndOpenLotStateChanged();
+            }
+        }
     }
 
     private bool _isTrustSnapshotLoading;
     public bool IsTrustSnapshotLoading
     {
         get => _isTrustSnapshotLoading;
-        private set => SetProperty(ref _isTrustSnapshotLoading, value);
+        private set
+        {
+            if (SetProperty(ref _isTrustSnapshotLoading, value))
+            {
+                RaiseScheduleAndOpenLotStateChanged();
+            }
+        }
     }
+
+    private string _trustSnapshotErrorText = string.Empty;
+    public string TrustSnapshotErrorText
+    {
+        get => _trustSnapshotErrorText;
+        private set
+        {
+            if (SetProperty(ref _trustSnapshotErrorText, value))
+            {
+                RaisePropertyChanged(nameof(HasTrustSnapshotError));
+                RaiseScheduleAndOpenLotStateChanged();
+            }
+        }
+    }
+
+    public bool HasTrustSnapshotError => !string.IsNullOrWhiteSpace(TrustSnapshotErrorText);
 
     private bool _showOnlySelectedSecurityConflicts = true;
     public bool ShowOnlySelectedSecurityConflicts
@@ -943,6 +978,70 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             };
 
             return $"{readiness} {PrintDistributionText}.";
+        }
+    }
+
+    public bool HasScheduleBookEvents => ScheduleBookEvents.Count > 0;
+
+    public bool HasOpenLotRows => OpenLotRows.Count > 0;
+
+    public string ScheduleBookStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading schedule book from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect cash-flow schedules, factor history, and source provenance.";
+            }
+
+            if (SelectedTrustSnapshot?.ScheduleBook is null)
+            {
+                return "Schedule book payload is unavailable for the selected security.";
+            }
+
+            return HasScheduleBookEvents
+                ? $"{ScheduleBookEvents.Count} schedule event{(ScheduleBookEvents.Count == 1 ? string.Empty : "s")} loaded with {ScheduleBookFactorHistory.Count} factor point{(ScheduleBookFactorHistory.Count == 1 ? string.Empty : "s")} and {ScheduleBookProvenanceHistory.Count} provenance row{(ScheduleBookProvenanceHistory.Count == 1 ? string.Empty : "s")}."
+                : "Schedule book loaded with no cash-flow events.";
+        }
+    }
+
+    public string OpenLotReadModelStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading open lot read model from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect open lots, factor-adjusted exposure, and ledger provenance.";
+            }
+
+            if (SelectedTrustSnapshot?.OpenLotReadModel is null)
+            {
+                return "Open lot read-model payload is unavailable for the selected security.";
+            }
+
+            return HasOpenLotRows
+                ? $"{OpenLotRows.Count} open lot{(OpenLotRows.Count == 1 ? string.Empty : "s")} loaded with {OpenLotProvenanceHistory.Count} provenance row{(OpenLotProvenanceHistory.Count == 1 ? string.Empty : "s")}."
+                : "Open lot read model loaded with no open lots.";
         }
     }
 
@@ -1363,6 +1462,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         FilteredConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
         RecommendedActions.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(RecommendedActions));
         DownstreamImpactLinks.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DownstreamImpactLinks));
+        ScheduleBookEvents.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ScheduleBookFactorHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ScheduleBookProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        OpenLotRows.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        OpenLotProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
 
         StartWorkflowPolling();
     }
@@ -1502,6 +1606,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(DownstreamImpactSummaryText));
         RaisePropertyChanged(nameof(CorporateActionReadinessText));
         RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
+        RaiseScheduleAndOpenLotStateChanged();
         RaisePropertyChanged(nameof(CompanyCardTitle));
         RaisePropertyChanged(nameof(CompanyCardSubtitle));
         RaisePropertyChanged(nameof(CompanyCardDescription));
@@ -1522,6 +1627,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasReportPackImpactLink));
         AlignConflictLaneToSelectedSecurity();
         NotifySelectionCommandsChanged();
+    }
+
+    private void RaiseScheduleAndOpenLotStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasTrustSnapshotError));
+        RaisePropertyChanged(nameof(HasScheduleBookEvents));
+        RaisePropertyChanged(nameof(HasOpenLotRows));
+        RaisePropertyChanged(nameof(ScheduleBookStatusText));
+        RaisePropertyChanged(nameof(OpenLotReadModelStatusText));
     }
 
     private void NotifySelectionCommandsChanged()
@@ -1690,6 +1804,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private void ClearSelectedSecurityAssuranceState()
     {
         SelectedTrustSnapshot = null;
+        TrustSnapshotErrorText = string.Empty;
         _selectedEconomicDefinition = null;
         _selectedTradingParameters = null;
         _latestHistoryEvent = null;
@@ -1700,6 +1815,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         DownstreamImpactLinks.Clear();
         CompanyProfileFields.Clear();
         CompanyCoverageFields.Clear();
+        ScheduleBookFields.Clear();
+        ScheduleBookEvents.Clear();
+        ScheduleBookFactorHistory.Clear();
+        ScheduleBookProvenanceHistory.Clear();
+        OpenLotReadModelFields.Clear();
+        OpenLotRows.Clear();
+        OpenLotProvenanceHistory.Clear();
         PrintSections.Clear();
         PrintChecklistItems.Clear();
         PrintEvidenceItems.Clear();
@@ -1737,6 +1859,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SelectedConflictImpactText));
         RaisePropertyChanged(nameof(CorporateActionReadinessText));
         RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
+        RaiseScheduleAndOpenLotStateChanged();
         RaisePropertyChanged(nameof(CompanyCardTitle));
         RaisePropertyChanged(nameof(CompanyCardSubtitle));
         RaisePropertyChanged(nameof(CompanyCardDescription));
@@ -2000,6 +2123,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         IsLoading = true;
         IsTrustSnapshotLoading = true;
+        TrustSnapshotErrorText = string.Empty;
         StatusText = "Loading selected security trust snapshot…";
 
         try
@@ -2030,6 +2154,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _loggingService.LogError($"Security Master trust snapshot load failed for {securityId}", ex);
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                TrustSnapshotErrorText = "Failed to load selected security trust snapshot.";
                 StatusText = "Failed to load selected security trust snapshot.";
                 _notificationService.ShowNotification("Security Master", "Trust snapshot load failed.", NotificationType.Error);
             });
@@ -2080,6 +2205,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         CorporateActionReadinessText = snapshot.TrustPosture.CorporateActionReadiness;
         CorporateActionImpactSummaryText = BuildCorporateActionImpactSummary(snapshot);
         PopulateCompanyPresentation(snapshot);
+        PopulateScheduleBookPresentation(snapshot);
+        PopulateOpenLotReadModelPresentation(snapshot);
         PopulatePrintPresentation(snapshot);
 
         RebuildFilteredConflicts(preferredConflictId);
@@ -2489,6 +2616,69 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ]);
     }
 
+    private void PopulateScheduleBookPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var scheduleBook = snapshot.ScheduleBook;
+        if (scheduleBook is null)
+        {
+            ScheduleBookFields.Clear();
+            ScheduleBookEvents.Clear();
+            ScheduleBookFactorHistory.Clear();
+            ScheduleBookProvenanceHistory.Clear();
+            RaiseScheduleAndOpenLotStateChanged();
+            return;
+        }
+
+        ReplaceCollection(ScheduleBookFields,
+        [
+            new SecurityMasterPresentationField("Summary", scheduleBook.Summary),
+            new SecurityMasterPresentationField("Currency", scheduleBook.Currency),
+            new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(scheduleBook.CurrentFactor)),
+            new SecurityMasterPresentationField("Current factor date", FormatNullableDate(scheduleBook.CurrentFactorDate)),
+            new SecurityMasterPresentationField("Next lifecycle date", FormatNullableDate(scheduleBook.NextLifecycleDate)),
+            new SecurityMasterPresentationField("Cash-flow schedule", scheduleBook.SupportsCashflowSchedule ? "Supported" : "Unavailable"),
+            new SecurityMasterPresentationField("Factor history", scheduleBook.SupportsFactorHistory ? "Supported" : "Unavailable"),
+            new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
+            new SecurityMasterPresentationField("Source", FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
+        ]);
+
+        ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
+        ReplaceCollection(ScheduleBookFactorHistory, scheduleBook.FactorHistory.OrderByDescending(item => item.EffectiveDate));
+        ReplaceCollection(ScheduleBookProvenanceHistory, scheduleBook.ProvenanceHistory.OrderByDescending(item => item.SourceAsOfUtc ?? DateTimeOffset.MinValue));
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
+    private void PopulateOpenLotReadModelPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var readModel = snapshot.OpenLotReadModel;
+        if (readModel is null)
+        {
+            OpenLotReadModelFields.Clear();
+            OpenLotRows.Clear();
+            OpenLotProvenanceHistory.Clear();
+            RaiseScheduleAndOpenLotStateChanged();
+            return;
+        }
+
+        ReplaceCollection(OpenLotReadModelFields,
+        [
+            new SecurityMasterPresentationField("Summary", readModel.Summary),
+            new SecurityMasterPresentationField("Quantity model", readModel.QuantityModel),
+            new SecurityMasterPresentationField("Lot size", FormatNullableDecimal(readModel.LotSize)),
+            new SecurityMasterPresentationField("Contract multiplier", FormatNullableDecimal(readModel.ContractMultiplier)),
+            new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(readModel.CurrentFactor)),
+            new SecurityMasterPresentationField("Current factor date", FormatNullableDate(readModel.CurrentFactorDate)),
+            new SecurityMasterPresentationField("As of", readModel.AsOfUtc.LocalDateTime.ToString("g")),
+            new SecurityMasterPresentationField("Face value", readModel.UsesFaceValue ? "Uses face value" : "Quantity only"),
+            new SecurityMasterPresentationField("Factor-adjusted exposure", readModel.SupportsFactorAdjustedExposure ? "Supported" : "Unavailable"),
+            new SecurityMasterPresentationField("Resolved ID required", readModel.RequiresResolvedSecurityId ? "Required" : "Not required")
+        ]);
+
+        ReplaceCollection(OpenLotRows, readModel.Lots.OrderByDescending(item => item.TradeDate));
+        ReplaceCollection(OpenLotProvenanceHistory, readModel.ProvenanceHistory.OrderByDescending(item => item.AsOfUtc));
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
     private void PopulatePrintPresentation(SecurityMasterTrustSnapshotDto snapshot)
     {
         ReplaceCollection(PrintSections,
@@ -2513,7 +2703,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterEvidenceItem("Winning source", GoldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
             new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
             new SecurityMasterEvidenceItem("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot), "Identifier resolution"),
-            new SecurityMasterEvidenceItem("Schedule model", BuildScheduleSummaryText(snapshot), FormatScheduleSourceLabel(snapshot.ScheduleSummary)),
+            new SecurityMasterEvidenceItem("Schedule model", BuildScheduleSummaryText(snapshot), FormatScheduleSourceLabel(snapshot)),
             new SecurityMasterEvidenceItem("Lot model", BuildLotModelSummaryText(snapshot), "Lot/open-position guidance"),
             new SecurityMasterEvidenceItem("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot), "Snapshot projection"),
             new SecurityMasterEvidenceItem("Latest audit event", LatestHistoryEventText, "History stream"),
@@ -2550,15 +2740,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         => snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.";
 
     private static string BuildScheduleSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-        => snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.";
+        => snapshot.ScheduleBook?.Summary ?? snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.";
 
     private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-        => snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
+        => snapshot.OpenLotReadModel?.Summary ?? snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
 
-    private static string FormatScheduleSourceLabel(SecurityMasterScheduleSummaryDto? summary)
-        => string.IsNullOrWhiteSpace(summary?.SourceSummary)
+    private static string FormatScheduleSourceLabel(SecurityMasterTrustSnapshotDto snapshot)
+        => string.IsNullOrWhiteSpace(snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary)
             ? "Schedule source"
-            : $"Schedule source: {summary.SourceSummary}";
+            : $"Schedule source: {snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary}";
 
     private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
@@ -2582,6 +2772,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private static string FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim()
            ?? string.Empty;
+
+    private static string FormatNullableDate(DateOnly? value)
+        => value?.ToString("yyyy-MM-dd") ?? "Unavailable";
+
+    private static string FormatNullableDecimal(decimal? value)
+        => value?.ToString("G29") ?? "Unavailable";
 
     private string BuildConflictFilterSummary(int baseCount, int filteredCount)
     {

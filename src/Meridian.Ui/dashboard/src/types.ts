@@ -1546,6 +1546,160 @@ export interface SecurityIdentityDrillIn {
   aliases: SecurityAliasEntry[];
 }
 
+export interface SecurityMasterScheduleSummary {
+  supportsCashflowSchedule: boolean;
+  supportsFactorHistory: boolean;
+  hasEconomicScheduleTerms: boolean;
+  currentFactor: number | null;
+  currentFactorDate: string | null;
+  nextLifecycleDate: string | null;
+  sourceSummary: string;
+  summary: string;
+}
+
+export interface SecurityMasterScheduleEvent {
+  eventId: string;
+  eventType: string;
+  effectiveDate: string;
+  payDate: string | null;
+  accrualStartDate: string | null;
+  accrualEndDate: string | null;
+  expectedAmount: number | null;
+  actualAmount: number | null;
+  varianceAmount: number | null;
+  factorStart: number | null;
+  factorEnd: number | null;
+  currency: string;
+  postingStatus: string;
+  sourceSystem: string;
+  sourceRecordId: string | null;
+  sourceAsOfUtc: string | null;
+  sourceUpdatedBy: string | null;
+  sourceReason: string | null;
+  isDerivedFromEconomicTerms: boolean;
+  isCurrentProjection: boolean;
+}
+
+export interface SecurityMasterFactorPoint {
+  pointId: string;
+  effectiveDate: string;
+  factor: number;
+  previousFactor: number | null;
+  sourceSystem: string;
+  sourceRecordId: string | null;
+  sourceAsOfUtc: string | null;
+  sourceUpdatedBy: string | null;
+  sourceReason: string | null;
+  isCurrentFactor: boolean;
+}
+
+export interface SecurityMasterScheduleProvenance {
+  provenanceId: string;
+  category: string;
+  summary: string;
+  effectiveDate: string | null;
+  sourceSystem: string;
+  sourceRecordId: string | null;
+  sourceAsOfUtc: string | null;
+  sourceUpdatedBy: string | null;
+  sourceReason: string | null;
+  streamVersion: number | null;
+  eventType: string | null;
+}
+
+export interface SecurityMasterScheduleBook {
+  supportsCashflowSchedule: boolean;
+  supportsFactorHistory: boolean;
+  hasEconomicScheduleTerms: boolean;
+  currency: string;
+  currentFactor: number | null;
+  currentFactorDate: string | null;
+  nextLifecycleDate: string | null;
+  sourceSummary: string;
+  summary: string;
+  events: SecurityMasterScheduleEvent[];
+  factorHistory: SecurityMasterFactorPoint[];
+  provenanceHistory: SecurityMasterScheduleProvenance[];
+}
+
+export interface SecurityMasterLotModel {
+  quantityModel: string;
+  lotSize: number | null;
+  contractMultiplier: number | null;
+  usesFaceValue: boolean;
+  supportsFactorAdjustedExposure: boolean;
+  requiresResolvedSecurityId: boolean;
+  summary: string;
+}
+
+export interface SecurityMasterOpenLot {
+  securityId: string;
+  portfolioId: string;
+  runId: string;
+  accountScopeId: string | null;
+  accountScopeDisplayName: string | null;
+  vehicleScopeId: string | null;
+  vehicleScopeDisplayName: string | null;
+  lotId: string;
+  symbol: string;
+  tradeDate: string;
+  settleDate: string | null;
+  originalQuantity: number;
+  currentQuantity: number;
+  originalFace: number | null;
+  currentFace: number | null;
+  factorAdjustedQuantity: number | null;
+  factorAdjustedFace: number | null;
+  costBasis: number;
+  entryPrice: number;
+  unrealizedPnl: number | null;
+  currency: string;
+  lotStatus: string;
+  sourceSystem: string;
+  sourceRecordId: string | null;
+  asOfUtc: string;
+  sourceUpdatedBy: string | null;
+  sourceReason: string | null;
+  isLongTerm: boolean;
+  notes: string | null;
+}
+
+export interface SecurityMasterOpenLotProvenance {
+  provenanceId: string;
+  runId: string;
+  portfolioId: string;
+  accountScopeId: string | null;
+  accountScopeDisplayName: string | null;
+  sourceSystem: string;
+  sourceRecordId: string | null;
+  asOfUtc: string;
+  summary: string;
+}
+
+export interface SecurityMasterOpenLotReadModel {
+  quantityModel: string;
+  lotSize: number | null;
+  contractMultiplier: number | null;
+  usesFaceValue: boolean;
+  supportsFactorAdjustedExposure: boolean;
+  requiresResolvedSecurityId: boolean;
+  currentFactor: number | null;
+  currentFactorDate: string | null;
+  asOfUtc: string;
+  summary: string;
+  lots: SecurityMasterOpenLot[];
+  provenanceHistory: SecurityMasterOpenLotProvenance[];
+}
+
+export interface SecurityMasterTrustSnapshot {
+  securityId: string;
+  retrievedAtUtc: string;
+  scheduleSummary?: SecurityMasterScheduleSummary | null;
+  lotModel?: SecurityMasterLotModel | null;
+  scheduleBook?: SecurityMasterScheduleBook | null;
+  openLotReadModel?: SecurityMasterOpenLotReadModel | null;
+}
+
 export interface OperatorOverridesDto {
   securityId: string;
   values: Record<string, string>;

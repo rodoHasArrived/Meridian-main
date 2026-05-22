@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Shell.Services;
 
 namespace Meridian.Wpf.Features;
 
@@ -15,6 +16,8 @@ public static class DesktopFeatureModuleRegistry
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddSingleton(ShellPageRegistryBuilder.BuildDefault());
+
         foreach (var module in Modules)
         {
             module.Register(services);
@@ -22,4 +25,6 @@ public static class DesktopFeatureModuleRegistry
 
         return services;
     }
+
+    public static IReadOnlyList<IDesktopFeatureModule> GetModules() => Modules;
 }
