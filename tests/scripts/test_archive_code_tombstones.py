@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 class ArchiveCodeTombstonesTests(unittest.TestCase):
+    # Archive/code currently retains .NET source tombstones only.
     CODE_EXTENSIONS = (".cs", ".fs")
-    COMMENT_PREFIXES = ("//", "/*", "*", "*/")
 
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
@@ -32,7 +32,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
             for line in non_empty_lines:
                 stripped = line.lstrip()
                 self.assertTrue(
-                    stripped.startswith(self.COMMENT_PREFIXES),
+                    stripped.startswith("//"),
                     f"{relative} must remain comment-only (found non-comment line: {line!r}).",
                 )
 
