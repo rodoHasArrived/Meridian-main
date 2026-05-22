@@ -57,15 +57,7 @@ public static class WpfShellServiceCollectionExtensions
         services.AddTransient<PaneHostViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<Meridian.Wpf.Views.MainPage>();
-        services.AddTransient(sp => new ResearchWorkspaceShellPresentationService(
-            sp.GetRequiredService<StrategyRunWorkspaceService>(),
-            sp.GetRequiredService<IResearchBriefingWorkspaceService>(),
-            sp.GetRequiredService<WatchlistService>(),
-            sp.GetRequiredService<FundContextService>(),
-            sp.GetService<WorkstationOperatingContextService>(),
-            sp.GetRequiredService<WorkspaceShellContextService>(),
-            sp.GetService<WorkstationWorkflowSummaryService>(),
-            sp.GetService<Meridian.Strategies.Services.PromotionService>()));
+        services.AddWorkspaceScoped<ResearchWorkspaceShellPresentationService>();
         if (configuration is null)
         {
             services.AddMeridianWpfFeatureModules();

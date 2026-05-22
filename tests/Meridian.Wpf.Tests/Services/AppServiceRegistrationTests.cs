@@ -99,6 +99,39 @@ public sealed class AppServiceRegistrationTests
     }
 
     [Fact]
+    public void ConfigureServices_ShouldKeepPlatformServicesRootedAndWorkspacePresentationServicesScoped()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var env = new EnvironmentVariableScope()
+                .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null)
+                .Set("POLYGON_API_KEY", null);
+
+            var services = BuildServiceCollection();
+
+            services.Single(descriptor => descriptor.ServiceType == typeof(NavigationService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ThemeService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(FundContextService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+
+            services.Single(descriptor => descriptor.ServiceType == typeof(TradingWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ResearchWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(IDataWorkspaceShellSnapshotService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(IDataWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ISettingsWorkspaceShellSnapshotService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ISettingsWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+        });
+    }
+
+    [Fact]
     public void ConfigureServices_ShouldResolveEveryCatalogPageType()
     {
         WpfTestThread.Run(() =>

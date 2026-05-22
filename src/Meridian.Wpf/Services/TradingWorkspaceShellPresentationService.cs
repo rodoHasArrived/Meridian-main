@@ -7,7 +7,7 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Services;
 
-public sealed class TradingWorkspaceShellPresentationService
+public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedService
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;

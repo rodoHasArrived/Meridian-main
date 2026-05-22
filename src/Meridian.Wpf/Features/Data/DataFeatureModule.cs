@@ -44,8 +44,8 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient<IDataWorkspaceShellSnapshotService, DataWorkspaceShellSnapshotService>();
-        services.AddTransient<IDataWorkspaceShellPresentationService, DataWorkspaceShellPresentationService>();
+        services.AddWorkspaceScoped<IDataWorkspaceShellSnapshotService, DataWorkspaceShellSnapshotService>();
+        services.AddWorkspaceScoped<IDataWorkspaceShellPresentationService, DataWorkspaceShellPresentationService>();
         services.AddTransient<DataWorkspaceShellViewModel>();
         services.AddTransient<DataWorkspaceShellPage>();
     }

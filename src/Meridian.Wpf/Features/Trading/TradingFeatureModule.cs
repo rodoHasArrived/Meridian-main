@@ -25,7 +25,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient<TradingWorkspaceShellPresentationService>();
+        services.AddWorkspaceScoped<TradingWorkspaceShellPresentationService>();
         services.AddTransient<TradingWorkspaceShellStateProvider>();
         services.AddTransient<TradingWorkspaceShellViewModel>();
         services.AddTransient<TradingWorkspaceShellPage>();

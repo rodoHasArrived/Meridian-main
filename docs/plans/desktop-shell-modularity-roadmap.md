@@ -218,9 +218,11 @@ operator state survives workspace switches and app restarts.
 - [x] In `WorkspaceService.ActivateWorkspaceAsync()`, create an `IServiceScope` keyed to
   `workspaceId` and store it in a `Dictionary<string, IServiceScope>`.
 - [x] Dispose the scope on workspace deactivation (when a different workspace is activated).
-- [ ] Audit existing services for correct lifetime: platform-owned singletons (`NavigationService`,
+- [x] Audit existing services for correct lifetime: platform-owned singletons (`NavigationService`,
   `FundContextService`, `ThemeService`) stay in the root container; workspace-owned polling/
-  streaming services are converted to `AddWorkspaceScoped`.
+  streaming services are converted to `AddWorkspaceScoped`. Converted the Trading/Research
+  workspace presentation services plus Data/Settings workspace snapshot and presentation services;
+  left platform, context, API, read-model, persistence, and global notification services rooted.
 - [x] Update `NavigationService.CreatePageContent()` to accept an optional `IServiceScope` and
   resolve pages from it when provided.
 - [ ] Update `MainPageViewModel` to pass the active workspace scope on every navigation call.

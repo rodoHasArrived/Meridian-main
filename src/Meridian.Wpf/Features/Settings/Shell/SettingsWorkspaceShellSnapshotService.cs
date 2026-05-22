@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Wpf.Services;
 using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
@@ -8,7 +9,7 @@ public interface ISettingsWorkspaceShellSnapshotService
     Task<SettingsWorkspaceShellSnapshot> LoadAsync(CancellationToken cancellationToken = default);
 }
 
-public sealed class SettingsWorkspaceShellSnapshotService : ISettingsWorkspaceShellSnapshotService
+public sealed class SettingsWorkspaceShellSnapshotService : ISettingsWorkspaceShellSnapshotService, IWorkspaceScopedService
 {
     private readonly SettingsConfigurationService _settingsConfigurationService;
 

@@ -36,8 +36,8 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient<ISettingsWorkspaceShellSnapshotService, SettingsWorkspaceShellSnapshotService>();
-        services.AddTransient<ISettingsWorkspaceShellPresentationService, SettingsWorkspaceShellPresentationService>();
+        services.AddWorkspaceScoped<ISettingsWorkspaceShellSnapshotService, SettingsWorkspaceShellSnapshotService>();
+        services.AddWorkspaceScoped<ISettingsWorkspaceShellPresentationService, SettingsWorkspaceShellPresentationService>();
         services.AddTransient<SettingsWorkspaceShellViewModel>();
         services.AddTransient<SettingsWorkspaceShellPage>();
     }

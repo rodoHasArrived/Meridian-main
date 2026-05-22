@@ -7,7 +7,7 @@ public interface IDataWorkspaceShellPresentationService
     DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data);
 }
 
-public sealed class DataWorkspaceShellPresentationService : IDataWorkspaceShellPresentationService
+public sealed class DataWorkspaceShellPresentationService : IDataWorkspaceShellPresentationService, IWorkspaceScopedService
 {
     public DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data)
         => DataOperationsWorkspacePresentationBuilder.Build(data);

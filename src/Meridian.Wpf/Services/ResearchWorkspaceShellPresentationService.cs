@@ -10,7 +10,7 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Services;
 
-public sealed class ResearchWorkspaceShellPresentationService
+public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScopedService
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly IResearchBriefingWorkspaceService _briefingService;
