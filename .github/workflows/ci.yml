@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v5.2.0
@@ -51,6 +51,31 @@ jobs:
       - name: Restore solution
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 
+      - name: Detect impacted lanes
+        id: impact
+        run: |
+          mkdir -p .ai artifacts/build-logs artifacts/test-results/dotnet
+
+          # On pull_request use the PR base SHA; on push to main use the
+          # previous commit; on workflow_dispatch run all lanes.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.sha }}"
+            python3 build/python/cli/buildctl.py impact \
+              --base "$BASE_SHA" --head "$HEAD_SHA" \
+              --output .ai/impact-plan.json \
+              --emit-script .ai/impact-plan.sh \
+              --github-output "$GITHUB_OUTPUT"
+          else
+            # Push to main or manual dispatch: run all lanes
+            python3 build/python/cli/buildctl.py impact \
+              --base HEAD~1 --head HEAD \
+              --all-lanes \
+              --output .ai/impact-plan.json \
+              --emit-script .ai/impact-plan.sh \
+              --github-output "$GITHUB_OUTPUT"
+          fi
+
       - name: Verify formatting
         run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 
@@ -58,6 +83,7 @@ jobs:
         run: python3 build/scripts/ci/check-warning-suppressions.py
 
       - name: Build web workstation lane
+        if: steps.impact.outputs.verify_web_workstation == 'true' || steps.impact.outputs.verify_build_config == 'true'
         run: |
           mkdir -p artifacts/build-logs
           set -euo pipefail
@@ -87,28 +113,60 @@ jobs:
             echo "- Web workstation build warnings: $WARNING_COUNT"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Run non-integration tests
+      - name: Run core tests
+        if: steps.impact.outputs.verify_core == 'true'
         run: |
           dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=core" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run F# tests
+        if: steps.impact.outputs.verify_fsharp == 'true'
+        run: |
           dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fsharp" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run UI tests
+        if: steps.impact.outputs.verify_ui == 'true'
+        run: |
           dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=ui" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run backtesting tests
+        if: steps.impact.outputs.verify_backtesting == 'true'
+        run: |
           dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=backtesting" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run direct lending tests
+        if: steps.impact.outputs.verify_directlending == 'true'
+        run: |
           dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=directlending" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run fund structure tests
+        if: steps.impact.outputs.verify_fundstructure == 'true'
+        run: |
           dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fundstructure" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run MCP server tests
+        if: steps.impact.outputs.verify_mcpserver == 'true'
+        run: |
           dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=mcpserver" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+
+      - name: Run QuantScript tests
+        if: steps.impact.outputs.verify_quantscript == 'true'
+        run: |
           dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=quantscript" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
 
       - name: Validate status docs delivery claims
+        if: steps.impact.outputs.verify_todo_registry == 'true' || steps.impact.outputs.verify_docs == 'true'
         run: |
           python3 scripts/check_status_delivery_claims.py
           python3 -m unittest tests/scripts/test_check_status_delivery_claims.py
 
       - name: Validate provider-validation script tests
+        if: steps.impact.outputs.verify_scripts == 'true'
         run: |
           python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
           python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 
       - name: Validate TODO registry contract
+        if: steps.impact.outputs.verify_todo_registry == 'true'
         run: |
           python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
           python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
@@ -130,8 +188,18 @@ jobs:
             artifacts/build-logs/
             artifacts/test-results/dotnet/
             docs/status/todo-scan-results.json
+            .ai/impact-plan.json
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload impact plan artifact
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ci-impact-plan-${{ github.run_number }}
+          path: .ai/impact-plan.json
+          if-no-files-found: ignore
+          retention-days: 30
 
   secret-scan:
     name: Secret Scan

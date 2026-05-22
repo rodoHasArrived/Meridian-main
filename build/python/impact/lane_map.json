@@ -1,0 +1,357 @@
+{
+  "_schema": "meridian-lane-map/1.0",
+  "_description": "Canonical changed-paths → build/test lane ownership map. Each lane declares which path patterns trigger it and the steps executed when active. Safety gates always run regardless of changed paths.",
+
+  "safety_gates": [
+    {
+      "name": "lint",
+      "description": "Code format check — always-on correctness gate",
+      "command": "dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore"
+    },
+    {
+      "name": "workflow-hygiene",
+      "description": "Pinned action ref and CI hygiene check — always-on",
+      "command": "python3 build/scripts/ci/check-workflow-hygiene.py"
+    },
+    {
+      "name": "known-lanes",
+      "description": "Lane vocabulary check — always-on",
+      "command": "python3 build/scripts/docs/check-known-lanes.py"
+    },
+    {
+      "name": "ai-contract-drift",
+      "description": "AI contract mirror drift check — always-on",
+      "command": "python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json"
+    },
+    {
+      "name": "warning-suppressions",
+      "description": "Warning suppression inventory check — always-on",
+      "command": "python3 build/scripts/ci/check-warning-suppressions.py"
+    }
+  ],
+
+  "lanes": [
+    {
+      "name": "verify-core",
+      "description": "Core domain, application, and infrastructure tests",
+      "trigger_patterns": [
+        "src/Meridian.Core/**",
+        "src/Meridian.Domain/**",
+        "src/Meridian.Application/**",
+        "src/Meridian.Contracts/**",
+        "src/Meridian.Infrastructure/**",
+        "src/Meridian.Storage/**",
+        "src/Meridian.ProviderSdk/**",
+        "src/Meridian.Risk/**",
+        "src/Meridian.Strategies/**",
+        "src/Meridian.Execution/**",
+        "src/Meridian.Execution.Sdk/**",
+        "src/Meridian.Ledger/**",
+        "src/Meridian.Providers/**",
+        "tests/Meridian.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-core",
+          "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=core\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-fsharp",
+      "description": "F# domain, ledger, and trading layer tests",
+      "trigger_patterns": [
+        "src/Meridian.FSharp/**",
+        "src/Meridian.FSharp.Ledger/**",
+        "src/Meridian.FSharp.Trading/**",
+        "src/Meridian.Ledger/**",
+        "tests/Meridian.FSharp.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-fsharp",
+          "command": "dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=fsharp\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-backtesting",
+      "description": "Backtesting engine and SDK tests",
+      "trigger_patterns": [
+        "src/Meridian.Backtesting/**",
+        "src/Meridian.Backtesting.Sdk/**",
+        "tests/Meridian.Backtesting.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-backtesting",
+          "command": "dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=backtesting\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-directlending",
+      "description": "Direct lending aggregates and tests",
+      "trigger_patterns": [
+        "src/Meridian.FSharp.DirectLending/**",
+        "src/Meridian.FSharp.DirectLending.Aggregates/**",
+        "tests/Meridian.DirectLending.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-directlending",
+          "command": "dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=directlending\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-ui",
+      "description": "UI services, shared components, and browser workstation tests",
+      "trigger_patterns": [
+        "src/Meridian.Ui/**",
+        "src/Meridian.Ui.Services/**",
+        "src/Meridian.Ui.Shared/**",
+        "tests/Meridian.Ui.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-ui",
+          "command": "dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=ui\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-desktop",
+      "description": "WPF desktop application build (requires Windows targeting)",
+      "trigger_patterns": [
+        "src/Meridian.Wpf/**",
+        "src/Meridian.Ui.Shared/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "build-wpf",
+          "command": "dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --nologo /p:EnableWindowsTargeting=true /p:IsWindows=true /p:EnableFullWpfBuild=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-fundstructure",
+      "description": "Fund structure service tests",
+      "trigger_patterns": [
+        "tests/Meridian.FundStructure.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-fundstructure",
+          "command": "dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=fundstructure\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-mcpserver",
+      "description": "MCP server and tooling tests",
+      "trigger_patterns": [
+        "src/Meridian.Mcp/**",
+        "src/Meridian.McpServer/**",
+        "tests/Meridian.McpServer.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-mcpserver",
+          "command": "dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=mcpserver\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-quantscript",
+      "description": "QuantScript engine tests",
+      "trigger_patterns": [
+        "src/Meridian.QuantScript/**",
+        "tests/Meridian.QuantScript.Tests/**",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "test-quantscript",
+          "command": "dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter \"Category!=Integration&Category!=Performance\" --logger \"trx;LogFilePrefix=quantscript\" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-web-workstation",
+      "description": "Browser workstation host build (web slnf)",
+      "trigger_patterns": [
+        "src/Meridian.Ui/**",
+        "src/Meridian.Ui.Services/**",
+        "src/Meridian.Ui.Shared/**",
+        "src/Meridian.Mcp/**",
+        "Meridian.WebWorkstation.slnf",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "build-web-workstation",
+          "command": "dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-dashboard",
+      "description": "Browser workstation dashboard JS tests and bundle build",
+      "trigger_patterns": [
+        "src/Meridian.Ui/dashboard/**",
+        "src/Meridian.Ui/**/*.ts",
+        "src/Meridian.Ui/**/*.tsx",
+        "src/Meridian.Ui/**/*.js",
+        "src/Meridian.Ui/**/*.json"
+      ],
+      "steps": [
+        {
+          "name": "npm-ci",
+          "command": "npm ci --prefix src/Meridian.Ui/dashboard"
+        },
+        {
+          "name": "dashboard-test",
+          "command": "npm --prefix src/Meridian.Ui/dashboard run test"
+        },
+        {
+          "name": "dashboard-build",
+          "command": "npm --prefix src/Meridian.Ui/dashboard run build"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-docs",
+      "description": "Documentation rendering, roadmap registry, and source READMEs",
+      "trigger_patterns": [
+        "docs/**",
+        "CLAUDE.md",
+        "README.md",
+        "**/*.md",
+        "build/scripts/docs/**"
+      ],
+      "steps": [
+        {
+          "name": "validate-roadmap-registry",
+          "command": "python3 build/scripts/docs/validate-roadmap-registry.py --summary"
+        },
+        {
+          "name": "validate-source-readmes",
+          "command": "python3 build/scripts/docs/validate-source-readmes.py --summary"
+        },
+        {
+          "name": "scan-source-todos",
+          "command": "python3 build/scripts/docs/scan-source-todos.py --summary"
+        },
+        {
+          "name": "render-roadmap-docs",
+          "command": "python3 build/scripts/docs/render-roadmap-docs.py --summary"
+        },
+        {
+          "name": "render-source-docs",
+          "command": "python3 build/scripts/docs/render-source-docs.py --summary"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-todo-registry",
+      "description": "TODO registry and delivery claims validation",
+      "trigger_patterns": [
+        "docs/**",
+        "src/**",
+        "tests/**",
+        "docs/source/todo-registry.json",
+        "build/scripts/docs/scan-todos.py",
+        "build/scripts/docs/validate-todo-registry.py",
+        "scripts/check_status_delivery_claims.py"
+      ],
+      "steps": [
+        {
+          "name": "scan-todos",
+          "command": "python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json"
+        },
+        {
+          "name": "validate-todo-registry",
+          "command": "python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/"
+        },
+        {
+          "name": "validate-delivery-claims",
+          "command": "python3 scripts/check_status_delivery_claims.py"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-scripts",
+      "description": "Build scripts, CI workflow, and maintenance script validation",
+      "trigger_patterns": [
+        "build/**",
+        "scripts/**",
+        "Makefile",
+        "make/**",
+        ".github/workflows/**"
+      ],
+      "steps": [
+        {
+          "name": "provider-validation-tests",
+          "command": "python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py tests/scripts/test_prepare_dk1_operator_signoff.py"
+        }
+      ]
+    },
+
+    {
+      "name": "verify-build-config",
+      "description": "Full solution restore and build when project graph or SDK version changes",
+      "trigger_patterns": [
+        "**/*.csproj",
+        "**/*.fsproj",
+        "**/*.sln",
+        "**/*.slnf",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "NuGet.config",
+        "global.json"
+      ],
+      "steps": [
+        {
+          "name": "dotnet-restore",
+          "command": "dotnet restore Meridian.sln /p:EnableWindowsTargeting=true"
+        },
+        {
+          "name": "dotnet-build",
+          "command": "dotnet build Meridian.sln -c Release --no-restore --nologo /p:EnableWindowsTargeting=true"
+        }
+      ]
+    }
+  ]
+}

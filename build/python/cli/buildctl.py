@@ -15,7 +15,7 @@ Usage:
     python3 build/python/cli/buildctl.py fingerprint --configuration <cfg>
     python3 build/python/cli/buildctl.py env-capture <name>
     python3 build/python/cli/buildctl.py env-diff <env1> <env2>
-    python3 build/python/cli/buildctl.py impact --file <path>
+    python3 build/python/cli/buildctl.py impact [--base <ref>] [--head <ref>] [--output <plan.json>] [--emit-script <plan.sh>] [--all-lanes] [--github-output <file>]
     python3 build/python/cli/buildctl.py bisect --good <ref> --bad <ref>
     python3 build/python/cli/buildctl.py metrics
     python3 build/python/cli/buildctl.py history
@@ -1162,17 +1162,77 @@ def cmd_env_diff(args: argparse.Namespace) -> int:
 # impact command
 # ---------------------------------------------------------------------------
 
+# Lazy import so the rest of buildctl works even without the impact package on
+# the path (e.g. when running from a directory that doesn't have build/python).
+def _load_planner():  # type: ignore[return]
+    """Import the impact planner, adding build/python to sys.path if needed."""
+    impact_pkg = Path(__file__).resolve().parents[1]  # build/python
+    if str(impact_pkg) not in sys.path:
+        sys.path.insert(0, str(impact_pkg))
+    from impact.planner import (  # type: ignore[import]
+        ImpactPlanner,
+        emit_github_outputs,
+        emit_shell_script,
+        print_plan_summary,
+    )
+    return ImpactPlanner, emit_github_outputs, emit_shell_script, print_plan_summary
+
 
 def cmd_impact(args: argparse.Namespace) -> int:
-    file: str = args.file
-    print(f"Analysing build impact of {file}...")
-    result = _run(["git", "log", "--oneline", "-10", "--", file])
-    if result.returncode == 0 and result.stdout.strip():
-        print("Recent commits touching this file:")
-        for line in result.stdout.strip().splitlines():
-            print(f"  {line}")
+    """Compute an actionable execution plan from changed files."""
+    import os
+
+    ImpactPlanner, emit_github_outputs, emit_shell_script, print_plan_summary = (
+        _load_planner()
+    )
+
+    # Resolve base / head refs
+    base: str = args.base
+    head: str = args.head
+    all_lanes: bool = args.all_lanes
+
+    # Determine changed files
+    if args.file:
+        # Legacy single-file mode kept for backward compat
+        changed_files = [args.file]
+    elif args.changed_files:
+        changed_files = args.changed_files
     else:
-        print("  No recent commits found for this file.")
+        planner_tmp = ImpactPlanner()
+        changed_files = planner_tmp.compute_changed_files(base, head)
+
+    planner = ImpactPlanner()
+    plan = planner.plan(changed_files, base=base, head=head, all_lanes=all_lanes)
+
+    if args.format == "json":
+        print(json.dumps(plan.to_dict(), indent=2))
+    else:
+        print_plan_summary(plan)
+
+    # Write machine-readable plan artifact
+    if args.output:
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(plan.to_dict(), indent=2) + "\n", encoding="utf-8"
+        )
+        print(f"[impact] Plan written to {args.output}")
+
+    # Emit executable shell script
+    if args.emit_script:
+        script_path = Path(args.emit_script)
+        script_path.parent.mkdir(parents=True, exist_ok=True)
+        script_content = emit_shell_script(plan)
+        script_path.write_text(script_content, encoding="utf-8")
+        script_path.chmod(0o755)
+        print(f"[impact] Script written to {args.emit_script}")
+
+    # Write GitHub Actions output variables
+    if args.github_output:
+        gha_file = args.github_output
+        emit_github_outputs(plan, gha_file)
+        print(f"[impact] GitHub Actions outputs written to {gha_file}")
+
     return 0
 
 
@@ -1325,8 +1385,61 @@ def build_parser() -> argparse.ArgumentParser:
     p_ed.add_argument("env2")
 
     # impact
-    p_impact = sub.add_parser("impact", help="Analyse build impact for a file")
-    p_impact.add_argument("--file", required=True)
+    p_impact = sub.add_parser(
+        "impact",
+        help="Compute change-impact execution plan for a set of changed files",
+    )
+    p_impact.add_argument(
+        "--file",
+        default=None,
+        help="Single file to analyse (legacy; prefer --base/--head)",
+    )
+    p_impact.add_argument(
+        "--changed-files",
+        nargs="+",
+        default=None,
+        metavar="FILE",
+        help="Explicit list of changed files (overrides git diff)",
+    )
+    p_impact.add_argument(
+        "--base",
+        default="origin/main",
+        help="Base git ref for diff (default: origin/main)",
+    )
+    p_impact.add_argument(
+        "--head",
+        default="HEAD",
+        help="Head git ref for diff (default: HEAD)",
+    )
+    p_impact.add_argument(
+        "--output",
+        default=None,
+        metavar="FILE",
+        help="Write plan JSON artifact to FILE",
+    )
+    p_impact.add_argument(
+        "--emit-script",
+        default=None,
+        metavar="FILE",
+        help="Write executable Bash plan script to FILE",
+    )
+    p_impact.add_argument(
+        "--all-lanes",
+        action="store_true",
+        help="Activate every lane regardless of changed paths (use on main pushes)",
+    )
+    p_impact.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    p_impact.add_argument(
+        "--github-output",
+        default=None,
+        metavar="FILE",
+        help="Write GitHub Actions output variables to FILE (use with $GITHUB_OUTPUT)",
+    )
 
     # bisect
     p_bisect = sub.add_parser("bisect", help="Build bisect helper")

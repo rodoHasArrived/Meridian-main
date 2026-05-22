@@ -10,7 +10,7 @@
         clean \
         benchmark bench-quick bench-filter bench-velocity \
         publish publish-linux publish-windows publish-macos \
-        pre-pr pre-pr-full
+        pre-pr pre-pr-full drift-review
 
 build: ## Build the project (Release)
 	@echo "$(BLUE)Building with observability...$(NC)"
@@ -128,11 +128,28 @@ publish-windows: ## Publish for Windows x64
 publish-macos: ## Publish for macOS x64
 	./build/scripts/publish/publish.sh osx-x64
 
-pre-pr: lint test ## Run pre-PR checks (format + tests) — run before pushing
+pre-pr: ## Impact-aware pre-PR validation (safety gates + impacted lanes only)
+	@mkdir -p .ai
+	@python3 build/python/cli/buildctl.py impact \
+		--base origin/main --head HEAD \
+		--output .ai/pre-pr-plan.json \
+		--emit-script .ai/pre-pr-plan.sh
+	@bash .ai/pre-pr-plan.sh
 	@echo ""
-	@echo "$(GREEN)All pre-PR checks passed!$(NC)"
-	@echo "Ready to push and open a pull request."
+	@echo "$(GREEN)Pre-PR checks passed (impact-aware)!$(NC)"
+	@echo "Plan artifact: .ai/pre-pr-plan.json"
 
-pre-pr-full: lint test-all ## Full pre-PR validation (format + all tests with coverage)
+pre-pr-full: ## Full pre-PR validation (all lanes, no skipping)
+	@mkdir -p .ai
+	@python3 build/python/cli/buildctl.py impact \
+		--base origin/main --head HEAD \
+		--output .ai/pre-pr-full-plan.json \
+		--emit-script .ai/pre-pr-full-plan.sh \
+		--all-lanes
+	@bash .ai/pre-pr-full-plan.sh
 	@echo ""
 	@echo "$(GREEN)Full pre-PR validation passed!$(NC)"
+	@echo "Plan artifact: .ai/pre-pr-full-plan.json"
+
+drift-review: ## Weekly impact-plan drift review (mapping quality telemetry)
+	@python3 build/scripts/drift/weekly-drift-review.py --days 7

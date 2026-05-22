@@ -117,13 +117,46 @@ cat >.ai/maintenance-route.json <<EOF
 }
 EOF
 
+# ── Build impact-based execution plan ─────────────────────────────────────────
+if have python3 && [[ -f build/python/cli/buildctl.py ]]; then
+    ALL_LANES_FLAG=""
+    [[ "$MODE" == "full" ]] && ALL_LANES_FLAG="--all-lanes"
+
+    # Build changed-files args from the already-computed diff
+    CHANGED_ARGS=()
+    if [[ -n "$CHANGED_FILES" ]]; then
+        while IFS= read -r f; do
+            [[ -n "$f" ]] && CHANGED_ARGS+=("$f")
+        done <.ai/changed-files.txt
+    fi
+
+    if [[ ${#CHANGED_ARGS[@]} -gt 0 ]]; then
+        python3 build/python/cli/buildctl.py impact \
+            --changed-files "${CHANGED_ARGS[@]}" \
+            --base "$BASE_REF" --head "$HEAD_REF" \
+            --output .ai/impact-plan.json \
+            --emit-script .ai/impact-plan.sh \
+            $ALL_LANES_FLAG || true
+    else
+        python3 build/python/cli/buildctl.py impact \
+            --base "$BASE_REF" --head "$HEAD_REF" \
+            --output .ai/impact-plan.json \
+            --emit-script .ai/impact-plan.sh \
+            $ALL_LANES_FLAG || true
+    fi
+    log "Impact plan written to .ai/impact-plan.json"
+fi
+
 if [[ "$CLASSIFY_ONLY" == true ]]; then
     log "Classification complete (classify-only mode); mode=$MODE"
     exit 0
 fi
 
-# ── Execute appropriate maintenance script ───────────────────────────────────
-if [[ "$MODE" == "full" ]]; then
+# ── Execute via impact plan when available, else fall back to legacy scripts ──
+if [[ -f .ai/impact-plan.sh ]]; then
+    log "Executing impact plan: .ai/impact-plan.sh"
+    exec bash .ai/impact-plan.sh
+elif [[ "$MODE" == "full" ]]; then
     exec bash scripts/ai/maintenance-full.sh
 else
     exec bash scripts/ai/maintenance-light.sh
