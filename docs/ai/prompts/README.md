@@ -85,7 +85,7 @@ The current maintained generator is
 [`../../../build/scripts/docs/generate-prompts.py`](../../../build/scripts/docs/generate-prompts.py).
 It can analyze workflow results, classify failures, and generate `.prompt.yml` files with failure
 context. The legacy prompt-generation GitHub Actions workflow is archived; see
-[`../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md`](../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md)
+[`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md)
 before reintroducing workflow automation.
 
 Run locally:

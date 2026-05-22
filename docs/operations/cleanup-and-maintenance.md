@@ -13,7 +13,7 @@ Use this guide before removing files or reorganizing the repository.
 3. Consolidate duplicate documentation into maintained indexes.
 4. Consolidate scripts only after checking README, docs, CI, project files,
    package files, launch settings, and automation prompts.
-5. Move useful docs-tree history to `docs/archive/` instead of deleting it.
+5. Move useful docs-tree history to `archive/docs/` instead of deleting it.
 6. Validate with the narrowest build/test command that covers the change.
 
 ## Safe Local Deletes
@@ -51,7 +51,7 @@ is inside `C:\Dev\Meridian-main`.
 - `.agents/`, `.codex/`, `.claude/`, and `.github/prompts/`: overlapping agent
   guidance is intentional until the AI guidance inventory is reconciled.
 - `archive/`: historical reference only, but retained for traceability.
-- `docs/archive/`: historical documentation retained inside the docs tree.
+- `archive/docs/`: historical documentation retained under the repository archive tree.
 
 ## Path Hygiene
 
@@ -68,7 +68,7 @@ from the current checkout before publishing documentation.
 - Add short command paths to `docs/developer/`; keep long explanations in
   `docs/development/`.
 - Add active architecture maps to `docs/architecture/`; archive superseded
-  design notes under `docs/archive/`.
+  design notes under `archive/docs/`.
 - Add prompt inventories to `docs/prompts/`; do not create a new prompt folder
   until the existing `.github/prompts/`, `.agents/`, `.codex/`, and `docs/ai/`
   surfaces have been checked.

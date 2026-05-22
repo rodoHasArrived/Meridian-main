@@ -31,7 +31,7 @@ current source instead.
 | [`../../../.github/instructions/`](../../../.github/instructions/) | Auto-applied path-specific rules for C#, tests, docs, and WPF |
 | [`../../../.github/agents/`](../../../.github/agents/) | Copilot coding-agent role definitions |
 | [`../../../.github/prompts/`](../../../.github/prompts/) | Reusable Copilot Chat prompt templates |
-| [`../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md`](../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md) | Archive note for retired Copilot workflow files |
+| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive note for retired Copilot workflow files |
 
 ## Current Product Framing
 
