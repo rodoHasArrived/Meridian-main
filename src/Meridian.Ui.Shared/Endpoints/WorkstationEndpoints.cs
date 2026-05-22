@@ -3113,15 +3113,8 @@ public static partial class WorkstationEndpoints
                 var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
                 var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
                 var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
-                var connectionSummary = connection ?? BuildSyntheticProviderConnectionSummary(
-                    providerId,
-                    displayName,
-                    capability,
-                    rationale,
-                    metrics);
-
                 return new WorkstationDataProviderRecord(
-                    ProviderId: connectionSummary.ProviderId,
+                    ProviderId: connection?.ProviderId ?? providerId,
                     DisplayName: displayName,
                     Status: connection is not null ? connection.Health.ToString() : rationale.Status,
                     Capability: capability,
@@ -3132,9 +3125,9 @@ public static partial class WorkstationEndpoints
                         ? string.Join(", ", trustSnapshot.Signals)
                         : rationale.SignalSource,
                     ReasonCode: rationale.ReasonCode,
-                    RecommendedAction: connectionSummary.RecommendedAction,
+                    RecommendedAction: connection?.RecommendedAction ?? rationale.RecommendedAction,
                     GateImpact: rationale.GateImpact,
-                    ConnectionSummary: connectionSummary,
+                    ConnectionSummary: connection,
                     RoutingSummary: new WorkstationDataProviderRoutingSummary(
                         ConnectionId: routingConnection?.ConnectionId,
                         ProviderFamilyId: routingConnection?.ProviderFamilyId ?? connection?.ProviderId,
@@ -3269,48 +3262,6 @@ public static partial class WorkstationEndpoints
            ?? routingConnection?.DisplayName
            ?? metrics?.ProviderId
            ?? providerId;
-
-    private static ProviderConnectionRowDto BuildSyntheticProviderConnectionSummary(
-        string providerId,
-        string displayName,
-        string capability,
-        ProviderTrustRationalePayload rationale,
-        ProviderMetrics? metrics)
-    {
-        var health = rationale.Status switch
-        {
-            "Healthy" => ProviderContinuityHealthDto.Healthy,
-            "Warning" => ProviderContinuityHealthDto.Warning,
-            "Degraded" => ProviderContinuityHealthDto.Degraded,
-            "Blocked" => ProviderContinuityHealthDto.Blocked,
-            _ => ProviderContinuityHealthDto.Unknown
-        };
-
-        return new ProviderConnectionRowDto(
-            ProviderId: metrics?.ProviderId ?? providerId,
-            DisplayName: displayName,
-            Capability: ResolveProviderConnectionCapability(capability),
-            CredentialState: ProviderCredentialStateDto.Missing,
-            CredentialSource: ProviderCredentialSourceDto.None,
-            VerificationState: ProviderVerificationStateDto.NotVerified,
-            Health: health,
-            FallbackActive: false,
-            LastVerifiedAt: metrics?.Timestamp,
-            LastSuccessfulAt: health == ProviderContinuityHealthDto.Healthy ? metrics?.Timestamp : null,
-            LastFailureAt: health is ProviderContinuityHealthDto.Degraded or ProviderContinuityHealthDto.Blocked ? metrics?.Timestamp : null,
-            LastError: health == ProviderContinuityHealthDto.Healthy ? null : rationale.RecommendedAction,
-            MaskedKeyPreview: null,
-            Environment: null,
-            ExternalAccountId: null,
-            AffectedWorkflows: [],
-            RecommendedAction: rationale.RecommendedAction,
-            ActionHref: ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId));
-    }
-
-    private static ProviderConnectionCapabilityDto ResolveProviderConnectionCapability(string capability)
-        => capability.Contains("brokerage", StringComparison.OrdinalIgnoreCase)
-            ? ProviderConnectionCapabilityDto.Brokerage
-            : ProviderConnectionCapabilityDto.Data;
 
     private static string ResolveDataProviderCapability(
         ProviderConnectionRowDto? connection,

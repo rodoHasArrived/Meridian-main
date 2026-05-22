@@ -575,7 +575,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models and compatibility shims for browser and retained desktop surfaces.
+    purpose: Shared UI read models and compatibility shims for browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W2-TRD-001

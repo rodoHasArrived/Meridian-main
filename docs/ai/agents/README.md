@@ -8,7 +8,7 @@ All agent surfaces should follow the shared provider-agnostic workflow in
 
 All three surfaces should stay aligned around the same current product framing: Meridian is a
 .NET 10 fund-management and trading platform with an active browser-based operator workstation,
-retained WPF support, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
+active WPF operator work, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
 `Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
 ledger, and MCP foundations.
 

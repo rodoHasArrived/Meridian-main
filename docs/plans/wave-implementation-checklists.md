@@ -129,9 +129,9 @@ Use this together with:
   - [ ] Confirm operator context (who/what/why/next step) is preserved in handoffs.
   - [ ] Validate sign-off outcomes are auditable.
 
-- [ ] **Shared contracts/read models work across browser and retained desktop.**
+- [ ] **Shared contracts/read models work across browser and desktop.**
   - [ ] Validate shared DTO/read-model compatibility in both UI surfaces.
-  - [ ] Confirm no wave-critical behavior diverges between browser and retained desktop.
+  - [ ] Confirm no wave-critical behavior diverges between browser and desktop.
   - [ ] Record compatibility exceptions and mitigation plans if any are unavoidable.
 
 - [ ] **W3 pilot-readiness gates are green or explicitly blocked.**

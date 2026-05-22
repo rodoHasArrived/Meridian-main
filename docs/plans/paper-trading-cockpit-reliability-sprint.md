@@ -11,7 +11,7 @@
 - [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 Planning review note 2026-05-18: this remains the Wave 2 cockpit reliability contract. The active
-operator UI proof path is the browser workstation, with retained WPF/API surfaces consuming the
+operator UI proof path runs through shared workstation contracts, with browser, WPF, and API surfaces consuming the
 same readiness, session, replay, control, audit, and promotion seams. Start from
 [`current-direction-and-status.md`](current-direction-and-status.md) for the consolidated current
 planning interpretation before using this sprint as the Wave 2 detail contract.
@@ -75,7 +75,7 @@ date-stamped evidence slice:
 
 ### In Scope
 
-- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with the web dashboard as the active operator lane and retained WPF/API surfaces as supporting consumers
+- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with browser, WPF, and API consumers aligned around the same readiness contracts
 - make replay verification an operator-facing readiness signal instead of a hidden service capability
 - tighten order, control, and risk audit correlation so decisions can be explained from the cockpit
 - make `Backtest -> Paper` traceability durable and make `Paper -> Live` readiness explicit without widening live-readiness claims
@@ -92,7 +92,7 @@ date-stamped evidence slice:
 ### Assumptions
 
 - Wave 1 remains the trust boundary for provider confidence and is not reopened here.
-- Wave 2 is a shared workstation cockpit hardening effort: the web dashboard is now the active operator shell, and retained WPF/API surfaces should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
+- Wave 2 is a shared workstation cockpit hardening effort: the browser and WPF operator shells should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
 - Later `Paper -> Live` work should only inherit controls from this sprint; it should not claim live readiness by default.
 
 ## Acceptance Gates
@@ -433,7 +433,7 @@ npm --prefix src/Meridian.Ui/dashboard test -- trading-screen api.trading
 
 ## Cross-Surface Run Continuity Acceptance Matrix (Wave 2 hard gate)
 
-The sprint is not complete until API, web Research, retained WPF, and operator work-item routing stay aligned for canonical run identity and continuity.
+The sprint is not complete until API, web Research, WPF, and operator work-item routing stay aligned for canonical run identity and continuity.
 
 ### Cross-surface acceptance criteria
 

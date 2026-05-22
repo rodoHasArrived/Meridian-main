@@ -152,7 +152,7 @@ Ledger and reconciliation workflows need evidence-linked acceptance before gover
 
 - Reconciliation queue actions link to ledger evidence.
 - Break resolution and sign-off states are operator-visible.
-- Shared contracts remain compatible across web and retained WPF.
+- Shared contracts remain compatible across browser and WPF workstation surfaces.
 
 ### Source Modules
 

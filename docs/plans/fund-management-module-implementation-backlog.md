@@ -17,7 +17,7 @@
 > operator UI lane again. Backlog items that touch operator workflow should use
 > shared contracts, local/web API endpoints, or shared read models first, then
 > land browser-visible surfaces in `src/Meridian.Ui/dashboard/`. WPF remains a
-> retained support and regression surface unless a backlog item explicitly
+> active WPF operator work and regression surface unless a backlog item explicitly
 > calls out desktop compatibility work.
 
 ## Purpose
@@ -87,7 +87,7 @@ workflow acceptance.
 
 **Primary backlog**
 
-- Keep browser-first workspace shells aligned to `Data`, `Strategy`, `Trading`,
+- Keep shared-contract-first workspace shells aligned to `Data`, `Strategy`, `Trading`,
   `Portfolio`, `Accounting`, `Reporting`, and `Settings`, with legacy
   `Research`, `Data Operations`, and `Governance` names handled as
   compatibility aliases.

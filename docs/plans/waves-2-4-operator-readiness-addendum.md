@@ -213,7 +213,7 @@ Turn the current paper-trading cockpit from "visible" into "dependable" by makin
 
 ### Objective
 
-Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser dashboard, and WPF desktop surfaces.
+Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser and WPF workstations, and WPF desktop surfaces.
 
 Current WPF evidence now includes RunCashFlow guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Keep that in the Wave 3 continuity lane; governance-wide cash-flow projections and reporting still belong to Wave 4.
 

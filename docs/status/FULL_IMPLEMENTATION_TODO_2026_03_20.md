@@ -137,7 +137,7 @@ Open work:
 - extend run history beyond backtest-first into paper and live-adjacent results
 - deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger and reconciliation continuity in the active web dashboard and retained workstation APIs/WPF support surfaces
+- surface ledger and reconciliation continuity in the active web dashboard and workstation APIs and WPF surfaces
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:

@@ -103,50 +103,50 @@ Split/stop immediately when:
 - implementation and governance changes are mixed in one PR,
 - generated docs were manually edited,
 - done-state evidence is missing,
-- new WPF product scope appears outside retained support,
+- new WPF product scope appears outside the shared-contract-first active desktop lane,
 - new mobile/client scope appears,
 - AI guidance diverges across providers.
 
 ## Execution Plan (PR0–PR9)
 
-- **PR0 — Governance contract only**  
-  Add governance and policy docs only (schema-versioning, generated-doc policy, source doc standards/templates).  
+- **PR0 — Governance contract only**
+  Add governance and policy docs only (schema-versioning, generated-doc policy, source doc standards/templates).
   DoD: policies complete; no registries/renderers/generated outputs yet.
 
-- **PR1 — Schemas + validator skeleton**  
-  Add v1 schema files and validator skeletons with tiny fixtures.  
+- **PR1 — Schemas + validator skeleton**
+  Add v1 schema files and validator skeletons with tiny fixtures.
   DoD: fixtures validate; missing required fields and unsupported majors fail.
 
-- **PR2 — Roadmap registry seed**  
-  Add initial roadmap registries with limited high-level items (W1–W6 anchors).  
+- **PR2 — Roadmap registry seed**
+  Add initial roadmap registries with limited high-level items (W1–W6 anchors).
   DoD: validation passes; exit criteria + evidence posture present; no done without evidence.
 
-- **PR3 — Source module registry seed**  
-  Add source module/TODO/diagram/README-coverage registries and `src/README.md` rules.  
+- **PR3 — Source module registry seed**
+  Add source module/TODO/diagram/README-coverage registries and `src/README.md` rules.
   DoD: priority module records complete and aligned with architecture boundaries.
 
-- **PR4 — Source READMEs (core backend)**  
-  Create/upgrade READMEs for host/application/contracts modules.  
+- **PR4 — Source READMEs (core backend)**
+  Create/upgrade READMEs for host/application/contracts modules.
   DoD: required front matter + sections + generated block markers present.
 
-- **PR5 — Source READMEs (UI + retained WPF)**  
-  Create/upgrade READMEs for `Ui/dashboard/Ui.Services/Ui.Shared/Wpf`.  
-  DoD: browser-first dashboard role explicit; WPF retained-support scope explicit.
+- **PR5 — Source READMEs (UI + WPF)**
+  Create/upgrade READMEs for `Ui/dashboard/Ui.Services/Ui.Shared/Wpf`.
+  DoD: shared-contract-first dashboard role explicit; WPF retained-support scope explicit.
 
-- **PR6 — Deterministic Markdown renderers**  
-  Implement roadmap + source-doc markdown renderers and generated manifests.  
+- **PR6 — Deterministic Markdown renderers**
+  Implement roadmap + source-doc markdown renderers and generated manifests.
   DoD: deterministic headers, stable ordering, render-twice parity, no post-render drift.
 
-- **PR7 — Diagram/SVG rendering**  
-  Implement roadmap/source diagram renderers and deterministic SVG generation.  
+- **PR7 — Diagram/SVG rendering**
+  Implement roadmap/source diagram renderers and deterministic SVG generation.
   DoD: deterministic IDs/colors; pinned Mermaid only where required; reproducible regeneration.
 
-- **PR8 — AI coding instruction sync**  
-  Update shared AI workflow contract + mirrors + path-specific instructions for `src/**`.  
+- **PR8 — AI coding instruction sync**
+  Update shared AI workflow contract + mirrors + path-specific instructions for `src/**`.
   DoD: shared-policy-first synchronization rules; no provider-policy divergence.
 
-- **PR9 — CI drift enforcement**  
-  Add CI workflow for validators, renderers, determinism checks, and drift checks.  
+- **PR9 — CI drift enforcement**
+  Add CI workflow for validators, renderers, determinism checks, and drift checks.
   DoD: CI fails on schema/readme/todo/generation/diagram drift or nondeterminism.
 
 ## Initiative Completion Checklist

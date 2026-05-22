@@ -38,7 +38,7 @@ The next six weeks should focus on four outcomes:
 
 1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and preserve the signed DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, freshly generated date-stamped parity-packet artifacts, and valid packet-bound sign-off evidence
 2. harden the Wave 2 paper-trading cockpit that is already visible through shared web and
-   retained support surfaces
+   active desktop/browser surfaces
 3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while validating browser and WPF operator workflows through shared contracts
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
 
@@ -104,7 +104,7 @@ This plan starts from the current repo state:
   such as `Research`, `Trading`, `Data Operations`, and `Governance`; the visible product shell is
   now the seven-workspace browser model (`Data`, `Strategy`, `Trading`, `Portfolio`,
   `Accounting`, `Reporting`, `Settings`), with legacy aliases retained for compatibility; WPF
-  remains useful support evidence for retained desktop workflows and shared workstation contracts
+  remains useful support evidence for active desktop workflows and shared workstation contracts
   rather than the default lane for new operator features
 - the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest results empty-state guidance, Position Blotter, Notification Center history recovery, Trading Hours session and holiday-calendar guidance, Welcome, Storage archive posture, System Health triage, Activity Log triage/export/clear state, Watchlist posture plus pinned-first display, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation and comparison guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing states, workspace queue tone styles, the workspace shell context strip, route-aware operator queue button state with shell-context attention cues, the Trading desk briefing hero's stale-replay count detail, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the feature-owned Data shell's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
 - the latest shell-support evidence adds Welcome readiness progress for connection/symbol/storage posture, Storage archive posture for daily growth/capacity/last-scan handoffs, Storage preview scope/guidance for archive-path decisions, OrderBook order-flow posture for depth/tape/spread monitoring, compact shared deep-page command chrome that preserves related-workflow and trust-state context, actionable shell-context attention details, a provider-degradation next action that opens `ProviderHealth`, brokerage-sync queue routing into `AccountPortfolio`, bounded run review-packet queue items, and Trading hero attention states for warning or critical shared work items; treat these as validation support for operator orientation and routing, not as separate readiness exits
@@ -132,7 +132,7 @@ This plan starts from the current repo state:
 ### Delivery guardrails in this window
 
 - keep WPF workflow-first consolidation and MVVM extraction limited to work that directly supports active Wave 2-4 flows
-- keep desktop launch/deep-link routing, screenshot workflows, single-instance forwarding, UI-automation page-state markers, and fixture/demo-mode cues aligned to retained workspace shell routes so compatibility automation verifies the same desktop support surfaces operators can still open; screenshot-refresh CI should remain a validation evidence lane with diagnostic artifact retention and a single final commit step
+- keep desktop launch/deep-link routing, screenshot workflows, single-instance forwarding, UI-automation page-state markers, and fixture/demo-mode cues aligned to WPF workspace shell routes so compatibility automation verifies the same desktop support surfaces operators can still open; screenshot-refresh CI should remain a validation evidence lane with diagnostic artifact retention and a single final commit step
 - keep validation and documentation synchronized with executable evidence, not summary language; the DK1 `pilotReplaySampleSet` is now part of that evidence contract
 - keep shared DTOs, read models, workflow services, and export seams as the integration boundary across active work
 - treat current browser and WPF workflow validation as open until the delivered shell/navigation baselines are clearly wired into run-centered workflows through shared contracts; the simplified browser rail/header and seeded `/data/quotes?symbol=AAPL` demo fixtures improve demo and orientation quality, but do not satisfy cockpit, reporting, reconciliation, or live-readiness gates
@@ -177,7 +177,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 - the DK1 pilot replay/sample-set contract is emitted by `scripts/dev/run-wave1-provider-validation.ps1`, packaged by `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, bound to operator approvals by `scripts/dev/prepare-dk1-operator-signoff.ps1 -PacketPath`, and reviewed through the DK1 pilot parity runbook
 - backfill checkpoints, gap detection, and Parquet L2 flush behavior remain on the passing command matrix instead of drifting back into assumed reliability
 - the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, generated validation summaries, and the signed 2026-04-27 DK1 packet; future generated `artifacts/provider-validation/` packets remain run-specific evidence and require matching sign-off when used for review
-- the retained Data shell and Provider Health posture briefing remain consumers of shared provider, backfill, storage, session, and export state instead of becoming separate operational-readiness models
+- the WPF Data shell and Provider Health posture briefing remain consumers of shared provider, backfill, storage, session, and export state instead of becoming separate operational-readiness models
 - Storage archive posture remains a Data Operations support improvement: it should project daily growth, capacity horizon, last-scan, and scan-failure guidance from already-loaded analytics without becoming a separate storage readiness gate
 
 ### Outcome 2: Wave 2 paper trading is dependable, not just visible
@@ -277,13 +277,13 @@ Priorities:
 
 - keep WPF page and shell work tied to shared contracts, active cockpit, shared-model, or governance workflows rather than client-local business logic
 - continue MVVM extraction where pages still depend heavily on code-behind orchestration in active areas
-- keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used by the WPF shell and retained desktop-local API contracts
+- keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used by the WPF shell and desktop-local API contracts
 - treat the Trading desk briefing hero, OrderBook posture strip, and Position Blotter selection-review rail as Wave 2 support evidence only when they continue to reflect shared execution, readiness, replay, controls, trust-gate, depth/tape, and brokerage-sync posture without duplicating service logic
 - treat the Research desk briefing hero as Wave 3 support evidence only when it keeps selected-run, run-detail, portfolio, and paper-promotion handoffs tied to shared workstation read models
 - treat StrategyRuns filter recovery and comparison guidance as Wave 3 support evidence only when they clarify shared run scope, recover hidden retained rows, and prevent invalid compare pairs without duplicating run-read service state
 - treat BatchBacktest results empty guidance as Wave 3 support evidence only when it helps operators distinguish idle, validation-blocked, running, failed, cancelled, and populated sweep states without inventing a separate results model
 - treat QuantScript Run History as Wave 3 support evidence only when it keeps script/notebook execution records local while using shared Research surfaces for mirrored run handoffs
-- treat the retained Data shell and Provider Health posture briefing as Wave 1/DK1 support evidence only when they keep provider, backfill, storage, session, and export handoffs tied to shared operational services
+- treat the WPF Data shell and Provider Health posture briefing as Wave 1/DK1 support evidence only when they keep provider, backfill, storage, session, and export handoffs tied to shared operational services
 - treat Storage archive posture as Data Operations support evidence only when it reflects already-loaded storage analytics and helps operators decide retention, packaging, or backfill next steps without replacing storage validation gates
 - treat System Health triage as support-triage evidence only when it summarizes provider, storage, and retained event posture and distinguishes pending scans from confirmed empty snapshots without substituting for readiness gates, provider validation, or durable incident queues
 - treat Notification Center filter recovery as governance/operator-triage support evidence only when it helps recover retained history without substituting for durable work-item queues

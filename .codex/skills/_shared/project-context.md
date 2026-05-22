@@ -154,7 +154,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the retained WPF shell
+  services, workstation endpoints, and the WPF shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: BenchmarkDotNet performance suites
 
@@ -202,7 +202,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/Shell/`: retained WPF shell route, launch, session, refresh, and presentation seams
+- `src/Meridian.Wpf/Shell/`: WPF shell route, launch, session, refresh, and presentation seams
 - `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained shell compatibility view model and migration anchor
 
 ## Review Guardrails

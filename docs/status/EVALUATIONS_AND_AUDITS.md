@@ -76,10 +76,10 @@ Use this document as supporting context. For active prioritization, default to t
 
 ## Refresh Highlights
 
-**This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the browser-first operator UI pivot, and the April 2026 workspace visual audit:**
+**This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the shared-contract-first operator UI pivot, and the April 2026 workspace visual audit:**
 
 - Wave 1 trust gate is **closed** as of 2026-04-17 with a signed DK1 parity packet and valid operator sign-off. The Project Health Summary and production-status posture are updated accordingly.
-- New WPF feature development is **paused**; the active operator UI lane is the web dashboard in `src/Meridian.Ui/dashboard/`. The Desktop UX summary is updated to reflect retained support scope rather than active parity targets.
+- WPF feature development is active alongside the browser workstation when it consumes shared contracts, API endpoints, and read models. The Desktop UX summary should reflect first-class desktop workflow scope rather than support-only parity targets.
 - The **Workspace Visual Audit Checklist (2026-04-22)** is now indexed under [Code Audits](#workspace-visual-audit-april-2026). It confirms shared spacing/rhythm tokens, card composition patterns, badge semantics, and summary-tile ordering are in place across the four workspace shells; four visual outliers are flagged for follow-up cleanup.
 - Version updated to 1.7.2 to align with `production-status.md`.
 
@@ -291,7 +291,7 @@ Use this document as supporting context. For active prioritization, default to t
 
 ## Desktop Assessments
 
-> **Note (2026-05-01):** New WPF feature development is paused. The active operator UI lane is the browser-based workstation dashboard in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The desktop shell is retained support evidence for shared contracts, regression fixes, and compatibility checks. The assessments below reflect the desktop-first evaluation history. For the active UI direction see [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
+> **Note (2026-05-01):** WPF feature development is active alongside the browser workstation. The browser dashboard in `src/Meridian.Ui/dashboard/` and built assets in `src/Meridian.Ui/wwwroot/workstation/` remain active, and the desktop shell is a first-class WPF operator surface that consumes the same shared contracts and read models. The assessments below reflect the desktop-first evaluation history. For the active UI direction see [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
 
 ### Desktop UX Assessment
 
@@ -361,12 +361,12 @@ Use this document as supporting context. For active prioritization, default to t
 **Executive Takeaway:** This archived desktop snapshot predates the current differentiation
 framing. Its durable signal is still useful: the highest-value remaining work was workflow
 consolidation and stronger trust signals. Read the active product direction through
-`docs/plans/evidence-backed-investment-operations-plan.md` and the browser-first operator pivot,
+`docs/plans/evidence-backed-investment-operations-plan.md` and the shared-contract-first operator pivot,
 not as a generic trading-workstation program.
 
 **Current planning alignment:**
 
-- Phase 11 — Historical workspace consolidation around Research, Trading, Data Operations, and Governance; current planning maps this into the browser-first `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` model with retained WPF compatibility aliases
+- Phase 11 — Historical workspace consolidation around Research, Trading, Data Operations, and Governance; current planning maps this into the shared-contract-first `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` model with WPF compatibility aliases
 - Phase 12 — Standardize shared run / portfolio / ledger read models
 - Phase 13 — Unify native backtesting, Lean integration, and paper-trading workflows
 
