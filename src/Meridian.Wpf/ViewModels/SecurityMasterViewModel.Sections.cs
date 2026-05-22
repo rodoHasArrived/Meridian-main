@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.ViewModels;
 

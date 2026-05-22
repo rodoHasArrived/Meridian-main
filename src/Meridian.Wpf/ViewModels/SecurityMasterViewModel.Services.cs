@@ -1,11 +1,12 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
-internal sealed class SecurityMasterSearchWorkspaceService
+internal static class SecurityMasterSearchWorkspaceService
 {
-    public IReadOnlyList<string> BuildAssetClassOptions(IEnumerable<SecurityMasterWorkstationDto> results, string allAssetClassesLabel)
+    public static IReadOnlyList<string> BuildAssetClassOptions(IEnumerable<SecurityMasterWorkstationDto> results, string allAssetClassesLabel)
     {
         var options = results
             .Select(result => result.Classification.AssetClass)
@@ -17,7 +18,7 @@ internal sealed class SecurityMasterSearchWorkspaceService
         return options;
     }
 
-    public IReadOnlyList<string> BuildProviderOptions(
+    public static IReadOnlyList<string> BuildProviderOptions(
         IEnumerable<SecurityMasterWorkstationDto> results,
         string allProvidersLabel,
         Func<SecurityMasterWorkstationDto, string> getMatchedProvider)
@@ -32,7 +33,7 @@ internal sealed class SecurityMasterSearchWorkspaceService
         return options;
     }
 
-    public SecurityMasterWorkstationDto[] ApplyFilters(
+    public static SecurityMasterWorkstationDto[] ApplyFilters(
         IEnumerable<SecurityMasterWorkstationDto> results,
         string selectedAssetClassFilter,
         string selectedProviderFilter,
@@ -65,9 +66,9 @@ internal sealed class SecurityMasterSearchWorkspaceService
     }
 }
 
-internal sealed class SecurityMasterPrintProjectionService
+internal static class SecurityMasterPrintProjectionService
 {
-    public SecurityMasterPrintProjection BuildProjection(
+    public static SecurityMasterPrintProjection BuildProjection(
         SecurityMasterTrustSnapshotDto snapshot,
         string goldenCopySourceText,
         string latestHistoryEventText,
@@ -91,7 +92,7 @@ internal sealed class SecurityMasterPrintProjectionService
             ],
             EvidenceItems:
             [
-                new SecurityMasterEvidenceItem("Winning source", goldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
+                new SecurityMasterEvidenceItem("Winning source", goldenCopySourceText, SecurityMasterTextHelpers.FirstNonEmpty(snapshot.EconomicDefinition?.WinningSourceReason, "Golden copy rationale")),
                 new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
                 new SecurityMasterEvidenceItem("Identifier coverage", snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.", "Identifier resolution"),
                 new SecurityMasterEvidenceItem("Schedule model", snapshot.ScheduleBook?.Summary ?? snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.", FormatScheduleSourceLabel(snapshot)),
@@ -131,9 +132,6 @@ internal sealed class SecurityMasterPrintProjectionService
         => string.IsNullOrWhiteSpace(snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary)
             ? "Schedule source"
             : $"Schedule source: {snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary}";
-
-    private static string FirstNonEmpty(params string?[] values)
-        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
 }
 
 internal sealed record SecurityMasterPrintProjection(

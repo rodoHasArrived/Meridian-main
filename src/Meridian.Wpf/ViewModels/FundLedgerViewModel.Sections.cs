@@ -1,10 +1,11 @@
 using System.Collections.ObjectModel;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
-public sealed class FundLedgerCollectionsSectionViewModel
+internal sealed class FundLedgerCollectionsSectionViewModel
 {
     public FundLedgerCollectionsSectionViewModel(
         ObservableCollection<FundTrialBalanceLine> trialBalance,

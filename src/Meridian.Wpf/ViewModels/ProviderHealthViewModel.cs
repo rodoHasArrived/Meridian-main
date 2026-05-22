@@ -172,7 +172,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     public string PageTitle => "Provider Health";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
-    public ProviderHealthCollectionsSectionViewModel CollectionsSection { get; }
+    internal ProviderHealthCollectionsSectionViewModel CollectionsSection { get; }
 
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,

@@ -212,9 +212,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
 
-    public MainPageNavigationSectionViewModel NavigationSection { get; }
+    internal MainPageNavigationSectionViewModel NavigationSection { get; }
 
-    public MainPageWorkflowSectionViewModel WorkflowSection { get; }
+    internal MainPageWorkflowSectionViewModel WorkflowSection { get; }
 
     public IRelayCommand<string> SelectWorkspaceCommand { get; }
 

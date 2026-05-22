@@ -51,8 +51,6 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
     private readonly SecurityMasterScheduleAndOpenLotSectionViewModel _scheduleSection = new();
     private readonly SecurityMasterPrintSectionViewModel _printSection = new();
-    private readonly SecurityMasterSearchWorkspaceService _searchWorkspaceService = new();
-    private readonly SecurityMasterPrintProjectionService _printProjectionService = new();
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SecurityMasterWorkstationDto> Results => _searchSection.Results;
@@ -928,9 +926,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
             var economic = SelectedTrustSnapshot?.EconomicDefinition;
             var identity = SelectedTrustSnapshot?.Identity;
-            var assetFamily = FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
-            var issuerType = FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
-            var country = FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
+            var assetFamily = SecurityMasterTextHelpers.FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
+            var issuerType = SecurityMasterTextHelpers.FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
+            var country = SecurityMasterTextHelpers.FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
             return $"{assetFamily} • {issuerType} • {country}";
         }
     }
@@ -1792,10 +1790,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var assetClassOptions = _searchWorkspaceService.BuildAssetClassOptions(Results, AllAssetClassesFilterLabel);
+            var assetClassOptions = SecurityMasterSearchWorkspaceService.BuildAssetClassOptions(Results, AllAssetClassesFilterLabel);
             ReplaceCollection(AssetClassFilterOptions, assetClassOptions);
 
-            var providerOptions = _searchWorkspaceService.BuildProviderOptions(
+            var providerOptions = SecurityMasterSearchWorkspaceService.BuildProviderOptions(
                 Results,
                 AllProvidersFilterLabel,
                 GetMatchedProvider);
@@ -1819,7 +1817,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ApplySearchWorkspaceFilters()
     {
-        var filteredResults = _searchWorkspaceService.ApplyFilters(
+        var filteredResults = SecurityMasterSearchWorkspaceService.ApplyFilters(
             Results,
             SelectedAssetClassFilter,
             SelectedProviderFilter,
@@ -2652,12 +2650,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         ReplaceCollection(CompanyProfileFields,
         [
-            new SecurityMasterPresentationField("Legal name", FirstNonEmpty(identity.IssuerName, snapshot.Security.DisplayName, "Unavailable")),
-            new SecurityMasterPresentationField("Primary listing", FirstNonEmpty(identity.PrimaryListingMic, "Not supplied")),
-            new SecurityMasterPresentationField("Country of risk", FirstNonEmpty(identity.CountryOfRisk, economic.RiskCountry, snapshot.Security.Classification.RiskCountry, "Not supplied")),
+            new SecurityMasterPresentationField("Legal name", SecurityMasterTextHelpers.FirstNonEmpty(identity.IssuerName, snapshot.Security.DisplayName, "Unavailable")),
+            new SecurityMasterPresentationField("Primary listing", SecurityMasterTextHelpers.FirstNonEmpty(identity.PrimaryListingMic, "Not supplied")),
+            new SecurityMasterPresentationField("Country of risk", SecurityMasterTextHelpers.FirstNonEmpty(identity.CountryOfRisk, economic.RiskCountry, snapshot.Security.Classification.RiskCountry, "Not supplied")),
             new SecurityMasterPresentationField("Settlement cycle", identity.SettlementCycleDays is int days ? $"T+{days}" : "Not supplied"),
-            new SecurityMasterPresentationField("Asset family", FirstNonEmpty(economic.AssetFamily, economic.AssetClass, "Not supplied")),
-            new SecurityMasterPresentationField("Issuer type", FirstNonEmpty(economic.IssuerType, snapshot.Security.Classification.IssuerType, "Not supplied"))
+            new SecurityMasterPresentationField("Asset family", SecurityMasterTextHelpers.FirstNonEmpty(economic.AssetFamily, economic.AssetClass, "Not supplied")),
+            new SecurityMasterPresentationField("Issuer type", SecurityMasterTextHelpers.FirstNonEmpty(economic.IssuerType, snapshot.Security.Classification.IssuerType, "Not supplied"))
         ]);
 
         ReplaceCollection(CompanyCoverageFields,
@@ -2725,7 +2723,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Cash-flow schedule", scheduleBook.SupportsCashflowSchedule ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Factor history", scheduleBook.SupportsFactorHistory ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
-            new SecurityMasterPresentationField("Source", FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
+            new SecurityMasterPresentationField("Source", SecurityMasterTextHelpers.FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
         ]);
 
         ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
@@ -2767,7 +2765,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void PopulatePrintPresentation(SecurityMasterTrustSnapshotDto snapshot)
     {
-        var projection = _printProjectionService.BuildProjection(
+        var projection = SecurityMasterPrintProjectionService.BuildProjection(
             snapshot,
             GoldenCopySourceText,
             LatestHistoryEventText,
@@ -2792,10 +2790,6 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             collection.Add(value);
         }
     }
-
-    private static string FirstNonEmpty(params string?[] values)
-        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim()
-           ?? string.Empty;
 
     private static string BuildValidationSummaryText(SecurityMasterTrustSnapshotDto snapshot)
     {

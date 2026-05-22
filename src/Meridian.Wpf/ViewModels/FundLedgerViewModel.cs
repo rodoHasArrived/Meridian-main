@@ -202,7 +202,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; }
 
-    public FundLedgerCollectionsSectionViewModel CollectionsSection { get; }
+    internal FundLedgerCollectionsSectionViewModel CollectionsSection { get; }
 
     public IAsyncRelayCommand RefreshCommand { get; }
 

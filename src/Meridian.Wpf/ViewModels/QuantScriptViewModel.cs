@@ -75,7 +75,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private string _memoryText = "--";
     private int _activeResultsTab;
 
-    public QuantScriptCollectionsSectionViewModel CollectionsSection { get; }
+    internal QuantScriptCollectionsSectionViewModel CollectionsSection { get; }
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -100,17 +100,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         _options = options?.Value ?? new QuantScriptOptions();
         _logger = logger;
         CollectionsSection = new QuantScriptCollectionsSectionViewModel(
-            Documents,
-            Templates,
-            NotebookCells,
-            Parameters,
-            ConsoleOutput,
-            Charts,
-            Metrics,
-            Trades,
-            Diagnostics,
-            RunHistory,
-            LegendEntries);
+            QuantScriptCollectionsSectionViewModel.QuantScriptCollectionRefs.FromOwner(this));
 
         RunScriptCommand = new AsyncRelayCommand(RunCurrentCellAsync, () => CanRun);
         RunAllCommand = new AsyncRelayCommand(RunAllAsync, () => !IsRunning && NotebookCells.Count > 0);

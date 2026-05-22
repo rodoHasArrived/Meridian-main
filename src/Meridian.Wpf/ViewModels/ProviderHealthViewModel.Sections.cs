@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
-public sealed class ProviderHealthCollectionsSectionViewModel
+internal sealed class ProviderHealthCollectionsSectionViewModel
 {
     public ProviderHealthCollectionsSectionViewModel(
         ObservableCollection<ProviderStatusModel> streamingProviders,
