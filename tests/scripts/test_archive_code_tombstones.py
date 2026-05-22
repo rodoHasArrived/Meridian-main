@@ -7,11 +7,12 @@ from pathlib import Path
 class ArchiveCodeTombstonesTests(unittest.TestCase):
     # Archive/code currently retains .NET source tombstones only.
     CODE_EXTENSIONS = (".cs", ".fs")
+    TOMBSTONE_MARKER = "ARCHIVE TOMBSTONE"
 
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
         self.archive_code_root = self.repo_root / "archive" / "code" / "src"
-        self.normalized_archive_path = self.archive_code_root.relative_to(self.repo_root).as_posix().lower()
+        self.archive_path_for_comparison = self.archive_code_root.relative_to(self.repo_root).as_posix().lower()
 
     def test_archive_code_files_are_comment_only_tombstones(self) -> None:
         files = sorted(
@@ -26,7 +27,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
             relative = file_path.relative_to(self.repo_root).as_posix()
             text = file_path.read_text(encoding="utf-8")
 
-            self.assertIn("ARCHIVE TOMBSTONE", text, f"{relative} must contain the tombstone marker.")
+            self.assertIn(self.TOMBSTONE_MARKER, text, f"{relative} must contain the tombstone marker.")
 
             non_empty_lines = [line for line in text.splitlines() if line.strip()]
             for line in non_empty_lines:
@@ -45,14 +46,15 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
             *self.repo_root.rglob("Directory.Build.targets"),
         ]
 
-        for file_path in sorted(set(candidate_files)):
+        candidate_files = set(candidate_files)
+        for file_path in sorted(candidate_files):
             text = file_path.read_text(encoding="utf-8")
             normalized_text = text.replace("\\", "/").lower()
             relative = file_path.relative_to(self.repo_root).as_posix()
             self.assertNotIn(
-                self.normalized_archive_path,
+                self.archive_path_for_comparison,
                 normalized_text,
-                f"{relative} must not include archived code path {self.normalized_archive_path!r}.",
+                f"{relative} must not include archived code path {self.archive_path_for_comparison!r}.",
             )
 
 
