@@ -1,4 +1,5 @@
 # Fund Operations Persistence Cutover Status
+**Last Updated:** 2026-05-22
 
 ## Domains
 - Fund Structure: Shadow-write scaffolded, reconciliation job registered, read cutover gated by config toggle.
