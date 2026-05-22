@@ -118,11 +118,9 @@ foreach ($definition in $selectedWorkflows) {
     }
 
     $runInvocationOutput = @(& $runnerPath @runnerArguments)
-    $runResult = @(
-        $runInvocationOutput |
-            Where-Object { $null -ne $_ -and $_.PSObject.Properties.Name -contains 'manifestPath' } |
-            Select-Object -Last 1
-    ) | Select-Object -First 1
+    $runResult = $runInvocationOutput |
+        Where-Object { $null -ne $_ -and $_.PSObject.Properties.Name -contains 'manifestPath' } |
+        Select-Object -Last 1
 
     if ($null -eq $runResult -or [string]::IsNullOrWhiteSpace([string]$runResult.manifestPath)) {
         throw "Workflow '$($definition.name)' did not return a manifest path."
