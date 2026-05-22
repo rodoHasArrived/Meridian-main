@@ -2694,10 +2694,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         ReplaceCollection(
             ValidationIssues,
-            snapshot.ValidationReport?.Issues
-                .OrderByDescending(static issue => issue.Severity)
-                .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-                ?? []);
+            snapshot.ValidationReport?.Issues is { } issues
+                ? issues
+                    .OrderByDescending(static issue => issue.Severity)
+                    .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+                : []);
         RaiseScheduleAndOpenLotStateChanged();
     }
 
@@ -2705,10 +2706,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         ReplaceCollection(
             ChangeHistoryItems,
-            snapshot.ChangeHistory?
-                .OrderByDescending(static item => item.ChangedAtUtc)
-                .ThenByDescending(static item => item.StreamVersion)
-                ?? []);
+            snapshot.ChangeHistory is { } changeHistory
+                ? changeHistory
+                    .OrderByDescending(static item => item.ChangedAtUtc)
+                    .ThenByDescending(static item => item.StreamVersion)
+                : []);
         RaiseScheduleAndOpenLotStateChanged();
     }
 
