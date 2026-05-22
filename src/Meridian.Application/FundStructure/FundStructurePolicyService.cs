@@ -22,14 +22,20 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
     public void ValidateCashFlowQuery(GovernanceCashFlowQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);
-        if (query.From > query.To)
+
+        if (query.HistoricalDays < 0)
         {
-            throw new ArgumentException("Query start must be less than or equal to query end.", nameof(query));
+            throw new ArgumentOutOfRangeException(nameof(query), "HistoricalDays must be greater than or equal to zero.");
         }
 
-        if (query.Limit <= 0)
+        if (query.ForecastDays < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(query), "Limit must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(query), "ForecastDays must be greater than or equal to zero.");
+        }
+
+        if (query.BucketDays <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), "BucketDays must be greater than zero.");
         }
     }
 }
