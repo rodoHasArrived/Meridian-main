@@ -96,6 +96,11 @@ class ImpactPlannerTests(unittest.TestCase):
         activated_names = {al.name for al in plan.activated_lanes}
         self.assertIn("verify-core", activated_names)
 
+    def test_host_source_activates_verify_core(self) -> None:
+        plan = self._plan(["src/Meridian/GlobalUsings.cs"])
+        activated_names = {al.name for al in plan.activated_lanes}
+        self.assertIn("verify-core", activated_names)
+
     def test_core_source_skips_unrelated_lanes(self) -> None:
         plan = self._plan(["src/Meridian.Core/Foo.cs"])
         activated_names = {al.name for al in plan.activated_lanes}
@@ -192,6 +197,7 @@ class ImpactPlannerTests(unittest.TestCase):
         plan = self._plan(["src/Meridian.Core/Foo.cs"])
         script = _emit_shell_script(plan)
         self.assertIn("verify-core/test-core", script)
+        self.assertIn("bash -o pipefail -c", script)
 
     def test_shell_script_has_telemetry_section(self) -> None:
         plan = self._plan([])

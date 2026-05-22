@@ -38,6 +38,7 @@
         "src/Meridian.Core/**",
         "src/Meridian.Domain/**",
         "src/Meridian.Application/**",
+        "src/Meridian/**",
         "src/Meridian.Contracts/**",
         "src/Meridian.Infrastructure/**",
         "src/Meridian.Storage/**",

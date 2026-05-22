@@ -10,7 +10,6 @@ from __future__ import annotations
 import fnmatch
 import json
 import os
-import shlex
 import subprocess
 import sys
 import time
@@ -246,10 +245,11 @@ def emit_shell_script(plan: ImpactPlan, telemetry_path: str | None = None) -> st
         "_step_timings=()",
         "",
         "_run_step() {",
-        "    local _name=$1; shift",
+        "    local _name=$1",
+        "    local _cmd=$2",
         "    local _t0; _t0=$(date +%s%3N)",
         "    printf '\\n[impact] %-40s ...\\n' \"$_name\"",
-        '    if "$@"; then',
+        '    if bash -o pipefail -c "$_cmd"; then',
         "        local _elapsed=$(( $(date +%s%3N) - _t0 ))",
         "        printf '[impact] %-40s OK  (%dms)\\n' \"$_name\" \"$_elapsed\"",
         '        _step_timings+=("{\\"name\\":\\"$_name\\",\\"status\\":\\"passed\\",\\"ms\\":$_elapsed}")',
@@ -266,9 +266,7 @@ def emit_shell_script(plan: ImpactPlan, telemetry_path: str | None = None) -> st
     # Safety gates
     lines.append("# ── Safety gates (always-on) " + "─" * 51)
     for gate in plan.safety_gates:
-        cmd_parts = shlex.split(gate.command)
-        quoted = " ".join(shlex.quote(p) for p in cmd_parts)
-        lines.append(f'_run_step {shlex.quote(gate.name)} {quoted}')
+        lines.append(f'_run_step {json.dumps(gate.name)} {json.dumps(gate.command)}')
     lines.append("")
 
     # Activated lanes
@@ -277,10 +275,8 @@ def emit_shell_script(plan: ImpactPlan, telemetry_path: str | None = None) -> st
         for al in plan.activated_lanes:
             lines.append(f"# Lane: {al.name}  ({al.reason})")
             for step in al.steps:
-                cmd_parts = shlex.split(step.command)
-                quoted = " ".join(shlex.quote(p) for p in cmd_parts)
                 step_id = f"{al.name}/{step.name}"
-                lines.append(f'_run_step {shlex.quote(step_id)} {quoted}')
+                lines.append(f'_run_step {json.dumps(step_id)} {json.dumps(step.command)}')
             lines.append("")
     else:
         lines.append("# No impacted lanes — only safety gates executed.")
@@ -291,7 +287,7 @@ def emit_shell_script(plan: ImpactPlan, telemetry_path: str | None = None) -> st
         "_impact_elapsed=$(( $(date +%s%3N) - _impact_start ))",
         "",
         "# Write telemetry artifact",
-        f'_telemetry_file={shlex.quote(telemetry_file)}',
+        f"_telemetry_file={json.dumps(telemetry_file)}",
         "mkdir -p \"$(dirname \"$_telemetry_file\")\"",
         '_timings_json=$(IFS=,; echo "[${_step_timings[*]}]")',
         "cat > \"$_telemetry_file\" << _TEOF",
