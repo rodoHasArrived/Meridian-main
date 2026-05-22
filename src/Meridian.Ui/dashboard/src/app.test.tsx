@@ -215,6 +215,17 @@ describe("App", () => {
     })).toHaveAttribute("href", "/data/providers");
   });
 
+  it("groups current session context for assistive technology", () => {
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const sessionContext = screen.getByRole("group", {
+      name: "Current session: paper, Ops Desk, Operator"
+    });
+    expect(within(sessionContext).getByText("paper")).toBeInTheDocument();
+    expect(within(sessionContext).getByText("Ops Desk")).toBeInTheDocument();
+    expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
+  });
+
   it("renders an informative startup status while workstation bootstrap is loading", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 

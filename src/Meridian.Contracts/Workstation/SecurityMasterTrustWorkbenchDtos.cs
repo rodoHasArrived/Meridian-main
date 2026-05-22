@@ -63,6 +63,7 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityValidationReportDto? ValidationReport { get; init; }
     public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }
     public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }
+    public IReadOnlyList<SecurityMasterChangeHistoryItemDto>? ChangeHistory { get; init; }
     public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }
     public SecurityMasterLotModelDto? LotModel { get; init; }
     public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }
@@ -160,6 +161,21 @@ public sealed record SecurityMasterSchemaCompatibilityDto(
     bool HasEconomicTerms,
     bool HasClassificationPayload,
     string Summary);
+
+public sealed record SecurityMasterChangeHistoryItemDto(
+    string ChangeId,
+    long StreamVersion,
+    string EventType,
+    DateTimeOffset ChangedAtUtc,
+    DateTimeOffset? EffectiveAtUtc,
+    string Actor,
+    string Origin,
+    string SourceSystem,
+    string? SourceRecordId,
+    string? Reason,
+    string Summary,
+    IReadOnlyList<string> ChangedFields,
+    string ChangedFieldsSummary);
 
 public sealed record SecurityMasterScheduleSummaryDto(
     bool SupportsCashflowSchedule,

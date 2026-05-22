@@ -53,6 +53,39 @@
                 </UniformGrid>
             </Border>
 
+            <Border Style="{StaticResource WorkspaceContextStripStyle}"
+                    Margin="0,0,0,20"
+                    Visibility="{Binding IsStatusLoadInfoVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.Name="Service status refresh state"
+                    AutomationProperties.AutomationId="ServiceManagerStatusLoadState">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Grid.Column="0"
+                                 Width="84"
+                                 Height="6"
+                                 Margin="0,7,14,0"
+                                 IsIndeterminate="True"
+                                 Visibility="{Binding IsStatusLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                                 AutomationProperties.AutomationId="ServiceManagerStatusProgress" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding StatusLoadStateText}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   AutomationProperties.AutomationId="ServiceManagerStatusLoadTitle" />
+                        <TextBlock Text="{Binding StatusLoadDetailText}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"
+                                   AutomationProperties.AutomationId="ServiceManagerStatusLoadDetail" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*" />

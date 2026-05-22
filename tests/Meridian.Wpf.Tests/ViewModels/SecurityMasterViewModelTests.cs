@@ -757,6 +757,10 @@ public sealed class SecurityMasterViewModelTests
                 field.Value == "FactorAdjustedFace");
             viewModel.OpenLotRows.Should().ContainSingle().Which.LotId.Should().Be("lot-1");
             viewModel.OpenLotProvenanceHistory.Should().ContainSingle();
+            viewModel.ValidationIssuesStatusText.Should().Contain("blocking issue");
+            viewModel.ValidationIssues.Should().ContainSingle().Which.Code.Should().Be("SM_IDENTIFIER_DUPLICATE_ACTIVE");
+            viewModel.ChangeHistoryStatusText.Should().Contain("structured change entr");
+            viewModel.ChangeHistoryItems.Should().ContainSingle().Which.ChangedFieldsSummary.Should().Contain("Display name");
         });
     }
 
@@ -768,14 +772,24 @@ public sealed class SecurityMasterViewModelTests
 
         xaml.Should().Contain("SecurityMasterScheduleBookPanel");
         xaml.Should().Contain("SecurityMasterOpenLotReadModelPanel");
+        xaml.Should().Contain("SecurityMasterValidationIssuesGrid");
+        xaml.Should().Contain("SecurityMasterChangeHistoryGrid");
         xaml.Should().Contain("SecurityMasterScheduleBookEventsGrid");
         xaml.Should().Contain("SecurityMasterOpenLotRowsGrid");
+        xaml.Should().Contain("{Binding ValidationIssuesStatusText}");
+        xaml.Should().Contain("{Binding ChangeHistoryStatusText}");
+        xaml.Should().Contain("ItemsSource=\"{Binding ValidationIssues}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding ChangeHistoryItems}\"");
         xaml.Should().Contain("{Binding ScheduleBookStatusText}");
         xaml.Should().Contain("{Binding OpenLotReadModelStatusText}");
         xaml.Should().Contain("ItemsSource=\"{Binding ScheduleBookEvents}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding OpenLotRows}\"");
+        viewModel.Should().Contain("ObservableCollection<SecurityValidationIssueDto> ValidationIssues");
+        viewModel.Should().Contain("ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems");
         viewModel.Should().Contain("ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents");
         viewModel.Should().Contain("ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows");
+        viewModel.Should().Contain("PopulateValidationPresentation(snapshot);");
+        viewModel.Should().Contain("PopulateChangeHistoryPresentation(snapshot);");
         viewModel.Should().Contain("PopulateScheduleBookPresentation(snapshot);");
         viewModel.Should().Contain("PopulateOpenLotReadModelPresentation(snapshot);");
     }
@@ -997,6 +1011,41 @@ public sealed class SecurityMasterViewModelTests
             CorporateActions: effectiveCorporateActions,
             RetrievedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero))
         {
+            ValidationReport = new SecurityValidationReportDto(
+                SecurityId: securityId,
+                Scope: "Security",
+                EvaluatedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero),
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                Issues:
+                [
+                    new SecurityValidationIssueDto(
+                        Severity: SecurityValidationSeverityDto.Error,
+                        Code: "SM_IDENTIFIER_DUPLICATE_ACTIVE",
+                        Title: "Duplicate active identifier exists on the record",
+                        Message: "The record contains duplicate active identifier 'Ticker|AAPL|'.",
+                        AffectedFields: ["identifiers"],
+                        SuggestedAction: "Expire duplicate identifiers or consolidate them into a single active identifier.",
+                        EvidenceLinks: [])
+                ]),
+            ChangeHistory =
+            [
+                new SecurityMasterChangeHistoryItemDto(
+                    ChangeId: "4:SecurityAmended",
+                    StreamVersion: 4,
+                    EventType: "SecurityAmended",
+                    ChangedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 0, 0, TimeSpan.Zero),
+                    EffectiveAtUtc: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                    Actor: "workflow.bot",
+                    Origin: "Vendor",
+                    SourceSystem: "golden-edm",
+                    SourceRecordId: "EDM-123",
+                    Reason: "golden-copy refresh",
+                    Summary: "Security Amended updated display name for 'Apple Inc.'.",
+                    ChangedFields: ["Display name"],
+                    ChangedFieldsSummary: "Display name"),
+            ],
             ScheduleSummary = new SecurityMasterScheduleSummaryDto(
                 SupportsCashflowSchedule: true,
                 SupportsFactorHistory: true,

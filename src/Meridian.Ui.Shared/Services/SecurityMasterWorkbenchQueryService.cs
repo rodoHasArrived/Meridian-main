@@ -108,6 +108,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var recommendedActions = BuildRecommendedActions(detail, trustPosture, assessments, downstreamImpact, validationReport);
         var identifierSummary = BuildIdentifierSummary(detail);
         var schemaCompatibility = BuildSchemaCompatibility(detail, economic);
+        var changeHistory = BuildChangeHistory(history);
         var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource);
         var lotModel = BuildLotModel(detail, economic, trading);
         var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary);
@@ -143,6 +144,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             ValidationReport = validationReport,
             IdentifierSummary = identifierSummary,
             SchemaCompatibility = schemaCompatibility,
+            ChangeHistory = changeHistory,
             ScheduleSummary = scheduleSummary,
             LotModel = lotModel,
             ScheduleBook = scheduleBook,
@@ -1032,6 +1034,74 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             HasEconomicTerms: hasEconomicTerms,
             HasClassificationPayload: hasClassificationPayload,
             Summary: summary);
+    }
+
+    private static IReadOnlyList<SecurityMasterChangeHistoryItemDto> BuildChangeHistory(
+        IReadOnlyList<SecurityMasterEventEnvelope> history)
+    {
+        if (history.Count == 0)
+        {
+            return [];
+        }
+
+        var ordered = history
+            .OrderBy(static item => item.StreamVersion)
+            .ThenBy(static item => item.EventTimestamp)
+            .ToArray();
+        var items = new List<SecurityMasterChangeHistoryItemDto>(ordered.Length);
+        SecurityEconomicDefinitionRecord? previousRecord = null;
+
+        foreach (var envelope in ordered)
+        {
+            var currentRecord = TryParseHistoryRecord(envelope.Payload);
+            var payloadProvenance = currentRecord?.Provenance;
+            var sourceSystem =
+                CoalesceNonEmpty(
+                    TryGetJsonString(envelope.Metadata, "sourceSystem"),
+                    TryGetJsonString(envelope.Metadata, "source"),
+                    payloadProvenance.HasValue ? TryGetJsonString(payloadProvenance.Value, "sourceSystem") : null)
+                ?? "Unknown";
+            var sourceRecordId =
+                CoalesceNonEmpty(
+                    TryGetJsonString(envelope.Metadata, "sourceRecordId"),
+                    payloadProvenance.HasValue ? TryGetJsonString(payloadProvenance.Value, "sourceRecordId") : null);
+            var reason =
+                CoalesceNonEmpty(
+                    TryGetJsonString(envelope.Metadata, "reason"),
+                    payloadProvenance.HasValue ? TryGetJsonString(payloadProvenance.Value, "reason") : null);
+            var effectiveAtUtc = payloadProvenance.HasValue
+                ? TryGetJsonDateTimeOffset(payloadProvenance.Value, "asOf")
+                : null;
+            var changedFields = BuildChangedFields(previousRecord, currentRecord, envelope.EventType);
+            var changedFieldsSummary = changedFields.Count == 0
+                ? "No structured field diff available."
+                : string.Join(", ", changedFields);
+
+            items.Add(new SecurityMasterChangeHistoryItemDto(
+                ChangeId: $"{envelope.StreamVersion}:{envelope.EventType}",
+                StreamVersion: envelope.StreamVersion,
+                EventType: envelope.EventType,
+                ChangedAtUtc: envelope.EventTimestamp,
+                EffectiveAtUtc: effectiveAtUtc,
+                Actor: envelope.Actor,
+                Origin: InferChangeOrigin(sourceSystem, envelope.Actor),
+                SourceSystem: sourceSystem,
+                SourceRecordId: sourceRecordId,
+                Reason: reason,
+                Summary: BuildChangeSummary(envelope, currentRecord, changedFields, sourceSystem),
+                ChangedFields: changedFields,
+                ChangedFieldsSummary: changedFieldsSummary));
+
+            if (currentRecord is not null)
+            {
+                previousRecord = currentRecord;
+            }
+        }
+
+        return items
+            .OrderByDescending(static item => item.ChangedAtUtc)
+            .ThenByDescending(static item => item.StreamVersion)
+            .ToArray();
     }
 
     private static SecurityMasterScheduleSummaryDto BuildScheduleSummary(
@@ -2076,6 +2146,216 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             JsonValueKind.Null or JsonValueKind.Undefined => false,
             _ => true
         };
+
+    private static SecurityEconomicDefinitionRecord? TryParseHistoryRecord(JsonElement payload)
+    {
+        try
+        {
+            if (payload.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            return SecurityMasterMapping.FromEconomicPayload(payload);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<string> BuildChangedFields(
+        SecurityEconomicDefinitionRecord? previousRecord,
+        SecurityEconomicDefinitionRecord? currentRecord,
+        string eventType)
+    {
+        if (currentRecord is null)
+        {
+            return [];
+        }
+
+        if (previousRecord is null)
+        {
+            return ["Identity", "Common terms", "Identifiers"];
+        }
+
+        var fields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.Equals(previousRecord.DisplayName, currentRecord.DisplayName, StringComparison.Ordinal))
+        {
+            fields.Add("Display name");
+        }
+
+        if (!string.Equals(previousRecord.Currency, currentRecord.Currency, StringComparison.OrdinalIgnoreCase))
+        {
+            fields.Add("Currency");
+        }
+
+        if (previousRecord.Status != currentRecord.Status)
+        {
+            fields.Add("Status");
+        }
+
+        if (previousRecord.EffectiveFrom != currentRecord.EffectiveFrom
+            || previousRecord.EffectiveTo != currentRecord.EffectiveTo)
+        {
+            fields.Add("Effective window");
+        }
+
+        if (!string.Equals(previousRecord.AssetClass, currentRecord.AssetClass, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(previousRecord.AssetFamily, currentRecord.AssetFamily, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(previousRecord.SubType, currentRecord.SubType, StringComparison.OrdinalIgnoreCase))
+        {
+            fields.Add("Classification");
+        }
+
+        if (!JsonElementsEquivalent(previousRecord.CommonTerms, currentRecord.CommonTerms))
+        {
+            fields.Add("Common terms");
+        }
+
+        if (!JsonElementsEquivalent(previousRecord.EconomicTerms, currentRecord.EconomicTerms))
+        {
+            fields.Add("Economic terms");
+        }
+
+        if (!IdentifiersEquivalent(previousRecord.Identifiers, currentRecord.Identifiers))
+        {
+            fields.Add("Identifiers");
+        }
+
+        if (eventType.Contains("Deactivate", StringComparison.OrdinalIgnoreCase))
+        {
+            fields.Add("Lifecycle status");
+        }
+
+        return fields
+            .OrderBy(static field => field, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string BuildChangeSummary(
+        SecurityMasterEventEnvelope envelope,
+        SecurityEconomicDefinitionRecord? currentRecord,
+        IReadOnlyList<string> changedFields,
+        string sourceSystem)
+    {
+        if (currentRecord is null)
+        {
+            return $"{HumanizeEventType(envelope.EventType)} recorded from {sourceSystem}.";
+        }
+
+        var primaryIdentifier = currentRecord.Identifiers.FirstOrDefault(static identifier => identifier.IsPrimary);
+        if (string.Equals(envelope.EventType, "SecurityCreated", StringComparison.OrdinalIgnoreCase))
+        {
+            var identifierText = primaryIdentifier is null
+                ? "without a primary identifier"
+                : $"with primary {primaryIdentifier.Kind}:{primaryIdentifier.Value}";
+            return $"Created {currentRecord.AssetClass} '{currentRecord.DisplayName}' {identifierText}.";
+        }
+
+        if (envelope.EventType.Contains("Deactivate", StringComparison.OrdinalIgnoreCase))
+        {
+            var effectiveText = currentRecord.EffectiveTo?.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'")
+                ?? envelope.EventTimestamp.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'");
+            return $"Deactivated {currentRecord.AssetClass} '{currentRecord.DisplayName}' effective {effectiveText}.";
+        }
+
+        if (changedFields.Count == 0)
+        {
+            return $"{HumanizeEventType(envelope.EventType)} recorded for '{currentRecord.DisplayName}'.";
+        }
+
+        return $"{HumanizeEventType(envelope.EventType)} updated {SummarizeChangedFields(changedFields)} for '{currentRecord.DisplayName}'.";
+    }
+
+    private static string SummarizeChangedFields(IReadOnlyList<string> changedFields)
+    {
+        if (changedFields.Count == 0)
+        {
+            return "the selected security";
+        }
+
+        if (changedFields.Count <= 3)
+        {
+            return string.Join(", ", changedFields).ToLowerInvariant();
+        }
+
+        var leading = string.Join(", ", changedFields.Take(3)).ToLowerInvariant();
+        return $"{leading}, and {changedFields.Count - 3} more area(s)";
+    }
+
+    private static string HumanizeEventType(string eventType)
+    {
+        if (string.IsNullOrWhiteSpace(eventType))
+        {
+            return "Security change";
+        }
+
+        var builder = new System.Text.StringBuilder(eventType.Length + 8);
+        for (var index = 0; index < eventType.Length; index++)
+        {
+            var character = eventType[index];
+            if (index > 0
+                && char.IsUpper(character)
+                && !char.IsUpper(eventType[index - 1]))
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(character);
+        }
+
+        return builder.ToString();
+    }
+
+    private static string InferChangeOrigin(string sourceSystem, string actor)
+    {
+        if (ContainsAny(sourceSystem, actor, "wpf-ui", "manual", "override", "desktop-user", "operator", "user"))
+        {
+            return "User";
+        }
+
+        if (ContainsAny(sourceSystem, actor, "polygon", "edgar", "bloomberg", "refinitiv", "trustee", "custodian", "vendor", "golden-edm"))
+        {
+            return "Vendor";
+        }
+
+        if (ContainsAny(sourceSystem, actor, "workflow", "system", "bot", "snapshot"))
+        {
+            return "System";
+        }
+
+        return "Unknown";
+    }
+
+    private static bool ContainsAny(string sourceSystem, string actor, params string[] tokens)
+        => tokens.Any(token =>
+            sourceSystem.Contains(token, StringComparison.OrdinalIgnoreCase)
+            || actor.Contains(token, StringComparison.OrdinalIgnoreCase));
+
+    private static bool JsonElementsEquivalent(JsonElement left, JsonElement right)
+        => left.ValueKind == right.ValueKind
+            && string.Equals(left.GetRawText(), right.GetRawText(), StringComparison.Ordinal);
+
+    private static bool IdentifiersEquivalent(
+        IReadOnlyList<SecurityIdentifierDto> left,
+        IReadOnlyList<SecurityIdentifierDto> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        static string Key(SecurityIdentifierDto identifier) =>
+            $"{identifier.Kind}|{identifier.Value}|{identifier.Provider}|{identifier.ValidFrom:O}|{identifier.ValidTo:O}|{identifier.IsPrimary}";
+
+        var leftKeys = left.Select(Key).OrderBy(static item => item, StringComparer.Ordinal).ToArray();
+        var rightKeys = right.Select(Key).OrderBy(static item => item, StringComparer.Ordinal).ToArray();
+        return leftKeys.SequenceEqual(rightKeys, StringComparer.Ordinal);
+    }
+
+    private static string? CoalesceNonEmpty(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
 
     private static void AppendScheduleEventsFromArray(
         ICollection<SecurityMasterScheduleEventDto> destination,

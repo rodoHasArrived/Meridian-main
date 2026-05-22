@@ -75,6 +75,7 @@ public sealed class WebSocketProviderBaseTests
         // Expose protected helpers for testing
         public bool IsConnectedPublic => Connected;
         public SubscriptionManager SubscriptionsPublic => Subscriptions;
+        public void RecordActivityPublic() => RecordActivity();
     }
 
     // -----------------------------------------------------------------------
@@ -210,6 +211,49 @@ public sealed class WebSocketProviderBaseTests
         await using var provider = new StubProvider();
 
         provider.IsConnectedPublic.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnosticsSource_BeforeConnect_ExposesProviderLifecycleSnapshot()
+    {
+        await using var provider = new StubProvider(providerName: "stub-diagnostics");
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.ProviderName.Should().Be("stub-diagnostics");
+        snapshot.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Configured);
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.IsReconnecting.Should().BeFalse();
+        snapshot.LastError.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnosticsSource_ForwardsLifecycleChangeEvents()
+    {
+        await using var provider = new StubProvider();
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+        var observedStates = new List<ProviderConnectionLifecycleState>();
+
+        diagnosticsSource.ConnectionDiagnosticsChanged += snapshot => observedStates.Add(snapshot.LifecycleState);
+
+        await provider.DisconnectAsync();
+
+        observedStates.Should().Contain(ProviderConnectionLifecycleState.Disconnecting);
+        observedStates.Should().Contain(ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    [Fact]
+    public async Task RecordActivity_UpdatesProviderLevelHeartbeatDiagnostics()
+    {
+        await using var provider = new StubProvider();
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+
+        provider.RecordActivityPublic();
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+        snapshot.LastHeartbeatReceivedAt.Should().NotBeNull();
+        snapshot.LastMessageReceivedAt.Should().BeNull("manual provider heartbeat activity is not a market-data payload");
     }
 
     // -----------------------------------------------------------------------

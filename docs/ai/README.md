@@ -61,12 +61,12 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
 The checker inventories root assistant entrypoints, Codex and Claude configuration, Agent
-Skills-compatible packages, Copilot instructions, agents, skills, prompts, AI workflow files,
-`docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant entrypoints for
-Cursor, Windsurf, Continue, Cline, Roo, and Gemini if they are introduced, and stale canonical
-GitHub documentation links. It also flags active AI docs that still point at retired GitHub
-Actions workflow paths. Its Markdown and JSON reports are safe to share because they use a portable
-repository identity instead of local absolute paths.
+Skills-compatible packages and shared context, Copilot instructions, agents, skills, prompts, AI
+workflow files, `docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant
+entrypoints for Cursor, Windsurf, Continue, Cline, Roo, and Gemini if they are introduced, and
+stale canonical GitHub documentation links. It also flags active AI docs that still point at retired
+GitHub Actions workflow paths. Its Markdown and JSON reports are safe to share because they use a
+portable repository identity instead of local absolute paths.
 
 ### Tier 2: Navigation and Routing
 

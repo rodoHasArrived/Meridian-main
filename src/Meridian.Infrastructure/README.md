@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-22
 ---
 
 # src/Meridian.Infrastructure
@@ -28,6 +28,11 @@ This layer owns external integration details while depending on lower contracts 
 ## Important workflows
 
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+WebSocket streaming adapters that derive from `WebSocketProviderBase` expose
+`IProviderConnectionDiagnosticsSource` for safe provider-level health snapshots. Consumers should
+use that optional seam for connection state, heartbeat time, reconnect status, and last safe error
+category instead of reaching into provider-specific transport internals.
 
 ## Diagrams
 

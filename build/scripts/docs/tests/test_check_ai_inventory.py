@@ -407,6 +407,27 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
+    def test_check_catalog_drift_reports_missing_agent_skills_shared_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(
+                root / ".agents" / "skills" / "_shared" / "project-context.md",
+                "Portable skills context.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "ui-platform-policy"
+                    and finding.path == ".agents/skills/_shared/project-context.md"
+                    for finding in findings
+                )
+            )
+
     def test_check_catalog_drift_passes_when_ui_platform_policy_is_mirrored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

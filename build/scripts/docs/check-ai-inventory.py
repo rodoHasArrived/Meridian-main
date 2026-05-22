@@ -38,6 +38,7 @@ UI_PLATFORM_POLICY_FILES = (
     ".github/copilot-instructions.md",
     ".codex/skills/_shared/project-context.md",
     ".claude/skills/_shared/project-context.md",
+    ".agents/skills/_shared/project-context.md",
     COPILOT_GUIDE,
 )
 UI_PLATFORM_POLICY_MARKERS = (

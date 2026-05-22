@@ -283,7 +283,11 @@ function AppShell() {
         <div className="workstation-actions">
           <PriceAlertsBell />
           {session ? (
-            <div className="workstation-session-card">
+            <div
+              className="workstation-session-card"
+              role="group"
+              aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
+            >
               <Badge variant={session.environment} dot>{session.environment}</Badge>
               <span className="workstation-session-name">{session.displayName}</span>
               <span className="workstation-session-role text-muted-foreground">{session.role}</span>

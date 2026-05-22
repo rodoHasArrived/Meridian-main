@@ -960,8 +960,65 @@
                                     </ScrollViewer>
                                 </TabItem>
 
+                                <TabItem Header="Validation"
+                                         AutomationProperties.AutomationId="SecurityMasterValidationTab">
+                                    <StackPanel Margin="12">
+                                        <TextBlock Text="{Binding ValidationIssuesStatusText}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   Margin="0,0,0,10"
+                                                   TextWrapping="Wrap" />
+                                        <DataGrid ItemsSource="{Binding ValidationIssues}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  Background="Transparent"
+                                                  BorderThickness="0"
+                                                  MinHeight="180"
+                                                  AutomationProperties.AutomationId="SecurityMasterValidationIssuesGrid">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="90" />
+                                                <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="160" />
+                                                <DataGridTextColumn Header="Issue" Binding="{Binding Title}" Width="200" />
+                                                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+                                                <DataGridTextColumn Header="Suggested Fix" Binding="{Binding SuggestedAction}" Width="260" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </StackPanel>
+                                </TabItem>
+
                                 <TabItem Header="History">
                                     <StackPanel Margin="12">
+                                        <TextBlock Text="{Binding ChangeHistoryStatusText}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   Margin="0,0,0,10"
+                                                   TextWrapping="Wrap" />
+                                        <DataGrid ItemsSource="{Binding ChangeHistoryItems}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  Background="Transparent"
+                                                  BorderThickness="0"
+                                                  MinHeight="180"
+                                                  AutomationProperties.AutomationId="SecurityMasterChangeHistoryGrid">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Changed" Binding="{Binding ChangedAtUtc, StringFormat='{}{0:g}'}" Width="130" />
+                                                <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="150" />
+                                                <DataGridTextColumn Header="Version" Binding="{Binding StreamVersion}" Width="80" />
+                                                <DataGridTextColumn Header="Origin" Binding="{Binding Origin}" Width="90" />
+                                                <DataGridTextColumn Header="Actor" Binding="{Binding Actor}" Width="140" />
+                                                <DataGridTextColumn Header="Source" Binding="{Binding SourceSystem}" Width="140" />
+                                                <DataGridTextColumn Header="Changed Fields" Binding="{Binding ChangedFieldsSummary}" Width="180" />
+                                                <DataGridTextColumn Header="Summary" Binding="{Binding Summary}" Width="*" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <TextBlock Text="Raw event stream"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   Margin="0,12,0,4" />
                                         <TextBlock Text="{Binding LatestHistoryEventText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,10" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding HistoryText}" FontFamily="Consolas" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
                                     </StackPanel>

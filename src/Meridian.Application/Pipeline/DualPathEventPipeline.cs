@@ -356,7 +356,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
         try
         {
-            while (!_cts.Token.IsCancellationRequested)
+            while (!ct.IsCancellationRequested)
             {
                 var drained = _tradeBuffer.DrainTo(_tradeBatch, _batchDrainSize);
 
@@ -372,12 +372,10 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
                     ref readonly var raw = ref _tradeBatch[i];
                     var evt = ReconstituteTrade(in raw);
 
-                    // Ensure we do not silently drop hot-path events under backpressure.
-                    while (!_slowPath.TryPublish(in evt))
-                    {
-                        // Back off briefly to avoid busy-waiting when the slow path is saturated.
-                        await Task.Delay(1, _cts.Token).ConfigureAwait(false);
-                    }
+                    // Wait for slow-path capacity instead of retrying TryPublish().
+                    // Repeated TryPublish() calls in Wait mode distort drop metrics and
+                    // audit trails because the event is eventually persisted, not lost.
+                    await _slowPath.PublishAsync(evt, ct).ConfigureAwait(false);
                 }
 
                 Interlocked.Add(ref _hotTradeConsumed, drained);
@@ -396,13 +394,13 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
         try
         {
-            while (!_cts.Token.IsCancellationRequested)
+            while (!ct.IsCancellationRequested)
             {
                 var drained = _quoteBuffer.DrainTo(_quoteBatch, _batchDrainSize);
 
                 if (drained == 0)
                 {
-                    await Task.Delay(0, _cts.Token).ConfigureAwait(false);
+                    await Task.Delay(0, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -411,7 +409,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
                     ref readonly var raw = ref _quoteBatch[i];
                     var evt = ReconstituteQuote(in raw);
 
-                    await _slowPath.PublishAsync(evt).ConfigureAwait(false);
+                    await _slowPath.PublishAsync(evt, ct).ConfigureAwait(false);
                 }
                 Interlocked.Add(ref _hotQuoteConsumed, drained);
             }

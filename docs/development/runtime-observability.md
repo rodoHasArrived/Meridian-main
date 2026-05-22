@@ -118,6 +118,13 @@ Provider health summaries should expose:
 - Reconnect count
 - Recommended operator action
 
+Streaming adapters based on `WebSocketProviderBase` expose these transport facts through the
+optional `IProviderConnectionDiagnosticsSource` seam. Health and diagnostics consumers should read
+that snapshot or subscribe to its change event instead of depending on adapter-specific socket
+fields. The snapshot is intentionally limited to lifecycle state, WebSocket state, heartbeat/message
+timestamps, reconnect counters, failure category, and safe error text; it must not include
+credentials, account identifiers, request headers, or provider payloads.
+
 ## Pipeline And Queue Metrics
 
 Event pipeline diagnostics should prefer counters and summaries:

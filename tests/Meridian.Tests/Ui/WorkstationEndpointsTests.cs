@@ -4229,6 +4229,11 @@ public sealed class WorkstationEndpointsTests
         snapshot.SchemaCompatibility.EconomicTermsSchemaVersion.Should().Be(2);
         snapshot.SchemaCompatibility.HasLegacyAssetSpecificTerms.Should().BeTrue();
         snapshot.SchemaCompatibility.HasEconomicTerms.Should().BeTrue();
+        snapshot.ChangeHistory.Should().NotBeNull();
+        snapshot.ChangeHistory!.Should().ContainSingle(item =>
+            item.EventType == "FactorScheduleRefreshed" &&
+            item.SourceSystem == "trustee-feed" &&
+            item.Origin == "Vendor");
         snapshot.ScheduleSummary.Should().NotBeNull();
         snapshot.ScheduleSummary!.SupportsCashflowSchedule.Should().BeTrue();
         snapshot.ScheduleSummary.SupportsFactorHistory.Should().BeTrue();

@@ -61,6 +61,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields { get; } = new();
+    public ObservableCollection<SecurityValidationIssueDto> ValidationIssues { get; } = new();
+    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields { get; } = new();
     public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents { get; } = new();
     public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory { get; } = new();
@@ -985,6 +987,69 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public bool HasOpenLotRows => OpenLotRows.Count > 0;
 
+    public bool HasChangeHistoryItems => ChangeHistoryItems.Count > 0;
+
+    public string ValidationIssuesStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading validation coverage from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect validation blockers, advisory issues, and suggested fixes.";
+            }
+
+            var report = SelectedTrustSnapshot?.ValidationReport;
+            if (report is null)
+            {
+                return "Validation report unavailable for the selected security.";
+            }
+
+            if (ValidationIssues.Count == 0)
+            {
+                return "Validation report loaded with no blocking or advisory issues.";
+            }
+
+            var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
+            var advisoryCount = Math.Max(0, ValidationIssues.Count - blockingCount);
+            return $"{blockingCount} blocking issue{(blockingCount == 1 ? string.Empty : "s")} and {advisoryCount} advisory issue{(advisoryCount == 1 ? string.Empty : "s")} loaded.";
+        }
+    }
+
+    public string ChangeHistoryStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading structured audit history from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect versioned change history, actors, and source provenance.";
+            }
+
+            return HasChangeHistoryItems
+                ? $"{ChangeHistoryItems.Count} structured change entr{(ChangeHistoryItems.Count == 1 ? "y" : "ies")} loaded."
+                : "Structured change history is unavailable for the selected security.";
+        }
+    }
+
     public string ScheduleBookStatusText
     {
         get
@@ -1462,6 +1527,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         FilteredConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
         RecommendedActions.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(RecommendedActions));
         DownstreamImpactLinks.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DownstreamImpactLinks));
+        ValidationIssues.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ChangeHistoryItems.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
         ScheduleBookEvents.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
         ScheduleBookFactorHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
         ScheduleBookProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
@@ -1632,6 +1699,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private void RaiseScheduleAndOpenLotStateChanged()
     {
         RaisePropertyChanged(nameof(HasTrustSnapshotError));
+        RaisePropertyChanged(nameof(ValidationIssuesStatusText));
+        RaisePropertyChanged(nameof(HasChangeHistoryItems));
+        RaisePropertyChanged(nameof(ChangeHistoryStatusText));
         RaisePropertyChanged(nameof(HasScheduleBookEvents));
         RaisePropertyChanged(nameof(HasOpenLotRows));
         RaisePropertyChanged(nameof(ScheduleBookStatusText));
@@ -1815,6 +1885,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         DownstreamImpactLinks.Clear();
         CompanyProfileFields.Clear();
         CompanyCoverageFields.Clear();
+        ValidationIssues.Clear();
+        ChangeHistoryItems.Clear();
         ScheduleBookFields.Clear();
         ScheduleBookEvents.Clear();
         ScheduleBookFactorHistory.Clear();
@@ -2205,6 +2277,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         CorporateActionReadinessText = snapshot.TrustPosture.CorporateActionReadiness;
         CorporateActionImpactSummaryText = BuildCorporateActionImpactSummary(snapshot);
         PopulateCompanyPresentation(snapshot);
+        PopulateValidationPresentation(snapshot);
+        PopulateChangeHistoryPresentation(snapshot);
         PopulateScheduleBookPresentation(snapshot);
         PopulateOpenLotReadModelPresentation(snapshot);
         PopulatePrintPresentation(snapshot);
@@ -2614,6 +2688,28 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Impact severity", snapshot.DownstreamImpact.Severity.ToString()),
             new SecurityMasterPresentationField("Latest audit", LatestHistoryEventText)
         ]);
+    }
+
+    private void PopulateValidationPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        ReplaceCollection(
+            ValidationIssues,
+            snapshot.ValidationReport?.Issues
+                .OrderByDescending(static issue => issue.Severity)
+                .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+                ?? []);
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
+    private void PopulateChangeHistoryPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        ReplaceCollection(
+            ChangeHistoryItems,
+            snapshot.ChangeHistory?
+                .OrderByDescending(static item => item.ChangedAtUtc)
+                .ThenByDescending(static item => item.StreamVersion)
+                ?? []);
+        RaiseScheduleAndOpenLotStateChanged();
     }
 
     private void PopulateScheduleBookPresentation(SecurityMasterTrustSnapshotDto snapshot)

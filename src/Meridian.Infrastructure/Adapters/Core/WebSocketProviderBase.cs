@@ -31,7 +31,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </remarks>
 [ImplementsAdr("ADR-001", "Unified WebSocket provider base class for streaming data providers")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-public abstract class WebSocketProviderBase : IMarketDataClient
+public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnectionDiagnosticsSource
 {
     private readonly WebSocketConnectionManager _connectionManager;
     private Uri? _wsUri;
@@ -50,6 +50,13 @@ public abstract class WebSocketProviderBase : IMarketDataClient
     /// Whether the connection is currently established.
     /// </summary>
     protected bool Connected => _connectionManager.IsConnected;
+
+    /// <inheritdoc/>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
+    {
+        add => _connectionManager.DiagnosticsChanged += value;
+        remove => _connectionManager.DiagnosticsChanged -= value;
+    }
 
     /// <summary>
     /// Creates a new WebSocket provider base.
@@ -78,6 +85,10 @@ public abstract class WebSocketProviderBase : IMarketDataClient
 
     /// <inheritdoc/>
     public abstract bool IsEnabled { get; }
+
+    /// <inheritdoc/>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+        => _connectionManager.GetDiagnosticsSnapshot();
 
     /// <inheritdoc/>
     public virtual async Task ConnectAsync(CancellationToken ct = default)

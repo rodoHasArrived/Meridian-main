@@ -2190,11 +2190,14 @@
     right: 0;
     z-index: 200;
     min-width: min(900px, 96vw);
+    max-height: calc(100dvh - 4.5rem);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     background: var(--surface-topbar);
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     animation: megaMenuIn 140ms ease;
   }
 

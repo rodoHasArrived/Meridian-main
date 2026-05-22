@@ -131,6 +131,49 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task TradeHotPath_WhenSlowPathBackpressures_WaitsWithoutRecordingFalseDrops()
+    {
+        var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var blockingSink = new BlockingStorageSink(release.Task);
+        await using var constrainedSlowPath = new EventPipeline(
+            blockingSink,
+            capacity: 1,
+            fullMode: System.Threading.Channels.BoundedChannelFullMode.Wait,
+            batchSize: 1,
+            enablePeriodicFlush: false);
+        await using var pipeline = new DualPathEventPipeline(
+            constrainedSlowPath,
+            new SymbolTable(),
+            ringBufferCapacity: 32,
+            batchDrainSize: 4);
+
+        pipeline.TryPublish(CreateTradeEvent("SPY", seq: 1));
+        pipeline.TryPublish(CreateTradeEvent("SPY", seq: 2));
+        pipeline.TryPublish(CreateTradeEvent("SPY", seq: 3));
+
+        var firstBlockSw = System.Diagnostics.Stopwatch.StartNew();
+        while (blockingSink.ReceivedCount < 1 && firstBlockSw.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            await Task.Delay(10);
+        }
+
+        blockingSink.ReceivedCount.Should().BeGreaterThanOrEqualTo(1,
+            "the slow path should have received at least one trade before releasing backpressure in this test");
+        release.SetResult(true);
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (blockingSink.ReceivedCount < 3 && sw.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            await Task.Delay(10);
+        }
+
+        blockingSink.ReceivedCount.Should().Be(3,
+            "trade hot-path backpressure should wait for slow-path capacity instead of losing events");
+        constrainedSlowPath.DroppedCount.Should().Be(0,
+            "waiting for slow-path capacity must not be misreported as dropped-event loss");
+    }
+
+    [Fact]
     public async Task TryPublish_IntegrityEvent_GoesToSlowPath_NotHotPath()
     {
         var evt = MarketEvent.Integrity(
