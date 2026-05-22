@@ -17,7 +17,7 @@ last_reviewed: 2026-05-20
 
 ## Layer responsibility
 
-The source tree is layered around host composition, application orchestration, contracts, provider/storage infrastructure, active browser workstation UI, shared UI services, and retained WPF support.
+The source tree is layered around host composition, application orchestration, contracts, provider/storage infrastructure, active browser workstation UI, shared UI services, and WPF desktop shell.
 
 ## Key folders and files
 
@@ -25,7 +25,7 @@ The source tree is layered around host composition, application orchestration, c
 - `src/Meridian.Application/` - use cases, orchestration, commands, and pipelines.
 - `src/Meridian.Contracts/` - shared DTOs and compatibility contracts.
 - `src/Meridian.Ui/dashboard/` - active browser workstation UI lane.
-- `src/Meridian.Wpf/` - retained desktop support and regression lane.
+- `src/Meridian.Wpf/` - active desktop shell for operator workflows.
 
 ## Important workflows
 
@@ -52,7 +52,7 @@ python3 build/scripts/docs/render-source-docs.py --summary
 
 ## Change rules
 
-Do not introduce new product lanes from `src/` without roadmap support. Browser workstation work belongs in `src/Meridian.Ui/dashboard/`; WPF work remains retained support unless explicitly scoped.
+Do not introduce new product lanes from `src/` without roadmap support. Browser workstation work belongs in `src/Meridian.Ui/dashboard/`; WPF desktop work belongs in `src/Meridian.Wpf/`.
 
 ## Related docs
 

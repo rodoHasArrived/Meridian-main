@@ -37,7 +37,7 @@ This directory contains documentation about the system's design, architectural d
 | [Overview](overview.md) | High-level system architecture |
 | [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
 | [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
-| [MVVM Guidelines](mvvm-guidelines.md) | Browser and retained WPF view-model boundaries |
+| [MVVM Guidelines](mvvm-guidelines.md) | Browser workstation and WPF desktop view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
 | [Deterministic Canonicalization](deterministic-canonicalization.md) | Data normalization and deduplication |
@@ -52,7 +52,7 @@ This directory contains documentation about the system's design, architectural d
 | [Strategy Engine Foundation](strategy-engine-foundation.md) | Shared Strategy Engine definitions, run validation, data dependency policy, evidence manifests, and workstation API surface |
 | [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
-| [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Retained desktop shell UX pattern and compatibility guidance for WPF workspace shells |
+| [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | WPF workstation shell UX pattern and guidance for WPF workspace shells |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
 | [Current Direction and Status](../plans/current-direction-and-status.md) | Consolidated planning interpretation for current product direction, status, and plan-file roles |

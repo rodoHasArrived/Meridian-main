@@ -1,6 +1,6 @@
 ---
 name: meridian-cleanup
-description: Clean up Meridian code and docs without changing observable behavior. Use when the user asks to clean up, tidy, remove dead code, reduce duplication, fix safe anti-patterns, remove stale docs, or make focused maintainability improvements in Meridian C#, F#, browser dashboard, retained WPF, or documentation files.
+description: Clean up Meridian code and docs without changing observable behavior. Use when the user asks to clean up, tidy, remove dead code, reduce duplication, fix safe anti-patterns, remove stale docs, or make focused maintainability improvements in Meridian C#, F#, browser dashboard, WPF desktop, or documentation files.
 ---
 
 # Meridian Cleanup

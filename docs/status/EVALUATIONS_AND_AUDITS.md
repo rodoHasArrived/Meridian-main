@@ -65,7 +65,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Historical Providers | Well-designed | Alpaca + Polygon primary; Stooq + Yahoo free fallback; validate Polygon rate limits | [Evaluation](#historical-data-providers) |
 | Ingestion Orchestration | Uneven maturity | Strong building blocks; needs unified job model for realtime + backfill workloads | [Evaluation](#ingestion-orchestration) |
 | Operational Readiness | Pilot Ready | Good monitoring baseline; needs standardized SLOs and runbook-linked alerts | [Evaluation](#operational-readiness) |
-| Desktop UX | Retained support | 49 XAML pages retained for compatibility; new WPF feature work paused; browser workstation is the active operator UI lane | [Assessment](#desktop-ux-assessment) |
+| Desktop UX | Active | WPF is the active desktop shell with 49 XAML pages; browser workstation is the parallel operator UI lane | [Assessment](#desktop-ux-assessment) |
 | Code Quality | Excellent | Debug code is intentional; no cleanup required; repository hygiene complete | [Audit](#debug-code-analysis-h3) |
 | Repository Cleanup | Complete | Phases 1-6 done; generated docs refresh and HtmlTemplateGenerator CSS/JS extraction remain | [Audit](#cleanup-action-plan-status) |
 | Simplification Backlog | ~2,800-3,400 LOC removable | 12 categories identified; highest priority: bare catches, dead code, Task.Run misuse | [Audit](#further-simplification-opportunities) |

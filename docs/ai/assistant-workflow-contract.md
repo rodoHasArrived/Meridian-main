@@ -47,7 +47,7 @@ Every assistant and automation should use the same high-level flow:
 4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
-   WPF names as retained compatibility aliases rather than new root workspaces.
+   WPF names as legacy workspace aliases rather than new root workspaces.
    **No mobile development lane:** do not create mobile applications, mobile-specific product
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for

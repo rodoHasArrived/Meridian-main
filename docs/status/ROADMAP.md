@@ -275,7 +275,7 @@ The product promise is continuity: one operator can move from data trust to rese
 
 ## Recommended Next Waves
 
-Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage, route/deep-link behavior, fixture/demo-mode cues, and architecture simplification reinforcing the same read-model and orchestration seams rather than becoming a parallel delivery program. Use WPF validation for active desktop workflows, desktop compatibility, and shared-contract regression coverage.
+Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage, route/deep-link behavior, fixture/demo-mode cues, and architecture simplification reinforcing the same read-model and orchestration seams rather than becoming a parallel delivery program. Use WPF validation for active desktop workflows and shared-contract coverage.
 
 ### Wave 1: Closed provider confidence and checkpoint evidence gate
 

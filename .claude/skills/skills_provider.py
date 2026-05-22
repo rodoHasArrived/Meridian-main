@@ -176,7 +176,7 @@ mdc_code_review_skill = Skill(
     description=dedent("""\
         Code review and architecture compliance skill for the Meridian
         project — a .NET 10 fund-management and trading-platform system with
-        F# domain models, browser workstation UI, retained WPF support, real-time
+        F# domain models, browser workstation UI, WPF desktop shell, real-time
         streaming pipelines, and tiered JSONL/Parquet storage. Use this skill whenever
         the user asks to review, audit, refactor, or improve C# or F# code from Meridian,
         or when they share .cs/.fs files and want feedback.
@@ -696,7 +696,7 @@ mdc_blueprint_skill = Skill(
         "Translates a single prioritized idea into a complete, code-ready technical "
         "design document — interfaces, component designs, data flows, UI sketches, "
         "test plans, and implementation checklists — grounded in Meridian's actual stack: "
-        ".NET 10, browser workstation UI, retained WPF support, EventPipeline, "
+        ".NET 10, browser workstation UI, WPF desktop shell, EventPipeline, "
         "IMarketDataClient, IStorageSink, IHistoricalDataProvider, Options pattern, "
         "Bounded Channels, and shared UI read models. "
         "Trigger on: \"blueprint\", \"design document\", \"technical spec\", "
