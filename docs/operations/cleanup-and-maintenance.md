@@ -51,7 +51,7 @@ is inside `C:\Dev\Meridian-main`.
 - `.agents/`, `.codex/`, `.claude/`, and `.github/prompts/`: overlapping agent
   guidance is intentional until the AI guidance inventory is reconciled.
 - `archive/`: historical reference only, but retained for traceability.
-- `archive/docs/`: historical documentation retained inside the docs tree.
+- `archive/docs/`: historical documentation retained under the repository archive tree.
 
 ## Path Hygiene
 
