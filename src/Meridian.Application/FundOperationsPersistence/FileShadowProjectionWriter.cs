@@ -19,10 +19,30 @@ public sealed class FileShadowProjectionWriter : IShadowProjectionWriter
 
     public FundOperationsDomain Domain { get; }
 
+    private static string SanitizePathSegment(string value)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars()
+            .Concat(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar })
+            .ToHashSet();
+
+        var sanitizedChars = value
+            .Select(ch => invalidChars.Contains(ch) ? '_' : ch)
+            .ToArray();
+
+        var sanitized = new string(sanitizedChars);
+
+        while (sanitized.Contains("..", StringComparison.Ordinal))
+        {
+            sanitized = sanitized.Replace("..", "_", StringComparison.Ordinal);
+        }
+
+        return string.IsNullOrWhiteSpace(sanitized) ? "_" : sanitized;
+    }
+
     public async Task WriteAsync(string projectionName, string entityKey, object payload, CancellationToken ct = default)
     {
-        var safeProjection = projectionName.Replace('/', '_');
-        var safeEntity = entityKey.Replace('/', '_');
+        var safeProjection = SanitizePathSegment(projectionName);
+        var safeEntity = SanitizePathSegment(entityKey);
         var folder = Path.Combine(_rootPath, Domain.ToString(), safeProjection);
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, $"{safeEntity}.json");
