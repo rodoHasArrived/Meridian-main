@@ -51,10 +51,7 @@ public sealed class ViewModelViewResolver : IViewModelViewResolver
             return;
         }
 
-        if (scope.GetService(viewModelType) is { } viewModel)
-        {
-            page.DataContext = viewModel;
-        }
+        page.DataContext = ActivatorUtilities.GetServiceOrCreateInstance(scope, viewModelType);
     }
 
     public void LogMissingViewModels(IShellPageRegistry pageRegistry)

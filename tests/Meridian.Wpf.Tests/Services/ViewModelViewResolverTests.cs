@@ -35,6 +35,24 @@ public sealed class ViewModelViewResolverTests
     }
 
     [Fact]
+    public void AutoWire_ShouldCreateConventionViewModelWhenItIsNotRegistered()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var services = new ServiceCollection()
+                .AddSingleton(new ConventionProbeDependency("ready"))
+                .BuildServiceProvider();
+            var resolver = new ViewModelViewResolver(services.GetRequiredService<IServiceProviderIsService>());
+            var page = new DependencyProbePage();
+
+            resolver.AutoWire(page, services);
+
+            var viewModel = page.DataContext.Should().BeOfType<DependencyProbeViewModel>().Subject;
+            viewModel.Dependency.Value.Should().Be("ready");
+        });
+    }
+
+    [Fact]
     public void AutoWire_ShouldSkipPagesWithExistingDataContext()
     {
         WpfTestThread.Run(() =>
@@ -62,4 +80,20 @@ public sealed class ViewModelViewResolverTests
     private sealed class ConventionProbeViewModel
     {
     }
+
+    private sealed class DependencyProbePage : Page
+    {
+    }
+
+    private sealed class DependencyProbeViewModel
+    {
+        public DependencyProbeViewModel(ConventionProbeDependency dependency)
+        {
+            Dependency = dependency;
+        }
+
+        public ConventionProbeDependency Dependency { get; }
+    }
+
+    private sealed record ConventionProbeDependency(string Value);
 }

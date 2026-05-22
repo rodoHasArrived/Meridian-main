@@ -34,6 +34,7 @@ namespace Meridian.Application.Config;
 /// <param name="PluginsPath">Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.</param>
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
 /// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
+/// <param name="FeatureCapabilities">Runtime feature capability overrides.</param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,

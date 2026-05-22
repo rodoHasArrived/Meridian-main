@@ -258,7 +258,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         var configureServices = typeof(Meridian.Wpf.App)
             .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
         configureServices.Should().NotBeNull();
-        configureServices!.Invoke(null, [services]);
+        AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
         var serviceRoot = Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}");
         Directory.CreateDirectory(serviceRoot);
