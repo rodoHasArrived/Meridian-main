@@ -24,7 +24,7 @@ public sealed record FundOperationsPersistenceOptions
     public DomainCutoverMode GetMode(FundOperationsDomain domain)
         => DomainModes.TryGetValue(domain, out var mode)
             ? mode
-            : new DomainCutoverMode(ShadowWritesEnabled: true, DomainReadMode.LegacyInMemory);
+            : new DomainCutoverMode(ShadowWritesEnabled: true, ReadMode: DomainReadMode.LegacyInMemory);
 }
 
 public sealed record ProjectionDiscrepancy(
