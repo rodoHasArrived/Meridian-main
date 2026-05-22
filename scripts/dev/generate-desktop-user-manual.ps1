@@ -119,7 +119,11 @@ foreach ($definition in $selectedWorkflows) {
 
     $runInvocationOutput = @(& $runnerPath @runnerArguments)
     $runResult = $runInvocationOutput |
-        Where-Object { $null -ne $_ -and $_.PSObject.Properties.Name -contains 'manifestPath' } |
+        Where-Object {
+            $null -ne $_ -and
+            $_.PSObject.Properties.Name -contains 'manifestPath' -and
+            $_.PSObject.Properties.Name -contains 'runDirectory'
+        } |
         Select-Object -Last 1
 
     if ($null -eq $runResult -or [string]::IsNullOrWhiteSpace([string]$runResult.manifestPath)) {
