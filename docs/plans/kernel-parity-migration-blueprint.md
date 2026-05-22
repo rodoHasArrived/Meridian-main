@@ -115,7 +115,7 @@ Establish a fixture-driven C# ↔ F# parity program that blocks kernel regressio
 5. Enforce minimum coverage threshold growth each milestone.
 
 ## Coverage Tracking
-Track parity coverage in `docs/status/KERNEL_PARITY_STATUS.md` using:
+Track parity coverage in the status dashboard once reactivated; the prior bootstrap placeholder is archived at `archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md`. Use:
 - Subsystem name,
 - Fixture count,
 - Covered scenarios,

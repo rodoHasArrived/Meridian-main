@@ -18,7 +18,7 @@ Use this document with:
 
 - `docs/status/ROADMAP.md` for delivery-wave sequencing
 - `docs/status/IMPROVEMENTS.md` for completed improvement history
-- `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for the broader non-assembly implementation backlog
+- `docs/status/FULL_IMPLEMENTATION_TODO.md` for the broader non-assembly implementation backlog
 - `archive/docs/plans/readability-refactor-roadmap.md` for historical host/UI refactor sequencing; keep current cleanup guidance in this document
 
 ---
@@ -177,7 +177,7 @@ This roadmap is complete when:
 This roadmap does not duplicate:
 
 - product-delivery sequencing from `docs/status/ROADMAP.md`
-- full non-assembly implementation scope from `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md`
+- full non-assembly implementation scope from `docs/status/FULL_IMPLEMENTATION_TODO.md`
 - blueprint-level delivery details from the workstation, governance, QuantScript, or L3 simulation plans
 
 It exists to keep cleanup work actionable and current instead of letting it drift back into historical audit prose.

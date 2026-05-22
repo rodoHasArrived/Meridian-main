@@ -3,6 +3,7 @@
 **Last Updated:** 2026-04-29
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
+**Scope:** Flat normalized execution backlog; use `IMPROVEMENTS.md` for themed prioritization/focus framing.
 
 This document is the normalized execution backlog for the repository's remaining product and structural work outside Phase 16 assembly/SIMD optimization.
 It is subordinate to [`ROADMAP.md`](ROADMAP.md): the tracks below are execution buckets that map to the canonical Wave 1-6 order and optional tracks, not an independent strategy. Status labels and target dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).

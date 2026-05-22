@@ -958,13 +958,13 @@ public sealed class PilotAcceptanceHarnessTests
                 ]
               },
               "evidenceDocuments": [
-                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/evidence/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/evidence/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/evidence/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
                 { "name": "Provider validation matrix", "gate": "parity", "path": "docs/status/provider-validation-matrix.md", "exists": true, "status": "validated", "missingRequirements": [] }
               ],
               "trustRationaleContract": {
-                "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+                "documentPath": "docs/status/evidence/dk1-trust-rationale-mapping.md",
                 "requiredPayloadFields": [ "signalSource", "reasonCode", "recommendedAction" ],
                 "requiredReasonCodes": [
                   "HEALTHY_BASELINE",
@@ -980,7 +980,7 @@ public sealed class PilotAcceptanceHarnessTests
                 "missingRequirements": []
               },
               "baselineThresholdContract": {
-                "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+                "documentPath": "docs/status/evidence/dk1-baseline-trust-thresholds.md",
                 "requiredMetrics": [
                   "Composite trust score",
                   "Connection stability score",

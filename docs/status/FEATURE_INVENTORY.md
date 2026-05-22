@@ -4,7 +4,7 @@
 **Date:** 2026-05-21
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
-Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
+Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) (consolidated non-assembly execution backlog).
 
 ---
 

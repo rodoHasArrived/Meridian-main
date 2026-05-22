@@ -394,7 +394,7 @@ $summary = [ordered]@{
     }
     calibration = [ordered]@{
         kernelVersion = "dk1-baseline-v1"
-        sourceDocument = "docs/status/dk1-baseline-trust-thresholds.md"
+        sourceDocument = "docs/status/evidence/dk1-baseline-trust-thresholds.md"
     }
     testRunIds = @($results | ForEach-Object { ($_.name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-') })
     activeProviderRows = $activeProviderRows

@@ -8,7 +8,7 @@ Use this table as the single source of truth for wave status labels and target d
 - [`ROADMAP.md`](ROADMAP.md)
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md)
 - [`production-status.md`](production-status.md)
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md)
 - [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md)
 
 <!-- program-state:begin -->

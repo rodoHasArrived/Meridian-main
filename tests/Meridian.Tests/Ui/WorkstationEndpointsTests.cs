@@ -1252,7 +1252,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.EvidenceDocuments.Should().ContainSingle(document =>
             document.Gate == "explainability" &&
             document.Status == "validated" &&
-            document.Path == "docs/status/dk1-trust-rationale-mapping.md");
+            document.Path == "docs/status/evidence/dk1-trust-rationale-mapping.md");
         readiness.TrustGate.TrustRationaleContract.Should().NotBeNull();
         readiness.TrustGate.TrustRationaleContract!.Status.Should().Be("validated");
         readiness.TrustGate.TrustRationaleContract.RequiredReasonCodes.Should().Contain("PROVIDER_STREAM_DEGRADED");
@@ -5550,9 +5550,9 @@ public sealed class WorkstationEndpointsTests
                 ]
               },
               "evidenceDocuments": [
-                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/evidence/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/evidence/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/evidence/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
                 { "name": "Provider validation matrix", "gate": "parity", "path": "docs/status/provider-validation-matrix.md", "exists": true, "status": "validated", "missingRequirements": [] }
               ],
               __CONTRACT_REVIEW__
@@ -5564,7 +5564,7 @@ public sealed class WorkstationEndpointsTests
             .Replace("__CONTRACT_REVIEW__", includeContractReview
                 ? """
                   "trustRationaleContract": {
-                    "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+                    "documentPath": "docs/status/evidence/dk1-trust-rationale-mapping.md",
                     "requiredPayloadFields": [ "signalSource", "reasonCode", "recommendedAction" ],
                     "requiredReasonCodes": [
                       "HEALTHY_BASELINE",
@@ -5580,7 +5580,7 @@ public sealed class WorkstationEndpointsTests
                     "missingRequirements": []
                   },
                   "baselineThresholdContract": {
-                    "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+                    "documentPath": "docs/status/evidence/dk1-baseline-trust-thresholds.md",
                     "requiredMetrics": [
                       "Composite trust score",
                       "Connection stability score",

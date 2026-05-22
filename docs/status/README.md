@@ -30,9 +30,11 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [production-status.md](production-status.md) | Current production and pilot-readiness caveats |
 | [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
 | [IMPROVEMENTS.md](IMPROVEMENTS.md) | Tracked implementation themes and recommended focus areas |
-| [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md) | Normalized broader implementation backlog |
+| [FULL_IMPLEMENTATION_TODO.md](FULL_IMPLEMENTATION_TODO.md) | Normalized broader implementation backlog |
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
-| [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
+| [evidence/](evidence/) | DK1/Wave evidence runbooks, thresholds, rationale maps, and evidence packet/templates |
+
+Backlog split: [`IMPROVEMENTS.md`](IMPROVEMENTS.md) tracks prioritized themes and focus areas, while [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) tracks the normalized flat execution backlog.
 
 ## Generated Status Reports
 
@@ -40,7 +42,8 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | --- | --- |
 | [CHANGELOG.md](CHANGELOG.md) | Generated repository/doc snapshot summary |
 | [TODO.md](TODO.md) | Informational TODO/FIXME aggregation from source comments |
-| [health-dashboard.md](health-dashboard.md) | Documentation health report |
+| [doc-health-dashboard.md](doc-health-dashboard.md) | Documentation health report |
+| [ROADMAP_SUMMARY.md](ROADMAP_SUMMARY.md) | Generated roadmap summary (from `build/scripts/docs/render-roadmap-docs.py`) |
 | [coverage-report.md](coverage-report.md) | Documentation coverage summary |
 | [metrics-dashboard.md](metrics-dashboard.md) | Documentation metrics dashboard |
 | [docs-automation-summary.md](docs-automation-summary.md) | Latest docs automation run summary |
@@ -81,6 +84,8 @@ These dated snapshots remain useful for history, but they no longer act as activ
 - [Provider failover hardening notes](../../archive/docs/summaries/provider-failover-hardening.md)
 - [Provider test gap baseline](../../archive/docs/summaries/provider-test-gap-baseline.md)
 - [Provider test minimums](../../archive/docs/summaries/provider-test-minimums.md)
+- [Health dashboard snapshot (2026-05-04)](../../archive/docs/summaries/health-dashboard-2026-05-04.md)
+- [Kernel parity placeholder snapshot (2026-04-20)](../../archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md)
 
 ## Recommended Reading Order
 
