@@ -6,6 +6,7 @@ from pathlib import Path
 
 class ArchiveCodeTombstonesTests(unittest.TestCase):
     CODE_EXTENSIONS = (".cs", ".fs")
+    COMMENT_PREFIXES = ("//", "/*", "*", "*/")
 
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
@@ -27,11 +28,11 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
 
             self.assertIn("ARCHIVE TOMBSTONE", text, f"{relative} must contain the tombstone marker.")
 
-            non_empty_lines = [line for line in text.splitlines() if line.strip()]
-            for line in non_empty_lines:
+            content_lines = [line for line in text.splitlines() if line.strip()]
+            for line in content_lines:
                 stripped = line.lstrip()
                 self.assertTrue(
-                    stripped.startswith("//") or stripped.startswith("/*") or stripped.startswith("*") or stripped.startswith("*/"),
+                    stripped.startswith(self.COMMENT_PREFIXES),
                     f"{relative} must remain comment-only (found non-comment line: {line!r}).",
                 )
 
