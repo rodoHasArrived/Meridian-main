@@ -5,12 +5,18 @@ from pathlib import Path
 
 
 class ArchiveCodeTombstonesTests(unittest.TestCase):
+    CODE_EXTENSIONS = (".cs", ".fs", ".vb", ".xaml", ".xml")
+
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
         self.archive_code_root = self.repo_root / "archive" / "code" / "src"
 
     def test_archive_code_files_are_comment_only_tombstones(self) -> None:
-        files = sorted(self.archive_code_root.rglob("*.cs"))
+        files = sorted(
+            file_path
+            for file_path in self.archive_code_root.rglob("*")
+            if file_path.is_file() and file_path.suffix.lower() in self.CODE_EXTENSIONS
+        )
         self.assertNotEqual([], files, "Expected archived code tombstone files under archive/code/src.")
 
         for file_path in files:
@@ -35,7 +41,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
             *self.repo_root.rglob("Directory.Build.targets"),
         ]
 
-        archive_token = "archive/code/src"
+        archive_token = self.archive_code_root.relative_to(self.repo_root).as_posix().lower()
         for file_path in sorted(set(candidate_files)):
             text = file_path.read_text(encoding="utf-8")
             normalized_text = text.replace("\\", "/").lower()
