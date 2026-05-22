@@ -31,17 +31,21 @@ class SummarizeDesktopWorkflowBundleTests(unittest.TestCase):
             )
             stage_status_path.write_text("[]", encoding="utf-8")
 
-            result = subprocess.run(
+            command = [pwsh, "-NoProfile"]
+            if Path(pwsh).name.lower().startswith("powershell"):
+                command.extend(["-ExecutionPolicy", "Bypass"])
+            command.extend(
                 [
-                    pwsh,
-                    "-NoProfile",
                     "-File",
                     str(SCRIPT_PATH),
                     "-BundlePath",
                     str(bundle_path),
                     "-ManifestPath",
                     str(manifest_path),
-                ],
+                ]
+            )
+            result = subprocess.run(
+                command,
                 cwd=REPO_ROOT,
                 capture_output=True,
                 text=True,
