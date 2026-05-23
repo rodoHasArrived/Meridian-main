@@ -103,6 +103,19 @@ tasks. Route work through it when any of the following apply:
 Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
 multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime.
 
+### Agent Design Patterns
+
+When composing multiple agents, choose the right topology for the work:
+
+- **Parallel** — subtasks are independent with no output dependency between them. Use when
+  investigating separate subsystems concurrently, or running review and security scan
+  simultaneously.
+- **Sequential** — each step's output feeds the next. Use for the default single-domain lane:
+  Repo Navigation → Specialist → Implementation → Review → Assurance.
+- **Hierarchical** — a coordinator delegates to specialist agents, aggregates evidence, and
+  enforces approval gates before proceeding. Use the CoS runtime for this pattern whenever a
+  task is multi-domain, gated, or requires structured evidence synthesis.
+
 Key resources:
 - `tools/chief-of-staff-runtime/runtime.py` — ADK node pipeline and integration boundary.
 - `docs/development/chief-of-staff-runtime.md` — API routes, config reference, and integration details.
