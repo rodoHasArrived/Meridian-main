@@ -1,6 +1,6 @@
 # Tools Directory Guide
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-23
 
 This folder contains small utility scripts used to keep Meridian documentation consistent and machine-checkable.
 
@@ -12,11 +12,15 @@ If you are new to the project, start here instead of opening individual Python f
   Scripts for roadmap governance checks and roadmap-data validation/rendering.
 - `tools/source_docs/`  
   Scripts for source-module README coverage checks and deterministic generated source-doc outputs.
+- `tools/chief-of-staff-runtime/`  
+  ADK scaffold for the out-of-process Chief of Staff orchestration runtime. Implements the
+  intent-to-evidence node pipeline that sits alongside Meridian's MCP and workstation API surfaces.
 
 ## Which folder should I use?
 
 - Use **`tools/roadmap/`** if you are working on roadmap phases, roadmap evidence files, or roadmap governance checks.
 - Use **`tools/source_docs/`** if you are working on source-module docs under `docs/source/` and generated source docs under `docs/generated/source/`.
+- Use **`tools/chief-of-staff-runtime/`** if you are implementing or extending the Chief of Staff ADK node pipeline. Start with `runtime.py` and the Codex skill at `.codex/skills/cos-runtime-development/SKILL.md`.
 
 ## Fast “just run it” commands
 
@@ -43,5 +47,8 @@ python3 tools/source_docs/check_source_determinism.py
 
 - `tools/roadmap/README.md`
 - `tools/source_docs/README.md`
+- `tools/chief-of-staff-runtime/README.md`
+- `docs/development/chief-of-staff-runtime.md`
+- `.codex/skills/cos-runtime-development/SKILL.md`
 - `docs/roadmap/roadmap-governance.md`
 - `docs/source/source-documentation-standard.md`

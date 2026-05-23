@@ -43,6 +43,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | `performance-resource-review` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `safe-refactoring` | Refactor desktop code incrementally without behavior drift |
 | `desktop-test-generation` | Generate focused WPF view-model, command, service, and binding tests |
+| `cos-runtime-development` | Build and extend the Chief of Staff ADK node pipeline scaffold |
 
 ## Routing Model
 
@@ -73,6 +74,7 @@ route by task phase:
 | Resource review | `performance-resource-review` | Review and reduce memory, CPU, I/O, rendering, concurrency, and lifecycle risk. |
 | Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
 | Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
+| CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
 
 ## Required Gates For Codex AI/Tooling Changes
 
