@@ -34,7 +34,6 @@ Last verified against `README.md`, `docs/status/ROADMAP.md`, and
 | `performance-resource-review` | [`SKILL.md`](performance-resource-review/SKILL.md) | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `safe-refactoring` | [`SKILL.md`](safe-refactoring/SKILL.md) | Refactor desktop code incrementally without behavior drift |
 | `desktop-test-generation` | [`SKILL.md`](desktop-test-generation/SKILL.md) | Generate focused WPF view-model, command, service, and binding tests |
-| `cos-runtime-development` | [`SKILL.md`](cos-runtime-development/SKILL.md) | Build and extend the Chief of Staff ADK node pipeline scaffold |
 
 ## Routing Model
 
@@ -65,7 +64,6 @@ different work:
 | Resource review | `performance-resource-review` | Review and reduce memory, CPU, I/O, rendering, concurrency, and lifecycle risk. |
 | Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
 | Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
-| CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
 
 ## Shared Resources
 

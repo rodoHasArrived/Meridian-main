@@ -16,7 +16,6 @@ This document is the master index for AI guidance in the Meridian repository. It
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills | [`codex/README.md`](codex/README.md) | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
-| ADK / CoS runtime | [`../development/chief-of-staff-runtime.md`](../development/chief-of-staff-runtime.md) | [`tools/chief-of-staff-runtime/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/tools/chief-of-staff-runtime), [`.codex/skills/cos-runtime-development/SKILL.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/cos-runtime-development/SKILL.md) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---
