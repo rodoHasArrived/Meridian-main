@@ -483,25 +483,6 @@ modules:
     todos: []
     last_reviewed: 2026-05-20
 
-  - id: SRC-MCP-SERVER
-    path: src/Meridian.McpServer
-    name: Meridian MCP server
-    layer: MCP
-    status: active
-    owner_lane: Docs and Automation
-    purpose: Market-data MCP server with tool/resource access for AI-assisted workflows.
-    readme: src/Meridian.McpServer/README.md
-    roadmap_items:
-      - W6-LIVE-001
-    stage_gates:
-      - LiveReadiness
-    validation:
-      - dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj --logger "console;verbosity=normal"
-    diagrams:
-      - DIA-ASSURANCE-LOOP
-    todos: []
-    last_reviewed: 2026-05-20
-
   - id: SRC-IBAPI-SMOKESTUB
     path: src/Meridian.IbApi.SmokeStub
     name: IB API smoke stub
