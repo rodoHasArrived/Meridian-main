@@ -595,7 +595,27 @@ function Invoke-NavigateWithMouse {
   }
 }
 
-function Invoke-Navigate {
+function New-ScreenNavigationRegistry {
+  return @(
+    [pscustomobject]@{ slug = 'dashboard'; searchTerm = 'System Overview'; skipNavigation = $true; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'providers'; searchTerm = 'Providers'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'provider-health'; searchTerm = 'Provider Health'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'backfill'; searchTerm = 'Backfill'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'symbols'; searchTerm = 'Symbols'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'live-data'; searchTerm = 'Live Data'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'storage'; searchTerm = 'Storage'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'data-quality'; searchTerm = 'Data Quality'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'data-browser'; searchTerm = 'Data Browser'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'strategy-runs'; searchTerm = 'Strategy Runs'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'backtest'; searchTerm = 'Backtest'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'quant-script'; searchTerm = 'Quant Script'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'security-master'; searchTerm = 'Security Master'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'diagnostics'; searchTerm = 'Diagnostics'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+    [pscustomobject]@{ slug = 'settings'; searchTerm = 'Settings'; skipNavigation = $false; navigationTimeoutSec = 8; readinessRetryAttempts = 6; captureRetryAttempts = 6 }
+  )
+}
+
+function Select-ScreenNavigationMethod {
   param(
     [Parameter(Mandatory = $true)]
     [System.Windows.Automation.AutomationElement]$Window,
@@ -603,15 +623,243 @@ function Invoke-Navigate {
     [System.Diagnostics.Process]$Process = $script:MeridianProcess,
 
     [Parameter(Mandatory = $true)]
-    [string]$SearchTerm
+    [string]$SearchTerm,
+
+    [scriptblock]$KeyboardNavigationAction = {
+      param($window, $process, $searchTerm)
+      return (Invoke-NavigateWithKeyboard -Window $window -Process $process -SearchTerm $searchTerm)
+    },
+
+    [scriptblock]$MouseNavigationAction = {
+      param($window, $process, $searchTerm)
+      return (Invoke-NavigateWithMouse -Window $window -Process $process -SearchTerm $searchTerm)
+    }
   )
 
-  if (Invoke-NavigateWithKeyboard -Window $Window -Process $Process -SearchTerm $SearchTerm) {
-    return $true
+  if (& $KeyboardNavigationAction $Window $Process $SearchTerm) {
+    return [pscustomobject]@{
+      success = $true
+      method = 'keyboard'
+      category = 'navigation_success'
+    }
   }
 
   Write-Warning "Retrying '$SearchTerm' navigation with mouse automation fallback."
-  return (Invoke-NavigateWithMouse -Window $Window -Process $Process -SearchTerm $SearchTerm)
+  if (& $MouseNavigationAction $Window $Process $SearchTerm) {
+    return [pscustomobject]@{
+      success = $true
+      method = 'mouse'
+      category = 'navigation_success'
+    }
+  }
+
+  return [pscustomobject]@{
+    success = $false
+    method = 'none'
+    category = 'navigation_failure'
+    failure = (New-MeridianRetryFailure -Code 'desktop.navigation.failed' -Reason "Unable to navigate to '$SearchTerm' with keyboard or mouse strategies." -Data @{ page = $SearchTerm })
+  }
+}
+
+function Invoke-ScreenNavigation {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Window,
+
+    [Parameter(Mandatory = $true)]
+    [pscustomobject]$Screen,
+
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess
+  )
+
+  if ($Screen.skipNavigation) {
+    Write-Host "Capturing '$($Screen.searchTerm)' from the detected shell window."
+    return [pscustomobject]@{
+      success = $true
+      method = 'none'
+      category = 'navigation_skipped'
+    }
+  }
+
+  Write-Host "Navigating to '$($Screen.searchTerm)' ..."
+  return (Select-ScreenNavigationMethod -Window $Window -Process $Process -SearchTerm $Screen.searchTerm)
+}
+
+function Test-ScreenReadiness {
+  param(
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+
+    [Parameter(Mandatory = $true)]
+    [pscustomobject]$Screen
+  )
+
+  $candidateWindow = Find-MeridianWindow -Process $Process
+  if ($null -eq $candidateWindow) {
+    return [pscustomobject]@{
+      ready = $false
+      failure = (New-MeridianRetryFailure -Code 'desktop.window.not_visible' -Reason "Window was not visible while capturing '$($Screen.searchTerm)'." -Data @{ page = $Screen.searchTerm; slug = $Screen.slug })
+    }
+  }
+
+  $shellMarker = $candidateWindow.FindFirst(
+    [System.Windows.Automation.TreeScope]::Descendants,
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+      'ShellAutomationState'
+    ))
+  )
+
+  if ($null -eq $shellMarker) {
+    return [pscustomobject]@{
+      ready = $false
+      failure = (New-MeridianRetryFailure -Code 'desktop.automation.marker_missing' -Reason "Shell automation marker was not found while capturing '$($Screen.searchTerm)'." -Data @{ page = $Screen.searchTerm; slug = $Screen.slug })
+    }
+  }
+
+  return [pscustomobject]@{
+    ready = $true
+    window = $candidateWindow
+  }
+}
+
+function Wait-ScreenReady {
+  param(
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+
+    [Parameter(Mandatory = $true)]
+    [pscustomobject]$Screen,
+
+    [System.Collections.ArrayList]$TelemetrySink = $null
+  )
+
+  return (Invoke-MeridianRetry `
+    -Name ("capture/page/{0}/ready" -f $Screen.slug) `
+    -MaxAttempts $Screen.readinessRetryAttempts `
+    -BaseDelayMs 350 `
+    -MaxDelayMs 2500 `
+    -JitterMs 180 `
+    -TelemetrySink $TelemetrySink `
+    -Predicate {
+      return (Test-ScreenReadiness -Process $Process -Screen $Screen)
+    } `
+    -Action {
+      param($state)
+      return $state.window
+    })
+}
+
+function Invoke-ScreenCapture {
+  param(
+    [Parameter(Mandatory = $true)]
+    [pscustomobject]$Screen,
+
+    [System.Diagnostics.Process]$Process = $script:MeridianProcess,
+
+    [System.Windows.Automation.AutomationElement]$Window = $null,
+
+    [Parameter(Mandatory = $true)]
+    [string]$OutputDirectory,
+
+    [System.Collections.ArrayList]$TelemetrySink = $null,
+
+    [scriptblock]$NavigationInvoker = {
+      param($window, $process, $screen)
+      return (Invoke-ScreenNavigation -Window $window -Process $process -Screen $screen)
+    },
+
+    [scriptblock]$ReadinessWaiter = {
+      param($process, $screen, $telemetry)
+      return (Wait-ScreenReady -Process $process -Screen $screen -TelemetrySink $telemetry)
+    },
+
+    [scriptblock]$CaptureInvoker = {
+      param($window, $targetPath)
+      Save-WindowCapture -Window $window -Path $targetPath
+      return $targetPath
+    }
+  )
+
+  $screenResult = [ordered]@{
+    slug = $Screen.slug
+    screen = $Screen.searchTerm
+    status = 'failure'
+    category = 'uninitialized'
+    message = ''
+    navigationMethod = 'none'
+    path = $null
+    window = $Window
+  }
+
+  try {
+    if (-not $Window) {
+      $Window = Wait-MeridianWindow -Process $Process -TimeoutSec $Screen.navigationTimeoutSec
+    }
+
+    if (-not $Window) {
+      $screenResult.status = 'warning'
+      $screenResult.category = 'window_missing'
+      $screenResult.message = "Skipping '$($Screen.searchTerm)' because the main window reference was lost."
+      return [pscustomobject]$screenResult
+    }
+
+    $navigation = & $NavigationInvoker $Window $Process $Screen
+    $screenResult.navigationMethod = $navigation.method
+    if (-not $navigation.success) {
+      $screenResult.status = 'warning'
+      $screenResult.category = 'navigation_failure'
+      $screenResult.message = "Skipping '$($Screen.searchTerm)' because navigation failed."
+      $screenResult.window = Wait-MeridianWindow -Process $Process -TimeoutSec $Screen.navigationTimeoutSec
+      return [pscustomobject]$screenResult
+    }
+
+    $readyResult = & $ReadinessWaiter $Process $Screen $TelemetrySink
+    if (-not $readyResult.Success) {
+      $failure = $readyResult.Failure
+      $screenResult.status = 'warning'
+      $screenResult.category = 'timeout'
+      $screenResult.message = ("Skipping '{0}' because readiness checks were exhausted [{1}] {2}" -f $Screen.searchTerm, $failure.code, $failure.reason)
+      $screenResult.window = Wait-MeridianWindow -Process $Process -TimeoutSec $Screen.navigationTimeoutSec
+      return [pscustomobject]$screenResult
+    }
+
+    $targetPath = Join-Path $OutputDirectory ("wpf-{0}.png" -f $Screen.slug)
+    $captureRetry = Invoke-MeridianRetry `
+      -Name ("capture/page/$($Screen.slug)") `
+      -MaxAttempts $Screen.captureRetryAttempts `
+      -BaseDelayMs 350 `
+      -MaxDelayMs 2500 `
+      -JitterMs 180 `
+      -TelemetrySink $TelemetrySink `
+      -Predicate {
+        return (Test-ScreenReadiness -Process $Process -Screen $Screen)
+      } `
+      -Action {
+        param($state)
+        return (& $CaptureInvoker $state.window $targetPath)
+      }
+
+    if ($captureRetry.Success) {
+      $screenResult.status = 'success'
+      $screenResult.category = 'capture_success'
+      $screenResult.message = "Saved: $($captureRetry.Value)"
+      $screenResult.path = $captureRetry.Value
+      $screenResult.window = Wait-MeridianWindow -Process $Process -TimeoutSec $Screen.navigationTimeoutSec
+      return [pscustomobject]$screenResult
+    }
+
+    $captureFailure = $captureRetry.Failure
+    $screenResult.status = 'warning'
+    $screenResult.category = 'capture_failure'
+    $screenResult.message = ("Skipping '{0}' due to retry exhaustion [{1}] {2}" -f $Screen.searchTerm, $captureFailure.code, $captureFailure.reason)
+    $screenResult.window = Wait-MeridianWindow -Process $Process -TimeoutSec $Screen.navigationTimeoutSec
+    return [pscustomobject]$screenResult
+  } catch {
+    $screenResult.status = 'failure'
+    $screenResult.category = 'unexpected_error'
+    $screenResult.message = ("Capture failed for '{0}': {1}" -f $Screen.searchTerm, $_.Exception.Message)
+    $screenResult.window = Wait-MeridianWindow -Process $Process -TimeoutSec $Screen.navigationTimeoutSec
+    return [pscustomobject]$screenResult
+  }
 }
 
 Assert-Command -Name 'dotnet'
@@ -664,6 +912,7 @@ $runStamp = (Get-Date).ToString('yyyyMMddHHmmss')
 $stdoutPath = Join-Path $OutputDir "wpf-startup-stdout-$runStamp.log"
 $stderrPath = Join-Path $OutputDir "wpf-startup-stderr-$runStamp.log"
 $retryTelemetry = New-Object System.Collections.ArrayList
+$screenDiagnostics = New-Object System.Collections.ArrayList
 $retryTelemetryPath = Join-Path $OutputDir 'retry-telemetry.json'
 
 if (-not (Test-Path $exePath)) {
@@ -729,101 +978,29 @@ try {
     Maximize-MeridianWindow -Window $window
   }
 
-  $pages = [ordered]@{
-    'dashboard' = 'System Overview'
-    'providers' = 'Provider'
-    'provider-health' = 'Provider Health'
-    'backfill' = 'Backfill'
-    'symbols' = 'Symbols'
-    'live-data' = 'Live Data'
-    'storage' = 'Storage'
-    'data-quality' = 'Data Quality'
-    'data-browser' = 'Data Browser'
-    'strategy-runs' = 'Strategy Runs'
-    'backtest' = 'Backtest'
-    'quant-script' = 'Quant Script'
-    'security-master' = 'Security Master'
-    'diagnostics' = 'Diagnostics'
-    'settings' = 'Settings'
+  $screenRegistry = New-ScreenNavigationRegistry
+  foreach ($screen in $screenRegistry) {
+    $screenResult = Invoke-ScreenCapture -Screen $screen -Process $proc -Window $window -OutputDirectory $OutputDir -TelemetrySink $retryTelemetry
+    $window = $screenResult.window
+    $null = $screenDiagnostics.Add($screenResult)
+
+    switch ($screenResult.status) {
+      'success' { Write-Host $screenResult.message }
+      'warning' { Write-Warning $screenResult.message }
+      default { Write-Warning ("Failure: {0}" -f $screenResult.message) }
+    }
   }
 
-  foreach ($entry in $pages.GetEnumerator()) {
-    $slug = $entry.Key
-    $search = $entry.Value
+  $successCount = @($screenDiagnostics | Where-Object { $_.status -eq 'success' }).Count
+  $warningCount = @($screenDiagnostics | Where-Object { $_.status -eq 'warning' }).Count
+  $failureCount = @($screenDiagnostics | Where-Object { $_.status -eq 'failure' }).Count
+  Write-Host ("Desktop screenshot summary: success={0}, warnings={1}, failures={2}" -f $successCount, $warningCount, $failureCount)
 
-    if (-not $window) {
-      $window = Wait-MeridianWindow -Process $proc -TimeoutSec 8
-    }
-
-    if (-not $window) {
-      Write-Warning "Skipping '$search' because the main window reference was lost."
-      continue
-    }
-
-    $ok = $true
-    if ($slug -eq 'dashboard') {
-      Write-Host "Capturing '$search' from the detected shell window."
-    } else {
-      Write-Host "Navigating to '$search' ..."
-      $ok = Invoke-Navigate -Window $window -Process $proc -SearchTerm $search
-    }
-
-    $window = Wait-MeridianWindow -Process $proc -TimeoutSec 8
-
-    if ($window -and $ok) {
-      $targetPath = Join-Path $OutputDir "wpf-$slug.png"
-      $captureRetry = Invoke-MeridianRetry `
-        -Name ("capture/page/$slug") `
-        -MaxAttempts 6 `
-        -BaseDelayMs 350 `
-        -MaxDelayMs 2500 `
-        -JitterMs 180 `
-        -TelemetrySink $retryTelemetry `
-        -Predicate {
-          $candidateWindow = Find-MeridianWindow -Process $proc
-          if ($null -eq $candidateWindow) {
-            return [pscustomobject]@{
-              ready = $false
-              failure = (New-MeridianRetryFailure -Code 'desktop.window.not_visible' -Reason "Window was not visible while capturing '$search'." -Data @{ page = $search; slug = $slug })
-            }
-          }
-
-          $shellMarker = $candidateWindow.FindFirst(
-            [System.Windows.Automation.TreeScope]::Descendants,
-            (New-Object System.Windows.Automation.PropertyCondition(
-              [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
-              'ShellAutomationState'
-            ))
-          )
-
-          if ($null -eq $shellMarker) {
-            return [pscustomobject]@{
-              ready = $false
-              failure = (New-MeridianRetryFailure -Code 'desktop.automation.marker_missing' -Reason "Shell automation marker was not found while capturing '$search'." -Data @{ page = $search; slug = $slug })
-            }
-          }
-
-          return [pscustomobject]@{
-            ready = $true
-            window = $candidateWindow
-          }
-        } `
-        -Action {
-          param($state)
-          Save-WindowCapture -Window $state.window -Path $targetPath
-          return $targetPath
-        }
-
-      if ($captureRetry.Success) {
-        Write-Host "Saved: $($captureRetry.Value)"
-      }
-      else {
-        $failure = $captureRetry.Failure
-        Write-Warning ("Skipping '{0}' due to retry exhaustion [{1}] {2}" -f $search, $failure.code, $failure.reason)
-      }
-    } else {
-      Write-Warning "Skipping '$search' because navigation failed or window reference was lost."
-    }
+  if ($warningCount -gt 0 -or $failureCount -gt 0) {
+    Write-Host 'Screen diagnostics:'
+    $screenDiagnostics |
+      Select-Object slug, screen, status, category, navigationMethod, message |
+      Format-Table -AutoSize
   }
 
   Write-Host "Desktop screenshots complete. Output directory: $OutputDir"
@@ -838,6 +1015,7 @@ finally {
     generatedAt = (Get-Date).ToString('o')
     outputDirectory = $OutputDir
     telemetry = @($retryTelemetry)
+    screenDiagnostics = @($screenDiagnostics | Select-Object slug, screen, status, category, navigationMethod, path, message)
     failureRanking = @(
       $retryTelemetry |
         Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |

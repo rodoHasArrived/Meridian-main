@@ -181,6 +181,7 @@ public sealed class EvidenceGraphService
             EvidenceSubjectResolver.ReportPackKind => "portfolio-reporting-output",
             EvidenceSubjectResolver.AnalysisExportKind => "portfolio-reporting-output",
             EvidenceSubjectResolver.ProviderTrustKind => "paper-trading-readiness",
+            EvidenceSubjectResolver.ChiefOfStaffSessionKind => "accounting-reconciliation-review",
             _ => string.Empty
         };
 

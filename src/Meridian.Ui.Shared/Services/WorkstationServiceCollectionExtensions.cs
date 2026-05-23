@@ -53,10 +53,20 @@ public static class WorkstationServiceCollectionExtensions
             return new BackfillCoordinator(configStore, registry, factory);
         });
 
+        services.AddHttpClient();
         services.AddMemoryCache();
+        services.AddOptions<ChiefOfStaffOptions>()
+            .BindConfiguration(ChiefOfStaffOptions.SectionName);
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+        services.TryAddSingleton<IChiefOfStaffRuntimeClient, ChiefOfStaffRuntimeClient>();
+        services.TryAddSingleton<IChiefOfStaffApprovalRouter, ChiefOfStaffApprovalRouter>();
+        services.TryAddSingleton<IChiefOfStaffTraceStore>(sp =>
+            new FileChiefOfStaffTraceStore(
+                ResolveConfigDataRoot(sp),
+                sp.GetRequiredService<ILogger<FileChiefOfStaffTraceStore>>()));
+        services.TryAddSingleton<IChiefOfStaffSessionService, ChiefOfStaffSessionService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();

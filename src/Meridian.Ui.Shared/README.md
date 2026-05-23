@@ -22,6 +22,7 @@ Shared UI read models, compatibility shims, and cross-surface data structures.
 
 ## Operational Notes
 Preserve cross-surface compatibility when evolving shared read models.
+Chief of Staff orchestration endpoints and services are additive and must keep ledger/reconciliation source-of-truth services authoritative.
 
 <!-- GENERATED:MODULE_OVERVIEW BEGIN -->
 Generated overview content is maintained by documentation automation.

@@ -492,6 +492,61 @@ public sealed class ExportEvidenceContributor : IEvidenceContributor
     }
 }
 
+public sealed class ChiefOfStaffEvidenceContributor : IEvidenceContributor
+{
+    private readonly IChiefOfStaffSessionService _sessionService;
+
+    public ChiefOfStaffEvidenceContributor(IChiefOfStaffSessionService sessionService)
+    {
+        _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
+    }
+
+    public string ContributorId => "chief-of-staff";
+
+    public bool Supports(EvidenceSubjectDto subject)
+        => string.Equals(subject.SubjectKind, EvidenceSubjectResolver.ChiefOfStaffSessionKind, StringComparison.OrdinalIgnoreCase);
+
+    public async Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
+    {
+        if (!Guid.TryParseExact(context.Subject.SubjectId, "N", out var sessionId))
+        {
+            return new EvidenceContribution([], [], [], [], [$"Chief of Staff subject id '{context.Subject.SubjectId}' is not a valid session id."]);
+        }
+
+        var session = await _sessionService.GetSessionAsync(sessionId, context.CancellationToken).ConfigureAwait(false);
+        if (session is null)
+        {
+            return new EvidenceContribution([], [], [], [], [$"Chief of Staff session '{context.Subject.SubjectId}' was not found."]);
+        }
+
+        var nodeId = NodeId(context.Subject, "trace");
+        var status = session.Status is ChiefOfStaffSessionStatusDto.Blocked
+            ? EvidenceStatusDto.Blocked
+            : session.Status is ChiefOfStaffSessionStatusDto.ReviewRequired
+                ? EvidenceStatusDto.ReviewRequired
+                : EvidenceStatusDto.Ready;
+        var node = Node(
+            context.Subject,
+            nodeId,
+            "chief-of-staff-trace",
+            status,
+            session.MarkdownSummary,
+            "ChiefOfStaffSessionService",
+            session.TraceSummary.CapturedAt,
+            artifacts:
+            [
+                Artifact(
+                    $"{nodeId}:session",
+                    "chief-of-staff-session",
+                    route: UiApiRoutes.WithParam(UiApiRoutes.WorkstationChiefOfStaffSessionById, "sessionId", sessionId.ToString("D")),
+                    generatedAt: session.TraceSummary.CapturedAt)
+            ],
+            workItemIds: session.EvidenceBundle.WorkItems.Select(static item => item.WorkItemId).ToArray());
+
+        return new EvidenceContribution([node], [], [], [nodeId], session.Warnings);
+    }
+}
+
 internal static class EvidenceContributionHelpers
 {
     public static string NodeId(EvidenceSubjectDto subject, string suffix)
