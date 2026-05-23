@@ -528,11 +528,6 @@ public static class UiApiRoutes
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
-    public const string WorkstationChiefOfStaffSessions = "/api/workstation/chief-of-staff/sessions";
-    public const string WorkstationChiefOfStaffSessionById = "/api/workstation/chief-of-staff/sessions/{sessionId:guid}";
-    public const string WorkstationChiefOfStaffDecision = "/api/workstation/chief-of-staff/sessions/{sessionId:guid}/decisions";
-    public const string WorkstationChiefOfStaffExportTrace = "/api/workstation/chief-of-staff/sessions/{sessionId:guid}/export-trace";
-    public const string WorkstationChiefOfStaffHealth = "/api/workstation/chief-of-staff/health";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
     public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";
