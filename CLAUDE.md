@@ -19,7 +19,7 @@ Current local project path: `D:\Meridian-main`.
 
 ## Core Working Rules
 
-1. Make the smallest safe change that satisfies the request.
+1. Make the safest change that satisfies the request.
 2. Preserve behavior unless the user explicitly asks for behavior changes.
 3. Run targeted validation for touched areas; avoid unrelated full-suite runs by default.
 4. Keep docs and code aligned when behavior, workflows, contracts, skills, or agent guidance change.
