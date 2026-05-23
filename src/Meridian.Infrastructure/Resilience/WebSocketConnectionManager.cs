@@ -206,6 +206,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     SetLifecycleState(ProviderConnectionLifecycleState.Connected);
                     StateChanged?.Invoke(WebSocketState.Open);
                 }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _lastError = ex.Message;
@@ -337,6 +341,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             {
                 try
                 { _connectionCts.Cancel(); }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
@@ -353,6 +361,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                         await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
                             .ConfigureAwait(false);
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -476,6 +488,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                         {
                             GapDetected?.Invoke(gap);
                         }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
                         catch (Exception gapEx)
                         {
                             _log.Error(gapEx, "{Provider} error in gap detection handler", _providerName);
@@ -483,6 +499,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     }
 
                     return true;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -597,6 +617,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     {
                         await messageHandler(message).ConfigureAwait(false);
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         _lastError = ex.Message;
@@ -686,6 +710,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { cts.Cancel(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} CTS cancel failed during cleanup", _providerName); }
         }
 
@@ -702,6 +727,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             {
                 try
                 { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { throw; }
                 catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
             }
         }
@@ -711,6 +737,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { receiveLoopCts.Dispose(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} receive loop CTS dispose failed during cleanup", _providerName); }
         }
 
@@ -718,6 +745,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { cts.Dispose(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} CTS dispose failed during cleanup", _providerName); }
         }
 
@@ -725,6 +753,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { ws.Dispose(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} WebSocket dispose failed during cleanup", _providerName); }
         }
     }
@@ -733,11 +762,13 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     {
         try
         { _webSocket?.Dispose(); }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex) { _log.Debug(ex, "{Provider} WebSocket dispose failed during connection cleanup", _providerName); }
         _webSocket = null;
 
         try
         { _connectionCts?.Dispose(); }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex) { _log.Debug(ex, "{Provider} CTS dispose failed during connection cleanup", _providerName); }
         _connectionCts = null;
     }
