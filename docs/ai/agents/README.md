@@ -80,10 +80,15 @@ Primary inputs:
 The intended routing flow is:
 
 ```text
-Repo Navigation -> Specialist Agent/Skill -> Implementation -> Review -> Testing/Assurance
+Repo Navigation -> [Single-domain task]    -> Specialist Agent/Skill -> Implementation -> Review -> Testing/Assurance
+                -> [Multi-domain / gated]  -> CoS Runtime (ADK)      -> Specialist Agent/Skill -> Approval Gate -> Trace/Evidence
 ```
 
-Use repo navigation first whenever the main problem is “where should I start?” rather than “how do I implement this detail?”
+Use repo navigation first whenever the main problem is "where should I start?" rather than "how do I implement this detail?"
+
+Choose the CoS runtime path when the task crosses multiple subsystems, requires an approval gate
+or operator sign-off, or needs a structured briefing with trace/evidence retention. See
+`tools/chief-of-staff-runtime/runtime.py` and `docs/development/chief-of-staff-runtime.md`.
 
 ---
 

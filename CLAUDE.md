@@ -89,6 +89,25 @@ make test
 Keep Claude-specific files focused on host mechanics and discovery. Shared policy belongs in
 `docs/ai/assistant-workflow-contract.md`; broad routing belongs in generated navigation docs.
 
+## Orchestration and Multi-Agent Dispatch
+
+The Chief of Staff (CoS) runtime (`tools/chief-of-staff-runtime/runtime.py`) is the repo's
+out-of-process ADK orchestration layer for multi-domain, approval-gated, or evidence-synthesis
+tasks. Route work through it when any of the following apply:
+
+- The request crosses multiple subsystems and needs evidence from more than one source.
+- The request requires an approval gate or operator sign-off before an action can proceed.
+- The request needs a structured briefing with trace/evidence retention (e.g. readiness reviews,
+  reconciliation summaries, report-pack approvals).
+
+Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
+multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime.
+
+Key resources:
+- `tools/chief-of-staff-runtime/runtime.py` — ADK node pipeline and integration boundary.
+- `docs/development/chief-of-staff-runtime.md` — API routes, config reference, and integration details.
+- `.codex/skills/cos-runtime-development/SKILL.md` — Codex workflow for extending the CoS runtime.
+
 ## Skills
 
 Use the skill that best matches the task and follow that skill's `SKILL.md` workflow. Current
