@@ -45,6 +45,11 @@ Every assistant and automation should use the same high-level flow:
    and resources before broad recursive search.
 3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
+   If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
+   needs a structured briefing with trace/evidence retention, route through the Chief of Staff
+   runtime (`tools/chief-of-staff-runtime/runtime.py`) instead of a single specialist surface.
+   See `docs/development/chief-of-staff-runtime.md` for the integration boundary and
+   `.codex/skills/cos-runtime-development/SKILL.md` for the Codex extension workflow.
 4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
