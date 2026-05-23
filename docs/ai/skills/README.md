@@ -53,6 +53,7 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `performance-resource-review` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `safe-refactoring` | Refactor desktop code incrementally without behavior drift |
 | `desktop-test-generation` | Generate focused WPF view-model, command, service, and binding tests |
+| `cos-runtime-development` | Build and extend the Chief of Staff ADK node pipeline scaffold |
 
 Shared grounding files:
 
@@ -112,4 +113,4 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 
 ---
 
-_Last Updated: 2026-05-19_
+_Last Updated: 2026-05-23_
