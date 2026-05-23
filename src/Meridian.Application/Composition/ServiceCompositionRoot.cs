@@ -305,25 +305,6 @@ public sealed record CompositionOptions
     };
 
     /// <summary>
-    /// Options for the MCP server host. Enables provider discovery and backfill services
-    /// without the streaming pipeline or collector, since the MCP server is query-oriented.
-    /// </summary>
-    public static CompositionOptions McpServer => new()
-    {
-        EnableSymbolManagement = false,
-        EnableBackfillServices = true,
-        EnableEtlServices = true,
-        EnableMaintenanceServices = false,
-        EnableDiagnosticServices = false,
-        EnableCredentialServices = true,
-        EnableProviderServices = true,
-        EnablePipelineServices = false,
-        EnableCollectorServices = false,
-        EnableHttpClientFactory = true,
-        EnableCanonicalizationServices = false
-    };
-
-    /// <summary>
     /// Path to the configuration file. If null, ConfigStore will use default resolution.
     /// </summary>
     public string? ConfigPath { get; init; }
