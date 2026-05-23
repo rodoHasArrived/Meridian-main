@@ -270,8 +270,6 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationOperatorInbox")
         .Produces<OperatorInboxDto>(200);
 
-        MapChiefOfStaffEndpoints(group, jsonOptions);
-
         group.MapGet("/data-operations", async (HttpContext context) =>
         {
             return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);

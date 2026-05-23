@@ -21,7 +21,6 @@ The current repository evidence supports these AI surfaces:
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
-| CoS runtime ADK scaffold | `tools/chief-of-staff-runtime/runtime.py`, `tools/chief-of-staff-runtime/README.md`, `docs/development/chief-of-staff-runtime.md`, `.codex/skills/cos-runtime-development/SKILL.md` | Out-of-process Chief of Staff orchestration runtime; ADK node pipeline implemented by Codex via the `cos-runtime-development` skill |
 | Workflow guidance | `.github/workflows/README.md`, `docs/development/github-actions-summary.md`, `docs/development/github-actions-testing.md` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, and manual assistant sessions |
 | Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
@@ -46,10 +45,8 @@ Every assistant and automation should use the same high-level flow:
 3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
    If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
-   needs a structured briefing with trace/evidence retention, route through the Chief of Staff
-   runtime (`tools/chief-of-staff-runtime/runtime.py`) instead of a single specialist surface.
-   See `docs/development/chief-of-staff-runtime.md` for the integration boundary and
-   `.codex/skills/cos-runtime-development/SKILL.md` for the Codex extension workflow.
+   needs a structured briefing with trace/evidence retention, use the repository docs, skills,
+   prompts, and scripts that currently own that workflow instead of inventing a new surface.
 4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
@@ -127,7 +124,6 @@ When editing `src/**`, assistants must:
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
-| CoS runtime ADK scaffold | `tools/chief-of-staff-runtime/runtime.py`, `docs/development/chief-of-staff-runtime.md` | `.codex/skills/cos-runtime-development/SKILL.md`, `docs/ai/codex/README.md` |
 | AI prompt generation and evaluation | `build/scripts/docs/generate-prompts.py`, skill `evals/` folders, `.codex/skills/*/scripts/run_evals.py` | CI-derived prompt files, local eval reports, and archived workflow notes |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
 | Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
@@ -214,4 +210,3 @@ Path-specific mirrors that must stay byte-identical to the canonical policy:
 - `docs/ai/claude/contract-policy.mirror.json`
 
 CI runs `build/scripts/docs/check-ai-contract-drift.py` and fails if any mirror drifts from the canonical policy file.
-
