@@ -24,6 +24,7 @@ import type {
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
+  FeatureCapabilitySettingsResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -846,6 +847,30 @@ export interface SettingsHeaderChip {
   value: string;
 }
 
+export interface SettingsRuntimeCapabilityToggle {
+  capabilityKey: string;
+  displayName: string;
+  description: string;
+  isEnabled: boolean;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  defaultLabel: string;
+  overrideLabel: string;
+  canToggle: boolean;
+  disabledReason: string | null;
+  ariaLabel: string;
+}
+
+export interface SettingsRuntimeCapabilitySection {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  summary: string;
+  listLabel: string;
+  toggles: SettingsRuntimeCapabilityToggle[];
+}
+
 export interface SettingsScreenViewModel {
   headerChips: SettingsHeaderChip[];
   sessionTitle: string;
@@ -871,6 +896,7 @@ export interface SettingsScreenViewModel {
   backendCapabilityListLabel: string;
   backendCapabilityStatusLabel: string;
   backendCapabilityStatusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  runtimeCapabilitySection: SettingsRuntimeCapabilitySection;
 }
 
 export interface SettingsScreenPayload {
@@ -887,6 +913,7 @@ export interface SettingsScreenPayload {
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  featureCapabilities?: FeatureCapabilitySettingsResponse | null;
   providerRoutingRefreshing?: boolean;
   loading?: boolean;
   error?: string | null;
@@ -2178,6 +2205,7 @@ export function buildSettingsScreenViewModel(
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
+  const runtimeCapabilitySection = buildRuntimeCapabilitySection(payload.featureCapabilities ?? null);
   const providerConnectionCenter = buildProviderConnectionCenter(
     payload.providerConnections ?? null,
     payload.providerRoutingConnections ?? null,
@@ -2205,6 +2233,7 @@ export function buildSettingsScreenViewModel(
     recentEventsSection: buildRecentEventsSection(overview),
     providerConnectionCenter,
     alpacaConnectionPanel,
+    runtimeCapabilitySection,
     ...diagnosticSection,
     ...backendCapabilitySection
   };
@@ -2253,6 +2282,50 @@ function buildSettingsHeaderChips(
     { label: "Diagnostics", value: diagnosticStatusLabel },
     { label: "Heartbeat", value: overview ? formatSettingsUtcMinute(overview.lastHeartbeatUtc) : "—" }
   ];
+}
+
+function buildRuntimeCapabilitySection(
+  capabilities: FeatureCapabilitySettingsResponse | null
+): SettingsRuntimeCapabilitySection {
+  if (!capabilities) {
+    return {
+      title: "Runtime feature capabilities",
+      description: "Toggle module-declared workstation feature gates without editing configuration by hand.",
+      statusLabel: "Checking",
+      statusVariant: "warning",
+      summary: "Capability settings are still loading from the local host.",
+      listLabel: "Runtime feature capability toggles",
+      toggles: []
+    };
+  }
+
+  const toggles = capabilities.capabilities.map((capability): SettingsRuntimeCapabilityToggle => ({
+    capabilityKey: capability.capabilityKey,
+    displayName: capability.displayName,
+    description: capability.description,
+    isEnabled: capability.isEnabled,
+    statusLabel: capability.isEnabled ? "Enabled" : "Disabled",
+    statusVariant: capability.isEnabled ? "success" : "warning",
+    defaultLabel: capability.defaultEnabled ? "Default on" : "Default off",
+    overrideLabel: capability.isOverridden ? "Configured override" : "Using default",
+    canToggle: capability.canToggle,
+    disabledReason: capability.disabledReason,
+    ariaLabel: `${capability.isEnabled ? "Disable" : "Enable"} ${capability.displayName}`
+  }));
+  const disabled = toggles.filter((toggle) => !toggle.isEnabled).length;
+  const permanent = toggles.filter((toggle) => !toggle.canToggle).length;
+
+  return {
+    title: "Runtime feature capabilities",
+    description: "Toggle module-declared workstation feature gates without editing configuration by hand.",
+    statusLabel: disabled > 0 ? `${disabled} disabled` : "All enabled",
+    statusVariant: disabled > 0 ? "warning" : "success",
+    summary: disabled > 0
+      ? `${disabled} optional capability ${disabled === 1 ? "is" : "are"} disabled; ${permanent} required ${permanent === 1 ? "capability stays" : "capabilities stay"} locked on.`
+      : `${toggles.length} declared capability ${toggles.length === 1 ? "is" : "are"} enabled; ${permanent} required ${permanent === 1 ? "capability is" : "capabilities are"} locked on.`,
+    listLabel: "Runtime feature capability toggles",
+    toggles
+  };
 }
 
 function buildBackendCapabilitySection(payload: SettingsScreenPayload): Pick<

@@ -1,3 +1,4 @@
+using Meridian.Application.Config;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
@@ -34,10 +35,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;
 
     public IReadOnlyList<FeatureCapabilityDescriptor> DeclareCapabilities() =>
-    [
-        new("desktop.trading.workspace", "Trading workspace", "Trading shell, market feed, order book, position blotter, and run-risk screens.", true, true),
-        new("desktop.trading.hours", "Trading hours", "Market-session briefing and schedule coverage review in the Trading workspace.", true, false)
-    ];
+        FeatureCapabilityCatalog.Trading;
 
     public WorkspaceCapabilityDescriptor DescribeWorkspace()
         => ShellNavigationCatalog.BuildCapability(

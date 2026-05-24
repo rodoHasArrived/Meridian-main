@@ -526,6 +526,8 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
+    public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string WorkstationChiefOfStaffSessions = "/api/workstation/chief-of-staff/sessions";

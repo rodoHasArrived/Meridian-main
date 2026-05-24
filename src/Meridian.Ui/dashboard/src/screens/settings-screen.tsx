@@ -20,6 +20,7 @@ import {
 import type {
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
+  FeatureCapabilitySettingsResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -47,7 +48,9 @@ interface SettingsScreenProps {
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  featureCapabilities?: FeatureCapabilitySettingsResponse | null;
   providerRoutingRefreshing?: boolean;
+  onFeatureCapabilityToggle?: (capabilityKey: string, isEnabled: boolean) => Promise<void> | void;
   onRefresh?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
   loading?: boolean;
@@ -195,7 +198,9 @@ export function SettingsScreen({
   providerRoutingConnections = null,
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
+  featureCapabilities = null,
   providerRoutingRefreshing = false,
+  onFeatureCapabilityToggle,
   onRefresh,
   onProviderRoutingRefresh,
   loading = false,
@@ -216,6 +221,7 @@ export function SettingsScreen({
     providerRoutingConnections,
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
+    featureCapabilities,
     providerRoutingRefreshing,
     loading,
     error,
@@ -863,6 +869,74 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      <Card id="runtime-feature-capabilities" className="panel-surface scroll-mt-6">
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="eyebrow-label">Runtime controls</div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MonitorCheck className="h-4 w-4 text-primary" />
+                {vm.runtimeCapabilitySection.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
+            </div>
+            <Badge variant={vm.runtimeCapabilitySection.statusVariant} dot={vm.runtimeCapabilitySection.statusVariant === "success"}>
+              {vm.runtimeCapabilitySection.statusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {vm.runtimeCapabilitySection.toggles.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{vm.runtimeCapabilitySection.description}</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2" role="list" aria-label={vm.runtimeCapabilitySection.listLabel}>
+              {vm.runtimeCapabilitySection.toggles.map((capability) => (
+                <div
+                  key={capability.capabilityKey}
+                  role="listitem"
+                  className={cn("rounded-lg border px-4 py-4", diagnosticToneClass[capability.statusVariant === "success" ? "success" : "warning"])}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-mono text-[10px] text-muted-foreground">{capability.capabilityKey}</div>
+                      <h3 className="mt-2 text-sm font-semibold text-foreground">{capability.displayName}</h3>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
+                    </div>
+                    <Badge variant={capability.statusVariant} className="shrink-0">
+                      {capability.statusLabel}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <SettingsChip label="Default" value={capability.defaultLabel} />
+                    <SettingsChip label="Config" value={capability.overrideLabel} />
+                  </div>
+                  <label className={cn("mt-4 flex items-start gap-3 text-sm", !capability.canToggle && "opacity-70")}>
+                    <input
+                      type="checkbox"
+                      checked={capability.isEnabled}
+                      disabled={!capability.canToggle || !onFeatureCapabilityToggle}
+                      onChange={(event) => {
+                        void onFeatureCapabilityToggle?.(capability.capabilityKey, event.target.checked);
+                      }}
+                      aria-label={capability.ariaLabel}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                    />
+                    <span className="min-w-0">
+                      <span className="block font-medium text-foreground">
+                        {capability.canToggle ? "Allow this browser workstation capability" : "Required capability"}
+                      </span>
+                      {capability.disabledReason ? (
+                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{capability.disabledReason}</span>
+                      ) : null}
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card id="backend-capability-coverage" className="panel-surface scroll-mt-6">
         <CardHeader>

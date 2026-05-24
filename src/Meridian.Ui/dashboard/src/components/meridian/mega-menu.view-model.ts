@@ -102,13 +102,13 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
   {
     key: "strategy",
     label: "Strategy",
-    eyebrow: "Research & backtesting",
+    eyebrow: "Backtesting & validation",
     links: [
       { label: "Backtest runs", route: WORKSTATION_ROUTE_CATALOG.strategy, description: "Strategy backtest results" },
       { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner, description: "Visual multi-leg strategy designer with payoff and participation visualizations" },
       { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall, description: "Run covered-call backtests with chain preview and payoff evidence" },
       { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions, description: "Paper-to-live promotions" },
-      { label: "Research", route: WORKSTATION_ROUTE_CATALOG.strategyResearch, description: "Signal research workspace" },
+      { label: "Research Lab", route: WORKSTATION_ROUTE_CATALOG.strategyResearch, description: "Signal research tools" },
       { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab, description: "Run C# scripts with plots and metrics" }
     ]
   },

@@ -1,3 +1,4 @@
+using Meridian.Application.Config;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Features.Settings.Shell;
@@ -45,11 +46,7 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;
 
     public IReadOnlyList<FeatureCapabilityDescriptor> DeclareCapabilities() =>
-    [
-        new("desktop.settings.workspace", "Settings workspace", "Preferences, credentials, diagnostics, service management, notifications, and support surfaces.", true, true),
-        new("desktop.settings.capabilities", "Capability toggles", "Generated capability-control tab for module-declared desktop feature switches.", true, true),
-        new("desktop.settings.workflow-library", "Workflow library", "Reusable workflow catalog and action launch surface in Settings.", true, false)
-    ];
+        FeatureCapabilityCatalog.Settings;
 
     public WorkspaceCapabilityDescriptor DescribeWorkspace()
         => ShellNavigationCatalog.BuildCapability(

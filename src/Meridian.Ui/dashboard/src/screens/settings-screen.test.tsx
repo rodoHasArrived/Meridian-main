@@ -590,6 +590,54 @@ describe("SettingsScreen", () => {
     );
   });
 
+  it("renders runtime capability toggles and sends toggle requests", async () => {
+    const onFeatureCapabilityToggle = vi.fn();
+    const user = userEvent.setup();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        featureCapabilities={{
+          capabilities: [
+            {
+              capabilityKey: "desktop.data.security-master",
+              displayName: "Security master",
+              description: "Reference-data review.",
+              isEnabled: false,
+              defaultEnabled: true,
+              isPermanent: false,
+              isOverridden: true,
+              canToggle: true,
+              disabledReason: null
+            },
+            {
+              capabilityKey: "desktop.settings.workspace",
+              displayName: "Settings workspace",
+              description: "Preferences and diagnostics.",
+              isEnabled: true,
+              defaultEnabled: true,
+              isPermanent: true,
+              isOverridden: false,
+              canToggle: false,
+              disabledReason: "Required for workstation navigation."
+            }
+          ]
+        }}
+        onFeatureCapabilityToggle={onFeatureCapabilityToggle}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Runtime feature capabilities" })).toBeInTheDocument();
+    const securityMasterToggle = screen.getByRole("checkbox", { name: "Enable Security master" });
+    expect(securityMasterToggle).not.toBeChecked();
+
+    await user.click(securityMasterToggle);
+
+    expect(onFeatureCapabilityToggle).toHaveBeenCalledWith("desktop.data.security-master", true);
+    expect(screen.getByRole("checkbox", { name: "Disable Settings workspace" })).toBeDisabled();
+  });
+
   it("renders diagnostic endpoint failures as accessible endpoint cards", () => {
     renderWithRouter(
       <SettingsScreen

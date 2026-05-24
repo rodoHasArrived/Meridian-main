@@ -94,7 +94,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             {
                 ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
                 {
-                    WorkspaceTitle = "Governance Workspace",
+                    WorkspaceTitle = "Accounting Workspace",
                     WorkspaceSubtitle = "Organization-aware review shell for operations, accounting, reconciliation, reporting, and audit posture.",
                     PrimaryScopeLabel = "Context",
                     PrimaryScopeValue = operatingContext?.DisplayName ?? "Awaiting fund-linked scope",
@@ -147,7 +147,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Governance Workspace",
+                    WorkspaceTitle = "Accounting Workspace",
                 WorkspaceSubtitle = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.",
                 PrimaryScopeLabel = "Governance Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",

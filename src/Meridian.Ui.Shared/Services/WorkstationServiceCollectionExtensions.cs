@@ -66,6 +66,7 @@ public static class WorkstationServiceCollectionExtensions
             new FileChiefOfStaffTraceStore(
                 ResolveConfigDataRoot(sp),
                 sp.GetRequiredService<ILogger<FileChiefOfStaffTraceStore>>()));
+        services.TryAddSingleton<FeatureCapabilitySettingsService>();
         services.TryAddSingleton<IChiefOfStaffSessionService, ChiefOfStaffSessionService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 

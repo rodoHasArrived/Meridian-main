@@ -1,3 +1,5 @@
+using Meridian.Application.Config;
+
 namespace Meridian.Wpf.Features;
 
 public interface IFeatureCapabilityGate

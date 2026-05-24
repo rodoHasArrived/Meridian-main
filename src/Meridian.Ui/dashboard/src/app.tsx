@@ -103,6 +103,7 @@ function AppShell() {
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
+    featureCapabilities,
     workflowError,
     usingDevelopmentFixtures,
     loading,
@@ -110,6 +111,7 @@ function AppShell() {
     workspaceErrors,
     refresh,
     refreshProviderRouting,
+    updateFeatureCapability,
     upsertWorkflowPreset
   } = useWorkstationData();
   const handleWorkflowPresetUsed = (presetId: string) =>
@@ -392,6 +394,8 @@ function AppShell() {
                       providerRoutingBindings={providerRoutingBindings}
                       providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
                       providerRoutingRefreshing={providerRoutingRefreshing}
+                      featureCapabilities={featureCapabilities}
+                      onFeatureCapabilityToggle={updateFeatureCapability}
                       onRefresh={refresh}
                       onProviderRoutingRefresh={refreshProviderRouting}
                       loading={loading}
