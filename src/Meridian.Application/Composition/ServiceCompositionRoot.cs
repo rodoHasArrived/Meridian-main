@@ -124,6 +124,8 @@ public static class ServiceCompositionRoot
 
         TryRegisterCppTraderIntegration(services, options.ConfigPath);
 
+        ProductionServiceRegistrationPolicy.Validate(services);
+
         // Backtesting services are registered by the host project (Meridian.Backtesting references
         // Meridian.Application, so registration here would create a circular dependency).
 

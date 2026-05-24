@@ -3,10 +3,11 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLendingInterop;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.DirectLending;
 
-public sealed partial class InMemoryDirectLendingService : IDirectLendingService
+public sealed partial class InMemoryDirectLendingService : INonProductionOnlyService, IDirectLendingService
 {
     private static readonly JsonSerializerOptions HashJsonOptions = new()
     {
