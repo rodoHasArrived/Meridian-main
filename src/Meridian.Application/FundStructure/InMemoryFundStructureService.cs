@@ -4,6 +4,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.CashFlowInterop;
 using Meridian.Storage.Archival;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.FundStructure;
 
@@ -11,7 +12,7 @@ namespace Meridian.Application.FundStructure;
 /// Thread-safe governance structure service backed by an in-memory working set
 /// with optional durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundStructureService : IFundStructureService
+public sealed class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
 {
     private static readonly StringComparer AssignmentComparer = StringComparer.OrdinalIgnoreCase;
     private const string DefaultCashFlowCurrency = "USD";
@@ -29,7 +30,8 @@ public sealed class InMemoryFundStructureService : IFundStructureService
     private readonly IFundAccountService _fundAccountService;
     private readonly IGovernanceSharedDataAccessService? _sharedDataAccessService;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
-    private readonly string? _persistencePath;
+    private readonly IFundStructureStateStore _stateStore;
+    private readonly IFundStructurePolicyService _policyService;
     private readonly SemaphoreSlim _persistGate = new(1, 1);
     private readonly Dictionary<Guid, OrganizationSummaryDto> _organizations = new();
     private readonly Dictionary<Guid, BusinessSummaryDto> _businesses = new();
@@ -72,11 +74,14 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _sharedDataAccessService = sharedDataAccessService;
         _securityMasterQueryService = securityMasterQueryService;
-        _persistencePath = string.IsNullOrWhiteSpace(persistencePath) ? null : persistencePath;
+        _stateStore = string.IsNullOrWhiteSpace(persistencePath)
+            ? new InMemoryFundStructureStateStore()
+            : new JsonFileFundStructureStateStore(persistencePath);
+        _policyService = new FundStructurePolicyService();
         LoadState();
     }
 
-    private sealed record PersistedState(
+    internal sealed record PersistedState(
         int Version,
         List<OrganizationSummaryDto> Organizations,
         List<BusinessSummaryDto> Businesses,
@@ -380,7 +385,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
-        EnsureSingleOperatingParent(request);
+        _policyService.EnsureSingleOperatingParent(request);
 
         var summary = new InvestmentPortfolioSummaryDto(
             request.InvestmentPortfolioId,
@@ -1090,7 +1095,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        ValidateCashFlowQuery(query);
+        _policyService.ValidateCashFlowQuery(query);
 
         var snapshot = CreateSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
@@ -2886,14 +2891,14 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private void LoadState()
     {
-        if (_persistencePath is null || !File.Exists(_persistencePath))
-        {
-            return;
-        }
-
         try
         {
-            var json = File.ReadAllText(_persistencePath);
+            var json = _stateStore.Load();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return;
+            }
+
             var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
             if (state is null)
             {

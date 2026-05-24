@@ -278,6 +278,13 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        if (metadata.CommandId is Guid commandId &&
+            await CommandAlreadyAppliedAsync(connection, transaction, loanId, commandId, ct).ConfigureAwait(false))
+        {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
         var currentVersion = await LoadCurrentVersionAsync(connection, transaction, loanId, ct).ConfigureAwait(false);
         if (currentVersion != expectedVersion)
         {
@@ -295,6 +302,30 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await MaybeInsertSnapshotAsync(connection, transaction, loanId, nextVersion, contract, servicing, forceSnapshot: false, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> CommandAlreadyAppliedAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid loanId,
+        Guid commandId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select 1
+            from {Qualified("loan_event")}
+            where loan_id = @loan_id
+              and command_id = @command_id
+            limit 1;
+            """;
+        command.Parameters.AddWithValue("loan_id", loanId);
+        command.Parameters.AddWithValue("command_id", commandId);
+
+        var existing = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return existing is not null;
     }
 
     private async Task AppendLedgerJournalEntriesAsync(

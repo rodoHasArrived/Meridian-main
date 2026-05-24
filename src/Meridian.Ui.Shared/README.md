@@ -22,7 +22,7 @@ Shared UI read models, compatibility shims, and cross-surface data structures.
 
 ## Operational Notes
 Preserve cross-surface compatibility when evolving shared read models.
-Chief of Staff orchestration endpoints and services are additive and must keep ledger/reconciliation source-of-truth services authoritative.
+Keep ledger/reconciliation source-of-truth services authoritative.
 Workstation endpoint registration is split by domain through `WorkstationEndpoints.*.cs` partial files.
 Keep the root `WorkstationEndpoints.cs` file as the coordinator, route new domain-specific endpoint edits to the matching partial file, and avoid concurrent branches that both modify the root coordinator or the shared `WorkstationEndpointsTests.cs` test body.
 For operations-continuity and reconciliation endpoint changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` / `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.

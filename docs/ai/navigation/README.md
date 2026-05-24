@@ -61,7 +61,7 @@ If MCP is available, prefer these navigation resources/tools:
 | Codex | [`.codex/skills/meridian-repo-navigation/SKILL.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/meridian-repo-navigation/SKILL.md) |
 | Copilot | [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md) |
 | Claude | [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md) |
-| MCP clients | `RepoNavigationResources` and `RepoNavigationTools` in `src/Meridian.McpServer/` |
+| MCP clients | `RepoNavigationResources` and `RepoNavigationTools` in `src/Meridian.Mcp/` |
 
 ---
 

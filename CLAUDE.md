@@ -19,7 +19,7 @@ Current local project path: `D:\Meridian-main`.
 
 ## Core Working Rules
 
-1. Make the smallest safe change that satisfies the request.
+1. Make the safest change that satisfies the request.
 2. Preserve behavior unless the user explicitly asks for behavior changes.
 3. Run targeted validation for touched areas; avoid unrelated full-suite runs by default.
 4. Keep docs and code aligned when behavior, workflows, contracts, skills, or agent guidance change.
@@ -88,6 +88,38 @@ make test
 
 Keep Claude-specific files focused on host mechanics and discovery. Shared policy belongs in
 `docs/ai/assistant-workflow-contract.md`; broad routing belongs in generated navigation docs.
+
+## Orchestration and Multi-Agent Dispatch
+
+The Chief of Staff (CoS) runtime (`tools/chief-of-staff-runtime/runtime.py`) is the repo's
+out-of-process ADK orchestration layer for multi-domain, approval-gated, or evidence-synthesis
+tasks. Route work through it when any of the following apply:
+
+- The request crosses multiple subsystems and needs evidence from more than one source.
+- The request requires an approval gate or operator sign-off before an action can proceed.
+- The request needs a structured briefing with trace/evidence retention (e.g. readiness reviews,
+  reconciliation summaries, report-pack approvals).
+
+Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
+multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime.
+
+### Agent Design Patterns
+
+When composing multiple agents, choose the right topology for the work:
+
+- **Parallel** — subtasks are independent with no output dependency between them. Use when
+  investigating separate subsystems concurrently, or running review and security scan
+  simultaneously.
+- **Sequential** — each step's output feeds the next. Use for the default single-domain lane:
+  Repo Navigation → Specialist → Implementation → Review → Assurance.
+- **Hierarchical** — a coordinator delegates to specialist agents, aggregates evidence, and
+  enforces approval gates before proceeding. Use the CoS runtime for this pattern whenever a
+  task is multi-domain, gated, or requires structured evidence synthesis.
+
+Key resources:
+- `tools/chief-of-staff-runtime/runtime.py` — ADK node pipeline and integration boundary.
+- `docs/development/chief-of-staff-runtime.md` — API routes, config reference, and integration details.
+- `.codex/skills/cos-runtime-development/SKILL.md` — Codex workflow for extending the CoS runtime.
 
 ## Skills
 

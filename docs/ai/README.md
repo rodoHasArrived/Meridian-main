@@ -145,7 +145,7 @@ tool-specific rule file to carry shared Meridian policy.
 
 ---
 
-_Last Updated: 2026-05-20_
+_Last Updated: 2026-05-23_
 
 ## Drift failure remediation
 
