@@ -26,7 +26,7 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _capitalFinancingText = "-";
     private string _capitalControlsDetailText = "Select an operating context to unlock capital, financing, and reconciliation posture.";
     private string _tradingActiveRunText = "No active trading run";
-    private string _tradingActiveRunMetaText = "Use Research to promote a run, or open a live/paper panel below.";
+    private string _tradingActiveRunMetaText = "Use Strategy to promote a run, or open a live/paper panel below.";
     private string _watchlistStatusText = "Watchlists and active strategies populate once paper or live runs are started.";
     private string _marketCoreText = "Live data, order book, portfolio, and accounting consequences are ready to dock below.";
     private string _riskRailText = "Risk, reconciliation, and audit surfaces become specific once an active run is selected.";

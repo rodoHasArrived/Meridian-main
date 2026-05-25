@@ -58,6 +58,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+        services.TryAddSingleton<FeatureCapabilitySettingsService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();

@@ -41,15 +41,60 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 
 namespace Meridian.Tests.Ui;
 
-public sealed class WorkstationEndpointsTests
+public sealed partial class WorkstationEndpointsTests
 {
-    // Must match the JsonSerializerOptions used in CreateAppAsync so that enum fields
-    // serialized as strings by the server (via JsonStringEnumConverter) can be round-tripped.
-    private static readonly JsonSerializerOptions ServerJsonOptions = new()
+    [Fact]
+    public async Task MapWorkstationEndpoints_FeatureCapabilities_ShouldExposeSharedDescriptorOverridesAndPersistToggle()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter() }
-    };
+        var configPath = Path.Combine(Path.GetTempPath(), "meridian-feature-capability-api-" + Guid.NewGuid().ToString("N"), "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(configPath, """
+            {
+              "FeatureCapabilities": {
+                "Overrides": {
+                  "desktop.data.security-master": false
+                }
+              }
+            }
+            """);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<FeatureCapabilitySettingsService>();
+        });
+        var client = app.GetTestClient();
+
+        var initial = await client.GetFromJsonAsync<FeatureCapabilitySettingsResponse>(
+            "/api/workstation/settings/feature-capabilities",
+            ServerJsonOptions);
+
+        initial.Should().NotBeNull();
+        initial!.Capabilities.Should().Contain(item => item.CapabilityKey == "desktop.settings.capabilities" && item.IsPermanent);
+        initial.Capabilities.Should().Contain(item =>
+            item.CapabilityKey == "desktop.data.security-master" &&
+            item.IsEnabled == false &&
+            item.IsOverridden);
+
+        var response = await client.PutAsJsonAsync(
+            "/api/workstation/settings/feature-capabilities/desktop.data.security-master",
+            new FeatureCapabilityToggleRequest(true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<FeatureCapabilitySettingsResponse>(ServerJsonOptions);
+        updated.Should().NotBeNull();
+        updated!.Capabilities.Should().Contain(item =>
+            item.CapabilityKey == "desktop.data.security-master" &&
+            item.IsEnabled &&
+            item.IsOverridden);
+
+        var persisted = Meridian.Application.UI.ConfigStore.LoadConfig(configPath);
+        persisted.FeatureCapabilities.Should().NotBeNull();
+        persisted.FeatureCapabilities!.Overrides.Should()
+            .ContainKey("desktop.data.security-master")
+            .WhoseValue.Should().BeTrue();
+    }
 
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
@@ -5263,170 +5308,6 @@ public sealed class WorkstationEndpointsTests
         public decimal RealisedPnl { get; }
         public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions { get; }
     }
-
-    private static async Task<WebApplication> CreateAppAsync(
-        Action<IServiceCollection>? configureServices = null,
-        bool mapExecutionApi = false,
-        bool mapPromotionApi = false,
-        UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster)
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        configureServices?.Invoke(builder.Services);
-        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
-            await next();
-        });
-
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        if (mapExecutionApi)
-        {
-            app.MapExecutionEndpoints(jsonOptions);
-        }
-
-        if (mapPromotionApi)
-        {
-            app.MapPromotionEndpoints(jsonOptions);
-        }
-
-        app.MapWorkstationEndpoints(jsonOptions);
-
-        await app.StartAsync();
-        return app;
-    }
-
-    private static void RegisterRunReadServices(IServiceCollection services)
-    {
-        var store = new StrategyRunStore();
-        services.AddSingleton<IStrategyRepository>(store);
-        services.AddSingleton<PortfolioReadService>();
-        services.AddSingleton<LedgerReadService>();
-        services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        services.AddSingleton<ReconciliationProjectionService>();
-        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        services.AddSingleton<CashFlowProjectionService>();
-        services.AddSingleton<StrategyRunContinuityService>();
-        services.AddSingleton<StrategyRunReviewPacketService>();
-        services.AddSingleton<WorkstationWorkflowSummaryService>();
-    }
-
-    private static void RegisterOperationsContinuityServices(IServiceCollection services)
-    {
-        services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
-        services.AddSingleton<IOperationsContinuityRepository, InMemoryOperationsContinuityRepository>();
-        services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
-        services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
-        services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
-        services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
-            new OperationsContinuityReconciliationBridge(
-                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
-    }
-
-    private static void RegisterConfigStores(IServiceCollection services, string configPath)
-    {
-        services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
-        services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-    }
-
-    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
-        new(
-            JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
-            PeriodId: Guid.NewGuid(),
-            Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
-            Description: "Operations continuity endpoint posting",
-            Lines:
-            [
-                new OperationsLedgerJournalLineDto(
-                    EntryId: null,
-                    AccountName: "Cash",
-                    AccountType: nameof(LedgerAccountType.Asset),
-                    Debit: 100m,
-                    Credit: 0m),
-                new OperationsLedgerJournalLineDto(
-                    EntryId: null,
-                    AccountName: "Interest income",
-                    AccountType: nameof(LedgerAccountType.Revenue),
-                    Debit: 0m,
-                    Credit: 100m)
-            ],
-            AccountingBasis: AccountingBasisKindDto.Primary,
-            AccountingPolicyId: "legacy-v1",
-            AccountingPolicyVersion: "legacy-v1",
-            PostingKind: LedgerPostingKindDto.Originating,
-            Metadata: new OperationsJournalEntryMetadataDto(ActivityType: "operations-continuity"));
-
-    private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
-    {
-        services.AddSingleton<BacktestToLivePromoter>();
-        services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
-            promotionRoot,
-            NullLogger<JsonlPromotionRecordStore>.Instance));
-        services.AddSingleton<PromotionService>(sp => new PromotionService(
-            sp.GetRequiredService<IStrategyRepository>(),
-            sp.GetRequiredService<BacktestToLivePromoter>(),
-            sp.GetRequiredService<IPromotionRecordStore>(),
-            NullLogger<PromotionService>.Instance));
-    }
-
-    private static BrokeragePortfolioSyncService CreateFailedBrokerageSyncService(string root)
-        => new(
-            new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
-            catalogs: [],
-            portfolioAdapters: [new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing.")],
-            activityAdapters: [new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing.")],
-            services: new ServiceCollection().BuildServiceProvider(),
-            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
-
-    private sealed class ThrowingPortfolioAdapter(string providerId, string message) : IBrokeragePortfolioSync
-    {
-        public string ProviderId { get; } = providerId;
-
-        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    private sealed class ThrowingActivityAdapter(string providerId, string message) : IBrokerageActivitySync
-    {
-        public string ProviderId { get; } = providerId;
-
-        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
-            string externalAccountId,
-            DateTimeOffset? since = null,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    private static string NormalizePathForAssertion(string path) =>
-        path.Replace(Path.DirectorySeparatorChar, '/');
 
     private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
     {

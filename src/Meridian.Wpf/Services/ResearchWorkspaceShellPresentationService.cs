@@ -136,7 +136,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
             CommandGroup = BuildCommandGroup(canPromoteActiveRun: false, canOpenTradingCockpit: false),
             DeskHero = new ResearchDeskHeroState(
                 FocusLabel: "Desk briefing degraded",
-                Summary: "Research workspace refresh is degraded.",
+                Summary: "Strategy workspace refresh is degraded.",
                 Detail: "Run, briefing, workflow, or shell-context state may be stale until the shell refresh succeeds.",
                 BadgeText: "Attention",
                 BadgeTone: ResearchDeskHeroTone.Warning,
@@ -172,7 +172,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
                     RunId: activeRun.RunId,
                     ReviewNotes: "Promoted from research workspace shell.",
                     ApprovedBy: Environment.UserName,
-                    ApprovalReason: "Research workstation promotion",
+                    ApprovalReason: "Strategy workstation promotion",
                     ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)),
                 ct).ConfigureAwait(false);
 
@@ -384,7 +384,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
         var secondaryActionId = primaryActionId == "StrategyRuns" ? "RunMat" : "StrategyRuns";
 
         return new ResearchDeskHeroState(
-            FocusLabel: "Research cycle",
+            FocusLabel: "Strategy cycle",
             Summary: effectiveWorkflow.StatusLabel,
             Detail: effectiveWorkflow.StatusDetail,
             BadgeText: ParseHeroTone(effectiveWorkflow.StatusTone) switch
@@ -434,7 +434,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
         "Watchlist" => "Watchlist",
         "TradingShell" => "TradingShell",
         "PromoteToPaper" => "Promotion approval",
-        _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "Research" : fallbackTargetPageTag
+        _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "Strategy" : fallbackTargetPageTag
     };
 
     private async Task<WorkspaceWorkflowSummary?> GetResearchWorkflowSummaryAsync(CancellationToken ct)

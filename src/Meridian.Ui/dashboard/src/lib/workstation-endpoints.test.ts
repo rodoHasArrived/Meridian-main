@@ -71,6 +71,11 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationChiefOfStaffDecisionEndpoint,
+  workstationChiefOfStaffHealthEndpoint,
+  workstationChiefOfStaffSessionEndpoint,
+  workstationChiefOfStaffSessionsEndpoint,
+  workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityBreaksEndpoint,
   workstationOperationsContinuityDetailEndpoint,
@@ -117,6 +122,7 @@ describe("workstation API endpoint catalog", () => {
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
       operationsContinuity: "/api/workstation/operations/continuity",
+      chiefOfStaff: "/api/workstation/chief-of-staff",
       runHistory: "/api/workstation/runs/history",
       runTimeline: "/api/workstation/runs/timeline",
       runSweeps: "/api/workstation/runs/sweeps",
@@ -173,6 +179,28 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
     );
+  });
+
+  it("builds Chief of Staff workstation endpoint routes", () => {
+    expect(workstationChiefOfStaffSessionsEndpoint()).toBe("/api/workstation/chief-of-staff/sessions");
+    expect(workstationChiefOfStaffSessionsEndpoint({
+      workspace: "Reporting",
+      fundProfileId: "fund / 1",
+      status: "AwaitingOperatorDecision",
+      limit: 10
+    })).toBe(
+      "/api/workstation/chief-of-staff/sessions?workspace=Reporting&fundProfileId=fund+%2F+1&status=AwaitingOperatorDecision&limit=10"
+    );
+    expect(workstationChiefOfStaffSessionEndpoint("session / 1")).toBe(
+      "/api/workstation/chief-of-staff/sessions/session%20%2F%201"
+    );
+    expect(workstationChiefOfStaffDecisionEndpoint("session / 1")).toBe(
+      "/api/workstation/chief-of-staff/sessions/session%20%2F%201/decisions"
+    );
+    expect(workstationChiefOfStaffTraceExportEndpoint("session / 1")).toBe(
+      "/api/workstation/chief-of-staff/sessions/session%20%2F%201/export-trace"
+    );
+    expect(workstationChiefOfStaffHealthEndpoint()).toBe("/api/workstation/chief-of-staff/health");
   });
 
   it("builds run evidence endpoints and matching Settings templates", () => {

@@ -137,7 +137,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             loadingTitle: "Loading provider queue",
             loadingDescription: "Gathering provider catalog and health telemetry.",
             emptyTitle: isFixtureMode ? "Demo provider telemetry" : "No providers configured",
-            emptyDescription: isFixtureMode ? "Demo data mode is showing sample Data Operations workflow data without live provider connections." : "Configure at least one provider before routing collection and backfill queues.",
+            emptyDescription: isFixtureMode ? "Demo data mode is showing sample Data workflow data without live provider connections." : "Configure at least one provider before routing collection and backfill queues.",
             emptyPrimaryLabel: isFixtureMode ? "Provider Health" : "Switch Context",
             emptyPrimaryAction: isFixtureMode ? "ProviderHealth" : "SwitchContext",
             emptySecondaryLabel: isFixtureMode ? "Switch Context" : "Provider Health",
@@ -257,7 +257,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             ProviderQueueItems = providerQueueItems,
             BackfillQueueItems = backfillQueueItems,
             StorageQueueItems = storageQueueItems,
-            OperationsSummaryTitleText = "Data Operations",
+            OperationsSummaryTitleText = "Data",
             OperationsSummaryDetailText = operationsDetail,
             SummaryProvidersText = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : isFixtureMode ? "Demo data" : ProvidersUnavailableSummary,
             SummaryProvidersTone = providersTone,
@@ -303,7 +303,7 @@ public static class DataOperationsWorkspacePresentationBuilder
                 summaryText: providerQueueState.Title,
                 badgeText: "Demo",
                 badgeTone: WorkspaceTone.Info,
-                handoffTitleText: "Review the Data Operations flow with sample telemetry",
+                handoffTitleText: "Review the Data flow with sample telemetry",
                 handoffDetailText: providerQueueState.Description,
                 primaryActionId: providerQueueState.PrimaryActionId,
                 primaryActionLabel: providerQueueState.PrimaryActionLabel,
@@ -806,7 +806,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             [
                 new WorkspaceRecentItem { Title = "Provider health", Detail = "Inspect provider reachability and fallback order before starting new historical work.", Meta = "No recent operations", Tone = WorkspaceTone.Info, ActionId = "ProviderHealth", ActionLabel = "Provider Health" },
                 new WorkspaceRecentItem { Title = "Backfill queue", Detail = "Stage historical coverage or review resumable jobs from the shell.", Meta = "No recent operations", Tone = WorkspaceTone.Neutral, ActionId = "Backfill", ActionLabel = "Open Backfill" },
-                new WorkspaceRecentItem { Title = "Export delivery", Detail = "Create or inspect export jobs without leaving Data Operations.", Meta = "No recent operations", Tone = WorkspaceTone.Neutral, ActionId = "DataExport", ActionLabel = "Open Data Export" }
+                new WorkspaceRecentItem { Title = "Export delivery", Detail = "Create or inspect export jobs without leaving Data.", Meta = "No recent operations", Tone = WorkspaceTone.Neutral, ActionId = "DataExport", ActionLabel = "Open Data Export" }
             ];
     }
 
@@ -918,7 +918,7 @@ public sealed class DataOperationsWorkspacePresentation
     public IReadOnlyList<WorkspaceQueueItem> ProviderQueueItems { get; init; } = Array.Empty<WorkspaceQueueItem>();
     public IReadOnlyList<WorkspaceQueueItem> BackfillQueueItems { get; init; } = Array.Empty<WorkspaceQueueItem>();
     public IReadOnlyList<WorkspaceQueueItem> StorageQueueItems { get; init; } = Array.Empty<WorkspaceQueueItem>();
-    public string OperationsSummaryTitleText { get; init; } = "Data Operations";
+    public string OperationsSummaryTitleText { get; init; } = "Data";
     public string OperationsSummaryDetailText { get; init; } = string.Empty;
     public string SummaryProvidersText { get; init; } = DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary;
     public string SummaryProvidersTone { get; init; } = WorkspaceTone.Warning;
@@ -939,7 +939,7 @@ public sealed class DataOperationsHeroState
     public string BadgeText { get; init; } = "Loading";
     public string BadgeTone { get; init; } = WorkspaceTone.Info;
     public string HandoffTitleText { get; init; } = "Telemetry refresh in progress";
-    public string HandoffDetailText { get; init; } = "The Data Operations shell is collecting current readiness signals.";
+    public string HandoffDetailText { get; init; } = "The Data shell is collecting current readiness signals.";
     public string PrimaryActionId { get; init; } = string.Empty;
     public string PrimaryActionLabel { get; init; } = string.Empty;
     public string SecondaryActionId { get; init; } = string.Empty;
@@ -953,7 +953,7 @@ public sealed class DataOperationsHeroState
         new()
         {
             FocusText = "Operational posture",
-            SummaryText = "Telemetry refresh failed for the current Data Operations scope.",
+            SummaryText = "Telemetry refresh failed for the current Data scope.",
             BadgeText = "Degraded",
             BadgeTone = WorkspaceTone.Warning,
             HandoffTitleText = "Retry the shell refresh, then inspect diagnostics if the shell stays degraded",

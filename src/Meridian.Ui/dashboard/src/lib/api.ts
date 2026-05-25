@@ -9,6 +9,13 @@ import type {
   CellExecutionContext,
   CellOutput,
   BrokerageHouseholdPortfolio,
+  ChiefOfStaffDecisionRequest,
+  ChiefOfStaffEvidenceExport,
+  ChiefOfStaffRuntimeHealth,
+  ChiefOfStaffSession,
+  ChiefOfStaffSessionQuery,
+  ChiefOfStaffSessionSummary,
+  ChiefOfStaffTraceExportRequest,
   CorporateAction,
   DataFetchRequest,
   DataFetchResult,
@@ -94,7 +101,8 @@ import type {
   WorkflowPresetLibrary,
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
-  ExecutionManualOverride
+  ExecutionManualOverride,
+  FeatureCapabilitySettingsResponse
 } from "@/types";
 import {
   BACKFILL_API_ENDPOINTS,
@@ -166,6 +174,11 @@ import {
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
+  workstationChiefOfStaffDecisionEndpoint,
+  workstationChiefOfStaffHealthEndpoint,
+  workstationChiefOfStaffSessionEndpoint,
+  workstationChiefOfStaffSessionsEndpoint,
+  workstationChiefOfStaffTraceExportEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
@@ -442,6 +455,18 @@ export function getWorkflowPresets(options: ApiRequestOptions = {}) {
   return getJson<WorkflowPresetLibrary>(WORKSTATION_API_ENDPOINTS.workflowPresets, options);
 }
 
+export function getFeatureCapabilities(options: ApiRequestOptions = {}) {
+  return getJson<FeatureCapabilitySettingsResponse>(WORKSTATION_API_ENDPOINTS.featureCapabilities, options);
+}
+
+export function setFeatureCapability(capabilityKey: string, isEnabled: boolean, options: ApiRequestOptions = {}) {
+  return putJson<FeatureCapabilitySettingsResponse>(
+    `${WORKSTATION_API_ENDPOINTS.featureCapabilities}/${encodeURIComponent(capabilityKey)}`,
+    { isEnabled },
+    options
+  );
+}
+
 export function getOperationsContinuityWorkflows(
   filters: { fundAccountId?: string; periodId?: string; status?: string } = {},
   options: ApiRequestOptions = {}
@@ -451,6 +476,34 @@ export function getOperationsContinuityWorkflows(
 
 export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
+}
+
+export function getChiefOfStaffSessions(query: ChiefOfStaffSessionQuery = {}, options: ApiRequestOptions = {}) {
+  return getJson<ChiefOfStaffSessionSummary[]>(workstationChiefOfStaffSessionsEndpoint(query), options);
+}
+
+export function getChiefOfStaffSession(sessionId: string, options: ApiRequestOptions = {}) {
+  return getJson<ChiefOfStaffSession>(workstationChiefOfStaffSessionEndpoint(sessionId), options);
+}
+
+export function getChiefOfStaffHealth(options: ApiRequestOptions = {}) {
+  return getJson<ChiefOfStaffRuntimeHealth>(workstationChiefOfStaffHealthEndpoint(), options);
+}
+
+export function submitChiefOfStaffDecision(
+  sessionId: string,
+  request: ChiefOfStaffDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ChiefOfStaffSession>(workstationChiefOfStaffDecisionEndpoint(sessionId), request, options);
+}
+
+export function exportChiefOfStaffTrace(
+  sessionId: string,
+  request: ChiefOfStaffTraceExportRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ChiefOfStaffEvidenceExport>(workstationChiefOfStaffTraceExportEndpoint(sessionId), request, options);
 }
 
 export function getEvidenceSubjects(options: ApiRequestOptions = {}) {

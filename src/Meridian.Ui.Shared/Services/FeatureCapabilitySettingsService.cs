@@ -1,0 +1,76 @@
+using Meridian.Application.Config;
+using Meridian.Contracts.Workstation;
+using CoreConfigStore = Meridian.Application.UI.ConfigStore;
+
+namespace Meridian.Ui.Shared.Services;
+
+public sealed class FeatureCapabilitySettingsService
+{
+    private readonly CoreConfigStore _configStore;
+    private readonly IReadOnlyList<FeatureCapabilityDescriptor> _descriptors;
+
+    public FeatureCapabilitySettingsService(
+        CoreConfigStore configStore,
+        IEnumerable<FeatureCapabilityDescriptor>? descriptors = null)
+    {
+        _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
+        _descriptors = (descriptors ?? FeatureCapabilityCatalog.All)
+            .GroupBy(static descriptor => descriptor.CapabilityKey, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    public FeatureCapabilitySettingsResponse Get()
+    {
+        var overrides = NormalizeOverrides(_configStore.Load().FeatureCapabilities?.Overrides);
+        return BuildResponse(overrides);
+    }
+
+    public async Task<FeatureCapabilitySettingsResponse?> SetAsync(
+        string capabilityKey,
+        bool isEnabled,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(capabilityKey))
+        {
+            return null;
+        }
+
+        var descriptor = _descriptors.FirstOrDefault(
+            item => string.Equals(item.CapabilityKey, capabilityKey, StringComparison.OrdinalIgnoreCase));
+        if (descriptor is null)
+        {
+            return null;
+        }
+
+        var overrides = NormalizeOverrides(_configStore.Load().FeatureCapabilities?.Overrides);
+        overrides[descriptor.CapabilityKey] = descriptor.IsPermanent || isEnabled;
+        await _configStore.SaveFeatureCapabilityOverridesAsync(overrides, ct).ConfigureAwait(false);
+        return BuildResponse(overrides);
+    }
+
+    private FeatureCapabilitySettingsResponse BuildResponse(IReadOnlyDictionary<string, bool> overrides)
+        => new(_descriptors.Select(descriptor =>
+        {
+            var isOverridden = overrides.TryGetValue(descriptor.CapabilityKey, out var overrideValue);
+            var isEnabled = descriptor.IsPermanent || (isOverridden ? overrideValue : descriptor.DefaultEnabled);
+            return new FeatureCapabilityToggleDto(
+                CapabilityKey: descriptor.CapabilityKey,
+                DisplayName: descriptor.DisplayName,
+                Description: descriptor.Description,
+                IsEnabled: isEnabled,
+                DefaultEnabled: descriptor.DefaultEnabled,
+                IsPermanent: descriptor.IsPermanent,
+                IsOverridden: isOverridden,
+                CanToggle: !descriptor.IsPermanent,
+                DisabledReason: descriptor.IsPermanent ? "Required for workstation navigation." : null);
+        }).ToArray());
+
+    private static Dictionary<string, bool> NormalizeOverrides(IReadOnlyDictionary<string, bool>? overrides)
+        => overrides is null
+            ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            : overrides
+                .Where(static entry => !string.IsNullOrWhiteSpace(entry.Key))
+                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.OrdinalIgnoreCase);
+}

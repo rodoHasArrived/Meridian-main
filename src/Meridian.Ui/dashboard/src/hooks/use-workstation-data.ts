@@ -17,7 +17,9 @@ import {
   getSystemStatus,
   getTradingWorkspace,
   getWorkflowLibrary,
-  getWorkflowPresets
+  getWorkflowPresets,
+  getFeatureCapabilities,
+  setFeatureCapability
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import type {
@@ -37,7 +39,8 @@ import type {
   WorkflowPreset,
   WorkflowLibrary,
   WorkflowPresetLibrary,
-  WorkspaceKey
+  WorkspaceKey,
+  FeatureCapabilitySettingsResponse
 } from "@/types";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
@@ -60,6 +63,7 @@ interface WorkstationDataState {
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
+  featureCapabilities: FeatureCapabilitySettingsResponse | null;
   workflowError: string | null;
   usingDevelopmentFixtures: boolean;
   loading: boolean;
@@ -85,6 +89,7 @@ const initialState: WorkstationDataState = {
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
+  featureCapabilities: null,
   workflowError: null,
   usingDevelopmentFixtures: false,
   loading: true,
@@ -152,7 +157,8 @@ export function useWorkstationData() {
       providerRoutingTrustSnapshots,
       brokeragePortfolio,
       workflowLibrary,
-      workflowPresets
+      workflowPresets,
+      featureCapabilities
     ] = await Promise.allSettled([
       getSession(requestOptions),
       getSystemStatus(requestOptions),
@@ -169,7 +175,8 @@ export function useWorkstationData() {
       getProviderRoutingTrustSnapshots(requestOptions),
       getBrokerageHouseholdPortfolio("alpaca", requestOptions),
       getWorkflowLibrary(requestOptions),
-      getWorkflowPresets(requestOptions)
+      getWorkflowPresets(requestOptions),
+      getFeatureCapabilities(requestOptions)
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
@@ -223,6 +230,7 @@ export function useWorkstationData() {
       brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),
+      featureCapabilities: readWorkspace(["settings"], featureCapabilities),
       workflowError: workflowErrors[0] ?? null,
       usingDevelopmentFixtures: hasDevelopmentFixtureUsage(),
       loading: false,
@@ -294,6 +302,22 @@ export function useWorkstationData() {
       }
       refreshingTrading.current = false;
     }
+  }, []);
+
+  const updateFeatureCapability = useCallback(async (capabilityKey: string, isEnabled: boolean) => {
+    const result = await setFeatureCapability(capabilityKey, isEnabled);
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setState((current) => ({
+      ...current,
+      featureCapabilities: result,
+      workspaceErrors: withoutWorkspaceError(current.workspaceErrors, "settings"),
+      error: current.workspaceErrors.settings === current.error
+        ? firstWorkspaceError(withoutWorkspaceError(current.workspaceErrors, "settings")) ?? null
+        : current.error
+    }));
   }, []);
 
   // Keep provider-routing evidence current without reloading the full workstation.
@@ -481,7 +505,7 @@ export function useWorkstationData() {
     return () => clearInterval(id);
   }, [refreshPortfolio]);
 
-  return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, upsertWorkflowPreset };
+  return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, updateFeatureCapability, upsertWorkflowPreset };
 }
 
 function formatRequestError(reason: unknown, fallback: string): string {
