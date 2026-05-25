@@ -124,9 +124,9 @@ SYSTEM_CHECKS = (
     ),
     (
         "mcp",
-        ("src/Meridian.Mcp", "src/Meridian.McpServer"),
+        ("src/Meridian.Mcp",),
         AI_CONTRACT,
-        ("MCP-compatible clients", "src/Meridian.Mcp", "src/Meridian.McpServer"),
+        ("MCP-compatible clients", "src/Meridian.Mcp"),
     ),
     (
         "ai-automation-workflows",
@@ -421,7 +421,7 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
             )
         )
 
-    for project in ("src/Meridian.Mcp", "src/Meridian.McpServer"):
+    for project in ("src/Meridian.Mcp",):
         for folder, kind in (("Prompts", "mcp-prompt"), ("Resources", "mcp-resource"), ("Tools", "mcp-tool")):
             for path in sorted_files(root, f"{project}/{folder}/*.cs"):
                 items.append(InventoryItem(surface="mcp", kind=kind, name=path.name, path=repo_relative(root, path)))

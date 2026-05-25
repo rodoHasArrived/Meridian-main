@@ -58,7 +58,8 @@ public sealed record AppConfig(
     string? PluginsPath = null,
     bool CoLocationProfile = false,
     ProviderConnectionsConfig? ProviderConnections = null,
-    FeatureCapabilityOptions? FeatureCapabilities = null
+    FeatureCapabilityOptions? FeatureCapabilities = null,
+    FundOperationsPersistenceConfig? FundOperationsPersistence = null
 );
 
 /// <summary>
@@ -154,4 +155,26 @@ public sealed record SourceRegistryConfig(
 public sealed record ValidationPipelineConfig(
     bool Enabled = false,
     bool UseRealTimeMode = false
+);
+
+/// <summary>
+/// Configuration for per-domain fund operations persistence cutover.
+/// Controls shadow write and read mode toggles for each fund operations domain.
+/// </summary>
+/// <param name="DomainModes">
+/// Per-domain cutover modes keyed by domain name (e.g. "FundStructure", "FundAccounts").
+/// When null or empty, all domains default to shadow writes enabled with legacy in-memory reads.
+/// </param>
+public sealed record FundOperationsPersistenceConfig(
+    Dictionary<string, DomainCutoverModeConfig>? DomainModes = null
+);
+
+/// <summary>
+/// Serializable cutover mode for a single fund operations domain.
+/// </summary>
+/// <param name="ShadowWritesEnabled">Whether shadow projection writes are enabled for this domain.</param>
+/// <param name="ReadMode">Read mode: "LegacyInMemory" (default) or "PersistedProjection".</param>
+public sealed record DomainCutoverModeConfig(
+    bool ShadowWritesEnabled = true,
+    string ReadMode = "LegacyInMemory"
 );

@@ -56,7 +56,6 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _tradingHeroSecondaryActionText = TradingWorkspaceShellPresentationDefaults.DeskHero.SecondaryActionLabel;
     private string _tradingHeroTargetText = TradingWorkspaceShellPresentationDefaults.DeskHero.TargetLabel;
     private Visibility _tradingHeroSecondaryActionVisibility = Visibility.Visible;
-    private WorkspaceShellContext _shellContext = new();
     private IReadOnlyList<TradingActivePositionItem> _activePositions = Array.Empty<TradingActivePositionItem>();
     private Visibility _noPositionsVisibility = Visibility.Collapsed;
     private ActiveRunContext? _activeRunContext;
@@ -367,12 +366,6 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     {
         get => _noPositionsVisibility;
         private set => SetProperty(ref _noPositionsVisibility, value);
-    }
-
-    public WorkspaceShellContext ShellContext
-    {
-        get => _shellContext;
-        private set => SetProperty(ref _shellContext, value);
     }
 
     internal ActiveRunContext? ActiveRunContext => _activeRunContext;

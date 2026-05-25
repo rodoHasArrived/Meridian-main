@@ -11,6 +11,7 @@ using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.Equity;
 using Meridian.Application.FixedIncome;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.FundOperationsPersistence;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Futures;
 using Meridian.Application.FxSpot;
@@ -41,6 +42,7 @@ using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.Composition.Features;
@@ -280,6 +282,39 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.TryAddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.TryAddSingleton<FundOperationsPersistenceOptions>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var config = configStore.Load();
+            var persistenceConfig = config.FundOperationsPersistence;
+            if (persistenceConfig?.DomainModes is null or { Count: 0 })
+                return new FundOperationsPersistenceOptions();
+
+            var domainModes = new Dictionary<FundOperationsDomain, DomainCutoverMode>();
+            foreach (var (key, value) in persistenceConfig.DomainModes)
+            {
+                if (Enum.TryParse<FundOperationsDomain>(key, ignoreCase: true, out var domain))
+                {
+                    var readMode = Enum.TryParse<DomainReadMode>(value.ReadMode, ignoreCase: true, out var rm)
+                        ? rm
+                        : DomainReadMode.LegacyInMemory;
+                    domainModes[domain] = new DomainCutoverMode(value.ShadowWritesEnabled, readMode);
+                }
+            }
+
+            return new FundOperationsPersistenceOptions { DomainModes = domainModes };
+        });
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket)));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
         return services;
     }
 

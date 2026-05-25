@@ -6,7 +6,7 @@ operator UI direction, retained browser workstation support, fund-management/tra
 scope, and no-mobile development policy.
 
 Last verified against `README.md`, `docs/status/ROADMAP.md`, and
-`docs/ai/assistant-workflow-contract.md`: 2026-05-21.
+`docs/ai/assistant-workflow-contract.md`: 2026-05-23.
 
 ## Current Skills
 

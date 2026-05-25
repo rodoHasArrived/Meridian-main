@@ -80,10 +80,23 @@ Primary inputs:
 The intended routing flow is:
 
 ```text
-Repo Navigation -> Specialist Agent/Skill -> Implementation -> Review -> Testing/Assurance
+Repo Navigation -> [Single-domain task]    -> Specialist Agent/Skill -> Implementation -> Review -> Testing/Assurance
+                -> [Multi-domain / gated]  -> CoS Runtime (ADK)      -> Specialist Agent/Skill -> Approval Gate -> Trace/Evidence
 ```
 
-Use repo navigation first whenever the main problem is “where should I start?” rather than “how do I implement this detail?”
+Use repo navigation first whenever the main problem is "where should I start?" rather than "how do I implement this detail?"
+
+Choose the CoS runtime path when the task crosses multiple subsystems, requires an approval gate
+or operator sign-off, or needs a structured briefing with trace/evidence retention. See
+`tools/chief-of-staff-runtime/runtime.py` and `docs/development/chief-of-staff-runtime.md`.
+
+### Agent Design Pattern Selection
+
+| Pattern | When to use | Meridian example |
+| --- | --- | --- |
+| **Parallel** | Subtasks are independent — no output dependency between them | Code review + security scan simultaneously; investigating separate subsystems concurrently |
+| **Sequential** | Each step's output feeds the next | Repo Navigation → Specialist Implementation → Code Review → Assurance (default single-domain lane) |
+| **Hierarchical** | A coordinator delegates to specialist agents, aggregates evidence, and enforces approval gates | DK1 readiness: provider validation + replay verification + brokerage sync → approval gate → promotion via CoS runtime |
 
 ---
 

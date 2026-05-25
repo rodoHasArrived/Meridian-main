@@ -520,9 +520,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 | Project | Status | Notes |
 | --------- | -------- | ------- |
-| `Meridian.McpServer` | ✅ | Market-data–focused MCP server: `BackfillTools`, `ProviderTools`, `StorageTools`, `SymbolTools`; `MarketDataPrompts`, `MarketDataResources` |
 | `Meridian.Mcp` | ✅ | Repo-tooling MCP server: `AdrTools`, `AuditTools`, `ConventionTools`, `KnownErrorTools`, `ProviderTools`; ADR/convention/template resources and code-review/test-writer prompts |
-| MCP tests | ✅ | `tests/Meridian.McpServer.Tests/` — backfill tools and storage tools coverage |
 
 ---
 
@@ -568,9 +566,8 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | `Meridian.Backtesting.Tests` | 19 | ~243 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 5 | ~29 | Direct lending services, workflows, PostgreSQL integration |
 | `Meridian.FundStructure.Tests` | 3 | ~24 | Governance shared-data access and in-memory fund-structure services |
-| `Meridian.McpServer.Tests` | 3 | ~15 | MCP server tools (backfill, storage) |
 | `Meridian.QuantScript.Tests` | 8 | ~93 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
-| **Total** | **518** | **~6,440** | |
+| **Total** | **515** | **~6,425** | |
 
 ### Key test infrastructure
 

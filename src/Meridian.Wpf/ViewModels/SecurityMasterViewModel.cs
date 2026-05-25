@@ -1580,6 +1580,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 });
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError($"Failed to load security {id} for edit", ex);
@@ -2061,6 +2065,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             BackfillStatus = "Trading parameters backfill completed successfully.";
             _notificationService.ShowNotification("Security Master",
                 "Trading parameters backfilled successfully.", NotificationType.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -2584,6 +2592,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             Clipboard.SetText(SelectedIdentifier);
             _notificationService.ShowNotification("Security Master", "Selected identifier copied to clipboard.", NotificationType.Success);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to copy selected identifier", ex);
@@ -2962,6 +2974,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 // Load the specific security detail
                 await LoadDetailAsync(securityId);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -3753,6 +3769,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     ? "Conflict dismissed."
                     : "Conflict marked resolved.",
                 NotificationType.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

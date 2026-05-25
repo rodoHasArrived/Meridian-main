@@ -76,7 +76,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "copilot-instructions.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
-            write(root / "src" / "Meridian.McpServer" / "Tools" / "SampleTools.cs")
+            write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
             write(root / "docs" / "ai" / "README.md")
 
             inventory = check_ai_inventory.collect_inventory(root)
@@ -268,7 +268,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "instructions" / "sample.instructions.md")
             write(root / ".github" / "workflows" / "prompt-generation.yml")
             write(root / ".github" / "workflows" / "copilot-setup-steps.yml")
-            write(root / "src" / "Meridian.McpServer" / "Tools" / "SampleTools.cs")
+            write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
 
             indexed = "\n".join(
                 [
@@ -276,7 +276,7 @@ class CheckAiInventoryTests(unittest.TestCase):
                     "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex meridian-test",
                     "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills meridian-test",
                     "GitHub Copilot .github/copilot-instructions.md .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",
-                    "MCP-compatible clients src/Meridian.Mcp src/Meridian.McpServer",
+                    "MCP-compatible clients src/Meridian.Mcp",
                     "AI automation workflows prompt-generation.yml skill-evals.yml .github/workflows/copilot-*",
                     "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
                     "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",

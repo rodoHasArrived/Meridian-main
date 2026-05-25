@@ -18,3 +18,7 @@ Current maintained entry points:
 Workflow modernization archive:
 
 - [Legacy GitHub Actions Inventory - 2026-05-18](workflows/legacy-github-actions-2026-05-18.md)
+
+Chief of Staff runtime archive:
+
+- [Chief of Staff runtime integration doc - 2026-05-23](plans/chief-of-staff-runtime.md)
