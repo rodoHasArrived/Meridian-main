@@ -13,5 +13,5 @@ public sealed class JsonFileFundStructureStateStore : IFundStructureStateStore
 
     public string? Load() => File.Exists(_path) ? File.ReadAllText(_path) : null;
 
-    public Task SaveAsync(string json, CancellationToken ct) => AtomicFileWriter.WriteAllTextAsync(_path, json, ct);
+    public Task SaveAsync(string json, CancellationToken ct) => AtomicFileWriter.WriteAsync(_path, json, ct);
 }

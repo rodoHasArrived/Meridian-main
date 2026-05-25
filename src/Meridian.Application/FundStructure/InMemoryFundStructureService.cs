@@ -1,10 +1,9 @@
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.CashFlowInterop;
-using Meridian.Storage.Archival;
-using Meridian.Application.Composition;
 
 namespace Meridian.Application.FundStructure;
 
@@ -32,6 +31,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IFundStructureStateStore _stateStore;
     private readonly IFundStructurePolicyService _policyService;
+    private readonly bool _persistenceEnabled;
     private readonly SemaphoreSlim _persistGate = new(1, 1);
     private readonly Dictionary<Guid, OrganizationSummaryDto> _organizations = new();
     private readonly Dictionary<Guid, BusinessSummaryDto> _businesses = new();
@@ -74,9 +74,10 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _sharedDataAccessService = sharedDataAccessService;
         _securityMasterQueryService = securityMasterQueryService;
-        _stateStore = string.IsNullOrWhiteSpace(persistencePath)
-            ? new InMemoryFundStructureStateStore()
-            : new JsonFileFundStructureStateStore(persistencePath);
+        _persistenceEnabled = !string.IsNullOrWhiteSpace(persistencePath);
+        _stateStore = _persistenceEnabled
+            ? new JsonFileFundStructureStateStore(persistencePath!)
+            : new InMemoryFundStructureStateStore();
         _policyService = new FundStructurePolicyService();
         LoadState();
     }
@@ -2840,7 +2841,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
 
     private (long Version, string Json)? CaptureSnapshotLocked()
     {
-        if (_persistencePath is null)
+        if (!_persistenceEnabled)
         {
             return null;
         }
@@ -2867,7 +2868,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
 
     private async Task PersistSnapshotAsync((long Version, string Json)? snapshot, CancellationToken ct)
     {
-        if (snapshot is null || _persistencePath is null)
+        if (snapshot is null || !_persistenceEnabled)
         {
             return;
         }
@@ -2880,7 +2881,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 return;
             }
 
-            await AtomicFileWriter.WriteAsync(_persistencePath, snapshot.Value.Json, ct).ConfigureAwait(false);
+            await _stateStore.SaveAsync(snapshot.Value.Json, ct).ConfigureAwait(false);
             _persistedVersion = snapshot.Value.Version;
         }
         finally
