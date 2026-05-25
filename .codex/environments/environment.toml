@@ -60,7 +60,7 @@ command = "npm --prefix src/Meridian.Ui/dashboard run build"
 platform = "win32"
 
 [[actions]]
-name = "Run Retained WPF"
+name = "Run WPF Desktop"
 icon = "run"
 command = "dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true"
 platform = "win32"

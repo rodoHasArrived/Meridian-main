@@ -168,7 +168,7 @@ and choose the narrowest lane that matches the user's request:
 - CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
 - Host-served workstation route: `http://localhost:8080/workstation/`
-- Retained WPF workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
+- WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
 
 ## Desktop Persistence Baseline
 

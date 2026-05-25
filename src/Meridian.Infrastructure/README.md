@@ -34,6 +34,16 @@ WebSocket streaming adapters that derive from `WebSocketProviderBase` expose
 use that optional seam for connection state, heartbeat time, reconnect status, and last safe error
 category instead of reaching into provider-specific transport internals.
 
+Provider registry paths normalize configured provider identifiers before factory lookup, and the
+registry can hold multiple adapter contracts for one provider family ID. This allows identifiers
+such as `alpaca` to resolve independently for streaming, backfill, and symbol-search contracts
+without dropping one registration because another adapter uses the same family ID.
+
+Streaming failover state is updated from explicit success, failure, and latency signals in addition
+to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
+failure. Backfill orchestration stores dependency job IDs on each job so chained jobs resume only
+after all upstream dependencies complete.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

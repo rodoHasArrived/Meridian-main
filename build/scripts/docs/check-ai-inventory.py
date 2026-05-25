@@ -48,6 +48,14 @@ UI_PLATFORM_POLICY_MARKERS = (
         "MAUI clients, React Native clients, Flutter clients, or mobile-first workflows"
     ),
 )
+ACTIVE_OPERATOR_SURFACE_EXTRA_FILES = (
+    ".codex/environments/README.md",
+)
+STALE_OPERATOR_SURFACE_LANGUAGE = (
+    re.compile(r"\bretained\s+WPF\b", re.IGNORECASE),
+    re.compile(r"\bretained\s+desktop\s+(?:support|tests?)\b", re.IGNORECASE),
+    re.compile(r"`src/Meridian\.Wpf/`\s+as\s+retained\s+support", re.IGNORECASE),
+)
 CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
 LEGACY_CANONICAL_LINK_PREFIXES = (
     "https://github.com/rodoHasArrived/Meridian/blob/main/",
@@ -506,6 +514,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_legacy_canonical_links(root, inventory))
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_ui_platform_policy(root))
+    findings.extend(check_stale_operator_surface_language(root, inventory))
     findings.extend(check_missing_workflow_references(root))
 
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
@@ -533,6 +542,56 @@ def check_ui_platform_policy(root: Path) -> list[Finding]:
                 path=doc_path,
                 expected_doc=AI_CONTRACT,
                 message=f"{doc_path} is missing UI platform policy markers: {', '.join(missing_markers)}",
+            )
+        )
+
+    return findings
+
+
+def check_stale_operator_surface_language(root: Path, inventory: Sequence[InventoryItem]) -> list[Finding]:
+    findings: list[Finding] = []
+    scanned_paths = {
+        item.path
+        for item in inventory
+        if item.surface in {
+            "agent-skills-compatible-hosts",
+            "claude",
+            "codex",
+            "docs-ai",
+            "github-copilot",
+            "root-assistant-compatibility",
+        }
+    }
+    scanned_paths.update(UI_PLATFORM_POLICY_FILES)
+    scanned_paths.update(ACTIVE_OPERATOR_SURFACE_EXTRA_FILES)
+
+    for rel_path in sorted(scanned_paths):
+        path = root / rel_path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace")
+        matched_phrase = None
+        for pattern in STALE_OPERATOR_SURFACE_LANGUAGE:
+            match = pattern.search(text)
+            if match:
+                matched_phrase = match.group(0)
+                break
+        if not matched_phrase:
+            continue
+
+        findings.append(
+            Finding(
+                severity="drift",
+                surface="shared-ai-docs",
+                kind="stale-operator-surface-language",
+                name=Path(rel_path).name,
+                path=rel_path,
+                expected_doc=AI_CONTRACT,
+                message=(
+                    f"{rel_path} still uses stale operator-surface wording ({matched_phrase}); "
+                    "describe both browser workstation and WPF desktop as active surfaces backed by shared contracts."
+                ),
             )
         )
 

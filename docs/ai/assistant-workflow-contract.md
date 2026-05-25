@@ -95,8 +95,8 @@ When editing `src/**`, assistants must:
 - Do not introduce new AI providers, tools, agents, models, or dependencies without repository
   evidence that they are needed.
 - Do not pursue mobile app development unless a future roadmap change explicitly creates and
-  documents a mobile product lane; keep operator UI work browser-workstation-first and retained
-  WPF active-surface.
+  documents a mobile product lane; keep operator UI work on the active browser workstation and WPF
+  desktop surfaces.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
 - Do not embed full repository trees in host-specific guidance. Link to

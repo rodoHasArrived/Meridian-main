@@ -4,14 +4,27 @@
     "name": "build/scripts/docs/mark-stale-docs.py",
     "version": "1.0.0"
   },
-  "removed_count": 0,
-  "removed_modules": [],
+  "removed_count": 1,
+  "removed_modules": [
+    {
+      "module_id": "SRC-MCP-SERVER",
+      "path": "src/Meridian.McpServer",
+      "readme": "src/Meridian.McpServer/README.md",
+      "reasons": [
+        "removed_module_hash_entry"
+      ],
+      "recommended_actions": [
+        "remove or migrate the stale source hash entry",
+        "refresh hashes after registry and generated docs are current"
+      ]
+    }
+  ],
   "schema": {
     "id": "meridian.stale-source-docs",
     "version": "1.0.0"
   },
   "source_hash_manifest": "docs/source/generated/source-hash-manifest.json",
-  "stale_count": 16,
+  "stale_count": 17,
   "stale_modules": [
     {
       "module_id": "SRC-APP",
@@ -120,6 +133,20 @@
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
       "reasons": [
+        "source_hash_drift",
+        "readme_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "review README changes and rerender generated blocks if needed",
+        "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
+      ]
+    },
+    {
+      "module_id": "SRC-PROVIDER-SDK",
+      "path": "src/Meridian.ProviderSdk",
+      "readme": "src/Meridian.ProviderSdk/README.md",
+      "reasons": [
         "source_hash_drift"
       ],
       "recommended_actions": [
@@ -128,9 +155,9 @@
       ]
     },
     {
-      "module_id": "SRC-PROVIDER-SDK",
-      "path": "src/Meridian.ProviderSdk",
-      "readme": "src/Meridian.ProviderSdk/README.md",
+      "module_id": "SRC-STORAGE",
+      "path": "src/Meridian.Storage",
+      "readme": "src/Meridian.Storage/README.md",
       "reasons": [
         "source_hash_drift"
       ],
@@ -184,9 +211,11 @@
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
       "reasons": [
+        "source_hash_drift",
         "readme_hash_drift"
       ],
       "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
         "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
       ]

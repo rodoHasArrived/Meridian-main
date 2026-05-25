@@ -439,6 +439,42 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertFalse(any(finding.kind == "ui-platform-policy" for finding in findings))
 
+    def test_check_catalog_drift_reports_stale_operator_surface_language(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(
+                root / ".github" / "prompts" / "sample.prompt.yml",
+                "Meridian includes browser workstation and retained WPF support.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "stale-operator-surface-language"
+                    and finding.path == ".github/prompts/sample.prompt.yml"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_allows_active_operator_surface_language(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(
+                root / ".github" / "prompts" / "sample.prompt.yml",
+                "Meridian includes active browser workstation and WPF desktop operator surfaces.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "stale-operator-surface-language" for finding in findings))
+
     def test_build_payload_uses_portable_repository_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

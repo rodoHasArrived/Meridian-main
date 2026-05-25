@@ -88,7 +88,7 @@ A provider-agnostic .NET 10 platform for evidence-backed investment operations: 
 - Strategy lifecycle: register, run, pause, promote paper→live
 - Pre-trade risk validation via `CompositeRiskValidator` / `IRiskRule`
 - Browser workstation: operator workflows, live status, data browser, and API-backed work queues
-- Retained WPF support: shared contracts, regressions, and existing desktop workflows
+- Active WPF desktop operator surface: shared contracts, regressions, and desktop workflows
 - MCP server layer (`Meridian.Mcp` / `Meridian.McpServer`) exposing tools + prompts for AI agents
 - Deployment: Docker Compose, systemd, Kubernetes
 - Observability: OpenTelemetry tracing, Prometheus metrics, Grafana dashboards

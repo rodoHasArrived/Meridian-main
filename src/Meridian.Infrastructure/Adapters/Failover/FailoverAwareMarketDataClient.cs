@@ -58,11 +58,12 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         _failoverService = failoverService ?? throw new ArgumentNullException(nameof(failoverService));
         _ruleId = ruleId;
 
-        if (!_providers.TryGetValue(initialProviderId, out var initial))
-            throw new ArgumentException($"Initial provider '{initialProviderId}' not found in provider map.", nameof(initialProviderId));
+        var initialKey = ProviderIdentity.NormalizeId(initialProviderId);
+        if (!_providers.TryGetValue(initialKey, out var initial))
+            throw new ArgumentException($"Initial provider '{initialKey}' not found in provider map.", nameof(initialProviderId));
 
         _activeClient = initial;
-        _activeProviderId = initialProviderId;
+        _activeProviderId = initialKey;
 
         _failoverService.OnFailoverTriggered += HandleFailoverTriggered;
         _failoverService.OnFailoverRecovered += HandleFailoverRecovered;
@@ -81,6 +82,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             await _activeClient.ConnectAsync(ct);
             _failoverService.RecordSuccess(_activeProviderId);
             _log.Information("Connected to active provider {ProviderId}", _activeProviderId);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested || _cts.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -273,13 +278,14 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     private async Task SwitchProviderAsync(string newProviderId, CancellationToken ct)
     {
-        if (!_providers.TryGetValue(newProviderId, out var newClient))
+        var newProviderKey = ProviderIdentity.NormalizeId(newProviderId);
+        if (!_providers.TryGetValue(newProviderKey, out var newClient))
         {
-            _log.Error("Cannot switch to unknown provider {ProviderId}", newProviderId);
+            _log.Error("Cannot switch to unknown provider {ProviderId}", newProviderKey);
             return;
         }
 
-        if (string.Equals(_activeProviderId, newProviderId, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(_activeProviderId, newProviderKey, StringComparison.OrdinalIgnoreCase))
             return;
 
         await _switchLock.WaitAsync(ct);
@@ -288,7 +294,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             var previousId = _activeProviderId;
             var previousClient = _activeClient;
 
-            _log.Information("Switching streaming provider: {From} -> {To}", previousId, newProviderId);
+            _log.Information("Switching streaming provider: {From} -> {To}", previousId, newProviderKey);
 
             // 1. Connect the new provider
             await newClient.ConnectAsync(ct);
@@ -298,7 +304,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
             // 3. Swap the active client
             _activeClient = newClient;
-            _activeProviderId = newProviderId;
+            _activeProviderId = newProviderKey;
 
             // 4. Disconnect the old provider gracefully
             try
@@ -310,7 +316,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                 _log.Warning(ex, "Error disconnecting previous provider {ProviderId} during failover", previousId);
             }
 
-            _log.Information("Provider switch complete: now using {ProviderId}", newProviderId);
+            _log.Information("Provider switch complete: now using {ProviderId}", newProviderKey);
         }
         finally
         {
@@ -338,6 +344,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                     _failoverService.RecordSuccess(kvp.Key);
                     _log.Information("Failover connect succeeded to {ProviderId}", kvp.Key);
                     return;
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested || _cts.IsCancellationRequested)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {

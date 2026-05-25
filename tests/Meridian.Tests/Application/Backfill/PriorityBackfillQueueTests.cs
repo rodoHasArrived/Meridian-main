@@ -319,6 +319,31 @@ public sealed class PriorityBackfillQueueTests : IDisposable
     }
 
     [Fact]
+    public async Task MarkCompletedAsync_DependencyChain_ResumesOnlyAfterAllDependenciesComplete()
+    {
+        var dependency1 = await _queue.EnqueueAsync(CreateRequest("SPY"));
+        var dependency2 = await _queue.EnqueueAsync(CreateRequest("QQQ"));
+        var dependent = await _queue.EnqueueAsync(CreateRequest("IWM") with
+        {
+            DependsOnJobIds = new[] { dependency1.JobId, dependency2.JobId }
+        });
+
+        dependent.Status.Should().Be(BackfillJobStatus.Paused);
+        dependent.DependsOnJobIds.Should().BeEquivalentTo(new[] { dependency1.JobId, dependency2.JobId });
+
+        await _queue.MarkCompletedAsync(dependency1.JobId, success: true);
+
+        dependent.Status.Should().Be(BackfillJobStatus.Paused);
+
+        await _queue.MarkCompletedAsync(dependency2.JobId, success: true);
+
+        dependent.Status.Should().Be(BackfillJobStatus.Pending);
+        var next = await _queue.DequeueNextAsync();
+        next.Should().NotBeNull();
+        next!.JobId.Should().Be(dependent.JobId);
+    }
+
+    [Fact]
     public async Task JobStatusChanged_Event_FiresOnStatusChange()
     {
         var events = new List<JobStatusChangedEventArgs>();

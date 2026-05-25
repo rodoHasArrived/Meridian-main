@@ -94,6 +94,34 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ConnectAsync_WhenCancelled_DoesNotRecordFailureOrTryBackup()
+    {
+        _primaryClient.ShouldCancelConnect = true;
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = () => _sut.ConnectAsync(cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        _backupClient.ConnectCallCount.Should().Be(0);
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetProviderHealthSnapshots()
+            .First(s => s.ProviderId == "primary")
+            .ConsecutiveFailures
+            .Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Constructor_NormalizesInitialProviderIdentifier()
+    {
+        await _sut.DisposeAsync();
+
+        _sut = new FailoverAwareMarketDataClient(_providers, _failoverService, "test-rule", " PRIMARY ");
+
+        _sut.ActiveProviderId.Should().Be("primary");
+    }
+
+    [Fact]
     public async Task ConnectAsync_AllProvidersFail_Throws()
     {
         _primaryClient.ShouldFailConnect = true;
@@ -204,6 +232,7 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         private int _nextSubId = 1;
 
         public bool ShouldFailConnect { get; set; }
+        public bool ShouldCancelConnect { get; set; }
         public int ConnectCallCount { get; private set; }
         public int DisconnectCallCount { get; private set; }
         public int DepthSubscribeCallCount { get; private set; }
@@ -229,6 +258,8 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         public Task ConnectAsync(CancellationToken ct = default)
         {
             ConnectCallCount++;
+            if (ShouldCancelConnect)
+                return Task.FromCanceled(ct.IsCancellationRequested ? ct : new CancellationToken(canceled: true));
             if (ShouldFailConnect)
                 throw new InvalidOperationException($"Fake connect failure for {_id}");
             return Task.CompletedTask;

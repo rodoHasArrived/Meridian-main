@@ -46,5 +46,6 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-Retained WPF is still available for compatibility and regression work, but it is not the default
-surface for new operator-facing implementation.
+The WPF desktop shell is an active operator surface alongside the browser workstation. Keep shared
+product behavior behind shared contracts, local/web API endpoints, or shared read models before
+composing it into either UI client.
