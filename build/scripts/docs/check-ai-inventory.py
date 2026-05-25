@@ -27,6 +27,7 @@ AGENTS_README = "docs/ai/agents/README.md"
 SKILLS_README = "docs/ai/skills/README.md"
 PROMPTS_README = "docs/ai/prompts/README.md"
 INSTRUCTIONS_README = "docs/ai/instructions/README.md"
+CODEX_GUIDE = "docs/ai/codex/README.md"
 CODEX_SKILLS_README = ".codex/skills/README.md"
 GITHUB_PROMPTS_README = ".github/prompts/README.md"
 COPILOT_GUIDE = "docs/ai/copilot/instructions.md"
@@ -110,7 +111,14 @@ SYSTEM_CHECKS = (
         "codex",
         (".codex/config.toml", ".codex/skills"),
         AI_CONTRACT,
-        ("Codex", ".codex/skills", "OpenAI/Codex"),
+        (
+            "Codex",
+            ".codex/AGENTS.md",
+            ".codex/skills",
+            ".codex/prompts/",
+            ".codex/checklists/",
+            "OpenAI/Codex",
+        ),
     ),
     (
         "agent-skills-compatible-hosts",
@@ -254,6 +262,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 )
             )
 
+    for rel_path in (".codex/AGENTS.md",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="codex",
+                    kind="instruction-entrypoint",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                )
+            )
+
     for path in sorted_files(root, ".codex/environments/*.toml"):
         items.append(
             InventoryItem(
@@ -263,6 +284,30 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 path=repo_relative(root, path),
                 expected_docs=(AI_CONTRACT,),
                 alternate_markers=(".codex/environments/",),
+            )
+        )
+
+    for path in sorted_files(root, ".codex/prompts/*.md"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="prompt-template",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                alternate_markers=(".codex/prompts/",),
+            )
+        )
+
+    for path in sorted_files(root, ".codex/checklists/*.md"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="validation-checklist",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                alternate_markers=(".codex/checklists/",),
             )
         )
 

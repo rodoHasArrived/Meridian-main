@@ -126,7 +126,7 @@ public sealed class WorkflowLibraryViewModel : BindableBase
         OpenWorkflowCommand.NotifyCanExecuteChanged();
     }
 
-    public static WorkflowLibraryFilterPresentation BuildFilterPresentation(
+    internal static WorkflowLibraryFilterPresentation BuildFilterPresentation(
         int totalWorkflowCount,
         int visibleWorkflowCount,
         int totalActionCount,
@@ -209,7 +209,7 @@ public sealed class WorkflowLibraryViewModel : BindableBase
     }
 }
 
-public readonly record struct WorkflowLibraryFilterPresentation(
+internal readonly record struct WorkflowLibraryFilterPresentation(
     string ResultScopeText,
     string EmptyStateTitle,
     string EmptyStateDetail,

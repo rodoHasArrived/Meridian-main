@@ -161,3 +161,7 @@ python3 build/scripts/docs/scan-source-todos.py --summary
 python3 build/scripts/docs/mark-stale-docs.py --write --summary
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```
+
+Use `python3 build/scripts/docs/check-ai-inventory.py --summary` after adding, renaming, or
+removing Codex prompts, validation checklists, `.codex/AGENTS.md`, environment configs, skills, or
+OpenAI metadata so the shared AI contract and this index stay aligned.

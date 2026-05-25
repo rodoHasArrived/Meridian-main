@@ -16,7 +16,7 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml` | Repo-local specialist skills, OpenAI/Codex metadata, and environment entrypoints |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/` | Repo-local specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, and validation checklists |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
@@ -28,7 +28,7 @@ The current repository evidence supports these AI surfaces:
 The AI inventory checker also watches optional IDE/provider assistant entrypoints such as
 `.cursor/`, `.windsurf/`, `.continue/`, `.cline/`, `.roo/`, `.cursorrules`, `.windsurfrules`,
 `.clinerules`, `.roomodes`, `GEMINI.md`, and `.gemini/`. No tracked Cursor, Windsurf, Continue,
-Cline, Roo, or Gemini instruction surface was found during the 2026-05-19 scan. Add one only when
+Cline, Roo, or Gemini instruction surface was found during the 2026-05-25 scan. Add one only when
 there is an actual tooling need, then list the exact entrypoint in this contract and
 `docs/ai/README.md`.
 
@@ -120,6 +120,7 @@ When editing `src/**`, assistants must:
 | Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
+| Codex prompts and validation checklists | `.codex/prompts/`, `.codex/checklists/`, `docs/ai/codex/README.md` | Desktop implementation prompts, MVVM/resource/safe-refactor checklists, and Codex workflow guidance |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
@@ -198,7 +199,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-23_
+_Last Updated: 2026-05-25_
 
 ## Machine-checkable synchronization contract
 

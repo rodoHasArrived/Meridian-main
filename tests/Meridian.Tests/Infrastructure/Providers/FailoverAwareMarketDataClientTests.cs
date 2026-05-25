@@ -140,6 +140,21 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public void Constructor_DuplicateNormalizedProviderKeys_Throws()
+    {
+        var providers = new Dictionary<string, IMarketDataClient>
+        {
+            ["primary"] = _primaryClient,
+            [" PRIMARY "] = _backupClient
+        };
+
+        var act = () => new FailoverAwareMarketDataClient(providers, _failoverService, "test-rule", "primary");
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*Duplicate provider*normalized key 'primary'*");
+    }
+
+    [Fact]
     public async Task ConnectAsync_AllProvidersFail_Throws()
     {
         _primaryClient.ShouldFailConnect = true;
