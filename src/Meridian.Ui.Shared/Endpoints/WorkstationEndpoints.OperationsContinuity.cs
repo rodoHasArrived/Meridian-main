@@ -8,8 +8,8 @@ using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -21,9 +21,9 @@ public static partial class WorkstationEndpoints
             Guid? fundAccountId,
             string? periodId,
             string? status,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -45,7 +45,8 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             OperationsStartWorkflowRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -62,7 +63,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -79,9 +79,11 @@ public static partial class WorkstationEndpoints
         .Produces(401)
         .Produces(403);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (Guid workflowId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (
+            Guid workflowId,
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -92,9 +94,11 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsContinuityDetail");
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (
+            Guid workflowId,
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -114,7 +118,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerImport), async (
             Guid workflowId,
             OperationsTransitionRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -131,7 +136,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -151,7 +155,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerNormalize), async (
             Guid workflowId,
             OperationsTransitionRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -168,7 +173,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -188,7 +192,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityPostureRefresh), async (
             Guid workflowId,
             OperationsGatePostureRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -205,7 +210,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -220,7 +224,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterResolve), async (
             Guid workflowId,
             OperationsSecurityMasterResolveRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -237,7 +242,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -253,7 +257,8 @@ public static partial class WorkstationEndpoints
             Guid workflowId,
             string overrideId,
             OperationsSecurityMasterOverrideApprovalRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasSecurityMasterOverrideApprovalPermission(context))
             {
@@ -270,7 +275,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -290,7 +294,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerDraft), async (
             Guid workflowId,
             OperationsLedgerDraftRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -307,7 +312,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -322,7 +326,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerValidate), async (
             Guid workflowId,
             OperationsLedgerValidationRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -339,7 +344,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -354,7 +358,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPost), async (
             Guid workflowId,
             OperationsLedgerPostRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -371,7 +376,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -391,7 +395,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationRun), async (
             Guid workflowId,
             OperationsReconciliationRunRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityReconciliationBridge? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -408,7 +413,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity reconciliation bridge is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -424,7 +428,8 @@ public static partial class WorkstationEndpoints
             Guid workflowId,
             string breakId,
             OperationsResolveBreakCaseRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -441,7 +446,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -456,7 +460,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalSubmit), async (
             Guid workflowId,
             OperationsSubmitApprovalRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -473,7 +478,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -488,7 +492,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalApprove), async (
             Guid workflowId,
             OperationsApprovalDecisionRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -505,7 +510,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -520,7 +524,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalReject), async (
             Guid workflowId,
             OperationsRejectWorkflowRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -537,7 +542,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -557,7 +561,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityClose), async (
             Guid workflowId,
             OperationsCloseWorkflowRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -574,7 +579,6 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -589,9 +593,11 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReopen), async (
             Guid workflowId,
             OperationsReopenWorkflowRequestDto? request,
-            HttpContext context) =>
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
-            if (!HasGovernedWorkflowReopenPermission(context))
+            var isGovernedAdmin = EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
+            if (!isGovernedAdmin)
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -606,13 +612,12 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = true };
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = isGovernedAdmin };
             var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -623,9 +628,11 @@ public static partial class WorkstationEndpoints
         .Produces(401)
         .Produces(403);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (Guid workflowId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (
+            Guid workflowId,
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -636,9 +643,11 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsContinuityBreaks");
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (
+            Guid workflowId,
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
-            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);

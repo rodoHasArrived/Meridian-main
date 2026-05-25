@@ -52,7 +52,8 @@ public sealed partial class WorkstationEndpointsTests
             {
               "FeatureCapabilities": {
                 "Overrides": {
-                  "desktop.data.security-master": false
+                  " desktop.data.security-master ": false,
+                  "DESKTOP.DATA.SECURITY-MASTER": true
                 }
               }
             }

@@ -1,6 +1,12 @@
 name: Roadmap Source Docs
 
 on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Phase for enforce-phase-scope (PR0..PR9)"
+        required: false
+        default: "PR1"
   pull_request:
     paths:
       - "docs/roadmap/**"
@@ -14,14 +20,17 @@ on:
       - "AGENTS.md"
       - "CLAUDE.md"
   push:
-    branches:
-      - main
     paths:
       - "docs/roadmap/**"
       - "docs/source/**"
+      - "docs/status/**"
+      - "docs/architecture/**"
       - "src/**/README.md"
       - "build/scripts/docs/**"
-  workflow_dispatch:
+      - ".github/workflows/roadmap-source-docs.yml"
+      - ".github/instructions/source-documentation.instructions.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
 
 permissions:
   contents: read
@@ -30,27 +39,25 @@ concurrency:
   group: roadmap-source-docs-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 env:
-  PYTHONUNBUFFERED: '1'
+  PYTHONUNBUFFERED: "1"
 
 jobs:
-  validate-roadmap-source-docs:
+  scope-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6.2.0
         with:
-          fetch-depth: 0
-          persist-credentials: false
+          python-version: "3.12"
+
       - name: Checkout trusted phase gate script
+        if: ${{ github.event_name != 'push' }}
         uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.event.pull_request.base.sha || github.sha }}
@@ -60,7 +67,9 @@ jobs:
           sparse-checkout-cone-mode: false
           fetch-depth: 1
           persist-credentials: false
+
       - name: Enforce phase scope
+        if: ${{ github.event_name != 'push' }}
         env:
           DISPATCH_PHASE: ${{ inputs.phase }}
           PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
@@ -75,13 +84,22 @@ jobs:
             --base-ref "$BASE_REF" \
             --head-ref "$HEAD_REF"
 
+      - name: Skip phase scope on branch push
+        if: ${{ github.event_name == 'push' }}
+        run: echo "Branch push has no PR phase marker; running roadmap/source docs validation only."
+
   schema:
     runs-on: ubuntu-latest
     needs: scope-gate
     steps:
       - uses: actions/checkout@v6.0.2
-      - name: Schema validation placeholder
-        run: echo "Run roadmap schema validation here"
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
           python-version: "3.12"
 
       - name: Validate roadmap registry

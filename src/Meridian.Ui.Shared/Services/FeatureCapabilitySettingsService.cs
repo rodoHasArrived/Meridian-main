@@ -64,16 +64,35 @@ public sealed class FeatureCapabilitySettingsService
         }).ToArray());
 
     private static Dictionary<string, bool> NormalizeOverrides(IReadOnlyDictionary<string, bool>? overrides)
-        => overrides is null
-            ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
-            : overrides
-                .Where(static entry => !string.IsNullOrWhiteSpace(entry.Key))
-                .GroupBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(static group => group.Key, static group => group.First().Value, StringComparer.OrdinalIgnoreCase);
+    {
+        var normalized = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        if (overrides is null)
+        {
+            return normalized;
+        }
+
+        foreach (var (key, value) in overrides)
+        {
+            var normalizedKey = key.Trim();
+            if (normalizedKey.Length == 0 || normalized.ContainsKey(normalizedKey))
+            {
+                continue;
+            }
+
+            normalized[normalizedKey] = value;
+        }
+
+        return normalized;
+    }
 
     private static IReadOnlyList<FeatureCapabilityDescriptor> NormalizeDescriptors(IEnumerable<FeatureCapabilityDescriptor>? descriptors)
     {
         if (descriptors is null)
+        {
+            return FeatureCapabilityCatalog.All;
+        }
+
+        if (ReferenceEquals(descriptors, FeatureCapabilityCatalog.All))
         {
             return FeatureCapabilityCatalog.All;
         }
