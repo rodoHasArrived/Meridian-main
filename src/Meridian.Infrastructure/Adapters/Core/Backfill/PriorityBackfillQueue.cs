@@ -233,34 +233,49 @@ public sealed class PriorityBackfillQueue : IDisposable
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            while (_priorityQueue.TryDequeue(out var job, out _))
+            var deferredJobs = new List<(BackfillJob Job, int Priority)>();
+            var jobsToInspect = _priorityQueue.Count;
+            while (jobsToInspect-- > 0 && _priorityQueue.TryDequeue(out var job, out _))
             {
                 // Skip terminal jobs or jobs already running.
                 if (job.IsComplete || job.Status is BackfillJobStatus.Running)
+                {
                     continue;
+                }
 
                 // Check dependencies again (they might have completed)
                 if (job.Status == BackfillJobStatus.Paused && IsDependencyPause(job))
                 {
                     if (HasUnmetDependencies(job))
                     {
-                        _priorityQueue.Enqueue(job, GetPriorityScore(job, (BackfillPriority)job.Options.Priority) + 1000);
-                        return null;
+                        deferredJobs.Add((job, GetPriorityScore(job, (BackfillPriority)job.Options.Priority) + 1000));
+                        continue;
                     }
 
                     job.Status = BackfillJobStatus.Pending;
                     job.StatusReason = null;
+                    RequeueDeferredJobs(deferredJobs);
                     return job;
                 }
 
+                RequeueDeferredJobs(deferredJobs);
                 return job;
             }
 
+            RequeueDeferredJobs(deferredJobs);
             return null;
         }
         finally
         {
             _queueLock.Release();
+        }
+
+        void RequeueDeferredJobs(List<(BackfillJob Job, int Priority)> deferred)
+        {
+            foreach (var (deferredJob, priority) in deferred)
+            {
+                _priorityQueue.Enqueue(deferredJob, priority);
+            }
         }
     }
 

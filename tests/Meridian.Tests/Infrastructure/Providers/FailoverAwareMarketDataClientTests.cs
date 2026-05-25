@@ -122,6 +122,24 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Constructor_NormalizesIncomingProviderMapKeys()
+    {
+        await _sut.DisposeAsync();
+
+        var providers = new Dictionary<string, IMarketDataClient>
+        {
+            [" PRIMARY "] = _primaryClient,
+            [" BACKUP "] = _backupClient
+        };
+
+        _sut = new FailoverAwareMarketDataClient(providers, _failoverService, "test-rule", "primary");
+
+        _sut.ActiveProviderId.Should().Be("primary");
+        await _sut.ConnectAsync();
+        _primaryClient.ConnectCallCount.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
     public async Task ConnectAsync_AllProvidersFail_Throws()
     {
         _primaryClient.ShouldFailConnect = true;

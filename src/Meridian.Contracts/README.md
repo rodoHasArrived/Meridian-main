@@ -22,6 +22,11 @@ Shared contracts and DTOs used across host, services, desktop, and dashboard sur
 
 ## Operational Notes
 Treat additive and breaking changes as cross-module compatibility work.
+Operations Continuity workflow DTOs publish the shared broker intake, Security Master, ledger
+posting, reconciliation, approval, close, and audit vocabulary consumed by both browser and WPF
+workstation clients. Keep returned workflow blocker codes in
+`OperationsWorkflowContractMatrix.BlockerCodes`, including ledger journal context-validation
+failures, so clients can handle command failures without parsing messages.
 
 <!-- GENERATED:MODULE_OVERVIEW BEGIN -->
 Generated overview content is maintained by documentation automation.

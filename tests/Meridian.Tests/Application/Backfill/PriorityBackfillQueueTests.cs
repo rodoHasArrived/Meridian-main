@@ -83,6 +83,24 @@ public sealed class PriorityBackfillQueueTests : IDisposable
     }
 
     [Fact]
+    public async Task DequeueNextAsync_SkipsDependencyPausedJob_WhenReadyJobExists()
+    {
+        var blocked = await _queue.EnqueueAsync(CreateRequest("BLOCKED", BackfillPriority.Critical) with
+        {
+            DependsOnJobIds = ["missing-job"]
+        });
+        var ready = await _queue.EnqueueAsync(CreateRequest("READY", BackfillPriority.Low));
+
+        blocked.Status.Should().Be(BackfillJobStatus.Paused);
+
+        var next = await _queue.DequeueNextAsync();
+
+        next.Should().NotBeNull();
+        next!.JobId.Should().Be(ready.JobId);
+        blocked.Status.Should().Be(BackfillJobStatus.Paused);
+    }
+
+    [Fact]
     public async Task GetJob_ReturnsJobById()
     {
         var enqueued = await _queue.EnqueueAsync(CreateRequest("SPY"));

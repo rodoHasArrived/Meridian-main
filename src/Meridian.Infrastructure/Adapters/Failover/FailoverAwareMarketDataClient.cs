@@ -54,7 +54,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         string ruleId,
         string initialProviderId)
     {
-        _providers = providers ?? throw new ArgumentNullException(nameof(providers));
+        ArgumentNullException.ThrowIfNull(providers);
+
+        _providers = NormalizeProviders(providers);
         _failoverService = failoverService ?? throw new ArgumentNullException(nameof(failoverService));
         _ruleId = ruleId;
 
@@ -363,6 +365,27 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         {
             _switchLock.Release();
         }
+    }
+
+    private static Dictionary<string, IMarketDataClient> NormalizeProviders(
+        Dictionary<string, IMarketDataClient> providers)
+    {
+        var normalized = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (providerId, client) in providers)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+            ArgumentNullException.ThrowIfNull(client);
+
+            var key = ProviderIdentity.NormalizeId(providerId);
+            if (!normalized.TryAdd(key, client))
+            {
+                throw new ArgumentException(
+                    $"Duplicate provider '{providerId}' resolves to normalized key '{key}'.",
+                    nameof(providers));
+            }
+        }
+
+        return normalized;
     }
 
     private Task ResubscribeAsync(IMarketDataClient newClient, CancellationToken ct)

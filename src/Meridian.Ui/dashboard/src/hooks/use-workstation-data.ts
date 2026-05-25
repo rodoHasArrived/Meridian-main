@@ -103,9 +103,12 @@ export function useWorkstationData() {
   const refreshRevisionRef = useRef(0);
   const tradingRefreshRevisionRef = useRef(0);
   const providerRoutingRefreshRevisionRef = useRef(0);
+  const portfolioRefreshRevisionRef = useRef(0);
   const refreshAbortRef = useRef<AbortController | null>(null);
   const tradingRefreshAbortRef = useRef<AbortController | null>(null);
   const providerRoutingRefreshAbortRef = useRef<AbortController | null>(null);
+  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
+  const refreshingPortfolio = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -115,9 +118,11 @@ export function useWorkstationData() {
       refreshRevisionRef.current += 1;
       tradingRefreshRevisionRef.current += 1;
       providerRoutingRefreshRevisionRef.current += 1;
+      portfolioRefreshRevisionRef.current += 1;
       refreshAbortRef.current?.abort();
       tradingRefreshAbortRef.current?.abort();
       providerRoutingRefreshAbortRef.current?.abort();
+      portfolioRefreshAbortRef.current?.abort();
     };
   }, []);
 
@@ -405,9 +410,6 @@ export function useWorkstationData() {
   }, []);
 
   // Keep portfolio positions in sync with strategy execution.
-  const portfolioRefreshRevisionRef = useRef(0);
-  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
-  const refreshingPortfolio = useRef(false);
   const refreshPortfolio = useCallback(async () => {
     if (refreshingPortfolio.current || !mountedRef.current) return;
     const revision = portfolioRefreshRevisionRef.current + 1;

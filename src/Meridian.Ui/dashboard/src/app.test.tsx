@@ -47,6 +47,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     brokeragePortfolio: null,
     workflowLibrary: null,
     workflowPresets: null,
+    featureCapabilities: null,
     workflowError: null,
     usingDevelopmentFixtures: false,
     loading: false,
@@ -56,6 +57,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     refreshTrading: vi.fn(),
     refreshPortfolio: vi.fn(),
     refreshProviderRouting: vi.fn(),
+    updateFeatureCapability: vi.fn(),
     upsertWorkflowPreset: vi.fn(),
     ...overrides
   });
