@@ -52,7 +52,8 @@ public sealed partial class WorkstationEndpointsTests
             {
               "FeatureCapabilities": {
                 "Overrides": {
-                  "desktop.data.security-master": false
+                  " desktop.data.security-master ": false,
+                  "DESKTOP.DATA.SECURITY-MASTER": true
                 }
               }
             }
@@ -94,6 +95,28 @@ public sealed partial class WorkstationEndpointsTests
         persisted.FeatureCapabilities!.Overrides.Should()
             .ContainKey("desktop.data.security-master")
             .WhoseValue.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FeatureCapabilityToggle_ShouldRequireMutationPermission()
+    {
+        var configPath = Path.Combine(Path.GetTempPath(), "meridian-feature-capability-permission-" + Guid.NewGuid().ToString("N"), "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(configPath, "{}");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<FeatureCapabilitySettingsService>();
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        var response = await client.PutAsJsonAsync(
+            UiApiRoutes.WorkstationFeatureCapabilityByKey.Replace("{capabilityKey}", "desktop.data.security-master"),
+            new FeatureCapabilityToggleRequest(true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -3239,21 +3262,42 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         }, currentUserPermissions: UserPermission.ViewStrategies);
 
-        var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon-permission"));
+        var repository = app.Services.GetRequiredService<IReconciliationRunRepository>();
+        await repository.SaveAsync(BuildReconciliationDetail(
+            reconciliationRunId: "recon-permission",
+            runId: "run-recon-permission",
+            createdAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            matchCount: 1,
+            breakCount: 0));
 
         var client = app.GetTestClient();
-        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("run-recon-permission"));
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var created = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
-        created.Should().NotBeNull();
-
         var byIdResponse = await client.GetAsync(
             UiApiRoutes.ReconciliationRunById.Replace(
                 "{reconciliationRunId}",
-                created!.Summary.ReconciliationRunId));
+                "recon-permission"));
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCreateRun_ShouldRequireMutationPermission()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon-create-permission"));
+
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationRuns,
+            new ReconciliationRunRequest("run-recon-create-permission"));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

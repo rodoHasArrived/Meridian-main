@@ -14,11 +14,7 @@ public sealed class FeatureCapabilitySettingsService
         IEnumerable<FeatureCapabilityDescriptor>? descriptors = null)
     {
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
-        _descriptors = (descriptors ?? FeatureCapabilityCatalog.All)
-            .GroupBy(static descriptor => descriptor.CapabilityKey, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        _descriptors = NormalizeDescriptors(descriptors);
     }
 
     public FeatureCapabilitySettingsResponse Get()
@@ -68,9 +64,46 @@ public sealed class FeatureCapabilitySettingsService
         }).ToArray());
 
     private static Dictionary<string, bool> NormalizeOverrides(IReadOnlyDictionary<string, bool>? overrides)
-        => overrides is null
-            ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
-            : overrides
-                .Where(static entry => !string.IsNullOrWhiteSpace(entry.Key))
-                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.OrdinalIgnoreCase);
+    {
+        var normalized = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        if (overrides is null)
+        {
+            return normalized;
+        }
+
+        foreach (var (key, value) in overrides)
+        {
+            var normalizedKey = key.Trim();
+            if (normalizedKey.Length == 0 || normalized.ContainsKey(normalizedKey))
+            {
+                continue;
+            }
+
+            normalized[normalizedKey] = value;
+        }
+
+        return normalized;
+    }
+
+    private static IReadOnlyList<FeatureCapabilityDescriptor> NormalizeDescriptors(IEnumerable<FeatureCapabilityDescriptor>? descriptors)
+    {
+        if (descriptors is null)
+        {
+            return FeatureCapabilityCatalog.All;
+        }
+
+        if (ReferenceEquals(descriptors, FeatureCapabilityCatalog.All))
+        {
+            return FeatureCapabilityCatalog.All;
+        }
+
+        var supplied = descriptors.ToArray();
+        return supplied.Length == 0
+            ? FeatureCapabilityCatalog.All
+            : supplied
+                .GroupBy(static descriptor => descriptor.CapabilityKey, StringComparer.OrdinalIgnoreCase)
+                .Select(static group => group.First())
+                .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+    }
 }

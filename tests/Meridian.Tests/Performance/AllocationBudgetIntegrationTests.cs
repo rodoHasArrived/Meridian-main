@@ -403,7 +403,7 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
         };
 
     private static string SourceForIndex(int index)
-        => index % 3 switch
+        => (index % 3) switch
         {
             0 => "ALPACA",
             1 => "IBKR",

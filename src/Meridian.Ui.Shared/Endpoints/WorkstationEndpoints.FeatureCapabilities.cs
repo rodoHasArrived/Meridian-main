@@ -15,18 +15,34 @@ public static partial class WorkstationEndpoints
     {
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFeatureCapabilities), (HttpContext context) =>
         {
-            var service = context.RequestServices.GetRequiredService<FeatureCapabilitySettingsService>();
+            var service = context.RequestServices.GetService<FeatureCapabilitySettingsService>();
+            if (service is null)
+            {
+                return Results.Problem("Feature capability settings service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
             return Results.Json(service.Get(), jsonOptions);
         })
         .WithName("GetWorkstationFeatureCapabilities")
-        .Produces<FeatureCapabilitySettingsResponse>(200);
+        .Produces<FeatureCapabilitySettingsResponse>(200)
+        .Produces(501);
 
         group.MapPut(WorkstationSubroute(UiApiRoutes.WorkstationFeatureCapabilityByKey), async (
             string capabilityKey,
             FeatureCapabilityToggleRequest request,
             HttpContext context) =>
         {
-            var service = context.RequestServices.GetRequiredService<FeatureCapabilitySettingsService>();
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<FeatureCapabilitySettingsService>();
+            if (service is null)
+            {
+                return Results.Problem("Feature capability settings service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
             var response = await service
                 .SetAsync(capabilityKey, request.IsEnabled, context.RequestAborted)
                 .ConfigureAwait(false);
@@ -36,6 +52,8 @@ public static partial class WorkstationEndpoints
         })
         .WithName("SetWorkstationFeatureCapability")
         .Produces<FeatureCapabilitySettingsResponse>(200)
-        .Produces(404);
+        .Produces(403)
+        .Produces(404)
+        .Produces(501);
     }
 }

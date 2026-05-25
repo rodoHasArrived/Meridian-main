@@ -4555,6 +4555,15 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
+    }
+
+    private static async Task SeedBreakQueueAsync(
+        IReconciliationBreakQueueRepository? repository,
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return;
@@ -4671,6 +4680,16 @@ public static partial class WorkstationEndpoints
     {
         var readService = services.GetService<StrategyRunReadService>();
         var reconciliationService = services.GetService<IReconciliationRunService>();
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, ct).ConfigureAwait(false);
+    }
+
+    private static async Task EnsureBreakQueueSeededAsync(
+        StrategyRunReadService? readService,
+        IReconciliationRunService? reconciliationService,
+        IReconciliationBreakQueueRepository? repository,
+        CancellationToken ct)
+    {
         if (readService is null || reconciliationService is null)
         {
             return;
@@ -4684,7 +4703,7 @@ public static partial class WorkstationEndpoints
 
         var reconciliations = await Task.WhenAll(
             runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-        await SeedBreakQueueAsync(services, runs, reconciliations, ct).ConfigureAwait(false);
+        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
     }
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
@@ -4694,6 +4713,15 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await GetBreakQueueItemsAsync(repository, status, fundAccountId, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
+        IReconciliationBreakQueueRepository? repository,
+        string? status,
+        string? fundAccountId,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return [];
@@ -4884,6 +4912,14 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await ReviewBreakAsync(repository, request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
+        IReconciliationBreakQueueRepository? repository,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -4901,6 +4937,14 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await ResolveBreakAsync(repository, request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
+        IReconciliationBreakQueueRepository? repository,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -5201,9 +5245,6 @@ public static partial class WorkstationEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ModifySecurityMaster);
-
-    private static bool HasGovernedWorkflowReopenPermission(HttpContext context)
-        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
     private static bool TryResolveCurrentUser(HttpContext context, out string currentUser)
         => EndpointAuthorization.TryResolveActor(context, out currentUser);
