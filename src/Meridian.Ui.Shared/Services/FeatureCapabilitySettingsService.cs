@@ -14,11 +14,7 @@ public sealed class FeatureCapabilitySettingsService
         IEnumerable<FeatureCapabilityDescriptor>? descriptors = null)
     {
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
-        _descriptors = (descriptors ?? FeatureCapabilityCatalog.All)
-            .GroupBy(static descriptor => descriptor.CapabilityKey, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        _descriptors = NormalizeDescriptors(descriptors);
     }
 
     public FeatureCapabilitySettingsResponse Get()
@@ -72,5 +68,23 @@ public sealed class FeatureCapabilitySettingsService
             ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
             : overrides
                 .Where(static entry => !string.IsNullOrWhiteSpace(entry.Key))
-                .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.OrdinalIgnoreCase);
+                .GroupBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static group => group.Key, static group => group.First().Value, StringComparer.OrdinalIgnoreCase);
+
+    private static IReadOnlyList<FeatureCapabilityDescriptor> NormalizeDescriptors(IEnumerable<FeatureCapabilityDescriptor>? descriptors)
+    {
+        if (descriptors is null)
+        {
+            return FeatureCapabilityCatalog.All;
+        }
+
+        var supplied = descriptors.ToArray();
+        return supplied.Length == 0
+            ? FeatureCapabilityCatalog.All
+            : supplied
+                .GroupBy(static descriptor => descriptor.CapabilityKey, StringComparer.OrdinalIgnoreCase)
+                .Select(static group => group.First())
+                .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+    }
 }

@@ -591,6 +591,7 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
     public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
+    public const string ReconciliationBreakQueueById = "/api/workstation/reconciliation/break-queue/{breakId}";
     public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";

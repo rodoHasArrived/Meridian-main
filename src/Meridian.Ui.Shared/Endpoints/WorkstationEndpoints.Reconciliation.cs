@@ -18,6 +18,11 @@ public static partial class WorkstationEndpoints
     {
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
             {
@@ -31,6 +36,7 @@ public static partial class WorkstationEndpoints
         })
         .WithName("CreateReconciliationRun")
         .Produces<ReconciliationRunDetail>(200)
+        .Produces(403)
         .Produces(404);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
@@ -89,7 +95,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (string? status, string? fundAccountId, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
@@ -98,7 +104,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
 
-        group.MapGet("/reconciliation/break-queue/{breakId}", async (string breakId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueueById), async (string breakId, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
@@ -114,7 +120,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCalibrationSummary), async (HttpContext context) =>
         {
             var asOf = DateTimeOffset.UtcNow;
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -125,7 +131,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetReconciliationCalibrationSummary")
         .Produces<ReconciliationCalibrationSummaryDto>(200);
 
-        group.MapGet("/reconciliation/break-queue/{breakId}/audit", async (string breakId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAudit), async (string breakId, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
@@ -144,7 +150,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReview), async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -179,7 +185,7 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(404);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/resolve", async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolve), async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
