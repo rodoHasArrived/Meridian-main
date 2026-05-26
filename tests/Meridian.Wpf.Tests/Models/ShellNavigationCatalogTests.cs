@@ -208,6 +208,30 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void BacktestLeanLiveDataAndPortfolioImport_ShouldCrossLinkForWorkflowHandoffs()
+    {
+        ShellNavigationCatalog.GetRelatedPages("Backtest")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["LeanIntegration", "LiveData", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("LeanIntegration")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LiveData", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("LiveData")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LeanIntegration", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("PortfolioImport")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LeanIntegration", "LiveData"]);
+    }
+
+    [Fact]
     public void OperatorRoutes_ShouldUseSevenWorkspaceLandingLabels()
     {
         ShellNavigationCatalog.GetPage("TradingShell")!.Title.Should().Be("Trading Workspace");
