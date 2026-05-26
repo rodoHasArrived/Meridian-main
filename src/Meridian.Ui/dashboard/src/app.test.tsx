@@ -904,7 +904,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/settings"] });
 
     expect(screen.getByText("Demo data")).toBeInTheDocument();
-    expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
+    expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.")).toBeInTheDocument();
     const demoPath = screen.getByRole("navigation", { name: "Demo data evidence path" });
     expect(within(demoPath).getByText("Evidence path")).toBeInTheDocument();
     expect(within(demoPath).getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute(

@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-REFRESH_SCREENSHOTS_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "refresh-screenshots.yml"
+WEB_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "web-screenshot-capture.yml"
 RUN_DESKTOP_WORKFLOW_SCRIPT = REPO_ROOT / "scripts" / "dev" / "run-desktop-workflow.ps1"
 WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.json"
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
@@ -13,17 +13,16 @@ WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtur
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.workflow = REFRESH_SCREENSHOTS_WORKFLOW.read_text(encoding="utf-8")
+        cls.workflow = WEB_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
         cls.run_desktop_workflow_script = RUN_DESKTOP_WORKFLOW_SCRIPT.read_text(encoding="utf-8")
         cls.web_screenshot_routes = json.loads(WEB_SCREENSHOT_ROUTES.read_text(encoding="utf-8"))
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
-<<<<<<< Updated upstream
-        self.assertIn("run: npm install --include=optional", self.workflow)
-=======
         self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.workflow)
->>>>>>> Stashed changes
+        self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package.json", self.workflow)
+        self.assertNotIn("npm ci", self.workflow)
+        self.assertNotIn("package-lock.json", self.workflow)
 
     def test_wpf_screenshot_job_downloads_prebuilt_binaries_under_src(self) -> None:
         self.assertIn("name: wpf-build-binaries", self.workflow)
