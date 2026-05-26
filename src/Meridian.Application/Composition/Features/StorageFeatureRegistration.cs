@@ -34,6 +34,8 @@ using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
+using Meridian.Application.Banking;
+using Meridian.Storage.Banking;
 using Meridian.Storage.FundAccounts;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.Interfaces;
@@ -301,6 +303,26 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                     securityMasterQueryService,
                     persistencePath);
             });
+        }
+        // ── Banking ──────────────────────────────────────────────────────────
+        if (BankingStartup.IsConfigured())
+        {
+            BankingStartup.EnsureEnvironmentDefaults();
+            services.TryAddSingleton(new BankingStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable(BankingStartup.ConnectionStringVariable)!,
+                Schema = Environment.GetEnvironmentVariable(BankingStartup.SchemaVariable) ?? BankingStartup.DefaultSchema
+            });
+            services.TryAddSingleton<IBankingStore, PostgresBankingStore>();
+            services.TryAddSingleton<PostgresBankingService>();
+            services.TryAddSingleton<IBankingService>(sp => sp.GetRequiredService<PostgresBankingService>());
+            services.TryAddSingleton<Meridian.Contracts.Banking.IBankTransactionSource>(sp => sp.GetRequiredService<PostgresBankingService>());
+        }
+        else
+        {
+            services.TryAddSingleton<InMemoryBankingService>();
+            services.TryAddSingleton<IBankingService>(sp => sp.GetRequiredService<InMemoryBankingService>());
+            services.TryAddSingleton<Meridian.Contracts.Banking.IBankTransactionSource>(sp => sp.GetRequiredService<InMemoryBankingService>());
         }
         services.TryAddSingleton<EnvironmentDesignerService>(sp =>
         {
