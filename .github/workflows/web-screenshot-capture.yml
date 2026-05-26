@@ -45,10 +45,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+          cache-dependency-path: src/Meridian.Ui/dashboard/package.json
 
       - name: Install dashboard dependencies
-        run: npm ci --prefix src/Meridian.Ui/dashboard
+        run: npm install --include=optional --prefix src/Meridian.Ui/dashboard
 
       - name: Install Playwright browser
         run: npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
