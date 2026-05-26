@@ -367,7 +367,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
 
     private void UpdateGovernanceHero()
     {
-        var hero = BuildLaneHeroState(
+        var hero = GovernanceWorkspacePresentationService.BuildLaneHeroState(
             _selectedSubarea,
             _lastOperatingContext,
             _lastProfile,
@@ -405,7 +405,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             return;
         }
 
-        ExecuteAction(ResolveLanePrimaryActionId(subarea), navigate: false);
+        ExecuteAction(GovernanceWorkspacePresentationService.ResolveLanePrimaryActionId(subarea), navigate: false);
     }
 
     private void UpdateSubareaButtons()
@@ -429,23 +429,4 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         detailText.Text = detail;
     }
 
-    internal static GovernanceWorkspacePresentationService.GovernanceLaneHeroState BuildLaneHeroState(
-        GovernanceSubarea subarea,
-        WorkstationOperatingContext? operatingContext,
-        FundProfileDetail? profile,
-        FundOperationsWorkspaceDto? workspace,
-        WorkspaceWorkflowSummary? workflow,
-        IReadOnlyList<NotificationHistoryItem> notifications,
-        int unreadAlerts)
-        => GovernanceWorkspacePresentationService.BuildLaneHeroState(
-            subarea,
-            operatingContext,
-            profile,
-            workspace,
-            workflow,
-            notifications,
-            unreadAlerts);
-
-    internal static string ResolveLanePrimaryActionId(GovernanceSubarea subarea)
-        => GovernanceWorkspacePresentationService.ResolveLanePrimaryActionId(subarea);
 }

@@ -3,6 +3,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
@@ -19,7 +20,7 @@ public sealed class GovernanceWorkspaceShellPageTests
         GovernanceSubarea subarea,
         string expectedActionId)
     {
-        GovernanceWorkspaceShellPage.ResolveLanePrimaryActionId(subarea)
+        GovernanceWorkspacePresentationService.ResolveLanePrimaryActionId(subarea)
             .Should()
             .Be(expectedActionId);
     }
@@ -46,7 +47,7 @@ public sealed class GovernanceWorkspaceShellPageTests
                 IsBlocking: true),
             Evidence: []);
 
-        var hero = GovernanceWorkspaceShellPage.BuildLaneHeroState(
+        var hero = GovernanceWorkspacePresentationService.BuildLaneHeroState(
             GovernanceSubarea.Accounting,
             operatingContext: null,
             profile: null,
@@ -206,7 +207,7 @@ public sealed class GovernanceWorkspaceShellPageTests
             }
         };
 
-        var hero = GovernanceWorkspaceShellPage.BuildLaneHeroState(
+        var hero = GovernanceWorkspacePresentationService.BuildLaneHeroState(
             GovernanceSubarea.Reconciliation,
             operatingContext: null,
             profile,
