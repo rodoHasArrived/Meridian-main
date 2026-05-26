@@ -35,9 +35,11 @@ using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Application.Banking;
+using Meridian.Application.Treasury;
 using Meridian.Storage.Banking;
 using Meridian.Storage.FundAccounts;
 using Meridian.Storage.FundStructure;
+using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Maintenance;
@@ -323,6 +325,26 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.TryAddSingleton<InMemoryBankingService>();
             services.TryAddSingleton<IBankingService>(sp => sp.GetRequiredService<InMemoryBankingService>());
             services.TryAddSingleton<Meridian.Contracts.Banking.IBankTransactionSource>(sp => sp.GetRequiredService<InMemoryBankingService>());
+        }
+        // ── Money Market Fund ─────────────────────────────────────────────────
+        if (MoneyMarketStartup.IsConfigured())
+        {
+            MoneyMarketStartup.EnsureEnvironmentDefaults();
+            services.TryAddSingleton(new MoneyMarketStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable)!,
+                Schema = Environment.GetEnvironmentVariable(MoneyMarketStartup.SchemaVariable) ?? MoneyMarketStartup.DefaultSchema
+            });
+            services.TryAddSingleton<IMoneyMarketFundAuxStore, PostgresMoneyMarketFundStore>();
+            services.TryAddSingleton<PostgresMoneyMarketFundService>();
+            services.TryAddSingleton<IMoneyMarketFundService>(sp => sp.GetRequiredService<PostgresMoneyMarketFundService>());
+            services.TryAddSingleton<IMmfLiquidityService>(sp => sp.GetRequiredService<PostgresMoneyMarketFundService>());
+        }
+        else
+        {
+            services.TryAddSingleton<InMemoryMoneyMarketFundService>();
+            services.TryAddSingleton<IMoneyMarketFundService>(sp => sp.GetRequiredService<InMemoryMoneyMarketFundService>());
+            services.TryAddSingleton<IMmfLiquidityService>(sp => sp.GetRequiredService<InMemoryMoneyMarketFundService>());
         }
         services.TryAddSingleton<EnvironmentDesignerService>(sp =>
         {
