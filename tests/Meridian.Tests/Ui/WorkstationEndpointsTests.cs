@@ -4817,8 +4817,8 @@ public sealed partial class WorkstationEndpointsTests
         rows.Should().HaveCount(2);
         rows.Select(r => r.GetProperty("runId").GetString()).Should().Contain("cmp-1").And.Contain("cmp-2");
         rows.Select(r => r.GetProperty("strategyName").GetString()).Should().Contain("Alpha Strategy").And.Contain("Beta Strategy");
-        rows.Should().OnlyContain(row => row.TryGetProperty("artifactCompleteness", out _));
-        rows.Should().OnlyContain(row => row.TryGetProperty("compatibilityWarnings", out _));
+        rows.Should().OnlyContain(row => row.GetProperty("artifactCompleteness").ValueKind == JsonValueKind.Object);
+        rows.Should().OnlyContain(row => row.GetProperty("compatibilityWarnings").ValueKind == JsonValueKind.Array);
     }
 
     [Fact]

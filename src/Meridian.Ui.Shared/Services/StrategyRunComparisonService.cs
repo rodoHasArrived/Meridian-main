@@ -1,7 +1,7 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Shared comparison service for run compare/diff endpoint flows.
