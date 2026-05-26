@@ -5,6 +5,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WEB_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "web-screenshot-capture.yml"
+DESKTOP_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "desktop-screenshot-capture.yml"
+DESKTOP_WORKFLOW_RUNNER_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "desktop-workflow-runner.yml"
 RUN_DESKTOP_WORKFLOW_SCRIPT = REPO_ROOT / "scripts" / "dev" / "run-desktop-workflow.ps1"
 WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.json"
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
@@ -13,27 +15,30 @@ WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtur
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.workflow = WEB_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
+        cls.web_workflow = WEB_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
+        cls.desktop_screenshot_workflow = DESKTOP_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
+        cls.desktop_workflow_runner = DESKTOP_WORKFLOW_RUNNER_WORKFLOW.read_text(encoding="utf-8")
         cls.run_desktop_workflow_script = RUN_DESKTOP_WORKFLOW_SCRIPT.read_text(encoding="utf-8")
         cls.web_screenshot_routes = json.loads(WEB_SCREENSHOT_ROUTES.read_text(encoding="utf-8"))
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
-        self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.workflow)
-        self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package.json", self.workflow)
-        self.assertNotIn("npm ci", self.workflow)
-        self.assertNotIn("package-lock.json", self.workflow)
+        self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
+        self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package.json", self.web_workflow)
+        self.assertNotIn("npm ci", self.web_workflow)
+        self.assertNotIn("package-lock.json", self.web_workflow)
+        self.assertNotIn("<<<<<<<", self.web_workflow)
+        self.assertNotIn(">>>>>>>", self.web_workflow)
 
-    def test_wpf_screenshot_job_downloads_prebuilt_binaries_under_src(self) -> None:
-        self.assertIn("name: wpf-build-binaries", self.workflow)
-        self.assertIn("path: src", self.workflow)
+    def test_desktop_screenshot_job_runs_capture_script_and_keeps_artifacts(self) -> None:
+        self.assertIn("scripts/dev/capture-desktop-screenshots.ps1", self.desktop_screenshot_workflow)
+        self.assertIn("continue-on-error: true", self.desktop_screenshot_workflow)
+        self.assertIn("name: desktop-screenshots-${{ github.run_number }}", self.desktop_screenshot_workflow)
 
-    def test_refresh_workflow_uses_dynamic_screenshot_plan(self) -> None:
-        self.assertIn("plan-screenshots:", self.workflow)
-        self.assertIn("scripts/dev/screenshot_workflow_plan.py", self.workflow)
-        self.assertIn("matrix: ${{ fromJson(needs.plan-screenshots.outputs.desktop_matrix) }}", self.workflow)
-        self.assertNotIn("name: manual-data-operations", self.workflow)
-        self.assertNotIn("name: manual-research-and-trading", self.workflow)
+    def test_desktop_workflow_runner_exposes_manual_capture_workflows(self) -> None:
+        self.assertIn("manual-data-operations", self.desktop_workflow_runner)
+        self.assertIn("manual-research-and-trading", self.desktop_workflow_runner)
+        self.assertIn("scripts/dev/run-desktop-workflow.ps1", self.desktop_workflow_runner)
 
     def test_desktop_workflow_script_contains_context_selection_automation_elements(self) -> None:
         self.assertIn("ContextSelectionHint", self.run_desktop_workflow_script)

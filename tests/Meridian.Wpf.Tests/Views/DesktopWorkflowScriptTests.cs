@@ -113,44 +113,29 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void CaptureDesktopScreenshotsScript_ShouldImportRetryHelperBeforeCapture()
+    public void CaptureDesktopScreenshotsScript_ShouldRouteThroughSharedWorkflowRunner()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\capture-desktop-screenshots.ps1"));
 
-        script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
-        script.Should().Contain("Invoke-MeridianRetry");
-        script.Should().Contain("function Wait-MeridianWindow");
-        script.Should().Contain("function New-ScreenNavigationRegistry");
-        script.Should().Contain("function Invoke-ScreenNavigation");
-        script.Should().Contain("function Wait-ScreenReady");
-        script.Should().Contain("function Test-ScreenReadiness");
-        script.Should().Contain("function Invoke-ScreenCapture");
-        script.Should().Contain("function Select-ScreenNavigationMethod");
-        script.Should().Contain("function Invoke-NavigateWithKeyboard");
-        script.Should().Contain("function Invoke-NavigateWithMouse");
-        script.Should().Contain("Retrying '$SearchTerm' navigation with mouse automation fallback.");
-        script.Should().Contain("Capturing '$($Screen.searchTerm)' from the detected shell window.");
-        script.Should().Contain("$screenRegistry = New-ScreenNavigationRegistry");
-        script.Should().Contain("$screenResult = Invoke-ScreenCapture");
-        script.Should().Contain("Desktop screenshot summary: success={0}, warnings={1}, failures={2}");
-        script.Should().Contain("$stdoutPath = Join-Path $OutputDir \"wpf-startup-stdout-$runStamp.log\"");
-        script.Should().Contain("$stderrPath = Join-Path $OutputDir \"wpf-startup-stderr-$runStamp.log\"");
-        script.Should().NotContain("$stdoutPath = 'wpf-startup-stdout.log'");
-        script.Should().NotContain("$stderrPath = 'wpf-startup-stderr.log'");
+        script.Should().Contain("$workflowRunner = Join-Path $PSScriptRoot 'run-desktop-workflow.ps1'");
+        script.Should().Contain("$workflowName = if ([string]::IsNullOrWhiteSpace($Profile)) { 'screenshot-catalog' } else { $Profile }");
+        script.Should().Contain("'-Workflow', $workflowName");
+        script.Should().Contain("'-Profile', $workflowName");
+        script.Should().Contain("'-OutputRoot', 'artifacts/desktop-workflows'");
+        script.Should().Contain("'-ScreenshotDirectory', $screenshotDirectory");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('ProjectPath'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('Configuration'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('Framework'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('ExeName'))");
+        script.Should().Contain("if ($SkipBuild)");
+        script.Should().Contain("if ($KeepAppOpen)");
+        script.Should().Contain("& pwsh -NoProfile @runnerArgs");
+        script.Should().Contain("exit $LASTEXITCODE");
 
-        var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'shared/retry.ps1')", StringComparison.Ordinal);
-        var retryIndex = script.IndexOf("Invoke-MeridianRetry", StringComparison.Ordinal);
-        var registryIndex = script.IndexOf("function New-ScreenNavigationRegistry", StringComparison.Ordinal);
-        var captureIndex = script.IndexOf("function Invoke-ScreenCapture", StringComparison.Ordinal);
-        var keyboardIndex = script.IndexOf("function Invoke-NavigateWithKeyboard", StringComparison.Ordinal);
-        var mouseIndex = script.IndexOf("function Invoke-NavigateWithMouse", StringComparison.Ordinal);
-
-        importIndex.Should().BeGreaterThan(0);
-        retryIndex.Should().BeGreaterThan(importIndex);
-        registryIndex.Should().BeGreaterThan(0);
-        captureIndex.Should().BeGreaterThan(registryIndex);
-        keyboardIndex.Should().BeGreaterThan(0);
-        mouseIndex.Should().BeGreaterThan(keyboardIndex);
+        script.Should().NotContain("CommandPaletteInput");
+        script.Should().NotContain("function New-ScreenNavigationRegistry");
+        script.Should().NotContain("function Invoke-NavigateWithKeyboard");
+        script.Should().NotContain("function Invoke-NavigateWithMouse");
     }
 
     [Fact]
