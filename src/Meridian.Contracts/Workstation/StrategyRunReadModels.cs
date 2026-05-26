@@ -441,7 +441,19 @@ public sealed record StrategyRunComparison(
     DateTimeOffset LastUpdatedAt,
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
     bool HasLedger = false,
-    bool HasAuditTrail = false);
+    bool HasAuditTrail = false,
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+
+/// <summary>
+/// Completeness indicator for run artifacts used by comparison workflows.
+/// </summary>
+public sealed record StrategyRunArtifactCompleteness(
+    bool HasPortfolio,
+    bool HasLedger,
+    bool HasCashFlow,
+    bool HasFills,
+    bool HasAuditTrail);
 
 
 
@@ -555,7 +567,9 @@ public sealed record RunComparisonDto(
     ReconciliationBreakSeverity ReconciliationHighestSeverity = ReconciliationBreakSeverity.Info,
     bool HasLedgerEntryCoverage = false,
     string LedgerCoverageStatus = "Missing",
-    string CashFlowHealth = "Missing");
+    string CashFlowHealth = "Missing",
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
 
 // ---------------------------------------------------------------------------
 // Track C drill-in models

@@ -1,5 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
+using Meridian.Backtesting.Sdk;
+using Meridian.Ledger;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Contracts.Api;
 using Meridian.Storage;
 using Meridian.Ui.Shared;
@@ -328,14 +332,42 @@ public static class LeanEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Backtest history
-        group.MapGet(UiApiRoutes.LeanBacktestHistory, (int? limit) =>
+        group.MapGet(UiApiRoutes.LeanBacktestHistory, async (int? limit, [FromServices] IStrategyRepository? repository) =>
         {
+            var requestedLimit = Math.Max(1, limit ?? 20);
             var history = s_backtests.Values
                 .OrderByDescending(b => b.StartedAt)
-                .Take(limit ?? 20)
-                .Select(b => new { backtestId = b.Id, algorithmName = b.AlgorithmName, status = b.Status, startedAt = b.StartedAt });
+                .Take(requestedLimit)
+                .Select(b => new { backtestId = b.Id, algorithmName = b.AlgorithmName, status = b.Status, startedAt = b.StartedAt })
+                .ToList();
 
-            return Results.Json(new { backtests = history, total = s_backtests.Count, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
+            if (repository is not null)
+            {
+                var persistedLeanRuns = await repository
+                    .QueryRunsAsync(new StrategyRunRepositoryQuery(RunTypes: [RunType.Backtest], Limit: requestedLimit * 4))
+                    .ConfigureAwait(false);
+
+                foreach (var run in persistedLeanRuns.Where(static run =>
+                             string.Equals(run.Engine, "Lean", StringComparison.OrdinalIgnoreCase)))
+                {
+                    history.Add(new
+                    {
+                        backtestId = run.RunId,
+                        algorithmName = run.StrategyName,
+                        status = run.EndedAt.HasValue ? "completed" : "running",
+                        startedAt = run.StartedAt
+                    });
+                }
+            }
+
+            var deduped = history
+                .GroupBy(entry => entry.backtestId, StringComparer.OrdinalIgnoreCase)
+                .Select(static group => group.OrderByDescending(entry => entry.startedAt).First())
+                .OrderByDescending(entry => entry.startedAt)
+                .Take(requestedLimit)
+                .ToArray();
+
+            return Results.Json(new { backtests = deduped, total = deduped.Length, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
         .WithName("GetLeanBacktestHistory")
         .Produces(200);
@@ -421,7 +453,8 @@ public static class LeanEndpoints
         // Results ingest — POST /api/lean/results/ingest
         // Reads a Lean backtest result JSON file and stores it as a completed backtest record.
         group.MapPost(UiApiRoutes.LeanResultsIngest, async (
-            [FromBody] LeanResultsIngestRequest? req) =>
+            [FromBody] LeanResultsIngestRequest? req,
+            [FromServices] IStrategyRepository? repository) =>
         {
             if (req == null || string.IsNullOrEmpty(req.ResultsFilePath))
             {
@@ -453,24 +486,23 @@ public static class LeanEndpoints
                 var info = new BacktestInfo(backtestId, algorithmName, "completed", DateTimeOffset.UtcNow);
                 s_backtests[backtestId] = info;
 
-                // Extract summary statistics
-                decimal? totalReturn = null;
-                decimal? sharpe = null;
-                int? totalTrades = null;
+                var canonicalResult = NormalizeLeanBacktestResult(root, backtestId, algorithmName);
+                var metrics = canonicalResult.Metrics;
+                var totalReturn = metrics.TotalReturn;
+                var sharpe = (decimal)metrics.SharpeRatio;
+                var totalTrades = metrics.TotalTrades;
 
-                if (root.TryGetProperty("Statistics", out var stats))
+                if (repository is not null)
                 {
-                    if (stats.TryGetProperty("Total Return", out var tr) &&
-                        decimal.TryParse(tr.GetString()?.TrimEnd('%'), out var trVal))
-                        totalReturn = trVal / 100m;
+                    var runEntry = StrategyRunEntry.Start(
+                            strategyId: $"lean-{algorithmName.ToLowerInvariant().Replace(' ', '-')}",
+                            strategyName: algorithmName,
+                            runType: RunType.Backtest,
+                            runId: backtestId,
+                            engine: "Lean")
+                        .Complete(canonicalResult);
 
-                    if (stats.TryGetProperty("Sharpe Ratio", out var sr) &&
-                        decimal.TryParse(sr.GetString(), out var srVal))
-                        sharpe = srVal;
-
-                    if (stats.TryGetProperty("Total Trades", out var tt) &&
-                        int.TryParse(tt.GetString(), out var ttVal))
-                        totalTrades = ttVal;
+                    await repository.RecordRunAsync(runEntry).ConfigureAwait(false);
                 }
 
                 s_ingestedResults[backtestId] = new IngestedResultInfo(
@@ -544,6 +576,131 @@ public static class LeanEndpoints
                 var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(launcherDll);
                 if (!string.IsNullOrEmpty(versionInfo.FileVersion))
                     return versionInfo.FileVersion;
+            }
+
+            private static BacktestResult NormalizeLeanBacktestResult(JsonElement root, string backtestId, string algorithmName)
+            {
+                var startedAt = DateTimeOffset.UtcNow;
+                var endedAt = DateTimeOffset.UtcNow;
+                if (root.TryGetProperty("Period", out var period))
+                {
+                    if (period.TryGetProperty("Start", out var startElement) &&
+                        DateTimeOffset.TryParse(startElement.GetString(), out var parsedStart))
+                    {
+                        startedAt = parsedStart;
+                    }
+
+                    if (period.TryGetProperty("End", out var endElement) &&
+                        DateTimeOffset.TryParse(endElement.GetString(), out var parsedEnd))
+                    {
+                        endedAt = parsedEnd;
+                    }
+                }
+
+                var totalReturn = 0m;
+                var sharpeRatio = 0d;
+                var totalTrades = 0;
+                if (root.TryGetProperty("Statistics", out var stats))
+                {
+                    totalReturn = ParsePercentageStatistic(stats, "Total Return");
+                    sharpeRatio = ParseDoubleStatistic(stats, "Sharpe Ratio");
+                    totalTrades = ParseIntStatistic(stats, "Total Trades");
+                }
+
+                var initialCapital = ParseDecimalPath(root, "Portfolio", "StartingCapital") ?? 100000m;
+                var finalEquity = initialCapital * (1m + totalReturn);
+                var netPnl = finalEquity - initialCapital;
+
+                var request = new BacktestRequest(
+                    From: DateOnly.FromDateTime(startedAt.UtcDateTime),
+                    To: DateOnly.FromDateTime(endedAt.UtcDateTime),
+                    Symbols: null,
+                    InitialCash: initialCapital);
+
+                var metrics = new BacktestMetrics(
+                    InitialCapital: initialCapital,
+                    FinalEquity: finalEquity,
+                    GrossPnl: netPnl,
+                    NetPnl: netPnl,
+                    TotalReturn: totalReturn,
+                    AnnualizedReturn: totalReturn,
+                    SharpeRatio: sharpeRatio,
+                    SortinoRatio: 0d,
+                    CalmarRatio: 0d,
+                    MaxDrawdown: 0m,
+                    MaxDrawdownPercent: 0m,
+                    MaxDrawdownRecoveryDays: 0,
+                    ProfitFactor: 0d,
+                    WinRate: 0d,
+                    TotalTrades: totalTrades,
+                    WinningTrades: 0,
+                    LosingTrades: 0,
+                    TotalCommissions: 0m,
+                    TotalMarginInterest: 0m,
+                    TotalShortRebates: 0m,
+                    Xirr: 0d,
+                    SymbolAttribution: new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase));
+
+                return new BacktestResult(
+                    Request: request,
+                    Universe: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                    Snapshots: Array.Empty<PortfolioSnapshot>(),
+                    CashFlows: Array.Empty<CashFlowEntry>(),
+                    Fills: Array.Empty<FillEvent>(),
+                    Metrics: metrics,
+                    Ledger: new Ledger(),
+                    ElapsedTime: endedAt >= startedAt ? endedAt - startedAt : TimeSpan.Zero,
+                    TotalEventsProcessed: totalTrades,
+                    EngineMetadata: new BacktestEngineMetadata("Lean"));
+            }
+
+            private static decimal ParsePercentageStatistic(JsonElement stats, string key)
+            {
+                if (!stats.TryGetProperty(key, out var element))
+                    return 0m;
+
+                var raw = element.GetString();
+                if (string.IsNullOrWhiteSpace(raw))
+                    return 0m;
+
+                var trimmed = raw.Trim().TrimEnd('%');
+                return decimal.TryParse(trimmed, out var value)
+                    ? value / 100m
+                    : 0m;
+            }
+
+            private static double ParseDoubleStatistic(JsonElement stats, string key)
+            {
+                if (!stats.TryGetProperty(key, out var element))
+                    return 0d;
+
+                var raw = element.GetString();
+                return double.TryParse(raw, out var value) ? value : 0d;
+            }
+
+            private static int ParseIntStatistic(JsonElement stats, string key)
+            {
+                if (!stats.TryGetProperty(key, out var element))
+                    return 0;
+
+                var raw = element.GetString();
+                return int.TryParse(raw, out var value) ? value : 0;
+            }
+
+            private static decimal? ParseDecimalPath(JsonElement root, string parent, string field)
+            {
+                if (!root.TryGetProperty(parent, out var parentElement))
+                    return null;
+
+                if (!parentElement.TryGetProperty(field, out var fieldElement))
+                    return null;
+
+                if (fieldElement.ValueKind == JsonValueKind.Number && fieldElement.TryGetDecimal(out var direct))
+                    return direct;
+
+                return decimal.TryParse(fieldElement.GetString(), out var parsed)
+                    ? parsed
+                    : null;
             }
 
             return null;
