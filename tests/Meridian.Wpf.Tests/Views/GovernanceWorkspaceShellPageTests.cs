@@ -9,6 +9,21 @@ namespace Meridian.Wpf.Tests.Views;
 
 public sealed class GovernanceWorkspaceShellPageTests
 {
+    [Theory]
+    [InlineData(GovernanceSubarea.Operations, "FundLedger")]
+    [InlineData(GovernanceSubarea.Accounting, "FundTrialBalance")]
+    [InlineData(GovernanceSubarea.Reconciliation, "FundReconciliation")]
+    [InlineData(GovernanceSubarea.Reporting, "FundCashFinancing")]
+    [InlineData(GovernanceSubarea.Audit, "FundAuditTrail")]
+    public void ResolveLanePrimaryActionId_ReturnsExpectedActionId(
+        GovernanceSubarea subarea,
+        string expectedActionId)
+    {
+        GovernanceWorkspaceShellPage.ResolveLanePrimaryActionId(subarea)
+            .Should()
+            .Be(expectedActionId);
+    }
+
     [Fact]
     public void BuildLaneHeroState_WithoutFundContext_UsesSwitchContextForSelectedLane()
     {
