@@ -345,6 +345,7 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 - `NotificationCenterPage` now behaves more like an operator inbox baseline, with search, unread-only filtering, severity filters, per-item read state, and richer empty/history states.
 - The WPF main shell now consumes `/api/workstation/operator/inbox` through `WorkstationOperatorInboxApiClient`, shows a queue button with review counts and severity tone, and routes the primary work item to its target page; this is initial shell consumption, while end-to-end queue workflow acceptance remains open.
 - `MessagingHubPage` now projects message-flow posture, subscriber readiness, retained activity scope, refresh recency, and clear-activity command state through `MessagingHubViewModel` instead of code-behind handlers.
+- `GovernanceWorkspaceShellPage` now routes command-bar wiring, lane summary shaping, queue composition, hero-state decisions, and dock-action mapping through `GovernanceWorkspacePresentationService`, keeping page code-behind focused on lifecycle/event wiring and visual updates.
 - `PositionBlotterPage` now includes a selected-position review rail with long/short/gross/net quantity, eligibility counts, and preview rows for batch-action review.
 - `BatchBacktestPage` and `BatchBacktestViewModel` now run real request-level parameter sweeps through `IBatchBacktestService` with validation, progress, cancellation, result metrics, and focused ViewModel tests; strategy selection and persisted sweep grouping remain open Research work.
 - Dock-hosted workspace pages are wrapped in `Frame` containers so WPF page content can be embedded safely inside the workstation docking surface.
@@ -734,4 +735,3 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 ---
 
 _Last Updated: 2026-05-21_
-

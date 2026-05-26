@@ -3,12 +3,28 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 
 public sealed class GovernanceWorkspaceShellPageTests
 {
+    [Theory]
+    [InlineData(GovernanceSubarea.Operations, "FundLedger")]
+    [InlineData(GovernanceSubarea.Accounting, "FundTrialBalance")]
+    [InlineData(GovernanceSubarea.Reconciliation, "FundReconciliation")]
+    [InlineData(GovernanceSubarea.Reporting, "FundCashFinancing")]
+    [InlineData(GovernanceSubarea.Audit, "FundAuditTrail")]
+    public void ResolveLanePrimaryActionId_ReturnsExpectedActionId(
+        GovernanceSubarea subarea,
+        string expectedActionId)
+    {
+        GovernanceWorkspacePresentationService.ResolveLanePrimaryActionId(subarea)
+            .Should()
+            .Be(expectedActionId);
+    }
+
     [Fact]
     public void BuildLaneHeroState_WithoutFundContext_UsesSwitchContextForSelectedLane()
     {
@@ -31,7 +47,7 @@ public sealed class GovernanceWorkspaceShellPageTests
                 IsBlocking: true),
             Evidence: []);
 
-        var hero = GovernanceWorkspaceShellPage.BuildLaneHeroState(
+        var hero = GovernanceWorkspacePresentationService.BuildLaneHeroState(
             GovernanceSubarea.Accounting,
             operatingContext: null,
             profile: null,
@@ -191,7 +207,7 @@ public sealed class GovernanceWorkspaceShellPageTests
             }
         };
 
-        var hero = GovernanceWorkspaceShellPage.BuildLaneHeroState(
+        var hero = GovernanceWorkspacePresentationService.BuildLaneHeroState(
             GovernanceSubarea.Reconciliation,
             operatingContext: null,
             profile,
