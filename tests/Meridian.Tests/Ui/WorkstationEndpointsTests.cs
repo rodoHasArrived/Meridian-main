@@ -4817,6 +4817,8 @@ public sealed partial class WorkstationEndpointsTests
         rows.Should().HaveCount(2);
         rows.Select(r => r.GetProperty("runId").GetString()).Should().Contain("cmp-1").And.Contain("cmp-2");
         rows.Select(r => r.GetProperty("strategyName").GetString()).Should().Contain("Alpha Strategy").And.Contain("Beta Strategy");
+        rows.Should().OnlyContain(row => row.GetProperty("artifactCompleteness").ValueKind == JsonValueKind.Object);
+        rows.Should().OnlyContain(row => row.GetProperty("compatibilityWarnings").ValueKind == JsonValueKind.Array);
     }
 
     [Fact]
@@ -5016,6 +5018,9 @@ public sealed partial class WorkstationEndpointsTests
         doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
         doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
         doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.TryGetProperty("baseArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("targetArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("compatibilityWarnings", out _).Should().BeTrue();
     }
 
     [Fact]
