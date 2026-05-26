@@ -3270,7 +3270,6 @@ Meridian-main
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
 │   │   │   ├── index.html
-│   │   │   ├── package-lock.json
 │   │   │   ├── package.json
 │   │   │   ├── postcss.config.cjs
 │   │   │   ├── tailwind.config.ts
@@ -5092,7 +5091,6 @@ Meridian-main
 ├── Meridian.sln
 ├── Meridian.WebWorkstation.slnf
 ├── NuGet.Config
-├── package-lock.json
 ├── package.json
 └── README.md
 ```
