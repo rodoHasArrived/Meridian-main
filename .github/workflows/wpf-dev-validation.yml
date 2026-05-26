@@ -78,6 +78,7 @@ jobs:
           TEST_FILTER: ${{ inputs.filter }}
         run: |
           $devArgs = @()
+          $devArgs += '-Restore'
           if ($env:BUILD_ONLY -eq 'true') {
             $devArgs += '-BuildOnly'
           }

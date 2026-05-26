@@ -1,3 +1,4 @@
+using Meridian.Application.Services;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 
@@ -17,10 +18,29 @@ internal sealed record ProviderConnectionDiagnosticsSummary(
     DateTimeOffset? LastReconnectAttemptAt,
     string? LastFailureKind,
     TimeSpan? ConnectionAge,
-    TimeSpan? IdleDuration);
+    TimeSpan? IdleDuration,
+    int ActiveSubscriptions,
+    int FailedSubscriptions,
+    int RecoveringSubscriptions,
+    DateTimeOffset? LastSubscriptionMessageAt);
 
 internal static class ProviderConnectionDiagnosticsProjection
 {
+    public static IReadOnlyList<ProviderConnectionDiagnosticsSummary> BuildUniqueSummaries(
+        ProviderRegistry? registry)
+    {
+        if (registry is null)
+        {
+            return [];
+        }
+
+        return registry.GetAllProviderMetadata()
+            .OfType<IProviderConnectionDiagnosticsSource>()
+            .Select(source => FromSnapshot(source.GetConnectionDiagnosticsSnapshot()))
+            .OrderBy(summary => summary.ProviderName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     public static IReadOnlyDictionary<string, ProviderConnectionDiagnosticsSummary> BuildByProviderId(
         ProviderRegistry? registry)
     {
@@ -64,7 +84,7 @@ internal static class ProviderConnectionDiagnosticsProjection
 
     public static ProviderConnectionDiagnosticsSummary FromSnapshot(WebSocketConnectionDiagnostics snapshot)
         => new(
-            ProviderName: snapshot.ProviderName,
+            ProviderName: RuntimeDiagnosticRedactor.SanitizeText(snapshot.ProviderName),
             LifecycleState: snapshot.LifecycleState.ToString(),
             WebSocketState: snapshot.WebSocketState.ToString(),
             IsConnected: snapshot.IsConnected,
@@ -75,9 +95,13 @@ internal static class ProviderConnectionDiagnosticsProjection
             LastHeartbeatReceivedAt: snapshot.LastHeartbeatReceivedAt,
             LastMessageReceivedAt: snapshot.LastMessageReceivedAt,
             LastReconnectAttemptAt: snapshot.LastReconnectAttemptAt,
-            LastFailureKind: snapshot.LastFailureKind?.ToString(),
+            LastFailureKind: RuntimeDiagnosticRedactor.SanitizeText(snapshot.LastFailureKind?.ToString()),
             ConnectionAge: snapshot.ConnectionAge,
-            IdleDuration: snapshot.IdleDuration);
+            IdleDuration: snapshot.IdleDuration,
+            ActiveSubscriptions: snapshot.ActiveSubscriptions,
+            FailedSubscriptions: snapshot.FailedSubscriptions,
+            RecoveringSubscriptions: snapshot.RecoveringSubscriptions,
+            LastSubscriptionMessageAt: snapshot.LastSubscriptionMessageAt);
 
     private static void AddIfPresent(
         IDictionary<string, ProviderConnectionDiagnosticsSummary> diagnostics,

@@ -113,6 +113,7 @@ SYSTEM_CHECKS = (
         AI_CONTRACT,
         (
             "Codex",
+            ".codex/agents/",
             ".codex/AGENTS.md",
             ".codex/skills",
             ".codex/prompts/",
@@ -261,6 +262,18 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                     expected_docs=(AI_CONTRACT,),
                 )
             )
+
+    for path in sorted_files(root, ".codex/agents/*.toml"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="agent-profile",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE, AGENTS_README),
+                alternate_markers=(".codex/agents/",),
+            )
+        )
 
     for rel_path in (".codex/AGENTS.md",):
         path = root / rel_path

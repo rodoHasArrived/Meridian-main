@@ -108,7 +108,10 @@ public record ProviderStatusResponse(
     DateTimeOffset? LastMessageReceivedAt = null,
     DateTimeOffset? LastReconnectAttemptAt = null,
     int? ReconnectAttempts = null,
-    string? LastFailureKind = null);
+    string? LastFailureKind = null,
+    int? FailedSubscriptions = null,
+    int? RecoveringSubscriptions = null,
+    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>Response containing detailed provider metrics.</summary>
 public record ProviderMetricsResponse(

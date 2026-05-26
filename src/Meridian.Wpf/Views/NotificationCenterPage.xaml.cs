@@ -42,8 +42,6 @@ public partial class NotificationCenterPage : Page
     {
         _viewModel.AlertsRefreshRequested += OnAlertsRefreshRequested;
         _viewModel.Start();
-        RefreshGroupedAlerts();
-        RefreshAlertSummary();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -55,16 +53,6 @@ public partial class NotificationCenterPage : Page
     private void OnAlertsRefreshRequested(object? sender, EventArgs e)
     {
         RefreshGroupedAlerts();
-        RefreshAlertSummary();
-    }
-
-    private void OnAlertChanged(object? sender, AlertEventArgs e)
-    {
-        Dispatcher.InvokeAsync(() =>
-        {
-            RefreshGroupedAlerts();
-            RefreshAlertSummary();
-        });
     }
 
     private void RefreshGroupedAlerts()
@@ -88,26 +76,6 @@ public partial class NotificationCenterPage : Page
             var card = BuildAlertGroupCard(group);
             GroupedAlertsPanel.Children.Add(card);
         }
-    }
-
-    private void RefreshAlertSummary()
-    {
-        var summary = _alertService.GetSummary();
-
-        AlertTotalText.Text = $"{summary.TotalActive} active";
-
-        CriticalBadge.Visibility = summary.CriticalCount > 0 ? Visibility.Visible : Visibility.Collapsed;
-        CriticalCountText.Text = $"{summary.CriticalCount} Critical";
-
-        ErrorBadge.Visibility = summary.ErrorCount > 0 ? Visibility.Visible : Visibility.Collapsed;
-        ErrorCountText.Text = $"{summary.ErrorCount} Error{(summary.ErrorCount != 1 ? "s" : "")}";
-
-        WarningBadge.Visibility = summary.WarningCount > 0 ? Visibility.Visible : Visibility.Collapsed;
-        WarningCountText.Text = $"{summary.WarningCount} Warning{(summary.WarningCount != 1 ? "s" : "")}";
-
-        SnoozedCountText.Text = summary.SnoozedCount > 0
-            ? $"{summary.SnoozedCount} snoozed"
-            : string.Empty;
     }
 
     private Border BuildAlertGroupCard(AlertGroup group)
@@ -371,8 +339,7 @@ public partial class NotificationCenterPage : Page
             "Alert snoozed for 1 hour.",
             NotificationType.Info);
 
-        RefreshGroupedAlerts();
-        RefreshAlertSummary();
+        _viewModel.RefreshAlertState();
     }
 
     private void SuppressAlert_Click(object sender, RoutedEventArgs e)
@@ -390,8 +357,7 @@ public partial class NotificationCenterPage : Page
             $"Similar alerts in \"{parts[0]}\" will be suppressed for 24 hours.",
             NotificationType.Info);
 
-        RefreshGroupedAlerts();
-        RefreshAlertSummary();
+        _viewModel.RefreshAlertState();
     }
 
     private void MarkAllRead_Click(object sender, RoutedEventArgs e)

@@ -268,6 +268,7 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\wpf-dev-validation.yml"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
         var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
 
@@ -298,6 +299,8 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("[System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))");
         sharedBuildScript.Should().Contain("Stop-MeridianRepoOwnedTestHostProcesses");
         sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
+
+        workflow.Should().Contain("$devArgs += '-Restore'");
 
         makefile.Should().Contain("desktop-test-dev:");
         makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");

@@ -905,9 +905,24 @@ describe("App", () => {
 
     expect(screen.getByText("Demo data")).toBeInTheDocument();
     expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: "Demo workflow" })).not.toBeInTheDocument();
-    expect(screen.queryByText("Evidence path")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Open sample watchlist demo lane" })).not.toBeInTheDocument();
+    const demoPath = screen.getByRole("navigation", { name: "Demo data evidence path" });
+    expect(within(demoPath).getByText("Evidence path")).toBeInTheDocument();
+    expect(within(demoPath).getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute(
+      "href",
+      "/data/watchlist"
+    );
+    expect(within(demoPath).getByRole("link", { name: "Open sample live quotes for AAPL" })).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=AAPL"
+    );
+    expect(within(demoPath).getByRole("link", { name: "Open sample readiness console" })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
+    expect(within(demoPath).getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
     await user.click(screen.getByRole("button", { name: "Retry Meridian API host and reload live workstation data" }));
     expect(refresh).toHaveBeenCalledOnce();
   });

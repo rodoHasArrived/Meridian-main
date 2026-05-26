@@ -41,7 +41,8 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
             metricsProvider: CreateMetricsSnapshot,
             configProvider: CreateConfigWithSecrets,
             recentErrorsProvider: CreateTrackedErrorsWithSecrets,
-            shutdownDiagnosticsProvider: CreateShutdownDiagnosticsWithSecrets);
+            shutdownDiagnosticsProvider: CreateShutdownDiagnosticsWithSecrets,
+            providerConnectionDiagnosticsProvider: CreateProviderConnectionDiagnosticsWithSecrets);
 
         var result = await service.GenerateAsync(new DiagnosticBundleOptions(
             IncludeSystemInfo: false,
@@ -80,6 +81,8 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         bundleText.Should().NotContain("tracked-query-secret");
         bundleText.Should().NotContain("tracked-inner-token");
         bundleText.Should().NotContain("shutdown-secret");
+        bundleText.Should().NotContain("provider-secret");
+        bundleText.Should().NotContain("ACCT-313131");
         bundleText.Should().NotContain("ACCT-224466");
         bundleText.Should().NotContain("ACCT-778899");
         bundleText.Should().NotContain("ACCT-123456");
@@ -116,6 +119,11 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         runtimeSummaryDocument.RootElement.GetProperty("metrics").GetProperty("latencySampleCount").GetInt64().Should().Be(10);
         runtimeSummaryDocument.RootElement.GetProperty("errors").GetProperty("available").GetBoolean().Should().BeTrue();
         runtimeSummaryDocument.RootElement.GetProperty("errors").GetProperty("totalErrors").GetInt32().Should().Be(1);
+        runtimeSummaryDocument.RootElement.GetProperty("providerConnections").GetProperty("available").GetBoolean().Should().BeTrue();
+        runtimeSummaryDocument.RootElement.GetProperty("providerConnections").GetProperty("count").GetInt32().Should().Be(1);
+        runtimeSummaryDocument.RootElement.GetProperty("providerConnections").GetProperty("providers").EnumerateArray()
+            .Should()
+            .Contain(provider => provider.GetProperty("providerName").GetString()!.Contains("[REDACTED]", StringComparison.Ordinal));
         runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("available").GetBoolean().Should().BeTrue();
         runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("operationName").GetString().Should().Be("runtime.shutdown.sequence");
         runtimeSummaryDocument.RootElement.GetProperty("shutdown").GetProperty("correlationId").GetString().Should().Be("shutdown-correlation");
@@ -271,6 +279,25 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         DuplicateRequestCount: 0,
         LastDuplicateRequestAtUtc: null,
         LastUpdatedAtUtc: DateTimeOffset.UtcNow);
+
+    private static IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot> CreateProviderConnectionDiagnosticsWithSecrets() =>
+    [
+        new ProviderConnectionDiagnosticSnapshot(
+            ProviderName: "Alpaca token=provider-secret accountNumber=ACCT-313131",
+            LifecycleState: "Reconnecting",
+            WebSocketState: "Aborted",
+            IsConnected: false,
+            IsReconnecting: true,
+            ReconnectAttempts: 2,
+            LastConnectedAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+            LastDisconnectedAt: DateTimeOffset.UtcNow.AddSeconds(-45),
+            LastHeartbeatReceivedAt: DateTimeOffset.UtcNow.AddSeconds(-30),
+            LastMessageReceivedAt: DateTimeOffset.UtcNow.AddSeconds(-35),
+            LastReconnectAttemptAt: DateTimeOffset.UtcNow.AddSeconds(-10),
+            LastFailureKind: "ProviderRateLimit",
+            ConnectionAge: null,
+            IdleDuration: TimeSpan.FromSeconds(35))
+    ];
 
     private static string ReadAllBundleText(string zipPath)
     {

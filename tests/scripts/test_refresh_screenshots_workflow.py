@@ -19,7 +19,11 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
+<<<<<<< Updated upstream
         self.assertIn("run: npm install --include=optional", self.workflow)
+=======
+        self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.workflow)
+>>>>>>> Stashed changes
 
     def test_wpf_screenshot_job_downloads_prebuilt_binaries_under_src(self) -> None:
         self.assertIn("name: wpf-build-binaries", self.workflow)

@@ -9,6 +9,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | Surface | Purpose |
 | --- | --- |
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
+| [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
 | [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for concurrency, validation, docs sync, and response shape |
@@ -163,5 +164,5 @@ python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```
 
 Use `python3 build/scripts/docs/check-ai-inventory.py --summary` after adding, renaming, or
-removing Codex prompts, validation checklists, `.codex/AGENTS.md`, environment configs, skills, or
-OpenAI metadata so the shared AI contract and this index stay aligned.
+removing Codex agent profiles, prompts, validation checklists, `.codex/AGENTS.md`, environment
+configs, skills, or OpenAI metadata so the shared AI contract and this index stay aligned.

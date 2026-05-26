@@ -263,7 +263,7 @@ public sealed class StreamingFailoverService : IDisposable
         // Check for recovery: if primary is not active and has recovered, switch back
         if (ruleState.IsInFailoverState && rule is { } r)
         {
-            var primaryId = r.PrimaryProviderId;
+            var primaryId = ProviderIdentity.NormalizeId(r.PrimaryProviderId);
             if (_providerHealth.TryGetValue(primaryId, out var primaryHealth))
             {
                 if (primaryHealth.ConsecutiveSuccesses >= r.RecoveryThreshold)
@@ -283,10 +283,13 @@ public sealed class StreamingFailoverService : IDisposable
 
     private string? FindNextHealthyProvider(FailoverRuleConfig rule, string currentActiveId)
     {
+        var currentActiveKey = ProviderIdentity.NormalizeId(currentActiveId);
+
         // Build the ordered list: primary first, then backups in order
         var allProviders = new[] { rule.PrimaryProviderId }
             .Concat(rule.BackupProviderIds)
-            .Where(id => !string.Equals(id, currentActiveId, StringComparison.OrdinalIgnoreCase));
+            .Select(ProviderIdentity.NormalizeId)
+            .Where(id => !string.Equals(id, currentActiveKey, StringComparison.Ordinal));
 
         foreach (var providerId in allProviders)
         {
@@ -450,7 +453,7 @@ internal sealed class FailoverRuleState
     public FailoverRuleState(FailoverRuleConfig rule)
     {
         Rule = rule;
-        CurrentActiveProviderId = rule.PrimaryProviderId;
+        CurrentActiveProviderId = ProviderIdentity.NormalizeId(rule.PrimaryProviderId);
     }
 
     public void SwitchTo(string providerId)

@@ -16,7 +16,7 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/` | Repo-local specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, and validation checklists |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, and validation checklists |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
@@ -120,6 +120,7 @@ When editing `src/**`, assistants must:
 | Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
+| Codex agent profiles | `.codex/agents/*.toml`, `docs/ai/codex/README.md`, `docs/ai/agents/README.md` | Codex specialist profile routing and task entrypoints |
 | Codex prompts and validation checklists | `.codex/prompts/`, `.codex/checklists/`, `docs/ai/codex/README.md` | Desktop implementation prompts, MVVM/resource/safe-refactor checklists, and Codex workflow guidance |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
@@ -151,6 +152,8 @@ Use this checklist when changing any AI-related asset:
       proposed by one assistant while another follows the browser-workstation plan.
 - [ ] Keep host-specific guides compact; route broad repository layout questions to generated
       navigation or structure artifacts instead of copying tree snapshots into assistant docs.
+- [ ] Keep `.codex/agents/*.toml` documented in the Codex and agent indexes when Codex specialist
+      profile routing changes.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
       descriptions or default prompts change.
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.
@@ -199,7 +202,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-25_
+_Last Updated: 2026-05-26_
 
 ## Machine-checkable synchronization contract
 

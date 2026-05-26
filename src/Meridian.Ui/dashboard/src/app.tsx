@@ -1117,7 +1117,7 @@ function DevelopmentFixtureNotice({
     <div
       role={viewModel.role}
       aria-live={viewModel.ariaLive}
-      className="mb-3 flex flex-col gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
+      className="development-fixture-notice mb-3 flex flex-col gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-warning">
@@ -1127,7 +1127,28 @@ function DevelopmentFixtureNotice({
           {viewModel.detail}
         </span>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="development-fixture-actions">
+        <nav className="development-fixture-path" aria-label={`Demo data ${viewModel.workflowLabel.toLowerCase()}`}>
+          <span className="development-fixture-path-label">{viewModel.workflowLabel}</span>
+          <ol className="development-fixture-path-list">
+            {viewModel.steps.map((step) => (
+              <li key={step.id}>
+                <Link
+                  to={step.href}
+                  aria-label={step.ariaLabel}
+                  aria-current={step.active ? "step" : undefined}
+                  className={cn(
+                    "development-fixture-path-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    step.active && "development-fixture-path-link-active"
+                  )}
+                >
+                  <span className="development-fixture-path-step" aria-hidden="true">{step.step}</span>
+                  <span>{step.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </nav>
         <Button
           type="button"
           variant="outline"

@@ -66,6 +66,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             root = Path(tmp)
             write_ui_platform_policy_docs(root)
             write(root / ".codex" / "config.toml")
+            write(root / ".codex" / "agents" / "meridian-docs.toml")
             write(root / ".codex" / "AGENTS.md")
             write(root / ".codex" / "environments" / "environment.toml")
             write(root / ".codex" / "prompts" / "sample-codex-prompt.md")
@@ -90,6 +91,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("entrypoint", "CLAUDE.md"), pairs)
             self.assertIn(("config", "config.toml"), pairs)
+            self.assertIn(("agent-profile", "meridian-docs.toml"), pairs)
             self.assertIn(("instruction-entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("environment-config", "environment.toml"), pairs)
             self.assertIn(("prompt-template", "sample-codex-prompt.md"), pairs)
@@ -256,7 +258,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             indexed = "\n".join(
                 [
                     "Root assistant compatibility AGENTS.md CLAUDE.md",
-                    "Codex .codex/config.toml .codex/AGENTS.md .codex/environments/ .codex/skills "
+                    "Codex .codex/config.toml .codex/agents/ .codex/AGENTS.md .codex/environments/ .codex/skills "
                     ".codex/prompts/ .codex/checklists/ OpenAI/Codex",
                     "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills",
                     "GitHub Copilot .github/agents .github/prompts .github/instructions",
@@ -283,6 +285,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / "AGENTS.md", policy)
             write(root / "CLAUDE.md", policy)
             write(root / ".codex" / "config.toml")
+            write(root / ".codex" / "agents" / "meridian-docs.toml")
             write(root / ".codex" / "AGENTS.md")
             write(root / ".codex" / "prompts" / "sample-codex-prompt.md")
             write(root / ".codex" / "checklists" / "sample-checklist.md")
@@ -303,7 +306,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             indexed = "\n".join(
                 [
                     "Root assistant compatibility AGENTS.md CLAUDE.md",
-                    "Codex .codex/config.toml .codex/AGENTS.md .codex/environments/ .codex/skills "
+                    "Codex .codex/config.toml .codex/agents/ .codex/AGENTS.md .codex/environments/ .codex/skills "
                     ".codex/prompts/ .codex/checklists/ OpenAI/Codex meridian-test",
                     "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills meridian-test",
                     "GitHub Copilot .github/copilot-instructions.md .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",

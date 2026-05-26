@@ -169,7 +169,11 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package.json
 
       - name: Install dashboard dependencies
+<<<<<<< Updated upstream
         run: npm install --include=optional --prefix src/Meridian.Ui/dashboard
+=======
+        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
+>>>>>>> Stashed changes
 
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test

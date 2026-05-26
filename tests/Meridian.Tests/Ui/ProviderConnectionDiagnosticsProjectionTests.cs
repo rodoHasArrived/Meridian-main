@@ -33,7 +33,11 @@ public sealed class ProviderConnectionDiagnosticsProjectionTests
                 LastError: "provider-specific transport details stay out of the projection",
                 LastFailureKind: ProviderFailureKind.ProviderRateLimit,
                 ConnectionAge: null,
-                IdleDuration: TimeSpan.FromSeconds(10)));
+                IdleDuration: TimeSpan.FromSeconds(10),
+                ActiveSubscriptions: 4,
+                FailedSubscriptions: 1,
+                RecoveringSubscriptions: 2,
+                LastSubscriptionMessageAt: lastMessage));
 
         using var registry = new ProviderRegistry();
         registry.Register(provider);
@@ -54,6 +58,10 @@ public sealed class ProviderConnectionDiagnosticsProjectionTests
         diagnostics.LastMessageReceivedAt.Should().Be(lastMessage);
         diagnostics.LastReconnectAttemptAt.Should().Be(reconnect);
         diagnostics.LastFailureKind.Should().Be("ProviderRateLimit");
+        diagnostics.ActiveSubscriptions.Should().Be(4);
+        diagnostics.FailedSubscriptions.Should().Be(1);
+        diagnostics.RecoveringSubscriptions.Should().Be(2);
+        diagnostics.LastSubscriptionMessageAt.Should().Be(lastMessage);
     }
 
     private sealed class DiagnosticProvider : IProviderMetadata, IProviderConnectionDiagnosticsSource

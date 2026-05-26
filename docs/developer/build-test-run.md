@@ -70,7 +70,7 @@ dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
-npm ci --prefix src/Meridian.Ui/dashboard
+npm install --prefix src/Meridian.Ui/dashboard --include=optional
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```

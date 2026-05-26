@@ -888,7 +888,11 @@ public sealed record WebSocketConnectionDiagnostics(
     string? LastError,
     ProviderFailureKind? LastFailureKind,
     TimeSpan? ConnectionAge,
-    TimeSpan? IdleDuration);
+    TimeSpan? IdleDuration,
+    int ActiveSubscriptions = 0,
+    int FailedSubscriptions = 0,
+    int RecoveringSubscriptions = 0,
+    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>
 /// Represents a gap in data caused by a WebSocket disconnection and reconnection.
