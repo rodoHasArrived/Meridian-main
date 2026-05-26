@@ -1,7 +1,9 @@
 using System.Net.Http;
 using Meridian.Application.Config;
+using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
@@ -159,7 +161,7 @@ internal sealed partial class ProviderFeatureRegistration
     ///   <item>Otherwise, the <see cref="SyntheticOptionsChainProvider"/> is used as the fallback.</item>
     /// </list>
     /// <see cref="CollectorFeatureRegistration"/> resolves
-    /// <c>IEnumerable&lt;IOptionsChainProvider&gt;</c> so <see cref="OptionsChainService"/>
+    /// <c>IEnumerable&lt;IOptionsChainProvider&gt;</c> so <see cref="Meridian.Application.Services.OptionsChainService"/>
     /// can try configured providers before falling back to deterministic synthetic data.
     /// </summary>
     private static void RegisterOptionsChainProviders(IServiceCollection services)

@@ -1,4 +1,5 @@
 using Meridian.Application.Composition.Startup.StartupModels;
+using Meridian.Application.Commands;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
 using Serilog;

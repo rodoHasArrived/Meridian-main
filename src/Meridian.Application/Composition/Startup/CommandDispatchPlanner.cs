@@ -1,8 +1,10 @@
 using Meridian.Application.Commands;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
+using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
 using Meridian.Storage;
+using Meridian.Storage.Services;
 using Serilog;
 
 namespace Meridian.Application.Composition.Startup;
