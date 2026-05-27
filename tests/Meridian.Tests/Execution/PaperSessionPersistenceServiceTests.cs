@@ -1012,6 +1012,46 @@ public sealed class PaperSessionReplayTests : IDisposable
     }
 
     [Fact]
+    public async Task VerifyReplayAsync_WhenLatestOrderHasNoLastUpdatedAt_UsesCreatedAtForTimestamp()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-order-ts", null, 100_000m, ["AAPL"]));
+
+        var olderUpdatedAt = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var newerCreatedAt = olderUpdatedAt.AddHours(2);
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "order-older-updated",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = olderUpdatedAt.AddMinutes(-10),
+            LastUpdatedAt = olderUpdatedAt
+        });
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "order-newer-created",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = newerCreatedAt,
+            LastUpdatedAt = null
+        });
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.LastPersistedOrderUpdateAt.Should().Be(newerCreatedAt);
+    }
+
+    [Fact]
     public async Task VerifyReplayAsync_WhenPersistedOrderHistoryDiffers_ReturnsMismatchWithCounts()
     {
         await using var auditTrail = new ExecutionAuditTrailService(
