@@ -161,6 +161,8 @@ public static class WorkstationServiceCollectionExtensions
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReconciliationRunService>()));
+        services.TryAddSingleton<CollateralIngestionBuffer>();
+        services.TryAddSingleton<CollateralExposureService>();
 
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();

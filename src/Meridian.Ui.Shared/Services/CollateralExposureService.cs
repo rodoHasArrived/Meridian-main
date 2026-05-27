@@ -1,103 +1,142 @@
-using Meridian.Contracts.Workstation;
+using System.Collections.Concurrent;
 
 namespace Meridian.Ui.Shared.Services;
 
+public enum ThresholdSeverity
+{
+    Normal,
+    EarlyWarning,
+    HardBreach
+}
+
+public sealed record ExposureSnapshot(
+    DateTimeOffset AsOf,
+    string Counterparty,
+    decimal NetExposure,
+    decimal GrossExposure,
+    IReadOnlyList<ProductExposure> ProductDecomposition,
+    decimal CollateralBalance,
+    decimal HaircutAdjustedCollateral,
+    decimal RequiredCollateral,
+    decimal CollateralCoverageRatio);
+
+public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
+
+public sealed record MarginRequirement(string Counterparty, decimal RequiredCollateral, decimal InitialMargin, decimal VariationMargin);
+
+public sealed record HaircutRule(string Counterparty, string CollateralType, decimal HaircutPercent);
+
+public sealed record CollateralCall(string Counterparty, decimal Amount, string Reason, DateTimeOffset CreatedAt);
+
+public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Severity, decimal CoverageRatio, decimal EarlyWarningLevel, decimal HardBreachLevel, string Message);
+
+public sealed record CounterpartyThresholdPolicy(string Counterparty, decimal EarlyWarningCoverageRatio, decimal HardBreachCoverageRatio);
+
+public sealed record CollateralInputRow(
+    DateTimeOffset AsOf,
+    string Counterparty,
+    string ProductType,
+    decimal PositionNotional,
+    decimal MarkToMarket,
+    decimal CollateralBalance,
+    string CollateralType,
+    decimal InitialMargin,
+    decimal VariationMargin);
+
 public sealed class CollateralExposureService
 {
-    private static readonly IReadOnlyList<HaircutRuleDto> HaircutRules =
-    [
-        new("cash", 0.00m, 100m),
-        new("treasury", 0.02m, 98m),
-        new("equity", 0.15m, 85m),
-        new("credit", 0.20m, 80m)
-    ];
+    private readonly ConcurrentDictionary<string, CounterpartyThresholdPolicy> _policies = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, HaircutRule> _haircuts = new(StringComparer.OrdinalIgnoreCase);
 
-    public ExposureSnapshotDto BuildSnapshot()
+    public CollateralExposureService()
     {
-        var asOf = DateTimeOffset.UtcNow;
-        var counterparties = new[]
-        {
-            BuildCounterparty("CP-ALPHA", 12_400_000m, 19_800_000m, 15_100_000m, 8_700_000m, 4_200_000m, 2_100_000m),
-            BuildCounterparty("CP-BETA", 6_500_000m, 11_900_000m, 6_900_000m, 3_900_000m, 2_400_000m, 1_100_000m)
-        };
+        UpsertThresholdPolicy(new CounterpartyThresholdPolicy("default", 1.10m, 1.00m));
+        UpsertHaircutRule(new HaircutRule("default", "cash", 0m));
+    }
 
-        var breaches = BuildThresholdBreaches(counterparties, asOf);
-        var calls = BuildCollateralCalls(counterparties, asOf);
-        var trend = Enumerable.Range(0, 12)
-            .Select(i =>
+    public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy)
+        => _policies[policy.Counterparty] = policy;
+
+    public void UpsertHaircutRule(HaircutRule rule)
+        => _haircuts[$"{rule.Counterparty}:{rule.CollateralType}".ToLowerInvariant()] = rule;
+
+    public IReadOnlyList<ExposureSnapshot> BuildSnapshots(IReadOnlyList<CollateralInputRow> rows)
+    {
+        return rows.GroupBy(r => r.Counterparty, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
             {
-                var t = asOf.AddMinutes(-5 * (11 - i));
-                var net = counterparties.Sum(c => c.NetExposure) * (0.95m + (i * 0.005m));
-                var coverage = counterparties.Sum(c => c.HaircutAdjustedCollateral) / Math.Max(1m, net);
-                return new ExposureTrendPointDto(t, decimal.Round(net, 2), decimal.Round(coverage, 4));
+                var asOf = group.Max(x => x.AsOf);
+                var net = group.Sum(x => x.MarkToMarket);
+                var gross = group.Sum(x => Math.Abs(x.MarkToMarket));
+                var collateralBalance = group.Sum(x => x.CollateralBalance);
+                var required = group.Sum(x => Math.Abs(x.InitialMargin) + Math.Abs(x.VariationMargin));
+                var haircutAdjusted = group.Sum(x => x.CollateralBalance * (1m - ResolveHaircut(group.Key, x.CollateralType)));
+                var byProduct = group.GroupBy(x => x.ProductType, StringComparer.OrdinalIgnoreCase)
+                    .Select(pg => new ProductExposure(pg.Key, pg.Sum(x => x.MarkToMarket), pg.Sum(x => Math.Abs(x.MarkToMarket))))
+                    .OrderByDescending(p => p.GrossExposure)
+                    .ToArray();
+                var ratio = required <= 0m ? 999m : haircutAdjusted / required;
+                return new ExposureSnapshot(asOf, group.Key, net, gross, byProduct, collateralBalance, haircutAdjusted, required, ratio);
             })
+            .OrderByDescending(x => x.GrossExposure)
             .ToArray();
-
-        return new ExposureSnapshotDto(asOf, "micro-batch:5m", counterparties, breaches, calls, trend);
     }
 
-    private static CounterpartyExposureDto BuildCounterparty(string name, decimal net, decimal gross, decimal collateral, decimal repo, decimal swap, decimal margin)
+    public IReadOnlyList<ThresholdBreach> EvaluateBreaches(IReadOnlyList<ExposureSnapshot> snapshots)
     {
-        var marginReq = new MarginRequirementDto(gross * 0.10m, net * 0.05m, gross * 0.10m + net * 0.05m);
-        var adjusted = ApplyHaircuts(collateral);
-        return new CounterpartyExposureDto(
-            name,
-            net,
-            gross,
-            collateral,
-            adjusted,
-            marginReq,
-            adjusted >= marginReq.TotalRequired,
-            [
-                new ProductExposureDto("repo", repo, repo * 1.45m),
-                new ProductExposureDto("swap", swap, swap * 1.55m),
-                new ProductExposureDto("margin", margin, margin * 1.35m)
-            ]);
-    }
-
-    private static decimal ApplyHaircuts(decimal collateralBalance)
-    {
-        var buckets = new Dictionary<string, decimal>
+        var results = new List<ThresholdBreach>();
+        foreach (var snapshot in snapshots)
         {
-            ["cash"] = collateralBalance * 0.35m,
-            ["treasury"] = collateralBalance * 0.30m,
-            ["equity"] = collateralBalance * 0.20m,
-            ["credit"] = collateralBalance * 0.15m
-        };
-
-        return decimal.Round(HaircutRules.Sum(rule => buckets[rule.AssetClass] * (rule.AdvanceRatePercent / 100m)), 2);
-    }
-
-    private static IReadOnlyList<ThresholdBreachDto> BuildThresholdBreaches(IReadOnlyList<CounterpartyExposureDto> counterparties, DateTimeOffset asOf)
-    {
-        const decimal earlyWarn = 12_000_000m;
-        const decimal hardLimit = 18_000_000m;
-
-        return counterparties
-            .SelectMany(cp => new[]
+            var policy = ResolvePolicy(snapshot.Counterparty);
+            var severity = snapshot.CollateralCoverageRatio < policy.HardBreachCoverageRatio
+                ? ThresholdSeverity.HardBreach
+                : snapshot.CollateralCoverageRatio < policy.EarlyWarningCoverageRatio
+                    ? ThresholdSeverity.EarlyWarning
+                    : ThresholdSeverity.Normal;
+            if (severity == ThresholdSeverity.Normal)
             {
-                cp.GrossExposure >= hardLimit
-                    ? new ThresholdBreachDto(cp.Counterparty, "hard", cp.GrossExposure, hardLimit, asOf, "Hard breach: reduce exposure and post collateral.")
-                    : null,
-                cp.GrossExposure >= earlyWarn
-                    ? new ThresholdBreachDto(cp.Counterparty, "warning", cp.GrossExposure, earlyWarn, asOf, "Early warning: escalate collateral monitoring.")
-                    : null
-            })
-            .Where(x => x is not null)
-            .Cast<ThresholdBreachDto>()
-            .ToArray();
+                continue;
+            }
+
+            var message = severity == ThresholdSeverity.HardBreach
+                ? "Collateral coverage is below hard-breach threshold."
+                : "Collateral coverage is below early-warning threshold.";
+            results.Add(new ThresholdBreach(snapshot.Counterparty, severity, snapshot.CollateralCoverageRatio, policy.EarlyWarningCoverageRatio, policy.HardBreachCoverageRatio, message));
+        }
+
+        return results;
     }
 
-    private static IReadOnlyList<CollateralCallDto> BuildCollateralCalls(IReadOnlyList<CounterpartyExposureDto> counterparties, DateTimeOffset asOf)
-        => counterparties
-            .Where(cp => !cp.CollateralSufficient)
-            .Select(cp => new CollateralCallDto(
-                $"CALL-{cp.Counterparty}-{asOf:yyyyMMddHHmm}",
-                cp.Counterparty,
-                decimal.Round(cp.MarginRequirement.TotalRequired - cp.HaircutAdjustedCollateral, 2),
-                0m,
-                asOf.AddHours(2),
-                "pending",
-                "Haircut-adjusted collateral below required margin."))
-            .ToArray();
+    private CounterpartyThresholdPolicy ResolvePolicy(string counterparty)
+        => _policies.TryGetValue(counterparty, out var policy) ? policy : _policies["default"];
+
+    private decimal ResolveHaircut(string counterparty, string collateralType)
+    {
+        var key = $"{counterparty}:{collateralType}".ToLowerInvariant();
+        if (_haircuts.TryGetValue(key, out var specific))
+        {
+            return specific.HaircutPercent;
+        }
+
+        var fallback = $"default:{collateralType}".ToLowerInvariant();
+        return _haircuts.TryGetValue(fallback, out var @default) ? @default.HaircutPercent : 0m;
+    }
+}
+
+public sealed class CollateralIngestionBuffer
+{
+    private readonly ConcurrentQueue<CollateralInputRow> _buffer = new();
+
+    public void Ingest(CollateralInputRow row) => _buffer.Enqueue(row);
+
+    public IReadOnlyList<CollateralInputRow> DrainBatch(int maxItems = 500)
+    {
+        var rows = new List<CollateralInputRow>(maxItems);
+        while (rows.Count < maxItems && _buffer.TryDequeue(out var row))
+        {
+            rows.Add(row);
+        }
+
+        return rows;
+    }
 }
