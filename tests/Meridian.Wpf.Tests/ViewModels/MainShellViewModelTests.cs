@@ -246,6 +246,7 @@ public sealed class MainShellViewModelTests
             workspaceService.ResetForTests();
             workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
             await workspaceService.ActivateWorkspaceAsync("strategy");
+            workspaceService.ActiveWorkspaceScope.Should().NotBeNull();
 
             var fixtureModeDetector = FixtureModeDetector.Instance;
             fixtureModeDetector.SetFixtureMode(false);

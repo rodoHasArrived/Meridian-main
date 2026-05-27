@@ -25,6 +25,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private const string DefaultPageTag = "StrategyShell";
 
     private readonly INavigationService _navigationService;
+    private readonly NavigationService? _wpfNavigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
@@ -80,6 +81,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ShellRefreshCoordinator? shellRefreshCoordinator = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _wpfNavigationService = navigationService as NavigationService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
@@ -840,9 +842,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private bool NavigateToWithWorkspaceScope(string pageTag, object? parameter = null)
     {
         var workspaceScope = WorkspaceService.Instance.ActiveWorkspaceScope;
-        if (_navigationService is NavigationService navigationService)
+        if (_wpfNavigationService is not null)
         {
-            return navigationService.NavigateTo(pageTag, parameter, workspaceScope);
+            return _wpfNavigationService.NavigateTo(pageTag, parameter, workspaceScope);
         }
 
         return _navigationService.NavigateTo(pageTag, parameter);
