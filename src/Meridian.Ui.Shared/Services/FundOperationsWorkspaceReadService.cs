@@ -141,6 +141,7 @@ public sealed class FundOperationsWorkspaceReadService
             runs,
             ct);
         var reconciliationTask = BuildReconciliationSummaryAsync(
+            normalizedFundProfileId,
             accountSummaries,
             runs,
             ct);
@@ -262,7 +263,11 @@ public sealed class FundOperationsWorkspaceReadService
             asOf,
             ledgerBook,
             ct);
-        var reconciliationTask = BuildReconciliationSummaryAsync(accountSummaries, runs, ct);
+        var reconciliationTask = BuildReconciliationSummaryAsync(
+            normalizedFundProfileId,
+            accountSummaries,
+            runs,
+            ct);
         var navTask = BuildNavSummaryAsync(normalizedFundProfileId, currency, ledgerBook, asOf, ct);
 
         await Task.WhenAll(reportTask, ledgerTask, reconciliationTask, navTask).ConfigureAwait(false);
@@ -598,6 +603,7 @@ public sealed class FundOperationsWorkspaceReadService
     }
 
     private async Task<ReconciliationSummary> BuildReconciliationSummaryAsync(
+        string fundProfileId,
         IReadOnlyList<FundAccountSummary> accounts,
         IReadOnlyList<StrategyRunEntry> runs,
         CancellationToken ct)
@@ -706,19 +712,30 @@ public sealed class FundOperationsWorkspaceReadService
             BreakAmountTotal: breakAmountTotal,
             RecentRuns: ordered,
             SecurityCoverageIssueCount: securityCoverageIssues,
-            BreakQueue: await BuildBreakQueueProjectionAsync(ct).ConfigureAwait(false),
+            BreakQueue: await BuildBreakQueueProjectionAsync(fundProfileId, runs, ct).ConfigureAwait(false),
             LedgerImpactPreview: BuildLedgerImpactPreview(ordered),
-            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(ct).ConfigureAwait(false));
+            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(fundProfileId, runs, ct).ConfigureAwait(false));
     }
 
-    private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(CancellationToken ct)
+    private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(
+        string fundProfileId,
+        IReadOnlyList<StrategyRunEntry> runs,
+        CancellationToken ct)
     {
         if (_breakQueueRepository is null)
         {
             return null;
         }
 
-        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var scopedRunIds = runs
+            .Select(static run => run.RunId)
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var items = (await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false))
+            .Where(item =>
+                string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                scopedRunIds.Contains(item.RunId))
+            .ToArray();
         var projected = items
             .OrderByDescending(static item => item.LastUpdatedAt)
             .Select(static item => new ReconciliationBreakQueueProjectionItemDto(
@@ -770,15 +787,25 @@ public sealed class FundOperationsWorkspaceReadService
             ValidationFlags: flags);
     }
 
-    private async Task<bool> HasCriticalBreakOpenAsync(CancellationToken ct)
+    private async Task<bool> HasCriticalBreakOpenAsync(
+        string fundProfileId,
+        IReadOnlyList<StrategyRunEntry> runs,
+        CancellationToken ct)
     {
         if (_breakQueueRepository is null)
         {
             return false;
         }
 
+        var scopedRunIds = runs
+            .Select(static run => run.RunId)
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var items = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
-        return items.Any(static item => item.Severity == ReconciliationBreakSeverity.Critical);
+        return items.Any(item =>
+            item.Severity == ReconciliationBreakSeverity.Critical &&
+            string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+            scopedRunIds.Contains(item.RunId));
     }
 
     private async Task<FundNavAttributionSummaryDto> BuildNavSummaryAsync(
