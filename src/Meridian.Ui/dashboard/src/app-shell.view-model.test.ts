@@ -3,6 +3,7 @@ import {
   buildAppShellViewState,
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
+  appendOperatingScopeToRoute,
   normalizeWorkspace,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
@@ -352,6 +353,27 @@ describe("app shell view model", () => {
       ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
       ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     ]);
+  });
+
+
+  it("does not overwrite authoritative query parameters when applying operating scope", () => {
+    const scopedRoute = appendOperatingScopeToRoute(
+      "/strategy?runId=run-victim",
+      {
+        label: "Operating scope",
+        summary: "Run: run-attacker",
+        subjectSymbol: null,
+        fundAccountId: null,
+        runId: "run-attacker",
+        provider: null,
+        hasScope: true,
+        clearAriaLabel: "Clear operating scope",
+        items: [],
+        queryParams: [{ key: "runId", value: "run-attacker", scopeKey: "runId" }]
+      }
+    );
+
+    expect(scopedRoute).toBe("/strategy?runId=run-victim");
   });
 
   it("keeps institutional operating scope in cross-workspace focus, evidence, and linked-context handoffs", () => {
