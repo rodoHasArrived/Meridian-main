@@ -1428,6 +1428,11 @@ public static partial class WorkstationEndpoints
             string? fundProfileId,
             HttpContext context) =>
         {
+            if (!HasPermission(context, UserPermission.ViewSecurityMaster))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
             var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
             if (workbenchService is null)
             {
@@ -1444,6 +1449,7 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetSecurityMasterWorkstationTrustSnapshot")
         .Produces<SecurityMasterTrustSnapshotDto>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(501);
 
