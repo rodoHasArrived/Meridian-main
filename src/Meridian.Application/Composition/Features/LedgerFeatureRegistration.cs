@@ -30,7 +30,7 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
         // ProjectLedgerBook manages a keyed collection of independent in-memory ledgers.
         // Registering as a singleton means all components within a host process share one
         // namespace, which is the correct model for an in-process trading workstation.
-        services.TryAddSingleton<ProjectLedgerBook>();
+        services.TryAddSingleton(_ => new ProjectLedgerBook("default"));
 
         return services;
     }
