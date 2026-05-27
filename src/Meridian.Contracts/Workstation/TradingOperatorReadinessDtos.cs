@@ -129,7 +129,9 @@ public sealed record TradingReplayReadinessDto(
     DateTimeOffset? LastPersistedFillAt,
     DateTimeOffset? LastPersistedOrderUpdateAt,
     string? VerificationAuditId,
-    IReadOnlyList<string> MismatchReasons);
+    IReadOnlyList<string> MismatchReasons,
+    string DriftStatus,
+    string RequiredNextAction);
 
 public sealed record TradingControlEvidenceDto(
     string AuditId,

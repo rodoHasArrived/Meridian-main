@@ -193,6 +193,24 @@ public sealed class TradingOperatorReadinessService
             .ToArray();
         var activeSession = SelectActiveSession(sessions, latestRun);
         var replay = BuildReplay(activeSession?.SessionId, auditEntries);
+        if (activeSession is not null && replay is not null)
+        {
+            var drift = ReplayDriftDetector.Assess(
+                activeSession.SessionId,
+                activeSession.FillCount,
+                activeSession.OrderCount,
+                activeSession.LedgerEntryCount,
+                replay.SessionId,
+                replay.ComparedFillCount,
+                replay.ComparedOrderCount,
+                replay.ComparedLedgerEntryCount);
+            replay = replay with
+            {
+                DriftStatus = drift.Status.ToString(),
+                RequiredNextAction = drift.RequiredNextAction
+            };
+        }
+
 
         if (activeSession is null)
         {
@@ -646,18 +664,25 @@ public sealed class TradingOperatorReadinessService
         var isConsistent = ParseBoolMetadata(replayAudit, "isConsistent")
             ?? (mismatchCount == 0 && !string.Equals(replayAudit.Outcome, "AttentionRequired", StringComparison.OrdinalIgnoreCase));
 
+        var replaySessionId = GetMetadata(replayAudit, "sessionId") ?? sessionId ?? replayAudit.CorrelationId ?? string.Empty;
+        var comparedFillCount = ParseIntMetadata(replayAudit, "comparedFillCount") ?? 0;
+        var comparedOrderCount = ParseIntMetadata(replayAudit, "comparedOrderCount") ?? 0;
+        var comparedLedgerEntryCount = ParseIntMetadata(replayAudit, "comparedLedgerEntryCount") ?? 0;
+
         return new TradingReplayReadinessDto(
-            SessionId: GetMetadata(replayAudit, "sessionId") ?? sessionId ?? replayAudit.CorrelationId ?? string.Empty,
+            SessionId: replaySessionId,
             ReplaySource: GetMetadata(replayAudit, "replaySource") ?? "ExecutionAudit",
             IsConsistent: isConsistent,
-            ComparedFillCount: ParseIntMetadata(replayAudit, "comparedFillCount") ?? 0,
-            ComparedOrderCount: ParseIntMetadata(replayAudit, "comparedOrderCount") ?? 0,
-            ComparedLedgerEntryCount: ParseIntMetadata(replayAudit, "comparedLedgerEntryCount") ?? 0,
+            ComparedFillCount: comparedFillCount,
+            ComparedOrderCount: comparedOrderCount,
+            ComparedLedgerEntryCount: comparedLedgerEntryCount,
             VerifiedAt: replayAudit.OccurredAt,
             LastPersistedFillAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedFillAt"),
             LastPersistedOrderUpdateAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedOrderUpdateAt"),
             VerificationAuditId: replayAudit.AuditId,
-            MismatchReasons: BuildReplayMismatchReasons(isConsistent, replayAudit));
+            MismatchReasons: BuildReplayMismatchReasons(isConsistent, replayAudit),
+            DriftStatus: ReplayDriftStatus.Unknown.ToString(),
+            RequiredNextAction: "Run replay verification.");
     }
 
     private static IReadOnlyList<string> BuildReplayMismatchReasons(

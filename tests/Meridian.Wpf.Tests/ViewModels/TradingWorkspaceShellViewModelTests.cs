@@ -40,7 +40,9 @@ public sealed class TradingWorkspaceShellViewModelTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-mismatch",
-                MismatchReasons: ["Fill sequence mismatch detected for paper replay."]),
+                MismatchReasons: ["Fill sequence mismatch detected for paper replay."],
+                DriftStatus: "DriftDetected",
+                RequiredNextAction: "Run replay verification again."),
             overallStatus: TradingAcceptanceGateStatusDto.Blocked,
             readyForPaperOperation: false);
 
