@@ -1,14 +1,14 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-21
+**Last Reviewed:** 2026-05-27
 
 ## Current Planning TODOs
 
-- [ ] Map the latest Strategy Engine pre-run validation and evidence hashes to accepted strategy-to-ledger lineage before upgrading any W3 continuity language.
-- [ ] Turn provider capability-matrix gaps into owned adapter-readiness tasks with target sprint, validation command, and evidence packet.
-- [ ] Keep W2/W3/W4 blockers synchronized between `pilot-readiness.*`, [`wave-implementation-checklists.md`](wave-implementation-checklists.md), and status docs.
-- [ ] Route desktop/WPF workflow claims through [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) before treating them as W2/W3/W4 progress.
-- [ ] Prove the operations-continuity close lane with browser/operator acceptance and external statement or custodian inputs before calling close readiness delivered.
+- [ ] Keep desktop acceptance matrix rows as the delivery unit for W2/W3/W4 desktop slices: lane, scenario, shared-contract check, and focused test evidence.
+- [ ] Prioritize high-traffic page-body workflow outcomes (run -> portfolio -> ledger -> reconciliation and casework/sign-off/reporting) over additional shell framing work.
+- [ ] Keep support evidence and exit claims separate in roadmap/status updates; do not mark exits from support-only proofs.
+- [ ] Keep browser and desktop parity checks coupled to shared endpoint/read-model payloads for every desktop workflow change.
+- [ ] Keep Wave 2 cockpit reliability as the active release gate; do not widen live-readiness language until Lane A criteria stay continuously green.
 - [ ] Re-run structured roadmap/source stale-doc and hash checks after docs or source ownership changes.
 
 **Role:** Single planning entry point for current direction, project status, and document roles.
@@ -44,9 +44,9 @@ Wave status labels and target dates are canonical in [`../status/PROGRAM_STATE.m
 | Wave | Status | Current meaning |
 | --- | --- | --- |
 | W1 Provider confidence and checkpoint evidence | Done | Repo-closed trust gate. Keep DK1 packet, provider matrix, checkpoint, and evidence docs synchronized when provider evidence changes. |
-| W2 Paper-trading cockpit | In Progress | Critical path. The readiness contract, replay evidence, operator inbox, and browser Trading surfaces are support evidence; operator-accepted cockpit reliability remains open. |
-| W3 Shared run / portfolio / ledger continuity | In Progress | Critical path. Shared run, portfolio, ledger, brokerage-sync, evidence, and reconciliation seams exist; cross-workspace continuity still needs acceptance evidence. |
-| W4 Governance and fund operations | In Progress | Critical path. Security Master baseline and reconciliation/report-pack support exist; durable casework, close/report workflows, approvals, and provenance remain open. |
+| W2 Paper-trading cockpit | In Progress | Critical path and first release gate. Readiness contracts, replay evidence, operator inbox, and desktop/browser workflow slices are support evidence; daily-use cockpit confidence remains open until Lane A acceptance is continuously green. |
+| W3 Shared run / portfolio / ledger continuity | In Progress | Critical path. Shared continuity seams exist, but the full run -> portfolio -> ledger -> reconciliation workflow still needs acceptance evidence on high-traffic workflow pages and parity across both clients. |
+| W4 Governance and fund operations | In Progress | Critical path. Security Master baseline and reconciliation/report-pack support exist; durable casework, sign-off, close/report lifecycle, and provenance still need end-to-end acceptance evidence. |
 | W5 Backtest Studio unification | Planned | Later wave. Do not pull forward ahead of W2-W4 unless the roadmap explicitly changes. |
 | W6 Live integration readiness | Planned | Later wave. Keep read-only/paper-first defaults until trust, paper, reconciliation, and promotion gates are materially closed. |
 | Optional advanced tracks | Optional | L3, performance, scale-out, advanced research, and similar work should not compete with the core operator-ready path. |
@@ -115,6 +115,7 @@ is the desktop acceptance filter for Lane A W2 cockpit reliability, Lane B W3 ru
 ledger continuity, and Lane C W4 reconciliation/governance close flow. It requires a shared
 contract/read-model check, focused WPF evidence, browser parity or an explicit mismatch blocker, and
 the matching pilot-readiness stage posture before any desktop slice is described as accepted.
+Treat support evidence separately from exit claims and keep claims scoped to the exact matrix scenario.
 
 ## Active Planning Set
 
@@ -163,7 +164,7 @@ These plans remain useful, but they are not current readiness drivers unless the
 Before a planning doc marks a slice as complete, verify that it has the evidence expected for its lane:
 
 - W1/DK1: fresh provider packet, matrix alignment, packet-bound sign-off when evidence changes, and provider-validation docs updated.
-- W2: readiness endpoint behavior, replay freshness, operator-inbox routing, promotion/checkpoint gates, and browser cockpit acceptance evidence.
+- W2: readiness endpoint behavior, replay freshness, operator-inbox routing, promotion/checkpoint gates, Lane A desktop acceptance evidence, and browser parity evidence from shared payloads.
 - W3: shared run, portfolio, ledger, brokerage/account, reconciliation, and evidence-packet continuity across the seven-workspace path.
 - W4: reconciliation casework, approval/sign-off, report-pack lifecycle, provenance, and governed output evidence.
 - W5/W6: only after W2-W4 gates stop being speculative blockers.
