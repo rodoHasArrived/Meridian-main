@@ -435,13 +435,74 @@ public sealed record ResolveReconciliationBreakRequest(
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
     string ResolutionNote,
-    string OperatorRationale,
-    string? DispositionCode = null);
+    string OperatorRationale);
 
-public sealed record ReconciliationBreakBulkActionRequest(
-    IReadOnlyList<string> BreakIds,
-    string Action,
-    string? Assignee = null,
-    ReconciliationBreakQueueStatus? Status = null,
-    string? CommentTemplate = null,
-    string? Actor = null);
+/// <summary>
+/// Canonical schema version metadata for reconciliation ingress/egress payloads.
+/// </summary>
+public sealed record ReconciliationSchemaVersion(
+    string ContractName,
+    int Major,
+    int Minor,
+    int Patch,
+    string ContentType = "application/vnd.meridian.reconciliation+json");
+
+/// <summary>
+/// Cross-workflow correlation metadata stamped on every reconciliation payload.
+/// </summary>
+public sealed record ReconciliationCorrelationContext(
+    string TraceId,
+    string SpanId,
+    string? ParentSpanId,
+    string WorkflowId,
+    string? JobId = null);
+
+/// <summary>
+/// Canonical envelope for inbound/outbound reconciliation payloads.
+/// </summary>
+public sealed record ReconciliationPayloadEnvelope<TPayload>(
+    string PayloadId,
+    ReconciliationSchemaVersion Schema,
+    ReconciliationCorrelationContext Correlation,
+    DateTimeOffset CreatedAt,
+    string Producer,
+    string Direction,
+    string? IdempotencyKey,
+    TPayload Payload);
+
+/// <summary>
+/// Queue orchestration controls and replay metadata for resilient reconciliation jobs.
+/// </summary>
+public sealed record ReconciliationJobControl(
+    string JobId,
+    string IdempotencyKey,
+    int Attempt,
+    int MaxAttempts,
+    bool DeadLettered,
+    string? DeadLetterReason,
+    DateTimeOffset EnqueuedAt,
+    DateTimeOffset? LastAttemptAt,
+    DateTimeOffset? NextAttemptAt,
+    string BackpressureBucket);
+
+/// <summary>
+/// Processing telemetry summary for SLA and throughput observability.
+/// </summary>
+public sealed record ReconciliationProcessingTelemetry(
+    double MatchRate,
+    double BreakRate,
+    int SlaMissCount,
+    double P50LatencyMs,
+    double P95LatencyMs,
+    double P99LatencyMs);
+
+/// <summary>
+/// Scoped rollout flags for phased reconciliation releases.
+/// </summary>
+public sealed record ReconciliationRolloutFlags(
+    bool Enabled,
+    IReadOnlyList<string> ClientIds,
+    IReadOnlyList<string> TeamIds,
+    IReadOnlyList<string> CounterpartyIds,
+    bool AllowReplay,
+    bool AllowBackfill);

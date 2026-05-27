@@ -60,6 +60,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
+        services.TryAddSingleton<SensitiveActionPolicyEngine>();
+        services.TryAddSingleton<ImmutableAuditLogService>();
+        services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
@@ -94,9 +97,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
 
+        services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
+
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
@@ -155,6 +161,8 @@ public static class WorkstationServiceCollectionExtensions
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReconciliationRunService>()));
+        services.TryAddSingleton<CollateralIngestionBuffer>();
+        services.TryAddSingleton<CollateralExposureService>();
 
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();

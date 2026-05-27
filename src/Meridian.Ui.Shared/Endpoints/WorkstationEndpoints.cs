@@ -124,6 +124,37 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationWorkflowLibrary")
         .Produces<WorkflowLibraryDto>(200);
 
+        group.MapPost("/collateral/ingest", (
+            IReadOnlyList<CollateralInputRow> rows,
+            CollateralIngestionBuffer buffer) =>
+        {
+            foreach (var row in rows)
+            {
+                buffer.Ingest(row);
+            }
+
+            return Results.Accepted(value: new { ingested = rows.Count });
+        })
+        .WithName("IngestCollateralRows")
+        .Produces(202);
+
+        group.MapGet("/collateral/exposure", (
+            CollateralIngestionBuffer buffer,
+            CollateralExposureService service) =>
+        {
+            var batch = buffer.DrainBatch(5_000);
+            var snapshots = service.BuildSnapshots(batch);
+            var breaches = service.EvaluateBreaches(snapshots);
+            return Results.Json(new
+            {
+                generatedAt = DateTimeOffset.UtcNow,
+                counterparties = snapshots,
+                breaches
+            }, jsonOptions);
+        })
+        .WithName("GetCollateralExposure")
+        .Produces(200);
+
         group.MapGet("/workflows/presets", async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowPresetService>();
@@ -280,6 +311,14 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationTradingReadiness")
         .Produces<TradingOperatorReadinessDto>(200);
+
+        group.MapGet("/collateral/exposure", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
+            return Results.Json(service.BuildSnapshot(), jsonOptions);
+        })
+        .WithName("GetWorkstationCollateralExposure")
+        .Produces<ExposureSnapshotDto>(200);
 
         group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
         {
