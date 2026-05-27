@@ -54,15 +54,16 @@ jobs:
       - name: Install Playwright browser
         run: |
           set -euo pipefail
+          install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
           set +e
-          timeout "$PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS" npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
+          timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
           playwright_install_exit_code=$?
           set -e
 
           if [ "$playwright_install_exit_code" -eq 0 ]; then
             echo "[INFO] Playwright browser and dependency install completed."
           elif [ "$playwright_install_exit_code" -eq 124 ]; then
-            echo "::warning::Playwright dependency install timed out after ${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS}s; retrying browser-only install."
+            echo "::warning::Playwright dependency install timed out after ${install_timeout_seconds}s; retrying browser-only install."
             npx --prefix src/Meridian.Ui/dashboard playwright install chromium
           else
             echo "::warning::Playwright dependency install failed with exit code ${playwright_install_exit_code}; retrying browser-only install."
