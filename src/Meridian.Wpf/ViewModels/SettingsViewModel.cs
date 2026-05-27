@@ -587,19 +587,30 @@ public sealed class SettingsViewModel : BindableBase
 
         if (result == MessageBoxResult.Yes)
         {
-            ThemeIndex = 0;
-            AccentColorIndex = 0;
-            SelectedShellDensityMode = ShellDensityMode.Standard;
-            IsNotificationsEnabled = true;
-            MaxConcurrentDownloads = "4";
-            WriteBufferSize = "64";
-            IsMetricsEnabled = true;
-            IsDebugLoggingEnabled = false;
-            ApiBaseUrl = "http://localhost:8080";
-            StatusRefreshInterval = "2";
+            // ResetToDefaults: hydrate UI defaults from the same canonical AppConfig object as first-run bootstrap.
+            var defaultConfig = WpfServices.AppConfigDefaults.CreateDefaultAppConfig();
+            ApplyDefaultsFromConfig(defaultConfig);
 
             _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
         }
+    }
+
+    private void ApplyDefaultsFromConfig(Meridian.Contracts.Configuration.AppConfigDto defaultConfig)
+    {
+        ThemeIndex = string.Equals(defaultConfig.Settings?.Theme, "Dark", StringComparison.OrdinalIgnoreCase)
+            ? 2
+            : string.Equals(defaultConfig.Settings?.Theme, "Light", StringComparison.OrdinalIgnoreCase)
+                ? 1
+                : 0;
+        AccentColorIndex = 0;
+        SelectedShellDensityMode = defaultConfig.Settings?.CompactMode == true ? ShellDensityMode.Compact : ShellDensityMode.Standard;
+        IsNotificationsEnabled = defaultConfig.Settings?.NotificationsEnabled ?? true;
+        MaxConcurrentDownloads = "4";
+        WriteBufferSize = "64";
+        IsMetricsEnabled = true;
+        IsDebugLoggingEnabled = false;
+        ApiBaseUrl = "http://localhost:8080";
+        StatusRefreshInterval = (defaultConfig.Settings?.StatusRefreshIntervalSeconds ?? 2).ToString();
     }
 
     // ── Test / support ────────────────────────────────────────────────────────
