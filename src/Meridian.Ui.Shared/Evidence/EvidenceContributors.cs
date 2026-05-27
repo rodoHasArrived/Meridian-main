@@ -58,7 +58,9 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
                     "review-packet-route",
                     subject: context.Subject,
                     route: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", run.Summary.RunId),
-                    generatedAt: generatedAt)
+                    generatedAt: generatedAt,
+                    canonicalSubjectKind: context.Subject.SubjectKind,
+                    canonicalSubjectId: context.Subject.SubjectId)
             ]));
         required.Add(detailId);
 
@@ -189,13 +191,17 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
                 "ledger-journal",
                 subject: subject,
                 route: UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", runId),
-                generatedAt: generatedAt),
+                generatedAt: generatedAt,
+                canonicalSubjectKind: subject.SubjectKind,
+                canonicalSubjectId: subject.SubjectId),
             Artifact(
                 $"{ledgerId}:trial-balance",
                 "ledger-trial-balance",
                 subject: subject,
                 route: UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", runId),
-                generatedAt: generatedAt)
+                generatedAt: generatedAt,
+                canonicalSubjectKind: subject.SubjectKind,
+                canonicalSubjectId: subject.SubjectId)
         ];
     }
 }
@@ -278,7 +284,9 @@ public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
                             "report-pack-manifest",
                             subject: context.Subject,
                             path: readiness.ReportPack.ManifestPath,
-                            generatedAt: readiness.ReportPack.GeneratedAt ?? readiness.AsOf)
+                            generatedAt: readiness.ReportPack.GeneratedAt ?? readiness.AsOf,
+                            canonicalSubjectKind: context.Subject.SubjectKind,
+                            canonicalSubjectId: context.Subject.SubjectId)
                     ]));
             edges.Add(new EvidenceEdgeDto(rootId, reportPackId, "requires", "Report-pack approval evidence supports paper readiness."));
         }
@@ -390,7 +398,9 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
                 subject: context.Subject,
                 path: artifact.RelativePath,
                 generatedAt: snapshot.GeneratedAt,
-                hash: artifact.ChecksumSha256)).ToArray());
+                hash: artifact.ChecksumSha256,
+                canonicalSubjectKind: context.Subject.SubjectKind,
+                canonicalSubjectId: context.Subject.SubjectId)).ToArray());
 
         return new EvidenceContribution([node], [], [], [nodeId], snapshot.Warnings);
     }
@@ -461,7 +471,9 @@ public sealed class ProviderTrustEvidenceContributor : IEvidenceContributor
                         "dk1-pilot-parity-packet",
                         subject: context.Subject,
                         path: readiness.PacketPath,
-                        generatedAt: readiness.GeneratedAt ?? DateTimeOffset.UtcNow)
+                        generatedAt: readiness.GeneratedAt ?? DateTimeOffset.UtcNow,
+                        canonicalSubjectKind: context.Subject.SubjectKind,
+                        canonicalSubjectId: context.Subject.SubjectId)
                 ],
             workItemIds: readiness.Blockers.Select(static blocker => $"provider-trust:{blocker}").ToArray());
 
@@ -494,7 +506,9 @@ public sealed class ExportEvidenceContributor : IEvidenceContributor
                 "export-profile",
                 subject: context.Subject,
                 route: $"/api/export/analysis/{Uri.EscapeDataString(profile.Id)}",
-                generatedAt: DateTimeOffset.UtcNow)).ToArray());
+                generatedAt: DateTimeOffset.UtcNow,
+                canonicalSubjectKind: context.Subject.SubjectKind,
+                canonicalSubjectId: context.Subject.SubjectId)).ToArray());
 
         return Task.FromResult(new EvidenceContribution([node], [], [], [nodeId], []));
     }
