@@ -8,7 +8,7 @@
 - Expected artifacts: docs/status/docs-automation-summary.md, docs/status/docs-automation-summary.json, docs/status/workflow-validation-summary.json, docs/status/workflow-drift-report.md, docs/generated/workflow-command-reference.md, docs/HELP.md, docs/development/documentation-automation.md
 - Owner lane: Documentation Automation
 - Refresh trigger: docs automation profile run (core/full)
-- Canonical output roots: docs/status, docs/generated, docs/HELP.md, docs/development/documentation-automation.md
+- Canonical output roots: docs/status, docs/generated, docs
 - Retention: replace-in-place (maxAgeDays=30, retainLatest=1)
 - Commands:
   - `python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json`

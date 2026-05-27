@@ -83,10 +83,9 @@ Any pull request touching scoped surfaces must pass:
    - strategy service interface compatibility tests,
    - ledger read/write snapshot compatibility tests,
    - workstation endpoint request/response shape tests.
-   - paired cross-surface evidence: backend contract tests plus at least one affected browser or WPF consumer test.
-5. **Cross-surface no-impact declaration (required when shared DTOs/endpoints change):**
-   - If no browser/WPF code change is needed, the PR must include an explicit no-impact note that names the checked consumers and why behavior remains unchanged.
-   - If consumer behavior changes, include the paired consumer updates and tests in the same PR.
+5. **Cross-surface impact verification (required when shared DTOs/endpoints change):**
+   - If consumer behavior changes, include backend contract tests plus at least one affected browser or WPF consumer test.
+   - If no browser/WPF code change is needed, include an explicit no-impact note that names the checked consumers and why behavior remains unchanged.
 6. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
 
 ## Workstation Dashboard Compatibility Protocol (Readiness + Operator Inbox + Routing Metadata)

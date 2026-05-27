@@ -70,7 +70,7 @@ Machine-readable sidecars that remain active in this folder:
 
 Artifact ownership and refresh policy routing lives in [`../generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), generated from `workflow-manifest.json`. Each workflow entry now declares owner lane, refresh trigger, retention policy, and canonical output roots used by drift checks.
 
-## Canonical topic map (current truth)
+## Canonical topic map
 
 | Topic | Canonical current-truth doc (`active`) | Supporting docs and status |
 | --- | --- | --- |

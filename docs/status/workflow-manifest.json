@@ -51,8 +51,7 @@
         "canonicalOutputRoots": [
           "docs/status",
           "docs/generated",
-          "docs/HELP.md",
-          "docs/development/documentation-automation.md"
+          "docs"
         ],
         "driftChecks": {
           "enforceMissing": true,
