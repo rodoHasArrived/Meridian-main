@@ -395,6 +395,12 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest("Corporate action SecurityId must match route parameter");
             }
 
+            var validationError = ValidateCorporateAction(dto);
+            if (validationError is not null)
+            {
+                return Results.BadRequest(validationError);
+            }
+
             await eventStore.AppendCorporateActionAsync(dto, ct).ConfigureAwait(false);
             return Results.Ok();
         })
@@ -485,6 +491,31 @@ public static class SecurityMasterEndpoints
         .WithName("PatchSecurityPreferredTerms")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+    }
+
+    private static string? ValidateCorporateAction(CorporateActionDto dto)
+    {
+        if (string.Equals(dto.EventType, "StockSplit", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!dto.SplitRatio.HasValue)
+            {
+                return "StockSplit corporate actions must include SplitRatio.";
+            }
+
+            if (dto.SplitRatio.Value <= 0m || dto.SplitRatio.Value > 1_000m)
+            {
+                return "StockSplit SplitRatio must be greater than 0 and less than or equal to 1000.";
+            }
+        }
+
+        if (string.Equals(dto.EventType, "Dividend", StringComparison.OrdinalIgnoreCase) &&
+            dto.DividendPerShare.HasValue &&
+            dto.DividendPerShare.Value < 0m)
+        {
+            return "DividendPerShare must be greater than or equal to 0.";
+        }
+
+        return null;
     }
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
