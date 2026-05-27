@@ -27,6 +27,7 @@ AGENTS_README = "docs/ai/agents/README.md"
 SKILLS_README = "docs/ai/skills/README.md"
 PROMPTS_README = "docs/ai/prompts/README.md"
 INSTRUCTIONS_README = "docs/ai/instructions/README.md"
+PROMPT_DOCS_README = "docs/prompts/README.md"
 CODEX_GUIDE = "docs/ai/codex/README.md"
 CODEX_SKILLS_README = ".codex/skills/README.md"
 GITHUB_PROMPTS_README = ".github/prompts/README.md"
@@ -153,9 +154,9 @@ SYSTEM_CHECKS = (
     ),
     (
         "reusable-prompts",
-        (".github/prompts",),
+        (".github/prompts", "docs/prompts"),
         AI_CONTRACT,
-        ("Reusable prompt templates", ".github/prompts/", "docs/ai/prompts/README.md"),
+        ("Reusable prompt templates", ".github/prompts/", "docs/prompts/", "docs/ai/prompts/README.md"),
     ),
     (
         "shared-ai-docs",
@@ -448,6 +449,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 name=path.name,
                 path=repo_relative(root, path),
                 expected_docs=(PROMPTS_README, GITHUB_PROMPTS_README),
+            )
+        )
+
+    for path in sorted_files(root, "docs/prompts/*.md"):
+        if path.name == "README.md":
+            continue
+        items.append(
+            InventoryItem(
+                surface="reusable-prompts",
+                kind="prompt-documentation",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, PROMPTS_README, PROMPT_DOCS_README),
             )
         )
 

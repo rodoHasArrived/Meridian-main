@@ -2,7 +2,7 @@
 
 This directory is the navigation index for **reusable AI prompt templates** used by GitHub Copilot
 Chat and other AI tools. The actual prompt files live in `.github/prompts/` where Copilot can
-discover them.
+discover them. Provider-agnostic prompt and automation guidance lives in `docs/prompts/`.
 Prompts should follow the shared provider-agnostic execution flow and safety rules in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
@@ -12,6 +12,15 @@ Prompts should follow the shared provider-agnostic execution flow and safety rul
 
 Prompt files are located in [`.github/prompts/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts).
 Full usage instructions are in [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md).
+
+Provider-agnostic prompt documentation is indexed in
+[`../../prompts/README.md`](../../prompts/README.md):
+
+| Guide | Purpose |
+| --- | --- |
+| [`automation-prompts.md`](../../prompts/automation-prompts.md) | Automation-oriented prompt and workflow surface inventory |
+| [`repo-maintenance-prompts.md`](../../prompts/repo-maintenance-prompts.md) | Shared maintenance prompt ownership and consolidation rules |
+| [`roadmap-source-docs-implementation-prompt.md`](../../prompts/roadmap-source-docs-implementation-prompt.md) | Source documentation and roadmap registry implementation prompt |
 
 ### Development
 
@@ -102,6 +111,8 @@ python build/scripts/docs/generate-prompts.py --workflow test-matrix.yml --outpu
 2. Follow the YAML format used by existing prompts
 3. Add an entry to [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md)
 4. Add an entry to this README
+5. Update [`../../prompts/README.md`](../../prompts/README.md) when adding or changing
+   provider-agnostic prompt documentation
 
 ---
 
@@ -111,9 +122,10 @@ python build/scripts/docs/generate-prompts.py --workflow test-matrix.yml --outpu
 |----------|---------|
 | [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Shared prompt and assistant workflow contract |
 | [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md) | Full prompt usage guide |
+| [`../../prompts/README.md`](../../prompts/README.md) | Provider-agnostic prompt documentation index |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Full agent definitions |
 | [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md) | Master AI resource index |
 
 ---
 
-*Last Updated: 2026-05-20*
+*Last Updated: 2026-05-27*

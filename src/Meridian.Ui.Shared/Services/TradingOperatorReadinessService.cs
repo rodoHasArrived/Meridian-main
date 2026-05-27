@@ -218,7 +218,8 @@ public sealed class TradingOperatorReadinessService
                 $"Run replay verification for paper session {activeSession.SessionId}.",
                 OperatorWorkItemToneDto.Warning,
                 activeSession.SessionId,
-                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId),
+                scope: activeSession.SessionId);
         }
         else if (!replay.IsConsistent)
         {
@@ -231,7 +232,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Critical,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId),
+                scope: replay.SessionId);
         }
         else if (IsReplayCoverageStale(activeSession, replay))
         {
@@ -244,7 +246,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Warning,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),
+                scope: replay.SessionId);
         }
 
         return new PaperSessionReadiness(sessions, activeSession, replay);

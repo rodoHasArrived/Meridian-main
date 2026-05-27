@@ -41,7 +41,8 @@ automation guidance is not scattered across the repo.
 - Update `.github/prompts/README.md` and this page when adding, renaming, or
   retiring a prompt.
 - Prefer extending an existing prompt before creating a near-duplicate.
-- Keep current local path examples pointed at `C:\Dev\Meridian-main`.
+- Use repository-relative paths in committed prompt guidance. Keep machine-specific checkout paths
+  in local run notes or automation memory.
 - Move obsolete prompt notes to `archive/docs/` with a replacement link.
 - Do not duplicate generated prompt catalogs by hand; update the generator or
   source inventory instead.

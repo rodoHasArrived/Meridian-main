@@ -44,6 +44,7 @@ def write_required_docs(root: Path, body: str) -> None:
         "docs/ai/prompts/README.md",
         "docs/ai/instructions/README.md",
         "docs/ai/codex/README.md",
+        "docs/prompts/README.md",
         ".codex/skills/README.md",
         ".github/prompts/README.md",
     ):
@@ -81,6 +82,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "copilot-instructions.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
+            write(root / "docs" / "prompts" / "sample-prompt-doc.md")
             write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
             write(root / "docs" / "ai" / "README.md")
 
@@ -102,6 +104,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("skill", "meridian-test"), pairs)
             self.assertIn(("agent", "meridian-test.md"), pairs)
             self.assertIn(("prompt", "sample.prompt.yml"), pairs)
+            self.assertIn(("prompt-documentation", "sample-prompt-doc.md"), pairs)
             self.assertIn(("path-instruction", "sample.instructions.md"), pairs)
             self.assertIn(("mcp-tool", "SampleTools.cs"), pairs)
             self.assertIn(("ai-doc", "README.md"), pairs)
@@ -215,6 +218,24 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
+    def test_check_catalog_drift_reports_undocumented_prompt_documentation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / "docs" / "prompts" / "automation-prompts.md")
+            write_required_docs(root, "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "prompt-documentation"
+                    and finding.path == "docs/prompts/automation-prompts.md"
+                    and finding.expected_doc == "docs/ai/prompts/README.md"
+                    for finding in findings
+                )
+            )
+
     def test_check_catalog_drift_reports_missing_workflow_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -262,7 +283,7 @@ class CheckAiInventoryTests(unittest.TestCase):
                     ".codex/prompts/ .codex/checklists/ OpenAI/Codex",
                     "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills",
                     "GitHub Copilot .github/agents .github/prompts .github/instructions",
-                    "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
+                    "Reusable prompt templates .github/prompts/ docs/prompts/ docs/ai/prompts/README.md",
                     "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
                     ".cursor/rules/meridian.mdc",
                 ]
@@ -299,6 +320,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "agents" / "new-agent.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
+            write(root / "docs" / "prompts" / "automation-prompts.md")
             write(root / ".github" / "workflows" / "prompt-generation.yml")
             write(root / ".github" / "workflows" / "copilot-setup-steps.yml")
             write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
@@ -312,7 +334,7 @@ class CheckAiInventoryTests(unittest.TestCase):
                     "GitHub Copilot .github/copilot-instructions.md .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",
                     "MCP-compatible clients src/Meridian.Mcp",
                     "AI automation workflows prompt-generation.yml skill-evals.yml .github/workflows/copilot-*",
-                    "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
+                    "Reusable prompt templates .github/prompts/ docs/prompts/ docs/ai/prompts/README.md automation-prompts.md",
                     "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
                 ]
             )
