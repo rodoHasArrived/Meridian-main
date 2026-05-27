@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: desktop-installer-release-${{ github.ref }}
@@ -25,6 +25,8 @@ jobs:
     name: package-desktop-msix (${{ matrix.runtime }})
     runs-on: windows-latest
     timeout-minutes: 75
+    environment:
+      name: desktop-release-signing
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +53,8 @@ jobs:
             ${{ runner.os }}-nuget-desktop-installer-
             ${{ runner.os }}-nuget-
 
-      - name: Prepare optional signing certificate
+      - name: Prepare optional signing certificate (tag releases only)
+        if: startsWith(github.ref, 'refs/tags/v')
         id: signing
         shell: pwsh
         env:
@@ -66,14 +69,14 @@ jobs:
             "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             Write-Host "Release signing certificate configured."
           } else {
-            Write-Host "No signing certificate secret found; installer will use a temporary development certificate."
+            throw "Tag release builds require MDC_SIGNING_CERT_PFX_BASE64 in the protected desktop-release-signing environment."
           }
 
       - name: Build desktop installer package
         shell: pwsh
         env:
           MDC_SIGNING_CERT_PFX: ${{ steps.signing.outputs.cert_path }}
-          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
         run: |
           $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
           pwsh ./build/scripts/install/install.ps1 `
@@ -123,6 +126,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
 
     steps:
       - name: Download packaged installer artifacts
