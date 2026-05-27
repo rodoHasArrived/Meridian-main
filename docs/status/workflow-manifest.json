@@ -3,7 +3,10 @@
   "workflows": [
     {
       "id": "docs-automation-core",
-      "owners": ["@platform-docs", "@developer-experience"],
+      "owners": [
+        "@platform-docs",
+        "@developer-experience"
+      ],
       "requiredPrerequisites": [
         "Python 3.11+ available on PATH",
         "Repository dependencies installed via make install"
@@ -22,7 +25,10 @@
         "docs/status/docs-automation-summary.md",
         "docs/status/docs-automation-summary.json",
         "docs/status/workflow-validation-summary.json",
-        "docs/status/workflow-drift-report.md"
+        "docs/status/workflow-drift-report.md",
+        "docs/generated/workflow-command-reference.md",
+        "docs/HELP.md",
+        "docs/development/documentation-automation.md"
       ],
       "validationChecks": [
         {
@@ -33,11 +39,33 @@
           "name": "workflow drift report exists",
           "command": "test -f docs/status/workflow-drift-report.md"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Documentation Automation",
+        "refreshTrigger": "docs automation profile run (core/full)",
+        "retention": {
+          "policy": "replace-in-place",
+          "maxAgeDays": 30,
+          "retainLatest": 1
+        },
+        "canonicalOutputRoots": [
+          "docs/status",
+          "docs/generated",
+          "docs"
+        ],
+        "driftChecks": {
+          "enforceMissing": true,
+          "enforceFreshness": true,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "desktop-screenshot-catalog",
-      "owners": ["@desktop-shell", "@operator-experience"],
+      "owners": [
+        "@desktop-shell",
+        "@operator-experience"
+      ],
       "requiredPrerequisites": [
         "Windows build host with PowerShell",
         "Release WPF build available when using -SkipBuild"
@@ -61,11 +89,32 @@
           "name": "screenshot workflow artifacts produced",
           "command": "test -d artifacts/desktop-workflows"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Workstation Shell and UX",
+        "refreshTrigger": "desktop screenshot capture workflow or manual screenshot refresh",
+        "retention": {
+          "policy": "timestamped-run-retention",
+          "maxAgeDays": 14,
+          "retainLatest": 10
+        },
+        "canonicalOutputRoots": [
+          "docs/screenshots/desktop",
+          "artifacts/desktop-workflows"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "provider-validation-wave1",
-      "owners": ["@provider-infra", "@ops-readiness"],
+      "owners": [
+        "@provider-infra",
+        "@ops-readiness"
+      ],
       "requiredPrerequisites": [
         "Provider credentials configured for Wave 1 adapters",
         "PowerShell available"
@@ -89,11 +138,31 @@
           "name": "provider validation summary exists",
           "command": "test -f artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Provider Infrastructure",
+        "refreshTrigger": "wave1 provider validation execution",
+        "retention": {
+          "policy": "dated-evidence-packets",
+          "maxAgeDays": 30,
+          "retainLatest": 30
+        },
+        "canonicalOutputRoots": [
+          "artifacts/provider-validation/_automation"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "operator-inbox-route-validation",
-      "owners": ["@desktop-shell", "@api-workstation"],
+      "owners": [
+        "@desktop-shell",
+        "@api-workstation"
+      ],
       "requiredPrerequisites": [
         "dotnet SDK with Windows targeting packs",
         "PowerShell available"
@@ -116,11 +185,31 @@
           "name": "operator inbox route artifact directory exists",
           "command": "test -d artifacts/wpf-validation/operator-inbox-route"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Workstation API and Desktop Validation",
+        "refreshTrigger": "route validation workflow or targeted validation script run",
+        "retention": {
+          "policy": "validation-bundle-retention",
+          "maxAgeDays": 30,
+          "retainLatest": 20
+        },
+        "canonicalOutputRoots": [
+          "artifacts/wpf-validation/operator-inbox-route"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "provider-validation-evidence-bundle",
-      "owners": ["@provider-infra", "@ops-readiness"],
+      "owners": [
+        "@provider-infra",
+        "@ops-readiness"
+      ],
       "requiredPrerequisites": [
         "Provider credentials configured for Wave 1 adapters",
         "PowerShell available"
@@ -141,11 +230,31 @@
           "name": "provider evidence bundle output exists",
           "command": "test -d artifacts/provider-validation/_automation/<yyyy-mm-dd>"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Provider Infrastructure",
+        "refreshTrigger": "provider validation evidence bundle execution",
+        "retention": {
+          "policy": "dated-evidence-packets",
+          "maxAgeDays": 30,
+          "retainLatest": 30
+        },
+        "canonicalOutputRoots": [
+          "artifacts/provider-validation/_automation"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "ibapi-smoke-build",
-      "owners": ["@provider-infra", "@desktop-shell"],
+      "owners": [
+        "@provider-infra",
+        "@desktop-shell"
+      ],
       "requiredPrerequisites": [
         "dotnet SDK with Windows targeting packs",
         "PowerShell available"
@@ -164,11 +273,31 @@
           "name": "IBAPI smoke build script exists",
           "command": "test -f scripts/dev/build-ibapi-smoke.ps1"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Provider Infrastructure and Desktop Validation",
+        "refreshTrigger": "ibapi smoke build workflow run",
+        "retention": {
+          "policy": "smoke-build-retention",
+          "maxAgeDays": 14,
+          "retainLatest": 20
+        },
+        "canonicalOutputRoots": [
+          "artifacts/bin/ibapi-smoke"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "wpf-route-validation-position-blotter",
-      "owners": ["@desktop-shell", "@api-workstation"],
+      "owners": [
+        "@desktop-shell",
+        "@api-workstation"
+      ],
       "requiredPrerequisites": [
         "dotnet SDK with Windows targeting packs",
         "PowerShell available"
@@ -187,11 +316,31 @@
           "name": "position blotter route artifact directory exists",
           "command": "test -d artifacts/wpf-validation/position-blotter-route"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Workstation API and Desktop Validation",
+        "refreshTrigger": "position blotter route validation execution",
+        "retention": {
+          "policy": "validation-bundle-retention",
+          "maxAgeDays": 30,
+          "retainLatest": 20
+        },
+        "canonicalOutputRoots": [
+          "artifacts/wpf-validation/position-blotter-route"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "wpf-dev-loop-validation",
-      "owners": ["@desktop-shell", "@developer-experience"],
+      "owners": [
+        "@desktop-shell",
+        "@developer-experience"
+      ],
       "requiredPrerequisites": [
         "dotnet SDK with Windows targeting packs",
         "PowerShell available"
@@ -210,11 +359,31 @@
           "name": "WPF dev-loop validation artifacts produced",
           "command": "test -d artifacts/wpf-validation/dev-loop"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Workstation Shell and UX",
+        "refreshTrigger": "wpf dev-loop validation execution",
+        "retention": {
+          "policy": "validation-bundle-retention",
+          "maxAgeDays": 30,
+          "retainLatest": 20
+        },
+        "canonicalOutputRoots": [
+          "artifacts/wpf-validation/dev-loop"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "robinhood-options-smoke",
-      "owners": ["@desktop-shell", "@provider-infra"],
+      "owners": [
+        "@desktop-shell",
+        "@provider-infra"
+      ],
       "requiredPrerequisites": [
         "dotnet SDK with Windows targeting packs",
         "PowerShell available"
@@ -233,11 +402,31 @@
           "name": "Robinhood options smoke artifacts produced",
           "command": "test -d artifacts/desktop-workflows/robinhood-options-smoke"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Workstation Shell and Provider Infrastructure",
+        "refreshTrigger": "robinhood options smoke workflow run",
+        "retention": {
+          "policy": "timestamped-run-retention",
+          "maxAgeDays": 14,
+          "retainLatest": 20
+        },
+        "canonicalOutputRoots": [
+          "artifacts/desktop-workflows/robinhood-options-smoke"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     },
     {
       "id": "web-screenshot-capture",
-      "owners": ["@operator-experience", "@developer-experience"],
+      "owners": [
+        "@operator-experience",
+        "@developer-experience"
+      ],
       "requiredPrerequisites": [
         "Node.js 24 available on PATH",
         "npm dependencies installed for src/Meridian.Ui/dashboard"
@@ -256,7 +445,24 @@
           "name": "web screenshot output directory exists",
           "command": "test -d docs/screenshots/web"
         }
-      ]
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Operator Experience",
+        "refreshTrigger": "web screenshot capture workflow or manual route capture",
+        "retention": {
+          "policy": "replace-in-place",
+          "maxAgeDays": 30,
+          "retainLatest": 1
+        },
+        "canonicalOutputRoots": [
+          "docs/screenshots/web"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
     }
   ]
 }
