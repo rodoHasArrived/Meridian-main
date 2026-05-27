@@ -92,6 +92,7 @@ import type {
   StrategyDesignRunBacktestResponse,
   StrategyDesignTemplate,
   StrategyDesignValidationResult,
+  StrategyRunContinuityDto,
   TradingActionResult,
   TradingOperatorReadiness,
   TradingParameters,
@@ -783,7 +784,7 @@ export function getRunLedgerJournal(runId: string, options: { from?: string; to?
 }
 
 export function getRunContinuity(runId: string) {
-  return getJson<unknown>(workstationRunContinuityEndpoint(runId));
+  return getJson<StrategyRunContinuityDto>(workstationRunContinuityEndpoint(runId));
 }
 
 export function getRunReviewPacketPath(runId: string, fundAccountId?: string) {

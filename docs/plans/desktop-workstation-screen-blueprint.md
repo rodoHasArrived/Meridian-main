@@ -526,8 +526,8 @@ contract DTOs.
   - `IExecutionSessionReplayService`
 - Suggested DTO/domain usage:
   - `TradingOperatorReadinessDto`
-  - `WorkstationBrokerageOrderDto`
-  - `WorkstationBrokerageFillDto`
+  - `FundAccountBrokerageOrderDto`
+  - `FundAccountBrokerageFillDto`
   - `StrategyRunReviewPacketDto`
 - Loading/error/empty states: no active paper session, readiness blocked, stale replay verification, broker simulation unavailable.
 - Accessibility considerations: explicit confirmation text for mutating actions, persistent disabled reasons, keyboard-first ticket submission.
@@ -598,9 +598,9 @@ contract DTOs.
   - portfolio performance presentation service
 - Suggested DTO/domain usage:
   - `FundAccountsDto`
-  - `WorkstationBrokerageSyncViewDto`
-  - `WorkstationBrokeragePositionDto`
-  - `WorkstationBrokerageBalanceSnapshotDto`
+  - `FundAccountBrokerageSyncActivityDto`
+  - `FundAccountBrokeragePositionDto`
+  - `FundAccountBrokerageBalanceSnapshotDto`
 - Loading/error/empty states: no context selected, disconnected account sync, no positions, stale balance snapshot.
 - Accessibility considerations: selected account context should drive all lower panes; clear announce when switching between aggregate and account scopes.
 - Performance considerations: cache summary cards, virtualize holdings, background performance series load.
@@ -917,8 +917,8 @@ contract DTOs.
   - `IOrderGateway`
   - `IExecutionQualityAnalyticsService`
 - Suggested DTO/domain usage:
-  - `WorkstationBrokerageOrderDto`
-  - `WorkstationBrokerageFillDto`
+  - `FundAccountBrokerageOrderDto`
+  - `FundAccountBrokerageFillDto`
   - execution audit models
 - Loading/error/empty states: no orders, filtered miss, route diagnostics unavailable, replace blocked.
 - Accessibility considerations: explicit state labels for partial/cancel-replace, action availability described inline.

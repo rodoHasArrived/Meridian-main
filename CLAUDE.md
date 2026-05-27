@@ -15,8 +15,6 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 - an active WPF desktop workstation alongside the browser-based operator workstation,
 - MCP and AI workflow assets for repository navigation and task automation.
 
-Current local project path: `D:\Meridian-main`.
-
 ## Core Working Rules
 
 1. Make the safest change that satisfies the request.

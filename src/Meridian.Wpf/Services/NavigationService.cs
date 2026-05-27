@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
@@ -46,6 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
+    private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -121,6 +123,23 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode, workspaceScope?.ServiceProvider);
     }
 
+    /// <summary>
+    /// Navigates using a workspace-scoped service provider when provided.
+    /// </summary>
+    public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
+    {
+        var previousProvider = _navigationScopeProvider.Value;
+        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
+        try
+        {
+            return base.NavigateTo(pageTag, parameter);
+        }
+        finally
+        {
+            _navigationScopeProvider.Value = previousProvider;
+        }
+    }
+
     /// <inheritdoc />
     protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
@@ -129,7 +148,12 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         try
         {
-            var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
+            var content = CreatePageContentCore(
+                pageTag,
+                pageType,
+                parameter,
+                WorkspaceChromePresentationMode.Standalone,
+                _navigationScopeProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
             {

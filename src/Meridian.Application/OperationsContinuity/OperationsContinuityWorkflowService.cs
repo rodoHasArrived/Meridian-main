@@ -1223,7 +1223,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 candidate.Timestamp,
                 description,
                 lines,
-                ToJournalEntryMetadata(candidate.Metadata));
+                ToJournalEntryMetadata(candidate));
 
             journalWrite = new LedgerJournalEntryWrite(
                 entry,
@@ -1285,6 +1285,24 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH", "Ledger journal candidate aggregate id must match the workflow fund account.", evidence));
         }
 
+        if (candidate.CommandId.GetValueOrDefault() == Guid.Empty ||
+            string.IsNullOrWhiteSpace(candidate.IdempotencyKey))
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_IDEMPOTENCY_KEY_MISSING",
+                "Ledger journal candidate requires a durable command id and idempotency key before posting.",
+                evidence));
+        }
+
+        if (candidate.Metadata?.SecurityId is null ||
+            string.IsNullOrWhiteSpace(candidate.SecurityMasterProvenance))
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_JOURNAL_PROVENANCE_MISSING",
+                "Ledger journal candidate requires Security Master security id and provenance before posting.",
+                evidence));
+        }
+
         if (candidate.Timestamp == default)
         {
             blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_TIMESTAMP_REQUIRED", "Ledger journal candidate timestamp is required.", evidence));
@@ -1338,24 +1356,49 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks) =>
         new(code, message, OperationsGateKeyDto.LedgerPosting, "Critical", evidenceLinks);
 
-    private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsJournalEntryMetadataDto? metadata) =>
-        metadata is null
-            ? null
-            : new JournalEntryMetadata(
-                ActivityType: NormalizeOptional(metadata.ActivityType),
-                Symbol: NormalizeOptional(metadata.Symbol),
-                SecurityId: metadata.SecurityId,
-                OrderId: metadata.OrderId,
-                FillId: metadata.FillId,
-                ProjectId: NormalizeOptional(metadata.ProjectId),
-                LedgerBook: NormalizeOptional(metadata.LedgerBook),
-                LedgerView: null,
-                ScenarioId: NormalizeOptional(metadata.ScenarioId),
-                StrategyId: NormalizeOptional(metadata.StrategyId),
-                FinancialAccountId: NormalizeOptional(metadata.FinancialAccountId),
-                CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
-                Institution: NormalizeOptional(metadata.Institution),
-                Tags: metadata.Tags);
+    private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsLedgerJournalCandidateDto candidate)
+    {
+        var metadata = candidate.Metadata;
+        if (metadata is null)
+        {
+            return null;
+        }
+
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (metadata.Tags is not null)
+        {
+            foreach (var pair in metadata.Tags)
+            {
+                tags[pair.Key] = pair.Value;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(candidate.IdempotencyKey))
+        {
+            tags["operationsContinuityIdempotencyKey"] = candidate.IdempotencyKey.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(candidate.SecurityMasterProvenance))
+        {
+            tags["securityMasterProvenance"] = candidate.SecurityMasterProvenance.Trim();
+        }
+
+        return new JournalEntryMetadata(
+            ActivityType: NormalizeOptional(metadata.ActivityType),
+            Symbol: NormalizeOptional(metadata.Symbol),
+            SecurityId: metadata.SecurityId,
+            OrderId: metadata.OrderId,
+            FillId: metadata.FillId,
+            ProjectId: NormalizeOptional(metadata.ProjectId),
+            LedgerBook: NormalizeOptional(metadata.LedgerBook),
+            LedgerView: null,
+            ScenarioId: NormalizeOptional(metadata.ScenarioId),
+            StrategyId: NormalizeOptional(metadata.StrategyId),
+            FinancialAccountId: NormalizeOptional(metadata.FinancialAccountId),
+            CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
+            Institution: NormalizeOptional(metadata.Institution),
+            Tags: tags.Count == 0 ? null : tags);
+    }
 
     private static string NormalizePolicy(string value) =>
         string.IsNullOrWhiteSpace(value) ? "legacy-v1" : value.Trim();

@@ -31,8 +31,9 @@ Use this module for provider implementation, external service integration, and a
 
 WebSocket streaming adapters that derive from `WebSocketProviderBase` expose
 `IProviderConnectionDiagnosticsSource` for safe provider-level health snapshots. Consumers should
-use that optional seam for connection state, heartbeat time, reconnect status, and last safe error
-category instead of reaching into provider-specific transport internals.
+use that optional seam for connection state, heartbeat time, reconnect status, subscription health
+counts, last subscription message time, and last safe error category instead of reaching into
+provider-specific transport internals.
 
 Provider registry paths normalize configured provider identifiers before factory lookup, and the
 registry can hold multiple adapter contracts for one provider family ID. This allows identifiers

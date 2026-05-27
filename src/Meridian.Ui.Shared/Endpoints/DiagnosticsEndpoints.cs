@@ -171,10 +171,12 @@ public static class DiagnosticsEndpoints
             var hotPathPipeline = services.GetService<DualPathEventPipeline>();
             var jsonlSink = services.GetService<JsonlStorageSink>();
             var shutdownDiagnostics = services.GetService<ShutdownDiagnosticsService>();
+            var providerRegistry = services.GetService<ProviderRegistry>();
             var stats = errorTracker?.GetStatistics();
             var pipelineStats = eventPipeline?.GetStatistics();
             var jsonlStats = jsonlSink?.GetStatistics();
             var metricsSnapshot = (eventPipeline?.EventMetrics ?? eventMetrics)?.GetSnapshot();
+            var providerConnectionDiagnostics = ProviderConnectionDiagnosticsProjection.BuildUniqueSummaries(providerRegistry);
             return Results.Json(new
             {
                 errors = stats != null ? new
@@ -246,6 +248,12 @@ public static class DiagnosticsEndpoints
                     maxLatencyUs = Math.Round(metricsSnapshot.Value.MaxLatencyUs, 2),
                     latencySampleCount = metricsSnapshot.Value.LatencySampleCount
                 } : null,
+                providerConnections = new
+                {
+                    available = providerRegistry is not null,
+                    count = providerConnectionDiagnostics.Count,
+                    providers = providerConnectionDiagnostics
+                },
                 shutdown = CreateShutdownDiagnosticsPayload(shutdownDiagnostics?.GetSnapshot()),
                 runtime = CreateRuntimeDiagnosticsSnapshot(),
                 processMemoryBytes = GC.GetTotalMemory(false),

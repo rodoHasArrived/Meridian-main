@@ -256,6 +256,28 @@ public sealed class WebSocketProviderBaseTests
         snapshot.LastMessageReceivedAt.Should().BeNull("manual provider heartbeat activity is not a market-data payload");
     }
 
+    [Fact]
+    public async Task ConnectionDiagnosticsSource_IncludesSubscriptionHealthCounts()
+    {
+        await using var provider = new StubProvider();
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+        var now = DateTimeOffset.UtcNow;
+        var activeId = provider.SubscriptionsPublic.Subscribe("SPY", "trades");
+        var failedId = provider.SubscriptionsPublic.Subscribe("QQQ", "quotes");
+        var recoveringId = provider.SubscriptionsPublic.Subscribe("IWM", "depth");
+
+        provider.SubscriptionsPublic.RecordMessageReceived(activeId, now.AddSeconds(-5)).Should().BeTrue();
+        provider.SubscriptionsPublic.RecordSubscriptionError(failedId, "provider rejected subscription").Should().BeTrue();
+        provider.SubscriptionsPublic.RecordRecoveryAttempt(recoveringId, "recovering after reconnect").Should().BeTrue();
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.ActiveSubscriptions.Should().Be(3);
+        snapshot.FailedSubscriptions.Should().Be(1);
+        snapshot.RecoveringSubscriptions.Should().Be(1);
+        snapshot.LastSubscriptionMessageAt.Should().Be(now.AddSeconds(-5));
+    }
+
     // -----------------------------------------------------------------------
     // Disconnect / Dispose without prior connect
     // -----------------------------------------------------------------------

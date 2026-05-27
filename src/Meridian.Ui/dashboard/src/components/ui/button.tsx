@@ -45,11 +45,11 @@ type ButtonChildProps = React.HTMLAttributes<HTMLElement> & {
 };
 
 const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
-  default: "border-primary/40 bg-primary text-primary-foreground hover:bg-primary/85",
-  secondary: "border-border/80 bg-secondary text-secondary-foreground hover:bg-secondary/80",
-  outline: "border-border/80 bg-transparent text-foreground hover:bg-secondary/60",
-  ghost: "border-transparent bg-transparent text-muted-foreground hover:bg-secondary/55 hover:text-foreground",
-  destructive: "border-danger/40 bg-danger/10 text-danger hover:bg-danger/15"
+  default: "border-primary bg-primary text-primary-foreground shadow-flat hover:bg-primary/85",
+  secondary: "border-border bg-secondary text-secondary-foreground hover:bg-secondary/80",
+  outline: "border-border bg-background/40 text-foreground hover:bg-secondary/60",
+  ghost: "border-transparent bg-transparent text-muted-foreground hover:border-border/60 hover:bg-secondary/55 hover:text-foreground",
+  destructive: "border-danger/60 bg-danger/10 text-danger hover:bg-danger/15"
 };
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -77,7 +77,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
-      "inline-flex items-center justify-center gap-2 rounded-md border font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
+      "inline-flex items-center justify-center gap-2 rounded-sm border font-semibold transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:translate-x-px active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:translate-x-0 disabled:active:translate-y-0",
       variantClasses[variant],
       sizeClasses[size],
       vm.disabled && asChild && "pointer-events-none opacity-50",

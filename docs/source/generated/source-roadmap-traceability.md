@@ -59,7 +59,6 @@ do_not_edit: true
 | `SRC-LEDGER` | Meridian ledger | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-LEDGER` | Meridian ledger | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-MCP` | Meridian MCP host | `W6-LIVE-001` | Live-readiness governance |
-| `SRC-MCP-SERVER` | Meridian MCP server | `W6-LIVE-001` | Live-readiness governance |
 | `SRC-PROVIDER-SDK` | Provider SDK | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-PROVIDER-SDK` | Provider SDK | `W6-LIVE-001` | Live-readiness governance |
 | `SRC-QUANTSCRIPT` | QuantScript | `W3-CONT-001` | Research to paper continuity |
@@ -86,5 +85,5 @@ do_not_edit: true
 | `SRC-UI-SHARED` | UI shared contracts | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-SHARED` | UI shared contracts | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-UI-SHARED` | UI shared contracts | `W4-RPT-001` | Governed report pack readiness |
-| `SRC-WPF` | Retained WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
-| `SRC-WPF` | Retained WPF workstation | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-WPF` | WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-WPF` | WPF workstation | `W4-RPT-001` | Governed report pack readiness |

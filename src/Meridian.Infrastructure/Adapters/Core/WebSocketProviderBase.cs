@@ -88,7 +88,18 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
 
     /// <inheritdoc/>
     public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
-        => _connectionManager.GetDiagnosticsSnapshot();
+    {
+        var connection = _connectionManager.GetDiagnosticsSnapshot();
+        var subscriptions = Subscriptions.GetSnapshot();
+
+        return connection with
+        {
+            ActiveSubscriptions = subscriptions.TotalSubscriptions,
+            FailedSubscriptions = subscriptions.FailedSubscriptions,
+            RecoveringSubscriptions = subscriptions.RecoveringSubscriptions,
+            LastSubscriptionMessageAt = GetLastSubscriptionMessageAt(subscriptions)
+        };
+    }
 
     /// <inheritdoc/>
     public virtual async Task ConnectAsync(CancellationToken ct = default)
@@ -236,6 +247,21 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
             MigrationDiagnostics.IncReconnectSuccess(ProviderId);
         else
             MigrationDiagnostics.IncReconnectFailure(ProviderId);
+    }
+
+    private static DateTimeOffset? GetLastSubscriptionMessageAt(SubscriptionSnapshot snapshot)
+    {
+        DateTimeOffset? latest = null;
+        foreach (var subscription in snapshot.Subscriptions)
+        {
+            if (subscription.LastMessageAt is not { } lastMessageAt)
+                continue;
+
+            if (latest is null || lastMessageAt > latest.Value)
+                latest = lastMessageAt;
+        }
+
+        return latest;
     }
 
 

@@ -137,10 +137,13 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
-        new(
+    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate(Guid? aggregateId = null)
+    {
+        var securityId = Guid.Parse("2C0F364F-6020-4675-A7E2-27448950C5AF");
+        var idempotencyKey = $"{securityId:N}:operations-continuity:20260531:AccrueInterestIncome:test-source-hash";
+        return new OperationsLedgerJournalCandidateDto(
             JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
+            AggregateId: aggregateId ?? Guid.NewGuid(),
             PeriodId: Guid.NewGuid(),
             Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             Description: "Operations continuity endpoint posting",
@@ -159,11 +162,21 @@ public sealed partial class WorkstationEndpointsTests
                     Debit: 0m,
                     Credit: 100m)
             ],
+            CommandId: Guid.NewGuid(),
+            SourceEventId: Guid.NewGuid(),
             AccountingBasis: AccountingBasisKindDto.Primary,
             AccountingPolicyId: "legacy-v1",
             AccountingPolicyVersion: "legacy-v1",
+            RuleId: "operations-continuity-endpoint",
+            RuleVersion: "v1",
             PostingKind: LedgerPostingKindDto.Originating,
-            Metadata: new OperationsJournalEntryMetadataDto(ActivityType: "operations-continuity"));
+            Metadata: new OperationsJournalEntryMetadataDto(
+                ActivityType: "operations-continuity",
+                Symbol: "OPS",
+                SecurityId: securityId),
+            IdempotencyKey: idempotencyKey,
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+    }
 
     private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
     {

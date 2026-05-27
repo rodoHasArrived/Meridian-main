@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Net.WebSockets;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
@@ -6,6 +7,8 @@ using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -32,6 +35,24 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton<IEventMetrics>(metrics);
+        var registry = new ProviderRegistry();
+        registry.Register(new DiagnosticProvider(new WebSocketConnectionDiagnostics(
+            ProviderName: "Alpaca",
+            LifecycleState: ProviderConnectionLifecycleState.Connected,
+            WebSocketState: WebSocketState.Open,
+            IsConnected: true,
+            IsReconnecting: false,
+            ReconnectAttempts: 1,
+            LastConnectedAt: DateTimeOffset.UtcNow.AddMinutes(-1),
+            LastDisconnectedAt: null,
+            LastHeartbeatReceivedAt: DateTimeOffset.UtcNow.AddSeconds(-5),
+            LastMessageReceivedAt: DateTimeOffset.UtcNow.AddSeconds(-4),
+            LastReconnectAttemptAt: DateTimeOffset.UtcNow.AddMinutes(-2),
+            LastError: "raw detail omitted from bundle",
+            LastFailureKind: null,
+            ConnectionAge: TimeSpan.FromMinutes(1),
+            IdleDuration: TimeSpan.FromSeconds(4))));
+        services.AddSingleton(registry);
 
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         new ConfigurationFeatureRegistration().Register(services, options);
@@ -91,6 +112,10 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
         summaryDocument.RootElement.GetProperty("errors").GetProperty("available").GetBoolean().Should().BeTrue();
         summaryDocument.RootElement.GetProperty("shutdown").GetProperty("available").GetBoolean().Should().BeTrue();
         summaryDocument.RootElement.GetProperty("shutdown").GetProperty("correlationId").GetString().Should().Be("registration-shutdown-correlation");
+        summaryDocument.RootElement.GetProperty("providerConnections").GetProperty("available").GetBoolean().Should().BeTrue();
+        summaryDocument.RootElement.GetProperty("providerConnections").GetProperty("count").GetInt32().Should().Be(1);
+        summaryDocument.RootElement.GetProperty("providerConnections").GetProperty("providers").EnumerateArray().Single()
+            .GetProperty("lifecycleState").GetString().Should().Be("Connected");
     }
 
     [Fact]
@@ -199,5 +224,29 @@ public sealed class DiagnosticsFeatureRegistrationTests : IDisposable
             MemoryUsageMb: 0,
             HeapSizeMb: 0,
             Timestamp: DateTimeOffset.UtcNow);
+    }
+
+    private sealed class DiagnosticProvider : IProviderMetadata, IProviderConnectionDiagnosticsSource
+    {
+        private readonly WebSocketConnectionDiagnostics _diagnostics;
+
+        public DiagnosticProvider(WebSocketConnectionDiagnostics diagnostics)
+        {
+            _diagnostics = diagnostics;
+        }
+
+        public string ProviderId => "alpaca";
+        public string ProviderDisplayName => "Alpaca";
+        public string ProviderDescription => "Diagnostics registration test provider.";
+        public int ProviderPriority => 10;
+        public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming();
+
+        public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() => _diagnostics;
     }
 }

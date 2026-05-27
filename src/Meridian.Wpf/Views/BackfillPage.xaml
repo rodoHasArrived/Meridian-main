@@ -1065,24 +1065,26 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Bars Downloaded"
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Bars Written"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
-                            <TextBlock x:Name="TotalBarsText" Grid.Row="0" Grid.Column="1" Text="1,234,567"
+                            <TextBlock x:Name="TotalBarsText" Grid.Row="0" Grid.Column="1" Text="{Binding BackfillStatsTotalBarsText}"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Symbols with Data"
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Symbols Processed"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
-                            <TextBlock x:Name="SymbolsWithDataText" Grid.Row="1" Grid.Column="1" Text="45"
+                            <TextBlock x:Name="SymbolsWithDataText" Grid.Row="1" Grid.Column="1" Text="{Binding BackfillStatsSymbolsProcessedText}"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Date Range Coverage"
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Latest Run Window"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
-                            <TextBlock x:Name="DateCoverageText" Grid.Row="2" Grid.Column="1" Text="5 years"
+                            <TextBlock x:Name="DateCoverageText" Grid.Row="2" Grid.Column="1" Text="{Binding BackfillStatsRunWindowText}"
+                                       TextAlignment="Right" TextWrapping="Wrap"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Last Successful Run"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
-                            <TextBlock x:Name="LastSuccessfulText" Grid.Row="3" Grid.Column="1" Text="2 hours ago"
+                            <TextBlock x:Name="LastSuccessfulText" Grid.Row="3" Grid.Column="1" Text="{Binding BackfillStatsLastSuccessfulRunText}"
+                                       TextAlignment="Right" TextWrapping="Wrap"
                                        FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4" />
                         </Grid>
                     </StackPanel>

@@ -88,6 +88,32 @@ public sealed class ProviderDataQualityValidatorTests
     }
 
     [Fact]
+    public void ValidateTrade_StaleTimestampWithThreshold_ReturnsWarning()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var update = new MarketTradeUpdate(
+            Timestamp: now.AddMinutes(-15),
+            Symbol: "SPY",
+            Price: 450.25m,
+            Size: 100,
+            Aggressor: AggressorSide.Unknown,
+            SequenceNumber: 1,
+            StreamId: "TEST",
+            Venue: "TEST");
+
+        var issues = ProviderDataQualityValidator.ValidateTrade(
+            "polygon",
+            update,
+            now,
+            staleThreshold: TimeSpan.FromMinutes(5));
+
+        issues.Should().ContainSingle(issue =>
+            issue.FieldPath == "timestamp" &&
+            issue.Severity == ProviderDataQualitySeverity.Warning &&
+            issue.Message.Contains("stale", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void ValidateQuote_NegativeBidAndAskSizes_ReturnsFieldSpecificIssues()
     {
         var now = DateTimeOffset.UtcNow;

@@ -318,7 +318,7 @@ public sealed partial class WorkstationEndpointsTests
                 "period-close",
                 true,
                 EvidenceLinks: [evidence],
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: [], EvidenceLinks: [evidence]));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
@@ -496,20 +496,24 @@ public sealed partial class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
-            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "reviewer", "Submit evidence", "report-pack-1"));
+            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "ops-user", "Submit evidence", "report-pack-1"));
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
-            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "reviewer", "Approve close", "report-pack-1"));
+            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "spoofed-reviewer", "Approve close", "report-pack-1"));
         var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
             new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user", "Close period", "report-pack-1"));
 
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
+        closed.Workflow.Approvals.Should().Contain(approval =>
+            approval.Status == OperationsApprovalStateDto.Approved &&
+            approval.Operator == "ops-user" &&
+            approval.Reviewer == "ops-user");
     }
 
     [Fact]
@@ -550,7 +554,7 @@ public sealed partial class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
 
         var bridged = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(
@@ -4817,6 +4821,8 @@ public sealed partial class WorkstationEndpointsTests
         rows.Should().HaveCount(2);
         rows.Select(r => r.GetProperty("runId").GetString()).Should().Contain("cmp-1").And.Contain("cmp-2");
         rows.Select(r => r.GetProperty("strategyName").GetString()).Should().Contain("Alpha Strategy").And.Contain("Beta Strategy");
+        rows.Should().OnlyContain(row => row.GetProperty("artifactCompleteness").ValueKind == JsonValueKind.Object);
+        rows.Should().OnlyContain(row => row.GetProperty("compatibilityWarnings").ValueKind == JsonValueKind.Array);
     }
 
     [Fact]
@@ -5016,6 +5022,9 @@ public sealed partial class WorkstationEndpointsTests
         doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
         doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
         doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.TryGetProperty("baseArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("targetArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("compatibilityWarnings", out _).Should().BeTrue();
     }
 
     [Fact]

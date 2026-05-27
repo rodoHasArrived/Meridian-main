@@ -912,7 +912,7 @@ describe("app shell view model", () => {
       role: "status",
       ariaLive: "polite",
       title: "Demo data",
-      detail: "Showing local fixture responses because the Meridian API host is unavailable.",
+      detail: "Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
       workflowLabel: "Evidence path",
       retryLabel: "Retrying live data",
       retryAriaLabel: "Retrying Meridian API host and live workstation data",

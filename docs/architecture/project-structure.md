@@ -4,9 +4,8 @@
 **Owner:** Core Team
 **Reviewed:** 2026-05-19
 
-Meridian lives at `D:\Meridian-main`. The repository is organized around
-source projects, tests, automation, docs, design-system assets, and generated
-artifacts.
+Meridian uses a standard repository layout organized around source projects,
+tests, automation, docs, design-system assets, and generated artifacts.
 
 ## Active Source
 

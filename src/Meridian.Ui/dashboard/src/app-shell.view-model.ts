@@ -605,7 +605,7 @@ export function buildDevelopmentFixtureNoticeViewModel({
     role: "status",
     ariaLive: "polite",
     title: "Demo data",
-    detail: "Showing local fixture responses because the Meridian API host is unavailable.",
+    detail: "Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
     workflowLabel: "Evidence path",
     retryLabel: refreshing ? "Retrying live data" : "Retry live data",
     retryAriaLabel: refreshing

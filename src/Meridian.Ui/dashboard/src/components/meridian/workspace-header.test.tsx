@@ -18,7 +18,6 @@ describe("WorkspaceHeader", () => {
       <WorkspaceHeader
         workspace={workspaceForKey("trading")}
         session={session}
-        onOpenCommandPalette={vi.fn()}
         onRefresh={vi.fn()}
         refreshing
       />
@@ -32,9 +31,6 @@ describe("WorkspaceHeader", () => {
     expect(refreshButton).toBeDisabled();
     expect(refreshButton).toHaveAttribute("title", "Trading workspace data is refreshing.");
     expect(refreshButton.querySelector("svg")).toHaveClass("animate-spin");
-    expect(screen.getByRole("button", { name: "Open workspace command palette" })).toHaveTextContent(
-      "Open command palette"
-    );
     expect(screen.queryByLabelText("Canonical route /trading")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("8 commands available in the command palette")).not.toBeInTheDocument();
     expect(screen.getByText("Refreshing Trading workspace data.")).toHaveClass("sr-only");

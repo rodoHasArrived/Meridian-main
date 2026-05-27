@@ -226,7 +226,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             }
 
             var metrics = sp.GetRequiredService<IEventMetrics>();
-            IMarketEventPublisher innerPublisher = sp.GetRequiredService<EventPipeline>();
+            IMarketEventPublisher innerPublisher = sp.GetRequiredService<DualPathEventPipeline>();
             IMarketEventPublisher publisher = new PipelinePublisher(
                 innerPublisher,
                 metrics);

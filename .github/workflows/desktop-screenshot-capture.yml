@@ -62,7 +62,6 @@ jobs:
           /p:EnableFullWpfBuild=true
 
       - name: Capture desktop screenshots
-        continue-on-error: true
         shell: pwsh
         run: >
           scripts/dev/capture-desktop-screenshots.ps1
@@ -86,7 +85,7 @@ jobs:
           }
 
       - name: Commit and push results
-        if: ${{ always() && inputs.commit == true }}
+        if: ${{ success() && inputs.commit == true }}
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
@@ -99,7 +98,25 @@ jobs:
           $changed = git diff --cached --name-only
           if ($changed) {
             git commit -m "chore: refresh desktop screenshot catalog [skip ci]"
-            git push
+            $maxPushAttempts = 3
+            $pushed = $false
+            for ($attempt = 1; $attempt -le $maxPushAttempts; $attempt++) {
+              git pull --rebase
+              git push
+              if ($LASTEXITCODE -eq 0) {
+                $pushed = $true
+                break
+              }
+              if ($attempt -lt $maxPushAttempts) {
+                $delay = [math]::Pow(2, $attempt)
+                Write-Host "::warning::Push was rejected on attempt $attempt of $maxPushAttempts; retrying after ${delay}s delay and refreshing from remote."
+                Start-Sleep -Seconds $delay
+              }
+            }
+            if (-not $pushed) {
+              Write-Host "::error::Unable to push screenshot updates after $maxPushAttempts attempts."
+              exit 1
+            }
           } else {
             Write-Host "[INFO] No changes to commit."
           }

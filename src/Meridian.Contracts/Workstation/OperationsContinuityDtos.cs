@@ -176,6 +176,7 @@ public static class OperationsWorkflowContractMatrix
         "APPROVAL_DECISION_REQUIRED",
         "APPROVAL_METADATA_REQUIRED",
         "APPROVAL_REQUIRED",
+        "APPROVAL_REVIEWER_MISMATCH",
         "APPROVAL_SUBMISSION_METADATA_REQUIRED",
         "APPROVAL_SUBMISSION_REQUIRED",
         "AUDIT_CHAIN_INVALID",
@@ -482,7 +483,9 @@ public sealed record OperationsLedgerJournalCandidateDto(
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
-    OperationsJournalEntryMetadataDto? Metadata = null);
+    OperationsJournalEntryMetadataDto? Metadata = null,
+    string? IdempotencyKey = null,
+    string? SecurityMasterProvenance = null);
 
 public sealed record OperationsLedgerJournalLineDto(
     Guid? EntryId,

@@ -275,6 +275,30 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
     {
+        if (IsMortgageBacked(definition.AssetClass) ||
+            IsMortgageBacked(definition.AssetFamily) ||
+            IsMortgageBacked(definition.SubType) ||
+            IsMortgageBacked(definition.TypeName))
+        {
+            return "MortgageBackedSecurity";
+        }
+
+        if (IsAssetBacked(definition.AssetClass) ||
+            IsAssetBacked(definition.AssetFamily) ||
+            IsAssetBacked(definition.SubType) ||
+            IsAssetBacked(definition.TypeName))
+        {
+            return "AssetBackedSecurity";
+        }
+
+        if (IsAmortizingLoan(definition.AssetClass) ||
+            IsAmortizingLoan(definition.AssetFamily) ||
+            IsAmortizingLoan(definition.SubType) ||
+            IsAmortizingLoan(definition.TypeName))
+        {
+            return "AmortizingLoan";
+        }
+
         if (IsFixedIncome(definition.AssetClass) ||
             IsFixedIncome(definition.AssetFamily) ||
             ContainsToken(definition.SubType, "Bond") ||
@@ -291,7 +315,30 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         string.Equals(value, "Bond", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(value, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(value, "CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "TreasuryBill", StringComparison.OrdinalIgnoreCase);
+        string.Equals(value, "TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
+        IsMortgageBacked(value) ||
+        IsAssetBacked(value) ||
+        IsAmortizingLoan(value);
+
+    private static bool IsMortgageBacked(string? value) =>
+        string.Equals(value, "MortgageBacked", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "Mbs", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "MortgageBacked") ||
+        ContainsToken(value, "Mortgage Backed");
+
+    private static bool IsAssetBacked(string? value) =>
+        string.Equals(value, "AssetBacked", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "Abs", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "AssetBacked") ||
+        ContainsToken(value, "Asset Backed");
+
+    private static bool IsAmortizingLoan(string? value) =>
+        string.Equals(value, "Loan", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "AmortizingLoan", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "AmortizingLoan") ||
+        ContainsToken(value, "Amortizing Loan");
 
     private static bool ContainsToken(string? value, string token) =>
         !string.IsNullOrWhiteSpace(value) &&

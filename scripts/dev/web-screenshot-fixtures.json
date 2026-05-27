@@ -721,6 +721,102 @@
           "createdAt": "2026-04-01T00:00:00Z"
         }
       ]
+    },
+    "/api/workstation/settings/feature-capabilities": {
+      "capabilities": [
+        {
+          "capabilityKey": "provider-routing",
+          "displayName": "Provider Routing",
+          "description": "Controls provider routing settings and trust snapshots.",
+          "isEnabled": true,
+          "defaultEnabled": true,
+          "isPermanent": false,
+          "isOverridden": false,
+          "canToggle": true,
+          "disabledReason": null
+        },
+        {
+          "capabilityKey": "brokerage-sync",
+          "displayName": "Brokerage Sync",
+          "description": "Enables brokerage account synchronization workflows.",
+          "isEnabled": true,
+          "defaultEnabled": true,
+          "isPermanent": false,
+          "isOverridden": false,
+          "canToggle": true,
+          "disabledReason": null
+        }
+      ]
+    },
+    "/api/providers/connections": [
+      {
+        "providerId": "alpaca",
+        "displayName": "Alpaca paper",
+        "capability": "Brokerage",
+        "credentialState": "Configured",
+        "credentialSource": "Operator",
+        "verificationState": "Verified",
+        "health": "Healthy",
+        "fallbackActive": false,
+        "lastVerifiedAt": "2026-05-07T11:50:00Z",
+        "lastSuccessfulAt": "2026-05-07T11:50:00Z",
+        "lastFailureAt": null,
+        "lastError": null,
+        "maskedKeyPreview": "********DEMO",
+        "environment": "paper",
+        "externalAccountId": "PA-DEMO",
+        "affectedWorkflows": ["Trading readiness", "Portfolio brokerage sync"],
+        "recommendedAction": "Keep provider in paper mode for workstation capture.",
+        "actionHref": "/workstation/settings/integrations"
+      }
+    ],
+    "/api/provider-routing/connections": [
+      {
+        "connectionId": "alpaca-paper",
+        "providerFamilyId": "alpaca",
+        "displayName": "Alpaca paper",
+        "connectionType": "Brokerage",
+        "connectionMode": "Paper",
+        "enabled": true,
+        "credentialReference": "alpaca-paper",
+        "institutionId": "alpaca",
+        "externalAccountId": "PA-DEMO",
+        "scope": null,
+        "tags": ["paper", "brokerage"],
+        "description": "Paper brokerage route for screenshots.",
+        "productionReady": true
+      }
+    ],
+    "/api/provider-routing/bindings": [
+      {
+        "bindingId": "binding-brokerage-paper",
+        "capability": "BrokerageExecution",
+        "connectionId": "alpaca-paper",
+        "target": null,
+        "priority": 1,
+        "enabled": true,
+        "failoverConnectionIds": [],
+        "safetyModeOverride": null,
+        "notes": "Default brokerage route for screenshot fixtures."
+      }
+    ],
+    "/api/provider-routing/trust-snapshots": [
+      {
+        "connectionId": "alpaca-paper",
+        "providerFamilyId": "alpaca",
+        "score": 0.92,
+        "isHealthy": true,
+        "healthStatus": "Healthy",
+        "isProductionReady": true,
+        "isCertificationFresh": true,
+        "signals": ["latency:p50=18ms", "continuity:stable"]
+      }
+    ],
+    "/api/workstation/workflow-summary": {
+      "generatedAt": "2026-04-28T18:15:00Z",
+      "totalWorkflows": 1,
+      "activeWorkflows": 1,
+      "reviewRequired": 1
     }
   }
 }

@@ -264,4 +264,31 @@ public sealed class StreamingFailoverServiceTests : IDisposable
         _service.GetActiveProviderId("ordered-rule").Should().Be("backup2");
     }
 
+    [Fact]
+    public void AutomaticFailover_NormalizesRuleProviderIds_WhenConfigUsesWhitespaceAndCaseVariants()
+    {
+        var normalizedRule = new FailoverRuleConfig(
+            Id: "normalized-rule",
+            PrimaryProviderId: " PRIMARY ",
+            BackupProviderIds: new[] { " BACKUP1 " },
+            FailoverThreshold: 2,
+            RecoveryThreshold: 2);
+
+        var config = new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: new[] { normalizedRule });
+
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(config);
+
+        _service.GetActiveProviderId("normalized-rule").Should().Be("primary");
+
+        _service.RecordFailure(" primary ", "timeout");
+        _service.RecordFailure(" PRIMARY ", "timeout");
+
+        _service.GetActiveProviderId("normalized-rule").Should().Be("backup1");
+    }
+
 }

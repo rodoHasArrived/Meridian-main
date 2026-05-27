@@ -1,17 +1,18 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-27
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, DK1 provider trust now has a signed 2026-04-27 pilot replay/sample-set parity packet, valid packet-bound operator sign-off, and cockpit readiness projection; Waves 2-4 remain the core operator-readiness path. Browser and WPF operator UI development are both active: the browser workstation lives in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`, and the Windows desktop workstation lives in `src/Meridian.Wpf/`. New product behavior should land behind shared contracts, local/web API endpoints, or shared read models before either client composes it. Current post-May-9 deltas add Security Master/UFL reference-data projection support, browser provider-setup validation handoffs, browser Data backfill queue dense-table selection, browser Trading loading-state panel and Recent Fills detail support, browser Live Quotes trade-detail selection plus quick-trade readiness handoffs, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, Quant Lab plot view-model extraction, Quant Notebook cell/data-fetch helpers, crash-safe shared UI persistence, WPF Data shell feature-module support, Overview Today panel support, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state at `/strategy/covered-call`, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, view-model-owned browser workflow polish for hash-aware command routing, query-string route focus for subject/symbol handoffs, Portfolio brokerage-sync next actions, Watchlist no-quote/empty-state copy, Overview status/refresh presentation, Reporting report-pack actions and endpoint-link safety, Security Master lot-detail/conflict refresh state, UTC Trading readiness labels, accessible disabled-reason support, session/role-aware API error summaries, web-workstation installer config repair, fail-closed brokerage order-placement gating, ledger/promotion endpoint authorization checks, execution metadata sanitization, expanded factor-based fixed-income accounting coverage for MBS/ABS/loan instruments, Strategy Engine definitions/validate-run support, additive workstation continuity payload guards, provider capability matrix ownership, and structured roadmap/source documentation controls; they are support evidence, not wave exits.
 **Repository Snapshot (2026-05-21 current repo):** solution/build/test project files: 40 | `src/` project files: 27 | test projects: 9 | workflow files: 10
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance in one shared-contract-first operator workflow across browser and desktop UI surfaces without letting the product split into parallel subsystems.
 
-The active roadmap therefore centers on four outcomes:
+The active roadmap therefore centers on five outcomes:
 
 - prove operator trust with evidence-backed provider, checkpoint, and replay validation
-- harden the paper-trading cockpit through the active web workstation dashboard
-- make shared run / portfolio / ledger continuity the default integration path across `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting`
-- productize governance and fund-operations on top of the delivered Security Master baseline
+- close Wave 2 cockpit reliability first, with desktop acceptance tracked through `docs/plans/desktop-ui-workflow-acceptance-matrix.md`
+- close Wave 3 continuity as one run -> portfolio -> ledger -> reconciliation workflow across high-traffic operator pages
+- close Wave 4 governance and close/report lifecycle through durable casework, sign-off, and reporting controls
+- keep browser and desktop parity locked to shared contracts, shared endpoints, and shared read-model behavior
 
 ## Commercial Positioning
 
@@ -54,6 +55,7 @@ Use this document with:
 - [`../plans/brokerage-portfolio-sync-blueprint.md`](../plans/brokerage-portfolio-sync-blueprint.md) - external brokerage and custodian account-sync design
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) - current short-horizon execution plan
 - [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - concrete owner-based workstreams, dependencies, and exit criteria for the active Waves 2-4 path
+- [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) - desktop/WPF acceptance filter for W2 cockpit, W3 continuity, and W4 governance workflow claims
 - [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md) - browser workstation foundation and desktop/browser coexistence history
 
 ---
@@ -149,6 +151,24 @@ Every W2/W3/W4 readiness claim must now be stage-gated: either it turns one of t
 to `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and
 `Reconciliation`; W4 claims map to `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and
 `GovernedReportPack`.
+
+2026-05-27 desktop workflow follow-up: desktop/WPF claims now have a dedicated acceptance filter in
+[`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md).
+Use it before treating retained-WPF changes as Wave 2, Wave 3, or Wave 4 progress. The matrix maps
+Lane A W2 cockpit reliability, Lane B W3 run -> portfolio -> ledger continuity, and Lane C W4
+reconciliation/governance close flow to required operator scenarios, shared endpoint/read-model
+checks, focused WPF tests, browser parity checks, release blockers, and milestone evidence; support
+evidence remains separate from exit claims until the matching happy path, blocker path, and recovery
+path evidence is present.
+The same 2026-05-27 desktop pass added W4 support evidence in Fund Ledger: selected reconciliation
+breaks now show lifecycle and required sign-off posture from shared queue metadata in the retained
+WPF detail panel. Treat this as blocker-path support evidence, not durable close/casework
+acceptance, until operations-continuity and browser-parity gates are green.
+It also added W3 support evidence in Run Cash Flow: the retained WPF cash-flow drill-in now consumes
+`StrategyRunContinuityService` and shows shared portfolio, ledger, cash-flow, reconciliation, and
+warning posture for the selected run. Treat this as blocker-path support evidence, not Milestone 2
+completion, until the full run -> portfolio -> ledger -> reconciliation workflow and browser parity
+are proven.
 
 ---
 

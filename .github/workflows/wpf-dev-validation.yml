@@ -77,12 +77,14 @@ jobs:
           BUILD_ONLY: ${{ inputs.build_only }}
           TEST_FILTER: ${{ inputs.filter }}
         run: |
-          $devArgs = @()
+          $devArgs = @{
+            Restore = $true
+          }
           if ($env:BUILD_ONLY -eq 'true') {
-            $devArgs += '-BuildOnly'
+            $devArgs.BuildOnly = $true
           }
           if ($env:TEST_FILTER -ne '') {
-            $devArgs += '-Filter', $env:TEST_FILTER
+            $devArgs.Filter = $env:TEST_FILTER
           }
           & scripts/dev/validate-wpf-dev.ps1 @devArgs
 

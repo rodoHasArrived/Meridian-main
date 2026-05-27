@@ -84,7 +84,7 @@ public sealed class TradingOperatorReadinessService
             brokerageStatus,
             riskRuleStatuses,
             auditEntries);
-        var overallStatus = EvaluateOverallPosture(acceptanceGates, latestRun is null);
+        var overallStatus = EvaluateOverallPosture(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
         var snapshotVersion = BuildSnapshotVersion(
@@ -218,7 +218,8 @@ public sealed class TradingOperatorReadinessService
                 $"Run replay verification for paper session {activeSession.SessionId}.",
                 OperatorWorkItemToneDto.Warning,
                 activeSession.SessionId,
-                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId),
+                scope: activeSession.SessionId);
         }
         else if (!replay.IsConsistent)
         {
@@ -231,7 +232,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Critical,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId),
+                scope: replay.SessionId);
         }
         else if (IsReplayCoverageStale(activeSession, replay))
         {
@@ -244,7 +246,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Warning,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),
+                scope: replay.SessionId);
         }
 
         return new PaperSessionReadiness(sessions, activeSession, replay);
@@ -1551,8 +1554,7 @@ public sealed class TradingOperatorReadinessService
     /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
     /// </summary>
     private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(
-        IReadOnlyList<TradingAcceptanceGateDto> gates,
-        bool activeSessionOnly)
+        IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
         var canonicalGateOrder = new[]
         {
@@ -1583,23 +1585,10 @@ public sealed class TradingOperatorReadinessService
             return TradingAcceptanceGateStatusDto.Blocked;
         }
 
-        if (activeSessionOnly &&
-            IsGateReady(ordered, "session") &&
-            IsGateReady(ordered, "replay") &&
-            IsGateReady(ordered, "audit-controls"))
-        {
-            return TradingAcceptanceGateStatusDto.Ready;
-        }
-
         return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
             ? TradingAcceptanceGateStatusDto.Ready
             : TradingAcceptanceGateStatusDto.ReviewRequired;
     }
-
-    private static bool IsGateReady(IEnumerable<TradingAcceptanceGateDto> gates, string gateId)
-        => gates.Any(gate =>
-            string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase) &&
-            gate.Status == TradingAcceptanceGateStatusDto.Ready);
 
     private static void AddTrustGateWorkItem(
         ICollection<OperatorWorkItemDto> workItems,
@@ -1679,7 +1668,7 @@ public sealed class TradingOperatorReadinessService
             : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
         var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
         var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var status = EvaluateOverallPosture(gates, activeSessionOnly: false);
+        var status = EvaluateOverallPosture(gates);
 
         return new EvidenceCompletenessSummaryDto(
             Status: status,

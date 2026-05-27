@@ -12,6 +12,7 @@ using Meridian.Wpf.Shell.Refresh;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Wpf.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -25,6 +26,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private const string DefaultPageTag = "StrategyShell";
 
     private readonly INavigationService _navigationService;
+    private readonly NavigationService? _wpfNavigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
@@ -80,6 +82,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ShellRefreshCoordinator? shellRefreshCoordinator = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _wpfNavigationService = navigationService as NavigationService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
@@ -368,6 +371,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public bool IsWorkspaceHomePageActive
         => string.Equals(CurrentPageTag, GetWorkspaceHomePageTag(CurrentWorkspace), StringComparison.OrdinalIgnoreCase);
 
+    public bool IsDataWorkspaceHomePageActive
+        => string.Equals(CurrentPageTag, "DataShell", StringComparison.OrdinalIgnoreCase);
+
+    public Visibility DataWorkspaceHomeChromeVisibility
+        => IsDataWorkspaceHomePageActive ? Visibility.Collapsed : Visibility.Visible;
+
     public bool IsWorkflowPageActive => !IsWorkspaceHomePageActive;
 
     public bool IsStrategyWorkspaceActive => string.Equals(_currentWorkspace, "strategy", StringComparison.OrdinalIgnoreCase);
@@ -409,6 +418,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             UpdateCurrentPageContent(normalized);
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
@@ -421,7 +432,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             if (!_suppressNavigation)
             {
-                _navigationService.NavigateTo(normalized);
+                NavigateToWithWorkspaceScope(normalized);
             }
         }
     }
@@ -551,7 +562,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (_navigationService.GetBreadcrumbs().Count == 0)
         {
             ApplyCurrentPage(CurrentPageTag);
-            _navigationService.NavigateTo(CurrentPageTag);
+            NavigateToWithWorkspaceScope(CurrentPageTag);
             SyncNavigationState();
             UpdateShellRefreshStamp();
             RequestShellRefresh();
@@ -706,6 +717,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(RecentPagesSummaryText));
             RaisePropertyChanged(nameof(CurrentWorkspaceHomePageTag));
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
@@ -833,8 +846,27 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void RefreshCurrentPage()
     {
         UpdateShellRefreshStamp();
-        _navigationService.NavigateTo(CurrentPageTag);
+        NavigateToWithWorkspaceScope(CurrentPageTag);
         RequestShellRefresh();
+    }
+
+    private bool NavigateToWithWorkspaceScope(string pageTag, object? parameter = null)
+    {
+        if (_wpfNavigationService is not null)
+        {
+            var workspaceScope = ResolveWorkspaceScopeForPage(pageTag);
+            return _wpfNavigationService.NavigateTo(pageTag, parameter, workspaceScope);
+        }
+
+        return _navigationService.NavigateTo(pageTag, parameter);
+    }
+
+    private static IServiceScope? ResolveWorkspaceScopeForPage(string pageTag)
+    {
+        var workspaceId = InferWorkspaceFromPage(pageTag);
+        return string.IsNullOrWhiteSpace(workspaceId)
+            ? WorkspaceService.Instance.ActiveWorkspaceScope
+            : WorkspaceService.Instance.GetOrCreateWorkspaceScope(workspaceId);
     }
 
     private void ToggleSecondaryWorkflowSummaries()
@@ -1086,6 +1118,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         });
 
         var (operatorInbox, operatorInboxError) = await BuildOperatorInboxAsync(ct).ConfigureAwait(false);
+        await ApplyOperatorInboxIfCurrentAsync(refreshRevision, operatorInbox, operatorInboxError).ConfigureAwait(false);
+
         var shellContext = fallbackShellContext;
         try
         {
@@ -1113,7 +1147,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 _workflowSummaryStrip.Apply(workflowSummaries, CurrentWorkspace);
                 RaiseWorkflowSummaryPropertiesChanged();
-                ApplyOperatorInbox(operatorInbox, operatorInboxError);
             }
 
             return;
@@ -1130,7 +1163,28 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 _workflowSummaryStrip.Apply(workflowSummaries, CurrentWorkspace);
                 RaiseWorkflowSummaryPropertiesChanged();
-                ApplyOperatorInbox(operatorInbox, operatorInboxError);
+            }
+        });
+    }
+
+    private async Task ApplyOperatorInboxIfCurrentAsync(int refreshRevision, OperatorInboxDto? inbox, string? error)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ApplyOperatorInbox(inbox, error);
+            }
+
+            return;
+        }
+
+        await dispatcher.InvokeAsync(() =>
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ApplyOperatorInbox(inbox, error);
             }
         });
     }

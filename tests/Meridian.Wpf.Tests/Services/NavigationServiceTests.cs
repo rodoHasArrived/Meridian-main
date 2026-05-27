@@ -179,6 +179,48 @@ public sealed class NavigationServiceTests : IDisposable
     }
 
     [Fact]
+    public void NavigateTo_WithWorkspaceScope_ShouldResolvePageFromScope()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var frame = new Frame();
+            service.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var scopedPage = new WorkspaceCapabilityHomePage();
+
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            service.SetServiceProvider(rootProvider);
+
+            var scopedServices = new ServiceCollection();
+            scopedServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
+            using var scopedProvider = scopedServices.BuildServiceProvider();
+            using var scope = scopedProvider.CreateScope();
+
+            service.CreatePageContent("PortfolioShell", workspaceScope: scope)
+                .Should()
+                .BeSameAs(scopedPage);
+
+            var result = service.NavigateTo("PortfolioShell", workspaceScope: scope);
+
+            result.Should().BeTrue();
+            service.GetCurrentPageTag().Should().Be("PortfolioShell");
+
+            service.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
+
+            var fallbackResult = service.NavigateTo("PortfolioShell");
+
+            fallbackResult.Should().BeTrue();
+            service.GetCurrentPageTag().Should().Be("PortfolioShell");
+        });
+    }
+
+    [Fact]
     public void IsPageRegistered_WithKnownPage_ShouldReturnTrue()
     {
         // Arrange

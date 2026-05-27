@@ -25,6 +25,7 @@ Meridian's current solution includes:
 - **Operational procedures:** [Operator Runbook](operations/operator-runbook.md)
 - **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md), [Developer Quick Guides](developer/README.md), [Design Documentation](design/README.md)
 - **Repository hygiene:** [Cleanup and Maintenance](operations/cleanup-and-maintenance.md), [Disk Space Hygiene](operations/disk-space-hygiene.md)
+- **Documentation cleanup intake:** [Orphaned Doc Triage Index](operations/orphaned-doc-triage-index.md)
 - **Prompt and agent guidance:** [Automation Prompts](prompts/automation-prompts.md), [Repo Maintenance Prompts](prompts/repo-maintenance-prompts.md)
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
 - **Structured roadmap registry:** [Roadmap Registry](roadmap/README.md)

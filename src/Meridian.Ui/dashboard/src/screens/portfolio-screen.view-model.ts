@@ -11,6 +11,8 @@ import type {
   MetricSnapshot,
   PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
+  StrategyRunContinuityDto,
+  StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
 } from "@/types";
 
@@ -190,6 +192,13 @@ export interface PortfolioWorkflowTaskPanel {
   selectedSummary: string;
 }
 
+interface PortfolioRunContinuityBlocker {
+  code: string;
+  label: string;
+  detail: string;
+  tone: "warning" | "danger" | "muted";
+}
+
 export interface PortfolioPositionDetail {
   id: string;
   title: string;
@@ -319,6 +328,7 @@ export function buildPortfolioScreenViewModel({
   brokeragePortfolio,
   selectedPositionId = null,
   selectedRunId = null,
+  selectedRunContinuity = null,
   selectedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
@@ -335,6 +345,7 @@ export function buildPortfolioScreenViewModel({
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   selectedPositionId?: string | null;
   selectedRunId?: string | null;
+  selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedBrokeragePositionId?: string | null;
   selectedBrokerageAccountKey?: string;
   pathname?: string;
@@ -454,8 +465,9 @@ export function buildPortfolioScreenViewModel({
     ? buildSelectedPositionDetail(selectedRow, risk, brokerage)
     : null;
   const selectedRunRow = runRows.find((row) => row.id === selectedRunStableId) ?? null;
+  const selectedContinuity = resolveSelectedRunContinuity(selectedRunRow, selectedRunContinuity);
   const selectedRun = selectedRunRow
-    ? buildSelectedRunDetail(selectedRunRow)
+    ? buildSelectedRunDetail(selectedRunRow, selectedContinuity)
     : null;
   const brokeragePositionRows = brokeragePositions.map((position) =>
     toBrokeragePositionRow(position, brokerageAccounts, selectedBrokerageStableId)
@@ -507,7 +519,8 @@ export function buildPortfolioScreenViewModel({
       cashFlow,
       cashVarianceLabel,
       selectedRunId: selectedRunRow?.id ?? null,
-      selectedRunName: selectedRunRow?.strategyName ?? null
+      selectedRunName: selectedRunRow?.strategyName ?? null,
+      selectedRunContinuity: selectedContinuity
     }),
     brokerageProviderLabel: providerLabel,
     brokeragePanelEyebrow: `${providerLabel} read-only`,
@@ -780,6 +793,7 @@ export function usePortfolioScreenViewModel({
   governance,
   brokerageConnection,
   brokeragePortfolio,
+  selectedRunContinuity = null,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -788,6 +802,7 @@ export function usePortfolioScreenViewModel({
   governance: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
+  selectedRunContinuity?: StrategyRunContinuityDto | null;
   pathname?: string;
 }): PortfolioScreenViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -802,6 +817,7 @@ export function usePortfolioScreenViewModel({
     governance,
     brokerageConnection,
     brokeragePortfolio,
+    selectedRunContinuity,
     pathname,
     selectedPositionId,
     selectedRunId,
@@ -1279,7 +1295,8 @@ function buildWorkflowTaskPanel({
   cashFlow,
   cashVarianceLabel,
   selectedRunId,
-  selectedRunName
+  selectedRunName,
+  selectedRunContinuity
 }: {
   pathname: string;
   risk: PortfolioRiskState | null;
@@ -1291,6 +1308,7 @@ function buildWorkflowTaskPanel({
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
   selectedRunName: string | null;
+  selectedRunContinuity: StrategyRunContinuityDto | null;
 }): PortfolioWorkflowTaskPanel | null {
   const normalizedPathname = normalizePathname(pathname);
   if (normalizedPathname === WORKSTATION_ROUTE_CATALOG.portfolio) {
@@ -1303,7 +1321,8 @@ function buildWorkflowTaskPanel({
       cashFlow,
       cashVarianceLabel,
       selectedRunId,
-      selectedRunName
+      selectedRunName,
+      selectedRunContinuity
     });
   }
 
@@ -1391,7 +1410,8 @@ function buildPortfolioReadinessTaskPanel({
   cashFlow,
   cashVarianceLabel,
   selectedRunId,
-  selectedRunName
+  selectedRunName,
+  selectedRunContinuity
 }: {
   risk: PortfolioRiskState | null;
   brokerage: PortfolioBrokerageStatus | null;
@@ -1402,19 +1422,26 @@ function buildPortfolioReadinessTaskPanel({
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
   selectedRunName: string | null;
+  selectedRunContinuity: StrategyRunContinuityDto | null;
 }): PortfolioWorkflowTaskPanel {
   const hasPosture = risk !== null || brokerage !== null || openPositionCount > 0;
   const connected = brokerage?.connection === "Connected";
   const feedsHealthy = brokerage?.orderIngress === "healthy" && brokerage?.fillFeed === "healthy";
   const hasCashVariance = cashFlow !== null && cashFlow.netVariance !== 0;
-  const needsReview = !connected || !feedsHealthy || hasCashVariance || !hasPosture;
+  const continuityBlockers = buildRunContinuityBlockers(selectedRunContinuity);
+  const hasDangerContinuityBlocker = continuityBlockers.some((blocker) => blocker.tone === "danger");
+  const needsReview = !connected || !feedsHealthy || hasCashVariance || !hasPosture || continuityBlockers.length > 0;
   const statusTone: PortfolioWorkflowTaskPanel["statusTone"] = !hasPosture
     ? "danger"
+    : hasDangerContinuityBlocker
+      ? "danger"
     : needsReview
       ? "warning"
       : "success";
   const statusLabel = !hasPosture
     ? "Portfolio unavailable"
+    : hasDangerContinuityBlocker
+      ? "Continuity blocked"
     : needsReview
       ? "Review blockers"
       : "Ready for review";
@@ -1424,6 +1451,8 @@ function buildPortfolioReadinessTaskPanel({
   const accountLabel = brokerage?.account ?? "Account unavailable";
   const selectedSummary = !hasPosture
     ? "Portfolio posture is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
+    : continuityBlockers.length > 0
+      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCountLabel(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio-to-ledger handoff.`
     : `${providerLabel} account ${accountLabel} is the current portfolio source. Review brokerage sync, trading readiness, cash variance, and linked run evidence before accepting holdings.`;
 
   return {
@@ -1453,6 +1482,7 @@ function buildPortfolioReadinessTaskPanel({
       { label: "Fill feed", value: brokerage?.fillFeed ?? "Unavailable", tone: brokerage?.fillFeed === "healthy" ? "success" : "warning" },
       { label: "Risk state", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
       { label: "Buying power", value: risk?.buyingPowerUsed ?? "—", tone: "muted" },
+      buildRunContinuityStatusRow(selectedRunId, selectedRunContinuity, continuityBlockers),
       { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: hasCashVariance ? "warning" : "success" },
       {
         label: "Guardrails",
@@ -1669,9 +1699,17 @@ function buildSelectedPositionDetail(
   };
 }
 
-function buildSelectedRunDetail(run: PortfolioRunRow): PortfolioRunDetail {
-  const statusTone = runStatusTone(run.status, run.pnlTone);
+function buildSelectedRunDetail(run: PortfolioRunRow, continuity: StrategyRunContinuityDto | null): PortfolioRunDetail {
+  const continuityBlockers = buildRunContinuityBlockers(continuity);
+  const hasDangerContinuityBlocker = continuityBlockers.some((blocker) => blocker.tone === "danger");
+  const statusTone = hasDangerContinuityBlocker
+    ? "danger"
+    : continuityBlockers.length > 0
+      ? "warning"
+      : runStatusTone(run.status, run.pnlTone);
   const promotionValue = run.promotionState ?? "Not promoted";
+  const continuityLabel = buildRunContinuityStatusLabel(run.id, continuity, continuityBlockers);
+  const continuityDetail = buildRunContinuityDetail(continuityBlockers);
 
   return {
     id: run.id,
@@ -1683,10 +1721,12 @@ function buildSelectedRunDetail(run: PortfolioRunRow): PortfolioRunDetail {
       href: evidenceWorkbenchPath("strategy-run", run.id),
       ariaLabel: `Open ${run.strategyName} evidence packet`
     },
-    statusTitle: `${run.strategyName} selected`,
-    statusDetail: `${run.status} ${run.mode} run with ${run.pnl} P&L and ${run.sharpe} Sharpe. ${run.notes || "No operator notes attached."}`,
+    statusTitle: continuityBlockers.length > 0 ? `${run.strategyName} continuity review` : `${run.strategyName} selected`,
+    statusDetail: continuityBlockers.length > 0
+      ? `${run.status} ${run.mode} run has ${formatCountLabel(continuityBlockers.length, "continuity blocker")}. ${continuityDetail}`
+      : `${run.status} ${run.mode} run with ${run.pnl} P&L and ${run.sharpe} Sharpe. ${run.notes || "No operator notes attached."}`,
     statusTone,
-    statusBadgeLabel: run.status,
+    statusBadgeLabel: continuityBlockers.length > 0 ? continuityLabel : run.status,
     statusBadgeVariant: statusTone === "default" ? "outline" : statusTone,
     fields: [
       { label: "Run ID", value: run.id, tone: "muted" },
@@ -1697,10 +1737,130 @@ function buildSelectedRunDetail(run: PortfolioRunRow): PortfolioRunDetail {
       { label: "Window", value: run.window, tone: "muted" },
       { label: "P&L", value: run.pnl, tone: pnlFieldTone(run.pnl) },
       { label: "Sharpe", value: run.sharpe, tone: "default" },
+      {
+        label: "Continuity",
+        value: continuityLabel,
+        tone: continuityBlockers.length === 0
+          ? continuity === null
+            ? "muted"
+            : "success"
+          : hasDangerContinuityBlocker
+            ? "danger"
+            : "warning"
+      },
       { label: "Promotion", value: promotionValue, tone: run.promotionState ? "success" : "warning" },
       { label: "Last updated", value: run.lastUpdated, tone: "muted" }
     ]
   };
+}
+
+function resolveSelectedRunContinuity(
+  selectedRun: PortfolioRunRow | null,
+  continuity: StrategyRunContinuityDto | null
+): StrategyRunContinuityDto | null {
+  if (!selectedRun || !continuity) {
+    return null;
+  }
+
+  return continuity.run.summary.runId === selectedRun.id ? continuity : null;
+}
+
+function buildRunContinuityStatusRow(
+  selectedRunId: string | null,
+  continuity: StrategyRunContinuityDto | null,
+  blockers: PortfolioRunContinuityBlocker[]
+): PortfolioDetailField {
+  if (!selectedRunId) {
+    return { label: "Run continuity", value: "No selected run", tone: "muted" };
+  }
+
+  if (!continuity) {
+    return { label: "Run continuity", value: "Not loaded", tone: "muted" };
+  }
+
+  const hasDangerBlocker = blockers.some((blocker) => blocker.tone === "danger");
+  return {
+    label: "Run continuity",
+    value: buildRunContinuityStatusLabel(selectedRunId, continuity, blockers),
+    tone: blockers.length === 0 ? "success" : hasDangerBlocker ? "danger" : "warning"
+  };
+}
+
+function buildRunContinuityStatusLabel(
+  selectedRunId: string,
+  continuity: StrategyRunContinuityDto | null,
+  blockers: PortfolioRunContinuityBlocker[]
+): string {
+  if (!continuity) {
+    return selectedRunId ? "Not loaded" : "No selected run";
+  }
+
+  if (blockers.length === 0) {
+    return "Continuity ready";
+  }
+
+  return `${blockers.length} blocker${blockers.length === 1 ? "" : "s"}`;
+}
+
+function buildRunContinuityDetail(blockers: PortfolioRunContinuityBlocker[]): string {
+  if (blockers.length === 0) {
+    return "Portfolio and ledger continuity are ready for review.";
+  }
+
+  return blockers.slice(0, 3).map((blocker) => blocker.detail).join(" ");
+}
+
+function buildRunContinuityBlockers(continuity: StrategyRunContinuityDto | null): PortfolioRunContinuityBlocker[] {
+  if (!continuity) {
+    return [];
+  }
+
+  const blockers: PortfolioRunContinuityBlocker[] = [];
+  const status = continuity.continuityStatus;
+  addMissingContinuityBlocker(blockers, !status.hasPortfolio, "missing-portfolio", "Portfolio coverage", "Portfolio read model is missing for the selected run.", "danger");
+  addMissingContinuityBlocker(blockers, !status.hasLedger, "missing-ledger", "Ledger coverage", "Ledger read model is missing for the selected run.", "danger");
+  addMissingContinuityBlocker(blockers, !status.hasCashFlow, "missing-cash-flow", "Cash-flow coverage", "Cash-flow digest is missing for the selected run.", "warning");
+  addMissingContinuityBlocker(blockers, !status.hasReconciliation, "missing-reconciliation", "Reconciliation coverage", "Reconciliation summary is missing for the selected run.", "warning");
+  addMissingContinuityBlocker(blockers, status.openReconciliationBreaks > 0, "open-reconciliation-breaks", "Open reconciliation breaks", `${formatCountLabel(status.openReconciliationBreaks, "reconciliation break")} remain open for the selected run.`, "warning");
+  addMissingContinuityBlocker(blockers, status.securityCoverageIssueCount > 0, "security-coverage", "Security coverage", `${formatCountLabel(status.securityCoverageIssueCount, "security coverage issue")} remain for the selected run.`, "warning");
+
+  for (const warning of status.warnings) {
+    if (blockers.some((blocker) => blocker.code === warning.code)) {
+      continue;
+    }
+
+    blockers.push({
+      code: warning.code,
+      label: warning.sourceSeam || warning.code,
+      detail: warning.message,
+      tone: continuityWarningTone(warning.severity)
+    });
+  }
+
+  return blockers;
+}
+
+function addMissingContinuityBlocker(
+  blockers: PortfolioRunContinuityBlocker[],
+  condition: boolean,
+  code: string,
+  label: string,
+  detail: string,
+  tone: PortfolioRunContinuityBlocker["tone"]
+) {
+  if (!condition) {
+    return;
+  }
+
+  blockers.push({ code, label, detail, tone });
+}
+
+function continuityWarningTone(severity: StrategyRunContinuityWarningSeverity): PortfolioRunContinuityBlocker["tone"] {
+  if (severity === "Critical") {
+    return "danger";
+  }
+
+  return severity === "Warning" ? "warning" : "muted";
 }
 
 function pnlFieldTone(value: string): PortfolioDetailField["tone"] {

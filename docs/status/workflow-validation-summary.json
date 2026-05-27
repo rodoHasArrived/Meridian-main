@@ -24,5 +24,11 @@
     "makeTargets": [],
     "scriptPaths": []
   },
+  "governance": {
+    "missingArtifacts": [],
+    "staleArtifacts": [],
+    "outsideCanonicalPaths": [],
+    "orphanGeneratedOutputs": []
+  },
   "status": "clean"
 }

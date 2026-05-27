@@ -34,6 +34,12 @@ using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
+using Meridian.Application.Banking;
+using Meridian.Application.Treasury;
+using Meridian.Storage.Banking;
+using Meridian.Storage.FundAccounts;
+using Meridian.Storage.FundStructure;
+using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Maintenance;
@@ -243,35 +249,103 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddHostedService<DailyAccrualWorker>();
         }
 
-        // Fund accounts and governance structure: keep the in-memory working set, but
-        // persist local-first snapshots under the configured storage root so operator
-        // setup survives restarts while the deeper Postgres governance wave remains future work.
-        services.TryAddSingleton<IFundAccountService>(sp =>
+        // Fund accounts and governance structure.
+        if (FundAccountsStartup.IsConfigured())
         {
-            var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
-            return new InMemoryFundAccountService(persistencePath);
-        });
-        services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
-        services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
+            FundAccountsStartup.EnsureEnvironmentDefaults();
+            var faConnectionString = Environment.GetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable)!;
+            var faSchema = Environment.GetEnvironmentVariable(FundAccountsStartup.SchemaVariable) ?? FundAccountsStartup.DefaultSchema;
+            services.TryAddSingleton(new FundAccountStoreOptions { ConnectionString = faConnectionString, Schema = faSchema });
+            services.TryAddSingleton<IFundAccountStore, PostgresFundAccountStore>();
+            services.TryAddSingleton<PostgresFundAccountService>();
+            services.TryAddSingleton<IFundAccountService>(sp => sp.GetRequiredService<PostgresFundAccountService>());
+            services.TryAddSingleton<IAccountManagementService>(sp => sp.GetRequiredService<PostgresFundAccountService>());
+            services.TryAddSingleton<IAccountQueryService>(sp => sp.GetRequiredService<PostgresFundAccountService>());
+        }
+        else
+        {
+            services.TryAddSingleton<IFundAccountService>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
+                return new InMemoryFundAccountService(persistencePath);
+            });
+            services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
+            services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
+        }
         services.TryAddSingleton<IGovernanceSharedDataAccessService>(sp =>
             new GovernanceSharedDataAccessService(
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 sp.GetService<HistoricalDataQueryService>(),
                 sp.GetService<BackfillCoordinator>()));
-        services.TryAddSingleton<IFundStructureService>(sp =>
+        if (FundStructureStartup.IsConfigured())
         {
-            var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var fundAccountService = sp.GetRequiredService<IFundAccountService>();
-            var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
-            var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
-            var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
-            return new InMemoryFundStructureService(
-                fundAccountService,
-                sharedDataAccessService,
-                securityMasterQueryService,
-                persistencePath);
-        });
+            FundStructureStartup.EnsureEnvironmentDefaults();
+            services.TryAddSingleton(new FundStructureStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable)!,
+                Schema = Environment.GetEnvironmentVariable(FundStructureStartup.SchemaVariable) ?? FundStructureStartup.DefaultSchema
+            });
+            services.TryAddSingleton<IFundStructureStore, PostgresFundStructureStore>();
+            services.TryAddSingleton<PostgresFundStructureService>();
+            services.TryAddSingleton<IFundStructureService>(sp => sp.GetRequiredService<PostgresFundStructureService>());
+        }
+        else
+        {
+            services.TryAddSingleton<IFundStructureService>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var fundAccountService = sp.GetRequiredService<IFundAccountService>();
+                var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
+                var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
+                return new InMemoryFundStructureService(
+                    fundAccountService,
+                    sharedDataAccessService,
+                    securityMasterQueryService,
+                    persistencePath);
+            });
+        }
+        // ── Banking ──────────────────────────────────────────────────────────
+        if (BankingStartup.IsConfigured())
+        {
+            BankingStartup.EnsureEnvironmentDefaults();
+            services.TryAddSingleton(new BankingStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable(BankingStartup.ConnectionStringVariable)!,
+                Schema = Environment.GetEnvironmentVariable(BankingStartup.SchemaVariable) ?? BankingStartup.DefaultSchema
+            });
+            services.TryAddSingleton<IBankingStore, PostgresBankingStore>();
+            services.TryAddSingleton<PostgresBankingService>();
+            services.TryAddSingleton<IBankingService>(sp => sp.GetRequiredService<PostgresBankingService>());
+            services.TryAddSingleton<Meridian.Contracts.Banking.IBankTransactionSource>(sp => sp.GetRequiredService<PostgresBankingService>());
+        }
+        else
+        {
+            services.TryAddSingleton<InMemoryBankingService>();
+            services.TryAddSingleton<IBankingService>(sp => sp.GetRequiredService<InMemoryBankingService>());
+            services.TryAddSingleton<Meridian.Contracts.Banking.IBankTransactionSource>(sp => sp.GetRequiredService<InMemoryBankingService>());
+        }
+        // ── Money Market Fund ─────────────────────────────────────────────────
+        if (MoneyMarketStartup.IsConfigured())
+        {
+            MoneyMarketStartup.EnsureEnvironmentDefaults();
+            services.TryAddSingleton(new MoneyMarketStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable)!,
+                Schema = Environment.GetEnvironmentVariable(MoneyMarketStartup.SchemaVariable) ?? MoneyMarketStartup.DefaultSchema
+            });
+            services.TryAddSingleton<IMoneyMarketFundAuxStore, PostgresMoneyMarketFundStore>();
+            services.TryAddSingleton<PostgresMoneyMarketFundService>();
+            services.TryAddSingleton<IMoneyMarketFundService>(sp => sp.GetRequiredService<PostgresMoneyMarketFundService>());
+            services.TryAddSingleton<IMmfLiquidityService>(sp => sp.GetRequiredService<PostgresMoneyMarketFundService>());
+        }
+        else
+        {
+            services.TryAddSingleton<InMemoryMoneyMarketFundService>();
+            services.TryAddSingleton<IMoneyMarketFundService>(sp => sp.GetRequiredService<InMemoryMoneyMarketFundService>());
+            services.TryAddSingleton<IMmfLiquidityService>(sp => sp.GetRequiredService<InMemoryMoneyMarketFundService>());
+        }
         services.TryAddSingleton<EnvironmentDesignerService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
@@ -304,16 +378,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
             return new FundOperationsPersistenceOptions { DomainModes = domainModes };
         });
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure)));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts)));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending)));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking)));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket)));
+        services.AddSingleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
+        services.AddSingleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
+        services.AddSingleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
+        services.AddSingleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
+        services.AddSingleton<IDomainProjectionReconciliationJob>(
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
         return services;
     }

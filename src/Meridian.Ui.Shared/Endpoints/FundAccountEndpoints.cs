@@ -281,7 +281,6 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
-#pragma warning disable CS0618 // Compatibility routes retain legacy brokerage projection payloads; readiness uses status DTOs.
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
@@ -295,7 +294,7 @@ public static class FundAccountEndpoints
             return Results.Json(positions, jsonOptions);
         })
         .WithName("GetAccountBrokerageSyncPositions")
-        .Produces<IReadOnlyList<WorkstationBrokeragePositionDto>>(StatusCodes.Status200OK)
+        .Produces<IReadOnlyList<FundAccountBrokeragePositionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
         group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
@@ -313,10 +312,9 @@ public static class FundAccountEndpoints
                 : Results.Json(view, jsonOptions);
         })
         .WithName("GetAccountBrokerageSyncActivity")
-        .Produces<WorkstationBrokerageSyncViewDto>(StatusCodes.Status200OK)
+        .Produces<FundAccountBrokerageSyncActivityDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
-#pragma warning restore CS0618
 
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {

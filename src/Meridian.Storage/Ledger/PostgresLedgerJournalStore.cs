@@ -652,7 +652,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                    jl.occurred_at
             from {Qualified("journal_entries")} je
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
-            """;
+            """ + "\n";
         return command;
     }
 

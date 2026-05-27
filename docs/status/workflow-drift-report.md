@@ -11,6 +11,13 @@
 - Missing Make targets (0): None
 - Missing scripts (0): None
 
+## Artifact governance violations
+
+- Missing expected artifacts (0): None
+- Stale artifacts (0): None
+- Outside canonical paths (0): None
+- Orphan generated outputs (0): None
+
 ## Undeclared actual inventory (top 25)
 
 ### Make targets

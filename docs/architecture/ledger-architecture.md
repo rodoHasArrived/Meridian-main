@@ -184,6 +184,10 @@ snapshot.
 Once a report pack is marked ready through gate posture, submit, approve, and close commands must
 reference that same report-pack id; mismatches return `REPORT_PACK_ID_MISMATCH` without appending
 an audit event or mutating the workflow snapshot.
+Approval decisions must also come from the reviewer assigned during `approval/submit`.
+The shared workstation approve/reject endpoints replace body-supplied reviewer values with the
+authenticated operator before calling the application service; mismatched decision reviewers return
+`APPROVAL_REVIEWER_MISMATCH` without appending an audit event or mutating the workflow snapshot.
 The close command also verifies the existing audit timeline before it appends `workflow-closed`.
 If the timeline is missing or any previous/current hash link fails canonical verification, close
 returns `AUDIT_CHAIN_MISSING` or `AUDIT_CHAIN_INVALID` on the Approval gate without appending a new
@@ -211,7 +215,10 @@ classification.
 
 For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
-`LedgerJournalEntryWrite`. When an `IOperationsContinuityTransactionalCommitStore` is registered,
+`LedgerJournalEntryWrite`. The candidate must carry a durable command id, an idempotency key, and
+Security Master provenance (`SecurityId` plus a provenance string) before the service will append it
+to the ledger journal; missing values return structured ledger-gate blockers without appending an
+audit event or mutating the workflow snapshot. When an `IOperationsContinuityTransactionalCommitStore` is registered,
 the service commits the journal append, workflow audit append, and workflow snapshot save through
 that single commit seam. Production hosts enable the PostgreSQL path with
 `MERIDIAN_LEDGER_CONNECTION_STRING`; `LedgerStartup` runs ledger migrations and registers

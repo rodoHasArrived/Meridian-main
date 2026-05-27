@@ -1,8 +1,9 @@
 # AI Agent Definitions
 
 This directory indexes AI agent definitions used in the Meridian project. GitHub Copilot agent
-files live in `.github/agents/`; Claude agent files live in `.claude/agents/`. Repo-local Codex
-skills live in `.codex/skills/` and provide the primary current project-scoped workflow surface.
+files live in `.github/agents/`; Claude agent files live in `.claude/agents/`; Codex specialist
+profiles live in `.codex/agents/`. Repo-local Codex skills live in `.codex/skills/` and provide
+the primary current project-scoped workflow surface.
 All agent surfaces should follow the shared provider-agnostic workflow in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
@@ -36,6 +37,25 @@ Primary inputs:
 - [`docs/ai/generated/repo-navigation.json`](../generated/repo-navigation.json)
 - [`docs/ai/navigation/README.md`](../navigation/README.md)
 - [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md)
+
+---
+
+## Codex Agent Profiles (`.codex/agents/`)
+
+Codex TOML profiles route recurring specialist work to compact, provider-specific entrypoints while
+the shared policy remains in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
+and [`../codex/README.md`](../codex/README.md).
+
+| Profile | Purpose |
+| ------ | --------- |
+| `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
+| `meridian-blueprint.toml` | Create implementation-ready technical designs |
+| `meridian-cleanup.toml` | Clean up code and docs without behavior changes |
+| `meridian-docs.toml` | Maintain documentation and AI guidance |
+| `meridian-navigation.toml` | Route tasks through Meridian repo-navigation context |
+| `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
+| `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
+| `meridian-user-panel.toml` | Run structured simulated-user feedback workflows |
 
 ---
 
@@ -113,4 +133,4 @@ or operator sign-off, or needs a structured briefing with trace/evidence retenti
 
 ---
 
-_Last Updated: 2026-05-08_
+_Last Updated: 2026-05-26_
