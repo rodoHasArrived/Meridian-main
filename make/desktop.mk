@@ -8,6 +8,7 @@
 .PHONY: verify-desktop desktop-build desktop-test desktop-test-dev desktop-test-position-blotter-route desktop-test-operator-inbox-route
 
 verify-desktop: desktop-build desktop-test ## Canonical lane: retained desktop build and test validation
+	@echo "$(GREEN)verify-desktop lane complete$(NC)"
 
 desktop-build: ## Build the WPF desktop project (requires Windows or EnableWindowsTargeting)
 	@echo "$(BLUE)Building Meridian.Wpf...$(NC)"

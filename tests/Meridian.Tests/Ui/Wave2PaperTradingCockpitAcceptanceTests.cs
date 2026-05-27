@@ -19,6 +19,7 @@ namespace Meridian.Tests.Ui;
 /// 3. Risk Auditability - Control/risk outcomes are explainable from the cockpit
 /// 4. Promotion Traceability - Promotion decisions have complete audit chains
 /// </summary>
+[Trait("Category", "Scenario")]
 public sealed class Wave2PaperTradingCockpitAcceptanceTests
 {
     // ---- GATE 1: REPLAY CONFIDENCE ----

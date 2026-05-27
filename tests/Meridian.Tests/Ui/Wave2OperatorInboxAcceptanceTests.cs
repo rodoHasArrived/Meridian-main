@@ -15,6 +15,7 @@ namespace Meridian.Tests.Ui;
 /// cockpit into a unified inbox that enables operators to triage and navigate
 /// to concrete workflows.
 /// </summary>
+[Trait("Category", "Scenario")]
 public sealed class Wave2OperatorInboxAcceptanceTests
 {
     [Fact]
