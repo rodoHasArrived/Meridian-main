@@ -167,7 +167,8 @@ public sealed class UiServer : IAsyncDisposable
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>()));
+                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
+                sp.GetService<ISecurityMasterQueryService>()));
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();
