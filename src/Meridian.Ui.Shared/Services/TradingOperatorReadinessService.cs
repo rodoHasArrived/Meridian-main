@@ -253,19 +253,23 @@ public sealed class TradingOperatorReadinessService
                 workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId),
                 scope: replay.SessionId);
         }
-        else if (IsReplayCoverageStale(activeSession, replay))
+        else
         {
-            PrometheusMetrics.RecordRunContinuityStaleProjection("api", "replay-stale");
-            AddWorkItem(
-                workItems,
-                OperatorWorkItemKindDto.PaperReplay,
-                "Paper replay verification stale",
-                BuildReplayCoverageDetail(activeSession, replay),
-                OperatorWorkItemToneDto.Warning,
-                replay.SessionId,
-                auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),
-                scope: replay.SessionId);
+            var replayFreshness = EvaluateReplayFreshness(activeSession, replay);
+            if (replayFreshness.IsStale)
+            {
+                PrometheusMetrics.RecordRunContinuityStaleProjection("api", "replay-stale");
+                AddWorkItem(
+                    workItems,
+                    OperatorWorkItemKindDto.PaperReplay,
+                    "Paper replay verification stale",
+                    replayFreshness.Detail,
+                    OperatorWorkItemToneDto.Critical,
+                    replay.SessionId,
+                    auditReference: replay.VerificationAuditId,
+                    workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),
+                    scope: replay.SessionId);
+            }
         }
 
         return new PaperSessionReadiness(sessions, activeSession, replay);
@@ -1209,15 +1213,18 @@ public sealed class TradingOperatorReadinessService
                 AuditReference: replay.VerificationAuditId);
         }
 
-        if (IsReplayCoverageStale(activeSession, replay))
+        var replayFreshness = EvaluateReplayFreshness(activeSession, replay);
+        if (replayFreshness.IsStale)
         {
             return new TradingAcceptanceGateDto(
                 GateId: "replay",
                 Label: "Replay verified",
-                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-                Detail: BuildReplayCoverageDetail(activeSession, replay),
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: replayFreshness.Detail,
                 SessionId: replay.SessionId,
-                AuditReference: replay.VerificationAuditId);
+                AuditReference: replay.VerificationAuditId,
+                Reason: "REPLAY_FRESHNESS_STALE",
+                RequiredNextAction: replayFreshness.RequiredNextAction);
         }
 
         return new TradingAcceptanceGateDto(
@@ -1229,43 +1236,23 @@ public sealed class TradingOperatorReadinessService
             AuditReference: replay.VerificationAuditId);
     }
 
-    private static bool IsReplayCoverageStale(
-        TradingPaperSessionReadinessDto activeSession,
-        TradingReplayReadinessDto replay)
-        => !string.Equals(activeSession.SessionId, replay.SessionId, StringComparison.OrdinalIgnoreCase) ||
-           activeSession.FillCount != replay.ComparedFillCount ||
-           activeSession.OrderCount != replay.ComparedOrderCount ||
-           activeSession.LedgerEntryCount != replay.ComparedLedgerEntryCount;
-
-    private static string BuildReplayCoverageDetail(
+    private static ReplayFreshnessEvaluation EvaluateReplayFreshness(
         TradingPaperSessionReadinessDto activeSession,
         TradingReplayReadinessDto replay)
     {
-        if (!string.Equals(activeSession.SessionId, replay.SessionId, StringComparison.OrdinalIgnoreCase))
-        {
-            return $"Replay verification covers session {replay.SessionId}, but the active paper session is {activeSession.SessionId}.";
-        }
-
-        var differences = new List<string>(capacity: 3);
-        if (activeSession.FillCount != replay.ComparedFillCount)
-        {
-            differences.Add($"fills active={activeSession.FillCount}, verified={replay.ComparedFillCount}");
-        }
-
-        if (activeSession.OrderCount != replay.ComparedOrderCount)
-        {
-            differences.Add($"orders active={activeSession.OrderCount}, verified={replay.ComparedOrderCount}");
-        }
-
-        if (activeSession.LedgerEntryCount != replay.ComparedLedgerEntryCount)
-        {
-            differences.Add($"ledger active={activeSession.LedgerEntryCount}, verified={replay.ComparedLedgerEntryCount}");
-        }
-
-        return differences.Count == 0
-            ? $"Replay verification for paper session {activeSession.SessionId} is no longer aligned with the active session."
-            : $"Replay verification for paper session {activeSession.SessionId} is stale ({string.Join("; ", differences)}). Run replay verification again before accepting cockpit readiness.";
+        var drift = ReplayDriftDetector.Assess(
+            activeSession.SessionId,
+            activeSession.FillCount,
+            activeSession.OrderCount,
+            activeSession.LedgerEntryCount,
+            replay.SessionId,
+            replay.ComparedFillCount,
+            replay.ComparedOrderCount,
+            replay.ComparedLedgerEntryCount);
+        return new ReplayFreshnessEvaluation(drift.IsDrifted, drift.Detail, drift.RequiredNextAction);
     }
+
+    private sealed record ReplayFreshnessEvaluation(bool IsStale, string Detail, string RequiredNextAction);
 
     private static TradingAcceptanceGateDto BuildAuditControlGate(
         TradingControlReadinessDto controls,
