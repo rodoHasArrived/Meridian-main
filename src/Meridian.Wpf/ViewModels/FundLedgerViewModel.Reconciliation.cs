@@ -1127,6 +1127,11 @@ public sealed partial class FundLedgerViewModel
             return $"Sign-off: {status}. Required role is not configured; keep the break out of close approval until governance ownership is assigned.";
         }
 
+        if (selectedBreak.ResolvedAt is not null && !status.Contains("signed", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Decision captured; sign-off: {status} by {role}. Keep close approval blocked until governance sign-off is recorded.";
+        }
+
         if (status.Contains("signed", StringComparison.OrdinalIgnoreCase))
         {
             return $"Sign-off: {status} for {role}. Confirm close-pack evidence before final reporting.";
