@@ -1034,7 +1034,7 @@ public sealed class TradingOperatorReadinessService
             return null;
         }
 
-        return await governance.EvaluateGateAsync(latestRun.Summary.RunId, new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, ct).ConfigureAwait(false);
+        return await governance.EvaluateGateAsync(latestRun.Summary.RunId, new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, ct, writeAudit: false).ConfigureAwait(false);
     }
 
     private static TradingAcceptanceGateDto BuildReconciliationGate(ReconciliationGateEvaluation? evaluation)
