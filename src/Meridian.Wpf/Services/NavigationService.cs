@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
@@ -46,7 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
-    private IServiceProvider? _navigationScopedProvider;
+    private readonly AsyncLocal<IServiceProvider?> _navigationScopedProvider = new();
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -127,15 +128,15 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// </summary>
     public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
     {
-        var previousProvider = _navigationScopedProvider;
-        _navigationScopedProvider = workspaceScope?.ServiceProvider;
+        var previousProvider = _navigationScopedProvider.Value;
+        _navigationScopedProvider.Value = workspaceScope?.ServiceProvider;
         try
         {
             return base.NavigateTo(pageTag, parameter);
         }
         finally
         {
-            _navigationScopedProvider = previousProvider;
+            _navigationScopedProvider.Value = previousProvider;
         }
     }
 
@@ -152,7 +153,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 pageType,
                 parameter,
                 WorkspaceChromePresentationMode.Standalone,
-                _navigationScopedProvider);
+                _navigationScopedProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
             {

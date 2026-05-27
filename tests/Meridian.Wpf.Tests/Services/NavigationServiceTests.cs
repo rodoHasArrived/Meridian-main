@@ -205,6 +205,11 @@ public sealed class NavigationServiceTests : IDisposable
             result.Should().BeTrue();
             frame.Content.Should().BeSameAs(scopedPage);
             frame.Content.Should().NotBeSameAs(rootPage);
+
+            var fallbackResult = service.NavigateTo("PortfolioShell");
+
+            fallbackResult.Should().BeTrue();
+            frame.Content.Should().BeSameAs(rootPage);
         });
     }
 

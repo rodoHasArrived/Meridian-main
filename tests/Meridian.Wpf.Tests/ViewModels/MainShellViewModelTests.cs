@@ -238,7 +238,7 @@ public sealed class MainShellViewModelTests
 
             var scopedPage = new WorkspaceCapabilityHomePage();
             var workspaceScopeServices = new ServiceCollection();
-            workspaceScopeServices.AddScoped(_ => scopedPage);
+            workspaceScopeServices.AddSingleton(scopedPage);
             using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
 
             WorkspaceService.SetSettingsFilePathOverrideForTests(null);
