@@ -148,6 +148,12 @@ def _as_list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
 
 
+def _get_module_id(module: dict[str, Any]) -> str | None:
+    return module.get("id") or module.get("module_id")
+
+
+def _get_module_path(module: dict[str, Any]) -> str | None:
+    return module.get("path") or module.get("canonical_path") or module.get("module_path")
 def _resolve_readme_path(repo_root: Path, readme_path: str) -> tuple[Path | None, str | None]:
     candidate = Path(readme_path)
     if candidate.is_absolute():
@@ -177,15 +183,17 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
 
     module_ids: list[str] = []
     for module in modules:
-        module_id = module.get("id")
+        module_id = _get_module_id(module)
         if not module_id:
-            errors.append("source-modules.yml entry missing required 'id'.")
+            errors.append("source-modules.yml entry missing required 'id' (or alias 'module_id').")
             continue
 
         module_ids.append(module_id)
-        module_path = module.get("path")
+        module_path = _get_module_path(module)
         if not module_path:
-            errors.append(f"source-modules.yml module '{module_id}' missing required 'path'.")
+            errors.append(
+                f"source-modules.yml module '{module_id}' missing required 'path' (or aliases 'canonical_path'/'module_path')."
+            )
         else:
             resolved = repo_root / module_path
             if not resolved.exists():
@@ -212,7 +220,10 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     moved_from_paths: set[str] = set()
 
     for module in coverage_modules:
-        transitions = [t for t in _as_list(module.get("transitions")) if isinstance(t, dict)]
+        transitions_raw = module.get("transitions")
+        if transitions_raw is None and isinstance(module.get("transition"), dict):
+            transitions_raw = [module.get("transition")]
+        transitions = [t for t in _as_list(transitions_raw) if isinstance(t, dict)]
         for transition in transitions:
             transition_type = transition.get("type")
             if transition_type not in ALLOWED_TRANSITIONS:
@@ -221,7 +232,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
                 )
 
             roadmap = transition.get("roadmap") or {}
-            module_id = module.get("id", "<unknown>")
+            module_id = _get_module_id(module) or "<unknown>"
             for field in ("id", "url", "status"):
                 if not roadmap.get(field):
                     errors.append(
@@ -243,8 +254,11 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
                     errors.append("Moved transition missing to_path.")
 
     for module in coverage_modules:
-        module_id = str(module.get("id", "<unknown>"))
+        module_id = str(_get_module_id(module) or "<unknown>")
         readme_path = module.get("readme_path")
+        readme_exists = (repo_root / readme_path).exists() if readme_path else False
+        declared_exists = module.get("exists")
+        if readme_path and declared_exists is True and not readme_exists:
         if not readme_path:
             continue
 
@@ -257,10 +271,14 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
 
         if not resolved_readme_path.exists():
             errors.append(f"README path does not exist: {readme_path}")
+        if readme_path and declared_exists is False and readme_exists:
+            errors.append(f"README path exists but coverage declares exists=false: {readme_path}")
         if readme_path and readme_path in moved_from_paths and readme_path not in moved_to_paths:
             errors.append(
                 f"Stale README path '{readme_path}' referenced after move/rename; update to current path."
             )
+        if readme_path and readme_exists:
+            readme_errors = validate_readme_contract(repo_root / readme_path, module_id)
         if resolved_readme_path.exists():
             readme_errors = validate_readme_contract(resolved_readme_path, module_id)
             for element_error in readme_errors:
