@@ -327,6 +327,14 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationPortfolio")
         .Produces<WorkstationPortfolioPayload>(200);
 
+        group.MapGet("/portfolio/summary", async (string? fundAccountId, string? strategyId, string? entity, HttpContext context) =>
+        {
+            var payload = await BuildPortfolioSummaryPayloadAsync(context, fundAccountId, strategyId, entity).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetWorkstationPortfolioSummary")
+        .Produces<WorkstationPortfolioSummaryPayload>(200);
+
         MapOperationsContinuityEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
@@ -3716,6 +3724,39 @@ public static partial class WorkstationEndpoints
             Brokerage: brokerage,
             Runs: runs,
             CashFlow: BuildGovernanceWorkspaceCashFlowSummary(runDetailsForCashFlow));
+    }
+
+    private static async Task<WorkstationPortfolioSummaryPayload> BuildPortfolioSummaryPayloadAsync(HttpContext context, string? fundAccountId, string? strategyId, string? entity)
+    {
+        var started = DateTimeOffset.UtcNow;
+        var basePayload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
+        var cards = new List<WorkstationMetricCard>(basePayload.Metrics)
+        {
+            new("portfolio-exposure", "Gross Exposure", basePayload.Risk.GrossExposure, "live", "default"),
+            new("portfolio-net-exposure", "Net Exposure", basePayload.Risk.NetExposure, "live", "default")
+        };
+
+        var serialized = JsonSerializer.Serialize(basePayload);
+        var stale = string.Equals(basePayload.Brokerage.Connection, "Disconnected", StringComparison.OrdinalIgnoreCase);
+
+        return new WorkstationPortfolioSummaryPayload(
+            FundAccountId: string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!,
+            StrategyId: string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!,
+            Entity: string.IsNullOrWhiteSpace(entity) ? "portfolio" : entity!,
+            ConsolidatedCards: cards,
+            Positions: basePayload.Positions,
+            Risk: basePayload.Risk,
+            Telemetry: new WorkstationPortfolioSummaryTelemetry(
+                RefreshLatencyMs: (long)Math.Max(0, (DateTimeOffset.UtcNow - started).TotalMilliseconds),
+                PayloadSizeBytes: System.Text.Encoding.UTF8.GetByteCount(serialized),
+                IsStale: stale,
+                StaleReason: stale ? "brokerage-disconnected" : null,
+                AsOfUtc: DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture)),
+            DrillThroughRoutes: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["positions"] = $"/portfolio/positions?fundAccountId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!)}&strategyId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!)}&entity={Uri.EscapeDataString(string.IsNullOrWhiteSpace(entity) ? "portfolio" : entity!)}",
+                ["trades"] = $"/trading?fundAccountId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!)}&strategyId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!)}"
+            });
     }
 
     private static async Task<WorkstationGovernancePayload> BuildGovernancePayloadAsync(HttpContext context)

@@ -312,6 +312,25 @@ public sealed record WorkstationPortfolioPayload(
     IReadOnlyList<WorkstationPortfolioRunRow> Runs,
     object? CashFlow);
 
+
+
+public sealed record WorkstationPortfolioSummaryTelemetry(
+    long RefreshLatencyMs,
+    int PayloadSizeBytes,
+    bool IsStale,
+    string? StaleReason,
+    string AsOfUtc);
+
+public sealed record WorkstationPortfolioSummaryPayload(
+    string FundAccountId,
+    string StrategyId,
+    string Entity,
+    IReadOnlyList<WorkstationMetricCard> ConsolidatedCards,
+    IReadOnlyList<WorkstationTradingPositionRow> Positions,
+    WorkstationTradingRiskState Risk,
+    WorkstationPortfolioSummaryTelemetry Telemetry,
+    IReadOnlyDictionary<string, string> DrillThroughRoutes);
+
 // ---------------------------------------------------------------------------
 // /api/workstation/data and /api/workstation/data-operations
 // ---------------------------------------------------------------------------
