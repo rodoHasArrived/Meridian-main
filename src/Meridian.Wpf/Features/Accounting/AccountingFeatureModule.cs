@@ -1,4 +1,7 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Features.Accounting;
@@ -10,6 +13,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
     public void Register(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.AddTransient<GovernanceWorkspaceShellStateProvider>();
+        services.AddTransient<GovernanceWorkspaceShellViewModel>();
+        services.AddTransient<GovernanceWorkspaceShellPage>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;
