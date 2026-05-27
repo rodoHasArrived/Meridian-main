@@ -245,19 +245,19 @@ public sealed class CommandPaletteService
     private void RegisterDefaultCommands()
     {
         // Navigation commands
-        RegisterNavigationCommand("nav-dashboard", "Open Research: Dashboard", "Dashboard", "research dash home main overview workstation", "\uE80F", "Ctrl+D");
+        RegisterNavigationCommand("nav-dashboard", "Open Reporting: Dashboard", "Dashboard", "reporting dashboard overview workstation", "\uE80F", "Ctrl+D");
         RegisterNavigationCommand("nav-watchlist", "Navigate to Watchlist", "Watchlist", "watch list favorites", "\uE728", "Ctrl+W");
         RegisterNavigationCommand("nav-symbols", "Navigate to Symbols", "Symbols", "symbol ticker stock add remove", "\uE71B", "Ctrl+Y");
-        RegisterNavigationCommand("nav-backfill", "Open Data Operations: Backfill", "Backfill", "data operations backfill historical download import", "\uE896", "Ctrl+B");
-        RegisterNavigationCommand("nav-live-data", "Open Trading: Live Data", "LiveData", "trading live data streaming real time cockpit", "\uE9F5", "");
+        RegisterNavigationCommand("nav-backfill", "Open Data: Backfill", "Backfill", "data data operations backfill historical download import", "\uE896", "Ctrl+B");
+        RegisterNavigationCommand("nav-live-data", "Open Trading: Live Data Viewer", "LiveData", "trading live data live viewer streaming real time cockpit", "\uE9F5", "");
         RegisterNavigationCommand("nav-runmat", "Navigate to RunMat Lab", "RunMat", "runmat matlab script research gpu analysis", "\uE943", "");
-        RegisterNavigationCommand("nav-strategy-runs", "Open Research: Strategy Runs", "StrategyRuns", "strategy runs history browser workstation portfolio ledger", "\uE8FD", "");
+        RegisterNavigationCommand("nav-strategy-runs", "Open Strategy: Strategy Runs", "StrategyRuns", "strategy research runs history browser workstation portfolio ledger", "\uE8FD", "");
         RegisterNavigationCommand("nav-run-detail", "Navigate to Run Detail", "RunDetail", "run detail strategy execution summary", "\uE946", "");
         RegisterNavigationCommand("nav-run-portfolio", "Open Trading: Run Portfolio", "RunPortfolio", "trading portfolio positions exposure workstation", "\uE8B5", "");
-        RegisterNavigationCommand("nav-run-ledger", "Open Governance: Run Ledger", "RunLedger", "governance ledger journal trial balance audit workstation", "\uE9D5", "");
-        RegisterNavigationCommand("nav-data-quality", "Open Governance: Data Quality", "DataQuality", "governance quality metrics completeness gaps", "\uE9D5", "Ctrl+Q");
-        RegisterNavigationCommand("nav-storage", "Open Data Operations: Storage", "Storage", "data operations storage disk files size", "\uEDA2", "");
-        RegisterNavigationCommand("nav-provider", "Open Data Operations: Providers", "Provider", "data operations provider data source alpaca polygon ib", "\uE774", "");
+        RegisterNavigationCommand("nav-run-ledger", "Open Accounting: Run Ledger", "RunLedger", "accounting governance ledger journal trial balance audit workstation", "\uE9D5", "");
+        RegisterNavigationCommand("nav-data-quality", "Open Data: Data Quality", "DataQuality", "data governance quality metrics completeness gaps", "\uE9D5", "Ctrl+Q");
+        RegisterNavigationCommand("nav-storage", "Open Data: Storage", "Storage", "data data operations storage disk files size", "\uEDA2", "");
+        RegisterNavigationCommand("nav-provider", "Open Data: Providers", "Provider", "data data operations provider data source alpaca polygon ib", "\uE774", "");
         RegisterNavigationCommand("nav-provider-health", "Navigate to Provider Health", "ProviderHealth", "provider health status connection", "\uE95E", "");
         RegisterNavigationCommand("nav-data-sources", "Navigate to Data Sources", "DataSources", "data sources configure", "\uE943", "");
         RegisterNavigationCommand("nav-data-browser", "Navigate to Data Browser", "DataBrowser", "data browser explore files", "\uEC50", "");
@@ -277,8 +277,8 @@ public sealed class CommandPaletteService
         RegisterNavigationCommand("nav-event-replay", "Navigate to Event Replay", "EventReplay", "event replay playback simulate", "\uE768", "");
         RegisterNavigationCommand("nav-package-manager", "Navigate to Package Manager", "PackageManager", "package zip import share", "\uE7B8", "");
         RegisterNavigationCommand("nav-schedules", "Navigate to Schedule Manager", "Schedules", "schedule cron job timer", "\uE823", "");
-        RegisterNavigationCommand("nav-backtest", "Open Research: Backtest", "Backtest", "research backtest strategy simulation run test historical replay", "\uE9D9", "Ctrl+Shift+B");
-        RegisterNavigationCommand("nav-lean", "Open Research: Lean Integration", "LeanIntegration", "research lean quantconnect backtest engine algorithm", "\uE943", "");
+        RegisterNavigationCommand("nav-backtest", "Open Strategy: Backtest", "Backtest", "strategy research backtest strategy simulation run test historical replay", "\uE9D9", "Ctrl+Shift+B");
+        RegisterNavigationCommand("nav-lean", "Open Strategy: Lean Integration", "LeanIntegration", "strategy research lean quantconnect backtest engine algorithm", "\uE943", "");
         RegisterNavigationCommand("nav-admin-maintenance", "Navigate to Admin Maintenance", "AdminMaintenance", "admin maintenance cleanup", "\uE90F", "");
         RegisterNavigationCommand("nav-storage-optimization", "Navigate to Storage Optimization", "StorageOptimization", "storage optimize compress tier", "\uEDA2", "");
         RegisterNavigationCommand("nav-keyboard-shortcuts", "Navigate to Keyboard Shortcuts", "KeyboardShortcuts", "keyboard shortcut hotkey bind", "\uE765", "");
@@ -298,15 +298,18 @@ public sealed class CommandPaletteService
         RegisterNavigationCommand("nav-symbol-storage", "Navigate to Symbol Storage", "SymbolStorage", "symbol storage files size", "\uEDA2", "");
         RegisterNavigationCommand("nav-options", "Navigate to Options / Derivatives", "Options", "options derivatives contracts puts calls configuration", "\uE945", "");
         RegisterNavigationCommand("nav-analysis-export-wizard", "Open Analysis Export Wizard", "AnalysisExportWizard", "analysis export wizard pandas python arrow parquet", "\uE9D9", "");
-        RegisterNavigationCommand("nav-research-shell", "Open Research Workspace", "ResearchShell", "research workspace shell home strategy runs backtest overview", "\uE9D9", "");
+        RegisterNavigationCommand("nav-research-shell", "Open Strategy Workspace", "ResearchShell", "strategy research workspace shell home strategy runs backtest overview", "\uE9D9", "");
         RegisterNavigationCommand("nav-trading-shell", "Open Trading Workspace", "TradingShell", "trading workspace shell live positions portfolio risk rail overview", "\uE9F5", "");
-        RegisterNavigationCommand("nav-quantscript", "Open Research: QuantScript", "QuantScript", "research quant script prototype calculation ide code", "\uE943", "");
-        RegisterNavigationCommand("nav-batch-backtest", "Open Research: Batch Backtest", "BatchBacktest", "research batch backtest bulk run multi strategy sweep", "\uE8EF", "");
-        RegisterNavigationCommand("nav-run-cashflow", "Open Research: Run Cash Flow", "RunCashFlow", "research run cash flow funding impact projection", "\uE8C8", "");
-        RegisterNavigationCommand("nav-security-master", "Open Governance: Security Master", "SecurityMaster", "governance security master reference data listings identifiers", "\uE8F1", "");
-        RegisterNavigationCommand("nav-direct-lending", "Open Governance: Direct Lending", "DirectLending", "governance direct lending portfolio workflow contracts accrual", "\uE8C8", "");
-        RegisterNavigationCommand("nav-credential-management", "Open Governance: Credential Management", "CredentialManagement", "governance credential management provider access secure api key", "\uE8D7", "");
-        RegisterNavigationCommand("nav-add-provider-wizard", "Open Data Operations: Add Provider Wizard", "AddProviderWizard", "data operations add provider wizard configure setup onboard", "\uE710", "");
+        RegisterNavigationCommand("nav-quantscript", "Open Strategy: Quant Script", "QuantScript", "strategy research quant script prototype calculation ide code", "\uE943", "");
+        RegisterNavigationCommand("nav-batch-backtest", "Open Strategy: Batch Backtest", "BatchBacktest", "strategy research batch backtest bulk run multi strategy sweep", "\uE8EF", "");
+        RegisterNavigationCommand("nav-run-cashflow", "Open Accounting: Run Cash Flow", "RunCashFlow", "accounting research run cash flow funding impact projection", "\uE8C8", "");
+        RegisterNavigationCommand("nav-security-master", "Open Data: Security Master", "SecurityMaster", "data governance security master reference data listings identifiers", "\uE8F1", "");
+        RegisterNavigationCommand("nav-direct-lending", "Open Portfolio: Direct Lending", "DirectLending", "portfolio governance direct lending portfolio workflow contracts accrual", "\uE8C8", "");
+        RegisterNavigationCommand("nav-credential-management", "Open Settings: Credential Management", "CredentialManagement", "settings governance credential management provider access secure api key", "\uE8D7", "");
+        RegisterNavigationCommand("nav-add-provider-wizard", "Open Data: Add Provider Wizard", "AddProviderWizard", "data data operations add provider wizard configure setup onboard", "\uE710", "");
+        RegisterNavigationCommand("nav-backtest-workflow", "Open Strategy: Backtest Workflow", "Backtest", "backtest workflow strategy simulation lean live viewer portfolio import", "\uEC35", "");
+        RegisterNavigationCommand("nav-trading-workflow", "Open Trading: Live Viewer Workflow", "LiveData", "trading workflow live viewer order book execution risk", "\uE9F5", "");
+        RegisterNavigationCommand("nav-portfolio-ledger-workflow", "Open Accounting: Portfolio Ledger Workflow", "RunLedger", "portfolio ledger workflow accounting run ledger postings cash flow", "\uE82D", "");
 
         // Action commands
         RegisterActionCommand("action-start-collector", "Start Data Collector", "StartCollector", "start collect begin run", "\uE768", "Ctrl+Shift+S");
@@ -338,34 +341,38 @@ public sealed class CommandPaletteService
     {
         return pageTag switch
         {
-            // Research workspace: analysis, strategy runs, charting, quant tooling
-            "Dashboard" or "Backtest" or "BatchBacktest" or "LeanIntegration" or "RunMat"
+            // Strategy workspace: analysis, strategy runs, charting, quant tooling
+            "Backtest" or "BatchBacktest" or "LeanIntegration" or "RunMat"
                 or "Charts" or "QuantScript" or "Watchlist" or "OrderBook"
-                or "StrategyRuns" or "RunDetail" or "RunCashFlow"
+                or "StrategyRuns" or "RunDetail"
                 or "AdvancedAnalytics" or "ResearchShell"
-                => $"Research workspace — {pageTag}",
+                => $"Strategy workspace — {pageTag}",
 
             // Trading workspace: live execution, positions, hours
             "LiveData" or "TradingHours" or "TradingShell" or "RunPortfolio"
                 => $"Trading workspace — {pageTag}",
 
-            // Data Operations workspace: ingest, symbols, storage, tools
+            // Reporting workspace: dashboard and export surfaces
+            "Dashboard" or "AnalysisExport" or "AnalysisExportWizard" or "ExportPresets"
+                => $"Reporting workspace — {pageTag}",
+
+            // Data workspace: ingest, symbols, storage, tools
             "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
                 or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser"
                 or "DataCalendar" or "EventReplay" or "DataSampling" or "TimeSeriesAlignment"
                 or "AnalysisExport" or "AnalysisExportWizard" or "ExportPresets"
                 or "IndexSubscription" or "SymbolMapping" or "SymbolStorage" or "Options"
                 or "PortfolioImport" or "AddProviderWizard"
-                => $"Data Operations workspace — {pageTag}",
+                => $"Data workspace — {pageTag}",
 
-            // Governance workspace: quality, audit, ledger, health, admin, setup
-            "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
+            // Accounting and settings workflows: quality, audit, ledger, health, admin, setup
+            "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics" or "RunCashFlow"
                 or "Settings" or "AdminMaintenance" or "RetentionAssurance"
                 or "NotificationCenter" or "Help" or "RunLedger" or "ArchiveHealth"
                 or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
                 or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
                 or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"
-                => $"Governance workspace — {pageTag}",
+                => $"Accounting workspace — {pageTag}",
 
             _ => $"Navigate to {pageTag}"
         };
@@ -432,4 +439,3 @@ public sealed record CommandEntry(
     string? Category,
     ICommand Command,
     string? Shortcut = null);
-

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Documents;
 using Meridian.Storage.Archival;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Microsoft.Extensions.Logging;
 
@@ -53,9 +54,9 @@ public sealed class QuantScriptExecutionHistoryService
             try
             {
                 await using var stream = File.OpenRead(path);
-                var record = await JsonSerializer.DeserializeAsync(
+                var record = await JsonSerializer.DeserializeAsync<QuantScriptExecutionRecord>(
                     stream,
-                    QuantScriptStorageJsonContext.Default.QuantScriptExecutionRecord,
+                    DesktopJsonOptions.PrettyPrint,
                     ct).ConfigureAwait(false);
 
                 if (record is not null)
@@ -123,10 +124,28 @@ public sealed class QuantScriptExecutionHistoryService
 
         var historyDirectory = await ResolveHistoryDirectoryAsync().ConfigureAwait(false);
         var path = Path.Combine(historyDirectory, $"{record.ExecutionId}.json");
-        var json = JsonSerializer.Serialize(record, QuantScriptStorageJsonContext.Default.QuantScriptExecutionRecord);
+        var json = JsonSerializer.Serialize(record, DesktopJsonOptions.PrettyPrint);
         await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
 
         return record;
+    }
+
+    public async Task<string> ExportExecutionRecordAsync(
+        QuantScriptExecutionRecord record,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        var config = await _configService.LoadConfigAsync().ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        var dataRoot = _configService.ResolveDataRoot(config);
+        var exportDirectory = Path.Combine(dataRoot, "_quantscript", "exports");
+        Directory.CreateDirectory(exportDirectory);
+
+        var path = Path.Combine(exportDirectory, $"{record.ExecutionId}.json");
+        var json = JsonSerializer.Serialize(record, DesktopJsonOptions.PrettyPrint);
+        await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
+        return path;
     }
 
     private async Task<string> ResolveHistoryDirectoryAsync()

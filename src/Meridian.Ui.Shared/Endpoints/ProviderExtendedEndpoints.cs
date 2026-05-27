@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.ProviderRouting;
@@ -226,14 +227,46 @@ public static class ProviderExtendedEndpoints
         // Provider health
         group.MapGet(UiApiRoutes.ProviderHealth, ([FromServices] ProviderRegistry? registry) =>
         {
-            var providers = registry?.GetAllProviders().Select(p => new
-            {
-                name = p.Name,
-                displayName = p.DisplayName,
-                type = p.ProviderType.ToString(),
-                isEnabled = p.IsEnabled,
-                healthy = p.IsEnabled
-            }).ToArray() ?? Array.Empty<object>();
+            var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
+            var providers = registry is null
+                ? Array.Empty<object>()
+                : registry.GetAllProviders().Select(p =>
+                {
+                    var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                        diagnosticsByProviderId,
+                        p.Name,
+                        p.DisplayName);
+                    var isConnected = diagnostics?.IsConnected ?? p.IsEnabled;
+
+                    return (object)new
+                    {
+                        name = p.Name,
+                        providerId = p.Name,
+                        displayName = p.DisplayName,
+                        providerName = p.DisplayName,
+                        type = p.ProviderType.ToString(),
+                        isEnabled = p.IsEnabled,
+                        isConnected,
+                        healthy = p.IsEnabled && isConnected,
+                        connectionStabilityScore = isConnected ? 100 : 0,
+                        averageLatencyMs = 0,
+                        latencyP99Ms = 0,
+                        latencyConsistencyScore = 100,
+                        dataCompletenessPercent = 100,
+                        reconnectsLastHour = diagnostics?.ReconnectAttempts ?? 0,
+                        uptimePercent = isConnected ? 100 : 0,
+                        messagesPerSecond = 0,
+                        errorsLastHour = diagnostics?.LastFailureKind is null ? 0 : 1,
+                        lifecycleState = diagnostics?.LifecycleState,
+                        webSocketState = diagnostics?.WebSocketState,
+                        isReconnecting = diagnostics?.IsReconnecting,
+                        lastHeartbeatReceivedAt = diagnostics?.LastHeartbeatReceivedAt,
+                        lastMessageReceivedAt = diagnostics?.LastMessageReceivedAt,
+                        lastReconnectAttemptAt = diagnostics?.LastReconnectAttemptAt,
+                        reconnectAttempts = diagnostics?.ReconnectAttempts,
+                        lastFailureKind = diagnostics?.LastFailureKind
+                    };
+                }).ToArray();
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
@@ -246,11 +279,21 @@ public static class ProviderExtendedEndpoints
         {
             var allProviders = registry?.GetAllProviders() ?? Array.Empty<ProviderInfo>();
             var metricsStatus = store.TryLoadProviderMetrics();
+            var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
 
             var providerSummaries = allProviders.Select(p =>
             {
+                var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                    diagnosticsByProviderId,
+                    p.Name,
+                    p.DisplayName);
                 // Determine per-provider traffic-light colour
-                var trafficLight = p.IsEnabled ? "green" : "red";
+                var isConnected = diagnostics?.IsConnected ?? p.IsEnabled;
+                var trafficLight = p.IsEnabled && isConnected ? "green" : "red";
+                if (diagnostics?.IsReconnecting == true)
+                {
+                    trafficLight = "yellow";
+                }
 
                 // Cross-reference latency metrics when available
                 string? latencyMs = null;
@@ -274,8 +317,15 @@ public static class ProviderExtendedEndpoints
                     displayName = p.DisplayName,
                     type = p.ProviderType.ToString(),
                     isEnabled = p.IsEnabled,
+                    isConnected,
                     trafficLight,
-                    latencyMs
+                    latencyMs,
+                    lifecycleState = diagnostics?.LifecycleState,
+                    lastHeartbeatReceivedAt = diagnostics?.LastHeartbeatReceivedAt,
+                    lastMessageReceivedAt = diagnostics?.LastMessageReceivedAt,
+                    lastReconnectAttemptAt = diagnostics?.LastReconnectAttemptAt,
+                    reconnectAttempts = diagnostics?.ReconnectAttempts,
+                    lastFailureKind = diagnostics?.LastFailureKind
                 };
             }).ToArray();
 

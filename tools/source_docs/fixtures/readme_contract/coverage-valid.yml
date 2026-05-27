@@ -1,0 +1,10 @@
+readme_coverage:
+  modules:
+    - id: valid-module
+      readme_path: tools/source_docs/fixtures/readme_contract/valid/README.md
+      transitions:
+        - type: added
+          roadmap:
+            id: roadmap-1
+            url: https://example.test/roadmap/1
+            status: planned

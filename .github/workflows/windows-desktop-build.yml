@@ -1,0 +1,144 @@
+name: Windows Desktop Build
+
+on:
+  pull_request:
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "src/Meridian.Contracts/**"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - "global.json"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "src/Meridian.Contracts/**"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - "global.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-desktop-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  desktop:
+    name: verify-desktop (build/test WPF)
+    runs-on: windows-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-wpf-
+            ${{ runner.os }}-nuget-
+
+      - name: Restore WPF tests
+        shell: pwsh
+        run: >
+          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+      - name: Build WPF app
+        shell: pwsh
+        run: >
+          dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj
+          -c Release
+          --no-restore
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+          /p:WindowsPackageType=None
+
+      - name: Run WPF tests
+        shell: pwsh
+        run: >
+          dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
+          -c Release
+          --no-restore
+          --filter "Category!=Integration&FullyQualifiedName!~Integration"
+          --logger "trx;LogFilePrefix=wpf"
+          --results-directory artifacts/test-results/wpf
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+      - name: Restore WPF publish graph
+        shell: pwsh
+        run: >
+          dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj
+          -r win-x64
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+      - name: Smoke publish WPF app
+        shell: pwsh
+        run: >
+          dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj
+          -c Release
+          -r win-x64
+          --no-restore
+          --self-contained false
+          -o artifacts/publish/desktop-smoke
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+          /p:WindowsPackageType=None
+          /p:PublishReadyToRun=false
+
+      - name: Confirm desktop executable
+        shell: pwsh
+        run: |
+          $exe = "artifacts/publish/desktop-smoke/Meridian.Desktop.exe"
+          if (-not (Test-Path $exe)) {
+            throw "Expected desktop executable not found: $exe"
+          }
+          Get-Item $exe | Select-Object FullName, Length
+
+      - name: Upload WPF test results
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: windows-desktop-test-results-${{ github.run_number }}
+          path: artifacts/test-results/wpf/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload desktop smoke publish artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: windows-desktop-smoke-${{ github.run_number }}
+          path: artifacts/publish/desktop-smoke/
+          if-no-files-found: ignore
+          retention-days: 14

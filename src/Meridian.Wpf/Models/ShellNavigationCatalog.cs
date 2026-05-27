@@ -1,10 +1,14 @@
 using System.Windows.Controls;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Shell.Services;
 
 namespace Meridian.Wpf.Models;
 
 public static partial class ShellNavigationCatalog
 {
+    private static readonly Lazy<IShellPageRegistry> RegistryValue =
+        new(ShellPageRegistryBuilder.BuildDefault);
+
     private static readonly Lazy<IReadOnlyList<ShellPageDescriptor>> PagesValue =
         new(BuildPages);
 
@@ -30,10 +34,13 @@ public static partial class ShellNavigationCatalog
         new(BuildPageLookup);
 
     private static IReadOnlyList<ShellPageDescriptor> BuildPages()
-        => WorkspaceCapabilities.SelectMany(static capability => capability.Pages).ToArray();
+        => RegistryValue.Value.Pages;
 
     private static IReadOnlyList<WorkspaceShellDefinition> BuildWorkspaceShells()
-        => WorkspaceCapabilities.Select(static capability => capability.ShellDefinition).ToArray();
+        => RegistryValue.Value.WorkspaceShells;
+
+    private static IReadOnlyList<WorkspaceCapabilityDescriptor> BuildWorkspaceCapabilities()
+        => RegistryValue.Value.WorkspaceCapabilities;
 
     private static IReadOnlyDictionary<string, WorkspaceShellDescriptor> BuildWorkspaceLookup()
     {
@@ -184,7 +191,7 @@ public static partial class ShellNavigationCatalog
         lookup[tag] = descriptor;
     }
 
-    private static ShellPageDescriptor Page<TPage>(
+    internal static ShellPageDescriptor Page<TPage>(
         string pageTag,
         string title,
         string subtitle,
@@ -215,7 +222,7 @@ public static partial class ShellNavigationCatalog
             HideFromDefaultPalette: hideFromDefaultPalette);
     }
 
-    private static WorkspacePaneDefinition Pane(
+    internal static WorkspacePaneDefinition Pane(
         string pageTag,
         PaneDropAction action,
         WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None,

@@ -124,11 +124,43 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var actor = ResolveActor(context);
+            var gateDecision = BrokerageOrderPlacementGate.Evaluate(
+                context.RequestServices.GetService<BrokerageConfiguration>());
+            if (!gateDecision.IsAllowed)
+            {
+                var blocked = new OrderResult
+                {
+                    Success = false,
+                    OrderId = request.ClientOrderId ?? "blocked",
+                    ErrorMessage = gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates."
+                };
+                return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            if (TryRejectClientControlledExecutionMetadata(request, jsonOptions) is { } brokerAccountFailure)
+            {
+                return brokerAccountFailure;
+            }
+
             string? correlationId = null;
             request.Metadata?.TryGetValue("correlationId", out correlationId);
             var normalizedRequest = request with
@@ -148,10 +180,23 @@ public static class ExecutionEndpoints
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(400)
+        .Produces<OrderResult>(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -186,9 +231,14 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/cancel-all", async (HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var oms = context.RequestServices.GetService<IOrderManager>();
@@ -284,13 +334,22 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/circuit-breaker", async (UpdateExecutionCircuitBreakerRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
                 return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var actor = ResolveActor(context);
             var snapshot = await controls
                 .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, request.CorrelationId, context.RequestAborted)
                 .ConfigureAwait(false);
@@ -298,13 +357,21 @@ public static class ExecutionEndpoints
         })
         .WithName("UpdateExecutionCircuitBreaker")
         .Produces<ExecutionControlSnapshot>(200)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces(503);
 
         group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
-            if (!HasExecutionControlPermission(context))
+            if (!HasExecutionControlMutationPermission(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
             }
 
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
@@ -319,7 +386,7 @@ public static class ExecutionEndpoints
                     new ManualOverrideRequest(
                         Kind: request.Kind,
                         Reason: request.Reason,
-                        CreatedBy: ResolveActor(context),
+                        CreatedBy: actor,
                         Symbol: request.Symbol,
                         StrategyId: request.StrategyId,
                         RunId: request.RunId,
@@ -336,14 +403,21 @@ public static class ExecutionEndpoints
         .WithName("CreateExecutionManualOverride")
         .Produces<ExecutionManualOverride>(201)
         .Produces(403)
+        .Produces(429)
         .Produces(400)
-        .Produces(503);
+        .Produces(503)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
         {
-            if (!HasExecutionControlPermission(context))
+            if (!HasExecutionControlMutationPermission(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
             }
 
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
@@ -354,7 +428,7 @@ public static class ExecutionEndpoints
 
             var cleared = await controls.ClearManualOverrideAsync(
                 overrideId,
-                ResolveActor(context),
+                actor,
                 request.Reason,
                 request.CorrelationId,
                 context.RequestAborted).ConfigureAwait(false);
@@ -375,8 +449,10 @@ public static class ExecutionEndpoints
         .WithName("ClearExecutionManualOverride")
         .Produces<TradingActionResult>(200)
         .Produces(403)
+        .Produces(429)
         .Produces(404)
-        .Produces(503);
+        .Produces(503)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // --- Session management ---
 
@@ -409,6 +485,16 @@ public static class ExecutionEndpoints
 
         group.MapPost("/sessions/create", async (CreatePaperSessionRequest request, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out _))
+            {
+                return Results.Unauthorized();
+            }
+
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -419,7 +505,26 @@ public static class ExecutionEndpoints
                 request.StrategyName,
                 request.InitialCash,
                 request.Symbols);
-            var session = await persistence.CreateSessionAsync(dto, context.RequestAborted).ConfigureAwait(false);
+            PaperSessionSummaryDto session;
+            try
+            {
+                session = await persistence.CreateSessionAsync(dto, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Json(
+                    new TradingActionResult(
+                        ActionId: actionId,
+                        Status: "Rejected",
+                        Message: ex.Message,
+                        OccurredAt: DateTimeOffset.UtcNow),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status429TooManyRequests);
+            }
 
             await RecordOperatorAuditAsync(
                 context,
@@ -442,10 +547,23 @@ public static class ExecutionEndpoints
         })
         .WithName("CreateExecutionSession")
         .Produces<PaperSessionSummaryDto>(201)
+        .Produces(400)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces(503);
 
         group.MapPost("/sessions/{sessionId}/close", async (string sessionId, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out _))
+            {
+                return Results.Unauthorized();
+            }
+
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -491,6 +609,16 @@ public static class ExecutionEndpoints
 
         group.MapGet("/sessions/{sessionId}/replay", async (string sessionId, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out _))
+            {
+                return Results.Unauthorized();
+            }
+
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -640,6 +768,16 @@ public static class ExecutionEndpoints
 
         group.MapPost("/positions/actions/close", async (ExecutionPositionActionRequest request, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -674,10 +812,21 @@ public static class ExecutionEndpoints
         .WithName("ClosePositionByKey")
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
+        .Produces(403)
         .Produces(503);
 
         group.MapPost("/positions/actions/upsize", async (ExecutionPositionActionRequest request, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -712,10 +861,21 @@ public static class ExecutionEndpoints
         .WithName("UpsizePositionByKey")
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
+        .Produces(403)
         .Produces(503);
 
         group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -855,11 +1015,56 @@ public static class ExecutionEndpoints
             return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
+        var blockedGateDecision = BrokerageOrderPlacementGate.Evaluate(
+            context.RequestServices.GetService<BrokerageConfiguration>());
+        if (!blockedGateDecision.IsAllowed)
+        {
+            var blockedActionId = GenerateActionId();
+            var message = blockedGateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.";
+            var blockedAuditEntry = await RecordOperatorAuditAsync(
+                context,
+                blockedActionId,
+                action: actionName,
+                outcome: "Rejected",
+                message: message,
+                symbol: position.Symbol,
+                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["positionKey"] = position.PositionKey,
+                    ["reason"] = "GateBlocked",
+                    ["source"] = positionSource
+                }).ConfigureAwait(false);
+
+            var blocked = new TradingActionResult(
+                ActionId: blockedActionId,
+                Status: "Rejected",
+                Message: message,
+                OccurredAt: DateTimeOffset.UtcNow,
+                AuditId: blockedAuditEntry?.AuditId);
+            return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+        }
+
         var logger = GetLogger(context.RequestServices);
         var actionId = GenerateActionId();
-        var actor = ResolveActor(context);
+        if (!TryResolveActor(context, out var actor))
+        {
+            return Results.Unauthorized();
+        }
+
+        var gateDecision = BrokerageOrderPlacementGate.Evaluate(
+            context.RequestServices.GetService<BrokerageConfiguration>());
+        if (!gateDecision.IsAllowed)
+        {
+            var blocked = new TradingActionResult(
+                ActionId: actionId,
+                Status: "Rejected",
+                Message: gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.",
+                OccurredAt: DateTimeOffset.UtcNow);
+            return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+        }
+
         var metadata = MergeMetadata(
-            position.Metadata,
+            RemoveServerOwnedExecutionMetadata(position.Metadata),
             ("actor", actor),
             ("correlationId", actionId),
             ("positionKey", position.PositionKey),
@@ -996,56 +1201,129 @@ public static class ExecutionEndpoints
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 
-    private static bool HasExecutionControlPermission(HttpContext context)
+    private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
     {
-        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var rawPermissions) ||
-            rawPermissions is not UserPermission permissions)
+        var configuration = services.GetService<BrokerageConfiguration>();
+        if (configuration is null || !IsLiveProductionRouting(configuration))
+        {
+            return null;
+        }
+
+        if (!configuration.ReadOnlyPhaseEnabled)
+        {
+            return Results.BadRequest(new { error = "Order routing is blocked because the read-only phase is disabled." });
+        }
+
+        if (!configuration.PaperTradingPhaseEnabled)
+        {
+            return Results.BadRequest(new { error = "Order routing is blocked because the paper-trading phase is disabled." });
+        }
+
+        if (!configuration.ProductionRoutingPhaseEnabled)
+        {
+            return Results.BadRequest(new { error = "Order routing is blocked because production routing is disabled." });
+        }
+
+        if (!configuration.ReadOnlyVerificationPassed)
+        {
+            return Results.BadRequest(new { error = "Production routing gate failed: read-only verification must pass." });
+        }
+
+        if (!configuration.PaperLifecycleTestsPassed)
+        {
+            return Results.BadRequest(new { error = "Production routing gate failed: paper-trading lifecycle tests must pass." });
+        }
+
+        if (!configuration.ReplayEvidencePassed)
+        {
+            return Results.BadRequest(new { error = "Production routing gate failed: replay evidence must pass." });
+        }
+
+        return null;
+    }
+
+    private static bool IsLiveProductionRouting(BrokerageConfiguration configuration)
+    {
+        if (!configuration.LiveExecutionEnabled)
         {
             return false;
         }
 
-        return permissions.HasFlag(UserPermission.ExecuteTrades) ||
-               permissions.HasFlag(UserPermission.ManageOrders);
+        if (string.IsNullOrWhiteSpace(configuration.Gateway))
+        {
+            return false;
+        }
+
+        return !string.Equals(configuration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
     }
 
     private static ILogger GetLogger(IServiceProvider sp) =>
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
-    private static string ResolveActor(HttpContext context)
-    {
-        if (context.User.Identity?.IsAuthenticated == true &&
-            !string.IsNullOrWhiteSpace(context.User.Identity.Name))
-        {
-            return context.User.Identity.Name!;
-        }
-
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
-            currentUser is string username &&
-            !string.IsNullOrWhiteSpace(username))
-        {
-            return username;
-        }
-
-        return "operator";
-    }
+    private static bool TryResolveActor(HttpContext context, out string actor)
+        => EndpointAuthorization.TryResolveActor(context, out actor);
 
     private static bool HasExecutionControlMutationPermission(HttpContext context) =>
         HasExecutionTradingPermission(context, UserPermission.ManageOrders);
 
     private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
+        => EndpointAuthorization.HasPermission(context, requiredPermission);
+
+    private static IResult? TryRejectClientControlledExecutionMetadata(
+        OrderRequest request,
+        JsonSerializerOptions jsonOptions)
     {
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        if (!ContainsServerOwnedExecutionMetadata(request.Metadata))
         {
-            return (permissionsFromContext & requiredPermission) == requiredPermission;
+            return null;
         }
 
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        var blocked = new OrderResult
         {
-            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
+            Success = false,
+            OrderId = request.ClientOrderId ?? "blocked",
+            ErrorMessage = "Broker account routing and execution-control metadata must be resolved server-side; server-owned execution metadata is not accepted from client order requests."
+        };
+        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    private static bool ContainsServerOwnedExecutionMetadata(IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null)
+        {
+            return false;
         }
 
-        return false;
+        return ExecutionOrderMetadataPolicy.ContainsClientRejectedServerOwnedKey(metadata);
+    }
+
+    private static IReadOnlyDictionary<string, string>? RemoveServerOwnedExecutionMetadata(
+        IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null)
+        {
+            return null;
+        }
+
+        return ExecutionOrderMetadataPolicy.RemoveClientRejectedServerOwnedKeys(metadata);
+    }
+
+    private static bool ContainsRestrictedBrokerRoutingMetadata(IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null || metadata.Count == 0)
+        {
+            return false;
+        }
+
+        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("alpaca:broker_account_id", StringComparison.OrdinalIgnoreCase));
     }
 
     private static Dictionary<string, string> MergeMetadata(
@@ -1091,7 +1369,7 @@ public static class ExecutionEndpoints
             category: "OperatorAction",
             action: action,
             outcome: outcome,
-            actor: ResolveActor(context),
+            actor: TryResolveActor(context, out var actor) ? actor : "unknown",
             brokerName: orderGateway?.BrokerName,
             orderId: orderId,
             runId: runId,

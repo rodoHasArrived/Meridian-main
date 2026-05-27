@@ -320,9 +320,9 @@
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        VerticalAlignment="Center"
                                        Margin="12,0,0,0">
-                                <Run Text="{Binding FilteredCountText}" />
+                                <Run Text="{Binding FilteredCountText, Mode=OneWay}" />
                                 <Run Text=" | " />
-                                <Run Text="{Binding TimePeriodScopeText}" />
+                                <Run Text="{Binding TimePeriodScopeText, Mode=OneWay}" />
                             </TextBlock>
 
                             <!-- Sort selector -->
@@ -370,6 +370,7 @@
                         <!-- DataGrid -->
                         <DataGrid x:Name="ResultsGrid"
                                   ItemsSource="{Binding PagedRecords}"
+                                  SelectedItem="{Binding SelectedRecord, Mode=TwoWay}"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   CanUserSortColumns="True"
@@ -384,7 +385,6 @@
                                   RowBackground="Transparent"
                                   AlternatingRowBackground="{StaticResource ConsoleBackgroundLightBrush}"
                                   BorderThickness="0"
-                                  SelectionChanged="ResultsGrid_SelectionChanged"
                                   Visibility="{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}}"
                                   AutomationProperties.AutomationId="DataBrowserResultsGrid">
                             <DataGrid.ColumnHeaderStyle>
@@ -642,10 +642,13 @@
                         </Border>
 
                         <!-- Row Detail Panel -->
-                        <Border x:Name="DetailPanel" Visibility="Collapsed"
+                        <Border x:Name="DetailPanel"
+                                Visibility="{Binding HasSelectedRecord, Converter={StaticResource BoolToVisibilityConverter}}"
                                 Background="{StaticResource ConsoleBackgroundLightBrush}"
                                 BorderBrush="{StaticResource InfoColorBrush}"
-                                BorderThickness="1" CornerRadius="8" Padding="20,16" Margin="0,4,0,12">
+                                BorderThickness="1" CornerRadius="8" Padding="20,16" Margin="0,4,0,12"
+                                AutomationProperties.AutomationId="DataBrowserDetailPanel"
+                                AutomationProperties.Name="{Binding SelectedRecordAutomationName}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -658,12 +661,14 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="10" FontWeight="SemiBold" Margin="0,0,0,4" />
                                     <TextBlock x:Name="DetailSymbol"
+                                               Text="{Binding SelectedRecordSymbol}"
                                                FontSize="18" FontWeight="Bold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                     <TextBlock Text="VENUE"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="10" FontWeight="SemiBold" Margin="0,12,0,4" />
                                     <TextBlock x:Name="DetailVenue"
+                                               Text="{Binding SelectedRecordVenue}"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
@@ -671,11 +676,13 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="10" FontWeight="SemiBold" Margin="0,0,0,4" />
                                     <TextBlock x:Name="DetailDataType"
+                                               Text="{Binding SelectedRecordDataType}"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     <TextBlock Text="TIMESTAMP"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="10" FontWeight="SemiBold" Margin="0,12,0,4" />
                                     <TextBlock x:Name="DetailTimestamp"
+                                               Text="{Binding SelectedRecordTimestampText}"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                FontFamily="Consolas" FontSize="13" />
                                 </StackPanel>
@@ -684,6 +691,7 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="10" FontWeight="SemiBold" Margin="0,0,0,4" />
                                     <TextBlock x:Name="DetailPrice"
+                                               Text="{Binding SelectedRecordPriceText}"
                                                FontSize="20" FontWeight="Bold"
                                                Foreground="{StaticResource SuccessColorBrush}"
                                                FontFamily="Consolas" />
@@ -691,14 +699,18 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                FontSize="10" FontWeight="SemiBold" Margin="0,12,0,4" />
                                     <TextBlock x:Name="DetailSize"
+                                               Text="{Binding SelectedRecordSizeText}"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                FontFamily="Consolas" />
                                 </StackPanel>
                                 <Button Grid.Column="3"
                                         Style="{StaticResource GhostButtonStyle}"
                                         VerticalAlignment="Top"
-                                        Click="CopyJson_Click"
-                                        Padding="10,6">
+                                        Command="{Binding CopySelectedRecordJsonCommand}"
+                                        IsEnabled="{Binding CanCopySelectedRecord}"
+                                        Padding="10,6"
+                                        AutomationProperties.AutomationId="DataBrowserCopySelectedRecordJsonButton"
+                                        AutomationProperties.Name="Copy selected data browser row as JSON">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE8C8;"
                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"

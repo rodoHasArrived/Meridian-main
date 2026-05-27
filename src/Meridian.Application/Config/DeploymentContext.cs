@@ -10,7 +10,8 @@ namespace Meridian.Application.Config;
 /// <para><b>Supported Deployment Modes:</b></para>
 /// <list type="bullet">
 /// <item><description><b>Headless</b> - Console application, no UI, suitable for servers/containers</description></item>
-/// <item><description><b>Desktop</b> - Native desktop app with embedded HTTP server for local UI</description></item>
+/// <item><description><b>Workstation</b> - Browser workstation local host without the streaming collector</description></item>
+/// <item><description><b>Desktop</b> - Native desktop app with embedded HTTP server and collector</description></item>
 /// </list>
 /// <para>The context is immutable once created and provides all deployment-related decisions
 /// through computed properties, eliminating scattered conditional logic.</para>
@@ -66,7 +67,7 @@ public sealed record DeploymentContext
     /// <summary>
     /// Whether the deployment requires an HTTP server.
     /// </summary>
-    public bool RequiresHttpServer => Mode == DeploymentMode.Desktop;
+    public bool RequiresHttpServer => Mode is DeploymentMode.Workstation or DeploymentMode.Desktop;
 
     /// <summary>
     /// Whether the deployment runs the data collector.
@@ -89,6 +90,7 @@ public sealed record DeploymentContext
     public string ModeDescription => Mode switch
     {
         DeploymentMode.Headless => "Headless (console only)",
+        DeploymentMode.Workstation => $"Browser workstation local host on port {HttpPort}",
         DeploymentMode.Desktop => $"Desktop mode with UI server on port {HttpPort}",
         _ => "Unknown mode"
     };
@@ -150,10 +152,28 @@ public sealed record DeploymentContext
         };
     }
 
+    /// <summary>
+    /// Creates a context for running the browser workstation local host without the streaming collector.
+    /// </summary>
+    public static DeploymentContext ForWorkstation(string configPath, int port = 8080, bool hotReload = false)
+    {
+        return new DeploymentContext
+        {
+            Mode = DeploymentMode.Workstation,
+            HttpPort = port,
+            HotReloadEnabled = hotReload,
+            ConfigPath = configPath,
+            EnvironmentName = GetEnvironmentName(),
+            IsDocker = false,
+            IsOneShotCommand = false
+        };
+    }
+
 
 
     private static DeploymentMode MapRunMode(CliModeResolver.RunMode mode) => mode switch
     {
+        CliModeResolver.RunMode.Workstation => DeploymentMode.Workstation,
         CliModeResolver.RunMode.Desktop => DeploymentMode.Desktop,
         _ => DeploymentMode.Headless
     };
@@ -268,6 +288,12 @@ public enum DeploymentMode : byte
     /// Suitable for servers, containers, and background services.
     /// </summary>
     Headless,
+
+    /// <summary>
+    /// Browser workstation mode - embedded HTTP server only.
+    /// Does not auto-start streaming providers, subscriptions, or the collector pipeline.
+    /// </summary>
+    Workstation,
 
     /// <summary>
     /// Desktop mode - native application with embedded HTTP server.

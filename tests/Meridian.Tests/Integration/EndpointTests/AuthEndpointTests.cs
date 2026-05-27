@@ -50,11 +50,26 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     }
 
     [Fact]
+    public async Task LoginPage_ContainsWorkstationContext()
+    {
+        var response = await GetAsync("/login");
+        var html = await response.Content.ReadAsStringAsync();
+
+        html.Should().Contain("Operator workstation");
+        html.Should().Contain("Web workstation");
+        html.Should().Contain("Session required");
+        html.Should().Contain("MDC_USERNAME");
+        html.Should().Contain("MDC_PASSWORD");
+    }
+
+    [Fact]
     public async Task LoginPage_WithErrorQueryParam_ContainsErrorMessage()
     {
         var response = await GetAsync("/login?error=1");
         var html = await response.Content.ReadAsStringAsync();
 
+        html.Should().Contain("role=\"alert\"");
+        html.Should().Contain("Sign-in failed");
         html.Should().Contain("Invalid username or password");
     }
 

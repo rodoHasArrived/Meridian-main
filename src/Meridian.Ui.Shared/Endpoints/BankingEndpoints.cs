@@ -100,7 +100,7 @@ public static class BankingEndpoints
             }
 
             var pending = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
-            if (!pending.Any(static p => p.PendingPaymentId == pendingPaymentId))
+            if (!pending.Any(p => p.PendingPaymentId == pendingPaymentId))
             {
                 return Results.NotFound();
             }
@@ -148,7 +148,7 @@ public static class BankingEndpoints
             }
 
             var pending = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
-            if (!pending.Any(static p => p.PendingPaymentId == pendingPaymentId))
+            if (!pending.Any(p => p.PendingPaymentId == pendingPaymentId))
             {
                 return Results.NotFound();
             }

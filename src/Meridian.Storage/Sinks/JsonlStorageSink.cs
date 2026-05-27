@@ -132,6 +132,21 @@ public sealed class JsonlStorageSink : IStorageSink
     public long BatchesWritten => Interlocked.Read(ref _batchesWritten);
 
     /// <summary>
+    /// Gets whether sink-side batching is enabled.
+    /// </summary>
+    public bool IsBatchingEnabled => _batchOptions.Enabled;
+
+    /// <summary>
+    /// Gets the configured batch size threshold.
+    /// </summary>
+    public int BatchSize => _batchOptions.BatchSize;
+
+    /// <summary>
+    /// Gets the configured periodic flush interval for buffered batches.
+    /// </summary>
+    public TimeSpan FlushInterval => _batchOptions.FlushInterval;
+
+    /// <summary>
     /// Creates a JsonlStorageSink with default options (no batching for backward compatibility).
     /// </summary>
     public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger<JsonlStorageSink>? logger = null)
@@ -364,6 +379,23 @@ public sealed class JsonlStorageSink : IStorageSink
         _retention?.Dispose();
         _flushGate.Dispose();
         _disposalCts.Dispose();
+    }
+
+    /// <summary>
+    /// Returns a diagnostics snapshot for buffered JSONL persistence.
+    /// </summary>
+    public JsonlStorageSinkStatistics GetStatistics()
+    {
+        return new JsonlStorageSinkStatistics(
+            IsBatchingEnabled: IsBatchingEnabled,
+            BatchSize: BatchSize,
+            FlushInterval: FlushInterval,
+            EventsBuffered: EventsBuffered,
+            EventsWritten: EventsWritten,
+            BatchesWritten: BatchesWritten,
+            WriterCount: _writers.Count,
+            BufferCount: _buffers.Count,
+            Timestamp: DateTimeOffset.UtcNow);
     }
 
     private sealed class WriterState : IAsyncDisposable
@@ -629,3 +661,14 @@ public sealed class JsonlStorageSink : IStorageSink
         }
     }
 }
+
+public sealed record JsonlStorageSinkStatistics(
+    bool IsBatchingEnabled,
+    int BatchSize,
+    TimeSpan FlushInterval,
+    long EventsBuffered,
+    long EventsWritten,
+    long BatchesWritten,
+    int WriterCount,
+    int BufferCount,
+    DateTimeOffset Timestamp);

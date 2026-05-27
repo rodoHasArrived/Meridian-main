@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Meridian.Application.Services;
-using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -88,7 +87,7 @@ public static class OptionsEndpoints
             {
                 return ValidationError(
                     "strikeRange",
-                    $"Strike range must be between 0 and {SyntheticOptionsChainProvider.MaxStrikeRange}.",
+                    $"Strike range must be between 0 and {MaxStrikeRange}.",
                     jsonOptions);
             }
 
@@ -225,7 +224,7 @@ public static class OptionsEndpoints
                 {
                     return ValidationError(
                         "strikeRange",
-                        $"Strike range must be between 0 and {SyntheticOptionsChainProvider.MaxStrikeRange}.",
+                        $"Strike range must be between 0 and {MaxStrikeRange}.",
                         jsonOptions);
                 }
 
@@ -262,9 +261,11 @@ public static class OptionsEndpoints
             statusCode: StatusCodes.Status400BadRequest);
     }
 
+    private const int MaxStrikeRange = OptionsChainService.MaxStrikeRange;
+
     private static bool IsValidStrikeRange(int strikeRange)
     {
-        return strikeRange >= 0 && strikeRange <= SyntheticOptionsChainProvider.MaxStrikeRange;
+        return strikeRange >= 0 && strikeRange <= MaxStrikeRange;
     }
 
     private static OptionsChainResponse MapChainToResponse(OptionChainSnapshot chain)

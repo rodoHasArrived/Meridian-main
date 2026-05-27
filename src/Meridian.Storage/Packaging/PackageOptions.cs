@@ -20,7 +20,7 @@ public sealed class PackageOptions
     public string? Description { get; set; }
 
     /// <summary>
-    /// Package format (Zip or TarGz).
+    /// Package archive format (Zip, TarGz, or SevenZip).
     /// </summary>
     [JsonPropertyName("format")]
     public PackageFormat Format { get; set; } = PackageFormat.Zip;

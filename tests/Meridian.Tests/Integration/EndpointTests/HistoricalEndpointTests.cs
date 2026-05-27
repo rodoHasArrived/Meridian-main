@@ -225,4 +225,64 @@ public sealed class HistoricalEndpointTests
     }
 
     #endregion
+
+    #region GET /api/historical/{symbol}/bars - Aggregated OHLCV
+
+    [Fact]
+    public async Task GetSymbolBars_WithSymbol_ReturnsOk()
+    {
+        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=5");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+
+        var content = await response.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(content);
+
+        doc.RootElement.TryGetProperty("symbol", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("intervalMinutes", out var interval).Should().BeTrue();
+        interval.GetInt32().Should().Be(5);
+        doc.RootElement.TryGetProperty("bars", out var bars).Should().BeTrue();
+        bars.ValueKind.Should().Be(JsonValueKind.Array);
+        doc.RootElement.TryGetProperty("totalBars", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetSymbolBars_DefaultIntervalIsFiveMinutes()
+    {
+        var response = await _client.GetAsync("/api/historical/SPY/bars");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var content = await response.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(content);
+        doc.RootElement.GetProperty("intervalMinutes").GetInt32().Should().Be(5);
+    }
+
+    [Fact]
+    public async Task GetSymbolBars_WithInvalidInterval_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=0");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetSymbolBars_WithExcessiveInterval_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=99999");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetSymbolBars_WithDateRange_ReturnsOk()
+    {
+        var response = await _client.GetAsync(
+            "/api/historical/SPY/bars?intervalMinutes=60&from=2024-01-01&to=2024-01-31&maxBars=200");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    #endregion
 }

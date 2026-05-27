@@ -60,8 +60,15 @@ public sealed class ProviderModuleLoader
         if (assemblies is null || assemblies.Length == 0)
             throw new ArgumentException("At least one assembly must be provided.", nameof(assemblies));
 
-        var modules = DiscoverModules(assemblies);
-        return await LoadModulesAsync(services, registry, modules, ct).ConfigureAwait(false);
+        var discovery = DiscoverModules(assemblies);
+        var report = await LoadModulesAsync(services, registry, discovery.Modules, ct).ConfigureAwait(false);
+        if (discovery.Failed.Count == 0)
+        {
+            return report;
+        }
+
+        var failed = report.Failed.Concat(discovery.Failed).ToArray();
+        return new ModuleLoadReport(report.Loaded, failed, report.TotalDiscovered + discovery.Failed.Count);
     }
 
     /// <summary>
@@ -141,9 +148,10 @@ public sealed class ProviderModuleLoader
     // Private helpers
     // ------------------------------------------------------------------
 
-    private IReadOnlyList<IProviderModule> DiscoverModules(Assembly[] assemblies)
+    private (IReadOnlyList<IProviderModule> Modules, IReadOnlyList<FailedModuleInfo> Failed) DiscoverModules(Assembly[] assemblies)
     {
         var modules = new List<IProviderModule>();
+        var failed = new List<FailedModuleInfo>();
 
         foreach (var assembly in assemblies)
         {
@@ -165,21 +173,33 @@ public sealed class ProviderModuleLoader
                 if (!typeof(IProviderModule).IsAssignableFrom(type))
                     continue;
 
-                if (Activator.CreateInstance(type) is IProviderModule module)
+                try
                 {
-                    modules.Add(module);
-                    _log.LogDebug("Discovered provider module {Type} ({ModuleId})", type.Name, module.ModuleId);
+                    if (Activator.CreateInstance(type) is IProviderModule module)
+                    {
+                        modules.Add(module);
+                        _log.LogDebug("Discovered provider module {Type} ({ModuleId})", type.Name, module.ModuleId);
+                    }
+                    else
+                    {
+                        _log.LogWarning(
+                            "Type {Type} implements IProviderModule but could not be instantiated via Activator.CreateInstance. " +
+                            "Use the LoadModulesAsync overload that accepts pre-built instances.", type.FullName);
+                        failed.Add(new FailedModuleInfo(type.Name, type.Name,
+                            "Could not instantiate provider module via Activator.CreateInstance.", null));
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _log.LogWarning(
-                        "Type {Type} implements IProviderModule but could not be instantiated via Activator.CreateInstance. " +
-                        "Use the LoadModulesAsync overload that accepts pre-built instances.", type.FullName);
+                    _log.LogWarning(ex,
+                        "Skipping provider module type {Type} because Activator.CreateInstance threw during discovery.",
+                        type.FullName);
+                    failed.Add(new FailedModuleInfo(type.Name, type.Name, ex.Message, ex));
                 }
             }
         }
 
-        return modules;
+        return (modules, failed);
     }
 }
 

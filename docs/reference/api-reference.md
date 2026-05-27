@@ -14,13 +14,13 @@ API pages are generated from XML documentation comments in the .NET projects and
 ### Build API docs
 
 ```bash
-docfx docs/docfx/docfx.json
+docfx docfx.json
 ```
 
 ### Serve locally for preview
 
 ```bash
-docfx docs/docfx/docfx.json --serve
+docfx docfx.json --serve
 ```
 
 ## API map
@@ -542,6 +542,23 @@ governance admin surface.
 | POST | `/api/environment-designer/versions/{versionId}/rollback` | Roll back the current published version pointer. |
 | GET | `/api/environment-designer/runtime/current` | Fetch the current published runtime projection. |
 | GET | `/api/environment-designer/runtime/versions/{versionId}` | Fetch the runtime projection for a specific published version. |
+
+
+### Workstation Governance Routes (v1 additive compatibility)
+
+The workstation governance workflow uses additive-compatible v1 contracts. Clients must tolerate
+additional JSON fields and additive state values without breaking existing flows.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/workstation/trading/readiness` | Trading readiness projection with governance work-item posture. |
+| GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
+| GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |
+| GET | `/api/execution/sessions/{sessionId}/replay` | Replay explainability payload used for readiness verification evidence. |
+
+See [Workstation Governance State Model](../status/workstation-governance-state-model.md) and
+[Workstation Governance Approval Runbook](../operations/workstation-governance-approval-runbook.md)
+for transition rules, required metadata, and rejection/reopen governance guidance.
 
 ### Health (`/healthz`, `/api/*`)
 

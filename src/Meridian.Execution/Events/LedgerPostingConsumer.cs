@@ -1,4 +1,6 @@
 using System.Threading.Channels;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
 namespace Meridian.Execution.Events;
@@ -12,9 +14,8 @@ namespace Meridian.Execution.Events;
 /// enhancement plan. The portfolio layer publishes events; this consumer writes to the ledger
 /// asynchronously, removing the synchronous ledger dependency from hot execution paths.
 ///
-/// The channel is bounded (capacity configurable via constructor) and uses
-/// <see cref="BoundedChannelFullMode.DropOldest"/> as a safety valve; callers should size
-/// the capacity appropriately for expected fill throughput.
+/// The channel is bounded (capacity configurable via constructor) and applies backpressure
+/// when full so trade-fill events are never silently discarded.
 /// </remarks>
 public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposable
 {
@@ -23,6 +24,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
     private readonly ILogger<LedgerPostingConsumer> _logger;
+    private readonly ISecurityValidationGateService? _securityValidationGate;
 
     /// <summary>
     /// Initialises a new <see cref="LedgerPostingConsumer"/> bound to <paramref name="ledger"/>.
@@ -30,13 +32,15 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     /// <param name="ledger">The double-entry ledger that journal entries will be posted to.</param>
     /// <param name="logger">Logger for diagnostic output.</param>
     /// <param name="channelCapacity">
-    ///     Maximum number of un-processed events to buffer before oldest events are dropped.
+    ///     Maximum number of un-processed events to buffer before additional publishes are
+    ///     rejected.
     ///     Defaults to 10 000.
     /// </param>
     public LedgerPostingConsumer(
         Ledger.Ledger ledger,
         ILogger<LedgerPostingConsumer> logger,
-        int channelCapacity = 10_000)
+        int channelCapacity = 10_000,
+        ISecurityValidationGateService? securityValidationGate = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(logger);
@@ -45,10 +49,11 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
         _ledger = ledger;
         _logger = logger;
+        _securityValidationGate = securityValidationGate;
 
         var options = new BoundedChannelOptions(channelCapacity)
         {
-            FullMode = BoundedChannelFullMode.DropOldest,
+            FullMode = BoundedChannelFullMode.Wait,
             SingleWriter = false,
             SingleReader = true
         };
@@ -67,7 +72,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         if (!_channel.Writer.TryWrite(tradeEvent))
         {
             _logger.LogWarning(
-                "LedgerPostingConsumer channel is full; dropping event for fill {FillId} on {Symbol}",
+                "LedgerPostingConsumer channel is full; failed to enqueue event for fill {FillId} on {Symbol}",
                 tradeEvent.FillId, tradeEvent.Symbol);
         }
     }
@@ -106,7 +111,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         {
             try
             {
-                PostEvent(evt);
+                await PostEventAsync(evt, ct).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -118,8 +123,31 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         }
     }
 
-    private void PostEvent(TradeExecutedEvent evt)
+    private async Task PostEventAsync(TradeExecutedEvent evt, CancellationToken ct)
     {
+        if (_securityValidationGate is not null)
+        {
+            var validation = await _securityValidationGate
+                .ValidateSymbolAsync(
+                    evt.Symbol,
+                    SecurityValidationWorkflowDto.LedgerPosting,
+                    workflowReference: evt.FillId.ToString("N"),
+                    actor: "ledger-posting-consumer",
+                    persistSnapshot: false,
+                    ct)
+                .ConfigureAwait(false);
+
+            if (validation.IsBlocked)
+            {
+                _logger.LogError(
+                    "Blocked ledger posting for fill {FillId} on {Symbol}: Security Master validation failed with {IssueCodes}",
+                    evt.FillId,
+                    evt.Symbol,
+                    string.Join(",", validation.Report.Issues.Select(static issue => issue.Code)));
+                return;
+            }
+        }
+
         var accountId = evt.FinancialAccountId;
         var cashAccount = accountId is null
             ? LedgerAccounts.Cash

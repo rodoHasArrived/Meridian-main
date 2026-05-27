@@ -1,0 +1,20 @@
+schema:
+  id: meridian.program-state
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+program:
+  id: meridian-program
+  title: Meridian Evidence-Backed Investment Operations
+  owner: Core Team
+  snapshot_date: 2026-05-20
+  status: active
+  current_focus:
+    - Trusted data
+    - Paper validation
+    - Books and reconciliation
+    - Approvals
+    - Governed reports
+  active_ui_lane: browser_workstation
+  retained_support_lane: wpf
+  mobile_lane: closed

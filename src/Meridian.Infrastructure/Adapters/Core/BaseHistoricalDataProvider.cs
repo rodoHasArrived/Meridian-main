@@ -276,7 +276,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         ThrowIfDisposed();
         await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
 
-        Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, url);
+        Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, RedactSensitiveQueryParameters(url));
 
         // Execute with resilience pipeline (retry, circuit breaker)
         var response = await ResiliencePipeline.ExecuteAsync(
@@ -285,6 +285,49 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
         return response;
     }
+
+    private static string RedactSensitiveQueryParameters(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return url;
+        }
+
+        var builder = new UriBuilder(uri);
+        if (string.IsNullOrEmpty(builder.Query))
+        {
+            return url;
+        }
+
+        var query = builder.Query.TrimStart('?');
+        var parts = query.Split('&', StringSplitOptions.RemoveEmptyEntries);
+
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var equalsIndex = parts[i].IndexOf('=');
+            if (equalsIndex <= 0)
+            {
+                continue;
+            }
+
+            var key = parts[i][..equalsIndex];
+            if (!IsSensitiveQueryKey(key))
+            {
+                continue;
+            }
+
+            parts[i] = $"{key}=REDACTED";
+        }
+
+        builder.Query = string.Join('&', parts);
+        return builder.Uri.ToString();
+    }
+
+    private static bool IsSensitiveQueryKey(string key) =>
+        key.Equals("apikey", StringComparison.OrdinalIgnoreCase) ||
+        key.Equals("api_key", StringComparison.OrdinalIgnoreCase) ||
+        key.Equals("token", StringComparison.OrdinalIgnoreCase) ||
+        key.Equals("access_token", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Execute an HTTP GET request, handle the response, and return the content string.

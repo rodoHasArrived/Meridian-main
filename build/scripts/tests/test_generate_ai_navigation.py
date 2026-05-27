@@ -30,12 +30,14 @@ class GenerateAiNavigationTests(unittest.TestCase):
 
         self.assertIn("provider-work", route_ids)
         self.assertIn("wpf-workflow", route_ids)
+        self.assertIn("browser-workstation", route_ids)
         self.assertIn("storage-investigation", route_ids)
         self.assertIn("mcp-surface", route_ids)
 
+        self.assertIn("Meridian.Ui.Dashboard", project_names)
         self.assertIn("Meridian.ProviderSdk", project_names)
         self.assertIn("Meridian.Storage", project_names)
-        self.assertIn("Meridian.McpServer", project_names)
+        self.assertIn("Meridian.Mcp", project_names)
 
     def test_generated_dataset_references_existing_paths(self) -> None:
         dataset = nav.build_dataset(nav.REPO_ROOT)
@@ -73,6 +75,7 @@ class GenerateAiNavigationTests(unittest.TestCase):
 
             self.assertIn("subsystems", written)
             self.assertIn("taskRoutes", written)
+            self.assertIn("recentChanges", written)
             self.assertIn("# Meridian AI Repo Navigation", markdown)
 
 

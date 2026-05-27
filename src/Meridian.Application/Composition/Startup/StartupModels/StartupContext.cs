@@ -30,6 +30,9 @@ public sealed record StartupContext
     /// <summary>Factory for creating the host-specific dashboard server.</summary>
     public required DashboardServerFactory DashboardServerFactory { get; init; }
 
+    /// <summary>Process-level startup and shutdown coordinator.</summary>
+    public required IApplicationLifecycleCoordinator Lifecycle { get; init; }
+
     /// <summary>Bootstrap logger scoped to the process entry point.</summary>
     public required ILogger Log { get; init; }
 

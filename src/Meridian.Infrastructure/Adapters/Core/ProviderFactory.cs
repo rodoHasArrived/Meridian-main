@@ -196,18 +196,25 @@ public sealed class ProviderFactory
         if (!(cfg?.Enabled ?? true))
             return null;
 
+        var configuredOptions = new AlpacaOptions(
+            KeyId: FirstNonBlank(cfg?.KeyId, _config.Alpaca?.KeyId) ?? string.Empty,
+            SecretKey: FirstNonBlank(cfg?.SecretKey, _config.Alpaca?.SecretKey) ?? string.Empty,
+            Feed: FirstNonBlank(cfg?.Feed, _config.Alpaca?.Feed) ?? "iex",
+            UseSandbox: _config.Alpaca?.UseSandbox ?? false,
+            SubscribeQuotes: _config.Alpaca?.SubscribeQuotes ?? false);
         var credentials = CreateCredentialContext<AlpacaHistoricalDataProvider>(
-            ("ALPACA_KEY_ID", cfg?.KeyId),
-            ("ALPACA_SECRET_KEY", cfg?.SecretKey));
-        var keyId = credentials.Get("ALPACA_KEY_ID");
-        var secretKey = credentials.Get("ALPACA_SECRET_KEY");
+            ("ALPACA_KEY_ID", configuredOptions.KeyId),
+            ("ALPACA_SECRET_KEY", configuredOptions.SecretKey));
+        var aliasAwareCredentials = AlpacaCredentialEnvironment.Resolve(configuredOptions);
+        var keyId = FirstNonBlank(credentials.Get("ALPACA_KEY_ID"), aliasAwareCredentials.KeyId);
+        var secretKey = FirstNonBlank(credentials.Get("ALPACA_SECRET_KEY"), aliasAwareCredentials.SecretKey);
         if (string.IsNullOrEmpty(keyId) || string.IsNullOrEmpty(secretKey))
             return null;
 
         return new AlpacaHistoricalDataProvider(
             keyId: keyId,
             secretKey: secretKey,
-            feed: cfg?.Feed ?? "iex",
+            feed: cfg?.Feed ?? configuredOptions.Feed,
             adjustment: cfg?.Adjustment ?? "all",
             priority: cfg?.Priority ?? 5,
             rateLimitPerMinute: cfg?.RateLimitPerMinute ?? 200,
@@ -451,6 +458,9 @@ public sealed class ProviderFactory
 
         return _credentialResolver.CreateContext(typeof(TProvider), configuredLookup);
     }
+
+    private static string? FirstNonBlank(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 }
 
 internal sealed class NullMarketEventPublisher : Meridian.Domain.Events.IMarketEventPublisher

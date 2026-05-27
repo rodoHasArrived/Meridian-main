@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
@@ -75,7 +76,7 @@ public class ConfigService : IConfigService
             : config.DataRoot;
 
         var json = JsonSerializer.Serialize(config, _jsonOptions);
-        await File.WriteAllTextAsync(ConfigPath, json, ct);
+        await AtomicFileWriter.WriteAsync(ConfigPath, json, ct).ConfigureAwait(false);
     }
 
     public string ResolveDataRoot(AppConfig? config = null)

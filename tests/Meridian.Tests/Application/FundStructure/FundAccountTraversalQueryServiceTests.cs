@@ -37,6 +37,41 @@ public sealed class FundAccountTraversalQueryServiceTests
     }
 
     [Fact]
+    public async Task NonFundNodeWithOwnsLink_ReturnsNoAccounts()
+    {
+        var fundId = Guid.NewGuid();
+        var nonFundNodeId = Guid.NewGuid();
+        var account = CreateAccount(Guid.NewGuid(), fundId, AccountTypeDto.Bank, true, "Sensitive");
+
+        var graph = BuildGraph(new[] { fundId }, new[] { account }) with
+        {
+            Clients = new[]
+            {
+                new ClientSummaryDto(
+                    nonFundNodeId,
+                    Guid.Empty,
+                    "CLIENT-1",
+                    "Client",
+                    null,
+                    true,
+                    DateTimeOffset.UtcNow,
+                    null,
+                    Array.Empty<Guid>())
+            },
+            OwnershipLinks = new[]
+            {
+                new OwnershipLinkDto(Guid.NewGuid(), nonFundNodeId, account.AccountId, OwnershipRelationshipTypeDto.Owns, null, true, DateTimeOffset.UtcNow, null, null)
+            }
+        };
+
+        var service = CreateSut(graph);
+
+        var result = await service.GetFundAccountsAsync(nonFundNodeId, AccountTypeDto.Bank, activeOnly: true);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task MixedStates_ActiveOnlyFiltersSuspendedAndClosed()
     {
         var fundId = Guid.NewGuid();

@@ -1,0 +1,3 @@
+# Archived material is intentionally excluded from default ripgrep/search results.
+# Include with: rg --no-ignore -g 'archive/**' <pattern>
+archive/**

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Export;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Ui.Services.Services;
 
@@ -19,6 +20,12 @@ public class ExportPresetServiceBase
     /// Event raised when presets are modified.
     /// </summary>
     public event EventHandler? PresetsChanged;
+
+
+    /// <summary>
+    /// Event raised when a save operation fails.
+    /// </summary>
+    public event EventHandler<Exception>? SaveFailed;
 
     /// <summary>
     /// Gets all available export presets.
@@ -83,8 +90,9 @@ public class ExportPresetServiceBase
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogLoadFailure(ex);
 
             if (_presets.Count == 0)
             {
@@ -96,7 +104,7 @@ public class ExportPresetServiceBase
     /// <summary>
     /// Saves presets to storage.
     /// </summary>
-    public async Task SavePresetsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SavePresetsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -104,14 +112,18 @@ public class ExportPresetServiceBase
         {
             var options = DesktopJsonOptions.PrettyPrint;
             var json = JsonSerializer.Serialize(_presets, options);
-            await File.WriteAllTextAsync(_presetsFilePath, json, cancellationToken);
+            await WritePresetsFileAsync(json, cancellationToken).ConfigureAwait(false);
+            return true;
         }
         catch (OperationCanceledException)
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogSaveFailure(ex);
+            SaveFailed?.Invoke(this, ex);
+            return false;
         }
     }
 
@@ -138,8 +150,10 @@ public class ExportPresetServiceBase
         };
 
         _presets.Add(preset);
-        await SavePresetsAsync(cancellationToken);
-        PresetsChanged?.Invoke(this, EventArgs.Empty);
+        if (await SavePresetsAsync(cancellationToken))
+        {
+            PresetsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         return preset;
     }
@@ -155,7 +169,11 @@ public class ExportPresetServiceBase
 
         preset.UpdatedAt = DateTime.UtcNow;
         _presets[index] = preset;
-        await SavePresetsAsync(cancellationToken);
+        if (!await SavePresetsAsync(cancellationToken))
+        {
+            return false;
+        }
+
         PresetsChanged?.Invoke(this, EventArgs.Empty);
 
         return true;
@@ -170,8 +188,14 @@ public class ExportPresetServiceBase
         if (preset == null || preset.IsBuiltIn)
             return false;
 
-        _presets.Remove(preset);
-        await SavePresetsAsync(cancellationToken);
+        var presetIndex = _presets.IndexOf(preset);
+        _presets.RemoveAt(presetIndex);
+        if (!await SavePresetsAsync(cancellationToken))
+        {
+            _presets.Insert(presetIndex, preset);
+            return false;
+        }
+
         PresetsChanged?.Invoke(this, EventArgs.Empty);
 
         return true;
@@ -229,8 +253,10 @@ public class ExportPresetServiceBase
         };
 
         _presets.Add(duplicate);
-        await SavePresetsAsync(cancellationToken);
-        PresetsChanged?.Invoke(this, EventArgs.Empty);
+        if (await SavePresetsAsync(cancellationToken))
+        {
+            PresetsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         return duplicate;
     }
@@ -245,7 +271,7 @@ public class ExportPresetServiceBase
         {
             preset.LastUsedAt = DateTime.UtcNow;
             preset.UseCount++;
-            await SavePresetsAsync(cancellationToken);
+            _ = await SavePresetsAsync(cancellationToken);
         }
     }
 
@@ -256,20 +282,15 @@ public class ExportPresetServiceBase
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var presetsToExport = _presets.Where(p => presetIds.Contains(p.Id)).ToList();
-
-        foreach (var preset in presetsToExport)
-        {
-            preset.Id = Guid.NewGuid().ToString();
-            preset.IsBuiltIn = false;
-            preset.UseCount = 0;
-            preset.LastUsedAt = null;
-        }
+        var presetsToExport = _presets
+            .Where(p => presetIds.Contains(p.Id))
+            .Select(CloneForExport)
+            .ToList();
 
         var options = DesktopJsonOptions.PrettyPrint;
         var json = JsonSerializer.Serialize(presetsToExport, options);
         var filePath = Path.Combine(destinationPath, $"export_presets_{DateTime.Now:yyyyMMdd_HHmmss}.json");
-        await File.WriteAllTextAsync(filePath, json, cancellationToken);
+        await AtomicFileWriter.WriteAsync(filePath, json, cancellationToken).ConfigureAwait(false);
 
         return filePath;
     }
@@ -303,8 +324,10 @@ public class ExportPresetServiceBase
             importedCount++;
         }
 
-        await SavePresetsAsync(cancellationToken);
-        PresetsChanged?.Invoke(this, EventArgs.Empty);
+        if (await SavePresetsAsync(cancellationToken))
+        {
+            PresetsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         return importedCount;
     }
@@ -319,6 +342,52 @@ public class ExportPresetServiceBase
                 _presets.Insert(0, builtIn);
             }
         }
+    }
+
+    private static ExportPreset CloneForExport(ExportPreset source)
+    {
+        return new ExportPreset
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = source.Name,
+            Description = source.Description,
+            Format = source.Format,
+            Compression = source.Compression,
+            Destination = source.Destination,
+            FilenamePattern = source.FilenamePattern,
+            Filters = new ExportPresetFilters
+            {
+                EventTypes = source.Filters.EventTypes.ToArray(),
+                Symbols = source.Filters.Symbols.ToArray(),
+                DateRangeType = source.Filters.DateRangeType,
+                CustomStartDate = source.Filters.CustomStartDate,
+                CustomEndDate = source.Filters.CustomEndDate,
+                SessionFilter = source.Filters.SessionFilter,
+                MinQualityScore = source.Filters.MinQualityScore
+            },
+            Schedule = source.Schedule,
+            ScheduleEnabled = source.ScheduleEnabled,
+            PostExportHook = source.PostExportHook,
+            NotifyOnComplete = source.NotifyOnComplete,
+            IncludeDataDictionary = source.IncludeDataDictionary,
+            IncludeLoaderScript = source.IncludeLoaderScript,
+            OverwriteExisting = source.OverwriteExisting,
+            CreatedAt = source.CreatedAt,
+            UpdatedAt = source.UpdatedAt,
+            LastUsedAt = null,
+            UseCount = 0,
+            IsBuiltIn = false,
+            Columns = source.Columns.ToArray(),
+            IncludeManifest = source.IncludeManifest,
+            Validation = source.Validation is null
+                ? null
+                : new ExportValidationRules
+                {
+                    DiskSpaceMultiplier = source.Validation.DiskSpaceMultiplier,
+                    RequireData = source.Validation.RequireData,
+                    WarnCsvComplexTypes = source.Validation.WarnCsvComplexTypes
+                }
+        };
     }
 
     private static string GetDefaultDestination(ExportPresetFormat format)
@@ -458,4 +527,12 @@ public class ExportPresetServiceBase
         };
     }
 
+    protected virtual Task WritePresetsFileAsync(string json, CancellationToken cancellationToken)
+        => AtomicFileWriter.WriteAsync(_presetsFilePath, json, cancellationToken);
+
+    protected virtual void LogLoadFailure(Exception exception)
+        => Meridian.Ui.Services.LoggingService.Instance.LogWarning($"Failed to load export presets from '{_presetsFilePath}'. Using built-in fallbacks.", exception);
+
+    protected virtual void LogSaveFailure(Exception exception)
+        => Meridian.Ui.Services.LoggingService.Instance.LogWarning($"Failed to save export presets to '{_presetsFilePath}'.", exception);
 }

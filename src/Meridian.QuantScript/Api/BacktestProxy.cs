@@ -13,6 +13,7 @@ public sealed class BacktestProxy
     private readonly BacktestEngine? _engine;
     private readonly QuantScriptOptions _options;
     private readonly List<BacktestResult> _capturedResults = [];
+    private readonly List<FillEvent> _capturedFills = [];
     private string[] _symbols = [];
     private DateOnly _from;
     private DateOnly _to;
@@ -50,6 +51,9 @@ public sealed class BacktestProxy
     public BacktestProxy OnDayEnd(Action<DateOnly, IBacktestContext> handler) { _strategy.SetOnDayEnd(handler); return this; }
     public BacktestProxy OnFinished(Action<IBacktestContext, BacktestResult> handler) { _strategy.SetOnFinished(handler); return this; }
 
+    /// <summary>Fills produced by the most recent backtest run.</summary>
+    public IReadOnlyList<FillEvent> CapturedFills => _capturedFills;
+
     /// <summary>Runs the backtest synchronously on the calling (script) thread.</summary>
     public BacktestResult Run() => Run(null);
 
@@ -80,6 +84,8 @@ public sealed class BacktestProxy
         var result = await _engine.RunAsync(request, _strategy, progress, _cancellationTokenProvider()).ConfigureAwait(false);
         _strategy.SetResult(result);
         _capturedResults.Add(result);
+        _capturedFills.Clear();
+        _capturedFills.AddRange(result.Fills);
         return result;
     }
 

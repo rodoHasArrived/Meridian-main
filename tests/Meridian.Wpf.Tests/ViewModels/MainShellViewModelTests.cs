@@ -9,6 +9,8 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Sdk;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -66,7 +68,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToResearchWorkspace()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToStrategyWorkspace()
     {
         WpfTestThread.Run(() =>
         {
@@ -74,8 +76,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("ResearchShell");
-            vm.CurrentPageTitle.Should().Be("Research Workspace");
+            vm.CurrentPageTag.Should().Be("StrategyShell");
+            vm.CurrentPageTitle.Should().Be("Strategy Workspace");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -156,11 +158,11 @@ public sealed class MainShellViewModelTests
 
             vm.SelectWorkspaceCommand.Execute("governance");
 
-            vm.CurrentWorkspace.Should().Be("governance");
-            vm.CurrentPageTag.Should().Be("GovernanceShell");
-            vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["GovernanceShell", "FundLedger", "FundReconciliation"]);
-            vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
-            vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.CurrentPageTag.Should().Be("AccountingShell");
+            vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["AccountingShell", "FundLedger", "FundReconciliation"]);
+            vm.OverflowNavigationItems.Should().BeEmpty();
+            vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "FundTrialBalance", "FundAuditTrail"]);
         });
     }
 
@@ -187,19 +189,19 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
             vm.NavigateToPageCommand.Execute("Backtest");
-            vm.NavigateToPageCommand.Execute("GovernanceShell");
-            vm.NavigateToPageCommand.Execute("SecurityMaster");
+            vm.NavigateToPageCommand.Execute("AccountingShell");
+            vm.NavigateToPageCommand.Execute("FundLedger");
 
             vm.CurrentWorkspace.Should().Be("accounting");
-            vm.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
-            vm.RecentPagesSummaryText.Should().Be("1 recent governance workflow");
+            vm.RecentPages.Select(page => page.PageTag).Should().Equal("AccountingShell");
+            vm.RecentPagesSummaryText.Should().Be("1 recent accounting workflow");
 
             vm.SelectWorkspaceCommand.Execute("research");
 
-            vm.CurrentWorkspace.Should().Be("research");
-            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.CurrentWorkspace.Should().Be("strategy");
+            vm.CurrentPageTag.Should().Be("StrategyShell");
             vm.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
-            vm.RecentPagesSummaryText.Should().Be("1 recent research workflow");
+            vm.RecentPagesSummaryText.Should().Be("1 recent strategy workflow");
         });
     }
 
@@ -220,7 +222,53 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void NavigateToEventReplay_KeepsResearchWorkspaceActive()
+    public void NavigateToPageCommand_UsesTargetWorkspaceScopeForFrameNavigation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            var frame = new Frame();
+            navigationService.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            navigationService.SetServiceProvider(rootProvider);
+            navigationService.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
+
+            var scopedPage = new WorkspaceCapabilityHomePage();
+            var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
+            using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
+
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+            var workspaceService = WorkspaceService.Instance;
+            workspaceService.ResetForTests();
+            workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
+            await workspaceService.ActivateWorkspaceAsync("strategy");
+            workspaceService.ActiveWorkspaceScope.Should().NotBeNull();
+            var strategyScope = workspaceService.ActiveWorkspaceScope;
+
+            var fixtureModeDetector = FixtureModeDetector.Instance;
+            fixtureModeDetector.SetFixtureMode(false);
+            fixtureModeDetector.UpdateBackendReachability(true);
+
+            using var vm = new MainPageViewModel(navigationService, fixtureModeDetector);
+
+            vm.NavigateToPageCommand.Execute("PortfolioShell");
+
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
+            navigationService.GetCurrentPageTag().Should().Be("PortfolioShell");
+        });
+    }
+
+    [Fact]
+    public void NavigateToEventReplay_KeepsStrategyWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -228,7 +276,7 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("EventReplay");
 
-            vm.CurrentWorkspace.Should().Be("research");
+            vm.CurrentWorkspace.Should().Be("strategy");
             vm.CurrentPageTag.Should().Be("EventReplay");
         });
     }
@@ -252,7 +300,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void NavigateToAddProviderWizard_KeepsDataOperationsWorkspaceActive()
+    public void NavigateToAddProviderWizard_KeepsDataWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -260,13 +308,13 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("AddProviderWizard");
 
-            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentWorkspace.Should().Be("data");
             vm.CurrentPageTag.Should().Be("AddProviderWizard");
         });
     }
 
     [Fact]
-    public void NavigateToProviderHealth_KeepsDataOperationsWorkspaceActive()
+    public void NavigateToProviderHealth_KeepsDataWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -274,13 +322,13 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("ProviderHealth");
 
-            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentWorkspace.Should().Be("data");
             vm.CurrentPageTag.Should().Be("ProviderHealth");
         });
     }
 
     [Fact]
-    public void NavigateToDiagnostics_KeepsGovernanceWorkspaceActive()
+    public void NavigateToDiagnostics_KeepsSettingsWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -288,7 +336,7 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("Diagnostics");
 
-            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentWorkspace.Should().Be("settings");
             vm.CurrentPageTag.Should().Be("Diagnostics");
         });
     }
@@ -335,7 +383,7 @@ public sealed class MainShellViewModelTests
 
             vm.HandleLaunchArgs(["--page", "DataOperationsShell"]);
 
-            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataOperationsShell");
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataShell");
         });
     }
 
@@ -360,6 +408,34 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void ShowStartupExperience_PresentsBrandedBriefingAndNotification()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var notificationService = NotificationService.Instance;
+            notificationService.UpdateSettings(new NotificationSettings { Enabled = true });
+            notificationService.ClearHistory();
+
+            using var vm = CreateMainWindowViewModel();
+
+            vm.ShowStartupExperience();
+
+            vm.StartupBannerVisibility.Should().Be(Visibility.Visible);
+            vm.StartupBannerStatusText.Should().Be("Startup briefing");
+            vm.StartupBannerMessage.Should().Contain("operating context");
+            vm.StartupBannerDetail.Should().Contain("Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings");
+
+            notificationService.GetHistory().Should().ContainSingle(item =>
+                item.Title == "Meridian ready"
+                && item.Message.Contains("Review operating context and readiness", StringComparison.Ordinal));
+
+            vm.DismissStartupBannerCommand.Execute(null);
+
+            vm.StartupBannerVisibility.Should().Be(Visibility.Collapsed);
+        });
+    }
+
+    [Fact]
     public void ShowClipboardSymbols_WhenManySymbolsDetected_UsesCompactPreview()
     {
         WpfTestThread.Run(() =>
@@ -371,6 +447,19 @@ public sealed class MainShellViewModelTests
             vm.ClipboardBannerText.Should().Contain("6 symbols detected in clipboard");
             vm.ClipboardBannerText.Should().Contain("AAPL, MSFT, NVDA, AMD +2 more");
         });
+    }
+
+    [Fact]
+    public void MainWindowXaml_BindsStartupExperienceBanner()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\MainWindow.xaml"));
+
+        xaml.Should().Contain("StartupBannerVisibility");
+        xaml.Should().Contain("StartupBannerStatusText");
+        xaml.Should().Contain("StartupBannerMessage");
+        xaml.Should().Contain("StartupBannerDetail");
+        xaml.Should().Contain("DismissStartupBannerCommand");
+        xaml.Should().Contain("CommandParameter=\"Welcome\"");
     }
 
     [Fact]
@@ -592,21 +681,22 @@ public sealed class MainShellViewModelTests
         WpfTestThread.Run(async () =>
         {
             using var vm = CreateMainPageViewModel();
+            var expectedSecondaryCount = ShellNavigationCatalog.Workspaces.Count - 1;
 
             await WaitForConditionAsync(() =>
                 vm.PrimaryWorkflowSummary is not null &&
-                vm.SecondaryWorkflowSummaries.Count == 3);
+                vm.SecondaryWorkflowSummaries.Count == expectedSecondaryCount);
 
             vm.PrimaryWorkflowSummary.Should().NotBeNull();
-            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("research");
-            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("research");
+            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("strategy");
+            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("strategy");
 
             vm.SelectWorkspaceCommand.Execute("trading");
 
             await WaitForConditionAsync(() => vm.PrimaryWorkflowSummary?.WorkspaceId == "trading");
 
             vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("trading");
-            vm.SecondaryWorkflowSummaries.Should().HaveCount(3);
+            vm.SecondaryWorkflowSummaries.Should().HaveCount(expectedSecondaryCount);
             vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
             vm.PrimaryWorkflowTargetText.Should().NotBe("Target page: -");
         });
@@ -663,6 +753,80 @@ public sealed class MainShellViewModelTests
                         Kind: OperatorWorkItemKindDto.ReconciliationBreak,
                         Label: "Reconciliation break requires review",
                         Detail: "Cash mismatch needs governance review.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("FundReconciliation");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.CurrentPageTag.Should().Be("FundReconciliation");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_UsesSharedTradingReadinessRouteForPaperReplayWorkItems()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "paper-replay-stale-session-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification is stale",
+                        Detail: "Session changed after the latest replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 0,
+                ReviewCount: 1,
+                Summary: "1 critical work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("TradingShell");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("trading");
+            vm.CurrentPageTag.Should().Be("TradingShell");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_RoutesLedgerPeriodCloseToReconciliation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "ledger-period-close-2026-p02",
+                        Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+                        Label: "SoftClosed sign-off required",
+                        Detail: "Alpha Fund 2026-P02 requires controller sign-off.",
                         Tone: OperatorWorkItemToneDto.Warning,
                         CreatedAt: DateTimeOffset.UtcNow,
                         TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
@@ -748,6 +912,69 @@ public sealed class MainShellViewModelTests
                 Glyph = "\uE7F4",
                 Tone = WorkspaceTone.Warning
             });
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_AllClearScenario_RemainsActionableWithoutRunHistoryDuplication()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [],
+                CriticalCount: 0,
+                WarningCount: 0,
+                ReviewCount: 0,
+                Summary: "No operator work items are open.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxSummary.Contains("No operator work items", StringComparison.Ordinal));
+
+            vm.OperatorInboxButtonText.Should().Be("Queue");
+            vm.OperatorInboxSummary.Contains("run history", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_MixedSeverityScenario_PrioritizesCriticalQueueItem()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "promotion-warning-1",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Promotion checklist review",
+                        Detail: "Review promotion checklist evidence.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell"),
+                    new OperatorWorkItemDto(
+                        WorkItemId: "replay-critical-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification stale",
+                        Detail: "Session changed after replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow.AddSeconds(1),
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 1,
+                ReviewCount: 2,
+                Summary: "2 work items need review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 2);
+
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Danger);
+            vm.OperatorInboxPrimaryLabel.Should().Contain("Replay verification stale");
         });
     }
 

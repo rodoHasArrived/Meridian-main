@@ -83,10 +83,9 @@ public sealed class AlpacaProviderModule : IProviderModule
         // Only register when credentials are discoverable at module-load time;
         // the factory resolves collectors from the DI container on first use.
         // ----------------------------------------------------------------
-        var streamingKeyId = Environment.GetEnvironmentVariable("ALPACA_KEY_ID")
-                             ?? Environment.GetEnvironmentVariable("ALPACA__KEYID") ?? "";
-        var streamingSecretKey = Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
-                                 ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY") ?? "";
+        var streamingCredentials = AlpacaCredentialEnvironment.Resolve();
+        var streamingKeyId = streamingCredentials.KeyId;
+        var streamingSecretKey = streamingCredentials.SecretKey;
 
         if (!string.IsNullOrWhiteSpace(streamingKeyId) && !string.IsNullOrWhiteSpace(streamingSecretKey))
         {
@@ -114,11 +113,7 @@ public sealed class AlpacaProviderModule : IProviderModule
         {
             var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
             var brokerageOptions = sp.GetService<AlpacaOptions>()
-                                   ?? new AlpacaOptions(
-                                       KeyId: Environment.GetEnvironmentVariable("ALPACA_KEY_ID")
-                                              ?? Environment.GetEnvironmentVariable("ALPACA__KEYID") ?? "",
-                                       SecretKey: Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
-                                                  ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY") ?? "");
+                                   ?? new AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger);
         });

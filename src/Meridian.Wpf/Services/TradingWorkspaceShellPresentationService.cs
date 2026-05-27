@@ -7,7 +7,7 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Services;
 
-public sealed class TradingWorkspaceShellPresentationService
+public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedService
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
@@ -495,6 +495,11 @@ public sealed class TradingWorkspaceShellPresentationService
 
     internal static string ResolveOperatorWorkItemActionId(OperatorWorkItemDto workItem)
     {
+        if (workItem.Kind == OperatorWorkItemKindDto.LedgerPeriodClose)
+        {
+            return "FundReconciliation";
+        }
+
         var routeActionId = ResolveOperatorWorkItemRouteActionId(workItem.TargetRoute);
         if (!string.IsNullOrWhiteSpace(routeActionId))
         {
@@ -701,7 +706,7 @@ public sealed class TradingWorkspaceShellPresentationService
         {
             return new ActiveRunPresentation(
                 "No active trading run",
-                "Use Research to promote a run, or open a live/paper panel below.",
+                "Use Strategy to promote a run, or open a live/paper panel below.",
                 "Watchlists and active strategies populate once paper or live runs are started.",
                 "Live data, order book, portfolio, and accounting consequences are ready to dock below.",
                 summary is null
@@ -941,6 +946,12 @@ public sealed class TradingWorkspaceShellPresentationService
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
         {
             return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
+        {
+            return "FundTrialBalance";
         }
 
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||

@@ -143,6 +143,15 @@ public sealed class ConfigJsonSchemaGenerator
             return CreateTypedSchema("string");
         }
 
+        if (type == typeof(Guid))
+        {
+            return new JsonObject
+            {
+                ["type"] = "string",
+                ["format"] = "uuid"
+            };
+        }
+
         if (type.IsEnum)
         {
             return new JsonObject

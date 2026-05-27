@@ -13,6 +13,8 @@ public static class CliModeResolver
     {
         /// <summary>Headless mode - no UI, command-line only.</summary>
         Headless,
+        /// <summary>Browser workstation mode - embedded local server without the streaming collector.</summary>
+        Workstation,
         /// <summary>Desktop mode - native desktop application with embedded server.</summary>
         Desktop
     }
@@ -66,15 +68,16 @@ public static class CliModeResolver
         var normalized = modeArg.Trim().ToLowerInvariant();
         return normalized switch
         {
+            "workstation" or "web-workstation" => (RunMode.Workstation, null),
             "desktop" => (RunMode.Desktop, null),
             "headless" => (RunMode.Headless, null),
             "web" => (RunMode.Headless, BuildRemovedWebMessage("--mode web")),
-            _ => (RunMode.Headless, $"Unknown mode '{normalized}'. Use desktop or headless.")
+            _ => (RunMode.Headless, $"Unknown mode '{normalized}'. Use workstation, desktop, or headless.")
         };
     }
 
     private static string BuildRemovedWebMessage(string flag)
-        => $"The web dashboard has been removed; use desktop or headless mode instead of '{flag}'.";
+        => $"The legacy web dashboard mode has been removed; use workstation mode for the browser workstation or desktop/headless mode instead of '{flag}'.";
 
     /// <summary>
     /// Checks if a specific flag is present in the arguments.

@@ -49,6 +49,11 @@ public sealed class DirectLendingEndpointsTests
             new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
         accrualResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        var penaltyResponse = await client.PostAsJsonAsync(
+            $"/api/loans/{created.LoanId}/prepayment-penalty",
+            new ChargePrepaymentPenaltyRequest(200_000m, new DateOnly(2026, 3, 24), "prepay-rebuild"));
+        penaltyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var accrual = await accrualResponse.Content.ReadFromJsonAsync<DailyAccrualEntryDto>();
         accrual.Should().NotBeNull();
         accrual!.InterestAmount.Should().BeApproximately(44.444444444m, 0.000000001m);
@@ -85,12 +90,13 @@ public sealed class DirectLendingEndpointsTests
 
         var history = await client.GetFromJsonAsync<List<LoanEventLineageDto>>($"/api/loans/{created.LoanId}/history");
         history.Should().NotBeNull();
-        history!.Should().HaveCount(4);
+        history!.Should().HaveCount(5);
         history.Select(static item => item.EventType).Should().ContainInOrder(
             "loan.created",
             "loan.activated",
             "loan.drawdown-booked",
-            "loan.daily-accrual-posted");
+            "loan.daily-accrual-posted",
+            "loan.prepayment-penalty-charged");
         history.All(static item => item.CommandId.HasValue).Should().BeTrue();
         history.All(static item => item.CorrelationId.HasValue).Should().BeTrue();
         history.All(static item => item.ReplayFlag is false).Should().BeTrue();
@@ -99,7 +105,8 @@ public sealed class DirectLendingEndpointsTests
         rebuildResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var rebuilt = await rebuildResponse.Content.ReadFromJsonAsync<LoanAggregateSnapshotDto>();
         rebuilt.Should().NotBeNull();
-        rebuilt!.AggregateVersion.Should().Be(4);
+        rebuilt!.AggregateVersion.Should().Be(5);
+        rebuilt.Servicing.Balances.PenaltyAccruedUnpaid.Should().Be(4_000m);
         rebuilt.Servicing.AccrualEntries.Should().ContainSingle();
 
         var termsVersions = await client.GetFromJsonAsync<List<LoanTermsVersionDto>>($"/api/loans/{created.LoanId}/terms-versions");

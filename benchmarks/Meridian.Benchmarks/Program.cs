@@ -1,5 +1,10 @@
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using Meridian.Benchmarks;
+
+const string VelocityJob = "velocity";
+var benchmarkConfig = ResolveBenchmarkConfig(args);
 
 // Handle --export-budgets flag: serialize the budget registry to perf-budgets.json
 // inside the artifacts directory and exit. This is called by CI after building.
@@ -20,7 +25,7 @@ if (exportBudgetsIdx >= 0)
     Console.WriteLine($"[perf-budgets] Exported {PerformanceBudgetRegistry.All.Count} budget entries to {budgetOutputPath}");
 
     // Run benchmarks normally after exporting budgets
-    var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(bdnArgs);
+    var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(bdnArgs, benchmarkConfig);
 
     // Auto-save results to local history for developer offline comparison
     var store = new BenchmarkResultStore();
@@ -39,7 +44,7 @@ if (exportBudgetsIdx >= 0)
 else
 {
     // Standard run — no budget export
-    var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+    var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, benchmarkConfig);
 
     // Auto-save results to local history for developer offline comparison
     var store = new BenchmarkResultStore();
@@ -59,4 +64,47 @@ else
                 store.Save(summary.Title, jsonFile);
         }
     }
+}
+
+static IConfig? ResolveBenchmarkConfig(string[] args)
+{
+    return HasVelocityJob(args) ? CreateVelocityBenchmarkConfig() : null;
+}
+
+static bool HasVelocityJob(string[] args)
+{
+    for (var i = 0; i < args.Length; i++)
+    {
+        var arg = args[i];
+        if (string.Equals(arg, "--job", StringComparison.OrdinalIgnoreCase))
+        {
+            if (i + 1 < args.Length && string.Equals(args[i + 1], VelocityJob, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            continue;
+        }
+
+        const string jobPrefix = "--job=";
+        if (arg.StartsWith(jobPrefix, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(arg.AsSpan(jobPrefix.Length).ToString(), VelocityJob, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static IConfig CreateVelocityBenchmarkConfig()
+{
+    var velocityJob = Job.ShortRun
+        .WithId(VelocityJob)
+        .WithWarmupCount(12)
+        .WithMinIterationCount(20)
+        .WithMaxIterationCount(120)
+        .WithMaxRelativeError(0.015);
+
+    return ManualConfig.Create(DefaultConfig.Instance).AddJob(velocityJob);
 }

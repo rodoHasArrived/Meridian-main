@@ -1,83 +1,260 @@
 import {
-  ArrowUpRight,
-  Building2,
   CheckCircle2,
   DatabaseZap,
-  Download,
   FileOutput,
-  FileText,
-  Landmark,
+  KeyRound,
+  MonitorCheck,
   Plus,
-  Printer,
   RadioTower,
-  Search,
+  RefreshCcw,
   ShieldCheck,
-  Sparkles,
   TimerReset,
   XCircle
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo, type ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
-  ALL_CAPABILITIES,
-  PROVIDER_KIND_CATALOG,
+  DATA_BACKFILL_DETAIL_PANEL_ID,
+  DATA_EXPORT_DETAIL_PANEL_ID,
+  DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataOperationsViewModel
 } from "@/screens/data-operations-screen.view-model";
 import type { DataOperationsWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
-  DataOperationsEmptyState
+  DataOperationsBackfillDetailState,
+  DataOperationsBackfillRow,
+  DataOperationsEmptyState,
+  DataOperationsExportDetailState,
+  DataOperationsExportRow,
+  DataOperationsLoadingState,
+  DataOperationsProviderDiagnosticRow,
+  DataOperationsProviderDetailState,
+  DataOperationsProviderRow,
+  DataOperationsRouteFocusCardState,
+  DataOperationsProviderSummaryCardState,
+  ProviderSetupNextActionState
 } from "@/screens/data-operations-screen.view-model";
 import type {
-  SecurityMasterAuditItem,
-  SecurityMasterCompanySection,
-  SecurityMasterCorporateActionRow,
-  SecurityMasterDetailField,
-  SecurityMasterOwnershipBar,
-  SecurityMasterPrintChecklistItem,
-  SecurityMasterRationaleItem,
-  SecurityMasterSelectedState,
-  SecurityMasterTimelineEvent,
-  SecurityMasterVenueRow,
-  SecurityMasterWorkspaceState
-} from "@/screens/data-operations-screen.security-master";
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot
+} from "@/types";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
+  providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
+  onProviderSetupConfigured?: () => Promise<void> | void;
+  onProviderRoutingRefresh?: () => Promise<void> | void;
 }
 
-export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
+const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
+  {
+    id: "provider",
+    label: "Provider",
+    render: (provider) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{provider.provider}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{provider.capability}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (provider) => (
+      <Badge
+        variant={provider.statusTone === "danger" ? "danger" : provider.statusTone === "warning" ? "warning" : "success"}
+        dot
+      >
+        {provider.status}
+      </Badge>
+    )
+  },
+  {
+    id: "credential",
+    label: "Credential",
+    render: (provider) => <span className="text-xs text-muted-foreground">{provider.credentialText}</span>
+  },
+  {
+    id: "verification",
+    label: "Verification",
+    render: (provider) => <span className="text-xs text-muted-foreground">{provider.verificationText}</span>
+  },
+  {
+    id: "latency",
+    label: "Last good",
+    render: (provider) => <span className="font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
+  },
+  {
+    id: "trust",
+    label: "Trust",
+    render: (provider) => (
+      <span className="block min-w-0">
+        <span className="block font-mono text-xs text-foreground">{provider.trustScoreText}</span>
+        <span className="mt-1 block truncate text-xs text-muted-foreground">{provider.signalSourceText}</span>
+      </span>
+    )
+  },
+  {
+    id: "gate",
+    label: "Workflows",
+    render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.affectedWorkflowsText}</span>
+  }
+];
+
+const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = [
+  {
+    id: "job",
+    label: "Job",
+    render: (backfill) => (
+      <span className="block min-w-0">
+        <span className="block font-mono font-semibold text-foreground">{backfill.jobId}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}</span>
+      </span>
+    )
+  },
+  {
+    id: "scope",
+    label: "Scope",
+    render: (backfill) => <span className="text-muted-foreground">{backfill.scope}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (backfill) => (
+      <Badge
+        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
+      >
+        {backfill.status}
+      </Badge>
+    )
+  },
+  {
+    id: "progress",
+    label: "Progress",
+    render: (backfill) => (
+      <span className="block min-w-[8rem]">
+        <span className="mb-1 block font-mono text-xs text-muted-foreground">{backfill.progress}</span>
+        <span className="block h-1 rounded-full bg-border/70">
+          <span className="block h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
+        </span>
+      </span>
+    )
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
+  }
+];
+
+const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (item) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{item.profile}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{item.exportId}</span>
+      </span>
+    )
+  },
+  {
+    id: "target",
+    label: "Target",
+    render: (item) => <span className="text-muted-foreground">{item.target}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (item) => <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
+  },
+  {
+    id: "rows",
+    label: "Rows",
+    align: "right",
+    render: (item) => <span className="font-mono text-xs text-foreground">{item.rows}</span>
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (item) => <span className="font-mono text-xs text-muted-foreground">{item.updatedAt}</span>
+  }
+];
+
+export function DataOperationsScreen({
+  data,
+  providerConnections = null,
+  providerRoutingConnections = null,
+  providerRoutingBindings = null,
+  providerRoutingTrustSnapshots = null,
+  providerRoutingRefreshing = false,
+  onProviderSetupConfigured,
+  onProviderRoutingRefresh
+}: DataOperationsScreenProps) {
   const { pathname } = useLocation();
   const workspace = workspaceForPath(pathname);
-  const vm = useDataOperationsViewModel(data, pathname);
+  const providerSetupLifecycle = useMemo(
+    () => ({ onConfigured: onProviderSetupConfigured }),
+    [onProviderSetupConfigured]
+  );
+  const providerEvidence = useMemo(() => ({
+    providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    providerRoutingRefreshing,
+    onProviderRoutingRefresh
+  }), [
+    onProviderRoutingRefresh,
+    providerConnections,
+    providerRoutingBindings,
+    providerRoutingConnections,
+    providerRoutingRefreshing,
+    providerRoutingTrustSnapshots
+  ]);
+  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
 
   if (!data) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading {workspace.label}</CardTitle>
-          <CardDescription>Waiting for provider posture, security coverage, and backfill queue state.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            If this takes more than a few seconds, check your API connection in{" "}
-            <span className="font-medium text-foreground">Settings</span> or use the refresh button in the toolbar.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <DataOperationsLoadingPanel state={vm.loadingState} />;
   }
 
   return (
     <div className="space-y-8">
+      <section className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/data/quotes" aria-label="Open live quotes and order book viewer">
+              <RadioTower className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Live quotes</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/data/watchlist" aria-label="Open symbol watchlist">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Watchlist</span>
+            </Link>
+          </Button>
+        </div>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
       </section>
@@ -88,113 +265,141 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             <div className="eyebrow-label">{workspace.label} Lane</div>
             <CardTitle className="flex items-center gap-2">
               <DatabaseZap className="h-5 w-5 text-primary" />
-              Security Master command deck
+              Data operations command deck
             </CardTitle>
             <CardDescription>
-              Search, validate, and publish Meridian-ready security profiles without leaving the Data workspace.
-              Company facts, corporate actions, and print/export evidence all stay on one operator surface.
+              Monitor provider posture, historical repairs, and export readiness from the Data workspace.
+              Security Master coverage now routes through Accounting where reconciliation and reporting evidence are reviewed.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <DataHighlight
-              icon={Search}
-              title="Search & resolve"
-              description="Match issuers, venues, and identifiers with a workstation-ready score and review trail."
+              icon={RadioTower}
+              title="Provider posture"
+              description="Track source health, trust evidence, and recovery actions before downstream workflows depend on the feed."
             />
             <DataHighlight
-              icon={Building2}
-              title="Company context"
-              description="Fold issuer profile, venue coverage, and ownership posture into the same evidence lane."
+              icon={TimerReset}
+              title="Backfill repair"
+              description="Preview and run historical repair jobs with operator-visible status, ranges, and result evidence."
             />
             <DataHighlight
-              icon={Printer}
-              title="Packet evidence"
-              description="Publish print/export packets with provider, backfill, and downstream handoff cues still visible."
+              icon={FileOutput}
+              title="Export readiness"
+              description="Keep generated packages and report handoff cues tied to the provider and backfill state that produced them."
             />
           </CardContent>
         </Card>
 
         <RouteFocusCard
-          workstream={vm.workstream}
-          selectedBackfillDetail={vm.selectedBackfillDetail}
-          backfillDetailEmptyState={vm.backfillDetailEmptyState}
-          selectedSecurity={vm.securityMaster.selectedSecurity}
-          openPrintPacket={() => vm.selectSecurityMasterTab("print")}
+          state={vm.routeFocusCard}
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.45fr]">
-        <SecurityMasterSearchPanel
-          state={vm.securityMaster}
-          onQueryChange={vm.updateSecurityMasterQuery}
-          onSelect={vm.selectSecurityMaster}
-          onToggleStatusFilter={vm.toggleSecurityMasterStatusFilter}
-        />
-        <SecurityMasterDetailCard
-          state={vm.securityMaster}
-          onSelectTab={vm.selectSecurityMasterTab}
-        />
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-3">
-        <Card aria-labelledby="data-provider-health-title">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
+        <Card aria-labelledby="data-provider-health-title" className="xl:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <CardTitle id="data-provider-health-title">Provider health</CardTitle>
-                <CardDescription>Current data-source posture for security, market, and export coverage.</CardDescription>
+                <div className="eyebrow-label">Provider management</div>
+                <CardTitle id="data-provider-health-title" className="mt-2 flex items-center gap-2">
+                  <MonitorCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.providerSection.title}
+                </CardTitle>
+                <div className="mt-1 text-xs font-medium text-muted-foreground">Provider health</div>
+                <CardDescription className="mt-2">
+                  Provider health, credential verification, routing, and fallback posture. {vm.providerSection.subtitle}
+                </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={vm.openProviderSetup} aria-label="Configure a new data provider">
-                <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                Add provider
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant={vm.providerSection.statusTone === "danger" ? "danger" : vm.providerSection.statusTone === "warning" ? "warning" : "success"}
+                  dot={vm.providerSection.statusTone === "success"}
+                >
+                  {vm.providerSection.statusLabel}
+                </Badge>
+                {vm.providerSection.commandActions.map((action) => (
+                  action.href ? (
+                    <Button key={action.id} asChild size="sm" variant={action.variant}>
+                      <Link to={action.href} aria-label={action.ariaLabel}>
+                        <ProviderCommandIcon actionId={action.id} busy={action.busy} />
+                        {action.label}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      key={action.id}
+                      size="sm"
+                      variant={action.variant}
+                      onClick={() => {
+                        if (action.id === "add") vm.openProviderSetup();
+                        if (action.id === "refresh") void onProviderRoutingRefresh?.();
+                        if (action.id === "diagnostics") void vm.verifySelectedProvider();
+                      }}
+                      disabled={action.disabled}
+                      disabledReason={action.disabledReason}
+                      busy={action.busy}
+                      aria-label={action.ariaLabel}
+                    >
+                      <ProviderCommandIcon actionId={action.id} busy={action.busy} />
+                      {action.label}
+                    </Button>
+                  )
+                ))}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {vm.providerSection.hasRows ? vm.providerSection.rows.map((provider) => (
-              <div
-                key={provider.provider}
-                role="group"
-                className={cn(
-                  "rounded-lg border p-3",
-                  provider.statusTone === "danger"
-                    ? "border-danger/35 bg-danger/5"
-                    : provider.statusTone === "warning"
-                      ? "border-warning/35 bg-warning/5"
-                      : "border-border/70 bg-secondary/20"
-                )}
-                aria-label={provider.ariaLabel}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-semibold">{provider.provider}</span>
-                  <span
-                    className={cn(
-                      "font-mono text-xs",
-                      provider.statusTone === "danger"
-                        ? "text-danger"
-                        : provider.statusTone === "warning"
-                          ? "text-warning"
-                          : "text-success"
-                    )}
+            {vm.providerSection.hasRows ? (
+              <>
+                <label htmlFor="configured-provider-selector" className="grid gap-1 text-sm font-medium text-muted-foreground">
+                  Configured Provider
+                  <select
+                    id="configured-provider-selector"
+                    className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    value={vm.providerSection.selectedRowId ?? ""}
+                    onChange={(event) => vm.selectProvider(event.target.value)}
+                    aria-label="Configured Provider"
                   >
-                    {provider.status}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{provider.capability}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{provider.note}</p>
-                <div className="mt-3 grid grid-cols-2 gap-2" aria-label={`${provider.provider} trust evidence`}>
-                  {provider.trustFields.map((field) => (
-                    <FieldTile key={field.id} field={field} />
+                    {vm.providerSection.providerOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                  {vm.providerSection.summaryCards.map((card) => (
+                    <ProviderSummaryCard key={card.id} card={card} />
                   ))}
                 </div>
-                <div className="mt-3 rounded-md border border-border/60 bg-background/40 px-3 py-2">
-                  <div className="eyebrow-label">Recommended action</div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{provider.recommendedActionText}</p>
-                  <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {provider.reasonCodeText}</p>
-                </div>
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.46fr)]">
+                <DenseDataTable
+                  columns={providerHealthColumns}
+                  rows={vm.providerSection.rows}
+                  getRowId={(provider) => provider.rowId}
+                  getRowAriaLabel={(provider) => provider.ariaLabel}
+                  getRowSelectAriaLabel={(provider) => provider.selectAriaLabel}
+                  getRowAriaControls={(provider) => provider.detailPanelId}
+                  getRowAriaExpanded={(provider) => provider.expanded}
+                  getRowClassName={(provider) => provider.rowClassName}
+                  selectedRowId={vm.providerSection.selectedRowId}
+                  onRowSelect={(provider) => vm.selectProvider(provider.rowId)}
+                  emptyText={vm.providerSection.emptyState.description}
+                  ariaLabel={vm.providerSection.tableLabel}
+                  caption={vm.providerSection.description}
+                />
+                <ProviderDetailPanel
+                  detail={vm.providerSection.selectedDetail}
+                  emptyState={vm.providerSection.detailEmptyState}
+                  activeTab={vm.selectedProviderTab}
+                  onTabSelect={vm.selectProviderTab}
+                  onVerify={vm.verifySelectedProvider}
+                />
               </div>
-            )) : (
-              <ProviderEmptyState onSetup={vm.openProviderSetup} />
+              </>
+            ) : (
+              <ProviderEmptyState state={vm.providerSection.emptyState} onSetup={vm.openProviderSetup} />
             )}
           </CardContent>
         </Card>
@@ -204,7 +409,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle id="data-backfill-queue-title">Backfill queue</CardTitle>
-                <CardDescription>Run or inspect historical repairs that support the Security Master lane.</CardDescription>
+                <CardDescription>Run or inspect historical repairs that support market-data quality and export readiness.</CardDescription>
               </div>
               <Button size="sm" onClick={vm.openBackfillDialog}>
                 Trigger backfill
@@ -212,31 +417,31 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {vm.backfillSection.hasRows ? vm.backfillSection.rows.map((backfill) => (
-              <button
-                key={backfill.jobId}
-                id={backfill.rowId}
-                type="button"
-                aria-label={backfill.ariaLabel}
-                aria-pressed={backfill.selected}
-                aria-controls={backfill.detailPanelId}
-                aria-describedby={`${backfill.rowId}-detail`}
-                className={cn(
-                  "w-full rounded-lg border px-3 py-3 text-left text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  backfill.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/25"
-                )}
-                onClick={() => vm.selectBackfill(backfill.jobId)}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-mono font-semibold">{backfill.jobId}</span>
-                  <span>{backfill.progress}</span>
-                </div>
-                <p className="mt-1 text-muted-foreground">{backfill.scope}</p>
-                <span id={`${backfill.rowId}-detail`} className="sr-only">{backfill.detailDescription}</span>
-              </button>
-            )) : (
-              <EmptyState state={vm.backfillSection.emptyState} />
-            )}
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
+              {vm.backfillSection.hasRows ? (
+                <DenseDataTable
+                  columns={backfillQueueColumns}
+                  rows={vm.backfillSection.rows}
+                  getRowId={(backfill) => backfill.rowId}
+                  getRowAriaLabel={(backfill) => backfill.ariaLabel}
+                  getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
+                  getRowAriaControls={(backfill) => backfill.detailPanelId}
+                  getRowAriaExpanded={(backfill) => backfill.expanded}
+                  getRowClassName={(backfill) => backfill.rowClassName}
+                  selectedRowId={vm.selectedBackfillRowId}
+                  onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
+                  emptyText={vm.backfillSection.emptyState.description}
+                  ariaLabel={vm.backfillSection.tableLabel}
+                  caption={vm.backfillSection.description}
+                />
+              ) : (
+                <EmptyState state={vm.backfillSection.emptyState} />
+              )}
+              <BackfillDetailPanel
+                detail={vm.selectedBackfillDetail}
+                emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -245,1069 +450,1044 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
             <CardDescription>Latest package and reporting outputs tied to data operations evidence.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {vm.exportSection.hasRows ? vm.exportSection.rows.map((item) => (
-              <div
-                key={item.exportId}
-                role="group"
-                className={cn("rounded-md border p-3", exportToneClass[item.statusTone])}
-                aria-label={item.ariaLabel}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <span className="font-semibold">{item.profile}</span>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.summaryText}</p>
-                  </div>
-                  <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
-                </div>
-                <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {item.detailFields.map((field) => (
-                    <FieldTile key={field.id} field={field} />
-                  ))}
-                </dl>
-                <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                  <div className="eyebrow-label">Next action</div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.actionText}</p>
-                </div>
-              </div>
-            )) : (
-              <EmptyState state={vm.exportSection.emptyState} />
-            )}
+          <CardContent>
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
+              {vm.exportSection.hasRows ? (
+                <DenseDataTable
+                  columns={exportColumns}
+                  rows={vm.exportSection.rows}
+                  getRowId={(item) => item.rowId}
+                  getRowAriaLabel={(item) => item.ariaLabel}
+                  getRowSelectAriaLabel={(item) => item.selectAriaLabel}
+                  getRowAriaControls={(item) => item.detailPanelId}
+                  getRowAriaExpanded={(item) => item.expanded}
+                  getRowClassName={(item) => item.rowClassName}
+                  selectedRowId={vm.exportSection.selectedRowId}
+                  onRowSelect={(item) => vm.selectExport(item.exportId)}
+                  emptyText={vm.exportSection.emptyState.description}
+                  ariaLabel={vm.exportSection.tableLabel}
+                  caption={vm.exportSection.description}
+                />
+              ) : (
+                <EmptyState state={vm.exportSection.emptyState} />
+              )}
+              <ExportDetailPanel
+                detail={vm.exportSection.selectedDetail}
+                emptyState={vm.exportSection.detailEmptyState ?? vm.exportSection.emptyState}
+              />
+            </div>
           </CardContent>
         </Card>
       </section>
 
-      <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
-        <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
-          <div className="flex items-start justify-between gap-4">
-            <DialogHeader className="mb-0">
-              <div className="eyebrow-label">Data providers</div>
-              <DialogTitle id={vm.providerSetupDialogState.titleId}>Configure provider</DialogTitle>
-              <DialogDescription id={vm.providerSetupDialogState.descriptionId}>
-                Register a data or brokerage provider with Meridian. The backend will verify credentials on save.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogCloseButton
-              label={vm.providerSetupDialogState.closeButtonLabel}
-              disabled={vm.providerPhase === "submitting"}
-              disabledReason={vm.providerSetupDialogState.closeButtonDisabledReason}
-              onClick={vm.closeProviderSetup}
-            />
-          </div>
-
-          {vm.providerPhase === "success" && vm.providerSetupResult ? (
-            <div className="mt-5">
-              <div className="flex items-center gap-3 rounded-lg border border-success/35 bg-success/10 px-4 py-4">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
-                <div>
-                  <div className="font-semibold text-success">{vm.providerSetupResult.providerName} configured</div>
-                  <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
-                </div>
-              </div>
-              <div className="mt-5 flex justify-end gap-2">
-                <Button variant="outline" onClick={vm.closeProviderSetup}>Done</Button>
-                <Button onClick={vm.openProviderSetup}>
-                  Configure another
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="mt-5 grid gap-4" role="group" aria-label={vm.providerSetupDialogState.formLabel}>
-                <label htmlFor="provider-setup-kind" className="grid gap-1 text-sm">
-                  Provider type
-                  <select
-                    id="provider-setup-kind"
-                    className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    value={vm.providerForm.kind}
-                    aria-label="Select provider type"
-                    onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
-                  >
-                    {PROVIDER_KIND_CATALOG.map((p) => (
-                      <option key={p.kind} value={p.kind}>{p.label}</option>
-                    ))}
-                  </select>
-                  {(() => {
-                    const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind);
-                    return meta ? (
-                      <span className="text-xs text-muted-foreground">{meta.description}</span>
-                    ) : null;
-                  })()}
-                </label>
-
-                <label htmlFor="provider-setup-name" className="grid gap-1 text-sm">
-                  Display name
-                  <input
-                    id="provider-setup-name"
-                    className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    value={vm.providerForm.displayName}
-                    aria-label="Provider display name"
-                    onChange={(e) => vm.updateProviderForm("displayName", e.target.value)}
-                  />
-                </label>
-
-                {PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind)?.needsApiKey !== false && (
-                  <label htmlFor="provider-setup-apikey" className="grid gap-1 text-sm">
-                    API key
-                    <input
-                      id="provider-setup-apikey"
-                      type="password"
-                      className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={vm.providerForm.apiKey}
-                      aria-label="Provider API key"
-                      placeholder="Stored server-side; never sent to the browser after save"
-                      onChange={(e) => vm.updateProviderForm("apiKey", e.target.value)}
-                    />
-                  </label>
-                )}
-
-                {PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind)?.needsApiSecret && (
-                  <label htmlFor="provider-setup-apisecret" className="grid gap-1 text-sm">
-                    API secret
-                    <input
-                      id="provider-setup-apisecret"
-                      type="password"
-                      className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={vm.providerForm.apiSecret}
-                      aria-label="Provider API secret"
-                      onChange={(e) => vm.updateProviderForm("apiSecret", e.target.value)}
-                    />
-                  </label>
-                )}
-
-                {PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind)?.needsEndpoint && (
-                  <label htmlFor="provider-setup-endpoint" className="grid gap-1 text-sm">
-                    Endpoint URL
-                    <input
-                      id="provider-setup-endpoint"
-                      className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={vm.providerForm.endpoint}
-                      aria-label="Provider endpoint URL"
-                      placeholder="https://localhost:7497 or https://api.yourprovider.com"
-                      onChange={(e) => vm.updateProviderForm("endpoint", e.target.value)}
-                    />
-                  </label>
-                )}
-
-                <fieldset>
-                  <legend className="mb-2 text-sm">Capabilities</legend>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {ALL_CAPABILITIES.map((cap) => (
-                      <label
-                        key={cap.id}
-                        className={cn(
-                          "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
-                          vm.providerForm.capabilities.includes(cap.id)
-                            ? "border-primary/40 bg-primary/8"
-                            : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
-                          checked={vm.providerForm.capabilities.includes(cap.id)}
-                          onChange={() => vm.toggleProviderCapability(cap.id)}
-                          aria-label={cap.label}
-                        />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium">{cap.label}</div>
-                          <div className="text-xs text-muted-foreground">{cap.description}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              </div>
-
-              <div
-                id="provider-setup-status"
-                role="status"
-                aria-live="polite"
-                className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
-              >
-                {vm.providerSetupDialogState.statusLabel}
-              </div>
-
-              {vm.providerSetupError && (
-                <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>{vm.providerSetupError}</span>
-                </div>
-              )}
-
-              <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <Button variant="outline" onClick={vm.closeProviderSetup} disabled={vm.providerPhase === "submitting"}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => void vm.submitProviderSetup()}
-                  disabled={vm.providerSetupDialogState.submitAction.disabled}
-                  disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
-                  busy={vm.providerSetupDialogState.submitAction.busy}
-                  busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
-                  aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
-                >
-                  {vm.providerSetupDialogState.submitAction.label}
-                </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
-        <DialogContent aria-labelledby={vm.dialogState.titleId} aria-describedby={vm.dialogState.descriptionId}>
-          <div className="flex items-start justify-between gap-4">
-            <DialogHeader className="mb-0">
-              <div className="eyebrow-label">Backfill</div>
-              <DialogTitle id={vm.dialogState.titleId}>Trigger backfill</DialogTitle>
-              <DialogDescription id={vm.dialogState.descriptionId}>
-                Preview the request before writing historical bars.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogCloseButton
-              label={vm.dialogState.closeButtonLabel}
-              disabled={vm.busy}
-              disabledReason={vm.dialogState.closeButtonDisabledReason}
-              onClick={vm.closeBackfillDialog}
-            />
-          </div>
-
-          <div className="mt-5 grid gap-3" role="group" aria-label={vm.dialogState.formLabel}>
-            <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
-              {vm.dialogState.providerField.label}
-              <input
-                id={vm.dialogState.providerField.id}
-                className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                value={vm.form.provider}
-                aria-label={vm.dialogState.providerField.ariaLabel}
-                onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
-              />
-            </label>
-            <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
-              {vm.dialogState.symbolsField.label}
-              <input
-                id={vm.dialogState.symbolsField.id}
-                className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                placeholder="AAPL MSFT SPY"
-                value={vm.form.symbols}
-                aria-label={vm.dialogState.symbolsField.ariaLabel}
-                aria-describedby={vm.dialogState.symbolsField.describedBy}
-                aria-invalid={vm.validationError !== null}
-                data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
-                onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
-              />
-              <span id="backfill-symbols-help" className="text-xs text-muted-foreground">{vm.symbolsHelpText}</span>
-            </label>
-            <div className="grid gap-3 md:grid-cols-2">
-              <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
-                {vm.dialogState.fromField.label}
-                <input
-                  id={vm.dialogState.fromField.id}
-                  type="date"
-                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  value={vm.form.from}
-                  aria-label={vm.dialogState.fromField.ariaLabel}
-                  onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
-                />
-              </label>
-              <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
-                {vm.dialogState.toField.label}
-                <input
-                  id={vm.dialogState.toField.id}
-                  type="date"
-                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  value={vm.form.to}
-                  aria-label={vm.dialogState.toField.ariaLabel}
-                  onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
-                />
-              </label>
-            </div>
-          </div>
-
-          <div
-            id="backfill-form-status"
-            role="status"
-            aria-live="polite"
-            className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
-          >
-            {vm.dialogState.formStatusLabel}
-          </div>
-
-          {vm.feedbackText && (
-            <div
-              id="backfill-form-feedback"
-              role="alert"
-              className={cn(
-                "mt-4 rounded-lg border px-3 py-2 text-sm",
-                vm.feedbackTone === "warning"
-                  ? "border-warning/40 bg-warning/10 text-warning"
-                  : "border-danger/40 bg-danger/10 text-danger"
-              )}
-            >
-              {vm.feedbackText}
-            </div>
-          )}
-          <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
-          {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-          {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
-
-          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => void vm.previewBackfill()}
-              disabled={vm.dialogState.previewAction.disabled}
-              disabledReason={vm.dialogState.previewAction.disabledReason}
-              busy={vm.dialogState.previewAction.busy}
-              busyLabel={vm.dialogState.previewAction.busyLabel}
-              aria-label={vm.dialogState.previewAction.ariaLabel}
-            >
-              {vm.dialogState.previewAction.label}
-            </Button>
-            {vm.preview && (
-              <Button
-                onClick={() => void vm.runBackfill()}
-                disabled={vm.dialogState.runAction.disabled}
-                disabledReason={vm.dialogState.runAction.disabledReason}
-                busy={vm.dialogState.runAction.busy}
-                busyLabel={vm.dialogState.runAction.busyLabel}
-                aria-label={vm.dialogState.runAction.ariaLabel}
-              >
-                {vm.dialogState.runAction.label}
-              </Button>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ProviderSetupDialog vm={vm} />
+      <BackfillTriggerDialog vm={vm} />
     </div>
   );
 }
 
-function RouteFocusCard({
-  workstream,
-  selectedBackfillDetail,
-  backfillDetailEmptyState,
-  selectedSecurity,
-  openPrintPacket
+type DataOperationsVm = ReturnType<typeof useDataOperationsViewModel>;
+
+function ProviderCommandIcon({
+  actionId,
+  busy
 }: {
-  workstream: "overview" | "backfills";
-  selectedBackfillDetail: { id: string; title: string; description: string; ariaLabel: string; rows: Array<{ id: string; label: string; value: string }> } | null;
-  backfillDetailEmptyState: DataOperationsEmptyState | null;
-  selectedSecurity: SecurityMasterSelectedState | null;
-  openPrintPacket: () => void;
+  actionId: "add" | "refresh" | "diagnostics" | "settings";
+  busy: boolean;
 }) {
-  if (workstream === "backfills") {
-    return selectedBackfillDetail ? (
-      <Card
-        id={selectedBackfillDetail.id}
-        className="bg-panel-strong text-slate-50"
-        role="region"
-        aria-label={selectedBackfillDetail.ariaLabel}
-      >
-        <CardHeader>
-          <div className="eyebrow-label text-slate-300">Backfill Detail</div>
-          <CardTitle>Backfill queue focus</CardTitle>
-          <CardDescription className="text-slate-300">{selectedBackfillDetail.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          {selectedBackfillDetail.rows.map((row) => (
-            <DetailRow key={row.id} label={row.label} value={row.value} />
+  if (actionId === "add") return <Plus className="h-3.5 w-3.5" aria-hidden="true" />;
+  if (actionId === "refresh") return <RefreshCcw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden="true" />;
+  if (actionId === "diagnostics") return <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />;
+  return <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />;
+}
+
+function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCardState }) {
+  const toneClass = card.tone === "success"
+    ? "border-success/30 bg-success/10"
+    : card.tone === "warning"
+      ? "border-warning/35 bg-warning/10"
+      : card.tone === "danger"
+        ? "border-danger/35 bg-danger/10"
+        : "border-border/70 bg-secondary/25";
+
+  return (
+    <div className={cn("min-w-0 rounded-md border px-3 py-3", toneClass)}>
+      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
+      <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
+      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+    </div>
+  );
+}
+
+function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingState }) {
+  return (
+    <section
+      role={state.role}
+      aria-live={state.ariaLive}
+      aria-busy={state.ariaBusy}
+      aria-label={state.regionLabel}
+      className="panel-surface-strong grid gap-4 px-4 py-4 lg:grid-cols-[1fr_auto]"
+    >
+      <div className="min-w-0">
+        <div className="eyebrow-label">Data lane</div>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+          <h2 className="font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {state.title}
+          </h2>
+          <Badge variant="warning">{state.statusLabel}</Badge>
+        </div>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{state.description}</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground">{state.detail}</p>
+        <div className="mt-4 flex flex-wrap gap-2" aria-label="Data loading dependencies">
+          {state.chips.map((chip) => (
+            <span key={chip.label} className="toolbar-chip">
+              <span className="text-muted-foreground">{chip.label}</span>
+              <span className="font-mono text-warning">{chip.value}</span>
+            </span>
           ))}
-        </CardContent>
-      </Card>
-    ) : (
-      <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Backfill Detail</div>
-          <CardTitle>{backfillDetailEmptyState?.title ?? "Backfill queue focus"}</CardTitle>
-          <CardDescription>{backfillDetailEmptyState?.description ?? "No backfill selected."}</CardDescription>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-start gap-2 lg:justify-end">
+        {state.actions.map((action) => (
+          <Button key={action.id} asChild variant={action.variant} size="sm">
+            <Link to={action.href} aria-label={action.ariaLabel}>
+              {action.id === "settings" ? (
+                <DatabaseZap className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <RadioTower className="h-4 w-4" aria-hidden="true" />
+              )}
+              {action.label}
+            </Link>
+          </Button>
+        ))}
+        <RefreshCcw className="mt-2 h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+      </div>
+    </section>
+  );
+}
+
+function ProviderEmptyState({
+  state,
+  onSetup
+}: {
+  state: DataOperationsEmptyState;
+  onSetup: () => void;
+}) {
+  return (
+    <div
+      role="status"
+      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
+    >
+      <div className="font-semibold text-foreground">{state.title}</div>
+      <p className="mt-1 leading-6">{state.description}</p>
+      <Button type="button" variant="outline" size="sm" className="mt-3" onClick={onSetup}>
+        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+        Add provider
+      </Button>
+    </div>
+  );
+}
+
+function ProviderDetailPanel({
+  detail,
+  emptyState,
+  activeTab,
+  onTabSelect,
+  onVerify
+}: {
+  detail: DataOperationsProviderDetailState | null;
+  emptyState: DataOperationsEmptyState | null;
+  activeTab: DataOperationsProviderDetailState["activeTab"];
+  onTabSelect: (tab: DataOperationsProviderDetailState["activeTab"]) => void;
+  onVerify: () => void;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={DATA_PROVIDER_DETAIL_PANEL_ID}
+        role="status"
+        aria-label="Provider detail empty state"
+        className="row-detail-panel h-fit min-w-0"
+      >
+        <div className="eyebrow-label">Provider Detail</div>
+        <h3 className="mt-2 text-sm font-semibold text-foreground">
+          {emptyState?.title ?? "No provider selected"}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {emptyState?.description ?? "Select a provider row to inspect trust evidence and recovery guidance."}
+        </p>
+      </aside>
     );
   }
 
   return (
-    <Card className="bg-panel-strong text-slate-50">
-      <CardHeader>
-        <div className="eyebrow-label text-slate-300">Lane evidence</div>
-        <CardTitle>Print/export evidence</CardTitle>
-        <CardDescription className="text-slate-300">
-          Keep the current Security Master packet, distribution plan, and downstream export cues visible while you work.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        {selectedSecurity ? (
-          <>
-            <div className="rounded-lg border border-slate-700/60 bg-slate-950/40 p-3">
-              <div className="eyebrow-label text-slate-300">Packet</div>
-              <div className="mt-1 font-mono text-sm text-slate-50">{selectedSecurity.printPacketId}</div>
-              <p className="mt-2 text-sm text-slate-300">{selectedSecurity.printSummary}</p>
-            </div>
-            <DetailRow label="Distribution" value={selectedSecurity.printDistribution} />
-            <DetailRow label="Generated" value={selectedSecurity.printGeneratedAt} />
-            <DetailRow label="Export targets" value={`${selectedSecurity.exportEvidence.length} downstream lanes`} />
-            <Button variant="outline" className="w-full border-slate-600/70 text-slate-50 hover:bg-slate-800/60" onClick={openPrintPacket}>
-              Open print packet
-            </Button>
-          </>
-        ) : (
-          <p className="text-sm text-slate-300">Select a security to inspect its print/export packet.</p>
-        )}
-      </CardContent>
-    </Card>
+    <aside
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Provider Detail</div>
+          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <Badge
+          variant={detail.statusTone === "danger" ? "danger" : detail.statusTone === "warning" ? "warning" : "success"}
+          dot
+        >
+          {detail.status}
+        </Badge>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+      <div className="mt-3 flex flex-wrap gap-1" role="tablist" aria-label={`${detail.title} provider detail tabs`}>
+        {detail.tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={tab.selected}
+            aria-controls={tab.ariaControls}
+            className={cn(
+              "rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+              tab.selected
+                ? "border-primary/40 bg-primary/[0.08] text-foreground"
+                : "border-border/70 bg-secondary/20 text-muted-foreground hover:bg-secondary/35"
+            )}
+            onClick={() => onTabSelect(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <ProviderDetailTabPanel detail={detail} activeTab={activeTab} onVerify={onVerify} />
+    </aside>
   );
 }
 
-function SecurityMasterSearchPanel({
-  state,
-  onQueryChange,
-  onSelect,
-  onToggleStatusFilter
+function ProviderDetailTabPanel({
+  detail,
+  activeTab,
+  onVerify
 }: {
-  state: SecurityMasterWorkspaceState;
-  onQueryChange: (value: string) => void;
-  onSelect: (securityId: string) => void;
-  onToggleStatusFilter: () => void;
+  detail: DataOperationsProviderDetailState;
+  activeTab: DataOperationsProviderDetailState["activeTab"];
+  onVerify: () => void;
 }) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="eyebrow-label">Security Master</div>
-        <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5 text-primary" />
-          Search and resolve instruments
-        </CardTitle>
-        <CardDescription>
-          Meridian-ready search results keep venue coverage, identifiers, and packet evidence visible before you drill into company or corporate action detail.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <label htmlFor="security-master-search" className="grid gap-2 text-sm">
-          Search securities
-          <input
-            id="security-master-search"
-            className="rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            value={state.searchValue}
-            placeholder="Search by issuer, ticker, or ISIN"
-            onChange={(event) => onQueryChange(event.target.value)}
-          />
-        </label>
+  if (activeTab === "credentials") {
+    return (
+      <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
+        <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+          {detail.credentialFields.map((field) => (
+            <FieldTile key={field.id} field={field} />
+          ))}
+        </dl>
+        <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+          <div className="eyebrow-label">Secret handling</div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            Raw secrets are never displayed after submit. Use Settings to replace or clear stored values.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">{state.searchMetaLabel}</Badge>
-          <Button size="sm" variant="outline" onClick={onToggleStatusFilter}>
-            {state.statusChipLabel}
+  if (activeTab === "diagnostics") {
+    return (
+      <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-diagnostics`} role="tabpanel" className="mt-3 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+          <div className="min-w-0">
+            <div className="eyebrow-label">Diagnostics</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.verifyAction.statusLabel}</p>
+            {detail.verifyAction.details.length > 0 ? (
+              <ul className="mt-2 grid gap-1 text-xs leading-5 text-muted-foreground">
+                {detail.verifyAction.details.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            ) : null}
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void onVerify()}
+            disabled={detail.verifyAction.disabled}
+            disabledReason={detail.verifyAction.disabledReason}
+            busy={detail.verifyAction.busy}
+            aria-label={detail.verifyAction.ariaLabel}
+          >
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            {detail.verifyAction.label}
           </Button>
-          <Badge variant="outline">Sort · Search score</Badge>
-          <Badge variant="outline">Coverage · venues + packets</Badge>
+        </div>
+        {detail.diagnosticsEmptyState ? (
+          <div
+            role="status"
+            aria-label={`${detail.title} diagnostics empty state`}
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-3 py-3"
+          >
+            <div className="font-semibold text-foreground">{detail.diagnosticsEmptyState.title}</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.diagnosticsEmptyState.description}</p>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {detail.diagnostics.map((diagnostic) => (
+              <ProviderDiagnosticRow key={diagnostic.id} diagnostic={diagnostic} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
+      <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.overviewFields.map((field) => (
+          <FieldTile key={field.id} field={field} />
+        ))}
+      </dl>
+      <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+        <div className="eyebrow-label">Recommended action</div>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
+        <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {detail.reasonCodeText}</p>
+        <p className="mt-1 font-mono text-[11px] text-muted-foreground">Gate: {detail.gateImpactText}</p>
+      </div>
+    </div>
+  );
+}
+
+function ProviderDiagnosticRow({ diagnostic }: { diagnostic: DataOperationsProviderDiagnosticRow }) {
+  const variant = diagnostic.status === "pass"
+    ? "success"
+    : diagnostic.status === "fail"
+      ? "danger"
+      : diagnostic.status === "warning"
+        ? "warning"
+        : "outline";
+
+  return (
+    <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-xs font-semibold text-foreground">{diagnostic.label}</div>
+        <Badge variant={variant}>{diagnostic.statusLabel}</Badge>
+      </div>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{diagnostic.detail}</p>
+    </div>
+  );
+}
+
+function BackfillDetailPanel({
+  detail,
+  emptyState
+}: {
+  detail: DataOperationsBackfillDetailState | null;
+  emptyState: DataOperationsEmptyState | null;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={DATA_BACKFILL_DETAIL_PANEL_ID}
+        role="status"
+        aria-label="Backfill detail empty state"
+        className="row-detail-panel h-fit min-w-0"
+      >
+        <div className="eyebrow-label">Selected Backfill</div>
+        <h3 className="mt-2 text-sm font-semibold text-foreground">
+          {emptyState?.title ?? "No backfill selected"}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {emptyState?.description ?? "Select a backfill row to inspect repair scope, provider, progress, and update evidence."}
+        </p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Selected Backfill</div>
+          <h3 className="mt-2 text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+        </div>
+        <Badge variant={detail.statusVariant} dot>
+          {detail.statusLabel}
+        </Badge>
+      </div>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.rows.map((field) => (
+          <FieldTile key={field.id} field={field} />
+        ))}
+      </dl>
+    </aside>
+  );
+}
+
+function ExportDetailPanel({
+  detail,
+  emptyState
+}: {
+  detail: DataOperationsExportDetailState | null;
+  emptyState: DataOperationsEmptyState | null;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={DATA_EXPORT_DETAIL_PANEL_ID}
+        role="status"
+        aria-label="Export detail empty state"
+        className="row-detail-panel h-fit min-w-0"
+      >
+        <div className="eyebrow-label">Selected Export</div>
+        <h3 className="mt-2 text-sm font-semibold text-foreground">
+          {emptyState?.title ?? "No export selected"}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and handoff guidance."}
+        </p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Selected Export</div>
+          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <Badge variant={detail.statusVariant} dot>
+          {detail.statusLabel}
+        </Badge>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.fields.map((field) => (
+          <FieldTile key={field.id} field={field} />
+        ))}
+      </dl>
+      <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+        <div className="eyebrow-label">Next action</div>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
+      </div>
+    </aside>
+  );
+}
+
+function EmptyState({ state }: { state: DataOperationsEmptyState }) {
+  return (
+    <div
+      role="status"
+      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
+    >
+      <div className="font-semibold text-foreground">{state.title}</div>
+      <p className="mt-1 leading-6">{state.description}</p>
+    </div>
+  );
+}
+
+function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
+  return (
+    <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
+      <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
+        <div className="flex items-start justify-between gap-4">
+          <DialogHeader className="mb-0">
+            <div className="eyebrow-label">Data providers</div>
+            <DialogTitle id={vm.providerSetupDialogState.titleId}>Configure provider</DialogTitle>
+            <DialogDescription id={vm.providerSetupDialogState.descriptionId}>
+              Register a data or brokerage provider with Meridian and seed routing for selected capabilities.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogCloseButton
+            label={vm.providerSetupDialogState.closeButtonLabel}
+            disabled={vm.providerPhase === "submitting"}
+            disabledReason={vm.providerSetupDialogState.closeButtonDisabledReason}
+            onClick={vm.closeProviderSetup}
+          />
         </div>
 
-        {state.hasResults ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-              <span>{state.resultCountLabel}</span>
-              <span>Issuer · type · venue · ISIN · score</span>
+        {vm.providerPhase === "success" && vm.providerSetupResult ? (
+          <div className="mt-5">
+            <div className="flex items-center gap-3 rounded-lg border border-success/35 bg-success/10 px-4 py-4">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+              <div>
+                <div className="font-semibold text-success">{vm.providerSetupResult.providerName} configured</div>
+                <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
+              </div>
             </div>
-            <div className="space-y-2" aria-label="Security master search results">
-              {state.results.map((result) => (
-                <button
-                  key={result.securityId}
-                  type="button"
-                  aria-label={result.ariaLabel}
-                  aria-pressed={result.selected}
-                  className={cn(
-                    "w-full rounded-xl border px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                    result.selected
-                      ? "border-primary/50 bg-primary/8 shadow-[inset_3px_0_0_hsl(var(--primary))]"
-                      : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
-                  )}
-                  onClick={() => onSelect(result.securityId)}
+            <div
+              className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+              role="region"
+              aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
+            >
+              <div className="eyebrow-label">Routing posture</div>
+              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
+                  <FieldTile key={row.id} field={row} />
+                ))}
+              </dl>
+              {vm.providerSetupDialogState.successMetadata.warnings.length > 0 ? (
+                <div
+                  className="mt-3 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning"
+                  role="status"
+                  aria-label={vm.providerSetupDialogState.successMetadata.warningsAriaLabel}
                 >
-                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1.5fr)_minmax(110px,0.8fr)_minmax(120px,0.85fr)_minmax(150px,0.9fr)_minmax(90px,0.5fr)]">
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold text-foreground">{result.displayName}</div>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <span className="font-mono text-primary">{result.ticker}</span>
-                        <span>{result.issuer}</span>
-                      </div>
-                    </div>
-                    <div className="text-sm text-muted-foreground">{result.assetType}</div>
-                    <div className="text-sm text-muted-foreground">
-                      <div>{result.market}</div>
-                      <div className="mt-1 text-xs">{result.country}</div>
-                    </div>
-                    <div className="font-mono text-xs text-muted-foreground">{result.isin}</div>
-                    <div className="text-right">
-                      <Badge variant={result.statusVariant} dot>{result.status}</Badge>
-                      <div className="mt-2 font-mono text-sm text-foreground">{result.scoreText}</div>
-                      <div className="mt-1 h-1 rounded-full bg-border/70">
-                        <div className="h-1 rounded-full bg-primary" style={{ width: result.scoreWidth }} />
-                      </div>
-                    </div>
+                  <ul className="grid gap-1">
+                    {vm.providerSetupDialogState.successMetadata.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+            <div
+              className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+              role="region"
+              aria-label={vm.providerSetupDialogState.successPanel.ariaLabel}
+            >
+              <div className="eyebrow-label">{vm.providerSetupDialogState.successPanel.title}</div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.providerSetupDialogState.successActions.map((action) => (
+                  <ProviderSetupNextAction
+                    key={action.id}
+                    action={action}
+                    onNavigate={vm.closeProviderSetup}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={vm.closeProviderSetup}>Done</Button>
+              <Button onClick={vm.openProviderSetup}>Configure another</Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 grid gap-4" role="group" aria-label={vm.providerSetupDialogState.formLabel}>
+              <label htmlFor="provider-setup-kind" className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.providerKindField.label}
+                <select
+                  id={vm.providerSetupDialogState.providerKindField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerForm.kind}
+                  aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.providerKindField.disabled}
+                  aria-describedby={joinDescribedByIds(
+                    `${vm.providerSetupDialogState.providerKindField.id}-description`,
+                    `${vm.providerSetupDialogState.providerKindField.id}-disabled-reason`
+                  )}
+                  onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
+                >
+                  {vm.providerSetupDialogState.providerKindField.options.map((p) => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+                <FieldSupportText
+                  helpId={`${vm.providerSetupDialogState.providerKindField.id}-description`}
+                  helpText={vm.providerSetupDialogState.providerKindField.description}
+                  disabledReason={vm.providerSetupDialogState.providerKindField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.providerKindField.id}-disabled-reason`}
+                />
+              </label>
+
+              <div
+                className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+                role="region"
+                aria-label={`${vm.providerSetupDialogState.selectedProviderSummary.providerLabel} setup summary`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold">{vm.providerSetupDialogState.selectedProviderSummary.providerLabel}</div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {vm.providerSetupDialogState.selectedProviderSummary.description}
+                    </p>
                   </div>
+                  {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage ? (
+                    <Badge variant="success">No key needed</Badge>
+                  ) : null}
+                </div>
+                <dl className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {vm.providerSetupDialogState.selectedProviderSummary.rows.map((row) => (
+                    <FieldTile key={row.id} field={row} />
+                  ))}
+                </dl>
+                {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage ? (
+                  <p className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs leading-5 text-success">
+                    {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage}
+                  </p>
+                ) : null}
+              </div>
+
+              <label htmlFor={vm.providerSetupDialogState.displayNameField.id} className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.displayNameField.label}
+                <input
+                  id={vm.providerSetupDialogState.displayNameField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerSetupDialogState.displayNameField.value}
+                  aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.displayNameField.disabled}
+                  aria-describedby={joinDescribedByIds(`${vm.providerSetupDialogState.displayNameField.id}-disabled-reason`)}
+                  onChange={(e) => vm.updateProviderForm(vm.providerSetupDialogState.displayNameField.field, e.target.value)}
+                />
+                <FieldSupportText
+                  disabledReason={vm.providerSetupDialogState.displayNameField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.displayNameField.id}-disabled-reason`}
+                />
+              </label>
+
+              <label htmlFor={vm.providerSetupDialogState.environmentField.id} className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.environmentField.label}
+                <select
+                  id={vm.providerSetupDialogState.environmentField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerSetupDialogState.environmentField.value}
+                  aria-label={vm.providerSetupDialogState.environmentField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.environmentField.disabled}
+                  aria-describedby={joinDescribedByIds(
+                    `${vm.providerSetupDialogState.environmentField.id}-description`,
+                    `${vm.providerSetupDialogState.environmentField.id}-disabled-reason`
+                  )}
+                  onChange={(e) => vm.updateProviderForm("environment", e.target.value)}
+                >
+                  {vm.providerSetupDialogState.environmentField.options.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <FieldSupportText
+                  helpId={`${vm.providerSetupDialogState.environmentField.id}-description`}
+                  helpText={vm.providerSetupDialogState.environmentField.description}
+                  disabledReason={vm.providerSetupDialogState.environmentField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.environmentField.id}-disabled-reason`}
+                />
+              </label>
+
+              {vm.providerSetupDialogState.liveAcknowledgement.visible ? (
+                <label
+                  htmlFor={vm.providerSetupDialogState.liveAcknowledgement.id}
+                  className="flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-2.5 text-sm"
+                >
+                  <input
+                    id={vm.providerSetupDialogState.liveAcknowledgement.id}
+                    type="checkbox"
+                    className="mt-0.5 shrink-0 accent-[hsl(var(--live-env))]"
+                    checked={vm.providerSetupDialogState.liveAcknowledgement.checked}
+                    disabled={vm.providerSetupDialogState.liveAcknowledgement.disabled}
+                    aria-label={vm.providerSetupDialogState.liveAcknowledgement.ariaLabel}
+                    onChange={(event) => vm.setProviderLiveAcknowledged(event.currentTarget.checked)}
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-live-env">{vm.providerSetupDialogState.liveAcknowledgement.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{vm.providerSetupDialogState.liveAcknowledgement.detail}</span>
+                  </span>
+                </label>
+              ) : null}
+
+              {vm.providerSetupDialogState.credentialFields.map((field) => (
+                <label key={field.id} htmlFor={field.id} className="grid gap-1 text-sm">
+                  {field.label}
+                  <input
+                    id={field.id}
+                    type={field.type}
+                    autoComplete={field.autoComplete}
+                    className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    value={field.value}
+                    aria-label={field.ariaLabel}
+                    placeholder={field.placeholder ?? undefined}
+                    disabled={field.disabled}
+                    aria-describedby={joinDescribedByIds(`${field.id}-disabled-reason`)}
+                    onChange={(e) => vm.updateProviderForm(field.field, e.target.value)}
+                  />
+                  <FieldSupportText
+                    disabledReason={field.disabledReason}
+                    disabledReasonId={`${field.id}-disabled-reason`}
+                  />
+                </label>
+              ))}
+
+              <fieldset>
+                <legend className="mb-2 text-sm">Capabilities</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {vm.providerSetupDialogState.capabilityOptions.map((cap) => (
+                    <label
+                      key={cap.id}
+                      className={cn(
+                        "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
+                        cap.selected
+                          ? "border-primary/40 bg-primary/[0.08]"
+                          : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
+                        checked={cap.selected}
+                        disabled={cap.disabled}
+                        aria-describedby={joinDescribedByIds(`${cap.id}-description`, `${cap.id}-disabled-reason`)}
+                        onChange={() => vm.toggleProviderCapability(cap.id)}
+                        aria-label={cap.label}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">{cap.label}</div>
+                        <div id={`${cap.id}-description`} className="text-xs text-muted-foreground">{cap.description}</div>
+                        <FieldSupportText
+                          disabledReason={cap.disabledReason}
+                          disabledReasonId={`${cap.id}-disabled-reason`}
+                        />
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+
+            <div
+              id="provider-setup-status"
+              role="status"
+              aria-live="polite"
+              className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
+            >
+              {vm.providerSetupDialogState.statusLabel}
+            </div>
+
+        {vm.providerSetupError && (
+          <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+            <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <div className="min-w-0">
+              <div>{vm.providerSetupError.summary}</div>
+              {vm.providerSetupError.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger/90">
+                  {vm.providerSetupError.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        )}
+
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={vm.closeProviderSetup}
+                disabled={vm.providerSetupDialogState.cancelAction.disabled}
+                disabledReason={vm.providerSetupDialogState.cancelAction.disabledReason}
+                aria-label={vm.providerSetupDialogState.cancelAction.ariaLabel}
+              >
+                {vm.providerSetupDialogState.cancelAction.label}
+              </Button>
+              <Button
+                onClick={() => void vm.submitProviderSetup()}
+                disabled={vm.providerSetupDialogState.submitAction.disabled}
+                disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
+                busy={vm.providerSetupDialogState.submitAction.busy}
+                busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
+                aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
+              >
+                {vm.providerSetupDialogState.submitAction.label}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ProviderSetupNextAction({
+  action,
+  onNavigate
+}: {
+  action: ProviderSetupNextActionState;
+  onNavigate: () => void;
+}) {
+  const Icon = providerSetupNextActionIcons[action.id];
+
+  return (
+    <Button asChild variant={action.variant} size="sm" className="justify-start">
+      <Link to={action.href} aria-label={action.ariaLabel} onClick={onNavigate}>
+        <Icon className="h-4 w-4" aria-hidden="true" />
+        {action.label}
+      </Link>
+    </Button>
+  );
+}
+
+const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], LucideIcon> = {
+  "live-quotes": RadioTower,
+  backfill: TimerReset,
+  readiness: ShieldCheck,
+  "security-master": DatabaseZap
+};
+
+function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
+  return (
+    <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
+      <DialogContent
+        aria-labelledby={vm.dialogState.titleId}
+        aria-describedby={vm.dialogState.descriptionId}
+        className="max-w-xl p-6"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <DialogHeader className="mb-0">
+            <div className="eyebrow-label">Backfill</div>
+            <DialogTitle id={vm.dialogState.titleId}>Trigger backfill</DialogTitle>
+            <DialogDescription id={vm.dialogState.descriptionId}>
+              Preview the request before writing historical bars.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogCloseButton
+            label={vm.dialogState.closeButtonLabel}
+            disabled={vm.busy}
+            disabledReason={vm.dialogState.closeButtonDisabledReason}
+            onClick={vm.closeBackfillDialog}
+          />
+        </div>
+
+        <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
+          {vm.dialogState.summaryItems.map((item) => (
+            <div key={item.id} className="min-w-0">
+              <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</dt>
+              <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
+          <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
+            {vm.dialogState.providerField.label}
+            <select
+              id={vm.dialogState.providerField.id}
+              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+              value={vm.form.provider}
+              aria-label={vm.dialogState.providerField.ariaLabel}
+              disabled={vm.dialogState.providerField.disabled}
+              aria-describedby={joinDescribedByIds(
+                `${vm.dialogState.providerField.id}-detail`,
+                `${vm.dialogState.providerField.id}-disabled-reason`
+              )}
+              onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
+            >
+              {vm.dialogState.providerOptions.map((provider) => (
+                <option key={provider.value} value={provider.value}>
+                  {provider.label}
+                </option>
+              ))}
+            </select>
+            <FieldSupportText
+              helpId={`${vm.dialogState.providerField.id}-detail`}
+              helpText={vm.dialogState.selectedProviderDetail}
+              disabledReason={vm.dialogState.providerField.disabledReason}
+              disabledReasonId={`${vm.dialogState.providerField.id}-disabled-reason`}
+            />
+            <div className="flex flex-wrap gap-2" aria-label="Backfill provider options">
+              {vm.dialogState.providerOptions.map((provider) => (
+                <button
+                  key={provider.value}
+                  type="button"
+                  className={cn(
+                    "rounded-md border px-2.5 py-1.5 text-left text-xs transition-colors",
+                    vm.form.provider === provider.value
+                      ? "border-primary/45 bg-primary/[0.08] text-foreground"
+                      : "border-border/70 bg-secondary/20 text-muted-foreground hover:bg-secondary/35"
+                  )}
+                  disabled={vm.dialogState.providerField.disabled}
+                  title={provider.description}
+                  aria-pressed={vm.form.provider === provider.value}
+                  onClick={() => vm.updateBackfillForm("provider", provider.value)}
+                >
+                  <span className="font-semibold">{provider.label}</span>
+                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">{provider.badge}</span>
                 </button>
               ))}
             </div>
+          </label>
+          <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
+            {vm.dialogState.symbolsField.label}
+            <input
+              id={vm.dialogState.symbolsField.id}
+              className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+              placeholder={vm.dialogState.symbolsField.placeholder}
+              value={vm.form.symbols}
+              aria-label={vm.dialogState.symbolsField.ariaLabel}
+              aria-invalid={vm.validationError !== null}
+              disabled={vm.dialogState.symbolsField.disabled}
+              aria-describedby={joinDescribedByIds(vm.dialogState.symbolsField.describedBy, `${vm.dialogState.symbolsField.id}-disabled-reason`)}
+              data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
+              onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
+            />
+            <FieldSupportText
+              helpId="backfill-symbols-help"
+              helpText={vm.symbolsHelpText}
+              disabledReason={vm.dialogState.symbolsField.disabledReason}
+              disabledReasonId={`${vm.dialogState.symbolsField.id}-disabled-reason`}
+            />
+          </label>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.fromField.label}
+              <input
+                id={vm.dialogState.fromField.id}
+                type="date"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                value={vm.form.from}
+                aria-label={vm.dialogState.fromField.ariaLabel}
+                disabled={vm.dialogState.fromField.disabled}
+                aria-describedby={joinDescribedByIds(`${vm.dialogState.fromField.id}-disabled-reason`)}
+                onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
+              />
+              <FieldSupportText
+                disabledReason={vm.dialogState.fromField.disabledReason}
+                disabledReasonId={`${vm.dialogState.fromField.id}-disabled-reason`}
+              />
+            </label>
+            <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.toField.label}
+              <input
+                id={vm.dialogState.toField.id}
+                type="date"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                value={vm.form.to}
+                aria-label={vm.dialogState.toField.ariaLabel}
+                disabled={vm.dialogState.toField.disabled}
+                aria-describedby={joinDescribedByIds(`${vm.dialogState.toField.id}-disabled-reason`)}
+                onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
+              />
+              <FieldSupportText
+                disabledReason={vm.dialogState.toField.disabledReason}
+                disabledReasonId={`${vm.dialogState.toField.id}-disabled-reason`}
+              />
+            </label>
           </div>
-        ) : state.emptyState ? (
-          <EmptyState state={state.emptyState} />
+        </div>
+
+        <div
+          id="backfill-form-status"
+          role="status"
+          aria-live="polite"
+          className={cn(
+            "mt-4 rounded-md border px-3 py-2 text-xs leading-5",
+            vm.dialogState.formStatusTone === "danger"
+              ? "border-danger/40 bg-danger/10 text-danger"
+              : vm.dialogState.formStatusTone === "success"
+                ? "border-success/35 bg-success/10 text-success"
+                : vm.dialogState.formStatusTone === "warning"
+                  ? "border-warning/35 bg-warning/10 text-warning"
+                  : "border-border/70 bg-secondary/25 text-muted-foreground"
+          )}
+        >
+          {vm.dialogState.formStatusLabel}
+        </div>
+
+        {vm.feedbackText && (
+          <div
+            id="backfill-form-feedback"
+            role="alert"
+            className={cn(
+              "mt-4 rounded-lg border px-3 py-2 text-sm",
+              vm.feedbackTone === "warning"
+                ? "border-warning/40 bg-warning/10 text-warning"
+                : "border-danger/40 bg-danger/10 text-danger"
+            )}
+          >
+            <div className="min-w-0">
+              <div>{vm.feedbackText}</div>
+              {vm.feedbackDetails.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                  {vm.feedbackDetails.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        )}
+        <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+        {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+        {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            variant="outline"
+            onClick={() => void vm.previewBackfill()}
+            disabled={vm.dialogState.previewAction.disabled}
+            disabledReason={vm.dialogState.previewAction.disabledReason}
+            busy={vm.dialogState.previewAction.busy}
+            busyLabel={vm.dialogState.previewAction.busyLabel}
+            aria-label={vm.dialogState.previewAction.ariaLabel}
+          >
+            {vm.dialogState.previewAction.label}
+          </Button>
+          {vm.preview && (
+            <Button
+              onClick={() => void vm.runBackfill()}
+              disabled={vm.dialogState.runAction.disabled}
+              disabledReason={vm.dialogState.runAction.disabledReason}
+              busy={vm.dialogState.runAction.busy}
+              busyLabel={vm.dialogState.runAction.busyLabel}
+              aria-label={vm.dialogState.runAction.ariaLabel}
+            >
+              {vm.dialogState.runAction.label}
+            </Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RouteFocusCard({
+  state
+}: {
+  state: DataOperationsRouteFocusCardState;
+}) {
+  return (
+    <Card id={state.id} role={state.role} aria-label={state.ariaLabel} className="panel-surface-strong">
+      <CardHeader>
+        <div className="eyebrow-label">{state.eyebrow}</div>
+        <CardTitle>{state.title}</CardTitle>
+        <CardDescription>{state.description}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {state.rows.length > 0 ? (
+          <dl className="space-y-2">
+            {state.rows.map((row) => (
+              <DetailRow key={row.id} label={row.label} value={row.value} />
+            ))}
+          </dl>
+        ) : (
+          <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning">
+            {state.description}
+          </p>
+        )}
+        {state.action ? (
+          <Button asChild variant="outline" className="w-full justify-center">
+            <Link to={state.action.href} aria-label={state.action.ariaLabel}>
+              {state.action.label}
+            </Link>
+          </Button>
         ) : null}
       </CardContent>
     </Card>
   );
 }
 
-function SecurityMasterDetailCard({
-  state,
-  onSelectTab
-}: {
-  state: SecurityMasterWorkspaceState;
-  onSelectTab: (tab: "overview" | "company" | "corporate-actions" | "print") => void;
-}) {
-  const selected = state.selectedSecurity;
-
-  return (
-    <Card className="overflow-hidden">
-      {selected ? (
-        <>
-          <CardHeader className="border-b border-border/70 bg-secondary/20">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <div className="eyebrow-label">Security Master / {selected.assetType}</div>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <CardTitle className="text-2xl">{selected.title}</CardTitle>
-                  <span className="rounded-md bg-primary/10 px-2.5 py-1 font-mono text-sm text-primary">{selected.titleCode}</span>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{selected.subtitle}</p>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">{selected.description}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge variant={selected.statusVariant} dot>{selected.status}</Badge>
-                  <Badge variant="outline">{selected.assetType}</Badge>
-                  <Badge variant="default">Score {selected.scoreText}</Badge>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => onSelectTab("company")}>
-                  <Building2 className="h-3.5 w-3.5" />
-                  Company view
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => onSelectTab("corporate-actions")}>
-                  <TimerReset className="h-3.5 w-3.5" />
-                  Corporate actions
-                </Button>
-                <Button size="sm" onClick={() => onSelectTab("print")}>
-                  <FileOutput className="h-3.5 w-3.5" />
-                  Print packet
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="grid gap-px border-b border-border/70 bg-border/70 sm:grid-cols-2 xl:grid-cols-6">
-              {selected.summaryFields.map((field) => (
-                <div key={field.id} className="bg-background px-4 py-3">
-                  <div className="eyebrow-label">{field.label}</div>
-                  <div className="mt-1 font-mono text-sm text-foreground">{field.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-b border-border/70 bg-secondary/20">
-              <div role="tablist" aria-label="Security master detail views" className="flex flex-wrap gap-1 px-4 py-2">
-                {state.tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    id={`security-master-tab-${tab.id}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab.selected}
-                    aria-controls={tab.panelId}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                      tab.selected ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-                    )}
-                    onClick={() => onSelectTab(tab.id)}
-                  >
-                    <span>{tab.label}</span>
-                    {tab.badge ? <span className="font-mono text-[11px]">{tab.badge}</span> : null}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {state.tabs.find((tab) => tab.selected)?.id === "overview" ? (
-              <SecurityOverviewPanel selected={selected} />
-            ) : state.tabs.find((tab) => tab.selected)?.id === "company" ? (
-              <SecurityCompanyPanel selected={selected} />
-            ) : state.tabs.find((tab) => tab.selected)?.id === "corporate-actions" ? (
-              <SecurityCorporateActionsPanel selected={selected} />
-            ) : (
-              <SecurityPrintPanel selected={selected} />
-            )}
-          </CardContent>
-        </>
-      ) : (
-        <CardContent className="p-6">
-          <EmptyState
-            state={{
-              title: "No security selected",
-              description: "Search the Security Master and choose a result to inspect its company, corporate action, and packet evidence views."
-            }}
-          />
-        </CardContent>
-      )}
-    </Card>
-  );
-}
-
-function SecurityOverviewPanel({ selected }: { selected: SecurityMasterSelectedState }) {
-  return (
-    <div
-      id="security-master-panel-overview"
-      role="tabpanel"
-      aria-labelledby="security-master-tab-overview"
-      className="grid gap-4 p-4 xl:grid-cols-[1fr_320px]"
-    >
-      <div className="space-y-4">
-        {selected.identifierSections.map((section) => (
-          <div key={section.id} className="rounded-xl border border-border/70 bg-background/80">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-secondary/20 px-4 py-3">
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-xs text-primary">{section.badge}</span>
-                <div className="font-semibold text-foreground">{section.title}</div>
-              </div>
-              <span className="text-xs text-muted-foreground">{section.meta}</span>
-            </div>
-            <dl className="grid gap-px bg-border/60 sm:grid-cols-2">
-              {section.rows.map((row) => (
-                <div key={row.id} className="bg-background px-4 py-3">
-                  <dt className="text-xs text-muted-foreground">{row.label}</dt>
-                  <dd className="mt-1 break-all font-mono text-sm text-foreground">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        ))}
-      </div>
-
-      <div className="space-y-4">
-        <RailCard title="Audit trail" icon={ShieldCheck}>
-          <SecurityAuditList items={selected.auditTrail} />
-        </RailCard>
-        <RailCard title="Active venues" icon={Landmark}>
-          <SecurityVenueList venues={selected.venues} />
-        </RailCard>
-        <RailCard title="Match rationale" icon={Sparkles}>
-          <SecurityRationaleList items={selected.rationale} />
-        </RailCard>
-      </div>
-    </div>
-  );
-}
-
-function SecurityCompanyPanel({ selected }: { selected: SecurityMasterSelectedState }) {
-  return (
-    <div
-      id="security-master-panel-company"
-      role="tabpanel"
-      aria-labelledby="security-master-tab-company"
-      className="grid gap-4 p-4 xl:grid-cols-[1fr_320px]"
-    >
-      <div className="space-y-4">
-        <div className="rounded-xl border border-border/70 bg-background/80 p-5">
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 font-display text-xl font-semibold text-primary">
-              {selected.companyCard.logoText}
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-lg font-semibold text-foreground">{selected.companyCard.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{selected.companyCard.subtitle}</p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{selected.companyCard.description}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {selected.companyTags.map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {selected.companySections.map((section) => (
-          <SecuritySectionCard key={section.id} section={section} />
-        ))}
-      </div>
-
-      <div className="space-y-4">
-        <RailCard title="Company metrics" icon={Building2}>
-          <MetricFieldList fields={selected.companyMetrics} />
-        </RailCard>
-        <RailCard title="Ownership posture" icon={Landmark}>
-          <OwnershipBars bars={selected.ownership} />
-        </RailCard>
-        <RailCard title="Venue distribution" icon={ArrowUpRight}>
-          <SecurityVenueList venues={selected.venues} />
-        </RailCard>
-      </div>
-    </div>
-  );
-}
-
-function SecurityCorporateActionsPanel({ selected }: { selected: SecurityMasterSelectedState }) {
-  return (
-    <div
-      id="security-master-panel-corporate-actions"
-      role="tabpanel"
-      aria-labelledby="security-master-tab-corporate-actions"
-      className="grid gap-4 p-4 xl:grid-cols-[1fr_320px]"
-    >
-      <div className="space-y-4">
-        <div className="rounded-xl border border-primary/25 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-5">
-          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-            <div>
-              <div className="eyebrow-label text-primary">{selected.upcomingActionLabel}</div>
-              <h3 className="mt-2 text-lg font-semibold text-foreground">{selected.upcomingActionTitle}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{selected.upcomingActionDescription}</p>
-            </div>
-            <div className="rounded-xl border border-primary/25 bg-background/80 px-4 py-3 text-center">
-              <div className="font-mono text-2xl text-foreground">{selected.upcomingActionCountdown}</div>
-              <div className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{selected.upcomingActionCountdownLabel}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border/70 bg-background/80 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="font-semibold text-foreground">Event timeline</div>
-            <div className="text-xs text-muted-foreground">Sequence from declaration through packet evidence</div>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-5">
-            {selected.corporateTimeline.map((event) => (
-              <TimelineStep key={event.id} event={event} />
-            ))}
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-border/70 bg-background/80">
-          <div className="grid gap-3 border-b border-border/70 bg-secondary/20 px-4 py-3 text-xs uppercase tracking-[0.14em] text-muted-foreground sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
-            <span>Type</span>
-            <span>Event</span>
-            <span>Announced</span>
-            <span>Effective</span>
-            <span className="text-right">Amount</span>
-            <span>Status</span>
-          </div>
-          <div className="divide-y divide-border/60">
-            {selected.corporateActions.map((row) => (
-              <CorporateActionRow key={row.id} row={row} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <RailCard title="Corporate action posture" icon={TimerReset}>
-          <MetricFieldList fields={selected.corporateActionStats} />
-        </RailCard>
-        <RailCard title="Linked filings" icon={FileText}>
-          <div className="space-y-2">
-            {selected.filings.map((filing) => (
-              <div key={filing.id} className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-mono text-xs text-primary">{filing.form}</span>
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
-                <div className="mt-2 text-sm text-foreground">{filing.description}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{filing.meta}</div>
-              </div>
-            ))}
-          </div>
-        </RailCard>
-      </div>
-    </div>
-  );
-}
-
-function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedState }) {
-  return (
-    <div
-      id="security-master-panel-print"
-      role="tabpanel"
-      aria-labelledby="security-master-tab-print"
-      className="grid gap-4 p-4 xl:grid-cols-[1fr_320px]"
-    >
-      <div className="space-y-4">
-        <div className="rounded-xl border border-border/70 bg-panel-strong p-5 text-slate-50">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="eyebrow-label text-slate-300">Print packet</div>
-              <h3 className="mt-2 text-lg font-semibold">{selected.printPacketId}</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{selected.printSummary}</p>
-            </div>
-            <Badge variant="success" dot>Ready for review</Badge>
-          </div>
-          <dl className="mt-4 grid gap-3 sm:grid-cols-3">
-            <DetailRow label="Generated" value={selected.printGeneratedAt} inverted />
-            <DetailRow label="Distribution" value={selected.printDistribution} inverted />
-            <DetailRow label="Sections" value={`${selected.printSections.length}`} inverted />
-          </dl>
-        </div>
-
-        <div className="rounded-xl border border-border/70 bg-background/80 p-5">
-          <div className="font-semibold text-foreground">Packet contents</div>
-          <div className="mt-4 grid gap-3">
-            {selected.printSections.map((section) => (
-              <div key={section.id} className="rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
-                <div className="font-semibold text-foreground">{section.title}</div>
-                <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border/70 bg-background/80 p-5">
-          <div className="font-semibold text-foreground">Sign-off checklist</div>
-          <div className="mt-4 space-y-2">
-            {selected.printChecklist.map((item) => (
-              <ChecklistRow key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <RailCard title="Export evidence" icon={Download}>
-          <div className="space-y-2">
-            {selected.exportEvidence.map((item) => (
-              <div key={item.id} className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3">
-                <div className="font-semibold text-foreground">{item.title}</div>
-                <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
-                <div className="mt-2 font-mono text-xs text-primary">{item.destination}</div>
-              </div>
-            ))}
-          </div>
-        </RailCard>
-        <RailCard title="Packet routing" icon={Printer}>
-          <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3 text-sm text-muted-foreground">
-            Export the packet to preserve operator evidence, then attach it to the research, accounting, and reporting handoff bundles.
-          </div>
-        </RailCard>
-      </div>
-    </div>
-  );
-}
-
-function SecuritySectionCard({ section }: { section: SecurityMasterCompanySection }) {
-  return (
-    <div className="rounded-xl border border-border/70 bg-background/80">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-secondary/20 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs text-primary">{section.badge}</span>
-          <div className="font-semibold text-foreground">{section.title}</div>
-        </div>
-        <span className="text-xs text-muted-foreground">{section.meta}</span>
-      </div>
-      <dl className="grid gap-px bg-border/60">
-        {section.rows.map((row) => (
-          <div key={row.id} className="grid gap-2 bg-background px-4 py-3 sm:grid-cols-[minmax(0,0.55fr)_minmax(0,1fr)]">
-            <dt className="text-xs text-muted-foreground">{row.label}</dt>
-            <dd className="break-words text-sm text-foreground">{row.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  );
-}
-
-function SecurityAuditList({ items }: { items: SecurityMasterAuditItem[] }) {
-  return (
-    <div className="space-y-3">
-      {items.map((item) => (
-        <div key={item.id} className="grid grid-cols-[12px_1fr] gap-3">
-          <div className={cn("mt-1.5 h-3 w-3 rounded-full border", item.current ? "border-success bg-success/30" : "border-border/70 bg-secondary/60")} />
-          <div>
-            <div className="text-sm text-foreground">{item.label}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{item.meta}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SecurityVenueList({ venues }: { venues: SecurityMasterVenueRow[] }) {
-  return (
-    <div className="space-y-2">
-      {venues.map((venue) => (
-        <div key={venue.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
-          <div>
-            <div className="text-sm text-foreground">{venue.venue}</div>
-            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{venue.mic}</div>
-          </div>
-          <span className="font-mono text-xs text-primary">{venue.ticker}</span>
-          {venue.primary ? <Badge variant="success">Primary</Badge> : <span className="text-xs text-muted-foreground">Alt</span>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SecurityRationaleList({ items }: { items: SecurityMasterRationaleItem[] }) {
-  return (
-    <div className="space-y-3">
-      {items.map((item) => (
-        <div key={item.id} className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="text-sm text-foreground">{item.label}</div>
-            <span className="font-mono text-[11px] text-muted-foreground">{item.weight}</span>
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function MetricFieldList({ fields }: { fields: SecurityMasterDetailField[] }) {
-  return (
-    <div className="grid gap-2">
-      {fields.map((field) => (
-        <div key={field.id} className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3">
-          <div className="text-xs text-muted-foreground">{field.label}</div>
-          <div className={cn(
-            "mt-1 font-mono text-sm",
-            field.tone === "success" ? "text-success" : field.tone === "warning" ? "text-warning" : "text-foreground"
-          )}>
-            {field.value}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function OwnershipBars({ bars }: { bars: SecurityMasterOwnershipBar[] }) {
-  return (
-    <div className="space-y-3">
-      {bars.map((bar) => (
-        <div key={bar.id} className="grid grid-cols-[90px_1fr_44px] items-center gap-3">
-          <div className="text-xs text-muted-foreground">{bar.label}</div>
-          <div className="h-2 rounded-full bg-border/70">
-            <div
-              className={cn(
-                "h-2 rounded-full",
-                bar.tone === "primary"
-                  ? "bg-primary"
-                  : bar.tone === "success"
-                    ? "bg-success"
-                    : bar.tone === "warning"
-                      ? "bg-warning"
-                      : "bg-muted-foreground/60"
-              )}
-              style={{ width: `${bar.percent}%` }}
-            />
-          </div>
-          <div className="text-right font-mono text-xs text-foreground">{bar.percent}%</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function TimelineStep({ event }: { event: SecurityMasterTimelineEvent }) {
-  return (
-    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3 text-center">
-      <div className={cn(
-        "mx-auto mb-2 h-3 w-3 rounded-full border",
-        event.current ? "border-primary bg-primary/40" : event.done ? "border-success bg-success/30" : "border-border bg-background"
-      )}
-      />
-      <div className={cn("text-[11px] uppercase tracking-[0.14em]", event.current ? "text-primary" : "text-muted-foreground")}>{event.label}</div>
-      <div className="mt-1 font-mono text-sm text-foreground">{event.date}</div>
-    </div>
-  );
-}
-
-function CorporateActionRow({ row }: { row: SecurityMasterCorporateActionRow }) {
-  return (
-    <div className="grid gap-3 px-4 py-4 text-sm sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
-      <div className="space-y-1">
-        <div className="font-mono text-xs text-primary">{row.type}</div>
-        <div className="text-xs text-muted-foreground">{row.note}</div>
-      </div>
-      <div>
-        <div className="font-semibold text-foreground">{row.description}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{row.note}</div>
-      </div>
-      <div className="font-mono text-xs text-muted-foreground">{row.announcedOn}</div>
-      <div className="font-mono text-xs text-muted-foreground">{row.effectiveOn}</div>
-      <div className="text-right font-mono text-sm text-foreground">{row.amount}</div>
-      <div>
-        <Badge variant={row.status === "Confirmed" ? "success" : row.status === "Pending" ? "warning" : "outline"}>
-          {row.status}
-        </Badge>
-      </div>
-    </div>
-  );
-}
-
-function ChecklistRow({ item }: { item: SecurityMasterPrintChecklistItem }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-secondary/20 px-3 py-3">
-      <div>
-        <div className="text-sm text-foreground">{item.label}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{item.owner}</div>
-      </div>
-      <Badge variant={item.status === "Ready" ? "success" : item.status === "Review" ? "warning" : "outline"}>
-        {item.status}
-      </Badge>
-    </div>
-  );
-}
-
-function RailCard({
-  title,
-  icon: Icon,
-  children
-}: {
-  title: string;
-  icon: LucideIcon;
-  children: ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-border/70 bg-background/80 p-4">
-      <div className="mb-4 flex items-center gap-2 font-semibold text-foreground">
-        <Icon className="h-4 w-4 text-primary" />
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function EmptyState({ state }: { state: DataOperationsEmptyState }) {
-  return (
-    <div role="status" className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4">
-      <div className="text-sm font-semibold">{state.title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{state.description}</p>
-    </div>
-  );
-}
-
-function ProviderEmptyState({ onSetup }: { onSetup: () => void }) {
-  return (
-    <div role="status" className="rounded-lg border border-dashed border-border/80 bg-secondary/10 px-4 py-6 text-center">
-      <RadioTower className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
-      <div className="text-sm font-semibold">No providers configured</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Meridian needs at least one data provider to stream prices, run backfills, and power strategy execution.
-        Configure a provider to unblock live data and backfill workflows.
-      </p>
-      <Button size="sm" className="mt-4" onClick={onSetup} aria-label="Open provider setup to configure your first data provider">
-        <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-        Configure your first provider
-      </Button>
-    </div>
-  );
-}
 
 function DataHighlight({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
   return (
@@ -1319,14 +1499,11 @@ function DataHighlight({ icon: Icon, title, description }: { icon: LucideIcon; t
   );
 }
 
-function DetailRow({ label, value, inverted = false }: { label: string; value: string; inverted?: boolean }) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className={cn(
-      "flex items-center justify-between gap-4 rounded-lg border px-3 py-2",
-      inverted ? "border-slate-700/60 bg-slate-950/40" : "border-border/70 bg-secondary/40"
-    )}>
-      <span className={cn(inverted ? "text-slate-300" : "text-muted-foreground")}>{label}</span>
-      <span className={cn("font-mono", inverted ? "text-slate-50" : "text-foreground")}>{value}</span>
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-mono text-foreground">{value}</dd>
     </div>
   );
 }
@@ -1346,12 +1523,6 @@ const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
   danger: "border-danger/35 bg-danger/10 text-danger"
 };
 
-const exportToneClass = {
-  success: "border-success/30 bg-success/5",
-  warning: "border-warning/30 bg-warning/5",
-  paper: "border-paper/30 bg-paper/5"
-} as const;
-
 function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
   return (
     <div
@@ -1360,7 +1531,7 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
       className={cn("mt-4 rounded-md border p-3 text-sm", resultToneClass[state.tone])}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="font-semibold text-foreground">{state.title}</div>
+        <div className="font-semibold">{state.title}</div>
         <div className="font-mono text-xs">{state.statusLabel}</div>
       </div>
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">

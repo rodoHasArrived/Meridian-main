@@ -28,7 +28,7 @@ public static class EdgarReferenceDataEndpoints
             CancellationToken ct) =>
         {
             if (!HasPermission(httpContext, UserPermission.ModifySecurityMaster))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var normalizedRequest = request with
             {

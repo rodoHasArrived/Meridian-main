@@ -110,14 +110,16 @@ public sealed class FundLedgerReadServiceTests
         scoped.Should().NotBeNull();
         selectedScoped.Should().NotBeNull();
 
-        var consolidatedSlice = summary!.LedgerSlices!.Single(slice => slice.ScopeKind == FundLedgerScope.Consolidated);
-        var entitySlice = summary.LedgerSlices.Single(slice =>
+        var ledgerSlices = summary!.LedgerSlices!;
+
+        var consolidatedSlice = ledgerSlices.Single(slice => slice.ScopeKind == FundLedgerScope.Consolidated);
+        var entitySlice = ledgerSlices.Single(slice =>
             slice.ScopeKind == FundLedgerScope.Entity &&
             string.Equals(slice.ScopeId, context.FirstEntityScopeId, StringComparison.OrdinalIgnoreCase));
-        var sleeveSlice = summary.LedgerSlices.Single(slice =>
+        var sleeveSlice = ledgerSlices.Single(slice =>
             slice.ScopeKind == FundLedgerScope.Sleeve &&
             string.Equals(slice.ScopeId, context.FirstSleeveScopeId, StringComparison.OrdinalIgnoreCase));
-        var vehicleSlice = summary.LedgerSlices.Single(slice =>
+        var vehicleSlice = ledgerSlices.Single(slice =>
             slice.ScopeKind == FundLedgerScope.Vehicle &&
             string.Equals(slice.ScopeId, context.FirstVehicleScopeId, StringComparison.OrdinalIgnoreCase));
 

@@ -25,7 +25,7 @@ public sealed class SecurityMasterConvertibleEquityEndpointsTests
         await using var app = await CreateAppAsync(queryService, service, UserPermission.ViewSecurityMaster);
         var client = app.GetTestClient();
 
-        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Patch, $"/api/security-master/equities/{securityId}/conversion-terms")
+        using var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Patch, $"/api/security-master/{securityId}/convertible-equity-terms")
         {
             Content = JsonContent.Create(BuildRequest(), options: new JsonSerializerOptions(JsonSerializerDefaults.Web))
         });

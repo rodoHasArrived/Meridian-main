@@ -1,5 +1,6 @@
 #if WINDOWS
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Meridian.QuantScript.Documents;
 using Meridian.Wpf.Models;
@@ -7,7 +8,7 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
 
-public sealed class QuantScriptTemplateCatalogServiceTests
+public sealed partial class QuantScriptTemplateCatalogServiceTests
 {
     [Fact]
     public async Task LoadTemplateAsync_ReturnsTemplateSourceFromCatalog()
@@ -30,7 +31,7 @@ public sealed class QuantScriptTemplateCatalogServiceTests
                             "hello-spy.csx",
                             "Getting Started")
                     ]),
-                    QuantScriptStorageJsonContext.Default.QuantScriptTemplateCatalogManifest));
+                    TestJsonContext.Default.QuantScriptTemplateCatalogManifest));
             await File.WriteAllTextAsync(Path.Combine(root, "hello-spy.csx"), "Print(\"hello\");");
 
             var service = new QuantScriptTemplateCatalogService(
@@ -49,5 +50,9 @@ public sealed class QuantScriptTemplateCatalogServiceTests
             Directory.Delete(root, recursive: true);
         }
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSerializable(typeof(QuantScriptTemplateCatalogManifest))]
+    private sealed partial class TestJsonContext : JsonSerializerContext;
 }
 #endif

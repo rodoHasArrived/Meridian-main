@@ -1,0 +1,13 @@
+flowchart LR
+  Session["Paper session"]
+  Orders["Orders and fills"]
+  Ledger["Ledger entries"]
+  Replay["Replay verification"]
+  Readiness["Trading readiness"]
+  Inbox["Operator inbox"]
+  Session --> Orders
+  Session --> Ledger
+  Orders --> Replay
+  Ledger --> Replay
+  Replay --> Readiness
+  Readiness --> Inbox

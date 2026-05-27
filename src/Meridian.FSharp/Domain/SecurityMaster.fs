@@ -133,6 +133,9 @@ type ExerciseStyle =
     | European
     | Bermudan
 
+/// Single-case option-chain identity used by option-contract and series projections.
+type OptChainId = OptChainId of string
+
 type OptionTerms = {
     UnderlyingId: SecurityId
     PutCall: string
