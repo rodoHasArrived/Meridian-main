@@ -277,6 +277,33 @@ public sealed class EvidenceWorkflowFabricTests
             issue.Severity == EvidenceValidationSeverityDto.Critical);
     }
 
+
+    [Fact]
+    public void EvidencePacketValidationService_DoesNotBlockRetainedRouteArtifactsWithoutCanonicalSubject()
+    {
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
+        var node = Node(
+            subject,
+            "report",
+            "report-pack",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto("a1", "report-pack", null, "/api/workstation/evidence/export/manifest", DateTimeOffset.UtcNow, null, true)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [node],
+            [],
+            new HashSet<string>(["report"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        result.Completeness.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "retained-artifact-missing-canonical-subject");
+    }
+
     [Fact]
     public async Task EvidenceGraphService_DuringCancelledReview_PreservesCancellation()
     {
