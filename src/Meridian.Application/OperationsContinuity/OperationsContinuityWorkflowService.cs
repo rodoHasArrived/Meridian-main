@@ -797,7 +797,35 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return await ApplyCommandAsync(
+        var existing = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
+        if (existing is not null)
+        {
+            var readiness = EvaluateCloseReadiness(existing);
+            if (!readiness.IsReadyToClose)
+            {
+                await _auditStore.AppendAsync(new OperationsWorkflowAuditDraft(
+                    existing.WorkflowId,
+                    existing.FundAccountId,
+                    existing.PeriodId,
+                    "workflow-close-rejected",
+                    _statusDerivation.Derive(existing),
+                    _statusDerivation.Derive(existing),
+                    OperationsGateKeyDto.Approval,
+                    existing.ApprovalGate.Status,
+                    existing.ApprovalGate.Status,
+                    request.Actor?.Trim() ?? string.Empty,
+                    RedactSensitiveText($"{request.Rationale} | close rejected: {string.Join("; ", readiness.Blockers.Select(static b => b.Code))}"),
+                    RedactSensitiveText(request.CorrelationId),
+                    EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks)), ct).ConfigureAwait(false);
+
+                return new OperationsTransitionResultDto(false, "CLOSE_READINESS_FAILED", "Close was rejected by fail-closed readiness gating.", null,
+                    readiness.Blockers.Select(static b => new OperationsWorkflowBlockerDto(b.Code, b.Message, b.Gate, b.Severity, [])).ToArray(),
+                    readiness.NextActions,
+                    CloseReadiness: readiness);
+            }
+        }
+
+        var result = await ApplyCommandAsync(
             workflowId,
             request.ExpectedVersion,
             request.Actor,
@@ -814,6 +842,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             },
             requireIntactAuditChain: true,
             ct: ct).ConfigureAwait(false);
+
+        return result with { CloseReadiness = result.Workflow?.CloseReadiness };
     }
 
     private async Task<OperationsTransitionResultDto> ApplyCommandAsync(
@@ -1035,7 +1065,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             BuildChecklist(workflow, timeline),
             evidenceLinks,
             blockers,
-            nextActions);
+            nextActions,
+            EvaluateCloseReadiness(workflow));
     }
 
     private static IReadOnlyList<OperationsCloseChecklistTaskDto> BuildChecklist(
@@ -1096,6 +1127,33 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflow.UpdatedAtUtc,
             gates,
             gates.SelectMany(static gate => gate.NextActions).ToArray());
+    }
+
+    private static OperationsCloseReadinessDto EvaluateCloseReadiness(OperationsContinuityWorkflow workflow)
+    {
+        var blockers = new List<OperationsCloseReadinessBlockerDto>();
+        if (workflow.BreakCases.Any(static item => !string.Equals(item.Status, "closed", StringComparison.OrdinalIgnoreCase) && !string.Equals(item.Status, "resolved", StringComparison.OrdinalIgnoreCase)))
+        {
+            blockers.Add(new("RECONCILIATION_BREAKS_OPEN", "Breaks", "Critical", "Unresolved reconciliation breaks still require disposition.", OperationsGateKeyDto.Reconciliation, "/workstation/accounting"));
+        }
+
+        if (workflow.ApprovalState != OperationsApprovalStateDto.Approved)
+        {
+            blockers.Add(new("APPROVAL_MISSING", "Approvals", "Critical", "Close requires final approval before execution.", OperationsGateKeyDto.Approval, "/workstation/accounting"));
+        }
+
+        if (workflow.LedgerPostingState != OperationsLedgerPostingStateDto.Posted && workflow.LedgerPostingState != OperationsLedgerPostingStateDto.Complete)
+        {
+            blockers.Add(new("POSTING_INCOMPLETE", "Posting", "Critical", "Ledger posting state is not complete for close.", OperationsGateKeyDto.LedgerPosting, "/workstation/accounting"));
+        }
+
+        if (!workflow.ReportPackReadiness.IsReady || string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId))
+        {
+            blockers.Add(new("EVIDENCE_INCOMPLETE", "Evidence", "Critical", "Close evidence is incomplete or report pack is missing.", OperationsGateKeyDto.Approval, "/workstation/reporting"));
+        }
+
+        var actions = blockers.Select(static b => new OperationsNextActionDto(b.Code, b.Message, b.RouteHint, b.Gate)).ToArray();
+        return new OperationsCloseReadinessDto(blockers.Count == 0, blockers.Count == 0 ? "Info" : "Critical", blockers, actions);
     }
 
     private static OperationsGateDto ToGateDto(OperationsGateState gate) =>

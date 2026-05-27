@@ -587,7 +587,8 @@ public sealed record OperationsTransitionResultDto(
     OperationsContinuityWorkflowDto? Workflow,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
     IReadOnlyList<OperationsNextActionDto> NextActions,
-    long? NewVersion = null);
+    long? NewVersion = null,
+    OperationsCloseReadinessDto? CloseReadiness = null);
 
 public sealed record OperationsContinuityWorkflowSummaryDto(
     Guid WorkflowId,
@@ -626,7 +627,8 @@ public sealed record OperationsContinuityWorkflowDto(
     IReadOnlyList<OperationsCloseChecklistTaskDto> CloseChecklist,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    OperationsCloseReadinessDto? CloseReadiness = null);
 
 public sealed record OperationsCloseChecklistTaskDto(
     string TaskId,
@@ -737,6 +739,21 @@ public sealed record OperationsReportPackReadinessDto(
     string? ReportPackId,
     string? BlockingReason,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+
+
+public sealed record OperationsCloseReadinessDto(
+    bool IsReadyToClose,
+    string Severity,
+    IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers,
+    IReadOnlyList<OperationsNextActionDto> NextActions);
+
+public sealed record OperationsCloseReadinessBlockerDto(
+    string Code,
+    string Category,
+    string Severity,
+    string Message,
+    OperationsGateKeyDto? Gate,
+    string? RouteHint);
 
 public sealed record OperationsWorkflowBlockerDto(
     string Code,
