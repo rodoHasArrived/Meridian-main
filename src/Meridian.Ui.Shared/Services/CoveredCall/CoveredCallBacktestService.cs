@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
-using Meridian.Application.Pipeline;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
@@ -37,8 +36,18 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     private readonly ILogger<CoveredCallBacktestService> _logger;
     private readonly TimeProvider _timeProvider;
 
+    private static readonly BoundedChannelOptions RunQueueOptions = new(capacity: 512)
+    {
+        FullMode = BoundedChannelFullMode.DropWrite,
+        SingleReader = true,
+        SingleWriter = false
+    };
+
     private readonly Channel<CoveredCallCommand> _channel =
-        EventPipelinePolicy.Default.CreateChannel<CoveredCallCommand>();
+        Channel.CreateBounded<CoveredCallCommand>(RunQueueOptions);
+
+    private const int MaxRetainedRuns = 2_000;
+    private static readonly TimeSpan TerminalRunRetention = TimeSpan.FromMinutes(30);
 
     private readonly ConcurrentDictionary<string, RunState> _runs = new(StringComparer.Ordinal);
 
@@ -145,6 +154,12 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     {
         ArgumentNullException.ThrowIfNull(request);
         ValidateRequest(request);
+        PruneTerminalRuns();
+
+        if (_runs.Count >= MaxRetainedRuns)
+        {
+            throw new InvalidOperationException("Covered-call backtest queue is at capacity. Please retry shortly.");
+        }
 
         var runId = Guid.NewGuid().ToString("N");
         var queuedAt = _timeProvider.GetUtcNow();
@@ -588,6 +603,11 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 catch (SemaphoreFullException) { /* benign during resize */ }
                 catch (ObjectDisposedException) { /* benign during resize */ }
             }
+
+            if (state is { Phase: RunPhase.Completed or RunPhase.Failed or RunPhase.Cancelled })
+            {
+                state.Cts.Dispose();
+            }
         }
     }
 
@@ -615,6 +635,30 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             throw new ArgumentException("InitialCash must be greater than zero.", nameof(request));
         if (request.InitialUnderlyingShares < 0)
             throw new ArgumentException("InitialUnderlyingShares cannot be negative.", nameof(request));
+    }
+
+
+    private void PruneTerminalRuns()
+    {
+        var now = _timeProvider.GetUtcNow();
+        foreach (var entry in _runs)
+        {
+            var state = entry.Value;
+            if (state.Phase is not (RunPhase.Completed or RunPhase.Failed or RunPhase.Cancelled))
+            {
+                continue;
+            }
+
+            if (!state.EndedAt.HasValue || now - state.EndedAt.Value < TerminalRunRetention)
+            {
+                continue;
+            }
+
+            if (_runs.TryRemove(entry.Key, out var removed))
+            {
+                removed.Cts.Dispose();
+            }
+        }
     }
 
     private void ResizeConcurrency(int desired)
