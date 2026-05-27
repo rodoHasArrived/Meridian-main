@@ -325,6 +325,34 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             "the short-sell fill was rejected by the account rule; no fills should be recorded");
     }
 
+    [Fact]
+    public async Task RunAsync_RejectedMarketImpactSlices_DoNotRemoveRemainingOrderQuantity()
+    {
+        WriteCustomBarJsonl(
+            "AAPL",
+            (new DateOnly(2024, 1, 2), 100m, 100m, 100m, 100m, 40),
+            (new DateOnly(2024, 1, 3), 1m, 1m, 1m, 1m, 40));
+
+        var restrictedAccount = new FinancialAccount(
+            BacktestDefaults.DefaultBrokerageAccountId,
+            "No-Margin Brokerage",
+            FinancialAccountKind.Brokerage,
+            InitialCash: 500m,
+            Rules: new FinancialAccountRules(AllowMargin: false, AllowShortSelling: true));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 3),
+            DataRoot: _dataRoot,
+            Accounts: [restrictedAccount]);
+
+        var strategy = new BuyFirstBarWithMarketImpactGtcStrategy("AAPL", quantity: 20);
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(20,
+            "the first accepted slice should keep the order pending so remaining quantity can fill later");
+    }
+
     // ------------------------------------------------------------------ //
     //  Progress reporting                                                 //
     // ------------------------------------------------------------------ //
@@ -507,6 +535,33 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             date = date.AddDays(1);
         }
     }
+
+    private void WriteCustomBarJsonl(string symbol, params (DateOnly Date, decimal Open, decimal High, decimal Low, decimal Close, long Volume)[] bars)
+    {
+        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(symbolDir, $"{symbol}_bars_{bars[0].Date:yyyy-MM-dd}.jsonl");
+
+        using var writer = new StreamWriter(filePath);
+        var seq = 1L;
+        foreach (var bar in bars)
+        {
+            var payload = new HistoricalBar(
+                Symbol: symbol,
+                SessionDate: bar.Date,
+                Open: bar.Open,
+                High: bar.High,
+                Low: bar.Low,
+                Close: bar.Close,
+                Volume: bar.Volume,
+                Source: "test",
+                SequenceNumber: seq++);
+
+            var ts = payload.ToTimestampUtc();
+            var evt = MarketEvent.HistoricalBar(ts, symbol, payload, seq, "test");
+            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+        }
+    }
 }
 
 // ------------------------------------------------------------------ //
@@ -656,6 +711,36 @@ file sealed class ShortFirstBarStrategy(string symbol, long quantity) : IBacktes
             ctx.PlaceMarketOrder(symbol, -quantity);   // negative quantity = short sell
             _shorted = true;
         }
+    }
+
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
+
+file sealed class BuyFirstBarWithMarketImpactGtcStrategy(string symbol, long quantity) : IBacktestStrategy
+{
+    private bool _submitted;
+
+    public string Name => "BuyFirstBarWithMarketImpactGtc";
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+    {
+        if (_submitted || !bar.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        ctx.PlaceOrder(new OrderRequest(
+            Symbol: symbol,
+            Quantity: quantity,
+            Type: OrderType.Market,
+            TimeInForce: TimeInForce.Gtc,
+            ExecutionModel: ExecutionModel.MarketImpact));
+        _submitted = true;
     }
 
     public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
