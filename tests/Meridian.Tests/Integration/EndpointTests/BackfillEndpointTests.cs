@@ -189,6 +189,47 @@ public sealed class BackfillEndpointTests
         body.Should().Contain("1 Minute");
     }
 
+    [Fact]
+    public async Task RunBackfill_WithIntradayTooManySymbols_ReturnsBadRequest()
+    {
+        var symbols = Enumerable.Range(1, 11).Select(i => $"SYM{i}").ToArray();
+        var payload = new
+        {
+            Symbols = symbols,
+            Provider = "yahoo",
+            Granularity = "1Min",
+            From = "2026-01-01",
+            To = "2026-01-02"
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/backfill/run", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("Intraday backfill supports at most 10 symbols");
+    }
+
+    [Fact]
+    public async Task RunBackfill_WithIntradayRangeExceedingLimit_ReturnsBadRequest()
+    {
+        var payload = new
+        {
+            Symbols = new[] { "SPY" },
+            Provider = "yahoo",
+            Granularity = "1Min",
+            From = "2026-01-01",
+            To = "2026-02-15"
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/backfill/run", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("Intraday backfill date range cannot exceed 31 days");
+    }
+
     #endregion
 
     #region POST /api/backfill/run/preview - Validation
@@ -202,6 +243,26 @@ public sealed class BackfillEndpointTests
         var response = await _client.PostAsync("/api/backfill/run/preview", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task PreviewBackfill_WithIntradayRangeExceedingLimit_ReturnsBadRequest()
+    {
+        var payload = new
+        {
+            Symbols = new[] { "SPY" },
+            Provider = "yahoo",
+            Granularity = "5Min",
+            From = "2026-01-01",
+            To = "2026-02-15"
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/backfill/run/preview", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("Intraday backfill date range cannot exceed 31 days");
     }
 
     #endregion
