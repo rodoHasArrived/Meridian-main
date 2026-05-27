@@ -673,7 +673,7 @@ These areas are part of the documented implementation scope even though they are
 | L3 reconstruction timeline | ðŸ“ | Planned deterministic replay + merged timeline for queue inference |
 | L3 inference model | ðŸ“ | Planned probabilistic queue-ahead inference with confidence scoring |
 | Queue-aware execution simulator | ðŸ“ | Planned market/limit simulation with partial fills, latency, and exported artifacts |
-| Simulation CLI workflow | ðŸ“ | `--simulate-execution` / calibration commands are documented but not yet implemented |
+| Simulation CLI workflow | ✅ | `--simulate-execution` now dispatches through dedicated `SimulationCommands`, supports dry-run/date/time-window/output options, and emits deterministic artifacts (`fill-tape.jsonl`, `order-lifecycle.jsonl`, `summary.json`, `queue-diagnostics.jsonl`). |
 | Simulation WPF explorer | ðŸ“ | Dedicated simulation page and progress/results UX remain planned |
 
 ### Remaining work

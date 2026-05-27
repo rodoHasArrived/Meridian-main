@@ -46,6 +46,7 @@ internal static class CommandDispatchPlanner
             new ConfigPresetCommand(new AutoConfigurationService(), log),
             new QueryCommand(new HistoricalDataQueryService(dataRoot), log),
             new CatalogCommand(storageSearchService, log),
+            new SimulationCommands(new ExecutionSimulationOrchestrator(new HistoricalDataQueryService(dataRoot))),
             new GenerateLoaderCommand(dataRoot, log),
             new RunbookCommands(runbookStore, runbookExecutor),
             new WalRepairCommand(cfg, log),
