@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Metric / KPI cards</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 18px; font-family: var(--font-sans); color: var(--fg); }
   .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -20,6 +22,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Metric / KPI cards">
+<h1 class="preview-sr-only">Metric / KPI cards</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="grid">
     <div class="card">
       <div class="head"><span class="label">NET P&L</span>
@@ -46,5 +51,6 @@
       <div class="delta">MAX −4.10% · 90D</div>
     </div>
   </div>
+</main>
 </body>
 </html>

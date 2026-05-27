@@ -14,6 +14,7 @@ internal sealed class ProcessBackedCppTraderSessionClient : ICppTraderSessionCli
     private readonly Task _readerTask;
     private readonly ILogger _logger;
     private readonly string _hostId;
+    private readonly TimeSpan _shutdownTimeout;
 
     public string SessionId { get; }
 
@@ -23,10 +24,12 @@ internal sealed class ProcessBackedCppTraderSessionClient : ICppTraderSessionCli
         Process process,
         string sessionId,
         CppTraderSessionKind sessionKind,
+        TimeSpan shutdownTimeout,
         ILogger logger)
     {
         _process = process;
         _logger = logger;
+        _shutdownTimeout = shutdownTimeout <= TimeSpan.Zero ? TimeSpan.FromSeconds(5) : shutdownTimeout;
         SessionId = sessionId;
         SessionKind = sessionKind;
         _hostId = $"{Environment.MachineName}:{Environment.ProcessId}";
@@ -130,16 +133,41 @@ internal sealed class ProcessBackedCppTraderSessionClient : ICppTraderSessionCli
 
         try
         {
-            await _readerTask.ConfigureAwait(false);
+            try
+            {
+                _process.StandardInput.Close();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to close CppTrader stdin for session {SessionId}", SessionId);
+            }
+
+            await _readerTask.WaitAsync(_shutdownTimeout).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
         }
+        catch (TimeoutException ex)
+        {
+            _logger.LogWarning(ex, "CppTrader protocol reader did not finish within {Timeout} for session {SessionId}", _shutdownTimeout, SessionId);
+        }
 
         if (!_process.HasExited)
         {
+            _logger.LogWarning(
+                "CppTrader adapter process did not exit gracefully within {Timeout}; terminating owned process tree for session {SessionId}",
+                _shutdownTimeout,
+                SessionId);
             _process.Kill(entireProcessTree: true);
-            await _process.WaitForExitAsync().ConfigureAwait(false);
+            using var killCts = new CancellationTokenSource(_shutdownTimeout);
+            try
+            {
+                await _process.WaitForExitAsync(killCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogWarning(ex, "CppTrader adapter process did not acknowledge termination for session {SessionId}", SessionId);
+            }
         }
 
         _process.Dispose();

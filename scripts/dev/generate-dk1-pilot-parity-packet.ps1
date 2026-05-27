@@ -108,7 +108,7 @@ $requiredSamples = @(
 $requiredDocs = @(
     [ordered]@{
         name = "DK1 pilot parity runbook"
-        path = "docs/status/dk1-pilot-parity-runbook.md"
+        path = "docs/status/evidence/dk1-pilot-parity-runbook.md"
         gate = "parity"
         requiredTokens = @(
             "DK1-ALPACA-QUOTE-GOLDEN",
@@ -120,7 +120,7 @@ $requiredDocs = @(
     },
     [ordered]@{
         name = "DK1 trust rationale mapping"
-        path = "docs/status/dk1-trust-rationale-mapping.md"
+        path = "docs/status/evidence/dk1-trust-rationale-mapping.md"
         gate = "explainability"
         requiredTokens = @(
             "signalSource",
@@ -138,7 +138,7 @@ $requiredDocs = @(
     },
     [ordered]@{
         name = "DK1 baseline trust thresholds"
-        path = "docs/status/dk1-baseline-trust-thresholds.md"
+        path = "docs/status/evidence/dk1-baseline-trust-thresholds.md"
         gate = "calibration"
         requiredTokens = @(
             "Composite trust score",
@@ -631,8 +631,8 @@ $missingDocs = @($docReviews | Where-Object { -not $_.exists } | ForEach-Object 
 $incompleteDocs = @($docReviews | Where-Object { $_.status -eq "incomplete" })
 $incompleteSamples = @($sampleReviews | Where-Object { $_.status -eq "incomplete" })
 
-$trustDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/dk1-trust-rationale-mapping.md" } | Select-Object -First 1)
-$thresholdDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/dk1-baseline-trust-thresholds.md" } | Select-Object -First 1)
+$trustDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/evidence/dk1-trust-rationale-mapping.md" } | Select-Object -First 1)
+$thresholdDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/evidence/dk1-baseline-trust-thresholds.md" } | Select-Object -First 1)
 $trustContractStatus = if ($trustDocReview.Count -eq 0) { "missing" } else { [string]$trustDocReview[0]["status"] }
 $thresholdContractStatus = if ($thresholdDocReview.Count -eq 0) { "missing" } else { [string]$thresholdDocReview[0]["status"] }
 $trustContractMissingRequirements = if ($trustDocReview.Count -eq 0) { @() } else { @($trustDocReview[0]["missingRequirements"]) }
@@ -699,7 +699,7 @@ $packet = [ordered]@{
         samples = @($sampleReviews)
     }
     trustRationaleContract = [ordered]@{
-        documentPath = "docs/status/dk1-trust-rationale-mapping.md"
+        documentPath = "docs/status/evidence/dk1-trust-rationale-mapping.md"
         requiredPayloadFields = @("signalSource", "reasonCode", "recommendedAction")
         requiredReasonCodes = @(
             "HEALTHY_BASELINE",
@@ -715,7 +715,7 @@ $packet = [ordered]@{
         missingRequirements = $trustContractMissingRequirements
     }
     baselineThresholdContract = [ordered]@{
-        documentPath = "docs/status/dk1-baseline-trust-thresholds.md"
+        documentPath = "docs/status/evidence/dk1-baseline-trust-thresholds.md"
         requiredMetrics = @(
             "Composite trust score",
             "Connection stability score",

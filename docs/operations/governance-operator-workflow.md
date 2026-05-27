@@ -44,7 +44,12 @@ Use the explicit **Open Report Pack** action from either **Security Master** or 
 - `POST /api/export/analysis`
 - `/api/export/formats`
 
-The browser Reporting screen previews selected profiles through the read-only preview route and runs exports through the POST route. `/api/workstation/accounting` and `/api/workstation/reporting` expose the current accounting/reporting bootstrap payloads; `/api/workstation/governance` remains a compatibility alias.
+The browser Reporting screen previews selected profiles through the read-only preview route and runs
+exports through the POST route. Reporting export commands pass request abort signals and suppress
+superseded same-profile or profile-switch results so late export responses do not update the wrong
+selected profile. `/api/workstation/accounting` and `/api/workstation/reporting` expose the current
+accounting/reporting bootstrap payloads; `/api/workstation/governance` remains a compatibility
+alias.
 
 ## 5) Release evidence
 

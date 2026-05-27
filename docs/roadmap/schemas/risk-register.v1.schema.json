@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.risk-register.v1",
+  "type": "object",
+  "required": ["schema", "risks"],
+  "properties": {
+    "schema": { "type": "object" },
+    "risks": { "type": "array" }
+  },
+  "additionalProperties": false
+}

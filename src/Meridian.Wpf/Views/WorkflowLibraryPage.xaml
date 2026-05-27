@@ -46,25 +46,71 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBox Grid.Column="0"
                              MinWidth="320"
                              Style="{StaticResource FormTextBoxStyle}"
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.Name="Workflow library search" />
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding SummaryText}"
+                    <Button Grid.Column="1"
+                            Content="Clear"
+                            Command="{Binding ClearSearchCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Margin="12,0,0,0"
+                            Visibility="{Binding HasActiveSearch, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="WorkflowLibraryClearSearchButton" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding ResultScopeText}"
                                Margin="16,0,0,0"
                                VerticalAlignment="Center"
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="12" />
+                               FontSize="12"
+                               MaxWidth="360"
+                               TextTrimming="CharacterEllipsis"
+                               AutomationProperties.AutomationId="WorkflowLibraryResultScopeText" />
                 </Grid>
             </Border>
 
-            <TextBlock Text="{Binding EmptyStateText}"
-                       Visibility="{Binding HasWorkflows, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                       Margin="0,0,0,20" />
+            <Border Visibility="{Binding HasWorkflows, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
+                    Style="{StaticResource CardStyle}"
+                    Padding="28"
+                    Margin="0,0,0,20"
+                    AutomationProperties.AutomationId="WorkflowLibraryEmptyStatePanel"
+                    AutomationProperties.Name="{Binding EmptyStateTitle}">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="&#xE8FD;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="36"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,12" />
+                    <TextBlock Text="{Binding EmptyStateTitle}"
+                               Style="{StaticResource EmptyStateTitleStyle}"
+                               HorizontalAlignment="Center"
+                               AutomationProperties.AutomationId="WorkflowLibraryEmptyStateTitle" />
+                    <TextBlock Text="{Binding EmptyStateDetail}"
+                               Style="{StaticResource EmptyStateDescriptionStyle}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               MaxWidth="520"
+                               HorizontalAlignment="Center"
+                               Margin="0,6,0,16"
+                               AutomationProperties.AutomationId="WorkflowLibraryEmptyStateDetail" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="{Binding EmptyStateActionText}"
+                                Command="{Binding ClearSearchCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Visibility="{Binding HasActiveSearch, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="WorkflowLibraryEmptyStateClearSearchButton" />
+                        <Button Content="Refresh library"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="8,0,0,0"
+                                AutomationProperties.AutomationId="WorkflowLibraryEmptyStateRefreshButton" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <ItemsControl ItemsSource="{Binding Workflows}">
                 <ItemsControl.ItemTemplate>

@@ -13,7 +13,8 @@
                             Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
                             BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
                         <TextBlock Text="&#xE90F;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
                     </Border>
                     <StackPanel Margin="12,0,0,0">
                         <TextBlock Text="Storage Optimization" Style="{StaticResource PageTitleStyle}" />
@@ -28,9 +29,52 @@
                 <StackPanel>
                     <DockPanel Margin="0,0,0,12">
                         <TextBlock Text="Storage Overview" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
-                        <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
-                                Click="RefreshAnalytics_Click" HorizontalAlignment="Right" Padding="12,6" />
+                        <Button Content="Refresh"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding RefreshAnalyticsCommand}"
+                                IsEnabled="{Binding CanRefreshAnalytics}"
+                                HorizontalAlignment="Right"
+                                Padding="12,6"
+                                AutomationProperties.AutomationId="StorageOptimizationRefreshButton" />
                     </DockPanel>
+                    <Border Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="10,8"
+                            Margin="0,0,0,12"
+                            AutomationProperties.AutomationId="StorageOptimizationOverviewStatusStrip">
+                        <DockPanel>
+                            <ProgressBar Width="92"
+                                         Height="4"
+                                         Margin="0,0,10,0"
+                                         VerticalAlignment="Center"
+                                         IsIndeterminate="True"
+                                         Visibility="{Binding IsAnalyticsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                                         Foreground="{StaticResource InfoColorBrush}" />
+                            <TextBlock Text="{Binding OverviewStatusText}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="StorageOptimizationOverviewStatusText">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding OverviewStatusTone}" Value="Success">
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding OverviewStatusTone}" Value="Warning">
+                                                <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding OverviewStatusTone}" Value="Error">
+                                                <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DockPanel>
+                    </Border>
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -40,23 +84,27 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
                             <TextBlock Text="Total Size" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="TotalSizeText" Text="--" FontSize="20" FontWeight="Bold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding TotalSizeText}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationTotalSizeText" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,12,0">
                             <TextBlock Text="Total Files" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="TotalFilesText" Text="--" FontSize="20" FontWeight="Bold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding TotalFilesText}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationTotalFilesText" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Margin="0,0,12,0">
                             <TextBlock Text="Daily Growth" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="DailyGrowthText" Text="--" FontSize="20" FontWeight="Bold"
-                                       Foreground="{StaticResource WarningColorBrush}" />
+                            <TextBlock Text="{Binding DailyGrowthText}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationDailyGrowthText" />
                         </StackPanel>
                         <StackPanel Grid.Column="3">
                             <TextBlock Text="Days Until Full" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="DaysUntilFullText" Text="--" FontSize="20" FontWeight="Bold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding DaysUntilFullText}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationDaysUntilFullText" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -74,23 +122,23 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
                             <TextBlock Text="Trade Data" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="TradeSizeText" Text="--" FontSize="16" FontWeight="SemiBold"
+                            <TextBlock Text="{Binding TradeSizeText}" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <TextBlock x:Name="TradeFilesText" Text="-- files" FontSize="11"
+                            <TextBlock Text="{Binding TradeFilesText}" FontSize="11"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,12,0">
                             <TextBlock Text="Depth Data" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="DepthSizeText" Text="--" FontSize="16" FontWeight="SemiBold"
+                            <TextBlock Text="{Binding DepthSizeText}" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <TextBlock x:Name="DepthFilesText" Text="-- files" FontSize="11"
+                            <TextBlock Text="{Binding DepthFilesText}" FontSize="11"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Historical Data" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="HistoricalSizeText" Text="--" FontSize="16" FontWeight="SemiBold"
+                            <TextBlock Text="{Binding HistoricalSizeText}" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <TextBlock x:Name="HistoricalFilesText" Text="-- files" FontSize="11"
+                            <TextBlock Text="{Binding HistoricalFilesText}" FontSize="11"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         </StackPanel>
                     </Grid>
@@ -101,9 +149,29 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Top Symbols by Size" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock x:Name="SymbolBreakdownStatus" Text="Loading..."
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
-                    <ItemsControl x:Name="SymbolBreakdownList">
+                    <TextBlock Text="{Binding SymbolBreakdownStatusText}"
+                               Margin="0,0,0,8"
+                               AutomationProperties.AutomationId="StorageOptimizationSymbolBreakdownStatus">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SymbolBreakdownTone}" Value="Info">
+                                        <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SymbolBreakdownTone}" Value="Warning">
+                                        <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SymbolBreakdownTone}" Value="Error">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding SymbolBreakdownRows}"
+                                  Visibility="{Binding HasSymbolBreakdown, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  AutomationProperties.AutomationId="StorageOptimizationSymbolBreakdownList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,4">
@@ -111,6 +179,7 @@
                                         <ColumnDefinition Width="80" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="92" />
                                         <ColumnDefinition Width="60" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontWeight="SemiBold"
@@ -119,14 +188,28 @@
                                                  Height="8" Margin="8,0"
                                                  Foreground="{StaticResource InfoColorBrush}"
                                                  Background="{StaticResource ConsoleBackgroundDarkBrush}" />
-                                    <TextBlock Grid.Column="2" Text="{Binding FileCount, StringFormat='{}{0} files'}"
+                                    <TextBlock Grid.Column="2" Text="{Binding FileCountText}"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="8,0" />
-                                    <TextBlock Grid.Column="3" Text="{Binding PercentOfTotal, StringFormat='{}{0:F1}%'}"
+                                    <TextBlock Grid.Column="3" Text="{Binding SizeText}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="8,0"
+                                               HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="4" Text="{Binding PercentOfTotal, StringFormat='{}{0:F1}%'}"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <Border Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="14,12"
+                            Visibility="{Binding IsSymbolBreakdownEmpty, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="StorageOptimizationSymbolEmptyState">
+                        <TextBlock Text="No symbol-level footprint rows are available for the current archive scan."
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap" />
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -142,23 +225,40 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
                             <TextBlock Text="Drive" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="DriveNameText" Text="--" FontSize="14"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding DriveNameText}" FontSize="14"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationDriveNameText" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,12,0">
                             <TextBlock Text="Free Space" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="FreeSpaceText" Text="--" FontSize="14"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding FreeSpaceText}" FontSize="14"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationFreeSpaceText" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Used" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="UsedPercentText" Text="--" FontSize="14"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding UsedPercentText}" FontSize="14"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="StorageOptimizationUsedPercentText" />
                         </StackPanel>
                     </Grid>
-                    <ProgressBar x:Name="DriveUsageBar" Value="0" Maximum="100" Height="12" Margin="0,12,0,0"
-                                 Foreground="{StaticResource InfoColorBrush}"
-                                 Background="{StaticResource ConsoleBackgroundDarkBrush}" />
+                    <ProgressBar Value="{Binding DriveUsedPercent}" Maximum="100" Height="12" Margin="0,12,0,0"
+                                 Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                                 AutomationProperties.AutomationId="StorageOptimizationDriveUsageBar">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar">
+                                <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DriveUsageTone}" Value="Warning">
+                                        <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DriveUsageTone}" Value="Error">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
                 </StackPanel>
             </Border>
 
@@ -169,14 +269,55 @@
                     <TextBlock Text="Run a storage analysis to identify optimization opportunities such as duplicate files, uncompressed archives, small file consolidation, and tier migration candidates."
                                Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="Run Analysis" Style="{StaticResource PrimaryButtonStyle}"
-                                Click="RunAnalysis_Click" Padding="16,8" Margin="0,0,8,0" />
-                        <Button Content="View Tier Statistics" Style="{StaticResource SecondaryButtonStyle}"
-                                Click="ViewTierStats_Click" Padding="16,8" />
+                        <Button Content="Run Analysis"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding RunAnalysisCommand}"
+                                IsEnabled="{Binding CanRunOptimizationActions}"
+                                Padding="16,8"
+                                Margin="0,0,8,0"
+                                AutomationProperties.AutomationId="StorageOptimizationRunAnalysisButton" />
+                        <Button Content="View Tier Statistics"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding ViewTierStatisticsCommand}"
+                                IsEnabled="{Binding CanRunOptimizationActions}"
+                                Padding="16,8"
+                                AutomationProperties.AutomationId="StorageOptimizationViewTierStatsButton" />
                     </StackPanel>
-                    <TextBlock x:Name="AnalysisResultText" Text=""
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap"
-                               Margin="0,12,0,0" FontFamily="Consolas" FontSize="11" />
+                    <ProgressBar IsIndeterminate="True"
+                                 Height="4"
+                                 Width="220"
+                                 Margin="0,12,0,0"
+                                 HorizontalAlignment="Left"
+                                 Foreground="{StaticResource InfoColorBrush}"
+                                 Visibility="{Binding IsOptimizationActionRunning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                 AutomationProperties.AutomationId="StorageOptimizationActionProgress" />
+                    <TextBlock Text="{Binding AnalysisResultText}"
+                               TextWrapping="Wrap"
+                               Margin="0,12,0,0"
+                               FontFamily="Consolas"
+                               FontSize="11"
+                               Visibility="{Binding HasAnalysisResult, Converter={StaticResource BoolToVisibilityConverter}}"
+                               AutomationProperties.AutomationId="StorageOptimizationAnalysisResultText">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding AnalysisResultTone}" Value="Info">
+                                        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding AnalysisResultTone}" Value="Success">
+                                        <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding AnalysisResultTone}" Value="Warning">
+                                        <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding AnalysisResultTone}" Value="Error">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </Border>
         </StackPanel>

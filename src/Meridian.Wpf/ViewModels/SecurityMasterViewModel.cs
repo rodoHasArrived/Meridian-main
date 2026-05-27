@@ -13,6 +13,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
 using ISmQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using ISmService = Meridian.Contracts.SecurityMaster.ISecurityMasterService;
 using WpfServices = Meridian.Wpf.Services;
@@ -26,6 +27,9 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 {
+    private const string AllAssetClassesFilterLabel = "All asset classes";
+    private const string AllProvidersFilterLabel = "All providers";
+
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ITradingParametersBackfillService _backfillService;
@@ -38,19 +42,42 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
     private readonly bool _hasPolygonApiKey;
+    private bool _isRefreshingSearchWorkspaceFilters;
     private CancellationTokenSource? _cts;
     private CancellationTokenSource? _workflowCts;
     private Task? _workflowPollingTask;
 
+    private readonly SecurityMasterSearchSectionViewModel _searchSection = new();
+    private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
+    private readonly SecurityMasterScheduleAndOpenLotSectionViewModel _scheduleSection = new();
+    private readonly SecurityMasterPrintSectionViewModel _printSection = new();
+
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
-    public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
-    public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
-    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups { get; } = new();
-    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates { get; } = new();
-    public ObservableCollection<SecurityMasterConflict> FilteredConflicts { get; } = new();
-    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions { get; } = new();
-    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks { get; } = new();
+    public ObservableCollection<SecurityMasterWorkstationDto> Results => _searchSection.Results;
+    public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults => _searchSection.FilteredResults;
+    public ObservableCollection<string> AssetClassFilterOptions => _searchSection.AssetClassFilterOptions;
+    public ObservableCollection<string> ProviderFilterOptions => _searchSection.ProviderFilterOptions;
+    public ObservableCollection<CorporateActionDto> CorporateActions => _printSection.CorporateActions;
+    public ObservableCollection<SecurityMasterConflict> OpenConflicts => _conflictSection.OpenConflicts;
+    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups => _conflictSection.ConflictGroups;
+    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates => _conflictSection.ProvenanceCandidates;
+    public ObservableCollection<SecurityMasterConflict> FilteredConflicts => _conflictSection.FilteredConflicts;
+    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions => _conflictSection.RecommendedActions;
+    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks => _conflictSection.DownstreamImpactLinks;
+    public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields => _printSection.CompanyProfileFields;
+    public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields => _printSection.CompanyCoverageFields;
+    public ObservableCollection<SecurityValidationIssueDto> ValidationIssues => _scheduleSection.ValidationIssues;
+    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems => _scheduleSection.ChangeHistoryItems;
+    public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields => _scheduleSection.ScheduleBookFields;
+    public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents => _scheduleSection.ScheduleBookEvents;
+    public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory => _scheduleSection.ScheduleBookFactorHistory;
+    public ObservableCollection<SecurityMasterScheduleProvenanceDto> ScheduleBookProvenanceHistory => _scheduleSection.ScheduleBookProvenanceHistory;
+    public ObservableCollection<SecurityMasterPresentationField> OpenLotReadModelFields => _scheduleSection.OpenLotReadModelFields;
+    public ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows => _scheduleSection.OpenLotRows;
+    public ObservableCollection<SecurityMasterOpenLotProvenanceDto> OpenLotProvenanceHistory => _scheduleSection.OpenLotProvenanceHistory;
+    public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections => _printSection.PrintSections;
+    public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems => _printSection.PrintChecklistItems;
+    public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems => _printSection.PrintEvidenceItems;
 
     /// <summary>
     /// Static list of corporate action types available for recording.
@@ -80,6 +107,45 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _activeOnly, value))
             {
                 RaiseSearchDerivedStateChanged();
+            }
+        }
+    }
+
+    private string _selectedAssetClassFilter = AllAssetClassesFilterLabel;
+    public string SelectedAssetClassFilter
+    {
+        get => _selectedAssetClassFilter;
+        set
+        {
+            if (SetProperty(ref _selectedAssetClassFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            {
+                ApplySearchWorkspaceFilters();
+            }
+        }
+    }
+
+    private string _selectedProviderFilter = AllProvidersFilterLabel;
+    public string SelectedProviderFilter
+    {
+        get => _selectedProviderFilter;
+        set
+        {
+            if (SetProperty(ref _selectedProviderFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            {
+                ApplySearchWorkspaceFilters();
+            }
+        }
+    }
+
+    private bool _showMappingGapsOnly;
+    public bool ShowMappingGapsOnly
+    {
+        get => _showMappingGapsOnly;
+        set
+        {
+            if (SetProperty(ref _showMappingGapsOnly, value) && !_isRefreshingSearchWorkspaceFilters)
+            {
+                ApplySearchWorkspaceFilters();
             }
         }
     }
@@ -474,15 +540,43 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public SecurityMasterTrustSnapshotDto? SelectedTrustSnapshot
     {
         get => _selectedTrustSnapshot;
-        private set => SetProperty(ref _selectedTrustSnapshot, value);
+        private set
+        {
+            if (SetProperty(ref _selectedTrustSnapshot, value))
+            {
+                RaiseScheduleAndOpenLotStateChanged();
+            }
+        }
     }
 
     private bool _isTrustSnapshotLoading;
     public bool IsTrustSnapshotLoading
     {
         get => _isTrustSnapshotLoading;
-        private set => SetProperty(ref _isTrustSnapshotLoading, value);
+        private set
+        {
+            if (SetProperty(ref _isTrustSnapshotLoading, value))
+            {
+                RaiseScheduleAndOpenLotStateChanged();
+            }
+        }
     }
+
+    private string _trustSnapshotErrorText = string.Empty;
+    public string TrustSnapshotErrorText
+    {
+        get => _trustSnapshotErrorText;
+        private set
+        {
+            if (SetProperty(ref _trustSnapshotErrorText, value))
+            {
+                RaisePropertyChanged(nameof(HasTrustSnapshotError));
+                RaiseScheduleAndOpenLotStateChanged();
+            }
+        }
+    }
+
+    public bool HasTrustSnapshotError => !string.IsNullOrWhiteSpace(TrustSnapshotErrorText);
 
     private bool _showOnlySelectedSecurityConflicts = true;
     public bool ShowOnlySelectedSecurityConflicts
@@ -633,13 +727,22 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
 
-    public int ResultCount => Results.Count;
+    public int LoadedResultCount => Results.Count;
+
+    public int ResultCount => FilteredResults.Count;
 
     public bool HasSearchQuery => !string.IsNullOrWhiteSpace(SearchQuery);
 
-    public bool HasSearchResults => Results.Count > 0;
+    public bool HasSearchResults => FilteredResults.Count > 0;
 
-    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && Results.Count == 0;
+    public bool HasLoadedResults => Results.Count > 0;
+
+    public bool HasActiveSearchWorkspaceFilters =>
+        !string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal) ||
+        !string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal) ||
+        ShowMappingGapsOnly;
+
+    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && ResultCount == 0;
 
     public string SearchRecoveryTitle
     {
@@ -648,6 +751,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (!_securityMasterRuntimeStatus.IsAvailable)
             {
                 return "Security Master unavailable";
+            }
+
+            if (HasLoadedResults && HasActiveSearchWorkspaceFilters)
+            {
+                return "No results match the current filters";
             }
 
             return HasSearchQuery
@@ -665,6 +773,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 return _securityMasterRuntimeStatus.AvailabilityDescription;
             }
 
+            if (HasLoadedResults && HasActiveSearchWorkspaceFilters)
+            {
+                return "Reset the asset-class or provider filters, or turn off mapping-gap mode to bring loaded results back into scope.";
+            }
+
             return ActiveOnly
                 ? "Try all-status search, check the identifier, or import the security universe."
                 : "Check the identifier, broaden the symbol or name, or import the security universe.";
@@ -676,6 +789,113 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             ? "Active-only scope ready. Enter a symbol, name, or identifier."
             : "All-status scope ready. Enter a symbol, name, or identifier."
         : $"{(ActiveOnly ? "Active-only" : "All-status")} scope • query \"{SearchQuery.Trim()}\"";
+
+    public string SearchResultCountLabel => ResultCount switch
+    {
+        0 => _hasSearchAttempted
+            ? HasLoadedResults && HasActiveSearchWorkspaceFilters
+                ? $"0 of {LoadedResultCount} matches shown"
+                : "No matches loaded"
+            : "Ready to search",
+        1 => HasActiveSearchWorkspaceFilters && LoadedResultCount != 1
+            ? "1 filtered match shown"
+            : "1 match loaded",
+        _ => HasActiveSearchWorkspaceFilters
+            ? $"{ResultCount} of {LoadedResultCount} matches shown"
+            : $"{ResultCount} matches loaded"
+    };
+
+    public string SearchMetaLabel
+    {
+        get
+        {
+            if (!_hasSearchAttempted)
+            {
+                return "Search issuers, identifiers, venues, and provider-linked aliases from one desktop command deck.";
+            }
+
+            if (HasLoadedResults && HasActiveSearchWorkspaceFilters)
+            {
+                return ResultCount > 0
+                    ? "Local desktop filters are narrowing the loaded result set without re-querying the backend."
+                    : "Loaded results are currently hidden by the active asset-class, provider, or mapping-gap filters.";
+            }
+
+            if (HasSearchResults)
+            {
+                return ActiveOnly
+                    ? "Active-only results keep workstation-ready definitions in focus."
+                    : "All-status results expose active and inactive definitions for review.";
+            }
+
+            return ActiveOnly
+                ? "No active matches yet. Broaden to all statuses or import the universe."
+                : "No matches yet. Refine the issuer, identifier, or provider alias.";
+        }
+    }
+
+    public string SearchStatusChipLabel => HasActiveSearchWorkspaceFilters
+        ? "Filtered view"
+        : ActiveOnly ? "Active only" : "All statuses";
+
+    public string SearchFilterSummaryText
+    {
+        get
+        {
+            if (!HasLoadedResults)
+            {
+                return "Load search results to refine by asset class, provider mapping, or mapping health.";
+            }
+
+            if (!HasActiveSearchWorkspaceFilters)
+            {
+                return $"Showing all {LoadedResultCount} loaded result{(LoadedResultCount == 1 ? string.Empty : "s")}.";
+            }
+
+            var parts = new List<string>();
+            if (!string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal))
+            {
+                parts.Add($"asset class: {SelectedAssetClassFilter}");
+            }
+
+            if (!string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal))
+            {
+                parts.Add($"provider: {SelectedProviderFilter}");
+            }
+
+            if (ShowMappingGapsOnly)
+            {
+                parts.Add("mapping gaps only");
+            }
+
+            return $"Showing {ResultCount} of {LoadedResultCount} loaded results • {string.Join(" • ", parts)}";
+        }
+    }
+
+    public string MappingHealthSummaryText
+    {
+        get
+        {
+            if (!HasLoadedResults)
+            {
+                return "Provider mapping health appears after a search.";
+            }
+
+            var mappedCount = Results.Count(HasProviderMapping);
+            var missingCount = LoadedResultCount - mappedCount;
+            return missingCount == 0
+                ? $"{mappedCount} result{(mappedCount == 1 ? string.Empty : "s")} mapped across provider aliases."
+                : $"{mappedCount} mapped • {missingCount} with provider or identifier coverage gaps.";
+        }
+    }
+
+    public string SearchDeckLeadText => SelectedSecurity is null
+        ? "Search, validate, and publish Meridian-ready security profiles without leaving the Data workspace."
+        : $"{SelectedSecurity.DisplayName} is loaded into the desktop Security Master deck.";
+
+    public string SearchDeckDetailText => SelectedSecurity is null
+        ? "Company context, corporate actions, and print packet evidence stay on one retained desktop surface."
+        : $"{SelectedTrustPostureText} {SelectedTradingParameterCoverageText}".Trim();
 
     public string SelectedAssetClass =>
         SelectedSecurity?.Classification.AssetClass ?? string.Empty;
@@ -690,6 +910,210 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         SelectedSecurity?.Classification.PrimaryIdentifierValue is { } v
             ? $"{SelectedSecurity!.Classification.PrimaryIdentifierKind}: {v}"
             : string.Empty;
+
+    public string CompanyCardTitle => SelectedTrustSnapshot?.Identity.IssuerName
+        ?? SelectedSecurity?.DisplayName
+        ?? "Company context unavailable";
+
+    public string CompanyCardSubtitle
+    {
+        get
+        {
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to review issuer context.";
+            }
+
+            var economic = SelectedTrustSnapshot?.EconomicDefinition;
+            var identity = SelectedTrustSnapshot?.Identity;
+            var assetFamily = SecurityMasterTextHelpers.FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
+            var issuerType = SecurityMasterTextHelpers.FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
+            var country = SecurityMasterTextHelpers.FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
+            return $"{assetFamily} • {issuerType} • {country}";
+        }
+    }
+
+    public string CompanyCardDescription
+    {
+        get
+        {
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Issuer profile, listing context, and downstream coverage appear after selection.";
+            }
+
+            var identity = SelectedTrustSnapshot?.Identity;
+            var listing = string.IsNullOrWhiteSpace(identity?.PrimaryListingMic)
+                ? "primary listing not supplied"
+                : $"primary listing {identity.PrimaryListingMic}";
+            var settlement = identity?.SettlementCycleDays is int days
+                ? $"settlement cycle T+{days}"
+                : "settlement cycle unavailable";
+            var scope = SelectedTrustSnapshot?.DownstreamImpact.IsScoped == true
+                ? $"scoped to {SelectedTrustSnapshot.DownstreamImpact.FundProfileId}"
+                : "operator-wide review";
+            return $"{listing}, {settlement}, and {scope} stay visible beside the command deck.";
+        }
+    }
+
+    public string PrintPacketIdText => SelectedTrustSnapshot is null
+        ? "Packet unavailable"
+        : $"SM-{SelectedTrustSnapshot.Security.SecurityId.ToString()[..8].ToUpperInvariant()}-V{SelectedTrustSnapshot.EconomicDefinition.Version}";
+
+    public string PrintGeneratedAtText => SelectedTrustSnapshot?.RetrievedAtUtc.LocalDateTime.ToString("g")
+        ?? "Not generated";
+
+    public string PrintDistributionText => SelectedTrustSnapshot?.DownstreamImpact.IsScoped == true
+        ? $"Deliver to {SelectedTrustSnapshot.DownstreamImpact.FundProfileId} packet queue"
+        : "Deliver to operator packet queue";
+
+    public string PrintSummaryText
+    {
+        get
+        {
+            if (SelectedTrustSnapshot is null)
+            {
+                return "Packet summary appears after a security snapshot is loaded.";
+            }
+
+            var readiness = SelectedTrustSnapshot.TrustPosture.Tone switch
+            {
+                SecurityMasterTrustTone.Trusted => "Packet is ready for downstream reference use.",
+                SecurityMasterTrustTone.Review => "Packet needs operator review before release.",
+                SecurityMasterTrustTone.Blocked => "Packet is blocked until open conflicts are resolved.",
+                _ => "Packet readiness is still being determined."
+            };
+
+            return $"{readiness} {PrintDistributionText}.";
+        }
+    }
+
+    public bool HasScheduleBookEvents => ScheduleBookEvents.Count > 0;
+
+    public bool HasOpenLotRows => OpenLotRows.Count > 0;
+
+    public bool HasChangeHistoryItems => ChangeHistoryItems.Count > 0;
+
+    public string ValidationIssuesStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading validation coverage from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect validation blockers, advisory issues, and suggested fixes.";
+            }
+
+            var report = SelectedTrustSnapshot?.ValidationReport;
+            if (report is null)
+            {
+                return "Validation report unavailable for the selected security.";
+            }
+
+            if (ValidationIssues.Count == 0)
+            {
+                return "Validation report loaded with no blocking or advisory issues.";
+            }
+
+            var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
+            var advisoryCount = Math.Max(0, ValidationIssues.Count - blockingCount);
+            return $"{blockingCount} blocking issue{(blockingCount == 1 ? string.Empty : "s")} and {advisoryCount} advisory issue{(advisoryCount == 1 ? string.Empty : "s")} loaded.";
+        }
+    }
+
+    public string ChangeHistoryStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading structured audit history from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect versioned change history, actors, and source provenance.";
+            }
+
+            return HasChangeHistoryItems
+                ? $"{ChangeHistoryItems.Count} structured change entr{(ChangeHistoryItems.Count == 1 ? "y" : "ies")} loaded."
+                : "Structured change history is unavailable for the selected security.";
+        }
+    }
+
+    public string ScheduleBookStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading schedule book from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect cash-flow schedules, factor history, and source provenance.";
+            }
+
+            if (SelectedTrustSnapshot?.ScheduleBook is null)
+            {
+                return "Schedule book payload is unavailable for the selected security.";
+            }
+
+            return HasScheduleBookEvents
+                ? $"{ScheduleBookEvents.Count} schedule event{(ScheduleBookEvents.Count == 1 ? string.Empty : "s")} loaded with {ScheduleBookFactorHistory.Count} factor point{(ScheduleBookFactorHistory.Count == 1 ? string.Empty : "s")} and {ScheduleBookProvenanceHistory.Count} provenance row{(ScheduleBookProvenanceHistory.Count == 1 ? string.Empty : "s")}."
+                : "Schedule book loaded with no cash-flow events.";
+        }
+    }
+
+    public string OpenLotReadModelStatusText
+    {
+        get
+        {
+            if (IsTrustSnapshotLoading)
+            {
+                return "Loading open lot read model from the workstation trust snapshot.";
+            }
+
+            if (HasTrustSnapshotError)
+            {
+                return TrustSnapshotErrorText;
+            }
+
+            if (SelectedSecurity is null && SelectedTrustSnapshot is null)
+            {
+                return "Select a security to inspect open lots, factor-adjusted exposure, and ledger provenance.";
+            }
+
+            if (SelectedTrustSnapshot?.OpenLotReadModel is null)
+            {
+                return "Open lot read-model payload is unavailable for the selected security.";
+            }
+
+            return HasOpenLotRows
+                ? $"{OpenLotRows.Count} open lot{(OpenLotRows.Count == 1 ? string.Empty : "s")} loaded with {OpenLotProvenanceHistory.Count} provenance row{(OpenLotProvenanceHistory.Count == 1 ? string.Empty : "s")}."
+                : "Open lot read model loaded with no open lots.";
+        }
+    }
 
     public string RuntimeStatusLabel => _hasPolygonApiKey
         ? "Polygon enrichment available"
@@ -978,6 +1402,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IRelayCommand CloseImportResultCommand { get; }
     public IAsyncRelayCommand SearchCommand { get; }
     public IRelayCommand ClearSearchCommand { get; }
+    public IRelayCommand ResetSearchFiltersCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
     public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }
@@ -1061,6 +1486,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
+        ResetSearchFiltersCommand = new RelayCommand(ResetSearchWorkspaceFilters, () => HasActiveSearchWorkspaceFilters);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
         RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
         RefreshSelectedTrustSnapshotCommand = new AsyncRelayCommand(
@@ -1098,7 +1524,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             () => HasActiveImpactLink("reportPack"));
         CopySelectedIdentifierCommand = new RelayCommand(CopySelectedIdentifier, () => !string.IsNullOrWhiteSpace(SelectedIdentifier));
 
-        Results.CollectionChanged += (_, _) => RaiseSearchDerivedStateChanged();
+        Results.CollectionChanged += (_, _) => RefreshSearchWorkspaceState();
         CorporateActions.CollectionChanged += (_, _) => RaiseSelectionDerivedStateChanged();
         OpenConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
         ConflictGroups.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
@@ -1106,6 +1532,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         FilteredConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
         RecommendedActions.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(RecommendedActions));
         DownstreamImpactLinks.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DownstreamImpactLinks));
+        ValidationIssues.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ChangeHistoryItems.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ScheduleBookEvents.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ScheduleBookFactorHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        ScheduleBookProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        OpenLotRows.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
+        OpenLotProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
 
         StartWorkflowPolling();
     }
@@ -1147,6 +1580,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 });
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError($"Failed to load security {id} for edit", ex);
@@ -1180,12 +1617,23 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(ResultCount));
         RaisePropertyChanged(nameof(HasSearchQuery));
         RaisePropertyChanged(nameof(HasSearchResults));
+        RaisePropertyChanged(nameof(HasLoadedResults));
         RaisePropertyChanged(nameof(IsSearchRecoveryVisible));
         RaisePropertyChanged(nameof(SearchRecoveryTitle));
         RaisePropertyChanged(nameof(SearchRecoveryDetail));
         RaisePropertyChanged(nameof(SearchScopeText));
+        RaisePropertyChanged(nameof(LoadedResultCount));
+        RaisePropertyChanged(nameof(SearchResultCountLabel));
+        RaisePropertyChanged(nameof(SearchMetaLabel));
+        RaisePropertyChanged(nameof(SearchStatusChipLabel));
+        RaisePropertyChanged(nameof(HasActiveSearchWorkspaceFilters));
+        RaisePropertyChanged(nameof(SearchFilterSummaryText));
+        RaisePropertyChanged(nameof(MappingHealthSummaryText));
+        RaisePropertyChanged(nameof(SearchDeckLeadText));
+        RaisePropertyChanged(nameof(SearchDeckDetailText));
         SearchCommand?.NotifyCanExecuteChanged();
         ClearSearchCommand?.NotifyCanExecuteChanged();
+        ResetSearchFiltersCommand?.NotifyCanExecuteChanged();
     }
 
     private bool CanSearch()
@@ -1200,6 +1648,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _cts = null;
         _hasSearchAttempted = false;
 
+        ResetSearchWorkspaceFilters();
         SearchQuery = string.Empty;
         Results.Clear();
         SelectedSecurity = null;
@@ -1233,6 +1682,16 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(DownstreamImpactSummaryText));
         RaisePropertyChanged(nameof(CorporateActionReadinessText));
         RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
+        RaiseScheduleAndOpenLotStateChanged();
+        RaisePropertyChanged(nameof(CompanyCardTitle));
+        RaisePropertyChanged(nameof(CompanyCardSubtitle));
+        RaisePropertyChanged(nameof(CompanyCardDescription));
+        RaisePropertyChanged(nameof(PrintPacketIdText));
+        RaisePropertyChanged(nameof(PrintGeneratedAtText));
+        RaisePropertyChanged(nameof(PrintDistributionText));
+        RaisePropertyChanged(nameof(PrintSummaryText));
+        RaisePropertyChanged(nameof(SearchDeckLeadText));
+        RaisePropertyChanged(nameof(SearchDeckDetailText));
         RaisePropertyChanged(nameof(ActionInspectorLeadText));
         RaisePropertyChanged(nameof(ActionInspectorDetailText));
         RaisePropertyChanged(nameof(ActionInspectorNoActionText));
@@ -1244,6 +1703,18 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasReportPackImpactLink));
         AlignConflictLaneToSelectedSecurity();
         NotifySelectionCommandsChanged();
+    }
+
+    private void RaiseScheduleAndOpenLotStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasTrustSnapshotError));
+        RaisePropertyChanged(nameof(ValidationIssuesStatusText));
+        RaisePropertyChanged(nameof(HasChangeHistoryItems));
+        RaisePropertyChanged(nameof(ChangeHistoryStatusText));
+        RaisePropertyChanged(nameof(HasScheduleBookEvents));
+        RaisePropertyChanged(nameof(HasOpenLotRows));
+        RaisePropertyChanged(nameof(ScheduleBookStatusText));
+        RaisePropertyChanged(nameof(OpenLotReadModelStatusText));
     }
 
     private void NotifySelectionCommandsChanged()
@@ -1311,9 +1782,89 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasReportPackImpactLink));
     }
 
+    private void RefreshSearchWorkspaceState()
+    {
+        RefreshSearchWorkspaceFilterOptions();
+        ApplySearchWorkspaceFilters();
+    }
+
+    private void RefreshSearchWorkspaceFilterOptions()
+    {
+        _isRefreshingSearchWorkspaceFilters = true;
+
+        try
+        {
+            var assetClassOptions = SecurityMasterSearchWorkspaceService.BuildAssetClassOptions(Results, AllAssetClassesFilterLabel);
+            ReplaceCollection(AssetClassFilterOptions, assetClassOptions);
+
+            var providerOptions = SecurityMasterSearchWorkspaceService.BuildProviderOptions(
+                Results,
+                AllProvidersFilterLabel,
+                GetMatchedProvider);
+            ReplaceCollection(ProviderFilterOptions, providerOptions);
+
+            if (!assetClassOptions.Contains(SelectedAssetClassFilter, StringComparer.OrdinalIgnoreCase))
+            {
+                SelectedAssetClassFilter = AllAssetClassesFilterLabel;
+            }
+
+            if (!providerOptions.Contains(SelectedProviderFilter, StringComparer.OrdinalIgnoreCase))
+            {
+                SelectedProviderFilter = AllProvidersFilterLabel;
+            }
+        }
+        finally
+        {
+            _isRefreshingSearchWorkspaceFilters = false;
+        }
+    }
+
+    private void ApplySearchWorkspaceFilters()
+    {
+        var filteredResults = SecurityMasterSearchWorkspaceService.ApplyFilters(
+            Results,
+            SelectedAssetClassFilter,
+            SelectedProviderFilter,
+            ShowMappingGapsOnly,
+            AllAssetClassesFilterLabel,
+            AllProvidersFilterLabel,
+            GetMatchedProvider,
+            HasProviderMapping);
+        ReplaceCollection(FilteredResults, filteredResults);
+
+        if (SelectedSecurity is not null &&
+            !FilteredResults.Any(result => result.SecurityId == SelectedSecurity.SecurityId))
+        {
+            SelectedSecurity = null;
+            HistoryText = string.Empty;
+            ClearSelectedSecurityAssuranceState();
+        }
+
+        RaiseSearchDerivedStateChanged();
+    }
+
+    private void ResetSearchWorkspaceFilters()
+    {
+        _isRefreshingSearchWorkspaceFilters = true;
+
+        try
+        {
+            SelectedAssetClassFilter = AllAssetClassesFilterLabel;
+            SelectedProviderFilter = AllProvidersFilterLabel;
+            ShowMappingGapsOnly = false;
+        }
+        finally
+        {
+            _isRefreshingSearchWorkspaceFilters = false;
+        }
+
+        ApplySearchWorkspaceFilters();
+    }
+
     private void ClearSelectedSecurityAssuranceState()
     {
         SelectedTrustSnapshot = null;
+        TrustSnapshotErrorText = string.Empty;
         _selectedEconomicDefinition = null;
         _selectedTradingParameters = null;
         _latestHistoryEvent = null;
@@ -1322,6 +1873,20 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         FilteredConflicts.Clear();
         RecommendedActions.Clear();
         DownstreamImpactLinks.Clear();
+        CompanyProfileFields.Clear();
+        CompanyCoverageFields.Clear();
+        ValidationIssues.Clear();
+        ChangeHistoryItems.Clear();
+        ScheduleBookFields.Clear();
+        ScheduleBookEvents.Clear();
+        ScheduleBookFactorHistory.Clear();
+        ScheduleBookProvenanceHistory.Clear();
+        OpenLotReadModelFields.Clear();
+        OpenLotRows.Clear();
+        OpenLotProvenanceHistory.Clear();
+        PrintSections.Clear();
+        PrintChecklistItems.Clear();
+        PrintEvidenceItems.Clear();
         TrustScoreText = "Trust score unavailable.";
         TrustSummaryText = "Select a security to review trust posture.";
         GoldenCopySourceText = "No golden copy selected.";
@@ -1356,6 +1921,16 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SelectedConflictImpactText));
         RaisePropertyChanged(nameof(CorporateActionReadinessText));
         RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
+        RaiseScheduleAndOpenLotStateChanged();
+        RaisePropertyChanged(nameof(CompanyCardTitle));
+        RaisePropertyChanged(nameof(CompanyCardSubtitle));
+        RaisePropertyChanged(nameof(CompanyCardDescription));
+        RaisePropertyChanged(nameof(PrintPacketIdText));
+        RaisePropertyChanged(nameof(PrintGeneratedAtText));
+        RaisePropertyChanged(nameof(PrintDistributionText));
+        RaisePropertyChanged(nameof(PrintSummaryText));
+        RaisePropertyChanged(nameof(SearchDeckLeadText));
+        RaisePropertyChanged(nameof(SearchDeckDetailText));
         RaisePropertyChanged(nameof(BulkPreviewSummaryText));
         RaisePropertyChanged(nameof(ActionInspectorLeadText));
         RaisePropertyChanged(nameof(ActionInspectorDetailText));
@@ -1491,6 +2066,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _notificationService.ShowNotification("Security Master",
                 "Trading parameters backfilled successfully.", NotificationType.Success);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Trading parameters backfill failed", ex);
@@ -1610,6 +2189,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         IsLoading = true;
         IsTrustSnapshotLoading = true;
+        TrustSnapshotErrorText = string.Empty;
         StatusText = "Loading selected security trust snapshot…";
 
         try
@@ -1640,6 +2220,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _loggingService.LogError($"Security Master trust snapshot load failed for {securityId}", ex);
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                TrustSnapshotErrorText = "Failed to load selected security trust snapshot.";
                 StatusText = "Failed to load selected security trust snapshot.";
                 _notificationService.ShowNotification("Security Master", "Trust snapshot load failed.", NotificationType.Error);
             });
@@ -1689,6 +2270,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         DownstreamImpactSummaryText = snapshot.DownstreamImpact.Summary;
         CorporateActionReadinessText = snapshot.TrustPosture.CorporateActionReadiness;
         CorporateActionImpactSummaryText = BuildCorporateActionImpactSummary(snapshot);
+        PopulateCompanyPresentation(snapshot);
+        PopulateValidationPresentation(snapshot);
+        PopulateChangeHistoryPresentation(snapshot);
+        PopulateScheduleBookPresentation(snapshot);
+        PopulateOpenLotReadModelPresentation(snapshot);
+        PopulatePrintPresentation(snapshot);
 
         RebuildFilteredConflicts(preferredConflictId);
         RebuildRecommendedActions();
@@ -2005,6 +2592,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             Clipboard.SetText(SelectedIdentifier);
             _notificationService.ShowNotification("Security Master", "Selected identifier copied to clipboard.", NotificationType.Success);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to copy selected identifier", ex);
@@ -2063,6 +2654,197 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             ? $"{snapshot.CorporateActions.Count} corporate action(s) are recorded with no upcoming events in the current review window."
             : $"{upcomingCount} upcoming corporate action(s) require review across {snapshot.CorporateActions.Count} recorded event(s).";
     }
+
+    private void PopulateCompanyPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var identity = snapshot.Identity;
+        var economic = snapshot.EconomicDefinition;
+
+        ReplaceCollection(CompanyProfileFields,
+        [
+            new SecurityMasterPresentationField("Legal name", SecurityMasterTextHelpers.FirstNonEmpty(identity.IssuerName, snapshot.Security.DisplayName, "Unavailable")),
+            new SecurityMasterPresentationField("Primary listing", SecurityMasterTextHelpers.FirstNonEmpty(identity.PrimaryListingMic, "Not supplied")),
+            new SecurityMasterPresentationField("Country of risk", SecurityMasterTextHelpers.FirstNonEmpty(identity.CountryOfRisk, economic.RiskCountry, snapshot.Security.Classification.RiskCountry, "Not supplied")),
+            new SecurityMasterPresentationField("Settlement cycle", identity.SettlementCycleDays is int days ? $"T+{days}" : "Not supplied"),
+            new SecurityMasterPresentationField("Asset family", SecurityMasterTextHelpers.FirstNonEmpty(economic.AssetFamily, economic.AssetClass, "Not supplied")),
+            new SecurityMasterPresentationField("Issuer type", SecurityMasterTextHelpers.FirstNonEmpty(economic.IssuerType, snapshot.Security.Classification.IssuerType, "Not supplied"))
+        ]);
+
+        ReplaceCollection(CompanyCoverageFields,
+        [
+            new SecurityMasterPresentationField("Trust posture", $"{snapshot.TrustPosture.Tone} • {snapshot.TrustPosture.TrustScore}/100"),
+            new SecurityMasterPresentationField("Validation", BuildValidationSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Schedule model", BuildScheduleSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Lot model", BuildLotModelSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Trading readiness", snapshot.TrustPosture.TradingParametersStatus),
+            new SecurityMasterPresentationField("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot)),
+            new SecurityMasterPresentationField("Corporate actions", snapshot.TrustPosture.CorporateActionReadiness),
+            new SecurityMasterPresentationField("Downstream scope", snapshot.DownstreamImpact.IsScoped
+                ? $"Scoped to {snapshot.DownstreamImpact.FundProfileId}"
+                : "Operator-wide review"),
+            new SecurityMasterPresentationField("Impact severity", snapshot.DownstreamImpact.Severity.ToString()),
+            new SecurityMasterPresentationField("Latest audit", LatestHistoryEventText)
+        ]);
+    }
+
+    private void PopulateValidationPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        ReplaceCollection(
+            ValidationIssues,
+            snapshot.ValidationReport?.Issues is { } issues
+                ? issues
+                    .OrderByDescending(static issue => issue.Severity)
+                    .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+                : []);
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
+    private void PopulateChangeHistoryPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        ReplaceCollection(
+            ChangeHistoryItems,
+            snapshot.ChangeHistory is { } changeHistory
+                ? changeHistory
+                    .OrderByDescending(static item => item.ChangedAtUtc)
+                    .ThenByDescending(static item => item.StreamVersion)
+                : []);
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
+    private void PopulateScheduleBookPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var scheduleBook = snapshot.ScheduleBook;
+        if (scheduleBook is null)
+        {
+            ScheduleBookFields.Clear();
+            ScheduleBookEvents.Clear();
+            ScheduleBookFactorHistory.Clear();
+            ScheduleBookProvenanceHistory.Clear();
+            RaiseScheduleAndOpenLotStateChanged();
+            return;
+        }
+
+        ReplaceCollection(ScheduleBookFields,
+        [
+            new SecurityMasterPresentationField("Summary", scheduleBook.Summary),
+            new SecurityMasterPresentationField("Currency", scheduleBook.Currency),
+            new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(scheduleBook.CurrentFactor)),
+            new SecurityMasterPresentationField("Current factor date", FormatNullableDate(scheduleBook.CurrentFactorDate)),
+            new SecurityMasterPresentationField("Next lifecycle date", FormatNullableDate(scheduleBook.NextLifecycleDate)),
+            new SecurityMasterPresentationField("Cash-flow schedule", scheduleBook.SupportsCashflowSchedule ? "Supported" : "Unavailable"),
+            new SecurityMasterPresentationField("Factor history", scheduleBook.SupportsFactorHistory ? "Supported" : "Unavailable"),
+            new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
+            new SecurityMasterPresentationField("Source", SecurityMasterTextHelpers.FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
+        ]);
+
+        ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
+        ReplaceCollection(ScheduleBookFactorHistory, scheduleBook.FactorHistory.OrderByDescending(item => item.EffectiveDate));
+        ReplaceCollection(ScheduleBookProvenanceHistory, scheduleBook.ProvenanceHistory.OrderByDescending(item => item.SourceAsOfUtc ?? DateTimeOffset.MinValue));
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
+    private void PopulateOpenLotReadModelPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var readModel = snapshot.OpenLotReadModel;
+        if (readModel is null)
+        {
+            OpenLotReadModelFields.Clear();
+            OpenLotRows.Clear();
+            OpenLotProvenanceHistory.Clear();
+            RaiseScheduleAndOpenLotStateChanged();
+            return;
+        }
+
+        ReplaceCollection(OpenLotReadModelFields,
+        [
+            new SecurityMasterPresentationField("Summary", readModel.Summary),
+            new SecurityMasterPresentationField("Quantity model", readModel.QuantityModel),
+            new SecurityMasterPresentationField("Lot size", FormatNullableDecimal(readModel.LotSize)),
+            new SecurityMasterPresentationField("Contract multiplier", FormatNullableDecimal(readModel.ContractMultiplier)),
+            new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(readModel.CurrentFactor)),
+            new SecurityMasterPresentationField("Current factor date", FormatNullableDate(readModel.CurrentFactorDate)),
+            new SecurityMasterPresentationField("As of", readModel.AsOfUtc.LocalDateTime.ToString("g")),
+            new SecurityMasterPresentationField("Face value", readModel.UsesFaceValue ? "Uses face value" : "Quantity only"),
+            new SecurityMasterPresentationField("Factor-adjusted exposure", readModel.SupportsFactorAdjustedExposure ? "Supported" : "Unavailable"),
+            new SecurityMasterPresentationField("Resolved ID required", readModel.RequiresResolvedSecurityId ? "Required" : "Not required")
+        ]);
+
+        ReplaceCollection(OpenLotRows, readModel.Lots.OrderByDescending(item => item.TradeDate));
+        ReplaceCollection(OpenLotProvenanceHistory, readModel.ProvenanceHistory.OrderByDescending(item => item.AsOfUtc));
+        RaiseScheduleAndOpenLotStateChanged();
+    }
+
+    private void PopulatePrintPresentation(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var projection = SecurityMasterPrintProjectionService.BuildProjection(
+            snapshot,
+            GoldenCopySourceText,
+            LatestHistoryEventText,
+            PrintDistributionText);
+        ReplaceCollection(PrintSections, projection.Sections);
+        ReplaceCollection(PrintChecklistItems, projection.ChecklistItems);
+        ReplaceCollection(PrintEvidenceItems, projection.EvidenceItems);
+    }
+
+    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
+        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
+           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
+
+    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
+        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
+
+    private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
+    {
+        collection.Clear();
+        foreach (var value in values)
+        {
+            collection.Add(value);
+        }
+    }
+
+    private static string BuildValidationSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var report = snapshot.ValidationReport;
+        if (report is null)
+        {
+            return "Validation report unavailable.";
+        }
+
+        if (report.Issues.Count == 0)
+        {
+            return "No validation issues detected.";
+        }
+
+        var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
+        var advisoryCount = Math.Max(0, report.Issues.Count - blockingCount);
+        if (blockingCount > 0 && advisoryCount > 0)
+        {
+            return $"{blockingCount} blocking issue(s) • {advisoryCount} advisory issue(s)";
+        }
+
+        return blockingCount > 0
+            ? $"{blockingCount} blocking issue(s)"
+            : $"{advisoryCount} advisory issue(s)";
+    }
+
+    private static string BuildIdentifierCoverageSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.";
+
+    private static string BuildScheduleSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.ScheduleBook?.Summary ?? snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.";
+
+    private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.OpenLotReadModel?.Summary ?? snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
+
+    private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
+
+    private static string FormatNullableDate(DateOnly? value)
+        => value?.ToString("yyyy-MM-dd") ?? "Unavailable";
+
+    private static string FormatNullableDecimal(decimal? value)
+        => value?.ToString("G29") ?? "Unavailable";
 
     private string BuildConflictFilterSummary(int baseCount, int filteredCount)
     {
@@ -2192,6 +2974,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 // Load the specific security detail
                 await LoadDetailAsync(securityId);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -2983,6 +3769,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     ? "Conflict dismissed."
                     : "Conflict marked resolved.",
                 NotificationType.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

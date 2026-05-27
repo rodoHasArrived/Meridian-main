@@ -1,5 +1,25 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Compact status label in font-mono uppercase, used for environment state, data posture,
+ * and event classification throughout the operator workstation.
+ *
+ * **Variants:**
+ * - `"default"` — primary/cyan, general status
+ * - `"outline"` — muted, secondary metadata
+ * - `"success"` / `"warning"` / `"danger"` — semantic state tones
+ * - `"paper"` — paper (simulated) trading mode (blue)
+ * - `"live"` — **LIVE environment alarm** using `--live-env` (alarm red). NOT the same as
+ *   data-posture "live" (cyan). Workspace status `live` maps to `"success"` in view-models.
+ * - `"research"` — research/backtest mode
+ *
+ * **Dot:** set `dot` to prepend a filled circle indicator matched to the variant color.
+ *
+ * @example
+ * <Badge variant="live" dot>LIVE</Badge>
+ * <Badge variant="paper">Paper</Badge>
+ * <Badge variant="success" dot>Healthy</Badge>
+ */
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
   dot?: boolean;
@@ -22,7 +42,7 @@ export function Badge({ children, className, dot = false, variant = "default", .
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
+        "inline-flex items-center gap-1.5 rounded-xs border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] shadow-[1px_1px_0_hsl(var(--shadow-color)/0.55)]",
         variantClasses[variant],
         className
       )}

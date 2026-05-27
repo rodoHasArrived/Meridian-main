@@ -1,0 +1,23 @@
+schema:
+  id: meridian.decision-log
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+decisions:
+  - id: DEC-DOCS-BPP-001
+    title: Treat documentation as an engineering subsystem
+    status: accepted
+    decided_on: 2026-05-21
+    owner_lane: Docs and Automation
+    summary: Roadmap YAML, source YAML, source READMEs, deterministic generated docs, and AI instructions form one synchronized documentation system.
+    related_roadmap_items:
+      - W2-TRD-001
+      - W6-LIVE-001
+  - id: DEC-UI-LANE-001
+    title: Browser and desktop workstations are active UI lanes
+    status: accepted
+    decided_on: 2026-05-21
+    owner_lane: Workstation Shell and UX
+    summary: Browser and WPF workstation work both remain active; shared contracts, API endpoints, and read models should carry business behavior before either client composes it.
+    related_roadmap_items:
+      - W2-TRD-001

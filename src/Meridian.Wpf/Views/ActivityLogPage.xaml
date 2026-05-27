@@ -55,11 +55,11 @@
                             AutomationProperties.AutomationId="ActivityLogExportButton"
                             AutomationProperties.Name="Export visible activity log entries"/>
                     <Button Content="Clear"
-                            Click="Clear_Click"
+                            Command="{Binding RequestClearCommand}"
                             Style="{StaticResource GhostButtonStyle}"
                             IsEnabled="{Binding CanClearLog}"
                             AutomationProperties.AutomationId="ActivityLogClearButton"
-                            AutomationProperties.Name="Clear retained activity log entries"/>
+                            AutomationProperties.Name="Request activity log clear confirmation"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -148,15 +148,69 @@
             </Grid>
         </Border>
 
-        <!-- Activity Triage -->
-        <Border Grid.Row="2"
-                Background="{StaticResource PremiumPanelBrush}"
-                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                BorderThickness="1"
-                Margin="24,0,24,16"
-                Padding="18,14"
-                CornerRadius="12"
-                AutomationProperties.AutomationId="ActivityLogTriageStrip">
+        <StackPanel Grid.Row="2" Margin="24,0,24,16">
+            <!-- Clear Confirmation -->
+            <Border Background="{StaticResource PremiumPanelBrush}"
+                    BorderBrush="{StaticResource WarningColorBrush}"
+                    BorderThickness="1"
+                    Padding="18,14"
+                    CornerRadius="12"
+                    Margin="0,0,0,16"
+                    Visibility="{Binding IsClearConfirmationVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="ActivityLogClearConfirmationPanel"
+                    AutomationProperties.Name="{Binding ClearConfirmationTitle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="320"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="&#xE783;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="15"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding ClearConfirmationTitle}"
+                                       FontWeight="SemiBold"
+                                       FontSize="14"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding ClearConfirmationDetail}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                        <Button Content="Keep Log"
+                                Command="{Binding CancelClearCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,0"
+                                AutomationProperties.AutomationId="ActivityLogCancelClearButton"
+                                AutomationProperties.Name="Keep retained activity log entries"/>
+                        <Button Content="Clear Log"
+                                Command="{Binding ConfirmClearCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                AutomationProperties.AutomationId="ActivityLogConfirmClearButton"
+                                AutomationProperties.Name="Clear retained activity log entries"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Activity Triage -->
+            <Border Background="{StaticResource PremiumPanelBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    Padding="18,14"
+                    CornerRadius="12"
+                    AutomationProperties.AutomationId="ActivityLogTriageStrip">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" MinWidth="320"/>
@@ -262,7 +316,8 @@
                     </Border>
                 </WrapPanel>
             </Grid>
-        </Border>
+            </Border>
+        </StackPanel>
 
         <!-- Log Entries -->
         <Border Grid.Row="3" Margin="24,0,24,24" Style="{StaticResource CardStyle}">

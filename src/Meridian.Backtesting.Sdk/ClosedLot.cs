@@ -14,10 +14,11 @@ public sealed record ClosedLot(
     decimal ClosePrice,
     DateTimeOffset ClosedAt,
     Guid CloseFillId,
-    string? AccountId = null)
+    string? AccountId = null,
+    bool IsShort = false)
 {
     /// <summary>Total realised profit or loss for this lot.</summary>
-    public decimal RealizedPnl => (ClosePrice - EntryPrice) * Quantity;
+    public decimal RealizedPnl => (IsShort ? EntryPrice - ClosePrice : ClosePrice - EntryPrice) * Quantity;
 
     /// <summary>Total holding duration from open to close.</summary>
     public TimeSpan HoldingPeriod => ClosedAt - OpenedAt;
@@ -29,5 +30,5 @@ public sealed record ClosedLot(
     public bool IsLongTerm => HoldingPeriod >= TimeSpan.FromDays(365);
 
     /// <summary>Per-share realised P&amp;L (close price minus entry price).</summary>
-    public decimal RealizedPnlPerShare => ClosePrice - EntryPrice;
+    public decimal RealizedPnlPerShare => IsShort ? EntryPrice - ClosePrice : ClosePrice - EntryPrice;
 }

@@ -68,20 +68,20 @@ class Doctor:
                     name=".NET SDK",
                     status="fail",
                     details="Not installed",
-                    expected="dotnet 9.0+",
+                    expected="dotnet 10.0+",
                     fix="Install from https://dot.net/download",
                 )
             )
             return
         version = self._command_version(["dotnet", "--version"])
         major = int(version.split(".")[0]) if version and version[0].isdigit() else 0
-        status = "pass" if major >= 9 else "warn"
+        status = "pass" if major >= 10 else "warn"
         self.results.append(
             DoctorResult(
                 name=".NET SDK",
                 status=status,
                 details=f"Installed {version}",
-                expected="dotnet 9.0+",
+                expected="dotnet 10.0+",
                 fix="Update dotnet SDK" if status != "pass" else None,
             )
         )

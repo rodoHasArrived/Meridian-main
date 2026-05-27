@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meridian.local/schemas/roadmap/evidence-record.v1.schema.json",
+  "title": "Roadmap evidence record",
+  "description": "Reusable evidence record contract for roadmap item state transitions.",
+  "type": "object",
+  "required": [
+    "type",
+    "produced_by",
+    "produced_on",
+    "commit_sha",
+    "reviewed_by",
+    "review_status"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Evidence classification (test-report, screenshot, runbook-log, etc.)."
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repository-relative filesystem path to the evidence artifact."
+    },
+    "uri": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri",
+      "description": "External URI for evidence that is not stored in-repo."
+    },
+    "produced_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tool or workflow that produced this evidence."
+    },
+    "produced_on": {
+      "type": "string",
+      "format": "date",
+      "description": "Production date in YYYY-MM-DD format."
+    },
+    "commit_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{7,40}$",
+      "description": "Git commit SHA tied to this evidence record."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Reviewer identity (person, role, or automation principal)."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_review",
+        "changes_requested",
+        "approved",
+        "rejected"
+      ],
+      "description": "Review disposition for this evidence record."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional operator notes."
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "path"
+      ]
+    },
+    {
+      "required": [
+        "uri"
+      ]
+    }
+  ],
+  "additionalProperties": true
+}

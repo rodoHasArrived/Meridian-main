@@ -255,6 +255,21 @@ public sealed class LotLevelTrackingTests
         snapshot.ClosedLots.Should().HaveCount(1);
     }
 
+    [Fact]
+    public void ShortCover_ClosedLot_RealizedPnl_MatchesShortSemantics()
+    {
+        var portfolio = MakePortfolio();
+
+        portfolio.ProcessFill(Sell("AAPL", 10, 400m));
+        portfolio.ProcessFill(Buy("AAPL", 10, 350m));
+
+        var closed = portfolio.GetClosedLots("AAPL");
+        closed.Should().HaveCount(1);
+        closed[0].IsShort.Should().BeTrue();
+        closed[0].RealizedPnl.Should().Be(500m); // (400-350)*10
+        closed[0].RealizedPnlPerShare.Should().Be(50m);
+    }
+
     // ── Multiple symbols, isolated lots ──────────────────────────────────────
 
     [Fact]

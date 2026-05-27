@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Wpf.ViewModels;
@@ -111,41 +110,5 @@ public partial class DataBrowserPage : Page
     private void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.ExportToCsv();
-    }
-
-    private void ResultsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ResultsGrid.SelectedItem is DataBrowserRecord record)
-        {
-            DetailPanel.Visibility = Visibility.Visible;
-            DetailSymbol.Text = record.Symbol;
-            DetailVenue.Text = record.Venue;
-            DetailDataType.Text = record.DataType;
-            DetailTimestamp.Text = record.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            DetailPrice.Text = record.Price.ToString("N2");
-            DetailSize.Text = record.Size.ToString("N0");
-        }
-        else
-        {
-            DetailPanel.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private void CopyJson_Click(object sender, RoutedEventArgs e)
-    {
-        if (ResultsGrid.SelectedItem is not DataBrowserRecord record)
-            return;
-
-        var json = JsonSerializer.Serialize(new
-        {
-            record.Symbol,
-            record.DataType,
-            record.Venue,
-            Timestamp = record.Timestamp.ToString("O"),
-            record.Price,
-            record.Size
-        }, new JsonSerializerOptions { WriteIndented = true });
-
-        Clipboard.SetText(json);
     }
 }

@@ -35,6 +35,10 @@ public sealed record ExecutionAuditEntry(
     string? Symbol = null,
     string? CorrelationId = null,
     string? Message = null,
+    /// <summary>Explicit reason or rationale for the action (e.g. "position-limit-exceeded").</summary>
+    string? Reason = null,
+    /// <summary>Explicit scope for the action (e.g. "AAPL:100" or "run:xyz/symbol:AAPL").</summary>
+    string? Scope = null,
     IReadOnlyDictionary<string, string>? Metadata = null);
 
 /// <summary>
@@ -71,6 +75,17 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
                 MaxWalFileSizeBytes = 5 * 1024 * 1024,
                 CorruptionMode = WalCorruptionMode.Alert
             });
+    }
+
+    /// <summary>
+    /// Convenience constructor that accepts a root directory string directly.
+    /// Useful for tests and simple host scenarios that do not need the full options object.
+    /// </summary>
+    public ExecutionAuditTrailService(
+        string rootDirectory,
+        ILogger<ExecutionAuditTrailService> logger)
+        : this(new ExecutionAuditTrailOptions(rootDirectory), logger)
+    {
     }
 
     /// <summary>
@@ -119,6 +134,8 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
         string? symbol = null,
         string? correlationId = null,
         string? message = null,
+        string? reason = null,
+        string? scope = null,
         IReadOnlyDictionary<string, string>? metadata = null,
         CancellationToken ct = default)
     {
@@ -135,6 +152,8 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
             Symbol: symbol,
             CorrelationId: correlationId,
             Message: message,
+            Reason: reason,
+            Scope: scope,
             Metadata: metadata);
 
         await RecordAsync(entry, ct).ConfigureAwait(false);

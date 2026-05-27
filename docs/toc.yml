@@ -15,6 +15,12 @@
   items:
     - name: Overview
       href: architecture/overview.md
+    - name: Project Structure
+      href: architecture/project-structure.md
+    - name: Module Map
+      href: architecture/module-map.md
+    - name: MVVM Guidelines
+      href: architecture/mvvm-guidelines.md
     - name: C4 Diagrams
       href: architecture/c4-diagrams.md
     - name: Domain Model
@@ -62,6 +68,10 @@
   items:
     - name: Deployment
       href: operations/deployment.md
+    - name: Cleanup And Maintenance
+      href: operations/cleanup-and-maintenance.md
+    - name: Disk Space Hygiene
+      href: operations/disk-space-hygiene.md
     - name: Operator Runbook
       href: operations/operator-runbook.md
     - name: Performance Tuning
@@ -77,6 +87,12 @@
 
 - name: Development
   items:
+    - name: Developer Setup
+      href: developer/setup.md
+    - name: Build, Test, Run
+      href: developer/build-test-run.md
+    - name: Publish Standalone EXE
+      href: developer/publish-standalone-exe.md
     - name: Repository Organization
       href: development/repository-organization-guide.md
     - name: Provider Implementation
@@ -95,6 +111,10 @@
       href: development/documentation-contribution-guide.md
     - name: Documentation Automation
       href: development/documentation-automation.md
+    - name: Automation Prompts
+      href: prompts/automation-prompts.md
+    - name: Repo Maintenance Prompts
+      href: prompts/repo-maintenance-prompts.md
     - name: Adding Custom Rules
       href: development/adding-custom-rules.md
     - name: Expanding Scripts
@@ -111,6 +131,8 @@
 
 - name: Reference
   items:
+    - name: Design System Usage
+      href: design/design-system-usage.md
     - name: API Reference
       href: reference/api-reference.md
     - name: Data Dictionary
@@ -169,6 +191,14 @@
       href: plans/ufl-other-security-target-state-v2.md
     - name: UFL Swap V2
       href: plans/ufl-swap-target-state-v2.md
+    - name: UFL Commodity V2
+      href: plans/ufl-commodity-target-state-v2.md
+    - name: UFL Crypto V2
+      href: plans/ufl-crypto-target-state-v2.md
+    - name: UFL CFD V2
+      href: plans/ufl-cfd-target-state-v2.md
+    - name: UFL Warrant V2
+      href: plans/ufl-warrant-target-state-v2.md
     - name: Roadmap
       href: status/ROADMAP.md
     - name: Feature Inventory

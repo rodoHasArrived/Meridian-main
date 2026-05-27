@@ -33,6 +33,8 @@ public static class UiApiRoutes
     public const string BackfillProviders = "/api/backfill/providers";
     public const string BackfillStatus = "/api/backfill/status";
     public const string BackfillRun = "/api/backfill/run";
+    public const string BackfillRunPreview = "/api/backfill/run/preview";
+    public const string BackfillProgress = "/api/backfill/progress";
     public const string BackfillHealth = "/api/backfill/health";
     public const string BackfillResolve = "/api/backfill/resolve/{symbol}";
     public const string BackfillGapFill = "/api/backfill/gap-fill";
@@ -73,6 +75,9 @@ public static class UiApiRoutes
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
     public const string ProviderConfigure = "/api/providers/configure";
+    public const string ProviderConnections = "/api/providers/connections";
+    public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
+    public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";
@@ -86,6 +91,10 @@ public static class UiApiRoutes
     public const string ProviderTest = "/api/providers/{providerName}/test";
     public const string ProviderFailoverThresholds = "/api/providers/failover-thresholds";
     public const string ProviderHealth = "/api/providers/health";
+    public const string ProviderRoutingConnections = "/api/provider-routing/connections";
+    public const string ProviderRoutingBindings = "/api/provider-routing/bindings";
+    public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
+    public const string ProviderRoutingPreview = "/api/provider-routing/preview";
 
     /// <summary>
     /// Unified traffic-light health dashboard across all providers.
@@ -296,6 +305,7 @@ public static class UiApiRoutes
 
     // Security Master endpoints
     public const string SecurityMasterById = "/api/security-master/{securityId:guid}";
+    public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
     public const string SecurityMasterHistory = "/api/security-master/{securityId:guid}/history";
@@ -307,6 +317,7 @@ public static class UiApiRoutes
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
@@ -315,6 +326,54 @@ public static class UiApiRoutes
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
     public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
     public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
+    public const string ReferenceDataBondReference = "/api/reference-data/bonds/{securityId:guid}";
+    public const string ReferenceDataBondLifecycle = "/api/reference-data/bonds/{securityId:guid}/lifecycle";
+    public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
+    public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
+    public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
+    public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
+    public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";
+    public const string ReferenceDataOptionUnderlyingLinkage = "/api/reference-data/options/contracts/{contractSymbol}/underlying-linkage";
+    public const string ReferenceDataOptionExpiryLadder = "/api/reference-data/options/expiry-ladder";
+    public const string ReferenceDataOptionChainImport = "/api/reference-data/options/chains/import";
+    public const string ReferenceDataOptionChainSnapshot = "/api/reference-data/options/chains/snapshot";
+
+    public const string ReferenceDataEquityReference = "/api/reference-data/equities/{securityId:guid}";
+    public const string ReferenceDataEquityByExchange = "/api/reference-data/equities/by-exchange";
+    public const string ReferenceDataEquityByIssuer = "/api/reference-data/equities/by-issuer";
+
+    public const string ReferenceDataFutureReference = "/api/reference-data/futures/{securityId:guid}";
+    public const string ReferenceDataFuturesByRoot = "/api/reference-data/futures/by-root";
+    public const string ReferenceDataFutureExpiryLadder = "/api/reference-data/futures/expiry-ladder";
+    public const string ReferenceDataFutureFrontMonth = "/api/reference-data/futures/front-month";
+
+    public const string ReferenceDataFxSpotReference = "/api/reference-data/fxspot/{securityId:guid}";
+    public const string ReferenceDataFxSpotByPairCode = "/api/reference-data/fxspot/pairs/{pairCode}";
+    public const string ReferenceDataFxSpotByCurrency = "/api/reference-data/fxspot/by-currency";
+
+    public const string ReferenceDataSwapReference = "/api/reference-data/swaps/{securityId:guid}";
+    public const string ReferenceDataSwapsByType = "/api/reference-data/swaps/by-type";
+    public const string ReferenceDataSwapsMaturingBefore = "/api/reference-data/swaps/maturing-before";
+
+    public const string ReferenceDataCommodityReference = "/api/reference-data/commodities/{securityId:guid}";
+    public const string ReferenceDataCommoditiesByType = "/api/reference-data/commodities/by-type";
+    public const string ReferenceDataCommoditiesByExchange = "/api/reference-data/commodities/by-exchange";
+
+    public const string ReferenceDataCryptoReference = "/api/reference-data/crypto/{securityId:guid}";
+    public const string ReferenceDataCryptoByNetwork = "/api/reference-data/crypto/by-network";
+    public const string ReferenceDataCryptoByBaseCurrency = "/api/reference-data/crypto/by-base-currency";
+
+    public const string ReferenceDataDepositReference = "/api/reference-data/deposits/{securityId:guid}";
+    public const string ReferenceDataDepositsByInstitution = "/api/reference-data/deposits/by-institution";
+    public const string ReferenceDataDepositsMaturingBefore = "/api/reference-data/deposits/maturing-before";
+
+    public const string ReferenceDataMoneyMarketFundReference = "/api/reference-data/money-market-funds/{securityId:guid}";
+    public const string ReferenceDataMoneyMarketFundsByFamily = "/api/reference-data/money-market-funds/by-family";
+    public const string ReferenceDataMoneyMarketFundsBySweepEligibility = "/api/reference-data/money-market-funds/by-sweep-eligibility";
+
+    public const string ReferenceDataCertificateOfDepositReference = "/api/reference-data/certificates-of-deposit/{securityId:guid}";
+    public const string ReferenceDataCertificatesOfDepositByIssuer = "/api/reference-data/certificates-of-deposit/by-issuer";
+    public const string ReferenceDataCertificatesOfDepositMaturingBefore = "/api/reference-data/certificates-of-deposit/maturing-before";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
@@ -342,6 +401,7 @@ public static class UiApiRoutes
     // Live data endpoints
     public const string DataTrades = "/api/data/trades/{symbol}";
     public const string DataQuotes = "/api/data/quotes/{symbol}";
+    public const string DataQuotesSnapshot = "/api/data/quotes-snapshot";
     public const string DataOrderbook = "/api/data/orderbook/{symbol}";
     public const string DataL3Orderbook = "/api/data/l3-orderbook/{symbol}";
     public const string DataBbo = "/api/data/bbo/{symbol}";
@@ -466,10 +526,43 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
+    public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
+    public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
+    public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
+    public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";
+    public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
+    public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
+    public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
+    public const string OperationsContinuity = "/api/workstation/operations/continuity";
+    public const string OperationsContinuityById = "/api/workstation/operations/continuity/{workflowId:guid}";
+    public const string OperationsContinuityTimeline = "/api/workstation/operations/continuity/{workflowId:guid}/timeline";
+    public const string OperationsContinuityBreaks = "/api/workstation/operations/continuity/{workflowId:guid}/breaks";
+    public const string OperationsContinuityLedgerPreview = "/api/workstation/operations/continuity/{workflowId:guid}/ledger-preview";
+    public const string OperationsContinuityBrokerImport = "/api/workstation/operations/continuity/{workflowId:guid}/broker/import";
+    public const string OperationsContinuityBrokerNormalize = "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize";
+    public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
+    public const string OperationsContinuitySecurityMasterResolve = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/resolve";
+    public const string OperationsContinuitySecurityMasterOverrideApprove = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/overrides/{overrideId}/approve";
+    public const string OperationsContinuityLedgerDraft = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/draft";
+    public const string OperationsContinuityLedgerValidate = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/validate";
+    public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";
+    public const string OperationsContinuityReconciliationRun = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/run";
+    public const string OperationsContinuityReconciliationBreakResolve = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/breaks/{breakId}/resolve";
+    public const string OperationsContinuityApprovalSubmit = "/api/workstation/operations/continuity/{workflowId:guid}/approval/submit";
+    public const string OperationsContinuityApprovalApprove = "/api/workstation/operations/continuity/{workflowId:guid}/approval/approve";
+    public const string OperationsContinuityApprovalReject = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reject";
+    public const string OperationsContinuityClose = "/api/workstation/operations/continuity/{workflowId:guid}/close";
+    public const string OperationsContinuityReopen = "/api/workstation/operations/continuity/{workflowId:guid}/reopen";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
+    public const string RunsEquityCurve = "/api/workstation/runs/{runId}/equity-curve";
+    public const string RunsFills = "/api/workstation/runs/{runId}/fills";
+    public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
+    public const string ReconciliationRuns = "/api/workstation/reconciliation/runs";
+    public const string ReconciliationRunById = "/api/workstation/reconciliation/runs/{reconciliationRunId}";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
@@ -480,13 +573,20 @@ public static class UiApiRoutes
     public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
+    public const string LedgerBooks = "/api/ledger/books";
+    public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerPeriods = "/api/ledger/periods";
+    public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
+    public const string WorkstationSecurityMasterHistory = "/api/workstation/security-master/securities/{securityId:guid}/history";
     public const string WorkstationSecurityMasterIdentity = "/api/workstation/security-master/securities/{securityId:guid}/identity";
+    public const string WorkstationSecurityMasterEconomicDefinition = "/api/workstation/security-master/securities/{securityId:guid}/economic-definition";
     public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
     public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
+    public const string ReconciliationBreakQueueById = "/api/workstation/reconciliation/break-queue/{breakId}";
     public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
@@ -513,10 +613,44 @@ public static class UiApiRoutes
     public const string RetentionComplianceReport = "/api/admin/retention/compliance-report";
 
     /// <summary>
-    /// Replaces a route parameter with a value.
+    /// Replaces a route parameter with a URL-encoded path segment value.
     /// </summary>
     public static string WithParam(string route, string paramName, string value)
-        => route.Replace($"{{{paramName}}}", Uri.EscapeDataString(value));
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        ArgumentException.ThrowIfNullOrWhiteSpace(paramName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+        var encodedValue = Uri.EscapeDataString(value.Trim());
+        var parameterName = paramName.Trim();
+        var simplePlaceholder = $"{{{parameterName}}}";
+        var updated = route.Replace(simplePlaceholder, encodedValue, StringComparison.Ordinal);
+
+        var constrainedPrefix = $"{{{parameterName}:";
+        var searchIndex = 0;
+        while (searchIndex < updated.Length)
+        {
+            var startIndex = updated.IndexOf(constrainedPrefix, searchIndex, StringComparison.Ordinal);
+            if (startIndex < 0)
+            {
+                break;
+            }
+
+            var endIndex = updated.IndexOf('}', startIndex);
+            if (endIndex < 0)
+            {
+                break;
+            }
+
+            updated = string.Concat(
+                updated.AsSpan(0, startIndex),
+                encodedValue,
+                updated.AsSpan(endIndex + 1));
+            searchIndex = startIndex + encodedValue.Length;
+        }
+
+        return updated;
+    }
 
     /// <summary>
     /// Appends a query string to a route.
@@ -528,4 +662,37 @@ public static class UiApiRoutes
     public const string Credentials = "/api/credentials";
     public const string CredentialByProvider = "/api/credentials/{provider}";
     public const string CredentialTest = "/api/credentials/{provider}/test";
+
+    // Quant Lab endpoints (gated behind QuantLab:Enabled host configuration)
+    public const string QuantRun = "/api/quant/run";
+    public const string QuantParameters = "/api/quant/parameters";
+    public const string QuantTemplates = "/api/quant/templates";
+
+    // Demo mode endpoints
+    public const string DemoMode = "/api/demo/mode";
+    public const string DemoSymbols = "/api/demo/symbols";
+    public const string DemoMarketData = "/api/demo/market-data/{symbol}";
+    public const string DemoHistoricalData = "/api/demo/historical/{symbol}";
+
+    // Symbol universe management endpoints
+    public const string SymbolUpdate = "/api/symbols/{symbol}/update";
+    public const string SymbolDelete = "/api/symbols/{symbol}";
+    public const string SymbolCreate = "/api/symbols/create";
+
+    // Backfill validation endpoints
+    public const string BackfillValidation = "/api/backfill/validation";
+    public const string BackfillValidationBySymbol = "/api/backfill/validation/{symbol}";
+    public const string BackfillGapDetection = "/api/backfill/gaps";
+    public const string BackfillCompleteness = "/api/backfill/completeness";
+
+    // Provider credential verification endpoints
+    public const string ProviderCredentialsValidate = "/api/providers/{provider}/validate-credentials";
+    public const string ProviderConnectionTest = "/api/providers/{provider}/test-connection";
+
+    // Covered-call strategy endpoints (slice 1: backtest UI)
+    public const string CoveredCallRuns = "/api/strategies/covered-call/runs";
+    public const string CoveredCallRunStatus = "/api/strategies/covered-call/runs/{runId}/status";
+    public const string CoveredCallRunResult = "/api/strategies/covered-call/runs/{runId}/result";
+    public const string CoveredCallRunCancel = "/api/strategies/covered-call/runs/{runId}/cancel";
+    public const string CoveredCallChainPreview = "/api/strategies/covered-call/chain-preview";
 }

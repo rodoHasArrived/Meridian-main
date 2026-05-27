@@ -30,9 +30,4 @@ public partial class SystemHealthPage : Page
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
         _viewModel.Stop();
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.RefreshAsync();
-
-    private async void GenerateDiagnostics_Click(object sender, RoutedEventArgs e) =>
-        await _viewModel.GenerateDiagnosticsAsync();
 }

@@ -1,0 +1,98 @@
+name: WPF Dev Loop Validation
+
+on:
+  pull_request:
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - "scripts/dev/desktop-workflows.json"
+      - ".github/workflows/wpf-dev-validation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - "scripts/dev/desktop-workflows.json"
+      - ".github/workflows/wpf-dev-validation.yml"
+  workflow_dispatch:
+    inputs:
+      build_only:
+        description: Build without running tests.
+        required: false
+        type: boolean
+        default: false
+      filter:
+        description: >
+          dotnet test --filter expression override.
+          Leave blank to use the script's own default (FullyQualifiedName~DesktopWorkflowScriptTests).
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wpf-dev-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  wpf-dev-loop:
+    name: WPF Dev Loop (DesktopWorkflowScriptTests)
+    runs-on: windows-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-wpf-
+            ${{ runner.os }}-nuget-
+
+      - name: Run WPF dev loop validation
+        shell: pwsh
+        env:
+          BUILD_ONLY: ${{ inputs.build_only }}
+          TEST_FILTER: ${{ inputs.filter }}
+        run: |
+          $devArgs = @{
+            Restore = $true
+          }
+          if ($env:BUILD_ONLY -eq 'true') {
+            $devArgs.BuildOnly = $true
+          }
+          if ($env:TEST_FILTER -ne '') {
+            $devArgs.Filter = $env:TEST_FILTER
+          }
+          & scripts/dev/validate-wpf-dev.ps1 @devArgs
+
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: wpf-dev-validation-${{ github.run_number }}
+          path: artifacts/wpf-validation/dev-loop/
+          if-no-files-found: ignore
+          retention-days: 14

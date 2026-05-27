@@ -534,6 +534,38 @@ let ``SecurityMasterSnapshotWrapper serializes current equity payload and identi
     wrapper.Currency |> should equal "USD"
 
 [<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` () =
+    let maturity = DateOnly(2034, 9, 15)
+    let bondTerms = {
+        Maturity = maturity
+        IssueDate = Some (DateOnly(2024, 9, 15))
+        Coupon = BondCouponStructure.Floating("SOFR", Some 150m, Some 7.25m, Some 0.75m, Some "ACT/360")
+        IsCallable = true
+        CallDate = Some (DateOnly(2030, 9, 15))
+        IssuerName = Some "Meridian Capital"
+        Seniority = Some "Senior Unsecured"
+        Subclass = BondSubclass.FloatingRate
+    }
+    let command = createValidCommand () |> mapKind (fun _ -> SecurityKind.Bond bondTerms)
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    payload.GetProperty("couponType").GetString() |> should equal "Floating"
+    payload.GetProperty("floatingIndex").GetString() |> should equal "SOFR"
+    payload.GetProperty("spreadBps").GetDecimal() |> should equal 150m
+    payload.GetProperty("capRate").GetDecimal() |> should equal 7.25m
+    payload.GetProperty("floorRate").GetDecimal() |> should equal 0.75m
+    payload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
+
+[<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
     let record = createSecurityRecord (Some classification)
@@ -875,3 +907,154 @@ let ``SecurityEconomicDefinition.normalize preserves unchanged optional fields``
     normalized.Common.CountryOfRisk    |> should equal (Some "US")
     normalized.Common.SettlementCycleDays |> should equal (Some 1)
     normalized.Classification          |> should equal (makeTestClassification ())
+
+// ---------------------------------------------------------------------------
+// EquityClassification module function tests
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``EquityClassification.asString returns "Common" for Common case`` () =
+    EquityClassification.asString EquityClassification.Common |> should equal "Common"
+
+[<Fact>]
+let ``EquityClassification.asString returns "Preferred" for Preferred case`` () =
+    let terms = {
+        DividendRate = Some 5.0m
+        DividendType = DividendType.Fixed
+        RedemptionPrice = Some 25.0m
+        RedemptionDate = None
+        CallableDate = None
+        ParticipationTerms = None
+        LiquidationPreference = LiquidationPreference.Pari
+    }
+    EquityClassification.asString (EquityClassification.Preferred terms) |> should equal "Preferred"
+
+[<Fact>]
+let ``EquityClassification.asString returns "Convertible" for Convertible case`` () =
+    let terms = {
+        UnderlyingSecurityId = SecurityId(Guid.NewGuid())
+        ConversionRatio = 2.0m
+        ConversionPrice = Some 50.0m
+        ConversionStartDate = None
+        ConversionEndDate = None
+    }
+    EquityClassification.asString (EquityClassification.Convertible terms) |> should equal "Convertible"
+
+[<Fact>]
+let ``EquityClassification.asString returns "ConvertiblePreferred" for ConvertiblePreferred case`` () =
+    let preferred = {
+        DividendRate = Some 6.0m
+        DividendType = DividendType.Cumulative
+        RedemptionPrice = None
+        RedemptionDate = None
+        CallableDate = None
+        ParticipationTerms = None
+        LiquidationPreference = LiquidationPreference.Senior 1.0m
+    }
+    let convertible = {
+        UnderlyingSecurityId = SecurityId(Guid.NewGuid())
+        ConversionRatio = 3.0m
+        ConversionPrice = None
+        ConversionStartDate = None
+        ConversionEndDate = None
+    }
+    EquityClassification.asString (EquityClassification.ConvertiblePreferred(preferred, convertible))
+    |> should equal "ConvertiblePreferred"
+
+[<Fact>]
+let ``EquityClassification.asString returns the label for Other case`` () =
+    EquityClassification.asString (EquityClassification.Other "SpecialPurpose")
+    |> should equal "SpecialPurpose"
+
+// ---------------------------------------------------------------------------
+// DividendType module function tests
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``DividendType.asString returns "Fixed" for Fixed`` () =
+    DividendType.asString DividendType.Fixed |> should equal "Fixed"
+
+[<Fact>]
+let ``DividendType.asString returns "Floating" for Floating`` () =
+    DividendType.asString DividendType.Floating |> should equal "Floating"
+
+[<Fact>]
+let ``DividendType.asString returns "Cumulative" for Cumulative`` () =
+    DividendType.asString DividendType.Cumulative |> should equal "Cumulative"
+
+// ---------------------------------------------------------------------------
+// LiquidationPreference module function tests
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``LiquidationPreference.asString returns "Pari" for Pari`` () =
+    LiquidationPreference.asString LiquidationPreference.Pari |> should equal "Pari"
+
+[<Fact>]
+let ``LiquidationPreference.asString returns "Senior" for Senior with any multiple`` () =
+    LiquidationPreference.asString (LiquidationPreference.Senior 1.5m) |> should equal "Senior"
+
+[<Fact>]
+let ``LiquidationPreference.asString returns "Subordinated" for Subordinated`` () =
+    LiquidationPreference.asString LiquidationPreference.Subordinated |> should equal "Subordinated"
+
+// ---------------------------------------------------------------------------
+// PreferredTerms — DividendType variant coverage
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``PreferredTerms accepts Floating dividend type`` () =
+    let terms = {
+        DividendRate = Some 3.5m
+        DividendType = DividendType.Floating
+        RedemptionPrice = Some 100.0m
+        RedemptionDate = Some (DateOnly(2035, 6, 1))
+        CallableDate = None
+        ParticipationTerms = None
+        LiquidationPreference = LiquidationPreference.Pari
+    }
+    DividendType.asString terms.DividendType |> should equal "Floating"
+    terms.DividendRate |> should equal (Some 3.5m)
+
+[<Fact>]
+let ``PreferredTerms accepts Cumulative dividend type with participation terms`` () =
+    let participation = {
+        ParticipatesInCommonDividends = true
+        AdditionalDividendThreshold = Some 1.00m
+    }
+    let terms = {
+        DividendRate = Some 4.0m
+        DividendType = DividendType.Cumulative
+        RedemptionPrice = None
+        RedemptionDate = None
+        CallableDate = Some (DateOnly(2030, 1, 1))
+        ParticipationTerms = Some participation
+        LiquidationPreference = LiquidationPreference.Senior 2.0m
+    }
+    DividendType.asString terms.DividendType |> should equal "Cumulative"
+    terms.ParticipationTerms |> should not' (equal None)
+    LiquidationPreference.asString terms.LiquidationPreference |> should equal "Senior"
+
+// ---------------------------------------------------------------------------
+// ConvertibleTerms — standalone Convertible classification
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``EquityClassification.Convertible round-trips through asString`` () =
+    let underlying = SecurityId(Guid.NewGuid())
+    let terms = {
+        UnderlyingSecurityId = underlying
+        ConversionRatio = 4.25m
+        ConversionPrice = Some 120.0m
+        ConversionStartDate = Some (DateOnly(2027, 1, 1))
+        ConversionEndDate = Some (DateOnly(2032, 12, 31))
+    }
+    let classification = EquityClassification.Convertible terms
+    EquityClassification.asString classification |> should equal "Convertible"
+
+    match classification with
+    | EquityClassification.Convertible ct ->
+        ct.UnderlyingSecurityId |> should equal underlying
+        ct.ConversionRatio |> should equal 4.25m
+        ct.ConversionPrice |> should equal (Some 120.0m)
+    | _ -> failwith "Expected Convertible case"

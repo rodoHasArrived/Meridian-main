@@ -9,7 +9,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 **Canonical tracking documents (not merged here):**
 
 - [`ROADMAP.md`](ROADMAP.md) — wave-structured delivery roadmap and core operator-readiness gates
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — normalized active implementation backlog aligned to the roadmap
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) — normalized active implementation backlog aligned to the roadmap
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking with legacy milestone tags retained for traceability
 - [`production-status.md`](production-status.md) — current development / pilot-ready posture and readiness caveats
 
@@ -65,7 +65,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Historical Providers | Well-designed | Alpaca + Polygon primary; Stooq + Yahoo free fallback; validate Polygon rate limits | [Evaluation](#historical-data-providers) |
 | Ingestion Orchestration | Uneven maturity | Strong building blocks; needs unified job model for realtime + backfill workloads | [Evaluation](#ingestion-orchestration) |
 | Operational Readiness | Pilot Ready | Good monitoring baseline; needs standardized SLOs and runbook-linked alerts | [Evaluation](#operational-readiness) |
-| Desktop UX | Retained support | 49 XAML pages retained for compatibility; new WPF feature work paused; browser workstation is the active operator UI lane | [Assessment](#desktop-ux-assessment) |
+| Desktop UX | Active | WPF is the active desktop shell with 49 XAML pages; browser workstation is the parallel operator UI lane | [Assessment](#desktop-ux-assessment) |
 | Code Quality | Excellent | Debug code is intentional; no cleanup required; repository hygiene complete | [Audit](#debug-code-analysis-h3) |
 | Repository Cleanup | Complete | Phases 1-6 done; generated docs refresh and HtmlTemplateGenerator CSS/JS extraction remain | [Audit](#cleanup-action-plan-status) |
 | Simplification Backlog | ~2,800-3,400 LOC removable | 12 categories identified; highest priority: bare catches, dead code, Task.Run misuse | [Audit](#further-simplification-opportunities) |
@@ -76,10 +76,10 @@ Use this document as supporting context. For active prioritization, default to t
 
 ## Refresh Highlights
 
-**This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the browser-first operator UI pivot, and the April 2026 workspace visual audit:**
+**This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the shared-contract-first operator UI pivot, and the April 2026 workspace visual audit:**
 
 - Wave 1 trust gate is **closed** as of 2026-04-17 with a signed DK1 parity packet and valid operator sign-off. The Project Health Summary and production-status posture are updated accordingly.
-- New WPF feature development is **paused**; the active operator UI lane is the web dashboard in `src/Meridian.Ui/dashboard/`. The Desktop UX summary is updated to reflect retained support scope rather than active parity targets.
+- WPF feature development is active alongside the browser workstation when it consumes shared contracts, API endpoints, and read models. The Desktop UX summary should reflect first-class desktop workflow scope rather than support-only parity targets.
 - The **Workspace Visual Audit Checklist (2026-04-22)** is now indexed under [Code Audits](#workspace-visual-audit-april-2026). It confirms shared spacing/rhythm tokens, card composition patterns, badge semantics, and summary-tile ordering are in place across the four workspace shells; four visual outliers are flagged for follow-up cleanup.
 - Version updated to 1.7.2 to align with `production-status.md`.
 
@@ -291,7 +291,7 @@ Use this document as supporting context. For active prioritization, default to t
 
 ## Desktop Assessments
 
-> **Note (2026-05-01):** New WPF feature development is paused. The active operator UI lane is the browser-based workstation dashboard in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The desktop shell is retained support evidence for shared contracts, regression fixes, and compatibility checks. The assessments below reflect the desktop-first evaluation history. For the active UI direction see [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
+> **Note (2026-05-01):** WPF feature development is active alongside the browser workstation. The browser dashboard in `src/Meridian.Ui/dashboard/` and built assets in `src/Meridian.Ui/wwwroot/workstation/` remain active, and the desktop shell is a first-class WPF operator surface that consumes the same shared contracts and read models. The assessments below reflect the desktop-first evaluation history. For the active UI direction see [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
 
 ### Desktop UX Assessment
 
@@ -361,12 +361,12 @@ Use this document as supporting context. For active prioritization, default to t
 **Executive Takeaway:** This archived desktop snapshot predates the current differentiation
 framing. Its durable signal is still useful: the highest-value remaining work was workflow
 consolidation and stronger trust signals. Read the active product direction through
-`docs/plans/evidence-backed-investment-operations-plan.md` and the browser-first operator pivot,
+`docs/plans/evidence-backed-investment-operations-plan.md` and the shared-contract-first operator pivot,
 not as a generic trading-workstation program.
 
 **Current planning alignment:**
 
-- Phase 11 — Reorganize the UX around Research, Trading, Data Operations, and Governance workspaces
+- Phase 11 — Historical workspace consolidation around Research, Trading, Data Operations, and Governance; current planning maps this into the shared-contract-first `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` model with WPF compatibility aliases
 - Phase 12 — Standardize shared run / portfolio / ledger read models
 - Phase 13 — Unify native backtesting, Lean integration, and paper-trading workflows
 
@@ -465,7 +465,7 @@ not as a generic trading-workstation program.
 > Source: `docs/audits/workspace-visual-audit-checklist-2026-04-22.md`
 > Date: 2026-04-22 | Status: Complete — 4 outliers identified for follow-up cleanup
 
-**Scope:** Research, Trading, Data Operations, and Governance workspace shell pages (`ResearchWorkspaceShellPage.xaml`, `TradingWorkspaceShellPage.xaml`, `DataOperationsWorkspaceShellPage.xaml`, `GovernanceWorkspaceShellPage.xaml`).
+**Scope:** Research, Trading, Data, and Governance workspace shell pages (`ResearchWorkspaceShellPage.xaml`, `TradingWorkspaceShellPage.xaml`, `Features/Data/Shell/DataWorkspaceShellPage.xaml`, `GovernanceWorkspaceShellPage.xaml`).
 
 **Checklist outcome:** All items confirmed:
 

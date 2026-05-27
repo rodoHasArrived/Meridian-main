@@ -18,22 +18,40 @@ internal sealed class StatementCommands : ICliCommand
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
 
         var svc = new StatementReconciliationService();
-        if (CliArguments.HasFlag(args, "--statement-validate"))
+        try
         {
-            var result = await svc.ValidateAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
-            Console.WriteLine(result);
+            if (CliArguments.HasFlag(args, "--statement-validate"))
+            {
+                var result = await svc.ValidateAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+                Console.WriteLine(result);
+                return CliResult.Ok();
+            }
+
+            if (CliArguments.HasFlag(args, "--statement-import"))
+            {
+                var result = await svc.ImportAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+                Console.WriteLine($"Imported statement batch {result.ImportId} with {result.RowCount} row(s).");
+                return CliResult.Ok();
+            }
+
+            var reconcileResult = await svc.ReconcileAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+            Console.WriteLine($"Reconciled batch {reconcileResult.ImportId}: matches={reconcileResult.MatchCount}, unresolved={reconcileResult.UnresolvedCount}.");
             return CliResult.Ok();
         }
-
-        if (CliArguments.HasFlag(args, "--statement-import"))
+        catch (FileNotFoundException ex)
         {
-            var result = await svc.ImportAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
-            Console.WriteLine($"Imported statement batch {result.ImportId} with {result.RowCount} row(s).");
-            return CliResult.Ok();
+            Console.WriteLine(ex.Message);
+            return CliResult.Fail(ErrorCode.FileNotFound);
         }
-
-        var reconcileResult = await svc.ReconcileAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
-        Console.WriteLine($"Reconciled batch {reconcileResult.ImportId}: matches={reconcileResult.MatchCount}, unresolved={reconcileResult.UnresolvedCount}.");
-        return CliResult.Ok();
+        catch (NotSupportedException ex)
+        {
+            Console.WriteLine(ex.Message);
+            return CliResult.Fail(ErrorCode.NotSupported);
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine(ex.Message);
+            return CliResult.Fail(ErrorCode.ValidationFailed);
+        }
     }
 }

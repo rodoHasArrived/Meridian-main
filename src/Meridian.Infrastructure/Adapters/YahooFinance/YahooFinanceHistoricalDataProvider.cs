@@ -8,6 +8,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
 using Serilog;
 using DomainAggregateTimeframe = Meridian.Domain.Models.AggregateTimeframe;
@@ -92,22 +93,12 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         ThrowIfDisposed();
         ValidateSymbol(symbol);
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = BuildRequestUrl(normalizedSymbol, from, to, "1d", includePrePost: false, includeEvents: true);
 
-        using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-        var httpResult = await ResponseHandler.HandleResponseAsync(response, symbol, "daily bars", ct).ConfigureAwait(false);
-        if (!httpResult.IsSuccess)
-        {
-            var errorMsg = httpResult.IsNotFound
-                ? $"Symbol {symbol} not found (404)"
-                : $"HTTP error {httpResult.StatusCode}: {httpResult.ReasonPhrase}";
-            throw new InvalidOperationException($"Failed to fetch Yahoo Finance data for {symbol}: {errorMsg}");
-        }
-
-        var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
+        if (json is null)
+            return Array.Empty<AdjustedHistoricalBar>();
         try
         {
             var data = DeserializeResponse<YahooChartResponse>(json, symbol);
@@ -270,38 +261,33 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         DateOnly to,
         CancellationToken ct)
     {
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var url = BuildRequestUrl(normalizedSymbol, from, to, spec.Interval, includePrePost: false, includeEvents: false);
-        using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-        var httpResult = await ResponseHandler.HandleResponseAsync(response, symbol, $"{granularity.ToDisplayName()} intraday bars", ct).ConfigureAwait(false);
+        using var response = await ExecuteGetAsync(url, symbol, $"{granularity.ToDisplayName()} intraday bars", ct).ConfigureAwait(false);
 
-        if (!httpResult.IsSuccess)
+        if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
         {
-            if (httpResult.StatusCode == HttpStatusCode.UnprocessableEntity)
-            {
-                var vendorMessage = TryExtractYahooErrorDescription(httpResult.ErrorContent, out var description)
-                    ? description
-                    : httpResult.ReasonPhrase;
+            var errorContent = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var vendorMessage = TryExtractYahooErrorDescription(errorContent, out var description)
+                ? description
+                : response.ReasonPhrase ?? "Unprocessable Entity";
 
-                Log.Warning(
-                    "Yahoo Finance rejected {Granularity} intraday chunk for {Symbol} [{From}..{To}]: {Message}",
-                    granularity.ToDisplayName(),
-                    symbol,
-                    from,
-                    to,
-                    vendorMessage);
+            Log.Warning(
+                "Yahoo Finance rejected {Granularity} intraday chunk for {Symbol} [{From}..{To}]: {Message}",
+                granularity.ToDisplayName(),
+                symbol,
+                from,
+                to,
+                vendorMessage);
 
-                throw new InvalidOperationException(
-                    $"Yahoo Finance rejected {granularity.ToDisplayName()} intraday request for {symbol} [{from}..{to}]: {vendorMessage}");
-            }
-
-            var errorMsg = httpResult.IsNotFound
-                ? $"Symbol {symbol} not found (404)"
-                : $"HTTP error {httpResult.StatusCode}: {httpResult.ReasonPhrase}";
-
-            throw new InvalidOperationException($"Failed to fetch Yahoo Finance data for {symbol}: {errorMsg}");
+            throw new InvalidOperationException(
+                $"Yahoo Finance rejected {granularity.ToDisplayName()} intraday request for {symbol} [{from}..{to}]: {vendorMessage}");
         }
+
+        var httpResult = await HandleHttpResponseAsync(response, symbol, $"{granularity.ToDisplayName()} intraday bars", ct).ConfigureAwait(false);
+        if (httpResult.IsNotFound)
+            return Array.Empty<AggregateBar>();
+        if (!httpResult.IsSuccess)
+            throw new InvalidOperationException($"Failed to fetch Yahoo Finance data for {symbol}: {httpResult.ErrorMessage ?? "HTTP error"}");
 
         var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         try

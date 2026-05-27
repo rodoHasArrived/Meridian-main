@@ -255,6 +255,20 @@ public sealed class SyntheticOptionsChainProviderTests
         quote.Contract.Expiration.Should().Be(expiry);
     }
 
+
+    [Fact]
+    public void NormalizeStrikeRange_ClampsNegativeToZero()
+    {
+        SyntheticOptionsChainProvider.NormalizeStrikeRange(-5).Should().Be(0);
+    }
+
+    [Fact]
+    public void NormalizeStrikeRange_ClampsToMax()
+    {
+        SyntheticOptionsChainProvider.NormalizeStrikeRange(SyntheticOptionsChainProvider.MaxStrikeRange + 25)
+            .Should().Be(SyntheticOptionsChainProvider.MaxStrikeRange);
+    }
+
     // ------------------------------------------------------------------ //
     //  Metadata                                                            //
     // ------------------------------------------------------------------ //

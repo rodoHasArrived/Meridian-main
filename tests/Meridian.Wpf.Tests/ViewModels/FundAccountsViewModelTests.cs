@@ -351,6 +351,137 @@ public sealed class FundAccountsViewModelTests
         viewModel.ProviderRoutingStatus.Should().Be("Loaded 1 binding(s) and 1 route preview(s).");
     }
 
+    [Fact]
+    public void BrokerageSync_WhenAccountIsUnlinked_SurfacesSyncGapBeforeSharedDataCheck()
+    {
+        var viewModel = CreateViewModel();
+        var account = CreateBrokerageAccount(sharedDataAccess: CreateSharedDataAccess());
+
+        viewModel.SelectedFundId = account.FundId;
+        viewModel.BrokerageAccounts.Add(account);
+        viewModel.SelectedAccount = account;
+        viewModel.ApplyProviderInsights(
+            account,
+            connections: [CreateConnection()],
+            bindings: [CreateBinding(account)],
+            trustSnapshots: [],
+            previews: [CreateRoutePreview(isRoutable: true)],
+            workspaceId: "trading",
+            fundProfileId: "alpha-fund");
+
+        // Without any sync status the briefing skips the sync gap check and lands on shared-data ready.
+        viewModel.AccountBriefingTitle.Should().Be("Account ready for reconciliation");
+
+        // Applying an unlinked sync status should bump the briefing to the sync gap.
+        viewModel.ApplyBrokerageSyncStatus(new WorkstationBrokerageSyncStatusDto(
+            FundAccountId: account.AccountId,
+            ProviderId: null,
+            ExternalAccountId: null,
+            Health: WorkstationBrokerageSyncHealth.Unlinked,
+            IsLinked: false,
+            IsStale: false,
+            LastAttemptedSyncAt: null,
+            LastSuccessfulSyncAt: null,
+            LastError: null,
+            PositionCount: 0,
+            OpenOrderCount: 0,
+            FillCount: 0,
+            CashTransactionCount: 0,
+            SecurityMissingCount: 0,
+            Warnings: []));
+
+        viewModel.AccountBriefingTitle.Should().Be("Brokerage sync not linked");
+        viewModel.AccountBriefingDetail.Should().Contain(account.DisplayName);
+        viewModel.AccountBriefingDetail.Should().Contain("not linked to a brokerage provider");
+        viewModel.AccountBriefingActionText.Should().Be("Open Account Portfolio");
+
+        viewModel.BrokerageSyncStatusText.Should().Contain("not linked to a brokerage provider");
+    }
+
+    [Fact]
+    public void BrokerageSync_WhenSyncFailed_SurfacesErrorAndRoutesBriefingActionToAccountPortfolio()
+    {
+        var viewModel = CreateViewModel();
+        var account = CreateBrokerageAccount(sharedDataAccess: CreateSharedDataAccess());
+
+        viewModel.SelectedFundId = account.FundId;
+        viewModel.BrokerageAccounts.Add(account);
+        viewModel.SelectedAccount = account;
+        viewModel.ApplyProviderInsights(
+            account,
+            connections: [CreateConnection()],
+            bindings: [CreateBinding(account)],
+            trustSnapshots: [],
+            previews: [CreateRoutePreview(isRoutable: true)],
+            workspaceId: "trading",
+            fundProfileId: "alpha-fund");
+
+        viewModel.ApplyBrokerageSyncStatus(new WorkstationBrokerageSyncStatusDto(
+            FundAccountId: account.AccountId,
+            ProviderId: "alpaca",
+            ExternalAccountId: "acct-001",
+            Health: WorkstationBrokerageSyncHealth.Failed,
+            IsLinked: true,
+            IsStale: false,
+            LastAttemptedSyncAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+            LastSuccessfulSyncAt: null,
+            LastError: "Connection refused by brokerage API.",
+            PositionCount: 0,
+            OpenOrderCount: 0,
+            FillCount: 0,
+            CashTransactionCount: 0,
+            SecurityMissingCount: 0,
+            Warnings: []));
+
+        viewModel.AccountBriefingTitle.Should().Be("Brokerage sync failed");
+        viewModel.AccountBriefingDetail.Should().Contain("Connection refused by brokerage API.");
+        viewModel.AccountBriefingDetail.Should().Contain("account portfolio page");
+        viewModel.AccountBriefingActionText.Should().Be("Open Account Portfolio");
+
+        viewModel.BrokerageSyncStatusText.Should().Contain("Brokerage sync failed");
+        viewModel.BrokerageSyncStatusText.Should().Contain("Connection refused by brokerage API.");
+    }
+
+    [Fact]
+    public void BrokerageSync_WhenSyncIsHealthy_DoesNotBlockBriefingReadyState()
+    {
+        var viewModel = CreateViewModel();
+        var account = CreateBrokerageAccount(sharedDataAccess: CreateSharedDataAccess());
+
+        viewModel.SelectedFundId = account.FundId;
+        viewModel.BrokerageAccounts.Add(account);
+        viewModel.SelectedAccount = account;
+        viewModel.ApplyProviderInsights(
+            account,
+            connections: [CreateConnection()],
+            bindings: [CreateBinding(account)],
+            trustSnapshots: [],
+            previews: [CreateRoutePreview(isRoutable: true)],
+            workspaceId: "trading",
+            fundProfileId: "alpha-fund");
+
+        viewModel.ApplyBrokerageSyncStatus(new WorkstationBrokerageSyncStatusDto(
+            FundAccountId: account.AccountId,
+            ProviderId: "alpaca",
+            ExternalAccountId: "acct-001",
+            Health: WorkstationBrokerageSyncHealth.Healthy,
+            IsLinked: true,
+            IsStale: false,
+            LastAttemptedSyncAt: DateTimeOffset.UtcNow.AddMinutes(-10),
+            LastSuccessfulSyncAt: DateTimeOffset.UtcNow.AddMinutes(-10),
+            LastError: null,
+            PositionCount: 8,
+            OpenOrderCount: 2,
+            FillCount: 14,
+            CashTransactionCount: 5,
+            SecurityMissingCount: 0,
+            Warnings: []));
+
+        viewModel.AccountBriefingTitle.Should().Be("Account ready for reconciliation");
+        viewModel.BrokerageSyncStatusText.Should().Contain("Brokerage sync is current");
+        viewModel.BrokerageSyncStatusText.Should().Contain("8 position(s)");
+    }
+
     private static FundAccountsViewModel CreateViewModel()
         => new(
             Substitute.For<IFundAccountService>(),

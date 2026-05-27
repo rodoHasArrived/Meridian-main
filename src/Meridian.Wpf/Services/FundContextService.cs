@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 
@@ -59,7 +58,7 @@ public sealed partial class FundContextService : IFundProfileCatalog
             }
 
             var json = await File.ReadAllTextAsync(_storagePath, ct).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize(json, FundProfileStorageJsonContext.Default.FundProfileStorageModel);
+            var data = JsonSerializer.Deserialize<FundProfileStorageModel>(json, StorageJsonOptions);
             if (data is null)
             {
                 return;
@@ -193,7 +192,7 @@ public sealed partial class FundContextService : IFundProfileCatalog
                     .ToList()
             };
 
-            var json = JsonSerializer.Serialize(model, FundProfileStorageJsonContext.Default.FundProfileStorageModel);
+            var json = JsonSerializer.Serialize(model, StorageJsonOptions);
             await File.WriteAllTextAsync(_storagePath, json, ct).ConfigureAwait(false);
         }
         catch
@@ -263,11 +262,10 @@ public sealed partial class FundContextService : IFundProfileCatalog
         public List<FundProfileDetail> Profiles { get; set; } = new();
     }
 
-    [JsonSourceGenerationOptions(WriteIndented = true)]
-    [JsonSerializable(typeof(FundProfileStorageModel))]
-    [JsonSerializable(typeof(List<FundProfileDetail>))]
-    [JsonSerializable(typeof(FundProfileDetail))]
-    private sealed partial class FundProfileStorageJsonContext : JsonSerializerContext;
+    private static readonly JsonSerializerOptions StorageJsonOptions = new()
+    {
+        WriteIndented = true
+    };
 }
 
 public sealed class FundProfileChangedEventArgs : EventArgs

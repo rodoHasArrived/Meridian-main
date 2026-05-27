@@ -3,6 +3,24 @@
 This guide covers producing MSIX packages for the Windows Desktop app and signing them
 for development or release distribution.
 
+## CI Release Packaging
+
+Tag pushes matching `v*` trigger `.github/workflows/desktop-installer-packaging.yml`, which:
+
+- builds `win-x64` and `win-arm64` MSIX installers,
+- uploads installer artifacts to the workflow run, and
+- attaches installer packages to the corresponding GitHub Release.
+
+For trusted release signing in CI, configure repository secrets:
+
+- `MDC_SIGNING_CERT_PFX_BASE64` (base64-encoded PFX contents)
+- `MDC_SIGNING_CERT_PASSWORD` (PFX password)
+
+If those secrets are not configured, CI falls back to a temporary development certificate.
+Installers signed with that fallback certificate are not trusted by default on end-user machines.
+For production release tags, verify the workflow log shows `Release signing certificate configured.`
+before distributing the package.
+
 ## Quick Start
 
 The easiest way to build and install the Desktop App:
@@ -14,7 +32,7 @@ The easiest way to build and install the Desktop App:
 # Build for ARM64 devices (Surface Pro X, etc.)
 .\build\scripts\install\install.ps1 -Mode Desktop -Architecture ARM64
 
-# Auto-install .NET SDK 9.0 and other prerequisites
+# Auto-install .NET SDK 10.0 and other prerequisites
 .\build\scripts\install\install.ps1 -Mode Desktop -AutoInstallPrereqs
 
 # Build only (no installation)
@@ -29,18 +47,6 @@ The easiest way to build and install the Desktop App:
 
 ## Build MSIX Packages
 
-**Makefile (Windows):**
-
-```powershell
-make desktop-publish
-
-# Lower-disk local publish
-make desktop-publish DESKTOP_PUBLISH_READYTORUN=false
-
-# Release-style local publish
-make desktop-publish DESKTOP_PUBLISH_READYTORUN=true
-```
-
 **PowerShell install script:**
 
 ```powershell
@@ -53,13 +59,21 @@ make desktop-publish DESKTOP_PUBLISH_READYTORUN=true
 .\build\scripts\install\install.ps1 -Mode Desktop -EnableReadyToRun
 ```
 
-Both commands output MSIX packages under:
+The script outputs MSIX packages under:
 
 ```
 dist\win-x64\msix\    (install script, x64)
 dist\win-arm64\msix\  (install script, ARM64)
-publish\desktop\      (make target)
 ```
+
+The WPF package uses `src/Meridian.Wpf/Package.appxmanifest` as its explicit package manifest.
+That manifest declares Meridian as a full-trust desktop app and includes a `desktop7:Shortcut`
+contract that creates `Meridian.lnk` on the current user's Desktop when the MSIX is installed.
+The shortcut extension requires Windows 10 build 19645 or newer, so the package manifest sets the
+desktop device-family minimum to `10.0.19645.0`.
+
+After a successful install, the installer summary should point operators to the Start Menu entry,
+the Desktop shortcut, and this guide at `docs/operations/msix-packaging.md`.
 
 ## Installation Options
 
@@ -99,12 +113,8 @@ To generate an AppInstaller alongside the MSIX package, provide the AppInstaller
 $env:MDC_APPINSTALLER_URI = "https://example.com/meridian/Meridian.appinstaller"
 ```
 
-For `make`:
-
-```powershell
-set APPINSTALLER_URI=https://example.com/meridian/Meridian.appinstaller
-make desktop-publish
-```
+The current repository does not define a `make desktop-publish` target; use the PowerShell install
+script for desktop package builds unless that target is restored.
 
 ## Signing for Development (Self-Signed)
 
@@ -150,17 +160,13 @@ $env:MDC_SIGNING_CERT_PFX = "C:\secure\Meridian.Release.pfx"
 $env:MDC_SIGNING_CERT_PASSWORD = "<secure-password>"
 ```
 
-For `make`, pass the same values:
-
-```powershell
-set SIGNING_CERT_PFX=C:\secure\Meridian.Release.pfx
-set SIGNING_CERT_PASSWORD=<secure-password>
-make desktop-publish
-```
+The install script reads the same signing environment variables when packaging.
 
 ## Notes
 
 - Keep the package identity values in the project file and manifest in sync.
+- Keep the Desktop shortcut target, icon path, and display name in `Package.appxmanifest`; validate
+  changes with `python -m unittest tests/scripts/test_wpf_msix_manifest.py`.
 - AppInstaller generation is optional; omit the URI to skip it.
 - Local desktop packaging defaults to `PublishReadyToRun=false` to reduce disk usage.
 - CI and release packaging should pass `PublishReadyToRun=true` explicitly.

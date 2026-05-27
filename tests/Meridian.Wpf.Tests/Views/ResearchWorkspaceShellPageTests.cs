@@ -38,7 +38,7 @@ public sealed class ResearchWorkspaceShellPageTests
                 Evidence: []));
 
         hero.FocusLabel.Should().Be("New cycle");
-        hero.Summary.Should().Be("Research queue is empty.");
+        hero.Summary.Should().Be("Strategy queue is empty.");
         hero.BadgeText.Should().Be("Setup");
         hero.PrimaryActionId.Should().Be("Backtest");
         hero.PrimaryActionLabel.Should().Be("Start Backtest");
@@ -115,7 +115,10 @@ public sealed class ResearchWorkspaceShellPageTests
         var models = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Models\ResearchWorkspaceShellPresentationModels.cs"));
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\ResearchWorkspaceShellViewModel.cs"));
 
-        xaml.Should().Contain("Research Desk Briefing");
+        xaml.Should().Contain("Strategy Desk Briefing");
+        xaml.Should().Contain("PlotTool workstation");
+        xaml.Should().Contain("Run scripts");
+        xaml.Should().Contain("Console &amp; compare");
         xaml.Should().Contain("ResearchHeroBadgeText");
         xaml.Should().Contain("ResearchHeroPrimaryActionButton");
         xaml.Should().Contain("ResearchHeroSecondaryActionButton");

@@ -27,6 +27,10 @@ public static class WorkflowActionIds
     public const string ReportingOpen = "workflow.reporting.open";
     public const string ReportingApproveReportPack = "workflow.reporting.approve-report-pack";
 
+    public const string EvidenceOpenPacket = "workflow.evidence.open-packet";
+    public const string EvidenceValidate = "workflow.evidence.validate";
+    public const string EvidenceExportManifest = "workflow.evidence.export-manifest";
+
     public const string DataOpenProviderHealth = "workflow.data.open-provider-health";
     public const string DataOpenBackfillQueue = "workflow.data.open-backfill-queue";
     public const string DataOpenQueueOverview = "workflow.data.open-queue-overview";

@@ -39,6 +39,76 @@
                     </StackPanel>
                 </Border>
 
+                <TabControl Margin="0,0,0,24"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            AutomationProperties.Name="Settings generated tabs">
+                    <TabItem Header="Capabilities"
+                             AutomationProperties.AutomationId="SettingsCapabilitiesTab">
+                        <Border Style="{StaticResource CardStyle}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <TextBlock Text="{StaticResource IconSettings}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="20"
+                                               Foreground="{StaticResource InfoColorBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Capabilities"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="8,0,0,0" />
+                                </StackPanel>
+
+                                <ItemsControl ItemsSource="{Binding CapabilityToggles}"
+                                              AutomationProperties.AutomationId="SettingsCapabilityToggles">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                                    CornerRadius="8"
+                                                    Padding="12"
+                                                    Margin="0,0,0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                                   TextWrapping="Wrap"
+                                                                   FontSize="12"
+                                                                   Margin="0,3,0,0" />
+                                                        <TextBlock Text="{Binding CapabilityKey}"
+                                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                   FontFamily="Cascadia Code, Consolas, monospace"
+                                                                   FontSize="11"
+                                                                   Margin="0,5,0,0" />
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1"
+                                                                Orientation="Horizontal"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding StateText}"
+                                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                   FontSize="12"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="0,0,8,0" />
+                                                        <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                                  IsEnabled="{Binding CanToggle}"
+                                                                  VerticalAlignment="Center"
+                                                                  AutomationProperties.Name="{Binding DisplayName}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </TabItem>
+                </TabControl>
+
                 <!-- Quick Actions -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                     <StackPanel>

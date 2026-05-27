@@ -7,6 +7,7 @@ Security-related documentation for the Meridian.
 | Document | Description |
 |----------|-------------|
 | [Known Vulnerabilities](known-vulnerabilities.md) | Assessed and accepted dependency vulnerabilities with documented mitigations |
+| [Threat Model (Current State)](threat-model-current-state.md) | Current trust boundaries, attack surfaces, mitigations, and severity calibration |
 
 ## Security Practices
 

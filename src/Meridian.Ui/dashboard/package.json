@@ -8,11 +8,13 @@
     "preview": "vite preview --host 127.0.0.1 --outDir ../wwwroot/workstation",
     "build": "tsc --noEmit && vite build",
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
-    "test": "vitest run",
+    "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
+    "test:vitest": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "lucide-react": "0.468.0",
+    "meridian-tools": "file:../../..",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.30.3"
@@ -26,6 +28,7 @@
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "10.4.20",
+    "jest-axe": "^10.0.0",
     "jsdom": "25.0.1",
     "playwright": "1.59.1",
     "postcss": "8.5.12",

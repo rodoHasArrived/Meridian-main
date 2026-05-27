@@ -242,7 +242,7 @@ public abstract class ConnectionServiceBase : IDisposable
     /// </summary>
     protected async Task OnMonitoringTimerFired(CancellationToken ct = default)
     {
-        await PerformHealthCheckAsync();
+        await PerformHealthCheckAsync(ct);
     }
 
     /// <summary>
@@ -254,7 +254,7 @@ public abstract class ConnectionServiceBase : IDisposable
 
         try
         {
-            var isHealthy = await PerformHealthCheckCoreAsync(CancellationToken.None);
+            var isHealthy = await PerformHealthCheckCoreAsync(ct);
 
             if (isHealthy)
             {
@@ -305,7 +305,7 @@ public abstract class ConnectionServiceBase : IDisposable
 
         try
         {
-            isHealthy = await PerformHealthCheckCoreAsync(CancellationToken.None);
+            isHealthy = await PerformHealthCheckCoreAsync(ct);
             stopwatch.Stop();
 
             LastLatencyMs = stopwatch.Elapsed.TotalMilliseconds;

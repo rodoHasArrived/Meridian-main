@@ -122,7 +122,7 @@ public sealed class GapBackfillService
                 symbols.Length, request.From, request.To,
                 evt.ProviderName, evt.GapDuration.TotalSeconds);
 
-            var result = await _backfillExecutor(request, CancellationToken.None);
+            var result = await _backfillExecutor(request, ct);
 
             if (result.Success)
             {

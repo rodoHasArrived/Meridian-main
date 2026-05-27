@@ -68,9 +68,9 @@ The best ideas for Meridian aren't isolated features. They're extensions that **
 ## Project Context
 
 **What Meridian is:**
-A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows.
+A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. WPF is the active desktop shell for operator workflows; the browser workstation under `src/Meridian.Ui/dashboard/` is the parallel surface for new operator-facing UI development.
 
-**Tech stack:** .NET 10, C# infrastructure, F# domain models, browser workstation UI, retained WPF support, Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet, GitHub Actions CI/CD.
+**Tech stack:** .NET 10, C# infrastructure, F# domain models, browser workstation UI, WPF desktop shell, Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet, GitHub Actions CI/CD.
 
 **Four-pillar architecture (ADR-016):**
 - **Data Collection** — streaming ingestion, historical backfill, storage, data quality monitoring
@@ -88,7 +88,7 @@ A provider-agnostic .NET 10 platform for evidence-backed investment operations: 
 - Strategy lifecycle: register, run, pause, promote paper→live
 - Pre-trade risk validation via `CompositeRiskValidator` / `IRiskRule`
 - Browser workstation: operator workflows, live status, data browser, and API-backed work queues
-- Retained WPF support: shared contracts, regressions, and existing desktop workflows
+- Active WPF desktop operator surface: shared contracts, regressions, and desktop workflows
 - MCP server layer (`Meridian.Mcp` / `Meridian.McpServer`) exposing tools + prompts for AI agents
 - Deployment: Docker Compose, systemd, Kubernetes
 - Observability: OpenTelemetry tracing, Prometheus metrics, Grafana dashboards

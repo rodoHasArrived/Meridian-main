@@ -25,6 +25,70 @@ public sealed class ScheduleManagerServiceTests
         a.Should().BeSameAs(b);
     }
 
+    [Fact]
+    public void BackfillRouteBuilders_ShouldUseCanonicalEncodedScheduleRoutes()
+    {
+        ScheduleManagerService.BuildBackfillScheduleRoute("daily open/1")
+            .Should()
+            .Be("/api/backfill/schedules/daily%20open%2F1");
+
+        ScheduleManagerService.BuildBackfillScheduleDeleteRoute("daily open/1")
+            .Should()
+            .Be("/api/backfill/schedules/daily%20open%2F1/delete");
+
+        ScheduleManagerService.BuildBackfillScheduleEnabledRoute("daily open/1", enabled: true)
+            .Should()
+            .Be("/api/backfill/schedules/daily%20open%2F1/enable");
+
+        ScheduleManagerService.BuildBackfillScheduleEnabledRoute("daily open/1", enabled: false)
+            .Should()
+            .Be("/api/backfill/schedules/daily%20open%2F1/disable");
+
+        ScheduleManagerService.BuildBackfillScheduleRunRoute("daily open/1")
+            .Should()
+            .Be("/api/backfill/schedules/daily%20open%2F1/run");
+
+        ScheduleManagerService.BuildBackfillScheduleHistoryRoute("daily open/1", 25)
+            .Should()
+            .Be("/api/backfill/schedules/daily%20open%2F1/history?limit=25");
+    }
+
+    [Fact]
+    public void MaintenanceRouteBuilders_ShouldUseCanonicalEncodedScheduleRoutes()
+    {
+        ScheduleManagerService.BuildMaintenanceScheduleRoute("storage sweep/1")
+            .Should()
+            .Be("/api/maintenance/schedules/storage%20sweep%2F1");
+
+        ScheduleManagerService.BuildMaintenanceScheduleDeleteRoute("storage sweep/1")
+            .Should()
+            .Be("/api/maintenance/schedules/storage%20sweep%2F1/delete");
+
+        ScheduleManagerService.BuildMaintenanceScheduleEnabledRoute("storage sweep/1", enabled: true)
+            .Should()
+            .Be("/api/maintenance/schedules/storage%20sweep%2F1/enable");
+
+        ScheduleManagerService.BuildMaintenanceScheduleEnabledRoute("storage sweep/1", enabled: false)
+            .Should()
+            .Be("/api/maintenance/schedules/storage%20sweep%2F1/disable");
+
+        ScheduleManagerService.BuildMaintenanceScheduleRunRoute("storage sweep/1")
+            .Should()
+            .Be("/api/maintenance/schedules/storage%20sweep%2F1/run");
+
+        ScheduleManagerService.BuildMaintenanceScheduleHistoryRoute("storage sweep/1", 10)
+            .Should()
+            .Be("/api/maintenance/schedules/storage%20sweep%2F1/history?limit=10");
+    }
+
+    [Fact]
+    public void RouteBuilders_ShouldRejectBlankScheduleIds()
+    {
+        Action act = () => ScheduleManagerService.BuildBackfillScheduleRoute("   ");
+
+        act.Should().Throw<ArgumentException>();
+    }
+
     // ── BackfillSchedule model ──────────────────────────────────────
 
     [Fact]

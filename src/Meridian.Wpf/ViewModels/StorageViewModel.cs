@@ -1,10 +1,44 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.ViewModels;
+
+internal interface IStorageFolderPicker
+{
+    string? SelectFolder(string currentPath);
+}
+
+internal sealed class StorageFolderPicker : IStorageFolderPicker
+{
+    public string? SelectFolder(string currentPath)
+    {
+        var selectedPath = string.IsNullOrWhiteSpace(currentPath)
+            ? Environment.CurrentDirectory
+            : currentPath;
+
+        if (!System.IO.Path.IsPathRooted(selectedPath))
+        {
+            selectedPath = System.IO.Path.GetFullPath(selectedPath);
+        }
+
+        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = "Select storage data directory",
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = true,
+            SelectedPath = selectedPath
+        };
+
+        return dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK
+            ? dialog.SelectedPath
+            : null;
+    }
+}
 
 /// <summary>
 /// ViewModel for the Storage configuration and analytics page.
@@ -13,8 +47,9 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class StorageViewModel : BindableBase
 {
-    private readonly StorageAnalyticsService _analyticsService;
     private readonly SettingsConfigurationService _settingsConfigService;
+    private readonly IStorageFolderPicker _folderPicker;
+    private readonly Func<bool, CancellationToken, Task<StorageAnalytics>> _getAnalyticsAsync;
 
     // ── Tier size properties ──────────────────────────────────────────────────────────
     private string _totalSizeText = "--";
@@ -25,6 +60,25 @@ public sealed class StorageViewModel : BindableBase
 
     private string _symbolCountText = "--";
     public string SymbolCountText { get => _symbolCountText; private set => SetProperty(ref _symbolCountText, value); }
+
+    private bool _isMetricsLoading;
+    public bool IsMetricsLoading
+    {
+        get => _isMetricsLoading;
+        private set
+        {
+            if (SetProperty(ref _isMetricsLoading, value))
+            {
+                OnPropertyChanged(nameof(CanRefreshMetrics));
+                RefreshMetricsCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool CanRefreshMetrics => !IsMetricsLoading;
+
+    private string _metricsStatusText = "Metrics pending. Open Storage to scan archive metrics.";
+    public string MetricsStatusText { get => _metricsStatusText; private set => SetProperty(ref _metricsStatusText, value); }
 
     private string _hotTierSizeText = "--";
     public string HotTierSizeText { get => _hotTierSizeText; private set => SetProperty(ref _hotTierSizeText, value); }
@@ -52,6 +106,48 @@ public sealed class StorageViewModel : BindableBase
     public string StorageLastScanText { get => _storageLastScanText; private set => SetProperty(ref _storageLastScanText, value); }
 
     // ── Preview properties ────────────────────────────────────────────────────────────
+    private string _dataDirectoryText = "./data";
+    public string DataDirectoryText
+    {
+        get => _dataDirectoryText;
+        set
+        {
+            var nextValue = string.IsNullOrWhiteSpace(value) ? "./data" : value;
+            if (SetProperty(ref _dataDirectoryText, nextValue))
+            {
+                RefreshPreview();
+            }
+        }
+    }
+
+    private string _namingConvention = "BySymbol";
+    public string NamingConvention
+    {
+        get => _namingConvention;
+        set
+        {
+            var nextValue = string.IsNullOrWhiteSpace(value) ? "BySymbol" : value;
+            if (SetProperty(ref _namingConvention, nextValue))
+            {
+                RefreshPreview();
+            }
+        }
+    }
+
+    private string _compressionFormat = "gzip";
+    public string CompressionFormat
+    {
+        get => _compressionFormat;
+        set
+        {
+            var nextValue = string.IsNullOrWhiteSpace(value) ? "gzip" : value;
+            if (SetProperty(ref _compressionFormat, nextValue))
+            {
+                RefreshPreview();
+            }
+        }
+    }
+
     private string _fileTreePreviewText = string.Empty;
     public string FileTreePreviewText { get => _fileTreePreviewText; private set => SetProperty(ref _fileTreePreviewText, value); }
 
@@ -64,12 +160,41 @@ public sealed class StorageViewModel : BindableBase
     private string _previewActionText = "Open the page to generate a sample SPY, AAPL, and MSFT layout.";
     public string PreviewActionText { get => _previewActionText; private set => SetProperty(ref _previewActionText, value); }
 
+    public IRelayCommand BrowseStorageRootCommand { get; }
+    public IAsyncRelayCommand RefreshMetricsCommand { get; }
+
     public StorageViewModel(
         StorageAnalyticsService analyticsService,
         SettingsConfigurationService settingsConfigService)
+        : this(analyticsService, settingsConfigService, new StorageFolderPicker())
     {
-        _analyticsService = analyticsService;
+    }
+
+    internal StorageViewModel(
+        StorageAnalyticsService analyticsService,
+        SettingsConfigurationService settingsConfigService,
+        IStorageFolderPicker folderPicker)
+        : this(
+            (forceRefresh, ct) => analyticsService.GetAnalyticsAsync(forceRefresh, ct),
+            settingsConfigService,
+            folderPicker)
+    {
+    }
+
+    internal StorageViewModel(
+        Func<bool, CancellationToken, Task<StorageAnalytics>> getAnalyticsAsync,
+        SettingsConfigurationService settingsConfigService,
+        IStorageFolderPicker folderPicker)
+    {
         _settingsConfigService = settingsConfigService;
+        _folderPicker = folderPicker;
+        _getAnalyticsAsync = getAnalyticsAsync;
+
+        BrowseStorageRootCommand = new RelayCommand(BrowseStorageRoot);
+        RefreshMetricsCommand = new AsyncRelayCommand(
+            ct => LoadStorageMetricsAsync(forceRefresh: true, ct),
+            () => CanRefreshMetrics);
+        RefreshPreview();
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────────────
@@ -81,11 +206,16 @@ public sealed class StorageViewModel : BindableBase
 
     // ── Data loading ──────────────────────────────────────────────────────────────────
 
-    private async Task LoadStorageMetricsAsync()
+    private async Task LoadStorageMetricsAsync(bool forceRefresh = false, CancellationToken ct = default)
     {
+        IsMetricsLoading = true;
+        MetricsStatusText = forceRefresh
+            ? "Refreshing storage metrics..."
+            : "Scanning storage metrics...";
+
         try
         {
-            var analytics = await _analyticsService.GetAnalyticsAsync();
+            var analytics = await _getAnalyticsAsync(forceRefresh, ct);
 
             TotalSizeText = FormatHelpers.FormatBytes(analytics.TotalSizeBytes);
             TotalFilesText = analytics.TotalFileCount.ToString("N0");
@@ -95,40 +225,68 @@ public sealed class StorageViewModel : BindableBase
             WarmTierSizeText = FormatHelpers.FormatBytes(analytics.DepthSizeBytes);
             ColdTierSizeText = FormatHelpers.FormatBytes(analytics.HistoricalSizeBytes);
             ApplyStoragePosture(BuildStoragePosture(analytics));
+            MetricsStatusText = BuildMetricsStatusText(analytics);
+        }
+        catch (OperationCanceledException)
+        {
+            MetricsStatusText = "Storage metrics scan cancelled.";
         }
         catch (Exception)
         {
             // Leave metric placeholders in place while making the posture failure explicit.
             ApplyStoragePosture(BuildStoragePostureUnavailable());
+            MetricsStatusText = "Storage metrics scan failed. Verify the configured DataRoot and permissions, then refresh.";
+        }
+        finally
+        {
+            IsMetricsLoading = false;
         }
     }
 
     /// <summary>
     /// Regenerates the file-tree preview and storage estimate based on the current
-    /// configuration selections.  Called from the code-behind whenever a ComboBox or
-    /// TextBox selection changes (WPF does not support direct Command binding on
-    /// SelectionChanged for non-ItemsControl sources).
+    /// configuration selections.
     /// </summary>
     public void RefreshPreview(string dataDirectory, string naming, string compression)
     {
-        var rootPath = NormalizePreviewRoot(dataDirectory);
+        _dataDirectoryText = string.IsNullOrWhiteSpace(dataDirectory) ? "./data" : dataDirectory;
+        _namingConvention = string.IsNullOrWhiteSpace(naming) ? "BySymbol" : naming;
+        _compressionFormat = string.IsNullOrWhiteSpace(compression) ? "gzip" : compression;
+        OnPropertyChanged(nameof(DataDirectoryText));
+        OnPropertyChanged(nameof(NamingConvention));
+        OnPropertyChanged(nameof(CompressionFormat));
+        RefreshPreview();
+    }
+
+    private void RefreshPreview()
+    {
+        var rootPath = NormalizePreviewRoot(DataDirectoryText);
 
         var symbols = new List<string> { "SPY", "AAPL", "MSFT" };
 
         FileTreePreviewText = _settingsConfigService.GenerateStoragePreview(
-            rootPath, naming, "daily", compression, symbols);
+            rootPath, NamingConvention, "daily", CompressionFormat, symbols);
 
         var estimate = _settingsConfigService.EstimateDailyStorageSize(
             symbols.Count, trades: true, quotes: true, depth: false);
         StorageEstimateText =
             $"Estimated daily size: ~{estimate} for {symbols.Count} symbols (trades + quotes sample)";
-        PreviewScopeText = $"{FormatNamingConvention(naming)} layout - {FormatCompression(compression)} - {rootPath}/";
+        PreviewScopeText = $"{FormatNamingConvention(NamingConvention)} layout - {FormatCompression(CompressionFormat)} - {rootPath}/";
         PreviewActionText = "Use this preview to verify the archive path before running backfill, export, or packaging jobs.";
+    }
+
+    private void BrowseStorageRoot()
+    {
+        var selectedPath = _folderPicker.SelectFolder(DataDirectoryText);
+        if (!string.IsNullOrWhiteSpace(selectedPath))
+        {
+            DataDirectoryText = selectedPath;
+        }
     }
 
     public static string NormalizePreviewRoot(string? dataDirectory)
     {
-        var rootPath = dataDirectory?.Trim().TrimStart('.', '/', '\\') ?? string.Empty;
+        var rootPath = dataDirectory?.Trim().TrimStart('.', '/', '\\').Replace('\\', '/') ?? string.Empty;
         return string.IsNullOrWhiteSpace(rootPath) ? "data" : rootPath;
     }
 
@@ -209,6 +367,20 @@ public sealed class StorageViewModel : BindableBase
             "Daily growth: --",
             "Capacity horizon: --",
             "Last scan: failed");
+
+    public static string BuildMetricsStatusText(StorageAnalytics analytics)
+    {
+        if (analytics.TotalFileCount <= 0)
+        {
+            return "Metrics loaded: no retained archive files found under the configured DataRoot.";
+        }
+
+        var fileLabel = analytics.TotalFileCount == 1 ? "file" : "files";
+        var symbolCount = analytics.SymbolBreakdown.Length;
+        var symbolLabel = symbolCount == 1 ? "symbol" : "symbols";
+
+        return $"Metrics loaded: {analytics.TotalFileCount:N0} {fileLabel} across {symbolCount:N0} {symbolLabel}.";
+    }
 
     private void ApplyStoragePosture(StoragePosture posture)
     {

@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
@@ -133,4 +135,75 @@ public sealed class EventDrivenDecouplingTests
         entry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedLoss && l.Debit == 1_000m);
     }
 
+    [Fact]
+    public async Task LedgerPostingConsumer_WhenSecurityValidationBlocks_DoesNotPostJournalEntry()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var consumer = new LedgerPostingConsumer(
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new BlockingSecurityValidationGate());
+
+        consumer.Publish(new TradeExecutedEvent(
+            Guid.NewGuid(), "ord-blocked", "AAPL", OrderSide.Buy,
+            FilledQuantity: 10, FillPrice: 100m, Commission: 0m,
+            RealizedPnl: 0m, NewCash: 0m, DateTimeOffset.UtcNow));
+
+        await consumer.DisposeAsync();
+
+        ledger.Journal.Should().BeEmpty("blocked Security Master validation must prevent ledger posting");
+    }
+
+    private sealed class BlockingSecurityValidationGate : ISecurityValidationGateService
+    {
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol, workflow));
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol ?? securityId.ToString(), workflow));
+
+        private static SecurityValidationGateResultDto BuildResult(string symbol, SecurityValidationWorkflowDto workflow)
+        {
+            var report = new SecurityValidationReportDto(
+                SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                Scope: "Security",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                Issues:
+                [
+                    new SecurityValidationIssueDto(
+                        SecurityValidationSeverityDto.Error,
+                        "SM_ACCOUNTING_CLASSIFICATION_MISSING",
+                        "Accounting classification is missing",
+                        "The record does not expose an accounting classification for ledger posting.",
+                        ["commonTerms.accountingClassification"],
+                        "Attach the ledger/reporting accounting classification.",
+                        [])
+                ]);
+
+            return new SecurityValidationGateResultDto(
+                workflow,
+                symbol.Trim().ToUpperInvariant(),
+                report.SecurityId,
+                IsResolved: true,
+                IsBlocked: true,
+                Report: report,
+                Snapshot: null);
+        }
+    }
 }

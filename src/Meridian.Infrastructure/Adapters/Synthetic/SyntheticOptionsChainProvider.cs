@@ -27,6 +27,8 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
     private const int WeeklyCount = 4;
     private const int MonthlyCount = 3;
     private const int QuarterlyCount = 2;
+    public const int DefaultStrikeRange = 10;
+    public const int MaxStrikeRange = 100;
 
     private readonly SyntheticMarketDataConfig _config;
 
@@ -100,7 +102,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
         if (expiration <= asOf)
             return Task.FromResult<OptionChainSnapshot?>(null);
 
-        var strikes = GenerateStrikes(profile.BasePrice, strikeRange ?? 10);
+        var strikes = GenerateStrikes(profile.BasePrice, strikeRange ?? DefaultStrikeRange);
         var now = DateTimeOffset.UtcNow;
 
         var calls = strikes
@@ -228,6 +230,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
     /// </summary>
     internal static IReadOnlyList<decimal> GenerateStrikes(decimal underlyingPrice, int strikeRange)
     {
+        strikeRange = NormalizeStrikeRange(strikeRange);
         var increment = underlyingPrice switch
         {
             >= 200m => 5m,
@@ -239,7 +242,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
         // Round underlying to nearest increment to get ATM strike
         decimal atm = Math.Round(underlyingPrice / increment, MidpointRounding.AwayFromZero) * increment;
 
-        var strikes = new List<decimal>(strikeRange * 2 + 1);
+        var strikes = new List<decimal>(checked(strikeRange * 2 + 1));
         for (int i = -strikeRange; i <= strikeRange; i++)
         {
             var strike = atm + i * increment;
@@ -247,6 +250,15 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
                 strikes.Add(strike);
         }
         return strikes;
+    }
+
+
+    internal static int NormalizeStrikeRange(int strikeRange)
+    {
+        if (strikeRange < 0)
+            return 0;
+
+        return Math.Min(strikeRange, MaxStrikeRange);
     }
 
     /// <summary>

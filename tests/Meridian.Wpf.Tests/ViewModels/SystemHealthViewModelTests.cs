@@ -162,6 +162,10 @@ public sealed class SystemHealthViewModelTests
         xaml.Should().Contain("SystemHealthEventEmptyStatePanel");
         xaml.Should().Contain("SystemHealthEventEmptyStateTitle");
         xaml.Should().Contain("SystemHealthEventEmptyStateDetail");
+        xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
+        xaml.Should().Contain("Command=\"{Binding GenerateDiagnosticsCommand}\"");
+        xaml.Should().NotContain("Refresh_Click");
+        xaml.Should().NotContain("GenerateDiagnostics_Click");
         xaml.Should().Contain("{Binding ProviderEmptyStateTitle}");
         xaml.Should().Contain("{Binding ProviderEmptyStateDetail}");
         xaml.Should().Contain("{Binding EventEmptyStateTitle}");

@@ -22,7 +22,7 @@ public sealed class WorkspaceQueueToneStylesTests
     [Fact]
     public void WorkspaceShellSources_ShouldUseToneAwareQueueAndRecentCardStyles()
     {
-        var dataOperationsXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\DataOperationsWorkspaceShellPage.xaml"));
+        var dataOperationsXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml"));
         var governanceXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\GovernanceWorkspaceShellPage.xaml"));
 
         dataOperationsXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneQueueCardStyle}\"");

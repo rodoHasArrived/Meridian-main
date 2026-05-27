@@ -5,6 +5,8 @@ param(
     [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
     [switch]$NoBuild,
     [switch]$Fixture,
+    [switch]$StartupSmoke,
+    [int]$StartupSmokeTimeoutSec = 45,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$DesktopArgs = @()
 )
@@ -38,7 +40,7 @@ $hostStartupTimeoutSec = [int](Get-MeridianWorkflowProfileValue -Table $hostProf
 $hostMode = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'mode' -Fallback 'desktop')
 $hostPort = [int](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'port' -Fallback 8080)
 $fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $false)
-$buildIsolationKey = New-MeridianBuildIsolationKey -Prefix 'desktop-run'
+$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }
 $hostExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $hostProject -Configuration 'Debug' -Framework 'net10.0' -BinaryName 'Meridian.exe' -IsolationKey $buildIsolationKey
 $desktopExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration $desktopConfiguration -Framework $desktopFramework -BinaryName $desktopExeName -IsolationKey $buildIsolationKey
 $artifactsDir = Join-Path $repoRoot 'artifacts'
@@ -61,6 +63,64 @@ function Write-Ok([string]$Message) { Write-Host "[OK]   $Message" -ForegroundCo
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
 function Write-Step([string]$Message) { Write-Host "`n[STEP] === $Message ===" -ForegroundColor Cyan }
 function Write-Fail([string]$Message) { Write-Host "[FAIL] $Message" -ForegroundColor Red }
+
+function Wait-ForDesktopWindow {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Diagnostics.Process]$Process,
+        [Parameter(Mandatory = $true)]
+        [int]$TimeoutSec
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline) {
+        if ($Process.HasExited) {
+            throw "Meridian desktop exited before a window was detected (exit code $($Process.ExitCode))."
+        }
+
+        try {
+            $Process.Refresh()
+            if ($Process.MainWindowHandle -ne [System.IntPtr]::Zero) {
+                return
+            }
+        }
+        catch {
+            # Ignore transient startup state while WPF is initializing the shell window.
+        }
+
+        Start-Sleep -Milliseconds 500
+    }
+
+    throw "Meridian desktop window did not appear within $TimeoutSec seconds."
+}
+
+function Stop-DesktopProcessAfterSmoke {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Diagnostics.Process]$Process
+    )
+
+    if ($Process.HasExited) {
+        return
+    }
+
+    try {
+        $Process.Refresh()
+        if ($Process.MainWindowHandle -ne [System.IntPtr]::Zero -and $Process.CloseMainWindow()) {
+            if ($Process.WaitForExit(10000)) {
+                Write-Ok 'Meridian desktop startup smoke closed the shell cleanly'
+                return
+            }
+        }
+
+        Stop-Process -Id $Process.Id -Force
+        $Process.WaitForExit()
+        Write-Warn 'Meridian desktop startup smoke had to force-close the shell after launch confirmation.'
+    }
+    catch {
+        Write-Warn "Failed to stop the smoke-test desktop shell cleanly: $($_.Exception.Message)"
+    }
+}
 
 function Get-WorkspaceDesktopProcesses {
     $expectedPath = [System.IO.Path]::GetFullPath($desktopExe)
@@ -216,6 +276,7 @@ try {
     Write-Info "Profile       : $Profile"
     Write-Info "Fixture mode  : $Fixture"
     Write-Info "Build         : $(-not $NoBuild)"
+    Write-Info "Startup smoke : $StartupSmoke"
     Write-Info "Host URL      : $hostBaseUrl"
     Write-Info "Desktop       : $desktopExeName ($desktopConfiguration / $desktopFramework)"
     Write-Info "Artifacts     : $artifactsDir"
@@ -356,6 +417,36 @@ try {
         -RedirectStandardOutput $desktopStdout `
         -RedirectStandardError $desktopStderr `
         -PassThru
+
+    if ($StartupSmoke) {
+        Write-Step 'Startup smoke'
+
+        try {
+            Wait-ForDesktopWindow -Process $desktopProcess -TimeoutSec $StartupSmokeTimeoutSec
+            Write-Ok 'Meridian desktop window became available'
+        }
+        catch {
+            if (Test-Path $desktopStderr) {
+                $hasStderr = $false
+                Get-Content -Path $desktopStderr | ForEach-Object {
+                    $hasStderr = $true
+                    Write-Host $_
+                }
+                if (-not $hasStderr) {
+                    Write-Verbose "Desktop stderr log was empty: $desktopStderr"
+                }
+            }
+
+            Write-Fail $_.Exception.Message
+            Write-Warn "Desktop stdout log : $desktopStdout"
+            Write-Warn "Desktop stderr log : $desktopStderr"
+            throw
+        }
+
+        Stop-DesktopProcessAfterSmoke -Process $desktopProcess
+        Write-Ok 'Meridian desktop startup smoke completed successfully'
+        return
+    }
 
     $desktopProcess.WaitForExit()
 

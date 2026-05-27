@@ -1,0 +1,10 @@
+flowchart LR
+  Host["Meridian host"]
+  UiServices["UI services"]
+  UiShared["UI shared contracts"]
+  Dashboard["Browser workstation dashboard"]
+  Operator["Operator"]
+  Host --> UiServices
+  UiServices --> UiShared
+  UiShared --> Dashboard
+  Dashboard --> Operator

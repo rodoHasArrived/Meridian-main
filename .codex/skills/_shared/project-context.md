@@ -1,7 +1,8 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-04-29
-> Canonical deep reference: `.claude/skills/_shared/project-context.md`
+> Last verified: 2026-05-23
+> Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`, and
+> `docs/architecture/project-structure.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
 direction, commands, and architecture when a Codex skill needs repository grounding without
@@ -10,17 +11,23 @@ repeating the same facts in every `SKILL.md`.
 ## Platform Snapshot
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one evidence-backed
   investment operations experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`,
   `Strategy`, `Data`, and `Settings`.
-- New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
-  contracts, regression fixes, or retained desktop support.
-- `src/Meridian.Ui/dashboard/` is now the active browser-based operator UI lane, with production
+- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
+- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
+  workflows, launch automation, and desktop validation.
+- `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support the web dashboard first while preserving retained desktop compatibility.
+  that should support both desktop and browser surfaces without duplicating business logic.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product
+  surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+  mobile-first workflows. Responsive browser validation is allowed only to keep the browser
+  workstation usable at supported viewport sizes.
 - Keep top-level operator navigation to seven workspaces: `Trading`, `Portfolio`, `Accounting`,
   `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
   `Governance` names remain compatibility aliases, not visible root workspaces.
@@ -30,13 +37,43 @@ repeating the same facts in every `SKILL.md`.
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
 - `README.md`
+- `docs/architecture/project-structure.md`
+- `docs/architecture/module-map.md`
+- `docs/architecture/mvvm-guidelines.md`
+- `docs/developer/build-test-run.md`
+- `docs/prompts/repo-maintenance-prompts.md`
 - `docs/status/ROADMAP.md`
 - `docs/status/FEATURE_INVENTORY.md`
 - `docs/status/IMPROVEMENTS.md`
+- `docs/status/production-status.md`
+- `docs/plans/web-ui-development-pivot.md`
 - `docs/plans/evidence-backed-investment-operations-plan.md`
 - `docs/plans/trading-workstation-migration-blueprint.md`
 - `docs/plans/governance-fund-ops-blueprint.md`
 - `docs/plans/meridian-6-week-roadmap.md`
+
+## Source Documentation Mesh
+
+- Roadmap truth lives in `docs/roadmap/data/*.yml`; generated roadmap views live in
+  `docs/roadmap/generated/`.
+- Source/module truth lives in `docs/source/data/*.yml`; registered modules have local
+  `src/**/README.md` files with purpose, ownership, diagrams, roadmap traceability, TODOs, and
+  validation commands.
+- Before editing `src/**`, read the nearest source README, identify the module ID in
+  `docs/source/data/source-modules.yml`, and update source README or registry records when behavior,
+  validation, ownership, diagrams, or TODO scope changes.
+- Do not hand-edit generated roadmap/source docs. Update registry data or renderers under
+  `build/scripts/docs/`, then rerun the narrow generator.
+- Use `python3 build/scripts/docs/mark-stale-docs.py --write --summary` to mark registered modules
+  whose code or README hashes need documentation review, then use `--stale-only` source README
+  sync/render commands when only outdated docs should be touched.
+- Use `python3 build/scripts/docs/validate-doc-hashes.py --summary` to detect code/docs drift for
+  registered modules. Refresh `docs/source/generated/source-hash-manifest.json` with
+  `python3 build/scripts/docs/validate-doc-hashes.py --write --summary` only after source README
+  and registry alignment is reviewed.
+- Source READMEs may include conditional sections for plans, end-user value, benchmarks and
+  performance, operational evidence, security or credential handling, API/contract notes, and
+  migration/archive notes when those sections add real module-specific context.
 
 ## Useful Commands
 
@@ -47,13 +84,55 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+pwsh ./scripts/dev/desktop-dev.ps1
+pwsh ./scripts/dev/run-desktop.ps1 -Fixture
+pwsh ./scripts/dev/test-wpf-dev.ps1
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 make test
-make desktop-run
-pwsh ./scripts/dev/run-desktop.ps1
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
 Prefer the narrowest validation command that matches the files being changed.
+
+For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
+validation stack before broad build or test runs:
+
+```bash
+make ai-codex-skills-check
+python build/scripts/docs/check-codex-skills.py --summary
+python build/scripts/docs/check-ai-inventory.py --summary
+python build/scripts/docs/validate-skill-packages.py
+python build/scripts/docs/validate-roadmap-registry.py --summary
+python build/scripts/docs/validate-source-readmes.py --summary
+python build/scripts/docs/scan-source-todos.py --summary
+python build/scripts/docs/mark-stale-docs.py --write --summary
+python build/scripts/docs/validate-doc-hashes.py --summary
+python .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
+git diff --check
+```
+
+If `make` is unavailable in the local Windows shell, run the underlying Python command directly and
+report that the wrapper was not available.
+
+## Codex Skill Routing
+
+Use `.codex/skills/` as the canonical repo-local Codex skill set. Keep the public skill names stable
+and choose the narrowest lane that matches the user's request:
+
+| Lane | Skill | Boundary |
+| --- | --- | --- |
+| Orient | `meridian-repo-navigation` | Route the task, name owners and docs, then hand off. |
+| Ideate | `meridian-brainstorm` | Generate options; do not turn one option into a spec. |
+| Plan | `meridian-blueprint` | Turn one selected idea into a decision-complete technical design. |
+| Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence, docs sync, and deterministic gates. |
+| Review | `meridian-code-review` | Report bugs, regressions, missing tests, and architecture drift before summaries. |
+| Test | `meridian-test-writer` | Add scenario-first tests in the right project and validation lane. |
+| Provider | `meridian-provider-builder` | Build or extend provider adapters and hand off to assurance for rollout proof. |
+| Archive | `meridian-archive-organizer` | Classify and move stale material with reference evidence. |
+| Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
+| Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
+| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and separate verified evidence from inference. |
+| CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
 
 ## Solution Map
 
@@ -73,10 +152,11 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
-- `src/Meridian.Ui/dashboard/`: browser-based operator workstation dashboard
+- `tools/chief-of-staff-runtime/`: out-of-process Chief of Staff ADK node pipeline scaffold
+- `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the retained WPF shell
+  services, workstation endpoints, and the WPF shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: BenchmarkDotNet performance suites
 
@@ -85,8 +165,10 @@ Prefer the narrowest validation command that matches the files being changed.
 - Main host: `src/Meridian/Meridian.csproj`
 - Minimal MCP host: `src/Meridian.Mcp/Meridian.Mcp.csproj`
 - Market-data MCP host: `src/Meridian.McpServer/Meridian.McpServer.csproj`
+- CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
-- Retained WPF workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
+- Host-served workstation route: `http://localhost:8080/workstation/`
+- WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
 
 ## Desktop Persistence Baseline
 
@@ -100,6 +182,9 @@ Prefer the narrowest validation command that matches the files being changed.
 - Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs,
   collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under
   the resolved external config and data roots so upgrades do not depend on the install directory.
+- Provider credentials saved by browser workstation flows use the shared encrypted
+  `IProviderCredentialStore` under the resolved data root; environment variables are read-only
+  legacy fallback and new flows must not write provider secrets to user-level env vars.
 - Wizard review/save flows should use `AppConfigJsonOptions` plus `ConfigStore` so previewed JSON
   and persisted config share the same serializer and resolved config path.
 - Paper-session order history is lifecycle-sensitive metadata; await the durable append before
@@ -120,7 +205,8 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: current shell orchestration anchor
+- `src/Meridian.Wpf/Shell/`: WPF shell route, launch, session, refresh, and presentation seams
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: WPF desktop shell view model and workstation navigation anchor
 
 ## Review Guardrails
 
@@ -134,4 +220,3 @@ Prefer the narrowest validation command that matches the files being changed.
   services; await initialization and terminal metadata writes at the service boundary.
 - Do not add package versions directly to project files; central package management lives in
   `Directory.Packages.props`.
-
