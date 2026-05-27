@@ -110,6 +110,26 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
+    public void Register_ResolvesProjectionReconciliationJobs_ForEachFundOperationsDomain()
+    {
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        using var provider = services.BuildServiceProvider();
+        var jobs = provider.GetRequiredService<IEnumerable<IDomainProjectionReconciliationJob>>();
+
+        jobs.Select(job => job.Domain).Should().BeEquivalentTo(Enum.GetValues<FundOperationsDomain>());
+    }
+
+    [Fact]
     public void Register_AddsLedgerBackedOperationsContinuityServices_WhenLedgerConnectionStringIsConfigured()
     {
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
