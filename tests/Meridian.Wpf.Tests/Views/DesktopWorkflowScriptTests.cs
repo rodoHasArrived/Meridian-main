@@ -151,6 +151,16 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void RunDesktopWorkflowScript_ShouldCaptureWindowUsingPrintWindow()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain("MeridianDesktopCaptureNative");
+        script.Should().Contain("[MeridianDesktopCaptureNative]::PrintWindow");
+        script.Should().NotContain("CopyFromScreen(");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldEnterOperatingContextBeforeWaitingForShellReadiness()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));

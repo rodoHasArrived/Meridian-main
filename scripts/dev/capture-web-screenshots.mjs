@@ -216,6 +216,49 @@ async function setupApiMocking(page, fixtureRoutes) {
   });
 }
 
+function collectRequiredFixtureRoutes(captures) {
+  const required = new Set();
+  for (const capture of captures) {
+    const configured = Array.isArray(capture.requiredApiRoutes) ? capture.requiredApiRoutes : [];
+    for (const route of configured) {
+      if (typeof route === "string" && route.trim().length > 0) {
+        required.add(route.trim());
+      }
+    }
+  }
+  return [...required];
+}
+
+function assertFixtureRouteCoverage(requiredRoutes, fixtureRoutes) {
+  const availableRoutes = Object.keys(fixtureRoutes);
+  const missing = requiredRoutes.filter(
+    (requiredRoute) => !availableRoutes.some((candidate) => candidate === requiredRoute || requiredRoute.startsWith(`${candidate}/`))
+  );
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Screenshot fixture route coverage is incomplete. Missing route fixtures: ${missing.join(", ")}`
+    );
+  }
+}
+
+function collectCaptureWaitForTexts(capture) {
+  const waitForTexts = [];
+  if (typeof capture.waitForText === "string" && capture.waitForText.trim().length > 0) {
+    waitForTexts.push(capture.waitForText.trim());
+  }
+
+  if (Array.isArray(capture.waitForTexts)) {
+    for (const value of capture.waitForTexts) {
+      if (typeof value === "string" && value.trim().length > 0) {
+        waitForTexts.push(value.trim());
+      }
+    }
+  }
+
+  return [...new Set(waitForTexts)];
+}
+
 async function captureRoute(page, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -230,8 +273,15 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
 
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
   await page.waitForSelector(".workstation-frame", { timeout: timeoutMs });
-  if (capture.waitForText) {
-    await page.getByText(capture.waitForText, { exact: false }).first().waitFor({ timeout: timeoutMs });
+  for (const waitForText of collectCaptureWaitForTexts(capture)) {
+    await page.getByText(waitForText, { exact: false }).first().waitFor({ timeout: timeoutMs });
+  }
+  if (Array.isArray(capture.waitForSelectors)) {
+    for (const selector of capture.waitForSelectors) {
+      if (typeof selector === "string" && selector.trim().length > 0) {
+        await page.waitForSelector(selector, { timeout: timeoutMs });
+      }
+    }
   }
   await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
 
@@ -331,6 +381,8 @@ async function main() {
     const fixtureRoutes = (fixtureConfig && typeof fixtureConfig.routes === "object")
       ? fixtureConfig.routes
       : {};
+    const requiredFixtureRoutes = collectRequiredFixtureRoutes(captures);
+    assertFixtureRouteCoverage(requiredFixtureRoutes, fixtureRoutes);
 
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
