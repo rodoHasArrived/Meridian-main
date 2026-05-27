@@ -287,13 +287,13 @@ public enum ReconciliationBreakQueueStatus : byte
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
-    Opened = 0,
-    Triaged = 1,
-    Calibrated = 2,
-    Approved = 3,
-    Escalated = 4,
-    Closed = 5,
-    Superseded = 6
+    New = 0,
+    Classified = 1,
+    Assigned = 2,
+    Investigating = 3,
+    PendingExternal = 4,
+    Resolved = 5,
+    Closed = 6
 }
 
 /// <summary>
@@ -337,14 +337,19 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Opened,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.New,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
     string? UpstreamSyncCursor = null,
     DateTimeOffset? LastUpstreamSyncAt = null,
     IReadOnlyList<ReconciliationCaseSignoffRecord>? SignoffHistory = null,
-    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null);
+    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null,
+    string? Team = null,
+    string? Counterparty = null,
+    ReconciliationBreakScore? Score = null,
+    DateTimeOffset? SlaDueAt = null,
+    bool SlaBreached = false);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,
@@ -354,6 +359,19 @@ public sealed record ReconciliationCaseSignoffRecord(
     DateTimeOffset SignedAt,
     string? InvalidatedBySyncCursor = null,
     DateTimeOffset? InvalidatedAt = null);
+
+
+
+public sealed record ReconciliationBreakScore(
+    int SeverityScore,
+    int PriorityScore,
+    decimal MaterialityComponent,
+    double AgeHours,
+    int CounterpartyCriticalityComponent,
+    int RecurringPatternComponent,
+    bool IsHighPriority,
+    DateTimeOffset? SlaDueAt = null,
+    DateTimeOffset? SlaBreachAt = null);
 
 public sealed record ReconciliationCaseStateTransition(
     string TransitionId,
@@ -416,4 +434,13 @@ public sealed record ResolveReconciliationBreakRequest(
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
     string ResolutionNote,
-    string OperatorRationale);
+    string OperatorRationale,
+    string? DispositionCode = null);
+
+public sealed record ReconciliationBreakBulkActionRequest(
+    IReadOnlyList<string> BreakIds,
+    string Action,
+    string? Assignee = null,
+    ReconciliationBreakQueueStatus? Status = null,
+    string? CommentTemplate = null,
+    string? Actor = null);
