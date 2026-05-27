@@ -281,6 +281,14 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationTradingReadiness")
         .Produces<TradingOperatorReadinessDto>(200);
 
+        group.MapGet("/collateral/exposure", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
+            return Results.Json(service.BuildSnapshot(), jsonOptions);
+        })
+        .WithName("GetWorkstationCollateralExposure")
+        .Produces<ExposureSnapshotDto>(200);
+
         group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
         {
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);

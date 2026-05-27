@@ -97,6 +97,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
