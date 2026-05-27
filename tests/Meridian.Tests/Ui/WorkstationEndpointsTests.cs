@@ -3985,6 +3985,25 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnForbiddenWithoutViewSecurityMasterPermission()
+    {
+        var securityId = Guid.Parse("60606060-6060-6060-6060-606060606060");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Locked Security", "LOCK"),
+            CreateSecurityDetail(securityId, "Locked Security", "LOCK"));
+
+        await using var app = await CreateAppAsync(
+            services => RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([])),
+            currentUserPermissions: UserPermission.ViewStrategies);
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnTypedWinningSourceProvenance()
     {
         var securityId = Guid.Parse("66666666-6666-6666-6666-666666666666");
