@@ -159,7 +159,8 @@ public static class EvidenceEndpoints
         .WithName("ExportWorkstationEvidenceManifest")
         .Produces<EvidencePacketExportResponse>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/templates", (HttpContext context) =>
         {
