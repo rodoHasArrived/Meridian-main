@@ -315,6 +315,11 @@ public static partial class WorkstationEndpoints
             string? status,
             HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -373,6 +378,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -386,6 +396,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -917,6 +932,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -930,6 +950,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -6025,6 +6050,15 @@ public static partial class WorkstationEndpoints
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending,
             UserPermission.ModifySecurityMaster);
+
+    private static bool HasOperationsContinuityReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewDirectLending,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
 
     private static bool HasSecurityMasterOverrideApprovalPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
