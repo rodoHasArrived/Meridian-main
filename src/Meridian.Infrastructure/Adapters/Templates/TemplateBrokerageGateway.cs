@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
@@ -42,8 +43,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     private bool _disposed;
 
     // Tracks submitted orders so cancel/modify reports carry the correct symbol and side.
-    // TODO(W1-DATA-001): In a full implementation, prefer querying the broker's API for live order state.
-    private readonly Dictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
+    // TODO: In a full implementation, prefer querying the broker's API for live order state.
+    private readonly ConcurrentDictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
 
     public TemplateBrokerageGateway(
         // TODO(W1-DATA-001): Add IHttpClientFactory, options, etc.
@@ -136,7 +137,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         // TODO(W1-DATA-001): Call your broker's cancel API
         // TODO(W1-DATA-001): For brokers that return order details on cancel, use the response to populate Symbol/Side.
 
-        _submittedOrders.TryGetValue(orderId, out var tracked);
+        _submittedOrders.TryRemove(orderId, out var tracked);
 
         var report = new ExecutionReport
         {
