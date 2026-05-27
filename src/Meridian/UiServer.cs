@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Application.Compliance;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
@@ -126,6 +127,9 @@ public sealed class UiServer : IAsyncDisposable
                 sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
+        builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
+        builder.Services.AddSingleton<ImmutableAuditLogService>();
+        builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
         builder.Services.AddSingleton<IOrderGateway>(sp =>
