@@ -220,14 +220,13 @@ function Test-ApprovedDecision {
     return @("approved", "signed", "complete", "completed") -contains $Decision.Trim().ToLowerInvariant()
 }
 
-function Get-ExistingPacketReview {
-    param([Parameter(Mandatory)][string]$Path)
+function Get-PacketReview {
+    param(
+        [Parameter(Mandatory)][object]$Packet,
+        [Parameter(Mandatory)][string]$Path
+    )
 
-    if (-not (Test-Path -LiteralPath $Path)) {
-        return $null
-    }
-
-    $packet = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $packet = $Packet
     $sampleReview = Get-ObjectPropertyValue -Object $packet -Name "sampleReview"
     $requiredSampleCountValue = Get-ObjectPropertyValue -Object $sampleReview -Name "requiredCount"
     $requiredSampleCount = if ($null -ne $requiredSampleCountValue) { [int]$requiredSampleCountValue } else { 0 }
@@ -669,20 +668,7 @@ foreach ($doc in $incompleteDocs) {
 $packetStatus = if ($blockers.Count -eq 0) { "ready-for-operator-review" } else { "blocked" }
 $jsonPath = Join-Path $summaryDir "dk1-pilot-parity-packet.json"
 $mdPath = Join-Path $summaryDir "dk1-pilot-parity-packet.md"
-$reviewedPacket = Get-ExistingPacketReview -Path $jsonPath
-$operatorSignoff = Get-OperatorSignoffPacket `
-    -Path $OperatorSignoffPath `
-    -RequiredOwners $requiredOperatorOwners `
-    -ExpectedPacketReview $reviewedPacket
-
 $packetGeneratedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
-if ($operatorSignoff.validForDk1Exit -and $null -ne $operatorSignoff.packetReview) {
-    $reviewedGeneratedAtUtc = Get-ObjectPropertyValue -Object $operatorSignoff.packetReview -Name "generatedAtUtc"
-    $reviewedGeneratedAtUtcText = [string]$reviewedGeneratedAtUtc
-    if (-not [string]::IsNullOrWhiteSpace($reviewedGeneratedAtUtcText)) {
-        $packetGeneratedAtUtc = $reviewedGeneratedAtUtc
-    }
-}
 
 $packet = [ordered]@{
     generatedAtUtc = $packetGeneratedAtUtc
@@ -728,9 +714,16 @@ $packet = [ordered]@{
         missingRequirements = $thresholdContractMissingRequirements
     }
     evidenceDocuments = @($docReviews)
-    operatorSignoff = $operatorSignoff
+    operatorSignoff = $null
     blockers = @($blockers)
 }
+
+$expectedPacketReview = Get-PacketReview -Packet $packet -Path $jsonPath
+$operatorSignoff = Get-OperatorSignoffPacket `
+    -Path $OperatorSignoffPath `
+    -RequiredOwners $requiredOperatorOwners `
+    -ExpectedPacketReview $expectedPacketReview
+$packet.operatorSignoff = $operatorSignoff
 
 if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-dk1-packet-json") {
     Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-dk1-packet-json" -Description "Write DK1 pilot parity packet JSON."
