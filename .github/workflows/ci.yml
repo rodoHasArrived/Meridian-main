@@ -122,6 +122,10 @@ jobs:
         run: |
           python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
 
+      - name: Validate AI navigation freshness
+        run: |
+          python3 build/scripts/docs/check-ai-navigation-freshness.py --navigation-json docs/ai/generated/repo-navigation.json --max-age-days 14
+
       - name: Validate lane vocabulary
         run: |
           python3 build/scripts/docs/check-known-lanes.py

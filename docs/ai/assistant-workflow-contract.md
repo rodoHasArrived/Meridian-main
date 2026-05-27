@@ -115,7 +115,7 @@ When editing `src/**`, assistants must:
 | Topic | Source of truth | Mirrors or consumers |
 | --- | --- | --- |
 | Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
-| Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
+| Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
 | Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
@@ -179,7 +179,8 @@ python3 build/scripts/docs/validate-skill-packages.py
 python3 build/scripts/docs/mark-stale-docs.py --write --summary
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
 python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
-python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
+python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary
+python3 build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14
 dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj -c Release
 ```
 

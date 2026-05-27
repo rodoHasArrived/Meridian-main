@@ -35,6 +35,7 @@ The generated navigation artifacts are the canonical orientation surface:
 | --- | --- |
 | [`generated/repo-navigation.json`](generated/repo-navigation.json) | Machine-readable repo map for MCP tools/resources and other AI surfaces |
 | [`generated/repo-navigation.md`](generated/repo-navigation.md) | Human-readable digest of subsystems, routes, symbols, and dependency highlights |
+| [`generated/recent-changes.md`](generated/recent-changes.md) | Rolling source-file change digest for sprint-level debugging context |
 | [`navigation/README.md`](navigation/README.md) | Hand-authored routing workflow and usage guidance |
 
 For source edits, assistants must also read the nearest registered source README and use
@@ -76,6 +77,7 @@ repository identity instead of local absolute paths.
 | [`navigation/README.md`](navigation/README.md) | How assistants should orient and route work across Meridian |
 | [`generated/repo-navigation.md`](generated/repo-navigation.md) | Generated subsystem, route, symbol, and dependency digest |
 | [`generated/repo-navigation.json`](generated/repo-navigation.json) | Canonical machine-readable navigation dataset |
+| [`generated/recent-changes.md`](generated/recent-changes.md) | Generated rolling source-file change summary |
 
 ### Tier 3: Specialized Guides
 
@@ -136,7 +138,7 @@ Located mainly in `docs/ai/claude/`.
 3. Update [`assistant-workflow-contract.md`](assistant-workflow-contract.md) when the new resource
    adds or removes an AI system, provider, automation, or cross-provider rule.
 4. Run `python3 build/scripts/docs/check-ai-inventory.py --summary` and fix any catalog drift.
-5. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json) and [`generated/repo-navigation.md`](generated/repo-navigation.md) if routing truth changed.
+5. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json), [`generated/repo-navigation.md`](generated/repo-navigation.md), and [`generated/recent-changes.md`](generated/recent-changes.md) if routing truth or recent-change context changed.
 6. Cross-link related resources when the new file changes workflow or ownership.
 
 ### Optional IDE Or Provider Surfaces
@@ -160,4 +162,3 @@ _Last Updated: 2026-05-26_
 3. Run AI contract drift check:
    - `python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
 4. If drift exists, copy canonical policy content into each mirror path and rerun checks.
-

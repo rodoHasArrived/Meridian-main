@@ -20,7 +20,8 @@ Meridian is large enough that broad recursive searching creates avoidable cost, 
 |----------|-----|
 | [`../generated/repo-navigation.json`](../generated/repo-navigation.json) | Canonical machine-readable repo map |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Human-readable routing digest |
-| [`build/scripts/docs/generate-ai-navigation.py`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes both artifacts |
+| [`../generated/recent-changes.md`](../generated/recent-changes.md) | Rolling source-file change digest for fast regression/debug context |
+| [`build/scripts/docs/generate-ai-navigation.py`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes the navigation and recent-change artifacts |
 
 The generator is the source of truth. Do not manually edit the generated files.
 
@@ -73,6 +74,7 @@ Run:
 python3 build/scripts/docs/generate-ai-navigation.py \
   --json-output docs/ai/generated/repo-navigation.json \
   --markdown-output docs/ai/generated/repo-navigation.md \
+  --recent-changes-output docs/ai/generated/recent-changes.md \
   --summary
 ```
 

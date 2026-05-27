@@ -74,3 +74,11 @@ jobs:
 
       - name: Validate workflow syntax with actionlint
         uses: rhysd/actionlint@v1.7.12
+
+      - name: Validate AI contract drift
+        run: |
+          python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+
+      - name: Validate AI navigation freshness
+        run: |
+          python3 build/scripts/docs/check-ai-navigation-freshness.py --navigation-json docs/ai/generated/repo-navigation.json --max-age-days 14
