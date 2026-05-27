@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
 
@@ -16,6 +17,8 @@ public sealed class FirstRunService
     private bool? _isFirstRun;
     private bool _isInitialized;
     private readonly object _lock = new();
+    private ConfigurationProvisioningResult _lastConfigurationProvisioningResult =
+        ConfigurationProvisioningResult.AlreadyValid;
 
     /// <summary>
     /// Gets the singleton instance of the FirstRunService.
@@ -184,6 +187,48 @@ public sealed class FirstRunService
     /// </summary>
     public bool IsInitialized => _isInitialized;
 
+    public ConfigurationProvisioningResult LastConfigurationProvisioningResult => _lastConfigurationProvisioningResult;
+
+    public Task<ConfigurationProvisioningResult> EnsureConfigurationExistsAsync()
+    {
+        lock (_lock)
+        {
+            Directory.CreateDirectory(AppDataPath);
+
+            if (!File.Exists(ConfigFilePath))
+            {
+                CreateDefaultConfiguration();
+                _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.CreatedDefault;
+                LoggingService.Instance.LogInfo(
+                    "Configuration provisioning completed",
+                    ("Outcome", "CreatedDefault"),
+                    ("Path", ConfigFilePath));
+                return Task.FromResult(_lastConfigurationProvisioningResult);
+            }
+
+            if (!TryParseConfiguration(ConfigFilePath, out var parseError))
+            {
+                var backupPath = $"{ConfigFilePath}.invalid-{DateTime.UtcNow:yyyyMMddHHmmssfff}.bak";
+                File.Copy(ConfigFilePath, backupPath, overwrite: true);
+                CreateDefaultConfiguration();
+                _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.RepairedInvalid;
+                LoggingService.Instance.LogWarning(
+                    "Configuration provisioning repaired invalid configuration",
+                    ("Path", ConfigFilePath),
+                    ("BackupPath", backupPath),
+                    ("Reason", parseError ?? "unknown"));
+                return Task.FromResult(_lastConfigurationProvisioningResult);
+            }
+
+            _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.AlreadyValid;
+            LoggingService.Instance.LogInfo(
+                "Configuration provisioning skipped",
+                ("Outcome", "AlreadyValid"),
+                ("Path", ConfigFilePath));
+            return Task.FromResult(_lastConfigurationProvisioningResult);
+        }
+    }
+
     private void CreateDefaultConfiguration()
     {
         var defaultConfig = """
@@ -252,6 +297,29 @@ public sealed class FirstRunService
     {
         Initialized?.Invoke(this, e);
     }
+
+    private static bool TryParseConfiguration(string path, out string? parseError)
+    {
+        try
+        {
+            var json = File.ReadAllText(path);
+            using var _ = JsonDocument.Parse(json);
+            parseError = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            parseError = ex.Message;
+            return false;
+        }
+    }
+}
+
+public enum ConfigurationProvisioningResult
+{
+    CreatedDefault,
+    RepairedInvalid,
+    AlreadyValid
 }
 
 /// <summary>

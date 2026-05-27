@@ -973,6 +973,11 @@ public partial class App : System.Windows.Application
     {
         try
         {
+            var provisioningResult = await WpfServices.FirstRunService.Instance.EnsureConfigurationExistsAsync();
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Configuration presence verification finished before validation",
+                ("Outcome", provisioningResult.ToString()));
+
             // Initialize the config service
             await WpfServices.ConfigService.Instance.InitializeAsync();
 
