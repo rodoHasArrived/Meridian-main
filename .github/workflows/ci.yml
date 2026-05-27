@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    # Run verify-full nightly at 02:00 UTC so coverage never silently degrades.
+    - cron: "0 2 * * *"
   workflow_dispatch:
 
 permissions:
@@ -95,13 +98,15 @@ jobs:
           dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=backtesting" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
           dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=directlending" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
           dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fundstructure" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=mcpserver" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
           dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=quantscript" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
 
       - name: Validate status docs delivery claims
         run: |
           python3 scripts/check_status_delivery_claims.py
           python3 -m unittest tests/scripts/test_check_status_delivery_claims.py
+
+      - name: Validate status doc staleness
+        run: python3 scripts/check_status_doc_staleness.py
 
       - name: Validate provider-validation script tests
         run: |
@@ -116,6 +121,10 @@ jobs:
       - name: Validate AI contract drift
         run: |
           python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+
+      - name: Validate AI navigation freshness
+        run: |
+          python3 build/scripts/docs/check-ai-navigation-freshness.py --navigation-json docs/ai/generated/repo-navigation.json --max-age-days 14
 
       - name: Validate lane vocabulary
         run: |
@@ -170,7 +179,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
-        run: npm ci --prefix src/Meridian.Ui/dashboard
+        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test
@@ -218,3 +227,62 @@ jobs:
           python3 build/scripts/docs/render-roadmap-docs.py --summary
           python3 build/scripts/docs/render-source-docs.py --summary
           git diff -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src --exit-code
+
+  verify-full:
+    name: verify-full (coverage + scenario tests)
+    # Run nightly on main or when manually triggered. Not on every PR to keep
+    # the PR critical path fast.
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-full-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-full-
+            ${{ runner.os }}-nuget-
+
+      - name: Restore solution
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Run all tests with coverage (including scenario tests)
+        run: |
+          dotnet test Meridian.sln \
+            --no-restore \
+            -c Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory artifacts/test-results/full \
+            --settings tests/coverlet.runsettings \
+            --logger "trx;LogFilePrefix=full" \
+            --filter "Category!=Integration&Category!=Performance" \
+            /p:EnableWindowsTargeting=true
+
+      - name: Write coverage summary to status doc
+        if: always()
+        run: python3 scripts/update_coverage_report.py --results-dir artifacts/test-results/full
+
+      - name: Upload coverage results
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: verify-full-coverage-${{ github.run_number }}
+          path: |
+            artifacts/test-results/full/
+            docs/status/coverage-report.md
+          if-no-files-found: ignore
+          retention-days: 30

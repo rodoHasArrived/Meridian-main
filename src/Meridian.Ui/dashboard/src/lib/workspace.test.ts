@@ -43,6 +43,7 @@ describe("workspace metadata", () => {
 
   it("exposes typed workstation route catalog helpers", () => {
     expect(workstationRoute("tradingReadiness")).toBe("/trading/readiness");
+    expect(workstationRoute("strategyFormulaWorkbench")).toBe("/strategy/formula-workbench");
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
@@ -95,7 +96,15 @@ describe("workspace metadata", () => {
   it("maps backend workflow targets to browser workstation routes", () => {
     expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
     expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
+    expect(workflowTargetPath("TradingShell", "trading")).toBe("/trading");
+    expect(workflowTargetPath("TradingReadiness", "trading")).toBe("/trading/readiness");
+    expect(workflowTargetPath("TradingReadinessConsole", "trading")).toBe("/trading/readiness");
+    expect(workflowTargetPath("RunRisk", "trading")).toBe("/trading/readiness");
     expect(workflowTargetPath("OperationsContinuity", "accounting")).toBe("/accounting/operations-continuity");
+    expect(workflowTargetPath("OperationsClose", "accounting")).toBe("/accounting/operations-continuity");
+    expect(workflowTargetPath("FundReconciliation", "accounting")).toBe("/accounting/reconciliation");
+    expect(workflowTargetPath("FundTrialBalance", "accounting")).toBe("/accounting/ledger");
+    expect(workflowTargetPath("FundAuditTrail", "accounting")).toBe("/accounting");
     expect(workflowTargetPath("FundReportPack", "reporting")).toBe("/reporting/report-packs");
     expect(workflowTargetPath("ProviderTrust", "data")).toBe("/data/providers");
     expect(workflowTargetPath("SecurityMaster", "data")).toBe("/accounting/security-master");

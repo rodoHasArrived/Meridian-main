@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.DirectLending;
+using Meridian.Application.FundOperationsPersistence;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
@@ -63,6 +64,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().NotContain(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
+            sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
@@ -94,12 +98,35 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingOptions));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
+            sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(DirectLendingOutboxDispatcher));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(DailyAccrualWorker));
+    }
+
+    [Fact]
+    public void Register_ResolvesProjectionReconciliationJobs_ForEachFundOperationsDomain()
+    {
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        using var provider = services.BuildServiceProvider();
+        var jobs = provider.GetRequiredService<IEnumerable<IDomainProjectionReconciliationJob>>();
+
+        jobs.Select(job => job.Domain).Should().BeEquivalentTo(Enum.GetValues<FundOperationsDomain>());
     }
 
     [Fact]

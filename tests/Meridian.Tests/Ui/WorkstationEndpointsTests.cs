@@ -41,15 +41,83 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 
 namespace Meridian.Tests.Ui;
 
-public sealed class WorkstationEndpointsTests
+public sealed partial class WorkstationEndpointsTests
 {
-    // Must match the JsonSerializerOptions used in CreateAppAsync so that enum fields
-    // serialized as strings by the server (via JsonStringEnumConverter) can be round-tripped.
-    private static readonly JsonSerializerOptions ServerJsonOptions = new()
+    [Fact]
+    public async Task MapWorkstationEndpoints_FeatureCapabilities_ShouldExposeSharedDescriptorOverridesAndPersistToggle()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter() }
-    };
+        var configPath = Path.Combine(Path.GetTempPath(), "meridian-feature-capability-api-" + Guid.NewGuid().ToString("N"), "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(configPath, """
+            {
+              "FeatureCapabilities": {
+                "Overrides": {
+                  " desktop.data.security-master ": false,
+                  "DESKTOP.DATA.SECURITY-MASTER": true
+                }
+              }
+            }
+            """);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<FeatureCapabilitySettingsService>();
+        });
+        var client = app.GetTestClient();
+
+        var initial = await client.GetFromJsonAsync<FeatureCapabilitySettingsResponse>(
+            "/api/workstation/settings/feature-capabilities",
+            ServerJsonOptions);
+
+        initial.Should().NotBeNull();
+        initial!.Capabilities.Should().Contain(item => item.CapabilityKey == "desktop.settings.capabilities" && item.IsPermanent);
+        initial.Capabilities.Should().Contain(item =>
+            item.CapabilityKey == "desktop.data.security-master" &&
+            item.IsEnabled == false &&
+            item.IsOverridden);
+
+        var response = await client.PutAsJsonAsync(
+            "/api/workstation/settings/feature-capabilities/desktop.data.security-master",
+            new FeatureCapabilityToggleRequest(true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<FeatureCapabilitySettingsResponse>(ServerJsonOptions);
+        updated.Should().NotBeNull();
+        updated!.Capabilities.Should().Contain(item =>
+            item.CapabilityKey == "desktop.data.security-master" &&
+            item.IsEnabled &&
+            item.IsOverridden);
+
+        var persisted = Meridian.Application.UI.ConfigStore.LoadConfig(configPath);
+        persisted.FeatureCapabilities.Should().NotBeNull();
+        persisted.FeatureCapabilities!.Overrides.Should()
+            .ContainKey("desktop.data.security-master")
+            .WhoseValue.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FeatureCapabilityToggle_ShouldRequireMutationPermission()
+    {
+        var configPath = Path.Combine(Path.GetTempPath(), "meridian-feature-capability-permission-" + Guid.NewGuid().ToString("N"), "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(configPath, "{}");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<FeatureCapabilitySettingsService>();
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        var response = await client.PutAsJsonAsync(
+            UiApiRoutes.WorkstationFeatureCapabilityByKey.Replace("{capabilityKey}", "desktop.data.security-master"),
+            new FeatureCapabilityToggleRequest(true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
@@ -250,7 +318,7 @@ public sealed class WorkstationEndpointsTests
                 "period-close",
                 true,
                 EvidenceLinks: [evidence],
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: [], EvidenceLinks: [evidence]));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
@@ -428,20 +496,24 @@ public sealed class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
-            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "reviewer", "Submit evidence", "report-pack-1"));
+            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "ops-user", "Submit evidence", "report-pack-1"));
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
-            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "reviewer", "Approve close", "report-pack-1"));
+            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "spoofed-reviewer", "Approve close", "report-pack-1"));
         var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
             new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user", "Close period", "report-pack-1"));
 
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
+        closed.Workflow.Approvals.Should().Contain(approval =>
+            approval.Status == OperationsApprovalStateDto.Approved &&
+            approval.Operator == "ops-user" &&
+            approval.Reviewer == "ops-user");
     }
 
     [Fact]
@@ -482,7 +554,7 @@ public sealed class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
 
         var bridged = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(
@@ -504,6 +576,16 @@ public sealed class WorkstationEndpointsTests
             breakCase.BreakId == "recon-ops-1:bank-break-1" &&
             breakCase.Severity == nameof(ReconciliationBreakSeverity.Critical) &&
             breakCase.EvidenceLinks.Any(link => link.Source == "reconciliation-run"));
+        bridged.Workflow.BreakCases.Should().Contain(breakCase =>
+            breakCase.CheckId == "SM_RECON_SECURITY_UNRESOLVED" &&
+            breakCase.Category == "SecurityMasterCoverage" &&
+            breakCase.Symbol == "BOND1" &&
+            breakCase.EvidenceLinks.Any(link => link.Source == "security-master-coverage"));
+        bridged.Workflow.BreakCases.Should().Contain(breakCase =>
+            breakCase.CheckId == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            breakCase.Category == "SecurityMasterAccounting" &&
+            breakCase.Symbol == "BOND1" &&
+            breakCase.EvidenceLinks.Any(link => link.Source == "security-master-accounting"));
         bridged.Workflow.EvidenceLinks.Should().Contain(link =>
             link.EvidenceId == "bank-normalized-activity:recon-ops-1" &&
             link.Source == "bank-normalized-activity");
@@ -732,7 +814,8 @@ public sealed class WorkstationEndpointsTests
 
         providers.Should().NotBeEmpty();
         providers.Should().OnlyContain(provider =>
-            provider.GetProperty("connectionSummary").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
+            provider.GetProperty("connectionSummary").ValueKind == JsonValueKind.Null ||
+            provider.GetProperty("connectionSummary").ValueKind == JsonValueKind.Undefined);
     }
 
     [Fact]
@@ -1241,7 +1324,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.EvidenceDocuments.Should().ContainSingle(document =>
             document.Gate == "explainability" &&
             document.Status == "validated" &&
-            document.Path == "docs/status/dk1-trust-rationale-mapping.md");
+            document.Path == "docs/status/evidence/dk1-trust-rationale-mapping.md");
         readiness.TrustGate.TrustRationaleContract.Should().NotBeNull();
         readiness.TrustGate.TrustRationaleContract!.Status.Should().Be("validated");
         readiness.TrustGate.TrustRationaleContract.RequiredReasonCodes.Should().Contain("PROVIDER_STREAM_DEGRADED");
@@ -3183,21 +3266,42 @@ public sealed class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         }, currentUserPermissions: UserPermission.ViewStrategies);
 
-        var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon-permission"));
+        var repository = app.Services.GetRequiredService<IReconciliationRunRepository>();
+        await repository.SaveAsync(BuildReconciliationDetail(
+            reconciliationRunId: "recon-permission",
+            runId: "run-recon-permission",
+            createdAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            matchCount: 1,
+            breakCount: 0));
 
         var client = app.GetTestClient();
-        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("run-recon-permission"));
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var created = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
-        created.Should().NotBeNull();
-
         var byIdResponse = await client.GetAsync(
             UiApiRoutes.ReconciliationRunById.Replace(
                 "{reconciliationRunId}",
-                created!.Summary.ReconciliationRunId));
+                "recon-permission"));
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCreateRun_ShouldRequireMutationPermission()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon-create-permission"));
+
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationRuns,
+            new ReconciliationRunRequest("run-recon-create-permission"));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -4020,16 +4124,64 @@ public sealed class WorkstationEndpointsTests
                         issueDate = "2026-01-15",
                         maturityDate = "2031-12-15"
                     },
+                    call = new
+                    {
+                        firstCallDate = "2028-06-15"
+                    },
                     coupon = new
                     {
                         couponType = "Fixed",
                         couponRate = 5.125
                     },
+                    cashflowSchedule = new object[]
+                    {
+                        new
+                        {
+                            eventId = "cf-20260625",
+                            eventType = "InterestPayment",
+                            effectiveDate = "2026-06-25",
+                            paymentDate = "2026-06-25",
+                            expectedAmount = 12500.00m,
+                            currency = "USD",
+                            postingStatus = "Projected",
+                            sourceSystem = "trustee-feed",
+                            sourceRecordId = "cashflow-20260625",
+                            asOf = "2026-05-20T10:00:00Z",
+                            updatedBy = "trustee.ops",
+                            reason = "scheduled-interest"
+                        }
+                    },
                     structuredProduct = new
                     {
                         factor = 0.9825,
                         factorDate = "2026-05-01",
-                        collateralType = "AutoLoan"
+                        collateralType = "AutoLoan",
+                        factorHistory = new object[]
+                        {
+                            new
+                            {
+                                pointId = "factor-20260401",
+                                effectiveDate = "2026-04-01",
+                                factor = 0.9910m,
+                                sourceSystem = "trustee-feed",
+                                sourceRecordId = "factor-20260401",
+                                asOf = "2026-04-01T10:00:00Z",
+                                updatedBy = "trustee.ops",
+                                reason = "monthly-factor"
+                            },
+                            new
+                            {
+                                pointId = "factor-20260501",
+                                effectiveDate = "2026-05-01",
+                                factor = 0.9825m,
+                                previousFactor = 0.9910m,
+                                sourceSystem = "trustee-feed",
+                                sourceRecordId = "factor-20260501",
+                                asOf = "2026-05-01T10:00:00Z",
+                                updatedBy = "trustee.ops",
+                                reason = "monthly-factor"
+                            }
+                        }
                     }
                 }),
                 Provenance: JsonSerializer.SerializeToElement(new
@@ -4058,6 +4210,50 @@ public sealed class WorkstationEndpointsTests
                     maturity = "2031-12-15"
                 })));
         queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+        queryService.RegisterCorporateActions(
+            securityId,
+            [
+                new CorporateActionDto(
+                    CorpActId: Guid.Parse("22222222-bbbb-4444-cccc-222222222222"),
+                    SecurityId: securityId,
+                    EventType: "PrincipalPaydown",
+                    ExDate: new DateOnly(2026, 5, 25),
+                    PayDate: new DateOnly(2026, 5, 27),
+                    DividendPerShare: null,
+                    Currency: "USD",
+                    SplitRatio: null,
+                    NewSecurityId: null,
+                    DistributionRatio: 0.0085m,
+                    AcquirerSecurityId: null,
+                    ExchangeRatio: null,
+                    SubscriptionPricePerShare: null,
+                    RightsPerShare: null)
+            ]);
+        queryService.RegisterHistory(
+            securityId,
+            [
+                new SecurityMasterEventEnvelope(
+                    GlobalSequence: 10,
+                    SecurityId: securityId,
+                    StreamVersion: 8,
+                    EventType: "FactorScheduleRefreshed",
+                    EventTimestamp: new DateTimeOffset(2026, 5, 20, 10, 15, 0, TimeSpan.Zero),
+                    Actor: "trustee.bot",
+                    CorrelationId: Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                    CausationId: Guid.Parse("10000000-0000-0000-0000-000000000002"),
+                    Payload: JsonSerializer.SerializeToElement(new
+                    {
+                        factor = 0.9825,
+                        factorDate = "2026-05-01",
+                        paymentDate = "2026-06-25"
+                    }),
+                    Metadata: JsonSerializer.SerializeToElement(new
+                    {
+                        sourceSystem = "trustee-feed",
+                        sourceRecordId = "factor-20260501",
+                        reason = "monthly remittance"
+                    }))
+            ]);
 
         var validationService = new StubSecurityValidationService();
         validationService.RegisterReport(
@@ -4090,8 +4286,24 @@ public sealed class WorkstationEndpointsTests
                 validationService);
         });
 
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-structured-lots",
+            strategyId: "structured-income",
+            strategyName: "Structured Income",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/structured-credit",
+            feedReference: "synthetic:structured-credit",
+            fundProfileId: "alpha-credit").Complete(BuildBacktestResultWithOpenLots(
+                symbol: "ACME31",
+                quantity: 1_000_000L,
+                entryPrice: 0.97m,
+                accountId: "structured-income-account",
+                accountDisplayName: "Structured Income Account")));
+
         var client = app.GetTestClient();
-        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=alpha-credit");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
@@ -4110,6 +4322,11 @@ public sealed class WorkstationEndpointsTests
         snapshot.SchemaCompatibility.EconomicTermsSchemaVersion.Should().Be(2);
         snapshot.SchemaCompatibility.HasLegacyAssetSpecificTerms.Should().BeTrue();
         snapshot.SchemaCompatibility.HasEconomicTerms.Should().BeTrue();
+        snapshot.ChangeHistory.Should().NotBeNull();
+        snapshot.ChangeHistory!.Should().ContainSingle(item =>
+            item.EventType == "FactorScheduleRefreshed" &&
+            item.SourceSystem == "trustee-feed" &&
+            item.Origin == "Vendor");
         snapshot.ScheduleSummary.Should().NotBeNull();
         snapshot.ScheduleSummary!.SupportsCashflowSchedule.Should().BeTrue();
         snapshot.ScheduleSummary.SupportsFactorHistory.Should().BeTrue();
@@ -4119,6 +4336,46 @@ public sealed class WorkstationEndpointsTests
         snapshot.LotModel!.QuantityModel.Should().Be("FactorAdjustedFace");
         snapshot.LotModel.UsesFaceValue.Should().BeTrue();
         snapshot.LotModel.SupportsFactorAdjustedExposure.Should().BeTrue();
+        snapshot.ScheduleBook.Should().NotBeNull();
+        snapshot.ScheduleBook!.FactorHistory.Should().HaveCount(2);
+        snapshot.ScheduleBook.Events.Should().Contain(item =>
+            item.EventType == "InterestPayment" &&
+            item.EffectiveDate == new DateOnly(2026, 6, 25) &&
+            item.ExpectedAmount == 12500.00m &&
+            item.SourceSystem == "trustee-feed");
+        snapshot.ScheduleBook.Events.Should().Contain(item =>
+            item.EventType == "PrincipalPaydown" &&
+            item.EffectiveDate == new DateOnly(2026, 5, 25) &&
+            item.FactorEnd == 0.0085m);
+        snapshot.ScheduleBook.ProvenanceHistory.Should().Contain(item =>
+            item.Category == "History" &&
+            item.EventType == "FactorScheduleRefreshed" &&
+            item.SourceSystem == "trustee-feed");
+        snapshot.OpenLotReadModel.Should().NotBeNull();
+        snapshot.OpenLotReadModel!.SupportsFactorAdjustedExposure.Should().BeTrue();
+        snapshot.OpenLotReadModel.CurrentFactor.Should().Be(0.9825m);
+        snapshot.OpenLotReadModel.Lots.Should().ContainSingle();
+        snapshot.OpenLotReadModel.ProvenanceHistory.Should().ContainSingle(item =>
+            item.RunId == "run-structured-lots" &&
+            item.SourceSystem == "strategy-run-snapshot");
+        var openLot = snapshot.OpenLotReadModel.Lots[0];
+        openLot.SecurityId.Should().Be(securityId);
+        openLot.PortfolioId.Should().Be("structured-income-backtest-portfolio");
+        openLot.RunId.Should().Be("run-structured-lots");
+        openLot.AccountScopeId.Should().Be("structured-income-account");
+        openLot.AccountScopeDisplayName.Should().Be("Structured Income Account");
+        openLot.LotId.Should().NotBeNullOrWhiteSpace();
+        openLot.Symbol.Should().Be("ACME31");
+        openLot.OriginalQuantity.Should().Be(1_000_000m);
+        openLot.CurrentQuantity.Should().Be(1_000_000m);
+        openLot.OriginalFace.Should().Be(1_000_000m);
+        openLot.CurrentFace.Should().Be(982_500m);
+        openLot.FactorAdjustedQuantity.Should().Be(982_500m);
+        openLot.FactorAdjustedFace.Should().Be(982_500m);
+        openLot.CostBasis.Should().Be(970_000m);
+        openLot.EntryPrice.Should().Be(0.97m);
+        openLot.UnrealizedPnl.Should().Be(12_500m);
+        openLot.SettleDate.Should().Be(new DateTimeOffset(2026, 5, 16, 14, 0, 0, TimeSpan.Zero));
         snapshot.RecommendedActions.Should().Contain(action =>
             action.Kind == SecurityMasterRecommendedActionKind.EditSelectedSecurity &&
             action.Detail.Contains("blocking validation issue", StringComparison.OrdinalIgnoreCase));
@@ -4564,6 +4821,8 @@ public sealed class WorkstationEndpointsTests
         rows.Should().HaveCount(2);
         rows.Select(r => r.GetProperty("runId").GetString()).Should().Contain("cmp-1").And.Contain("cmp-2");
         rows.Select(r => r.GetProperty("strategyName").GetString()).Should().Contain("Alpha Strategy").And.Contain("Beta Strategy");
+        rows.Should().OnlyContain(row => row.GetProperty("artifactCompleteness").ValueKind == JsonValueKind.Object);
+        rows.Should().OnlyContain(row => row.GetProperty("compatibilityWarnings").ValueKind == JsonValueKind.Array);
     }
 
     [Fact]
@@ -4763,6 +5022,9 @@ public sealed class WorkstationEndpointsTests
         doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
         doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
         doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.TryGetProperty("baseArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("targetArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("compatibilityWarnings", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -5100,170 +5362,6 @@ public sealed class WorkstationEndpointsTests
         public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions { get; }
     }
 
-    private static async Task<WebApplication> CreateAppAsync(
-        Action<IServiceCollection>? configureServices = null,
-        bool mapExecutionApi = false,
-        bool mapPromotionApi = false,
-        UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster)
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        configureServices?.Invoke(builder.Services);
-        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
-            await next();
-        });
-
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        if (mapExecutionApi)
-        {
-            app.MapExecutionEndpoints(jsonOptions);
-        }
-
-        if (mapPromotionApi)
-        {
-            app.MapPromotionEndpoints(jsonOptions);
-        }
-
-        app.MapWorkstationEndpoints(jsonOptions);
-
-        await app.StartAsync();
-        return app;
-    }
-
-    private static void RegisterRunReadServices(IServiceCollection services)
-    {
-        var store = new StrategyRunStore();
-        services.AddSingleton<IStrategyRepository>(store);
-        services.AddSingleton<PortfolioReadService>();
-        services.AddSingleton<LedgerReadService>();
-        services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        services.AddSingleton<ReconciliationProjectionService>();
-        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        services.AddSingleton<CashFlowProjectionService>();
-        services.AddSingleton<StrategyRunContinuityService>();
-        services.AddSingleton<StrategyRunReviewPacketService>();
-        services.AddSingleton<WorkstationWorkflowSummaryService>();
-    }
-
-    private static void RegisterOperationsContinuityServices(IServiceCollection services)
-    {
-        services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
-        services.AddSingleton<IOperationsContinuityRepository, InMemoryOperationsContinuityRepository>();
-        services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
-        services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
-        services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
-        services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
-            new OperationsContinuityReconciliationBridge(
-                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
-    }
-
-    private static void RegisterConfigStores(IServiceCollection services, string configPath)
-    {
-        services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
-        services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-    }
-
-    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
-        new(
-            JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
-            PeriodId: Guid.NewGuid(),
-            Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
-            Description: "Operations continuity endpoint posting",
-            Lines:
-            [
-                new OperationsLedgerJournalLineDto(
-                    EntryId: null,
-                    AccountName: "Cash",
-                    AccountType: nameof(LedgerAccountType.Asset),
-                    Debit: 100m,
-                    Credit: 0m),
-                new OperationsLedgerJournalLineDto(
-                    EntryId: null,
-                    AccountName: "Interest income",
-                    AccountType: nameof(LedgerAccountType.Revenue),
-                    Debit: 0m,
-                    Credit: 100m)
-            ],
-            AccountingBasis: AccountingBasisKindDto.Primary,
-            AccountingPolicyId: "legacy-v1",
-            AccountingPolicyVersion: "legacy-v1",
-            PostingKind: LedgerPostingKindDto.Originating,
-            Metadata: new OperationsJournalEntryMetadataDto(ActivityType: "operations-continuity"));
-
-    private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
-    {
-        services.AddSingleton<BacktestToLivePromoter>();
-        services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
-            promotionRoot,
-            NullLogger<JsonlPromotionRecordStore>.Instance));
-        services.AddSingleton<PromotionService>(sp => new PromotionService(
-            sp.GetRequiredService<IStrategyRepository>(),
-            sp.GetRequiredService<BacktestToLivePromoter>(),
-            sp.GetRequiredService<IPromotionRecordStore>(),
-            NullLogger<PromotionService>.Instance));
-    }
-
-    private static BrokeragePortfolioSyncService CreateFailedBrokerageSyncService(string root)
-        => new(
-            new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
-            catalogs: [],
-            portfolioAdapters: [new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing.")],
-            activityAdapters: [new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing.")],
-            services: new ServiceCollection().BuildServiceProvider(),
-            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
-
-    private sealed class ThrowingPortfolioAdapter(string providerId, string message) : IBrokeragePortfolioSync
-    {
-        public string ProviderId { get; } = providerId;
-
-        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    private sealed class ThrowingActivityAdapter(string providerId, string message) : IBrokerageActivitySync
-    {
-        public string ProviderId { get; } = providerId;
-
-        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
-            string externalAccountId,
-            DateTimeOffset? since = null,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    private static string NormalizePathForAssertion(string path) =>
-        path.Replace(Path.DirectorySeparatorChar, '/');
-
     private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
     {
         public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
@@ -5386,9 +5484,9 @@ public sealed class WorkstationEndpointsTests
                 ]
               },
               "evidenceDocuments": [
-                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/evidence/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/evidence/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/evidence/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
                 { "name": "Provider validation matrix", "gate": "parity", "path": "docs/status/provider-validation-matrix.md", "exists": true, "status": "validated", "missingRequirements": [] }
               ],
               __CONTRACT_REVIEW__
@@ -5400,7 +5498,7 @@ public sealed class WorkstationEndpointsTests
             .Replace("__CONTRACT_REVIEW__", includeContractReview
                 ? """
                   "trustRationaleContract": {
-                    "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+                    "documentPath": "docs/status/evidence/dk1-trust-rationale-mapping.md",
                     "requiredPayloadFields": [ "signalSource", "reasonCode", "recommendedAction" ],
                     "requiredReasonCodes": [
                       "HEALTHY_BASELINE",
@@ -5416,7 +5514,7 @@ public sealed class WorkstationEndpointsTests
                     "missingRequirements": []
                   },
                   "baselineThresholdContract": {
-                    "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+                    "documentPath": "docs/status/evidence/dk1-baseline-trust-thresholds.md",
                     "requiredMetrics": [
                       "Composite trust score",
                       "Connection stability score",
@@ -6279,6 +6377,106 @@ public sealed class WorkstationEndpointsTests
             Ledger: ledger,
             ElapsedTime: TimeSpan.FromMinutes(30),
             TotalEventsProcessed: 100);
+    }
+
+    private static BacktestResult BuildBacktestResultWithOpenLots(
+        string symbol,
+        long quantity,
+        decimal entryPrice,
+        string accountId,
+        string accountDisplayName)
+    {
+        var startedAt = new DateTimeOffset(2026, 5, 14, 14, 0, 0, TimeSpan.Zero);
+        var completedAt = startedAt.AddDays(6);
+        var openLot = new OpenLot(
+            LotId: Guid.Parse("33333333-cccc-4444-dddd-333333333333"),
+            Symbol: symbol,
+            Quantity: quantity,
+            EntryPrice: entryPrice,
+            OpenedAt: startedAt,
+            OpenFillId: Guid.Parse("44444444-dddd-4444-eeee-444444444444"),
+            AccountId: accountId,
+            Notes: "Trust remittance carry lot");
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            [symbol] = new(symbol, quantity, entryPrice, 12_500m, 0m, [openLot])
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: accountId,
+            DisplayName: accountDisplayName,
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Structured Credit Broker",
+            Cash: 250_000m,
+            MarginBalance: 0m,
+            LongMarketValue: 982_500m,
+            ShortMarketValue: 0m,
+            Equity: 1_232_500m,
+            Positions: positions,
+            Rules: new FinancialAccountRules(),
+            OpenLots: [openLot]);
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: completedAt,
+            Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
+            Cash: 250_000m,
+            MarginBalance: 0m,
+            LongMarketValue: 982_500m,
+            ShortMarketValue: 0m,
+            TotalEquity: 1_232_500m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 5, 14),
+            To: new DateOnly(2026, 5, 20),
+            Symbols: [symbol],
+            InitialCash: 1_220_000m,
+            DataRoot: "./data");
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_220_000m,
+            FinalEquity: 1_232_500m,
+            GrossPnl: 12_500m,
+            NetPnl: 12_500m,
+            TotalReturn: 0.0102459016393442622950819672m,
+            AnnualizedReturn: 0.0102459016393442622950819672m,
+            SharpeRatio: 1.0d,
+            SortinoRatio: 1.0d,
+            CalmarRatio: 1.0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 1,
+            WinningTrades: 1,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, startedAt, $"Buy {symbol}",
+        [
+            (LedgerAccounts.Securities(symbol), 970_000m, 0m),
+            (LedgerAccounts.Cash, 0m, 970_000m)
+        ]);
+
+        return new BacktestResult(
+            Request: request,
+            Universe: new HashSet<string>([symbol], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: ledger,
+            ElapsedTime: TimeSpan.FromMinutes(45),
+            TotalEventsProcessed: 64);
     }
 
     private static ReconciliationRunDetail BuildReconciliationDetail(

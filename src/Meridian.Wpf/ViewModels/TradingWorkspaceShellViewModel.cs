@@ -26,7 +26,7 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _capitalFinancingText = "-";
     private string _capitalControlsDetailText = "Select an operating context to unlock capital, financing, and reconciliation posture.";
     private string _tradingActiveRunText = "No active trading run";
-    private string _tradingActiveRunMetaText = "Use Research to promote a run, or open a live/paper panel below.";
+    private string _tradingActiveRunMetaText = "Use Strategy to promote a run, or open a live/paper panel below.";
     private string _watchlistStatusText = "Watchlists and active strategies populate once paper or live runs are started.";
     private string _marketCoreText = "Live data, order book, portfolio, and accounting consequences are ready to dock below.";
     private string _riskRailText = "Risk, reconciliation, and audit surfaces become specific once an active run is selected.";
@@ -56,7 +56,6 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _tradingHeroSecondaryActionText = TradingWorkspaceShellPresentationDefaults.DeskHero.SecondaryActionLabel;
     private string _tradingHeroTargetText = TradingWorkspaceShellPresentationDefaults.DeskHero.TargetLabel;
     private Visibility _tradingHeroSecondaryActionVisibility = Visibility.Visible;
-    private WorkspaceShellContext _shellContext = new();
     private IReadOnlyList<TradingActivePositionItem> _activePositions = Array.Empty<TradingActivePositionItem>();
     private Visibility _noPositionsVisibility = Visibility.Collapsed;
     private ActiveRunContext? _activeRunContext;
@@ -367,12 +366,6 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     {
         get => _noPositionsVisibility;
         private set => SetProperty(ref _noPositionsVisibility, value);
-    }
-
-    public WorkspaceShellContext ShellContext
-    {
-        get => _shellContext;
-        private set => SetProperty(ref _shellContext, value);
     }
 
     internal ActiveRunContext? ActiveRunContext => _activeRunContext;

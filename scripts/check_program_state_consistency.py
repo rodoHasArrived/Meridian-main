@@ -15,7 +15,7 @@ STATUS_DOC_PATHS = [
     "docs/status/ROADMAP.md",
     "docs/status/IMPROVEMENTS.md",
     "docs/status/production-status.md",
-    "docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md",
+    "docs/status/FULL_IMPLEMENTATION_TODO.md",
     "docs/status/ROADMAP_COMBINED.md",
 ]
 

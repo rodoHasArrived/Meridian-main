@@ -176,8 +176,11 @@ public static class OperationsWorkflowContractMatrix
         "APPROVAL_DECISION_REQUIRED",
         "APPROVAL_METADATA_REQUIRED",
         "APPROVAL_REQUIRED",
+        "APPROVAL_REVIEWER_MISMATCH",
         "APPROVAL_SUBMISSION_METADATA_REQUIRED",
         "APPROVAL_SUBMISSION_REQUIRED",
+        "AUDIT_CHAIN_INVALID",
+        "AUDIT_CHAIN_MISSING",
         "BROKER_IMPORT_ALREADY_RECORDED",
         "BROKER_IMPORT_GATE_NOT_READY",
         "BROKER_IMPORT_REQUIRED",
@@ -208,6 +211,8 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_JOURNAL_DESCRIPTION_REQUIRED",
         "LEDGER_JOURNAL_LINES_REQUIRED",
         "LEDGER_JOURNAL_PERIOD_ID_REQUIRED",
+        "LEDGER_JOURNAL_PERIOD_ID_MISMATCH",
+        "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH",
         "LEDGER_JOURNAL_STORE_UNAVAILABLE",
         "LEDGER_JOURNAL_TIMESTAMP_REQUIRED",
         "LEDGER_PERIOD_CLOSED",
@@ -478,7 +483,9 @@ public sealed record OperationsLedgerJournalCandidateDto(
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
-    OperationsJournalEntryMetadataDto? Metadata = null);
+    OperationsJournalEntryMetadataDto? Metadata = null,
+    string? IdempotencyKey = null,
+    string? SecurityMasterProvenance = null);
 
 public sealed record OperationsLedgerJournalLineDto(
     Guid? EntryId,

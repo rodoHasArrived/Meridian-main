@@ -5,8 +5,21 @@ namespace Meridian.Wpf.Shell.Services;
 
 public sealed class ShellRouteRegistry : IShellRouteRegistry
 {
-    private readonly Lazy<IReadOnlyList<ShellRoute>> _routes = new(BuildRoutes);
-    private readonly Lazy<IReadOnlyDictionary<string, ShellRoute>> _routesByTag = new(BuildLookup);
+    private readonly IShellPageRegistry _pageRegistry;
+    private readonly Lazy<IReadOnlyList<ShellRoute>> _routes;
+    private readonly Lazy<IReadOnlyDictionary<string, ShellRoute>> _routesByTag;
+
+    public ShellRouteRegistry()
+        : this(ShellPageRegistryBuilder.BuildDefault())
+    {
+    }
+
+    public ShellRouteRegistry(IShellPageRegistry pageRegistry)
+    {
+        _pageRegistry = pageRegistry ?? throw new ArgumentNullException(nameof(pageRegistry));
+        _routes = new Lazy<IReadOnlyList<ShellRoute>>(BuildRoutes);
+        _routesByTag = new Lazy<IReadOnlyDictionary<string, ShellRoute>>(BuildLookup);
+    }
 
     public IReadOnlyList<ShellRoute> Routes => _routes.Value;
 
@@ -46,15 +59,15 @@ public sealed class ShellRouteRegistry : IShellRouteRegistry
             .ToArray();
     }
 
-    private static IReadOnlyList<ShellRoute> BuildRoutes()
-        => ShellNavigationCatalog.Pages
+    private IReadOnlyList<ShellRoute> BuildRoutes()
+        => _pageRegistry.Pages
             .Select(ShellRoute.FromDescriptor)
             .ToArray();
 
-    private static IReadOnlyDictionary<string, ShellRoute> BuildLookup()
+    private IReadOnlyDictionary<string, ShellRoute> BuildLookup()
     {
         var lookup = new Dictionary<string, ShellRoute>(StringComparer.OrdinalIgnoreCase);
-        foreach (var route in BuildRoutes())
+        foreach (var route in _routes.Value)
         {
             Register(lookup, route.PageTag, route);
             foreach (var alias in route.Aliases)

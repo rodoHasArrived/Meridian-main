@@ -1,5 +1,7 @@
 using Meridian.Ui.Services;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
 
 namespace Meridian.Wpf.Tests.Models;
 
@@ -122,6 +124,51 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void ModuleRegistry_ShouldAssembleCanonicalCatalogPagesAndUniqueTags()
+    {
+        var registry = ShellPageRegistryBuilder.BuildDefault();
+
+        registry.WorkspaceCapabilities
+            .Select(static capability => capability.Workspace.Id)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+        registry.Pages.Count.Should().Be(ShellNavigationCatalog.Pages.Count);
+        registry.WorkspaceShells.Count.Should().Be(ShellNavigationCatalog.WorkspaceShells.Count);
+        registry.Pages.Select(static page => page.PageTag)
+            .Should()
+            .OnlyHaveUniqueItems("page tags are route keys in the assembled shell registry");
+
+        var aliasCollisions = registry.Pages
+            .SelectMany(static page => page.Aliases.Select(alias => (Alias: alias, PageTag: page.PageTag)))
+            .GroupBy(static entry => entry.Alias, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Select(entry => entry.PageTag).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1)
+            .Select(static group => group.Key)
+            .ToArray();
+
+        aliasCollisions.Should().BeEmpty("aliases should resolve to exactly one canonical page");
+        DesktopFeatureModuleRegistry.GetModules()
+            .SelectMany(static module => module.DescribePages())
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell", "StrategyShell", "DataShell", "SettingsShell"]);
+    }
+
+    [Fact]
+    public void FeatureModules_ShouldOwnAllSevenCanonicalWorkspaces()
+    {
+        DesktopFeatureModuleRegistry.GetModules()
+            .Select(static module => module.DescribeWorkspace()?.Workspace.Id)
+            .Where(static workspaceId => !string.IsNullOrWhiteSpace(workspaceId))
+            .Select(static workspaceId => workspaceId!)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+
+        ShellNavigationCatalog.BuildFallbackWorkspaceCapabilities(["trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings"])
+            .Should()
+            .BeEmpty();
+    }
+
+    [Fact]
     public void DataShell_ShouldUseFeatureOwnedWorkspaceShellPage()
     {
         var dataShell = ShellNavigationCatalog.GetPage("DataShell");
@@ -173,6 +220,30 @@ public sealed class ShellNavigationCatalogTests
 
         relatedPages.Should().ContainInOrder("LiveData", "OrderBook", "PositionBlotter", "RunRisk");
         relatedPages.Should().Contain("PortfolioShell");
+    }
+
+    [Fact]
+    public void BacktestLeanLiveDataAndPortfolioImport_ShouldCrossLinkForWorkflowHandoffs()
+    {
+        ShellNavigationCatalog.GetRelatedPages("Backtest")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["LeanIntegration", "LiveData", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("LeanIntegration")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LiveData", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("LiveData")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LeanIntegration", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("PortfolioImport")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LeanIntegration", "LiveData"]);
     }
 
     [Fact]

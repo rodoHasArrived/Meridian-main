@@ -51,7 +51,6 @@ export interface WorkspaceHeaderViewModel {
   sessionRoleLabel: string | null;
   sessionPillAriaLabel: string;
   refreshAction: WorkspaceHeaderAction | null;
-  commandAction: WorkspaceHeaderAction;
   liveAnnouncement: string;
   ariaBusy: boolean;
   isLiveEnvironment: boolean;
@@ -109,14 +108,6 @@ export function buildWorkspaceHeaderViewModel({
           busy: refreshing
         }
       : null,
-    commandAction: {
-      label: "Open command palette",
-      ariaLabel: "Open workspace command palette",
-      title: "Open workspace command palette",
-      disabled: false,
-      disabledReason: null,
-      busy: false
-    },
     liveAnnouncement: refreshing ? `Refreshing ${workspace.label} workspace data.` : "",
     ariaBusy: refreshing,
     isLiveEnvironment,

@@ -191,6 +191,14 @@ public sealed class ProviderHealthService : IDisposable
                     ProviderId = provider.ProviderId,
                     ProviderName = provider.ProviderName,
                     IsConnected = provider.IsConnected,
+                    LifecycleState = provider.LifecycleState,
+                    WebSocketState = provider.WebSocketState,
+                    IsReconnecting = provider.IsReconnecting,
+                    LastHeartbeatReceivedAt = provider.LastHeartbeatReceivedAt,
+                    LastMessageReceivedAt = provider.LastMessageReceivedAt,
+                    LastReconnectAttemptAt = provider.LastReconnectAttemptAt,
+                    ReconnectAttempts = provider.ReconnectAttempts,
+                    LastFailureKind = provider.LastFailureKind,
                     LastUpdated = DateTime.UtcNow,
                     OverallScore = CalculateOverallScore(provider),
                     Metrics = new HealthMetrics
@@ -459,6 +467,14 @@ public sealed class ProviderHealthData
     public string ProviderId { get; set; } = string.Empty;
     public string ProviderName { get; set; } = string.Empty;
     public bool IsConnected { get; set; }
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public int? ReconnectAttempts { get; set; }
+    public string? LastFailureKind { get; set; }
     public DateTime LastUpdated { get; set; }
     public double OverallScore { get; set; }
     public HealthMetrics Metrics { get; set; } = new();
@@ -535,6 +551,14 @@ public sealed class ProviderHealthInfo
     public string ProviderId { get; set; } = string.Empty;
     public string ProviderName { get; set; } = string.Empty;
     public bool IsConnected { get; set; }
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public int? ReconnectAttempts { get; set; }
+    public string? LastFailureKind { get; set; }
     public double ConnectionStabilityScore { get; set; }
     public double AverageLatencyMs { get; set; }
     public double LatencyP99Ms { get; set; }

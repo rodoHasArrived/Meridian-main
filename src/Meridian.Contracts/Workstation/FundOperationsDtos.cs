@@ -183,6 +183,24 @@ public sealed record ReconciliationSummary(
     bool HasCriticalBreakOpen = false);
 
 /// <summary>
+/// Shared governance lifecycle projection composed from operations continuity,
+/// reconciliation break queue, report-pack lifecycle, and evidence workflow references.
+/// </summary>
+public sealed record GovernanceLifecycleProjectionDto(
+    string DecisionPosture,
+    string SignoffPosture,
+    string CloseReadiness,
+    string AuditTraceability,
+    string? ActiveWorkflowId = null,
+    OperationsWorkflowStatusDto? WorkflowStatus = null,
+    OperationsApprovalStateDto? ApprovalState = null,
+    DateTimeOffset? WorkflowUpdatedAtUtc = null,
+    int TimelineEventCount = 0,
+    int EvidenceReferenceCount = 0,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<string>? AuditReferences = null);
+
+/// <summary>
 /// Reconciliation break-queue projection used by shared operator workflows.
 /// </summary>
 public sealed record ReconciliationBreakQueueProjectionDto(

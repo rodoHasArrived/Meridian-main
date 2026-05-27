@@ -9,9 +9,7 @@ forking behavior.
 - New operator UI work belongs in `src/Meridian.Ui/dashboard/`.
 - Shared workstation endpoint and read-model support belongs in
   `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
-- `src/Meridian.Wpf/` is retained for compatibility, regression repair, and
-  shared-contract validation. Treat new WPF product work as archivable unless
-  the roadmap or user explicitly reopens it.
+- `src/Meridian.Wpf/` is the active desktop UI for operator workflows.
 
 ## View-Model Ownership
 
@@ -22,6 +20,12 @@ Keep these in view models, shared read models, or endpoint projections:
 - command availability and recovery action routing
 - accessible names, live-region text, and keyboard-selection semantics
 - route hints and subject or symbol handoffs
+
+### Anti-monolith rule
+
+- Do not add new "god" page view models. Treat ~1,000+ line page view models as decomposition candidates.
+- Page view models should coordinate section view models and command wiring; heavy filtering, projection shaping, and API orchestration belong in dedicated services/query classes.
+- Preserve existing XAML bindings during decomposition with temporary adapter properties, then remove adapters once views are migrated.
 
 Views should render state, invoke commands, and handle local interaction glue.
 They should not recalculate business posture or invent labels that should be

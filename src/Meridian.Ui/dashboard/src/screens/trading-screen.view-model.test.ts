@@ -32,15 +32,17 @@ import {
   validatePromotionApproval,
   validatePromotionRejection,
   useOrderTicketViewModel,
+  usePaperSessionsViewModel,
   useTradingConfirmViewModel,
   useTradingReadinessViewModel,
   usePromotionGateViewModel,
   type OrderTicketServices,
+  type PaperSessionServices,
   type PromotionGateServices,
   type TradingConfirmServices,
   type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, OperatorWorkItem, OperatorWorkItemKind, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingPosition, TradingReplayReadiness, TradingRiskState, TradingTrustGateReadiness, TradingWorkspaceResponse, WorkstationBrokerageSyncStatus } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, OperatorWorkItem, OperatorWorkItemKind, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingPaperSessionReadiness, TradingPosition, TradingReplayReadiness, TradingRiskState, TradingTrustGateReadiness, TradingWorkspaceResponse, WorkstationBrokerageSyncStatus } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -625,6 +627,54 @@ describe("paper session view model", () => {
     expect(invalidState.initialCashField.invalid).toBe(true);
     expect(invalidState.initialCashField.disabled).toBe(false);
     expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
+  });
+
+  it("verifies replay through the paper-session hook and requests readiness refresh", async () => {
+    const services: PaperSessionServices = {
+      getExecutionSessions: vi.fn<PaperSessionServices["getExecutionSessions"]>().mockResolvedValue([activePaperSession]),
+      createPaperSession: vi.fn<PaperSessionServices["createPaperSession"]>(),
+      closePaperSession: vi.fn<PaperSessionServices["closePaperSession"]>(),
+      getPaperSessionDetail: vi.fn<PaperSessionServices["getPaperSessionDetail"]>().mockResolvedValue(selectedPaperSessionDetail),
+      getPaperSessionReplayVerification: vi.fn<PaperSessionServices["getPaperSessionReplayVerification"]>()
+        .mockResolvedValue(consistentReplayVerification)
+    };
+    const onSessionEvidenceChanged = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const { result } = renderHook(() => usePaperSessionsViewModel({ services, onSessionEvidenceChanged }));
+
+    await waitFor(() => {
+      expect(result.current.rows).toHaveLength(1);
+      expect(result.current.isBusy).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.restoreSession("sess-1");
+    });
+
+    expect(services.getPaperSessionDetail).toHaveBeenCalledWith("sess-1");
+    expect(result.current.selectedSessionId).toBe("sess-1");
+    expect(result.current.selectedSessionDetail).toBe(selectedPaperSessionDetail);
+    expect(result.current.sessionReplayVerification).toBeNull();
+    expect(result.current.detail?.replay).toBeNull();
+    expect(result.current.statusAnnouncement).toBe("Paper session sess-1 restored.");
+    expect(onSessionEvidenceChanged).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.verifySessionReplay("sess-1");
+    });
+
+    expect(services.getPaperSessionDetail).toHaveBeenCalledTimes(2);
+    expect(services.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1");
+    expect(result.current.selectedSessionId).toBe("sess-1");
+    expect(result.current.selectedSessionDetail).toBe(selectedPaperSessionDetail);
+    expect(result.current.sessionReplayVerification).toBe(consistentReplayVerification);
+    expect(result.current.detail?.replay).toEqual(expect.objectContaining({
+      tone: "success",
+      statusLabel: "Matched current state",
+      ariaLabel: "Replay verification matched current state for sess-1"
+    }));
+    expect(result.current.detail?.replay?.rows).toContainEqual({ label: "Verification audit", value: "audit-verify-1" });
+    expect(result.current.statusAnnouncement).toBe("Replay verification matched current state for sess-1.");
+    expect(onSessionEvidenceChanged).toHaveBeenCalledOnce();
   });
 });
 
@@ -2087,6 +2137,23 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("replay");
   });
 
+  it("preserves the PaperReplay session-replay panel when shared metadata targets the Trading shell", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("PaperReplay", {
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Verify replay");
+    expect(action?.href).toBe("/trading#session-replay-panel");
+  });
+
   it("routes ExecutionControl work items to the trading risk route", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("ExecutionControl"), refreshing: false, errorText: null });
     const action = state.visibleWorkItems[0].action;
@@ -2097,6 +2164,23 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("guardrails");
   });
 
+  it("uses shared TradingShell metadata for ExecutionControl work items when present", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("ExecutionControl", {
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Review risk controls");
+    expect(action?.href).toBe("/trading");
+  });
+
   it("routes PromotionReview work items to the promotion gate panel", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("PromotionReview", { runId: "run-001" }), refreshing: false, errorText: null });
     const action = state.visibleWorkItems[0].action;
@@ -2104,6 +2188,24 @@ describe("trading readiness work-item action routing", () => {
     expect(action).not.toBeNull();
     expect(action?.label).toBe("Open promotion gate");
     expect(action?.href).toBe("/trading#promotion-gate-panel");
+  });
+
+  it("uses shared TradingShell metadata for PromotionReview work items when present", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("PromotionReview", {
+        runId: "run-001",
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Open promotion gate");
+    expect(action?.href).toBe("/trading");
   });
 
   it("routes SecurityMasterCoverage work items to the security master route", () => {
@@ -2255,7 +2357,7 @@ describe("promotion approval checklist", () => {
 
 describe("trading readiness fund account threading", () => {
   it("passes fundAccountId to getTradingReadiness on refresh", async () => {
-    const getTradingReadiness = vi.fn<Parameters<TradingReadinessServices["getTradingReadiness"]>, ReturnType<TradingReadinessServices["getTradingReadiness"]>>();
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>();
     const deferred = createDeferred<TradingOperatorReadiness | null>();
     getTradingReadiness.mockReturnValueOnce(deferred.promise);
 
@@ -2279,7 +2381,7 @@ describe("trading readiness fund account threading", () => {
   });
 
   it("omits fundAccountId from the call when no account context is active", async () => {
-    const getTradingReadiness = vi.fn<Parameters<TradingReadinessServices["getTradingReadiness"]>, ReturnType<TradingReadinessServices["getTradingReadiness"]>>();
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>();
     const deferred = createDeferred<TradingOperatorReadiness | null>();
     getTradingReadiness.mockReturnValueOnce(deferred.promise);
 
@@ -2300,6 +2402,102 @@ describe("trading readiness fund account threading", () => {
       deferred.resolve(null);
       await deferred.promise;
     });
+  });
+});
+
+// ─── Lane A / W2 blocker-path recovery: browser parity ───────────────────────
+
+describe("trading readiness blocker recovery", () => {
+  it("drops blocked work items from view state when refresh returns an empty work-item list", () => {
+    // Step 1: build blocked state as seen before recovery
+    const blockedState = buildTradingReadinessState({
+      readiness: blockedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(blockedState.hasOperatorAttention).toBe(true);
+    expect(blockedState.visibleWorkItems).toHaveLength(1);
+    expect(blockedState.visibleWorkItems[0].tone).toBe("Critical");
+
+    // Step 2: simulate the refresh returning a cleared readiness payload
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:30:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      brokerageSync: {
+        ...blockedReadiness.brokerageSync!,
+        health: "Healthy",
+        isStale: false,
+        lastError: null,
+        warnings: []
+      },
+      workItems: [],
+      warnings: []
+    };
+
+    const clearedState = buildTradingReadinessState({
+      readiness: clearedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(clearedState.hasOperatorAttention).toBe(false);
+    expect(clearedState.visibleWorkItems).toHaveLength(0);
+    expect(clearedState.workItemSummaryText).toBe("0 readiness items and 0 warnings.");
+  });
+
+  it("transitions status announcement from blocked to ready when blockers clear", () => {
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:35:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      workItems: [],
+      warnings: []
+    };
+
+    const state = buildTradingReadinessState({
+      readiness: clearedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.statusAnnouncement).toContain("ready");
+    expect(state.statusAnnouncement).not.toContain("blocked");
+  });
+
+  it("refresh via hook applies cleared readiness payload and drops blocked work items", async () => {
+    const blockerWorkItem = blockedReadiness.workItems[0];
+    expect(blockerWorkItem).toBeDefined();
+
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:40:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      workItems: [],
+      warnings: []
+    };
+
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>()
+      .mockResolvedValueOnce(clearedReadiness);
+    const services: TradingReadinessServices = { getTradingReadiness };
+
+    const { result } = renderHook(() =>
+      useTradingReadinessViewModel({ initialReadiness: blockedReadiness, services })
+    );
+
+    expect(result.current.readiness?.workItems).toHaveLength(1);
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(result.current.readiness?.workItems).toHaveLength(0);
+    expect(result.current.readiness?.overallStatus).toBe("Ready");
+    expect(result.current.readiness?.readyForPaperOperation).toBe(true);
   });
 });
 

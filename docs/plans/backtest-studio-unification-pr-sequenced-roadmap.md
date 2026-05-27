@@ -14,8 +14,8 @@
 **Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
 
 > **UI lane refresh (2026-05-12):** References in this roadmap to
-> `src/Meridian.Ui/dashboard` and the web workstation are active browser-first
-> implementation targets again. Treat WPF slices as retained desktop support,
+> `src/Meridian.Ui/dashboard` and the web workstation are active shared-contract-first
+> implementation targets again. Treat WPF slices as active desktop workstation support,
 > shared-contract regression coverage, or compatibility work unless a roadmap
 > owner explicitly pulls a WPF-first operator workflow forward.
 
@@ -35,7 +35,7 @@ Use this with:
 - [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md)
 - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
 - [../status/ROADMAP.md](../status/ROADMAP.md)
-- [../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+- [../status/FULL_IMPLEMENTATION_TODO.md](../status/FULL_IMPLEMENTATION_TODO.md)
 
 ## How to Use This Document
 

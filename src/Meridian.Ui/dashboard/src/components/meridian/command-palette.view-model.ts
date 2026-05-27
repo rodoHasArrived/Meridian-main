@@ -179,6 +179,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab
   },
   {
+    id: "strategy-formula-workbench",
+    label: "Formula Workbench",
+    description: "Author cell-based strategy formulas with field search and suggestions.",
+    route: WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench
+  },
+  {
     id: "strategy-covered-call",
     label: "Covered call backtest",
     description: "Configure covered-call chain preview, run backtests, and review payoff evidence.",

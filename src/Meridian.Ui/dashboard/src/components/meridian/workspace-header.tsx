@@ -20,14 +20,10 @@ import type { SessionInfo, WorkspaceSummary } from "@/types";
  * while the data fetch is in flight — the button exposes a view-model disabled reason,
  * shows a spinner, and sets `aria-busy` on the `<header>` element.
  *
- * **Command palette:** `onOpenCommandPalette` is wired to the "Search / commands"
- * secondary button in the action row.
- *
  * @example
  * <WorkspaceHeader
  *   workspace={workspaceSummary}
  *   session={session}
- *   onOpenCommandPalette={() => setPaletteOpen(true)}
  *   onRefresh={() => void refresh()}
  *   refreshing={isRefreshing}
  * />
@@ -35,7 +31,6 @@ import type { SessionInfo, WorkspaceSummary } from "@/types";
 interface WorkspaceHeaderProps {
   workspace: WorkspaceSummary;
   session: SessionInfo | null;
-  onOpenCommandPalette: () => void;
   onRefresh?: () => void;
   refreshing?: boolean;
 }
@@ -43,7 +38,6 @@ interface WorkspaceHeaderProps {
 export function WorkspaceHeader({
   workspace,
   session,
-  onOpenCommandPalette,
   onRefresh,
   refreshing = false
 }: WorkspaceHeaderProps) {
@@ -108,17 +102,6 @@ export function WorkspaceHeader({
                   />
                 </Button>
               ) : null}
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onOpenCommandPalette}
-                title={viewModel.commandAction.title}
-                aria-label={viewModel.commandAction.ariaLabel}
-                disabled={viewModel.commandAction.disabled}
-                disabledReason={viewModel.commandAction.disabledReason}
-              >
-                {viewModel.commandAction.label}
-              </Button>
             </div>
           </div>
 

@@ -16,19 +16,19 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml` | Repo-local specialist skills, OpenAI/Codex metadata, and environment entrypoints |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, and validation checklists |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
-| MCP-compatible clients | `src/Meridian.Mcp/`, `src/Meridian.McpServer/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
+| MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
 | Workflow guidance | `.github/workflows/README.md`, `docs/development/github-actions-summary.md`, `docs/development/github-actions-testing.md` | Current build, test, publish, and maintenance workflow guidance |
-| Reusable prompt templates | `.github/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, and manual assistant sessions |
-| Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
+| Reusable prompt templates | `.github/prompts/`, `docs/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, automation runs, and manual assistant sessions |
+| Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
 
 The AI inventory checker also watches optional IDE/provider assistant entrypoints such as
 `.cursor/`, `.windsurf/`, `.continue/`, `.cline/`, `.roo/`, `.cursorrules`, `.windsurfrules`,
 `.clinerules`, `.roomodes`, `GEMINI.md`, and `.gemini/`. No tracked Cursor, Windsurf, Continue,
-Cline, Roo, or Gemini instruction surface was found during the 2026-05-19 scan. Add one only when
+Cline, Roo, or Gemini instruction surface was found during the 2026-05-25 scan. Add one only when
 there is an actual tooling need, then list the exact entrypoint in this contract and
 `docs/ai/README.md`.
 
@@ -44,10 +44,13 @@ Every assistant and automation should use the same high-level flow:
    and resources before broad recursive search.
 3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
-4. **Preserve architecture boundaries.** Follow the current browser-first operator UI framing,
+   If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
+   needs a structured briefing with trace/evidence retention, use the repository docs, skills,
+   prompts, and scripts that currently own that workflow instead of inventing a new surface.
+4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
-   WPF names as retained compatibility aliases rather than new root workspaces.
+   WPF names as legacy workspace aliases rather than new root workspaces.
    **No mobile development lane:** do not create mobile applications, mobile-specific product
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
@@ -92,8 +95,8 @@ When editing `src/**`, assistants must:
 - Do not introduce new AI providers, tools, agents, models, or dependencies without repository
   evidence that they are needed.
 - Do not pursue mobile app development unless a future roadmap change explicitly creates and
-  documents a mobile product lane; keep operator UI work browser-workstation-first and retained
-  WPF support-only.
+  documents a mobile product lane; keep operator UI work on the active browser workstation and WPF
+  desktop surfaces.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
 - Do not embed full repository trees in host-specific guidance. Link to
@@ -112,15 +115,18 @@ When editing `src/**`, assistants must:
 | Topic | Source of truth | Mirrors or consumers |
 | --- | --- | --- |
 | Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
-| Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
+| Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
 | Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
+| Codex agent profiles | `.codex/agents/*.toml`, `docs/ai/codex/README.md`, `docs/ai/agents/README.md` | Codex specialist profile routing and task entrypoints |
+| Codex prompts and validation checklists | `.codex/prompts/`, `.codex/checklists/`, `docs/ai/codex/README.md` | Desktop implementation prompts, MVVM/resource/safe-refactor checklists, and Codex workflow guidance |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
-| MCP tools, prompts, and resources | `src/Meridian.Mcp/`, `src/Meridian.McpServer/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
+| Provider-agnostic prompt docs | `docs/prompts/automation-prompts.md`, `docs/prompts/repo-maintenance-prompts.md`, `docs/prompts/roadmap-source-docs-implementation-prompt.md` | `docs/prompts/README.md`, `docs/ai/prompts/README.md`, automation prompts, repo-maintenance prompts, and source-doc update prompts |
+| MCP tools, prompts, and resources | `src/Meridian.Mcp/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `build/scripts/docs/generate-prompts.py`, skill `evals/` folders, `.codex/skills/*/scripts/run_evals.py` | CI-derived prompt files, local eval reports, and archived workflow notes |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
 | Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
@@ -139,23 +145,27 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep shared project context mirrored across `.codex/skills/_shared/project-context.md`,
       `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`
       when current project framing changes.
-- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
-      retained WPF support only when needed, and visible root workspaces limited to `Trading`,
+- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
+      WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - [ ] Keep the **No mobile development lane** policy mirrored in the root assistant entrypoints,
-      Copilot guide, and shared Codex/Claude project-context files so mobile clients are not
+      Copilot guide, and shared Codex/Claude/Agent Skills project-context files so mobile clients are not
       proposed by one assistant while another follows the browser-workstation plan.
 - [ ] Keep host-specific guides compact; route broad repository layout questions to generated
       navigation or structure artifacts instead of copying tree snapshots into assistant docs.
+- [ ] Keep `.codex/agents/*.toml` documented in the Codex and agent indexes when Codex specialist
+      profile routing changes.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
       descriptions or default prompts change.
+- [ ] Keep `docs/prompts/*.md` listed in `docs/prompts/README.md` and `docs/ai/prompts/README.md`
+      when prompt or automation guidance changes.
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.
 - [ ] Regenerate `docs/ai/generated/repo-navigation.*` only when routing truth, projects, symbols,
       or authoritative docs change.
 - [ ] Keep generated AI inventory reports portable; they must not include local absolute repository
       paths, secrets, or machine-only identifiers.
 - [ ] Keep active AI docs from linking to retired GitHub Actions workflow paths. Point to current
-      local scripts or `docs/archive/workflows/legacy-github-actions-2026-05-18.md` instead.
+      local scripts or `archive/docs/workflows/legacy-github-actions-2026-05-18.md` instead.
 - [ ] Keep canonical GitHub documentation links pointed at `rodoHasArrived/Meridian-main`; historical
       issue or workflow-run evidence links may retain their original repository if they are evidence.
 - [ ] Run targeted validation and record the command result.
@@ -172,8 +182,9 @@ python3 build/scripts/docs/validate-skill-packages.py
 python3 build/scripts/docs/mark-stale-docs.py --write --summary
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run
 python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
-python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
-dotnet build src/Meridian.McpServer/Meridian.McpServer.csproj -c Release
+python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary
+python3 build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14
+dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj -c Release
 ```
 
 For documentation-only updates, a link/readability check plus `git diff --check` is usually enough
@@ -195,7 +206,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-20_
+_Last Updated: 2026-05-27_
 
 ## Machine-checkable synchronization contract
 
@@ -207,4 +218,3 @@ Path-specific mirrors that must stay byte-identical to the canonical policy:
 - `docs/ai/claude/contract-policy.mirror.json`
 
 CI runs `build/scripts/docs/check-ai-contract-drift.py` and fails if any mirror drifts from the canonical policy file.
-

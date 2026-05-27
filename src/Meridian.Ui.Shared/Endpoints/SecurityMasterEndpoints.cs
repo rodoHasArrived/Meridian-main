@@ -114,6 +114,18 @@ public static class SecurityMasterEndpoints
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
+            if (string.IsNullOrWhiteSpace(request.Query))
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["query"] = ["Query is required."]
+                });
+
+            if (request.Skip < 0)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["skip"] = ["Skip must be non-negative."]
+                });
+
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })

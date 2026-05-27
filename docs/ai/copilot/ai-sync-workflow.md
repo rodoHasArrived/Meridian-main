@@ -15,7 +15,7 @@ or generated navigation:
 ```bash
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/run-docs-automation.py --profile quick --dry-run
-python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
+python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary
 git diff --check
 ```
 
@@ -42,7 +42,7 @@ provider-agnostic rules in [`../assistant-workflow-contract.md`](../assistant-wo
 
 | File | Purpose |
 |------|---------|
-| [`../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md`](../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md) | Archive inventory for retired GitHub Actions workflows |
+| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive inventory for retired GitHub Actions workflows |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../../../CLAUDE.md`](../../../CLAUDE.md) | Root AI context document |
 | [`instructions.md`](instructions.md) | Compact Copilot guide and routing links |

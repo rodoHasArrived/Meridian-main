@@ -4,6 +4,7 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.DirectLending.Tests;
 
+[Trait("Category", "Scenario")]
 public sealed class DirectLendingWorkflowTests
 {
     [Fact]

@@ -83,7 +83,10 @@ Any pull request touching scoped surfaces must pass:
    - strategy service interface compatibility tests,
    - ledger read/write snapshot compatibility tests,
    - workstation endpoint request/response shape tests.
-5. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
+5. **Cross-surface impact verification (required when shared DTOs/endpoints change):**
+   - If consumer behavior changes, include backend contract tests plus at least one affected browser or WPF consumer test.
+   - If no browser/WPF code change is needed, include an explicit no-impact note that names the checked consumers and why behavior remains unchanged.
+6. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
 
 ## Workstation Dashboard Compatibility Protocol (Readiness + Operator Inbox + Routing Metadata)
 
@@ -177,3 +180,5 @@ When your PR touches any scoped surface above:
 - [ ] I updated this matrix when compatibility behavior/policy changed.
 - [ ] If breaking, I added a dated item under **Migration Notes** and concrete migration instructions in the PR body.
 - [ ] I validated required tests for contract changes.
+- [ ] I answered: “Is this behavior shared?” If yes, the behavior lives in shared contracts/read models/services, not duplicated in both web and WPF clients.
+- [ ] For shared DTO/endpoint changes, I included paired cross-surface tests or an explicit no-impact evidence note.

@@ -1,5 +1,5 @@
-import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, ShieldCheck, Trash2, User } from "lucide-react";
-import type { ReactNode } from "react";
+import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { deleteProviderCredentials, putProviderCredentials, testProviderConnection, verifyProviderConnection } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import {
   buildSettingsScreenViewModel,
@@ -17,9 +19,11 @@ import {
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
+import { PROVIDER_KIND_CATALOG } from "@/screens/data-operations-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
+  FeatureCapabilitySettingsResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -47,12 +51,40 @@ interface SettingsScreenProps {
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  featureCapabilities?: FeatureCapabilitySettingsResponse | null;
   providerRoutingRefreshing?: boolean;
+  onFeatureCapabilityToggle?: (capabilityKey: string, isEnabled: boolean) => Promise<void> | void;
   onRefresh?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
+}
+
+type ProviderInlineField = "apiKey" | "apiSecret" | "endpoint";
+type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
+
+interface ProviderInlineFieldDefinition {
+  field: ProviderInlineField;
+  label: string;
+  type: "password" | "url";
+  placeholder: string;
+  helpText: string;
+  required: boolean;
+}
+
+interface ProviderInlineState {
+  editing: boolean;
+  values: Record<ProviderInlineField, string>;
+  environment: "paper" | "live" | "sandbox" | "custom";
+  liveAcknowledged: boolean;
+  dirty: boolean;
+  busyAction: ProviderInlineBusyAction;
+  statusMessage: string | null;
+  statusDetails: string[];
+  statusTone: "default" | "success" | "warning" | "danger";
+  verificationFailed: boolean;
+  testLatencyLabel: string | null;
 }
 
 const systemToneClass = {
@@ -195,7 +227,9 @@ export function SettingsScreen({
   providerRoutingConnections = null,
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
+  featureCapabilities = null,
   providerRoutingRefreshing = false,
+  onFeatureCapabilityToggle,
   onRefresh,
   onProviderRoutingRefresh,
   loading = false,
@@ -216,6 +250,7 @@ export function SettingsScreen({
     providerRoutingConnections,
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
+    featureCapabilities,
     providerRoutingRefreshing,
     loading,
     error,
@@ -226,6 +261,308 @@ export function SettingsScreen({
     canClear: vm.alpacaConnectionPanel.canClear
   });
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
+  const [providerSearch, setProviderSearch] = useState("");
+  const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data">("all");
+  const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
+  const [providerVerificationFilter, setProviderVerificationFilter] = useState<"all" | "verified" | "unverified">("all");
+  const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
+  const [providerInlineState, setProviderInlineState] = useState<Record<string, ProviderInlineState>>({});
+  const providerInlineFlag = featureCapabilities?.capabilities.find((capability) => (
+    capability.capabilityKey === "desktop.settings.provider-connection-center-inline-management"
+  ));
+  const inlineProviderManagementEnabled = providerInlineFlag?.isEnabled ?? true;
+  const allProviderRows = useMemo(
+    () => vm.providerConnectionCenter.groups.flatMap((group) => group.rows),
+    [vm.providerConnectionCenter.groups]
+  );
+  const providerRowIdsSignature = useMemo(
+    () => allProviderRows.map((row) => row.providerId).sort().join("|"),
+    [allProviderRows]
+  );
+  const providerFieldDefinitions = useMemo(
+    () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, buildProviderFieldDefinitions(row)])),
+    [allProviderRows]
+  );
+  const providerRiskScores = useMemo(
+    () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, providerRiskScore(row)])),
+    [allProviderRows]
+  );
+
+  useEffect(() => {
+    if (!inlineProviderManagementEnabled) {
+      return;
+    }
+
+    setProviderInlineState((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const row of allProviderRows) {
+        if (next[row.providerId]) {
+          continue;
+        }
+        next[row.providerId] = createProviderInlineState(row);
+        changed = true;
+      }
+      return changed ? next : current;
+    });
+  }, [inlineProviderManagementEnabled, providerRowIdsSignature]);
+
+  const filteredProviderGroups = useMemo(() => {
+    const search = providerSearch.trim().toLowerCase();
+    return vm.providerConnectionCenter.groups.map((group) => {
+      const rows = group.rows
+        .filter((row) => filterProviderRow(row, search, providerCapabilityFilter, providerHealthFilter, providerVerificationFilter))
+        .sort((left, right) => {
+          if (providerSort === "name") {
+            return left.displayName.localeCompare(right.displayName);
+          }
+          const riskScore = (providerRiskScores[right.providerId] ?? 0) - (providerRiskScores[left.providerId] ?? 0);
+          return riskScore !== 0 ? riskScore : left.displayName.localeCompare(right.displayName);
+        });
+      return {
+        ...group,
+        rows
+      };
+    });
+  }, [
+    providerCapabilityFilter,
+    providerHealthFilter,
+    providerRiskScores,
+    providerSearch,
+    providerSort,
+    providerVerificationFilter,
+    vm.providerConnectionCenter.groups
+  ]);
+
+  const updateProviderInlineState = (providerId: string, updater: (state: ProviderInlineState) => ProviderInlineState) => {
+    setProviderInlineState((current) => {
+      const previous = current[providerId];
+      if (!previous) {
+        return current;
+      }
+      return {
+        ...current,
+        [providerId]: updater(previous)
+      };
+    });
+  };
+
+  const toggleProviderEdit = (providerId: string) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      editing: !state.editing,
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+  };
+
+  const updateProviderField = (providerId: string, field: ProviderInlineField, value: string) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      dirty: true,
+      values: {
+        ...state.values,
+        [field]: value
+      },
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+  };
+
+  const updateProviderEnvironment = (providerId: string, value: ProviderInlineState["environment"]) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      dirty: true,
+      environment: value,
+      liveAcknowledged: value === "live" ? state.liveAcknowledged : false,
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+  };
+
+  const updateProviderLiveAcknowledgement = (providerId: string, checked: boolean) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      dirty: true,
+      liveAcknowledged: checked,
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+  };
+
+  const runProviderTest = async (providerId: string) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      busyAction: "test",
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+    try {
+      const result = await testProviderConnection(providerId);
+      updateProviderInlineState(providerId, (state) => ({
+        ...state,
+        busyAction: null,
+        testLatencyLabel: result.latency ?? null,
+        statusMessage: result.success ? "Connection test passed." : "Connection test failed.",
+        statusDetails: [result.message].filter(Boolean),
+        statusTone: result.success ? "success" : "danger"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider connection test failed.");
+      updateProviderInlineState(providerId, (state) => ({
+        ...state,
+        busyAction: null,
+        statusMessage: display.summary,
+        statusDetails: display.details,
+        statusTone: "danger"
+      }));
+    }
+  };
+
+  const saveProviderDraft = async (row: (typeof allProviderRows)[number]) => {
+    const state = providerInlineState[row.providerId];
+    if (!state) {
+      return;
+    }
+    const definitions = providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row);
+    const missingField = definitions.find((definition) => (
+      definition.required && !state.values[definition.field].trim()
+    ));
+    if (missingField) {
+      updateProviderInlineState(row.providerId, (current) => ({
+        ...current,
+        statusMessage: `${missingField.label} is required before save.`,
+        statusDetails: [],
+        statusTone: "warning"
+      }));
+      return;
+    }
+    if (state.environment === "live" && !state.liveAcknowledged) {
+      updateProviderInlineState(row.providerId, (current) => ({
+        ...current,
+        statusMessage: "Acknowledge live routing before saving live credentials.",
+        statusDetails: [],
+        statusTone: "warning"
+      }));
+      return;
+    }
+
+    updateProviderInlineState(row.providerId, (current) => ({
+      ...current,
+      busyAction: "save",
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+
+    try {
+      const result = await putProviderCredentials(row.providerId, {
+        credentials: definitions.reduce<Record<string, string | null>>((acc, definition) => {
+          const value = state.values[definition.field].trim();
+          acc[definition.field] = value.length > 0 ? value : null;
+          return acc;
+        }, {}),
+        environment: state.environment,
+        requestedBy: session?.displayName ?? "settings-screen"
+      });
+      await onRefresh?.();
+      await onProviderRoutingRefresh?.();
+      updateProviderInlineState(row.providerId, (current) => ({
+        ...current,
+        busyAction: null,
+        dirty: false,
+        editing: false,
+        verificationFailed: false,
+        statusMessage: `Credentials saved (${result.credentialState}).`,
+        statusDetails: result.warnings ?? [],
+        statusTone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Saving provider credentials failed.");
+      updateProviderInlineState(row.providerId, (current) => ({
+        ...current,
+        busyAction: null,
+        statusMessage: display.summary,
+        statusDetails: display.details,
+        statusTone: "danger"
+      }));
+    }
+  };
+
+  const runProviderVerification = async (providerId: string) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      busyAction: "verify",
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+    try {
+      const result = await verifyProviderConnection(providerId);
+      await onRefresh?.();
+      await onProviderRoutingRefresh?.();
+      updateProviderInlineState(providerId, (state) => ({
+        ...state,
+        busyAction: null,
+        verificationFailed: !result.success,
+        statusMessage: result.success ? "Verification succeeded." : "Verification failed.",
+        statusDetails: [
+          result.lastError,
+          ...(result.warnings ?? [])
+        ].filter((value): value is string => Boolean(value)),
+        statusTone: result.success ? "success" : "danger"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider verification failed.");
+      updateProviderInlineState(providerId, (state) => ({
+        ...state,
+        busyAction: null,
+        verificationFailed: true,
+        statusMessage: display.summary,
+        statusDetails: display.details,
+        statusTone: "danger"
+      }));
+    }
+  };
+
+  const clearProviderCredentials = async (providerId: string) => {
+    updateProviderInlineState(providerId, (state) => ({
+      ...state,
+      busyAction: "clear",
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+    try {
+      const result = await deleteProviderCredentials(providerId);
+      await onRefresh?.();
+      await onProviderRoutingRefresh?.();
+      updateProviderInlineState(providerId, (state) => ({
+        ...state,
+        busyAction: null,
+        dirty: false,
+        values: { apiKey: "", apiSecret: "", endpoint: "" },
+        statusMessage: "Credentials cleared.",
+        statusDetails: result.warnings ?? [],
+        statusTone: "success",
+        verificationFailed: result.verificationState === "Failed"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Clearing provider credentials failed.");
+      updateProviderInlineState(providerId, (state) => ({
+        ...state,
+        busyAction: null,
+        statusMessage: display.summary,
+        statusDetails: display.details,
+        statusTone: "danger"
+      }));
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -392,7 +729,12 @@ export function SettingsScreen({
                 <MonitorCheck className="h-4 w-4 text-primary" />
                 {vm.providerConnectionCenter.title}
               </CardTitle>
-              <CardDescription className="mt-2">{vm.providerConnectionCenter.description}</CardDescription>
+              <CardDescription className="mt-2">
+                {vm.providerConnectionCenter.description}
+                {inlineProviderManagementEnabled
+                  ? " Inline credential editing, verification, and runtime impact checks are enabled."
+                  : " Inline editing is disabled by capability flag."}
+              </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {onProviderRoutingRefresh ? (
@@ -423,8 +765,66 @@ export function SettingsScreen({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-4 xl:grid-cols-2">
-          {vm.providerConnectionCenter.groups.map((group) => (
+        <CardContent className="grid gap-4">
+          <section className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_11rem_11rem_11rem_9rem]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Search providers
+                <Input
+                  value={providerSearch}
+                  onChange={(event) => setProviderSearch(event.target.value)}
+                  placeholder="Search provider, workflow, or action"
+                  leadingIcon={<Search className="h-4 w-4" />}
+                  aria-label="Search providers in connection center"
+                />
+              </label>
+              <FilterSelect
+                label="Capability"
+                value={providerCapabilityFilter}
+                onChange={(value) => setProviderCapabilityFilter(value as typeof providerCapabilityFilter)}
+                options={[
+                  { value: "all", label: "All" },
+                  { value: "brokerage", label: "Brokerage" },
+                  { value: "data", label: "Data" }
+                ]}
+              />
+              <FilterSelect
+                label="Health"
+                value={providerHealthFilter}
+                onChange={(value) => setProviderHealthFilter(value as typeof providerHealthFilter)}
+                options={[
+                  { value: "all", label: "All" },
+                  { value: "healthy", label: "Healthy" },
+                  { value: "warning", label: "Warning" },
+                  { value: "blocked", label: "Blocked" }
+                ]}
+              />
+              <FilterSelect
+                label="Verification"
+                value={providerVerificationFilter}
+                onChange={(value) => setProviderVerificationFilter(value as typeof providerVerificationFilter)}
+                options={[
+                  { value: "all", label: "All" },
+                  { value: "verified", label: "Verified" },
+                  { value: "unverified", label: "Unverified" }
+                ]}
+              />
+              <FilterSelect
+                label="Sort"
+                value={providerSort}
+                onChange={(value) => setProviderSort(value as typeof providerSort)}
+                options={[
+                  { value: "risk", label: "Risk" },
+                  { value: "name", label: "Name" }
+                ]}
+              />
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Providers are sorted by risk by default so blocked and warning rows needing attention appear first.
+            </p>
+          </section>
+          <div className="grid gap-4 xl:grid-cols-2">
+          {filteredProviderGroups.map((group) => (
             <section key={group.id} className="grid gap-3" aria-label={group.label}>
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-foreground">{group.label}</h3>
@@ -438,6 +838,21 @@ export function SettingsScreen({
                       id={row.rowAnchorId === "alpaca-provider-setup" ? undefined : row.rowAnchorId}
                       className="rounded-md border border-border/70 bg-background/35 px-3 py-3"
                     >
+                      {inlineProviderManagementEnabled ? (
+                        <ProviderInlineActionPanel
+                          row={row}
+                          state={providerInlineState[row.providerId] ?? createProviderInlineState(row)}
+                          fieldDefinitions={providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row)}
+                          onToggleEdit={() => toggleProviderEdit(row.providerId)}
+                          onFieldChange={(field, value) => updateProviderField(row.providerId, field, value)}
+                          onEnvironmentChange={(value) => updateProviderEnvironment(row.providerId, value)}
+                          onLiveAcknowledgementChange={(value) => updateProviderLiveAcknowledgement(row.providerId, value)}
+                          onTest={() => void runProviderTest(row.providerId)}
+                          onSave={() => void saveProviderDraft(row)}
+                          onVerify={() => void runProviderVerification(row.providerId)}
+                          onClear={() => void clearProviderCredentials(row.providerId)}
+                        />
+                      ) : null}
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -446,15 +861,22 @@ export function SettingsScreen({
                             <Badge variant={toneVariant(row.healthTone)} dot={row.healthTone === "success"}>
                               {row.healthLabel}
                             </Badge>
+                            {inlineProviderManagementEnabled ? (
+                              <Badge variant={providerDraftStatusVariant(providerInlineState[row.providerId], row)}>
+                                {providerDraftStatusLabel(providerInlineState[row.providerId], row)}
+                              </Badge>
+                            ) : null}
                           </div>
                           <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.recommendedAction}</p>
                         </div>
-                        <Button asChild variant="outline" size="sm" className="shrink-0">
-                          <Link to={row.actionHref} aria-label={row.actionAriaLabel}>
-                            {row.actionLabel}
-                            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Link>
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button asChild variant="outline" size="sm" className="shrink-0">
+                            <Link to={row.actionHref} aria-label={row.actionAriaLabel}>
+                              {row.actionLabel}
+                              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
                         <SettingsFieldRow label="Credential" value={row.credentialLabel} tone={row.credentialTone} />
@@ -469,6 +891,13 @@ export function SettingsScreen({
                         <SettingsFieldRow label="Production gate" value={row.productionStateLabel} tone={row.productionStateLabel === "Production ready" ? "success" : "warning"} />
                         <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
                       </dl>
+                      {inlineProviderManagementEnabled ? (
+                        <ProviderReadinessChecklist
+                          row={row}
+                          state={providerInlineState[row.providerId] ?? createProviderInlineState(row)}
+                          fieldDefinitions={providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row)}
+                        />
+                      ) : null}
                     </article>
                   ))}
                 </div>
@@ -479,6 +908,7 @@ export function SettingsScreen({
               )}
             </section>
           ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -864,6 +1294,74 @@ export function SettingsScreen({
         </Card>
       </section>
 
+      <Card id="runtime-feature-capabilities" className="panel-surface scroll-mt-6">
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="eyebrow-label">Runtime controls</div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MonitorCheck className="h-4 w-4 text-primary" />
+                {vm.runtimeCapabilitySection.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
+            </div>
+            <Badge variant={vm.runtimeCapabilitySection.statusVariant} dot={vm.runtimeCapabilitySection.statusVariant === "success"}>
+              {vm.runtimeCapabilitySection.statusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {vm.runtimeCapabilitySection.toggles.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{vm.runtimeCapabilitySection.description}</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2" role="list" aria-label={vm.runtimeCapabilitySection.listLabel}>
+              {vm.runtimeCapabilitySection.toggles.map((capability) => (
+                <div
+                  key={capability.capabilityKey}
+                  role="listitem"
+                  className={cn("rounded-lg border px-4 py-4", diagnosticToneClass[capability.statusVariant === "success" ? "success" : "warning"])}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-mono text-[10px] text-muted-foreground">{capability.capabilityKey}</div>
+                      <h3 className="mt-2 text-sm font-semibold text-foreground">{capability.displayName}</h3>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
+                    </div>
+                    <Badge variant={capability.statusVariant} className="shrink-0">
+                      {capability.statusLabel}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <SettingsChip label="Default" value={capability.defaultLabel} />
+                    <SettingsChip label="Config" value={capability.overrideLabel} />
+                  </div>
+                  <label className={cn("mt-4 flex items-start gap-3 text-sm", !capability.canToggle && "opacity-70")}>
+                    <input
+                      type="checkbox"
+                      checked={capability.isEnabled}
+                      disabled={!capability.canToggle || !onFeatureCapabilityToggle}
+                      onChange={(event) => {
+                        void onFeatureCapabilityToggle?.(capability.capabilityKey, event.target.checked);
+                      }}
+                      aria-label={capability.ariaLabel}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                    />
+                    <span className="min-w-0">
+                      <span className="block font-medium text-foreground">
+                        {capability.canToggle ? "Allow this browser workstation capability" : "Required capability"}
+                      </span>
+                      {capability.disabledReason ? (
+                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{capability.disabledReason}</span>
+                      ) : null}
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card id="backend-capability-coverage" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1071,6 +1569,366 @@ function SettingsFieldRow({
   );
 }
 
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+}) {
+  return (
+    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+      {label}
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
+        aria-label={label}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function ProviderInlineActionPanel({
+  row,
+  state,
+  fieldDefinitions,
+  onToggleEdit,
+  onFieldChange,
+  onEnvironmentChange,
+  onLiveAcknowledgementChange,
+  onTest,
+  onSave,
+  onVerify,
+  onClear
+}: {
+  row: { providerId: string; displayName: string; affectedWorkflowsLabel: string; productionStateLabel: string; fallbackLabel: string };
+  state: ProviderInlineState;
+  fieldDefinitions: ProviderInlineFieldDefinition[];
+  onToggleEdit: () => void;
+  onFieldChange: (field: ProviderInlineField, value: string) => void;
+  onEnvironmentChange: (value: ProviderInlineState["environment"]) => void;
+  onLiveAcknowledgementChange: (value: boolean) => void;
+  onTest: () => void;
+  onSave: () => void;
+  onVerify: () => void;
+  onClear: () => void;
+}) {
+  const busy = state.busyAction !== null;
+  return (
+    <section className="mb-3 grid gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label={`${row.displayName} inline provider actions`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onToggleEdit}
+          disabled={busy}
+          aria-label={state.editing ? `Close ${row.displayName} editor` : `Edit ${row.displayName} credentials`}
+        >
+          {state.editing ? "Close editor" : "Edit"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onTest}
+          busy={state.busyAction === "test"}
+          disabled={busy}
+          busyLabel="Testing provider"
+          aria-label={`Test ${row.displayName} connection`}
+        >
+          Test
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={onSave}
+          busy={state.busyAction === "save"}
+          disabled={busy || (state.environment === "live" && !state.liveAcknowledged)}
+          busyLabel="Saving draft"
+          aria-label={`Save ${row.displayName} credentials`}
+        >
+          <Save className="h-3.5 w-3.5" aria-hidden="true" />
+          Save
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onVerify}
+          busy={state.busyAction === "verify"}
+          disabled={busy}
+          busyLabel="Verifying provider"
+          aria-label={`Re-verify ${row.displayName} connection`}
+        >
+          Re-verify
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onClear}
+          busy={state.busyAction === "clear"}
+          disabled={busy}
+          busyLabel="Clearing credentials"
+          aria-label={`Clear ${row.displayName} credentials`}
+        >
+          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          Clear credentials
+        </Button>
+      </div>
+      {state.editing ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          {fieldDefinitions.map((field) => (
+            <label key={`${row.providerId}-${field.field}`} className="grid gap-1 text-xs font-medium text-muted-foreground">
+              {field.label}
+              <Input
+                type={field.type}
+                value={state.values[field.field]}
+                onChange={(event) => onFieldChange(field.field, event.target.value)}
+                placeholder={field.placeholder}
+                autoComplete={field.type === "password" ? "new-password" : "off"}
+                disabled={busy}
+                aria-label={`${row.displayName} ${field.label}`}
+              />
+              <span className="text-[11px] leading-4 text-muted-foreground">{field.helpText}</span>
+            </label>
+          ))}
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Environment
+            <select
+              value={state.environment}
+              onChange={(event) => onEnvironmentChange(event.target.value as ProviderInlineState["environment"])}
+              className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
+              disabled={busy}
+              aria-label={`${row.displayName} environment`}
+            >
+              <option value="paper">Paper</option>
+              <option value="live">Live</option>
+              <option value="sandbox">Sandbox</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          {state.environment === "live" ? (
+            <label className="flex items-start gap-2 rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env">
+              <input
+                type="checkbox"
+                checked={state.liveAcknowledged}
+                onChange={(event) => onLiveAcknowledgementChange(event.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
+                disabled={busy}
+              />
+              <span>I understand this save updates live provider routing credentials.</span>
+            </label>
+          ) : null}
+        </div>
+      ) : null}
+      <div className="rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground">
+        Impact summary: {row.affectedWorkflowsLabel} · Production gate {row.productionStateLabel} · Failover {row.fallbackLabel}
+      </div>
+      {state.testLatencyLabel ? <div className="text-xs text-muted-foreground">Latest test latency: {state.testLatencyLabel}</div> : null}
+      {state.statusMessage ? (
+        <div className={cn("text-xs", itemToneClass[state.statusTone])}>
+          <div>{state.statusMessage}</div>
+          {state.statusDetails.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.statusDetails.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function ProviderReadinessChecklist({
+  row,
+  state,
+  fieldDefinitions
+}: {
+  row: { credentialStatus: "present" | "missing" | "not-required"; verificationStatus: "verified" | "pending" | "failed"; fallbackStatus: "active" | "available" | "missing"; displayName: string };
+  state: ProviderInlineState;
+  fieldDefinitions: ProviderInlineFieldDefinition[];
+}) {
+  const credentialsReady = state.dirty
+    ? fieldDefinitions
+      .filter((definition) => definition.required)
+      .every((definition) => state.values[definition.field].trim().length > 0)
+    : row.credentialStatus !== "missing";
+  const verified = !state.verificationFailed && row.verificationStatus === "verified";
+  const fallbackSet = row.fallbackStatus !== "missing";
+  const checks = [
+    { label: "Credentials present", ready: credentialsReady },
+    { label: "Verified recently", ready: verified },
+    { label: "Fallback set", ready: fallbackSet }
+  ];
+  return (
+    <div className="mt-3 rounded-md border border-border/60 bg-secondary/15 px-3 py-2" aria-label={`${row.displayName} readiness checks`}>
+      <div className="text-xs font-semibold text-foreground">Readiness checks</div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {checks.map((check) => (
+          <Badge key={check.label} variant={check.ready ? "success" : "warning"}>
+            {check.label}: {check.ready ? "Ready" : "Review"}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function createProviderInlineState(row: {
+  environmentLabel: string;
+  credentialStatus: "present" | "missing" | "not-required";
+  verificationStatus: "verified" | "pending" | "failed";
+}): ProviderInlineState {
+  return {
+    editing: false,
+    values: {
+      apiKey: "",
+      apiSecret: "",
+      endpoint: ""
+    },
+    environment: normalizeInlineEnvironment(row.environmentLabel),
+    liveAcknowledged: false,
+    dirty: false,
+    busyAction: null,
+    statusMessage: null,
+    statusDetails: [],
+    statusTone: "default",
+    verificationFailed: row.verificationStatus === "failed" || row.credentialStatus === "missing",
+    testLatencyLabel: null
+  };
+}
+
+function normalizeInlineEnvironment(label: string): ProviderInlineState["environment"] {
+  const value = label.trim().toLowerCase();
+  if (value === "live") return "live";
+  if (value === "sandbox") return "sandbox";
+  if (value === "custom") return "custom";
+  return "paper";
+}
+
+function buildProviderFieldDefinitions(row: { providerId: string; displayName: string }): ProviderInlineFieldDefinition[] {
+  const normalizedId = row.providerId.toLowerCase();
+  const idTokens = normalizedId.split(/[^a-z0-9]+/).filter(Boolean);
+  const displayTokens = row.displayName.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const fromCatalog = PROVIDER_KIND_CATALOG.find((provider) => (
+    idTokens.includes(provider.kind) || displayTokens.includes(provider.kind)
+  ));
+  const fields: ProviderInlineFieldDefinition[] = [];
+
+  if (fromCatalog?.needsApiKey !== false) {
+    fields.push({
+      field: "apiKey",
+      label: "API key",
+      type: "password",
+      placeholder: "Stored server-side and masked after save",
+      helpText: "Required for provider credential verification.",
+      required: true
+    });
+  }
+  if (fromCatalog?.needsApiSecret) {
+    fields.push({
+      field: "apiSecret",
+      label: "API secret",
+      type: "password",
+      placeholder: "Paste secure secret for this provider",
+      helpText: "Secret is cleared from browser state after save.",
+      required: true
+    });
+  }
+  if (fromCatalog?.needsEndpoint) {
+    fields.push({
+      field: "endpoint",
+      label: "Endpoint URL",
+      type: "url",
+      placeholder: "https://api.provider.com",
+      helpText: "Used when provider requires a custom endpoint.",
+      required: true
+    });
+  }
+
+  if (fields.length === 0) {
+    fields.push({
+      field: "apiKey",
+      label: "Credential reference",
+      type: "password",
+      placeholder: "Optional credential or token",
+      helpText: "Provider metadata marks credentials as optional.",
+      required: false
+    });
+  }
+
+  return fields;
+}
+
+function filterProviderRow(
+  row: { displayName: string; recommendedAction: string; affectedWorkflowsLabel: string; capabilityGroup: "brokerage" | "data"; healthTone: string; verificationStatus: "verified" | "pending" | "failed" },
+  search: string,
+  capabilityFilter: "all" | "brokerage" | "data",
+  healthFilter: "all" | "healthy" | "warning" | "blocked",
+  verificationFilter: "all" | "verified" | "unverified"
+): boolean {
+  if (search) {
+    const content = `${row.displayName} ${row.recommendedAction} ${row.affectedWorkflowsLabel}`.toLowerCase();
+    if (!content.includes(search)) {
+      return false;
+    }
+  }
+
+  if (capabilityFilter === "brokerage" && row.capabilityGroup !== "brokerage") {
+    return false;
+  }
+  if (capabilityFilter === "data" && row.capabilityGroup !== "data") {
+    return false;
+  }
+
+  if (healthFilter === "healthy" && row.healthTone !== "success") return false;
+  if (healthFilter === "warning" && row.healthTone !== "warning") return false;
+  if (healthFilter === "blocked" && row.healthTone !== "danger") return false;
+
+  const verified = row.verificationStatus === "verified";
+  if (verificationFilter === "verified" && !verified) return false;
+  if (verificationFilter === "unverified" && verified) return false;
+
+  return true;
+}
+
+function providerRiskScore(row: { healthTone: string; credentialTone: string; verificationStatus: "verified" | "pending" | "failed"; fallbackStatus: "active" | "available" | "missing" }): number {
+  const healthScore = row.healthTone === "danger" ? 100 : row.healthTone === "warning" ? 70 : 20;
+  const credentialScore = row.credentialTone === "danger" ? 40 : row.credentialTone === "warning" ? 20 : 0;
+  const verificationScore = row.verificationStatus === "failed" ? 30 : row.verificationStatus === "pending" ? 20 : 0;
+  const fallbackScore = row.fallbackStatus === "active" ? 10 : row.fallbackStatus === "missing" ? 20 : 0;
+  return healthScore + credentialScore + verificationScore + fallbackScore;
+}
+
+function providerDraftStatusLabel(state: ProviderInlineState | undefined, row: { verificationStatus: "verified" | "pending" | "failed" }): string {
+  if (!state) return "Active";
+  if (state.busyAction === "save") return "Saving";
+  if (state.dirty) return "Unsaved";
+  if (state.verificationFailed || row.verificationStatus === "failed") return "Verification failed";
+  return "Active";
+}
+
+function providerDraftStatusVariant(state: ProviderInlineState | undefined, row: { verificationStatus: "verified" | "pending" | "failed" }): "outline" | "success" | "warning" | "danger" {
+  const label = providerDraftStatusLabel(state, row);
+  if (label === "Saving") return "warning";
+  if (label === "Unsaved") return "warning";
+  if (label === "Verification failed") return "danger";
+  return "success";
+}
+
 function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default" | "outline" | "danger" {
   if (state === "unavailable") return "danger";
   if (state === "empty") return "outline";
@@ -1097,4 +1955,3 @@ function capabilityTone(tone: "success" | "warning" | "danger" | "outline"): key
   if (tone === "danger") return "danger";
   return "default";
 }
-

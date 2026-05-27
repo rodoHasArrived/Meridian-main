@@ -94,7 +94,7 @@ Trading readiness, operator inbox routing, and replay durability are the active 
 - Trading readiness endpoint works for global and account-scoped checks.
 - Operator inbox exposes actionable readiness and reconciliation routing.
 - Paper session replay verification remains durable across restart.
-- Browser workstation shows the readiness posture through the active web UI lane.
+- Browser and WPF workstation surfaces show readiness posture through shared contracts where each surface participates.
 
 ### Source Modules
 
@@ -152,7 +152,7 @@ Ledger and reconciliation workflows need evidence-linked acceptance before gover
 
 - Reconciliation queue actions link to ledger evidence.
 - Break resolution and sign-off states are operator-visible.
-- Shared contracts remain compatible across web and retained WPF.
+- Shared contracts remain compatible across browser and WPF workstation surfaces.
 
 ### Source Modules
 

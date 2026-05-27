@@ -36,6 +36,9 @@ public sealed class WorkflowLibraryEndpointTests
             .TargetPageTag
             .Should()
             .Be("FundReconciliation");
+        registry.ResolveTargetPageTag(WorkflowActionIds.AccountingReviewLedgerContinuity, "Fallback")
+            .Should()
+            .Be("FundTrialBalance");
         registry.ResolveOperatorWorkItem(new OperatorWorkItemDto(
                 WorkItemId: "sync-1",
                 Kind: OperatorWorkItemKindDto.BrokerageSync,
@@ -72,6 +75,9 @@ public sealed class WorkflowLibraryEndpointTests
         library.Actions.Should().Contain(action =>
             action.ActionId == WorkflowActionIds.DataOpenProviderHealth &&
             action.TargetPageTag == "ProviderHealth");
+        library.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.AccountingReviewLedgerContinuity &&
+            action.TargetPageTag == "FundTrialBalance");
     }
 
     [Fact]

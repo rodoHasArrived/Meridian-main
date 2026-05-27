@@ -45,7 +45,7 @@ public sealed class DataWorkspaceShellViewModelTests
             QueueSummaryText = "Provider and storage queues are ready.",
             ProviderQueueItems = [providerQueueItem],
             BackfillQueueState = WorkspaceQueueRegionState.Empty("No backfill", "No work queued.", "Open Backfill", "Backfill"),
-            OperationsSummaryTitleText = "Data Operations",
+            OperationsSummaryTitleText = "Data",
             OperationsSummaryDetailText = "Current scope",
             SummaryProvidersText = "1 healthy",
             SummaryProvidersTone = WorkspaceTone.Success,

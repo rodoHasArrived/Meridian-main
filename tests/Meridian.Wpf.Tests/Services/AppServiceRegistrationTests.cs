@@ -31,7 +31,7 @@ public sealed class AppServiceRegistrationTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 
@@ -95,6 +95,39 @@ public sealed class AppServiceRegistrationTests
                     1,
                     $"workspace shell view model '{shell.ViewModelType!.Name}' should be registered exactly once");
             }
+        });
+    }
+
+    [Fact]
+    public void ConfigureServices_ShouldKeepPlatformServicesRootedAndWorkspacePresentationServicesScoped()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var env = new EnvironmentVariableScope()
+                .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null)
+                .Set("POLYGON_API_KEY", null);
+
+            var services = BuildServiceCollection();
+
+            services.Single(descriptor => descriptor.ServiceType == typeof(NavigationService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ThemeService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(FundContextService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+
+            services.Single(descriptor => descriptor.ServiceType == typeof(TradingWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ResearchWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(IDataWorkspaceShellSnapshotService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(IDataWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ISettingsWorkspaceShellSnapshotService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
+            services.Single(descriptor => descriptor.ServiceType == typeof(ISettingsWorkspaceShellPresentationService))
+                .Lifetime.Should().Be(ServiceLifetime.Scoped);
         });
     }
 
@@ -207,7 +240,7 @@ public sealed class AppServiceRegistrationTests
             .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
         configureServices.Should().NotBeNull();
-        configureServices!.Invoke(null, [services]);
+        AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
         return services;
     }

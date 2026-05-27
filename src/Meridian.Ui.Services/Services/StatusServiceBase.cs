@@ -56,6 +56,14 @@ public sealed class StatusProviderInfo
     public bool IsConnected { get; set; }
     public int ConnectionCount { get; set; }
     public DateTimeOffset? LastHeartbeat { get; set; }
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public int? ReconnectAttempts { get; set; }
+    public string? LastFailureKind { get; set; }
     public IReadOnlyList<string> AvailableProviders { get; set; } = new List<string>();
 
     public string DisplayStatus => IsConnected
@@ -130,6 +138,14 @@ internal sealed class ProviderStatusResponse
     public bool IsConnected { get; set; }
     public int ConnectionCount { get; set; }
     public DateTimeOffset? LastHeartbeat { get; set; }
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public int? ReconnectAttempts { get; set; }
+    public string? LastFailureKind { get; set; }
     public List<string>? AvailableProviders { get; set; }
 }
 
@@ -331,6 +347,14 @@ public abstract class StatusServiceBase
                         IsConnected = providerStatus.IsConnected,
                         ConnectionCount = providerStatus.ConnectionCount,
                         LastHeartbeat = providerStatus.LastHeartbeat,
+                        LifecycleState = providerStatus.LifecycleState,
+                        WebSocketState = providerStatus.WebSocketState,
+                        IsReconnecting = providerStatus.IsReconnecting,
+                        LastHeartbeatReceivedAt = providerStatus.LastHeartbeatReceivedAt,
+                        LastMessageReceivedAt = providerStatus.LastMessageReceivedAt,
+                        LastReconnectAttemptAt = providerStatus.LastReconnectAttemptAt,
+                        ReconnectAttempts = providerStatus.ReconnectAttempts,
+                        LastFailureKind = providerStatus.LastFailureKind,
                         AvailableProviders = providerStatus.AvailableProviders ?? new List<string>()
                     };
                 }

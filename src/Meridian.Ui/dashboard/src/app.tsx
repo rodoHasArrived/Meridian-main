@@ -3,11 +3,9 @@ import {
   ArrowRight,
   AlertTriangle,
   Bell,
-  ChevronDown,
   GitBranch,
   LoaderCircle,
   Menu,
-  RefreshCcw,
   Search,
   X
 } from "lucide-react";
@@ -15,13 +13,11 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-r
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import {
   buildAppShellViewState,
-  buildDevelopmentFixtureNoticeViewModel,
   isAppShellEditableShortcutTarget,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkflowContinuityViewModel,
-  type AppShellWorkflowContinuityDisclosurePanel,
   type AppShellOperatingScopeInput,
   type AppShellTrustStripState,
   type ShellStatusPanel
@@ -52,13 +48,13 @@ const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
-const OverviewScreen = lazy(() => import("@/screens/overview-screen").then((module) => ({ default: module.OverviewScreen })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
 const ResearchScreen = lazy(() => import("@/screens/research-screen").then((module) => ({ default: module.ResearchScreen })));
+const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: module.SettingsScreen })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: module.TradingScreen })));
@@ -103,6 +99,7 @@ function AppShell() {
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
+    featureCapabilities,
     workflowError,
     usingDevelopmentFixtures,
     loading,
@@ -110,6 +107,7 @@ function AppShell() {
     workspaceErrors,
     refresh,
     refreshProviderRouting,
+    updateFeatureCapability,
     upsertWorkflowPreset
   } = useWorkstationData();
   const handleWorkflowPresetUsed = (presetId: string) =>
@@ -283,7 +281,11 @@ function AppShell() {
         <div className="workstation-actions">
           <PriceAlertsBell />
           {session ? (
-            <div className="workstation-session-card">
+            <div
+              className="workstation-session-card"
+              role="group"
+              aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
+            >
               <Badge variant={session.environment} dot>{session.environment}</Badge>
               <span className="workstation-session-name">{session.displayName}</span>
               <span className="workstation-session-role text-muted-foreground">{session.role}</span>
@@ -310,7 +312,6 @@ function AppShell() {
           <WorkspaceHeader
             workspace={shell.activeWorkspace}
             session={session}
-            onOpenCommandPalette={() => setCommandOpen(true)}
             onRefresh={refresh}
             refreshing={loading}
           />
@@ -320,13 +321,12 @@ function AppShell() {
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
-            {usingDevelopmentFixtures ? <DevelopmentFixtureNotice refreshing={loading} onRetry={refresh} /> : null}
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
               <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes>
-                  <Route path="/" element={<OverviewScreen data={overview} session={session} trading={trading} portfolio={portfolio} />} />
+                  <Route path="/" element={<Navigate to="/trading" replace />} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
                       research={research}
@@ -353,6 +353,7 @@ function AppShell() {
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
+                  <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />
@@ -388,6 +389,8 @@ function AppShell() {
                       providerRoutingBindings={providerRoutingBindings}
                       providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
                       providerRoutingRefreshing={providerRoutingRefreshing}
+                      featureCapabilities={featureCapabilities}
+                      onFeatureCapabilityToggle={updateFeatureCapability}
                       onRefresh={refresh}
                       onProviderRoutingRefresh={refreshProviderRouting}
                       loading={loading}
@@ -554,8 +557,6 @@ function WorkflowContinuityDock({
         ) : null}
       </div>
 
-      <DecisionBriefPanel decision={viewModel.decisionBrief} />
-
       <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
         {dockSteps.map((step) => (
           <Link
@@ -583,21 +584,6 @@ function WorkflowContinuityDock({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
-
-      <div
-        className="workflow-continuity-support"
-        role="group"
-        aria-label={viewModel.disclosure.label}
-      >
-        <p className="workflow-continuity-support-summary">{viewModel.disclosure.summary}</p>
-        {viewModel.disclosure.panels.map((panel) => (
-          <WorkflowContinuityDisclosurePanel
-            key={panel.id}
-            panel={panel}
-            viewModel={viewModel}
-          />
-        ))}
-      </div>
     </section>
   );
 }
@@ -686,213 +672,6 @@ function RouteRecoveryPanel({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
-    </section>
-  );
-}
-
-function WorkflowContinuityDisclosurePanel({
-  panel,
-  viewModel
-}: {
-  panel: AppShellWorkflowContinuityDisclosurePanel;
-  viewModel: AppShellWorkflowContinuityViewModel;
-}) {
-  return (
-    <details className="workflow-continuity-disclosure" open={panel.defaultExpanded}>
-      <summary aria-label={panel.ariaLabel}>
-        <span className="workflow-continuity-disclosure-copy">
-          <span>{panel.label}</span>
-          <span>{panel.summary}</span>
-        </span>
-        <ChevronDown className="workflow-continuity-disclosure-icon h-3.5 w-3.5" aria-hidden="true" />
-      </summary>
-      <div className="workflow-continuity-disclosure-body">
-        {panel.id === "linked-context" ? (
-          <LinkedContextPanel viewModel={viewModel} />
-        ) : panel.id === "operator-focus" ? (
-          <OperatorFocusPanel viewModel={viewModel} />
-        ) : (
-          <EvidenceTimelinePanel viewModel={viewModel} />
-        )}
-      </div>
-    </details>
-  );
-}
-
-function DecisionBriefPanel({
-  decision
-}: {
-  decision: AppShellWorkflowContinuityViewModel["decisionBrief"];
-}) {
-  return (
-    <section
-      className={cn("workflow-continuity-decision", `workflow-continuity-decision-${decision.statusTone}`)}
-      aria-label={decision.label}
-    >
-      <div className="workflow-continuity-decision-copy">
-        <div className="workflow-continuity-decision-head">
-          <span className="eyebrow-label">{decision.label}</span>
-          <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
-        </div>
-        <h3>{decision.title}</h3>
-        <p>{decision.summary}</p>
-        <div className="workflow-continuity-decision-reason">
-          <span>{decision.reasonLabel}</span>
-          <span>{decision.reason}</span>
-        </div>
-        {decision.evidenceLabel ? (
-          <span className="workflow-continuity-decision-evidence">{decision.evidenceLabel}</span>
-        ) : null}
-      </div>
-      <Button asChild variant="default" size="sm" className="workflow-continuity-decision-action">
-        <Link to={decision.actionHref} aria-label={decision.actionAriaLabel}>
-          <span>{decision.actionLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </Button>
-    </section>
-  );
-}
-
-function OperatorFocusPanel({
-  viewModel
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-}) {
-  return (
-    <section className="workflow-continuity-focus" aria-label={viewModel.operatorFocusLabel}>
-      <div className="workflow-continuity-focus-head">
-        <span className="eyebrow-label">{viewModel.operatorFocusLabel}</span>
-        <p className="workflow-continuity-focus-summary">{viewModel.operatorFocusSummary}</p>
-      </div>
-      {viewModel.operatorFocusItems.length > 0 ? (
-        <ul className="workflow-continuity-focus-list" aria-label={viewModel.operatorFocusItemsLabel}>
-          {viewModel.operatorFocusItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={item.route}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "workflow-continuity-focus-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  `workflow-continuity-focus-item-${item.tone}`
-                )}
-              >
-                <span className="workflow-continuity-focus-route">{item.workspaceLabel}</span>
-                <span className="workflow-continuity-focus-copy">
-                  <span className="workflow-continuity-focus-title">{item.label}</span>
-                  <span className="workflow-continuity-focus-detail">{item.detail}</span>
-                  <span className="workflow-continuity-focus-action">{item.actionLabel}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="workflow-continuity-focus-empty">{viewModel.operatorFocusEmptyText}</p>
-      )}
-      {viewModel.operatorFocusOverflowLabel ? (
-        <span className="workflow-continuity-focus-overflow">{viewModel.operatorFocusOverflowLabel}</span>
-      ) : null}
-    </section>
-  );
-}
-
-function LinkedContextPanel({
-  viewModel
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-}) {
-  return (
-    <section className="workflow-continuity-linked" aria-label={viewModel.linkedContextLabel}>
-      <div className="workflow-continuity-linked-head">
-        <span className="eyebrow-label">{viewModel.linkedContextLabel}</span>
-        <p className="workflow-continuity-linked-summary">{viewModel.linkedContextSummary}</p>
-        <span className={cn(
-          "workflow-continuity-linked-posture",
-          `workflow-continuity-linked-posture-${viewModel.linkedContextPostureTone}`
-        )}>
-          {viewModel.linkedContextPostureLabel}
-        </span>
-        {viewModel.linkedContextPrimaryActionHref && viewModel.linkedContextPrimaryActionLabel ? (
-          <Button asChild variant="outline" size="sm" className="workflow-continuity-linked-primary">
-            <Link
-              to={viewModel.linkedContextPrimaryActionHref}
-              aria-label={viewModel.linkedContextPrimaryActionAriaLabel ?? viewModel.linkedContextPrimaryActionLabel}
-            >
-              <span>{viewModel.linkedContextPrimaryActionLabel}</span>
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </Button>
-        ) : null}
-      </div>
-      {viewModel.linkedContextItems.length > 0 ? (
-        <ul className="workflow-continuity-linked-list" aria-label={viewModel.linkedContextItemsLabel}>
-          {viewModel.linkedContextItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={item.route}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "workflow-continuity-linked-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  `workflow-continuity-linked-item-${item.tone}`
-                )}
-              >
-                <span className="workflow-continuity-linked-route">{item.workspaceLabel}</span>
-                <span className="workflow-continuity-linked-copy">
-                  <span>{item.label}</span>
-                  <span>{item.detail}</span>
-                </span>
-                <span className="workflow-continuity-linked-status">{item.statusLabel}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="workflow-continuity-linked-empty">{viewModel.linkedContextEmptyText}</p>
-      )}
-    </section>
-  );
-}
-
-function EvidenceTimelinePanel({
-  viewModel
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-}) {
-  return (
-    <section className="workflow-continuity-evidence" aria-label={viewModel.evidenceTimelineLabel}>
-      <div className="workflow-continuity-evidence-head">
-        <span className="eyebrow-label">{viewModel.evidenceTimelineLabel}</span>
-        <p className="workflow-continuity-evidence-summary">{viewModel.evidenceTimelineSummary}</p>
-      </div>
-      {viewModel.evidenceTimelineItems.length > 0 ? (
-        <ul className="workflow-continuity-evidence-list" aria-label={viewModel.evidenceTimelineItemsLabel}>
-          {viewModel.evidenceTimelineItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={item.route}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "workflow-continuity-evidence-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  `workflow-continuity-evidence-item-${item.tone}`
-                )}
-              >
-                <span className="workflow-continuity-evidence-route">{item.workspaceLabel}</span>
-                <span className="workflow-continuity-evidence-copy">
-                  <span>{item.label}</span>
-                  <span>{item.detail}</span>
-                </span>
-                <time dateTime={item.timestampIso}>{item.timestampLabel}</time>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="workflow-continuity-evidence-empty">{viewModel.evidenceTimelineEmptyText}</p>
-      )}
-      {viewModel.evidenceTimelineOverflowLabel ? (
-        <span className="workflow-continuity-evidence-overflow">{viewModel.evidenceTimelineOverflowLabel}</span>
-      ) : null}
     </section>
   );
 }
@@ -1088,52 +867,6 @@ function WorkspaceRouteFallback({ title }: { title: string }) {
         <p className="mt-1 text-xs text-muted-foreground">Preparing the workstation route.</p>
       </div>
     </section>
-  );
-}
-
-function DevelopmentFixtureNotice({
-  refreshing,
-  onRetry
-}: {
-  refreshing: boolean;
-  onRetry: () => void | Promise<void>;
-}) {
-  const location = useLocation();
-  const viewModel = buildDevelopmentFixtureNoticeViewModel({
-    pathname: location.pathname,
-    hash: location.hash,
-    refreshing
-  });
-
-  return (
-    <div
-      role={viewModel.role}
-      aria-live={viewModel.ariaLive}
-      className="mb-3 flex flex-col gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
-    >
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-warning">
-          {viewModel.title}
-        </span>
-        <span className="text-foreground/80">
-          {viewModel.detail}
-        </span>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={viewModel.retryDisabled}
-          onClick={() => void onRetry()}
-          aria-label={viewModel.retryAriaLabel}
-          className="bg-background/40"
-        >
-          <RefreshCcw className={`h-3.5 w-3.5 ${viewModel.retryBusy ? "animate-spin" : ""}`} aria-hidden="true" />
-          <span>{viewModel.retryLabel}</span>
-        </Button>
-      </div>
-    </div>
   );
 }
 

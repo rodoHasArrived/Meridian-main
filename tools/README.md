@@ -1,6 +1,6 @@
 # Tools Directory Guide
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-23
 
 This folder contains small utility scripts used to keep Meridian documentation consistent and machine-checkable.
 
@@ -18,7 +18,7 @@ If you are new to the project, start here instead of opening individual Python f
 - Use **`tools/roadmap/`** if you are working on roadmap phases, roadmap evidence files, or roadmap governance checks.
 - Use **`tools/source_docs/`** if you are working on source-module docs under `docs/source/` and generated source docs under `docs/generated/source/`.
 
-## Fast “just run it” commands
+## Fast "just run it" commands
 
 From the repository root:
 

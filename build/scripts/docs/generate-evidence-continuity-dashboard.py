@@ -25,7 +25,7 @@ from dashboard_rendering import (
 
 
 DATA_SOURCES = [
-    "docs/status/dk1-pilot-parity-runbook.md",
+    "docs/status/evidence/dk1-pilot-parity-runbook.md",
     "docs/status/kernel-readiness-dashboard.md",
     "docs/status/contract-compatibility-matrix.md",
     "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
@@ -37,7 +37,7 @@ CHECKS = [
         "id": "dk1-run-evidence",
         "category": "DK1 Evidence",
         "label": "DK1 runbook requires fresh date-stamped evidence artifacts",
-        "paths": ["docs/status/dk1-pilot-parity-runbook.md"],
+        "paths": ["docs/status/evidence/dk1-pilot-parity-runbook.md"],
         "terms": ["generated run evidence", "run date", "packetReview"],
         "weight": 3,
         "remediation": "Refresh the DK1 runbook so current evidence cannot be confused with stale artifacts.",

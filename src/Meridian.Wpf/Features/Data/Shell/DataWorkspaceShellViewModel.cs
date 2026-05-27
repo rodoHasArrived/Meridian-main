@@ -48,7 +48,7 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private WorkspaceQueueRegionState _providerQueueState = WorkspaceQueueRegionState.Loading("Loading provider queue", "Refreshing provider readiness and connectivity telemetry.");
     private WorkspaceQueueRegionState _backfillQueueState = WorkspaceQueueRegionState.Loading("Loading backfill queue", "Refreshing backfill checkpoints and execution posture.");
     private WorkspaceQueueRegionState _storageQueueState = WorkspaceQueueRegionState.Loading("Loading storage queue", "Refreshing storage health, export, and capacity signals.");
-    private string _operationsSummaryTitleText = "Data Operations";
+    private string _operationsSummaryTitleText = "Data";
     private string _operationsSummaryDetailText = "Provider readiness, historical coverage, and storage posture live in the same operator shell.";
     private string _summaryProvidersText = DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary;
     private string _summaryProvidersTone = WorkspaceTone.Warning;

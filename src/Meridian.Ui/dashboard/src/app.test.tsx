@@ -47,6 +47,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     brokeragePortfolio: null,
     workflowLibrary: null,
     workflowPresets: null,
+    featureCapabilities: null,
     workflowError: null,
     usingDevelopmentFixtures: false,
     loading: false,
@@ -56,6 +57,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     refreshTrading: vi.fn(),
     refreshPortfolio: vi.fn(),
     refreshProviderRouting: vi.fn(),
+    updateFeatureCapability: vi.fn(),
     upsertWorkflowPreset: vi.fn(),
     ...overrides
   });
@@ -177,6 +179,11 @@ describe("App", () => {
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
   });
 
+  it("redirects the root route to trading", async () => {
+    renderWithRouter(<App />, { initialEntries: ["/"] });
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Trading Workstation" })).toBeInTheDocument());
+  });
+
   it("renders build, environment, data-source, and provider trust in the masthead", () => {
     mockWorkstationData({
       session: {
@@ -213,6 +220,17 @@ describe("App", () => {
     expect(within(strip).getByRole("link", {
       name: "Providers 1 degraded. 1 provider degraded; open Data provider posture before trading decisions. Open provider posture."
     })).toHaveAttribute("href", "/data/providers");
+  });
+
+  it("groups current session context for assistive technology", () => {
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const sessionContext = screen.getByRole("group", {
+      name: "Current session: paper, Ops Desk, Operator"
+    });
+    expect(within(sessionContext).getByText("paper")).toBeInTheDocument();
+    expect(within(sessionContext).getByText("Ops Desk")).toBeInTheDocument();
+    expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
   });
 
   it("renders an informative startup status while workstation bootstrap is loading", () => {
@@ -268,12 +286,6 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
-    const decisionBrief = screen.getByRole("region", { name: "Decision brief" });
-    expect(within(decisionBrief).getByText("Continue MSFT decision")).toBeInTheDocument();
-    expect(within(decisionBrief).getByText("MSFT needs 5 checks before action across 5 workspaces; 5 pending.")).toBeInTheDocument();
-    expect(within(decisionBrief).getByRole("link", {
-      name: "Open Quote evidence from active subject; Data status Waiting."
-    })).toHaveAttribute("href", "/data/quotes?symbol=MSFT");
     expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
     expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
@@ -290,164 +302,6 @@ describe("App", () => {
       "/data/alerts?symbol=MSFT"
     );
     expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
-  });
-
-  it("surfaces linked portfolio-aware context from the continuity dock", () => {
-    mockWorkstationData({
-      session: {
-        displayName: "Ops Desk",
-        role: "Operator",
-        environment: "paper",
-        activeWorkspace: "portfolio",
-        commandCount: 7
-      },
-      overview: null,
-      research: null,
-      trading: {
-        metrics: [],
-        positions: [
-          {
-            symbol: "MSFT",
-            side: "Long",
-            quantity: "10",
-            averagePrice: "410.00",
-            markPrice: "415.00",
-            dayPnl: "+$50",
-            unrealizedPnl: "+$50",
-            exposure: "$4,150"
-          }
-        ],
-        openOrders: [],
-        fills: [],
-        risk: {
-          state: "Healthy",
-          summary: "Trading risk is inside guardrails.",
-          netExposure: "$4,150",
-          grossExposure: "$4,150",
-          var95: "$200",
-          maxDrawdown: "0%",
-          buyingPowerUsed: "12%",
-          activeGuardrails: []
-        },
-        brokerage: {
-          provider: "Alpaca",
-          account: "PAPER",
-          environment: "paper",
-          connection: "Connected",
-          lastHeartbeat: "1s ago",
-          orderIngress: "healthy",
-          fillFeed: "healthy",
-          notes: ""
-        }
-      },
-      portfolio: {
-        ...portfolio,
-        positions: [
-          {
-            symbol: "MSFT",
-            side: "Long",
-            quantity: "10",
-            averagePrice: "410.00",
-            markPrice: "415.00",
-            dayPnl: "+$50",
-            unrealizedPnl: "+$50",
-            exposure: "$4,150"
-          }
-        ]
-      },
-      dataOperations: {
-        metrics: [],
-        providers: [
-          {
-            provider: "Alpaca",
-            status: "Healthy",
-            capability: "quotes",
-            latency: "95ms",
-            note: "Streaming quote path is healthy."
-          }
-        ],
-        backfills: [],
-        exports: []
-      },
-      governance: {
-        metrics: [],
-        reconciliationQueue: [],
-        breakQueue: [],
-        cashFlow: {
-          totalCash: 0,
-          totalLedgerCash: 0,
-          netVariance: 0,
-          totalFinancing: 0,
-          runsWithCashSignals: 0,
-          runsWithCashVariance: 0,
-          tone: "success",
-          summary: "Cash is balanced."
-        },
-        reporting: {
-          profileCount: 0,
-          recommendedProfiles: [],
-          profiles: [],
-          reportPackTargets: [],
-          summary: "No governed report targets loaded."
-        }
-      },
-      reporting: {
-        metrics: [],
-        reconciliationQueue: [],
-        breakQueue: [],
-        cashFlow: {
-          totalCash: 0,
-          totalLedgerCash: 0,
-          netVariance: 0,
-          totalFinancing: 0,
-          runsWithCashSignals: 0,
-          runsWithCashVariance: 0,
-          tone: "success",
-          summary: "Cash is balanced."
-        },
-        reporting: {
-          profileCount: 1,
-          recommendedProfiles: ["monthly-board-pack"],
-          profiles: [],
-          reportPackTargets: ["monthly-board-pack"],
-          summary: "Monthly board pack is ready for governed review."
-        }
-      },
-      brokerageConnection: null,
-      providerConnections: null,
-      brokeragePortfolio: null,
-      workflowLibrary: null,
-      workflowPresets: null,
-      workflowError: null,
-      usingDevelopmentFixtures: false,
-      loading: false,
-      error: null,
-      workspaceErrors: {},
-      refresh: vi.fn(),
-      refreshTrading: vi.fn(),
-      refreshPortfolio: vi.fn(),
-      upsertWorkflowPreset: vi.fn()
-    });
-
-    renderWithRouter(<App />, { initialEntries: ["/portfolio?symbol=MSFT"] });
-
-    const decisionBrief = screen.getByRole("region", { name: "Decision brief" });
-    expect(within(decisionBrief).getByText("Continue MSFT decision")).toBeInTheDocument();
-    expect(within(decisionBrief).getByText("MSFT context is clear across 5 workspaces.")).toBeInTheDocument();
-    expect(within(decisionBrief).getByText("Ready")).toBeInTheDocument();
-    expect(within(decisionBrief).getByRole("link", { name: "Review MSFT context from active subject; Data status Trusted." })).toHaveAttribute(
-      "href",
-      "/data/quotes?symbol=MSFT"
-    );
-    const linkedContext = screen.getByRole("region", { name: "Linked context" });
-    expect(within(linkedContext).getByText("MSFT context is clear across 5 workspaces.")).toBeInTheDocument();
-    expect(within(linkedContext).getByText("Ready")).toBeInTheDocument();
-    expect(within(linkedContext).getByRole("link", {
-      name: "Data: Quote evidence. Live quote, alert, and historical evidence routes retain MSFT. Trusted. active subject."
-    })).toHaveAttribute("href", "/data/quotes?symbol=MSFT");
-    expect(within(linkedContext).getByRole("link", {
-      name: "Reporting: Evidence packet. 1 report target can carry MSFT context into governed review. Packet ready. active subject."
-    })).toHaveAttribute("href", "/reporting/evidence?symbol=MSFT");
   });
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
@@ -610,39 +464,10 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
-    const decisionBrief = screen.getByRole("region", { name: "Decision brief" });
-    expect(within(decisionBrief).getByText("Resolve Brokerage sync failed")).toBeInTheDocument();
-    expect(within(decisionBrief).getByText("Settings is the highest-priority loaded issue. 4 focus items across workspaces: 2 blocked and 2 review.")).toBeInTheDocument();
-    expect(within(decisionBrief).getByText("Latest evidence: Reporting 2026-05-14 21:00 UTC")).toBeInTheDocument();
-    expect(within(decisionBrief).getByRole("link", {
-      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
-    })).toHaveAttribute("href", "/settings#alpaca-provider-setup");
-    expect(within(decisionBrief).getByText(/4 focus items across workspaces: 2 blocked and 2 review\./)).toBeInTheDocument();
-    expect(screen.getAllByRole("link", {
-      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
-    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
-    const operatorFocus = screen.getByRole("region", { name: "Operator focus" });
-    expect(within(operatorFocus).getByText("4 focus items across workspaces: 2 blocked and 2 review.")).toBeInTheDocument();
-    expect(within(operatorFocus).getByText("+1 more focus item")).toBeInTheDocument();
-    expect(within(operatorFocus).getByRole("link", {
-      name: "Trading: Replay audit. Replay evidence is stale for the active paper session. Open readiness."
-    })).toHaveAttribute("href", "/trading/readiness?symbol=MSFT");
-    expect(within(operatorFocus).getByRole("link", {
-      name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
-    })).toHaveAttribute("href", "/reporting/report-packs?symbol=MSFT");
-    expect(screen.queryByRole("link", {
-      name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
-    })).not.toBeInTheDocument();
-    const evidenceTimeline = screen.getByRole("region", { name: "Evidence timeline" });
-    expect(within(evidenceTimeline).getByText("2 evidence events across 2 workspaces. Latest: Reporting at 2026-05-14 21:00 UTC.")).toBeInTheDocument();
-    expect(within(evidenceTimeline).getByRole("link", {
-      name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Audit: audit-2. 2026-05-14 21:00 UTC. Open evidence."
-    })).toHaveAttribute("href", "/reporting/report-packs?symbol=MSFT");
-
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
     expect(screen.getByLabelText("Focus actions: 4 focus actions")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "24 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "25 workstation commands" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
@@ -851,52 +676,6 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
-  });
-
-  it("labels fixture-backed bootstrap data as demo data and can retry live data", async () => {
-    const user = userEvent.setup();
-    const refresh = vi.fn();
-
-    mockWorkstationData({
-      session: {
-        displayName: "Ops Desk",
-        role: "Operator",
-        environment: "paper",
-        activeWorkspace: "settings",
-        commandCount: 7
-      },
-      overview: null,
-      research: null,
-      trading: null,
-      portfolio: null,
-      dataOperations: null,
-      governance: null,
-      reporting: null,
-      brokerageConnection: null,
-      providerConnections: null,
-      brokeragePortfolio: null,
-      workflowLibrary: null,
-      workflowPresets: null,
-      workflowError: null,
-      usingDevelopmentFixtures: true,
-      loading: false,
-      error: null,
-      workspaceErrors: {},
-      refresh,
-      refreshTrading: vi.fn(),
-      refreshPortfolio: vi.fn(),
-      upsertWorkflowPreset: vi.fn()
-    });
-
-    renderWithRouter(<App />, { initialEntries: ["/settings"] });
-
-    expect(screen.getByText("Demo data")).toBeInTheDocument();
-    expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: "Demo workflow" })).not.toBeInTheDocument();
-    expect(screen.queryByText("Evidence path")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Open sample watchlist demo lane" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Retry Meridian API host and reload live workstation data" }));
-    expect(refresh).toHaveBeenCalledOnce();
   });
 
   it("routes degraded bootstrap recovery to Settings capability diagnostics", async () => {

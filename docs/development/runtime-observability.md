@@ -118,6 +118,13 @@ Provider health summaries should expose:
 - Reconnect count
 - Recommended operator action
 
+Streaming adapters based on `WebSocketProviderBase` expose these transport facts through the
+optional `IProviderConnectionDiagnosticsSource` seam. Health and diagnostics consumers should read
+that snapshot or subscribe to its change event instead of depending on adapter-specific socket
+fields. The snapshot is intentionally limited to lifecycle state, WebSocket state, heartbeat/message
+timestamps, reconnect counters, failure category, and safe error text; it must not include
+credentials, account identifiers, request headers, or provider payloads.
+
 ## Pipeline And Queue Metrics
 
 Event pipeline diagnostics should prefer counters and summaries:
@@ -147,6 +154,11 @@ only when the diagnostics endpoint is called and must stay out of market-data ho
 Use the `shutdown` block to inspect the latest graceful shutdown sequence: last correlation ID,
 status, incomplete flush count, sanitized warning summary, duplicate request count, and component
 counts.
+Use the `providerConnections` block to inspect safe provider transport lifecycle state when a
+provider implements `IProviderConnectionDiagnosticsSource`: provider name, lifecycle state,
+WebSocket state, reconnect count, active/failed/recovering subscription counts, last heartbeat,
+message, and subscription-message timestamps, and safe failure category. This block intentionally
+omits raw provider errors, request headers, credentials, account identifiers, and payloads.
 These fields are counts, timings, and runtime metadata only; do not add raw provider payloads,
 account identifiers, order details, or portfolio values to this endpoint.
 
@@ -160,6 +172,7 @@ Support bundles may include:
 - Sanitized configuration summary.
 - Sanitized recent logs.
 - Metrics snapshot.
+- Safe provider connection lifecycle summary when provider diagnostics sources are registered.
 - Sanitized recent tracked errors from the in-process `ErrorTracker`.
 - Storage shape and disk-space summary.
 - Redacted Meridian/provider-related environment variables.
@@ -176,6 +189,9 @@ When `ErrorTracker` is registered, `recent-errors.json` and the `runtime-summary
 block must include only sanitized error IDs, timestamps, levels, exception types, messages, stack
 traces, contexts, and inner-exception messages. Secrets, credential query parameters, authorization
 headers, and account identifiers must be redacted before the bundle is written.
+When provider connection diagnostics are registered, the `runtime-summary.json`
+`providerConnections` block must include only safe lifecycle fields and sanitized provider names or
+failure categories. Raw provider error text and provider payloads must stay out of support bundles.
 
 ## Validation Expectations
 

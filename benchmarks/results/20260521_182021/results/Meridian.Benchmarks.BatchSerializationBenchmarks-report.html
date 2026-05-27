@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.BatchSerializationBenchmarks-20260521-182039</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.4 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.300
+  [Host]   : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  ShortRun : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                   </th><th>BatchSize</th><th>Mean </th><th>Error </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Parallel_Utf8Bytes</td><td>100</td><td>54.88 &mu;s</td><td>15.048 &mu;s</td><td>0.825 &mu;s</td><td>0.47</td><td>0.01</td><td>1</td><td>4.8828</td><td>0.4883</td><td>-</td><td>78.78 KB</td><td>0.66</td>
+</tr><tr><td>Parallel_SourceGenerated</td><td>100</td><td>75.29 &mu;s</td><td>262.889 &mu;s</td><td>14.410 &mu;s</td><td>0.65</td><td>0.11</td><td>2</td><td>7.3242</td><td>1.4648</td><td>-</td><td>121.5 KB</td><td>1.02</td>
+</tr><tr><td>Sequential_WriteTo_PooledBuffer</td><td>100</td><td>100.13 &mu;s</td><td>3.765 &mu;s</td><td>0.206 &mu;s</td><td>0.86</td><td>0.00</td><td>3</td><td>1.9531</td><td>-</td><td>-</td><td>32.18 KB</td><td>0.27</td>
+</tr><tr><td>Sequential_Utf8Bytes</td><td>100</td><td>105.93 &mu;s</td><td>0.306 &mu;s</td><td>0.017 &mu;s</td><td>0.91</td><td>0.00</td><td>3</td><td>4.6387</td><td>0.7324</td><td>-</td><td>76.58 KB</td><td>0.64</td>
+</tr><tr><td>Sequential_DirectJsonlStream</td><td>100</td><td>107.22 &mu;s</td><td>9.377 &mu;s</td><td>0.514 &mu;s</td><td>0.92</td><td>0.00</td><td>3</td><td>8.6670</td><td>2.0752</td><td>-</td><td>143.52 KB</td><td>1.20</td>
+</tr><tr><td>Sequential_SourceGenerated</td><td>100</td><td>116.69 &mu;s</td><td>4.769 &mu;s</td><td>0.261 &mu;s</td><td>1.00</td><td>0.00</td><td>3</td><td>7.2021</td><td>1.7090</td><td>-</td><td>119.27 KB</td><td>1.00</td>
+</tr><tr><td>Sequential_Reflection</td><td>100</td><td>169.37 &mu;s</td><td>6.292 &mu;s</td><td>0.345 &mu;s</td><td>1.45</td><td>0.00</td><td>4</td><td>9.5215</td><td>2.1973</td><td>-</td><td>157.67 KB</td><td>1.32</td>
+</tr><tr><td>Parallel_Utf8Bytes</td><td>1000</td><td>522.06 &mu;s</td><td>472.184 &mu;s</td><td>25.882 &mu;s</td><td>0.44</td><td>0.02</td><td>1</td><td>46.8750</td><td>31.2500</td><td>-</td><td>768.47 KB</td><td>0.64</td>
+</tr><tr><td>Parallel_SourceGenerated</td><td>1000</td><td>548.25 &mu;s</td><td>316.982 &mu;s</td><td>17.375 &mu;s</td><td>0.47</td><td>0.01</td><td>1</td><td>74.2188</td><td>58.5938</td><td>-</td><td>1196.59 KB</td><td>1.00</td>
+</tr><tr><td>Sequential_WriteTo_PooledBuffer</td><td>1000</td><td>955.10 &mu;s</td><td>192.463 &mu;s</td><td>10.550 &mu;s</td><td>0.81</td><td>0.01</td><td>2</td><td>18.5547</td><td>-</td><td>-</td><td>306.4 KB</td><td>0.26</td>
+</tr><tr><td>Sequential_Utf8Bytes</td><td>1000</td><td>1,071.38 &mu;s</td><td>504.329 &mu;s</td><td>27.644 &mu;s</td><td>0.91</td><td>0.02</td><td>2</td><td>46.8750</td><td>29.2969</td><td>-</td><td>766.26 KB</td><td>0.64</td>
+</tr><tr><td>Sequential_SourceGenerated</td><td>1000</td><td>1,173.67 &mu;s</td><td>337.088 &mu;s</td><td>18.477 &mu;s</td><td>1.00</td><td>0.02</td><td>2</td><td>72.2656</td><td>50.7813</td><td>-</td><td>1194.39 KB</td><td>1.00</td>
+</tr><tr><td>Sequential_DirectJsonlStream</td><td>1000</td><td>1,612.43 &mu;s</td><td>111.828 &mu;s</td><td>6.130 &mu;s</td><td>1.37</td><td>0.02</td><td>3</td><td>332.0313</td><td>332.0313</td><td>332.0313</td><td>1430.45 KB</td><td>1.20</td>
+</tr><tr><td>Sequential_Reflection</td><td>1000</td><td>1,623.18 &mu;s</td><td>82.611 &mu;s</td><td>4.528 &mu;s</td><td>1.38</td><td>0.02</td><td>3</td><td>95.7031</td><td>50.7813</td><td>-</td><td>1578.52 KB</td><td>1.32</td>
+</tr><tr><td>Parallel_Utf8Bytes</td><td>5000</td><td>2,560.60 &mu;s</td><td>291.583 &mu;s</td><td>15.983 &mu;s</td><td>0.40</td><td>0.00</td><td>1</td><td>246.0938</td><td>175.7813</td><td>-</td><td>3859.04 KB</td><td>0.64</td>
+</tr><tr><td>Parallel_SourceGenerated</td><td>5000</td><td>3,090.55 &mu;s</td><td>624.341 &mu;s</td><td>34.222 &mu;s</td><td>0.48</td><td>0.00</td><td>2</td><td>398.4375</td><td>316.4063</td><td>-</td><td>6003.84 KB</td><td>1.00</td>
+</tr><tr><td>Sequential_WriteTo_PooledBuffer</td><td>5000</td><td>4,963.58 &mu;s</td><td>53.528 &mu;s</td><td>2.934 &mu;s</td><td>0.78</td><td>0.00</td><td>3</td><td>85.9375</td><td>-</td><td>-</td><td>1525.15 KB</td><td>0.25</td>
+</tr><tr><td>Sequential_Utf8Bytes</td><td>5000</td><td>5,487.79 &mu;s</td><td>155.267 &mu;s</td><td>8.511 &mu;s</td><td>0.86</td><td>0.00</td><td>3</td><td>234.3750</td><td>179.6875</td><td>-</td><td>3856.7 KB</td><td>0.64</td>
+</tr><tr><td>Sequential_DirectJsonlStream</td><td>5000</td><td>6,122.44 &mu;s</td><td>913.083 &mu;s</td><td>50.049 &mu;s</td><td>0.96</td><td>0.01</td><td>3</td><td>1078.1250</td><td>984.3750</td><td>984.3750</td><td>7152.84 KB</td><td>1.19</td>
+</tr><tr><td>Sequential_SourceGenerated</td><td>5000</td><td>6,386.38 &mu;s</td><td>395.703 &mu;s</td><td>21.690 &mu;s</td><td>1.00</td><td>0.00</td><td>3</td><td>367.1875</td><td>273.4375</td><td>-</td><td>6001.83 KB</td><td>1.00</td>
+</tr><tr><td>Sequential_Reflection</td><td>5000</td><td>8,450.71 &mu;s</td><td>1,023.663 &mu;s</td><td>56.110 &mu;s</td><td>1.32</td><td>0.01</td><td>4</td><td>484.3750</td><td>421.8750</td><td>-</td><td>7918.86 KB</td><td>1.32</td>
+</tr></tbody></table>
+</body>
+</html>

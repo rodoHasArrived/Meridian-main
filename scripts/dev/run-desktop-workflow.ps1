@@ -686,21 +686,52 @@ function Save-WindowCapture {
         throw "Window bounds are too small to capture ($($rect.Width)x$($rect.Height))."
     }
 
+    if (-not ('MeridianDesktopCaptureNative' -as [type])) {
+        Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class MeridianDesktopCaptureNative
+{
+    public const uint PW_RENDERFULLCONTENT = 0x00000002;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
+}
+"@
+    }
+
+    $nativeHandleValue = [int64]$Window.Current.NativeWindowHandle
+    if ($nativeHandleValue -le 0) {
+        throw 'Window did not expose a native handle for PrintWindow capture.'
+    }
+
+    $nativeHandle = [System.IntPtr]::new($nativeHandleValue)
     $bitmap = New-Object System.Drawing.Bitmap([int]$rect.Width, [int]$rect.Height)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+    $hdc = [System.IntPtr]::Zero
 
     try {
-        $graphics.CopyFromScreen(
-            [int]$rect.X,
-            [int]$rect.Y,
-            0,
-            0,
-            [System.Drawing.Size]::new([int]$rect.Width, [int]$rect.Height)
+        $hdc = $graphics.GetHdc()
+        $printSucceeded = [MeridianDesktopCaptureNative]::PrintWindow(
+            $nativeHandle,
+            $hdc,
+            [uint32][MeridianDesktopCaptureNative]::PW_RENDERFULLCONTENT
         )
+
+        if (-not $printSucceeded) {
+            $lastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
+            throw "PrintWindow failed while capturing desktop screenshot (Win32: $lastError)."
+        }
+
         $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
         return $Path
     }
     finally {
+        if ($hdc -ne [System.IntPtr]::Zero) {
+            $graphics.ReleaseHdc($hdc)
+        }
         $graphics.Dispose()
         $bitmap.Dispose()
     }

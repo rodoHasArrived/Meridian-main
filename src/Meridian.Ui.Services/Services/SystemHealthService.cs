@@ -114,10 +114,19 @@ public sealed class SystemHealthSummary
 public sealed class ProviderHealth
 {
     public string Provider { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public bool IsEnabled { get; set; }
     public bool IsConnected { get; set; }
     public string Status { get; set; } = "Unknown";
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public int? ReconnectAttempts { get; set; }
+    public string? LastFailureKind { get; set; }
     public double LatencyMs { get; set; }
     public DateTime? LastConnectedAt { get; set; }
     public DateTime? LastEventAt { get; set; }
@@ -132,8 +141,15 @@ public sealed class ProviderDiagnostics
     public string Provider { get; set; } = string.Empty;
     public bool IsConnected { get; set; }
     public string ConnectionState { get; set; } = string.Empty;
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
     public double LatencyMs { get; set; }
     public int ReconnectAttempts { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public string? LastFailureKind { get; set; }
     public DateTime? LastReconnectAt { get; set; }
     public List<string> ActiveSubscriptions { get; set; } = new();
     public Dictionary<string, int> EventCounts { get; set; } = new();

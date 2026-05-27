@@ -734,7 +734,7 @@ public sealed class SecurityMasterViewModelTests
 
             viewModel.CompanyCoverageFields.Should().Contain(field =>
                 field.Label == "Schedule model" &&
-                field.Value.Contains("Factor-aware cash-flow support", StringComparison.OrdinalIgnoreCase));
+                field.Value.Contains("Schedule book includes 2 cash-flow events", StringComparison.OrdinalIgnoreCase));
             viewModel.CompanyCoverageFields.Should().Contain(field =>
                 field.Label == "Lot model" &&
                 field.Value.Contains("factor-adjusted exposure", StringComparison.OrdinalIgnoreCase));
@@ -744,7 +744,54 @@ public sealed class SecurityMasterViewModelTests
             viewModel.PrintEvidenceItems.Should().Contain(item =>
                 item.Title == "Lot model" &&
                 item.Destination.Contains("Lot/open-position guidance", StringComparison.OrdinalIgnoreCase));
+            viewModel.ScheduleBookStatusText.Should().Contain("2 schedule events");
+            viewModel.ScheduleBookFields.Should().Contain(field =>
+                field.Label == "Summary" &&
+                field.Value.Contains("Schedule book includes 2 cash-flow events", StringComparison.OrdinalIgnoreCase));
+            viewModel.ScheduleBookEvents.Should().HaveCount(2);
+            viewModel.ScheduleBookFactorHistory.Should().ContainSingle();
+            viewModel.ScheduleBookProvenanceHistory.Should().ContainSingle();
+            viewModel.OpenLotReadModelStatusText.Should().Contain("1 open lot");
+            viewModel.OpenLotReadModelFields.Should().Contain(field =>
+                field.Label == "Quantity model" &&
+                field.Value == "FactorAdjustedFace");
+            viewModel.OpenLotRows.Should().ContainSingle().Which.LotId.Should().Be("lot-1");
+            viewModel.OpenLotProvenanceHistory.Should().ContainSingle();
+            viewModel.ValidationIssuesStatusText.Should().Contain("blocking issue");
+            viewModel.ValidationIssues.Should().ContainSingle().Which.Code.Should().Be("SM_IDENTIFIER_DUPLICATE_ACTIVE");
+            viewModel.ChangeHistoryStatusText.Should().Contain("structured change entr");
+            viewModel.ChangeHistoryItems.Should().ContainSingle().Which.ChangedFieldsSummary.Should().Contain("Display name");
         });
+    }
+
+    [Fact]
+    public void SecurityMasterPageSource_BindsScheduleBookAndOpenLotReadModel()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+
+        xaml.Should().Contain("SecurityMasterScheduleBookPanel");
+        xaml.Should().Contain("SecurityMasterOpenLotReadModelPanel");
+        xaml.Should().Contain("SecurityMasterValidationIssuesGrid");
+        xaml.Should().Contain("SecurityMasterChangeHistoryGrid");
+        xaml.Should().Contain("SecurityMasterScheduleBookEventsGrid");
+        xaml.Should().Contain("SecurityMasterOpenLotRowsGrid");
+        xaml.Should().Contain("{Binding ValidationIssuesStatusText}");
+        xaml.Should().Contain("{Binding ChangeHistoryStatusText}");
+        xaml.Should().Contain("ItemsSource=\"{Binding ValidationIssues}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding ChangeHistoryItems}\"");
+        xaml.Should().Contain("{Binding ScheduleBookStatusText}");
+        xaml.Should().Contain("{Binding OpenLotReadModelStatusText}");
+        xaml.Should().Contain("ItemsSource=\"{Binding ScheduleBookEvents}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding OpenLotRows}\"");
+        viewModel.Should().Contain("ObservableCollection<SecurityValidationIssueDto> ValidationIssues");
+        viewModel.Should().Contain("ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems");
+        viewModel.Should().Contain("ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents");
+        viewModel.Should().Contain("ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows");
+        viewModel.Should().Contain("PopulateValidationPresentation(snapshot);");
+        viewModel.Should().Contain("PopulateChangeHistoryPresentation(snapshot);");
+        viewModel.Should().Contain("PopulateScheduleBookPresentation(snapshot);");
+        viewModel.Should().Contain("PopulateOpenLotReadModelPresentation(snapshot);");
     }
 
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)
@@ -964,6 +1011,41 @@ public sealed class SecurityMasterViewModelTests
             CorporateActions: effectiveCorporateActions,
             RetrievedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero))
         {
+            ValidationReport = new SecurityValidationReportDto(
+                SecurityId: securityId,
+                Scope: "Security",
+                EvaluatedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero),
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                Issues:
+                [
+                    new SecurityValidationIssueDto(
+                        Severity: SecurityValidationSeverityDto.Error,
+                        Code: "SM_IDENTIFIER_DUPLICATE_ACTIVE",
+                        Title: "Duplicate active identifier exists on the record",
+                        Message: "The record contains duplicate active identifier 'Ticker|AAPL|'.",
+                        AffectedFields: ["identifiers"],
+                        SuggestedAction: "Expire duplicate identifiers or consolidate them into a single active identifier.",
+                        EvidenceLinks: [])
+                ]),
+            ChangeHistory =
+            [
+                new SecurityMasterChangeHistoryItemDto(
+                    ChangeId: "4:SecurityAmended",
+                    StreamVersion: 4,
+                    EventType: "SecurityAmended",
+                    ChangedAtUtc: new DateTimeOffset(2026, 4, 20, 10, 0, 0, TimeSpan.Zero),
+                    EffectiveAtUtc: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                    Actor: "workflow.bot",
+                    Origin: "Vendor",
+                    SourceSystem: "golden-edm",
+                    SourceRecordId: "EDM-123",
+                    Reason: "golden-copy refresh",
+                    Summary: "Security Amended updated display name for 'Apple Inc.'.",
+                    ChangedFields: ["Display name"],
+                    ChangedFieldsSummary: "Display name"),
+            ],
             ScheduleSummary = new SecurityMasterScheduleSummaryDto(
                 SupportsCashflowSchedule: true,
                 SupportsFactorHistory: true,
@@ -980,7 +1062,148 @@ public sealed class SecurityMasterViewModelTests
                 UsesFaceValue: true,
                 SupportsFactorAdjustedExposure: true,
                 RequiresResolvedSecurityId: true,
-                Summary: "Lots should reconcile by current face using factor-adjusted exposure (lot size 1).")
+                Summary: "Lots should reconcile by current face using factor-adjusted exposure (lot size 1)."),
+            ScheduleBook = new SecurityMasterScheduleBookDto(
+                SupportsCashflowSchedule: true,
+                SupportsFactorHistory: true,
+                HasEconomicScheduleTerms: true,
+                Currency: "USD",
+                CurrentFactor: 0.9825m,
+                CurrentFactorDate: new DateOnly(2026, 4, 19),
+                NextLifecycleDate: new DateOnly(2031, 12, 15),
+                SourceSummary: "Schedules follow golden-edm record EDM-123 as of 2026-04-20 09:30 UTC.",
+                Summary: "Schedule book includes 2 cash-flow events with factor history from golden-edm.",
+                Events:
+                [
+                    new SecurityMasterScheduleEventDto(
+                        EventId: "sched-coupon-2026-06",
+                        EventType: "Coupon",
+                        EffectiveDate: new DateOnly(2026, 6, 15),
+                        PayDate: new DateOnly(2026, 6, 15),
+                        AccrualStartDate: new DateOnly(2025, 12, 15),
+                        AccrualEndDate: new DateOnly(2026, 6, 15),
+                        ExpectedAmount: 29375m,
+                        ActualAmount: null,
+                        VarianceAmount: null,
+                        FactorStart: 1m,
+                        FactorEnd: 0.9825m,
+                        Currency: "USD",
+                        PostingStatus: "Forecast",
+                        SourceSystem: "golden-edm",
+                        SourceRecordId: "EDM-123",
+                        SourceAsOfUtc: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                        SourceUpdatedBy: "workflow.bot",
+                        SourceReason: "Projected coupon from trusted schedule source.",
+                        IsDerivedFromEconomicTerms: true,
+                        IsCurrentProjection: true),
+                    new SecurityMasterScheduleEventDto(
+                        EventId: "sched-maturity-2031-12",
+                        EventType: "Maturity",
+                        EffectiveDate: new DateOnly(2031, 12, 15),
+                        PayDate: new DateOnly(2031, 12, 15),
+                        AccrualStartDate: new DateOnly(2031, 6, 15),
+                        AccrualEndDate: new DateOnly(2031, 12, 15),
+                        ExpectedAmount: 529375m,
+                        ActualAmount: null,
+                        VarianceAmount: null,
+                        FactorStart: 0.9825m,
+                        FactorEnd: 0m,
+                        Currency: "USD",
+                        PostingStatus: "Pending",
+                        SourceSystem: "golden-edm",
+                        SourceRecordId: "EDM-123",
+                        SourceAsOfUtc: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                        SourceUpdatedBy: "workflow.bot",
+                        SourceReason: "Final principal and coupon projection.",
+                        IsDerivedFromEconomicTerms: true,
+                        IsCurrentProjection: true)
+                ],
+                FactorHistory:
+                [
+                    new SecurityMasterFactorPointDto(
+                        PointId: "factor-current",
+                        EffectiveDate: new DateOnly(2026, 4, 19),
+                        Factor: 0.9825m,
+                        PreviousFactor: 1m,
+                        SourceSystem: "golden-edm",
+                        SourceRecordId: "EDM-123",
+                        SourceAsOfUtc: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                        SourceUpdatedBy: "workflow.bot",
+                        SourceReason: "Current factor from trustee feed.",
+                        IsCurrentFactor: true)
+                ],
+                ProvenanceHistory:
+                [
+                    new SecurityMasterScheduleProvenanceDto(
+                        ProvenanceId: "schedule-provenance-1",
+                        Category: "Schedule",
+                        Summary: "Loaded from golden EDM schedule source.",
+                        EffectiveDate: new DateOnly(2026, 6, 15),
+                        SourceSystem: "golden-edm",
+                        SourceRecordId: "EDM-123",
+                        SourceAsOfUtc: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                        SourceUpdatedBy: "workflow.bot",
+                        SourceReason: "Trusted source carried the schedule projection.",
+                        StreamVersion: 4,
+                        EventType: "SecurityAmended")
+                ]),
+            OpenLotReadModel = new SecurityMasterOpenLotReadModelDto(
+                QuantityModel: "FactorAdjustedFace",
+                LotSize: 1m,
+                ContractMultiplier: null,
+                UsesFaceValue: true,
+                SupportsFactorAdjustedExposure: true,
+                RequiresResolvedSecurityId: true,
+                CurrentFactor: 0.9825m,
+                CurrentFactorDate: new DateOnly(2026, 4, 19),
+                AsOfUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero),
+                Summary: "Open lots reconcile by current face using factor-adjusted exposure.",
+                Lots:
+                [
+                    new SecurityMasterOpenLotDto(
+                        SecurityId: securityId,
+                        PortfolioId: "portfolio-alpha",
+                        RunId: "run-42",
+                        AccountScopeId: "acct-alpha",
+                        AccountScopeDisplayName: "Fund Alpha - Main",
+                        VehicleScopeId: null,
+                        VehicleScopeDisplayName: null,
+                        LotId: "lot-1",
+                        Symbol: "AAPL",
+                        TradeDate: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero),
+                        SettleDate: new DateTimeOffset(2026, 4, 22, 0, 0, 0, TimeSpan.Zero),
+                        OriginalQuantity: 100000m,
+                        CurrentQuantity: 95000m,
+                        OriginalFace: 100000m,
+                        CurrentFace: 95000m,
+                        FactorAdjustedQuantity: 93337.5m,
+                        FactorAdjustedFace: 93337.5m,
+                        CostBasis: 99000m,
+                        EntryPrice: 99m,
+                        UnrealizedPnl: 1250m,
+                        Currency: "USD",
+                        LotStatus: "Open",
+                        SourceSystem: "ledger",
+                        SourceRecordId: "LOT-1",
+                        AsOfUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero),
+                        SourceUpdatedBy: "workflow.bot",
+                        SourceReason: "Latest ledger lot read model.",
+                        IsLongTerm: false,
+                        Notes: "Primary scoped lot.")
+                ],
+                ProvenanceHistory:
+                [
+                    new SecurityMasterOpenLotProvenanceDto(
+                        ProvenanceId: "lot-provenance-1",
+                        RunId: "run-42",
+                        PortfolioId: "portfolio-alpha",
+                        AccountScopeId: "acct-alpha",
+                        AccountScopeDisplayName: "Fund Alpha - Main",
+                        SourceSystem: "ledger",
+                        SourceRecordId: "LOT-1",
+                        AsOfUtc: new DateTimeOffset(2026, 4, 20, 10, 5, 0, TimeSpan.Zero),
+                        Summary: "Lot sourced from latest ledger read model.")
+                ])
         };
     }
 

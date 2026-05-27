@@ -1133,6 +1133,57 @@ describe("buildSettingsScreenViewModel", () => {
     expect(options.signal?.aborted).toBe(true);
   });
 
+  it("builds runtime feature capability toggles from shared API response", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      featureCapabilities: {
+        capabilities: [
+          {
+            capabilityKey: "desktop.settings.workspace",
+            displayName: "Settings workspace",
+            description: "Preferences and diagnostics.",
+            isEnabled: true,
+            defaultEnabled: true,
+            isPermanent: true,
+            isOverridden: false,
+            canToggle: false,
+            disabledReason: "Required for workstation navigation."
+          },
+          {
+            capabilityKey: "desktop.data.security-master",
+            displayName: "Security master",
+            description: "Reference-data review.",
+            isEnabled: false,
+            defaultEnabled: true,
+            isPermanent: false,
+            isOverridden: true,
+            canToggle: true,
+            disabledReason: null
+          }
+        ]
+      }
+    });
+
+    expect(vm.runtimeCapabilitySection.statusLabel).toBe("1 disabled");
+    expect(vm.runtimeCapabilitySection.toggles).toEqual([
+      expect.objectContaining({
+        capabilityKey: "desktop.settings.workspace",
+        statusLabel: "Enabled",
+        defaultLabel: "Default on",
+        overrideLabel: "Using default",
+        canToggle: false
+      }),
+      expect.objectContaining({
+        capabilityKey: "desktop.data.security-master",
+        statusLabel: "Disabled",
+        defaultLabel: "Default on",
+        overrideLabel: "Configured override",
+        canToggle: true
+      })
+    ]);
+  });
+
   it("surfaces structured Alpaca connection errors", async () => {
     const connectConnection = vi.fn().mockRejectedValue(
       new ApiError({

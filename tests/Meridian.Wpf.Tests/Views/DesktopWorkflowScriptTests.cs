@@ -113,18 +113,29 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void CaptureDesktopScreenshotsScript_ShouldImportRetryHelperBeforeCapture()
+    public void CaptureDesktopScreenshotsScript_ShouldRouteThroughSharedWorkflowRunner()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\capture-desktop-screenshots.ps1"));
 
-        script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
-        script.Should().Contain("Invoke-MeridianRetry");
+        script.Should().Contain("$workflowRunner = Join-Path $PSScriptRoot 'run-desktop-workflow.ps1'");
+        script.Should().Contain("$workflowName = if ([string]::IsNullOrWhiteSpace($Profile)) { 'screenshot-catalog' } else { $Profile }");
+        script.Should().Contain("'-Workflow', $workflowName");
+        script.Should().Contain("'-Profile', $workflowName");
+        script.Should().Contain("'-OutputRoot', 'artifacts/desktop-workflows'");
+        script.Should().Contain("'-ScreenshotDirectory', $screenshotDirectory");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('ProjectPath'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('Configuration'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('Framework'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('ExeName'))");
+        script.Should().Contain("if ($SkipBuild)");
+        script.Should().Contain("if ($KeepAppOpen)");
+        script.Should().Contain("& pwsh -NoProfile @runnerArgs");
+        script.Should().Contain("exit $LASTEXITCODE");
 
-        var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'shared/retry.ps1')", StringComparison.Ordinal);
-        var retryIndex = script.IndexOf("Invoke-MeridianRetry", StringComparison.Ordinal);
-
-        importIndex.Should().BeGreaterThan(0);
-        retryIndex.Should().BeGreaterThan(importIndex);
+        script.Should().NotContain("CommandPaletteInput");
+        script.Should().NotContain("function New-ScreenNavigationRegistry");
+        script.Should().NotContain("function Invoke-NavigateWithKeyboard");
+        script.Should().NotContain("function Invoke-NavigateWithMouse");
     }
 
     [Fact]
@@ -137,6 +148,16 @@ public sealed class DesktopWorkflowScriptTests
 
         activationIndex.Should().BeGreaterThan(0);
         captureIndex.Should().BeGreaterThan(activationIndex);
+    }
+
+    [Fact]
+    public void RunDesktopWorkflowScript_ShouldCaptureWindowUsingPrintWindow()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain("MeridianDesktopCaptureNative");
+        script.Should().Contain("[MeridianDesktopCaptureNative]::PrintWindow");
+        script.Should().NotContain("CopyFromScreen(");
     }
 
     [Fact]
@@ -242,6 +263,7 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\wpf-dev-validation.yml"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
         var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
 
@@ -272,6 +294,9 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("[System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))");
         sharedBuildScript.Should().Contain("Stop-MeridianRepoOwnedTestHostProcesses");
         sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
+
+        workflow.Should().Contain("$devArgs = @{");
+        workflow.Should().Contain("Restore = $true");
 
         makefile.Should().Contain("desktop-test-dev:");
         makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");

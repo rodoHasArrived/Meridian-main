@@ -34,6 +34,7 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation` | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | Clean code and docs without changing observable behavior |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
@@ -74,6 +75,7 @@ for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavio
 | `meridian-archive-organizer` | [`SKILL.md`](../../../.claude/skills/meridian-archive-organizer/SKILL.md) | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
+| `meridian-browser-workstation` | [`SKILL.md`](../../../.claude/skills/meridian-browser-workstation/SKILL.md) | Route and implement browser workstation TypeScript/React work |
 | `meridian-code-review` | [`SKILL.md`](../../../.claude/skills/meridian-code-review/SKILL.md) | Apply Meridian’s 7-lens review framework |
 | `meridian-implementation-assurance` | [`SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md) | Validate completed work against requirements and evidence |
 | `meridian-provider-builder` | [`SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md) | Scaffold and extend providers with the right contracts and resilience patterns |
@@ -112,4 +114,4 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 
 ---
 
-_Last Updated: 2026-05-19_
+_Last Updated: 2026-05-23_

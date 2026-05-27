@@ -9,6 +9,8 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Sdk;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -216,6 +218,52 @@ public sealed class MainShellViewModelTests
 
             vm.CurrentPageTag.Should().Be("Backfill");
             vm.CurrentPageTitle.Should().Be("Backfill");
+        });
+    }
+
+    [Fact]
+    public void NavigateToPageCommand_UsesTargetWorkspaceScopeForFrameNavigation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            var frame = new Frame();
+            navigationService.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            navigationService.SetServiceProvider(rootProvider);
+            navigationService.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
+
+            var scopedPage = new WorkspaceCapabilityHomePage();
+            var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
+            using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
+
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+            var workspaceService = WorkspaceService.Instance;
+            workspaceService.ResetForTests();
+            workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
+            await workspaceService.ActivateWorkspaceAsync("strategy");
+            workspaceService.ActiveWorkspaceScope.Should().NotBeNull();
+            var strategyScope = workspaceService.ActiveWorkspaceScope;
+
+            var fixtureModeDetector = FixtureModeDetector.Instance;
+            fixtureModeDetector.SetFixtureMode(false);
+            fixtureModeDetector.UpdateBackendReachability(true);
+
+            using var vm = new MainPageViewModel(navigationService, fixtureModeDetector);
+
+            vm.NavigateToPageCommand.Execute("PortfolioShell");
+
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
+            navigationService.GetCurrentPageTag().Should().Be("PortfolioShell");
         });
     }
 
@@ -726,6 +774,43 @@ public sealed class MainShellViewModelTests
 
             vm.CurrentWorkspace.Should().Be("accounting");
             vm.CurrentPageTag.Should().Be("FundReconciliation");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_UsesSharedTradingReadinessRouteForPaperReplayWorkItems()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "paper-replay-stale-session-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification is stale",
+                        Detail: "Session changed after the latest replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 0,
+                ReviewCount: 1,
+                Summary: "1 critical work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("TradingShell");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("trading");
+            vm.CurrentPageTag.Should().Be("TradingShell");
         });
     }
 

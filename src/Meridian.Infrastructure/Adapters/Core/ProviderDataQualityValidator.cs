@@ -14,12 +14,13 @@ public static class ProviderDataQualityValidator
     public static IReadOnlyList<ProviderDataQualityIssue> ValidateTrade(
         string providerName,
         MarketTradeUpdate update,
-        DateTimeOffset? now = null)
+        DateTimeOffset? now = null,
+        TimeSpan? staleThreshold = null)
     {
         ArgumentNullException.ThrowIfNull(update);
 
         var issues = new List<ProviderDataQualityIssue>(capacity: 2);
-        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, issues);
+        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, staleThreshold, issues);
 
         if (update.Price < 0)
         {
@@ -47,12 +48,13 @@ public static class ProviderDataQualityValidator
     public static IReadOnlyList<ProviderDataQualityIssue> ValidateQuote(
         string providerName,
         MarketQuoteUpdate update,
-        DateTimeOffset? now = null)
+        DateTimeOffset? now = null,
+        TimeSpan? staleThreshold = null)
     {
         ArgumentNullException.ThrowIfNull(update);
 
         var issues = new List<ProviderDataQualityIssue>(capacity: 2);
-        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, issues);
+        ValidateCommon(providerName, update.Symbol, update.Timestamp, now, staleThreshold, issues);
 
         if (update.BidPrice < 0)
         {
@@ -112,6 +114,7 @@ public static class ProviderDataQualityValidator
         string? symbol,
         DateTimeOffset timestamp,
         DateTimeOffset? now,
+        TimeSpan? staleThreshold,
         List<ProviderDataQualityIssue> issues)
     {
         if (string.IsNullOrWhiteSpace(symbol))
@@ -145,6 +148,16 @@ public static class ProviderDataQualityValidator
                 "Timestamp is too far in the future.",
                 "Drop the event and inspect provider clock, timezone, or timestamp unit mapping."));
         }
+
+        if (staleThreshold is { } threshold && referenceTime - timestamp > threshold)
+        {
+            issues.Add(ProviderDataQualityIssue.Warning(
+                providerName,
+                "timestamp",
+                symbol,
+                "Timestamp is stale for the configured provider boundary.",
+                "Flag the event and inspect provider latency, replay handoff, or subscription recovery state."));
+        }
     }
 }
 
@@ -170,6 +183,20 @@ public sealed record ProviderDataQualityIssue(
         string suggestedRecovery)
         => new(
             ProviderDataQualitySeverity.Error,
+            providerName,
+            fieldPath,
+            entity,
+            message,
+            suggestedRecovery);
+
+    public static ProviderDataQualityIssue Warning(
+        string providerName,
+        string fieldPath,
+        string? entity,
+        string message,
+        string suggestedRecovery)
+        => new(
+            ProviderDataQualitySeverity.Warning,
             providerName,
             fieldPath,
             entity,

@@ -9,7 +9,8 @@ import type {
   GovernanceWorkspaceResponse,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
-  SecurityMasterConflict
+  SecurityMasterConflict,
+  SecurityMasterTrustSnapshot
 } from "@/types";
 
 vi.mock("@/lib/api", async () => {
@@ -49,6 +50,12 @@ vi.mock("@/lib/api", async () => {
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
     getCorporateActions: vi.fn().mockResolvedValue([]),
     getTradingParameters: vi.fn().mockResolvedValue(null),
+    getSecurityTrustSnapshot: vi.fn().mockResolvedValue({
+      securityId: "sec-1",
+      retrievedAtUtc: "2026-05-21T15:00:00Z",
+      scheduleBook: null,
+      openLotReadModel: null
+    }),
     resolveSecurityConflict: vi.fn()
   };
 });
@@ -177,6 +184,142 @@ const calibrationSummary: ReconciliationCalibrationSummary = {
       lastUpdatedAt: "2026-01-01T00:05:00Z"
     }
   ]
+};
+
+const securityTrustSnapshot: SecurityMasterTrustSnapshot = {
+  securityId: "sec-1",
+  retrievedAtUtc: "2026-05-21T15:00:00Z",
+  scheduleBook: {
+    supportsCashflowSchedule: true,
+    supportsFactorHistory: true,
+    hasEconomicScheduleTerms: true,
+    currency: "USD",
+    currentFactor: 0.9,
+    currentFactorDate: "2026-11-15",
+    nextLifecycleDate: "2031-12-15",
+    sourceSummary: "Schedule source EDM-123 is current.",
+    summary: "Schedule book includes current cash-flow and factor evidence.",
+    events: [
+      {
+        eventId: "sched-1-coupon",
+        eventType: "Coupon",
+        effectiveDate: "2026-05-15",
+        payDate: "2026-05-15",
+        accrualStartDate: "2025-11-15",
+        accrualEndDate: "2026-05-15",
+        expectedAmount: 26250,
+        actualAmount: 26250,
+        varianceAmount: 0,
+        factorStart: 1,
+        factorEnd: 1,
+        currency: "USD",
+        postingStatus: "Posted",
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Trustee schedule matched.",
+        isDerivedFromEconomicTerms: true,
+        isCurrentProjection: false
+      },
+      {
+        eventId: "sched-1-principal",
+        eventType: "Principal",
+        effectiveDate: "2026-11-15",
+        payDate: "2026-11-15",
+        accrualStartDate: "2026-05-15",
+        accrualEndDate: "2026-11-15",
+        expectedAmount: 126250,
+        actualAmount: null,
+        varianceAmount: null,
+        factorStart: 1,
+        factorEnd: 0.9,
+        currency: "USD",
+        postingStatus: "Pending",
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Projected amortization row.",
+        isDerivedFromEconomicTerms: true,
+        isCurrentProjection: true
+      }
+    ],
+    factorHistory: [],
+    provenanceHistory: [
+      {
+        provenanceId: "schedule-source-1",
+        category: "Schedule",
+        summary: "Loaded from golden EDM schedule source.",
+        effectiveDate: "2026-05-15",
+        sourceSystem: "golden-edm",
+        sourceRecordId: "EDM-123",
+        sourceAsOfUtc: "2026-05-21T14:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Trustee schedule matched.",
+        streamVersion: 4,
+        eventType: "SecurityAmended"
+      }
+    ]
+  },
+  openLotReadModel: {
+    quantityModel: "FactorAdjustedFace",
+    lotSize: 1,
+    contractMultiplier: null,
+    usesFaceValue: true,
+    supportsFactorAdjustedExposure: true,
+    requiresResolvedSecurityId: true,
+    currentFactor: 0.9,
+    currentFactorDate: "2026-11-15",
+    asOfUtc: "2026-05-21T15:00:00Z",
+    summary: "Open lots reconcile by factor-adjusted face for account scope Fund Alpha.",
+    lots: [
+      {
+        securityId: "sec-1",
+        portfolioId: "portfolio-alpha",
+        runId: "run-42",
+        accountScopeId: "acct-alpha",
+        accountScopeDisplayName: "Fund Alpha - Main",
+        vehicleScopeId: null,
+        vehicleScopeDisplayName: null,
+        lotId: "lot-1",
+        symbol: "AAPL",
+        tradeDate: "2026-04-20T14:30:00Z",
+        settleDate: "2026-04-22T00:00:00Z",
+        originalQuantity: 100000,
+        currentQuantity: 95000,
+        originalFace: 100000,
+        currentFace: 95000,
+        factorAdjustedQuantity: 85500,
+        factorAdjustedFace: 85500,
+        costBasis: 99000,
+        entryPrice: 99,
+        unrealizedPnl: 1250,
+        currency: "USD",
+        lotStatus: "Open",
+        sourceSystem: "ledger",
+        sourceRecordId: "LOT-1",
+        asOfUtc: "2026-05-21T15:00:00Z",
+        sourceUpdatedBy: "workflow.bot",
+        sourceReason: "Latest paper ledger lot.",
+        isLongTerm: false,
+        notes: "Primary scoped lot."
+      }
+    ],
+    provenanceHistory: [
+      {
+        provenanceId: "lot-source-1",
+        runId: "run-42",
+        portfolioId: "portfolio-alpha",
+        accountScopeId: "acct-alpha",
+        accountScopeDisplayName: "Fund Alpha - Main",
+        sourceSystem: "ledger",
+        sourceRecordId: "LOT-1",
+        asOfUtc: "2026-05-21T15:00:00Z",
+        summary: "Lot sourced from latest ledger read model."
+      }
+    ]
+  }
 };
 
 const securityConflict: SecurityMasterConflict = {
@@ -376,7 +519,7 @@ describe("GovernanceScreen", () => {
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting");
+    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting/ledger");
     expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
@@ -722,6 +865,7 @@ describe("GovernanceScreen", () => {
       identifiers: [],
       aliases: []
     });
+    vi.mocked(api.getSecurityTrustSnapshot).mockResolvedValue(securityTrustSnapshot);
 
     await renderGovernanceScreen(data, "/accounting/security-master");
 
@@ -785,7 +929,7 @@ describe("GovernanceScreen", () => {
     await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
 
     const table = await screen.findByRole("table", { name: "Cash-flow and factor schedules for sec-1" });
-    expect(table).toHaveTextContent("sched-sec-1-cpn-2026-05");
+    expect(table).toHaveTextContent("sched-1-coupon");
     const couponRow = screen.getByRole("row", { name: "Inspect schedule event Coupon for sec-1 on 2026-05-15" });
     const principalRow = screen.getByRole("row", { name: "Inspect schedule event Principal for sec-1 on 2026-11-15" });
     expect(couponRow).toHaveAttribute("aria-selected", "true");
@@ -797,8 +941,11 @@ describe("GovernanceScreen", () => {
 
     expect(principalRow).toHaveAttribute("aria-selected", "true");
     expect(principalRow).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Principal on sec-1" })).toHaveTextContent("100,000 USD");
+    expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Principal on sec-1" })).toHaveTextContent("126,250 USD");
     expect(screen.getByRole("toolbar", { name: "Cash-flow schedule status for sec-1" })).toHaveTextContent("2");
+    expect(screen.getByRole("table", { name: "Open lot read model for sec-1" })).toHaveTextContent("lot-1");
+    expect(screen.getByRole("row", { name: "Inspect open lot lot-1 for AAPL" })).toHaveAttribute("aria-controls", "security-open-lot-detail-panel");
+    expect(screen.getByRole("region", { name: "Open lot detail for lot-1 on AAPL" })).toHaveTextContent("85,500");
   });
 
   it("renders corporate actions as selectable dense evidence with a detail panel", async () => {
@@ -1047,7 +1194,12 @@ describe("GovernanceScreen", () => {
       status: "Resolved" as const,
       resolvedBy: "ops.gov",
       resolvedAt: "2026-01-01T00:10:00Z",
-      resolutionNote: "Matched ledger adjustment."
+      resolutionNote: "Matched ledger adjustment.",
+      exceptionRoute: "fund-ops-review",
+      toleranceProfileId: "cash-variance-ops",
+      toleranceBand: 250,
+      requiredSignoffRole: "Fund operations lead",
+      signoffStatus: "Pending Signoff"
     };
     const dismissedBreak = {
       ...data.breakQueue[0],
@@ -1072,6 +1224,11 @@ describe("GovernanceScreen", () => {
       .toHaveAttribute("title", "This break is already resolved.");
     expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
       .toHaveAttribute("title", "This break is already dismissed.");
+
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
+    const resolvedDetail = screen.getByRole("region", { name: "Reconciliation break detail for run-42:resolved" });
+    expect(resolvedDetail).toHaveTextContent("Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked.");
+    expect(resolvedDetail).toHaveTextContent("Matched ledger adjustment.");
 
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
 

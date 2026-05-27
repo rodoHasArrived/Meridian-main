@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Models;
 using Meridian.Ui.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -65,6 +66,17 @@ public sealed class WorkspaceServiceTests : IDisposable
             "strategy",
             "data",
             "settings");
+    }
+
+    [Fact]
+    public void AddWorkspaceScoped_ShouldRegisterScopedMarkerService()
+    {
+        var services = new ServiceCollection();
+
+        services.AddWorkspaceScoped<WorkspaceScopedProbe>();
+
+        services.Single(descriptor => descriptor.ServiceType == typeof(WorkspaceScopedProbe))
+            .Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
 
     [Fact]
@@ -296,6 +308,96 @@ public sealed class WorkspaceServiceTests : IDisposable
         receivedArgs.Should().NotBeNull();
         receivedArgs!.Workspace.Should().NotBeNull();
         receivedArgs.Workspace!.Id.Should().Be(workspace.Id);
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldCreateWorkspaceScope()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        await svc.ActivateWorkspaceAsync("trading");
+
+        svc.ActiveWorkspaceScope.Should().BeSameAs(scopeFactory.CreatedScopes.Single());
+        svc.GetWorkspaceScope("trading").Should().BeSameAs(scopeFactory.CreatedScopes.Single());
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldReuseScopeForSameWorkspace()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        await svc.ActivateWorkspaceAsync("trading");
+        await svc.ActivateWorkspaceAsync("trading");
+
+        scopeFactory.CreatedScopes.Should().HaveCount(1);
+        scopeFactory.CreatedScopes[0].IsDisposed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldDisposePreviousWorkspaceScope()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        await svc.ActivateWorkspaceAsync("trading");
+        var tradingScope = scopeFactory.CreatedScopes.Single();
+
+        await svc.ActivateWorkspaceAsync("strategy");
+
+        tradingScope.IsDisposed.Should().BeTrue();
+        scopeFactory.CreatedScopes.Should().HaveCount(2);
+        svc.ActiveWorkspaceScope.Should().BeSameAs(scopeFactory.CreatedScopes[1]);
+        svc.GetWorkspaceScope("trading").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldCreateFreshScopeWhenReturningToWorkspace()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        await svc.ActivateWorkspaceAsync("trading");
+        var firstTradingScope = scopeFactory.CreatedScopes.Single();
+        await svc.ActivateWorkspaceAsync("strategy");
+        await svc.ActivateWorkspaceAsync("trading");
+
+        scopeFactory.CreatedScopes.Should().HaveCount(3);
+        firstTradingScope.IsDisposed.Should().BeTrue();
+        scopeFactory.CreatedScopes[2].Should().NotBeSameAs(firstTradingScope);
+        svc.ActiveWorkspaceScope.Should().BeSameAs(scopeFactory.CreatedScopes[2]);
+    }
+
+    [Fact]
+    public void GetOrCreateWorkspaceScope_ShouldCreateScopeWithoutActivatingWorkspace()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        var scope = svc.GetOrCreateWorkspaceScope("portfolio");
+
+        scope.Should().BeSameAs(scopeFactory.CreatedScopes.Single());
+        svc.GetWorkspaceScope("portfolio").Should().BeSameAs(scope);
+    }
+
+    [Fact]
+    public void GetOrCreateWorkspaceScope_ShouldNormalizeLegacyWorkspaceIds()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        var scope = svc.GetOrCreateWorkspaceScope("governance");
+
+        scope.Should().BeSameAs(scopeFactory.CreatedScopes.Single());
+        svc.GetWorkspaceScope("accounting").Should().BeSameAs(scope);
+        svc.GetWorkspaceScope("governance").Should().BeSameAs(scope);
     }
 
     // ── UpdateWorkspaceAsync ─────────────────────────────────────────
@@ -961,5 +1063,33 @@ public sealed class WorkspaceServiceTests : IDisposable
     public void WorkspaceCategory_AllValues_ShouldBeDefined(WorkspaceCategory category)
     {
         Enum.IsDefined(typeof(WorkspaceCategory), category).Should().BeTrue();
+    }
+
+    private sealed class WorkspaceScopedProbe : IWorkspaceScopedService
+    {
+    }
+
+    private sealed class RecordingScopeFactory : IServiceScopeFactory
+    {
+        public List<RecordingScope> CreatedScopes { get; } = new();
+
+        public IServiceScope CreateScope()
+        {
+            var scope = new RecordingScope();
+            CreatedScopes.Add(scope);
+            return scope;
+        }
+    }
+
+    private sealed class RecordingScope : IServiceScope
+    {
+        public bool IsDisposed { get; private set; }
+
+        public IServiceProvider ServiceProvider { get; } = new ServiceCollection().BuildServiceProvider();
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+        }
     }
 }

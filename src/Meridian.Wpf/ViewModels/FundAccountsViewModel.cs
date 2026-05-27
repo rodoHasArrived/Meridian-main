@@ -3,8 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Workstation;
 using Meridian.ProviderSdk;
 using Meridian.Ui.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Services;
 using Microsoft.Extensions.Logging;
 
@@ -18,17 +20,20 @@ public sealed partial class FundAccountsViewModel : BindableBase
     private readonly IFundAccountService _service;
     private readonly IFundProfileCatalog _fundProfileCatalog;
     private readonly ProviderManagementService _providerManagementService;
+    private readonly BrokeragePortfolioSyncService? _brokerageSync;
     private readonly ILogger<FundAccountsViewModel> _logger;
 
     public FundAccountsViewModel(
         IFundAccountService service,
         IFundProfileCatalog fundProfileCatalog,
         ProviderManagementService providerManagementService,
-        ILogger<FundAccountsViewModel> logger)
+        ILogger<FundAccountsViewModel> logger,
+        BrokeragePortfolioSyncService? brokerageSync = null)
     {
         _service = service;
         _fundProfileCatalog = fundProfileCatalog;
         _providerManagementService = providerManagementService;
+        _brokerageSync = brokerageSync;
         _logger = logger;
 
         LoadFundAccountsCommand = new AsyncRelayCommand(LoadFundAccountsAsync);
@@ -102,6 +107,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
             if (BlockedRoutePreviewCount > 0)
                 return "Provider routing blocked";
 
+            if (HasBrokerageSyncGap)
+                return BuildBrokerageSyncGapTitle();
+
             if (HasSharedDataAccessGap(SelectedAccount))
                 return "Shared data access incomplete";
 
@@ -131,6 +139,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
             if (BlockedRoutePreviewCount > 0)
                 return $"{BlockedRoutePreviewCount} of {RoutePreviews.Count} capability route preview(s) are blocked for {SelectedAccount.DisplayName}; review reasons and fallback coverage.";
 
+            if (HasBrokerageSyncGap)
+                return BuildBrokerageSyncGapDetail(SelectedAccount);
+
             if (HasSharedDataAccessGap(SelectedAccount))
                 return $"{SelectedAccount.DisplayName} has a shared-data access gap: {BuildSharedDataAccessGapSummary(SelectedAccount)}.";
 
@@ -159,6 +170,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
             if (BlockedRoutePreviewCount > 0)
                 return "Review Route Preview";
+
+            if (HasBrokerageSyncGap)
+                return BuildBrokerageSyncGapActionText();
 
             if (HasSharedDataAccessGap(SelectedAccount))
                 return "Review Shared Data";
@@ -346,6 +360,57 @@ public sealed partial class FundAccountsViewModel : BindableBase
         }
     }
 
+    private WorkstationBrokerageSyncStatusDto? _selectedAccountSyncStatus;
+
+    /// <summary>
+    /// Most recent brokerage sync posture for the currently selected account.
+    /// Null when the selected account is not a brokerage account or the sync service is unavailable.
+    /// </summary>
+    public WorkstationBrokerageSyncStatusDto? SelectedAccountSyncStatus
+    {
+        get => _selectedAccountSyncStatus;
+        private set
+        {
+            if (SetProperty(ref _selectedAccountSyncStatus, value))
+            {
+                RaisePropertyChanged(nameof(BrokerageSyncStatusText));
+                RaiseAccountBriefingProperties();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Human-readable description of the brokerage sync health for the selected account.
+    /// </summary>
+    public string BrokerageSyncStatusText
+        => _selectedAccountSyncStatus switch
+        {
+            null => "Brokerage sync status is not available for the selected account.",
+            { IsLinked: false } => "Account is not linked to a brokerage provider; set up a sync link before reconciliation.",
+            { Health: WorkstationBrokerageSyncHealth.Healthy } s
+                => $"Brokerage sync is current • {s.PositionCount} position(s), {s.OpenOrderCount} open order(s), {s.FillCount} fill(s).",
+            { Health: WorkstationBrokerageSyncHealth.Stale } s
+                => $"Brokerage sync is stale (last synced {FormatSyncAge(s.LastSuccessfulSyncAt)}); run a fresh sync before reconciliation.",
+            { Health: WorkstationBrokerageSyncHealth.Degraded } s
+                => $"Brokerage sync is degraded • {s.SecurityMissingCount} security reference(s) missing; review warnings before reconciliation.",
+            { Health: WorkstationBrokerageSyncHealth.Failed } s
+                => $"Brokerage sync failed: {s.LastError ?? "unknown error"}; resolve the connection issue and re-run.",
+            _ => "Brokerage sync posture is unlinked; connect a provider account before reconciliation."
+        };
+
+    private bool HasBrokerageSyncGap
+        => _selectedAccountSyncStatus is { IsLinked: false }
+        || _selectedAccountSyncStatus is { Health: WorkstationBrokerageSyncHealth.Failed }
+        || _selectedAccountSyncStatus is { Health: WorkstationBrokerageSyncHealth.Unlinked }
+        || _selectedAccountSyncStatus is { Health: WorkstationBrokerageSyncHealth.Stale };
+
+    /// <summary>
+    /// Applies a pre-fetched brokerage sync status for the selected account.
+    /// Exposed as public so callers (and tests) can push a status without triggering async I/O.
+    /// </summary>
+    public void ApplyBrokerageSyncStatus(WorkstationBrokerageSyncStatusDto? status)
+        => SelectedAccountSyncStatus = status;
+
     public IAsyncRelayCommand LoadFundAccountsCommand { get; }
     public IAsyncRelayCommand CreateAccountCommand { get; }
     public IAsyncRelayCommand UpdateDetailsCommand { get; }
@@ -491,6 +556,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             ProviderBindings.Clear();
             RoutePreviews.Clear();
             BalanceHistory.Clear();
+            SelectedAccountSyncStatus = null;
             ProviderRoutingStatus = "Select an account to inspect provider routing.";
             RaiseBalanceEvidenceProperties();
             RaiseAccountBriefingProperties();
@@ -499,6 +565,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
         await LoadBalanceHistoryAsync();
         await RefreshProviderRoutingAsync();
+
+        if (SelectedAccount.AccountType == AccountTypeDto.Brokerage)
+            await RefreshBrokerageSyncStatusAsync();
     }
 
     public async Task RefreshProviderRoutingAsync()
@@ -573,6 +642,26 @@ public sealed partial class FundAccountsViewModel : BindableBase
         }
     }
 
+    private async Task RefreshBrokerageSyncStatusAsync()
+    {
+        if (_brokerageSync is null || SelectedAccount is null)
+        {
+            SelectedAccountSyncStatus = null;
+            return;
+        }
+
+        try
+        {
+            var status = await _brokerageSync.GetStatusAsync(SelectedAccount.AccountId).ConfigureAwait(false);
+            SelectedAccountSyncStatus = status;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not retrieve brokerage sync status for account {AccountId}", SelectedAccount.AccountId);
+            SelectedAccountSyncStatus = null;
+        }
+    }
+
     public void ApplyProviderInsights(
         AccountSummaryDto account,
         IReadOnlyList<ProviderConnectionDto> connections,
@@ -642,6 +731,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         RaisePropertyChanged(nameof(SelectedAccountSecurityMasterText));
         RaisePropertyChanged(nameof(SelectedAccountHistoricalPriceText));
         RaisePropertyChanged(nameof(SelectedAccountBackfillText));
+        RaisePropertyChanged(nameof(BrokerageSyncStatusText));
         RaiseBalanceEvidenceProperties();
     }
 
@@ -658,6 +748,46 @@ public sealed partial class FundAccountsViewModel : BindableBase
         RaisePropertyChanged(nameof(AccountBriefingTitle));
         RaisePropertyChanged(nameof(AccountBriefingDetail));
         RaisePropertyChanged(nameof(AccountBriefingActionText));
+    }
+
+    private string BuildBrokerageSyncGapTitle()
+        => _selectedAccountSyncStatus switch
+        {
+            { IsLinked: false } or { Health: WorkstationBrokerageSyncHealth.Unlinked }
+                => "Brokerage sync not linked",
+            { Health: WorkstationBrokerageSyncHealth.Failed }
+                => "Brokerage sync failed",
+            { Health: WorkstationBrokerageSyncHealth.Stale }
+                => "Brokerage sync is stale",
+            _ => "Brokerage sync needs attention"
+        };
+
+    private string BuildBrokerageSyncGapDetail(AccountSummaryDto account)
+        => _selectedAccountSyncStatus switch
+        {
+            { IsLinked: false } or { Health: WorkstationBrokerageSyncHealth.Unlinked }
+                => $"{account.DisplayName} is not linked to a brokerage provider; open the account portfolio page and connect a provider before reconciliation.",
+            { Health: WorkstationBrokerageSyncHealth.Failed } s
+                => $"Brokerage sync for {account.DisplayName} failed: {s.LastError ?? "unknown error"}. Open the account portfolio page to resolve the connection and re-run.",
+            { Health: WorkstationBrokerageSyncHealth.Stale } s
+                => $"Brokerage sync for {account.DisplayName} is stale (last succeeded {FormatSyncAge(s.LastSuccessfulSyncAt)}). Open the account portfolio page and run a fresh sync.",
+            _ => $"Brokerage sync for {account.DisplayName} needs attention; open the account portfolio page to review and fix."
+        };
+
+    private static string BuildBrokerageSyncGapActionText()
+        => "Open Account Portfolio";
+
+    private static string FormatSyncAge(DateTimeOffset? lastSuccessfulSyncAt)
+    {
+        if (lastSuccessfulSyncAt is null)
+            return "never";
+
+        var elapsed = DateTimeOffset.UtcNow - lastSuccessfulSyncAt.Value;
+        if (elapsed.TotalMinutes < 60)
+            return $"{(int)elapsed.TotalMinutes}m ago";
+        if (elapsed.TotalHours < 24)
+            return $"{(int)elapsed.TotalHours}h ago";
+        return $"{(int)elapsed.TotalDays}d ago";
     }
 
     private static bool HasSharedDataAccessGap(AccountSummaryDto account)

@@ -1,6 +1,6 @@
 # C4 And System Diagrams
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-05-22
 
 This page is the quickest way to review the current Meridian visual model. The editable source of truth remains the DOT files in [`docs/diagrams/`](../diagrams/README.md); this page curates the most useful rendered views for architecture work.
 
@@ -38,7 +38,7 @@ Shows the runnable projects in the repo and the verified `SharedStartupBootstrap
 
 ![Workstation Delivery](../diagrams/workstation-delivery.svg)
 
-Shows how WPF pages, governance review surfaces, and the retained desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services.
+Shows how WPF pages, governance review surfaces, and the desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services.
 
 ### Security Master Lifecycle
 

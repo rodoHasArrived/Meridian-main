@@ -1,0 +1,61 @@
+name: Desktop Standalone Publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-standalone-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  publish-desktop-standalone:
+    name: publish-desktop-standalone-exe
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-standalone-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-standalone-
+            ${{ runner.os }}-nuget-
+
+      - name: Publish desktop standalone executable
+        shell: pwsh
+        run: >
+          pwsh ./build/scripts/publish/publish.ps1
+          -Platform win-x64
+          -Project desktop
+          -OutputDir artifacts/publish/local-desktop
+
+      - name: Upload desktop standalone publish artifacts
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: desktop-standalone-win-x64-${{ github.run_number }}
+          path: artifacts/publish/local-desktop/
+          if-no-files-found: error
+          retention-days: 14

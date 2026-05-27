@@ -1,6 +1,6 @@
 ---
 name: meridian-blueprint
-description: Create implementation-ready technical blueprints for Meridian features, refactors, and workflow changes. Use when the user asks for a blueprint, technical design, architecture plan, interface sketch, spike plan, migration design, or a code-ready spec for Meridian, especially for browser workstation flows, retained WPF support, providers, pipelines, orchestration services, or cross-project interfaces.
+description: Create implementation-ready technical blueprints for Meridian features, refactors, and workflow changes. Use when the user asks for a blueprint, technical design, architecture plan, interface sketch, spike plan, migration design, or a code-ready spec for Meridian, especially for browser workstation flows, WPF desktop shell, providers, pipelines, orchestration services, or cross-project interfaces.
 ---
 
 # Meridian Blueprint
@@ -76,9 +76,9 @@ Prefer this structure unless the user asks for something narrower:
 
 - Reuse existing contracts before proposing new ones.
 - Keep provider, storage, execution, and UI responsibilities in their current layers.
-- For workflow-centric UI changes, default to `src/Meridian.Ui/dashboard/` and the `/workstation/` route unless the request is explicitly retained-WPF. Align visible operator navigation with `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; treat legacy `Research`, `Data Operations`, and `Governance` names as compatibility aliases.
+- For workflow-centric UI changes, default to `src/Meridian.Ui/dashboard/` and the `/workstation/` route for new browser-surface work. For WPF desktop work, place it in `src/Meridian.Wpf/`. Align visible operator navigation with `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; treat legacy `Research`, `Data Operations`, and `Governance` names as compatibility aliases.
 - For browser workstation work, keep route strings, visible labels, disabled reasons, empty states, and live-region status in view-model/catalog seams rather than scattering them through React components.
-- For retained WPF work, keep code-behind minimal and put behavior in `BindableBase` view models or services.
+- For WPF desktop work, keep code-behind minimal and put behavior in `BindableBase` view models or services.
 - Do not propose mobile applications, native mobile clients, or mobile-first workflows unless the roadmap or user explicitly reopens that lane.
 - For pipeline or storage work, mention WAL, channel policy, and JSON source generation when relevant.
 - For provider or execution changes, cite the concrete contracts being extended.

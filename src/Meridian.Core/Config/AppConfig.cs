@@ -34,6 +34,7 @@ namespace Meridian.Application.Config;
 /// <param name="PluginsPath">Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.</param>
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
 /// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
+/// <param name="FeatureCapabilities">Runtime feature capability overrides.</param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
@@ -56,7 +57,9 @@ public sealed record AppConfig(
     bool OfflineFirstMode = false,
     string? PluginsPath = null,
     bool CoLocationProfile = false,
-    ProviderConnectionsConfig? ProviderConnections = null
+    ProviderConnectionsConfig? ProviderConnections = null,
+    FeatureCapabilityOptions? FeatureCapabilities = null,
+    FundOperationsPersistenceConfig? FundOperationsPersistence = null
 );
 
 /// <summary>
@@ -152,4 +155,26 @@ public sealed record SourceRegistryConfig(
 public sealed record ValidationPipelineConfig(
     bool Enabled = false,
     bool UseRealTimeMode = false
+);
+
+/// <summary>
+/// Configuration for per-domain fund operations persistence cutover.
+/// Controls shadow write and read mode toggles for each fund operations domain.
+/// </summary>
+/// <param name="DomainModes">
+/// Per-domain cutover modes keyed by domain name (e.g. "FundStructure", "FundAccounts").
+/// When null or empty, all domains default to shadow writes enabled with legacy in-memory reads.
+/// </param>
+public sealed record FundOperationsPersistenceConfig(
+    Dictionary<string, DomainCutoverModeConfig>? DomainModes = null
+);
+
+/// <summary>
+/// Serializable cutover mode for a single fund operations domain.
+/// </summary>
+/// <param name="ShadowWritesEnabled">Whether shadow projection writes are enabled for this domain.</param>
+/// <param name="ReadMode">Read mode: "LegacyInMemory" (default) or "PersistedProjection".</param>
+public sealed record DomainCutoverModeConfig(
+    bool ShadowWritesEnabled = true,
+    string ReadMode = "LegacyInMemory"
 );

@@ -19,6 +19,7 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 | [Provider Degradation Calibration](provider-degradation-calibration.md) | Offline calibration and governance gates for provider degradation kernel promotions |
 | [Cleanup And Maintenance](cleanup-and-maintenance.md) | Safe generated-output cleanup, path hygiene, and repository maintenance rules |
 | [Disk Space Hygiene](disk-space-hygiene.md) | Local disk-space triage and generated artifact retention |
+| [Orphaned Doc Triage Index](orphaned-doc-triage-index.md) | Current orphan-doc intake list linked from doc-health report for cleanup routing |
 
 ## Quick Links
 

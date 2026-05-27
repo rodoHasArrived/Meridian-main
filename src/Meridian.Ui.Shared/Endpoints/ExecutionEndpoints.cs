@@ -181,6 +181,8 @@ public static class ExecutionEndpoints
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(400)
         .Produces<OrderResult>(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
@@ -503,7 +505,26 @@ public static class ExecutionEndpoints
                 request.StrategyName,
                 request.InitialCash,
                 request.Symbols);
-            var session = await persistence.CreateSessionAsync(dto, context.RequestAborted).ConfigureAwait(false);
+            PaperSessionSummaryDto session;
+            try
+            {
+                session = await persistence.CreateSessionAsync(dto, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Json(
+                    new TradingActionResult(
+                        ActionId: actionId,
+                        Status: "Rejected",
+                        Message: ex.Message,
+                        OccurredAt: DateTimeOffset.UtcNow),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status429TooManyRequests);
+            }
 
             await RecordOperatorAuditAsync(
                 context,
@@ -526,6 +547,9 @@ public static class ExecutionEndpoints
         })
         .WithName("CreateExecutionSession")
         .Produces<PaperSessionSummaryDto>(201)
+        .Produces(400)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces(503);
 
         group.MapPost("/sessions/{sessionId}/close", async (string sessionId, HttpContext context) =>
