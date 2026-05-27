@@ -841,9 +841,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private bool NavigateToWithWorkspaceScope(string pageTag, object? parameter = null)
     {
-        var workspaceScope = WorkspaceService.Instance.ActiveWorkspaceScope;
         if (_wpfNavigationService is not null)
         {
+            var workspaceScope = WorkspaceService.Instance.ActiveWorkspaceScope;
             return _wpfNavigationService.NavigateTo(pageTag, parameter, workspaceScope);
         }
 

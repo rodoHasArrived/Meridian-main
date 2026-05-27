@@ -47,7 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
-    private readonly AsyncLocal<IServiceProvider?> _navigationScopedProvider = new();
+    private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -128,15 +128,15 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// </summary>
     public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
     {
-        var previousProvider = _navigationScopedProvider.Value;
-        _navigationScopedProvider.Value = workspaceScope?.ServiceProvider;
+        var previousProvider = _navigationScopeProvider.Value;
+        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
         try
         {
             return base.NavigateTo(pageTag, parameter);
         }
         finally
         {
-            _navigationScopedProvider.Value = previousProvider;
+            _navigationScopeProvider.Value = previousProvider;
         }
     }
 
@@ -153,7 +153,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 pageType,
                 parameter,
                 WorkspaceChromePresentationMode.Standalone,
-                _navigationScopedProvider.Value);
+                _navigationScopeProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
             {
