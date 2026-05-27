@@ -28,6 +28,7 @@ Provider-agnostic prompt documentation is indexed in
 |--------|---------|
 | `add-data-provider.prompt.yml` | Add a new streaming or historical data provider |
 | `provider-implementation-guide.prompt.yml` | Step-by-step `IMarketDataClient` implementation guide |
+| `operations-continuity-core.prompt.yml` | Implement and harden the end-to-end operations continuity workflow |
 | `add-export-format.prompt.yml` | Add a new data export format |
 | `write-unit-tests.prompt.yml` | Generate unit tests for a class or method |
 
