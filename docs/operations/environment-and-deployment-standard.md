@@ -1,0 +1,29 @@
+# Environment, Secret, and Deployment Standard
+
+## Environment model
+
+Use three deployment tiers with consistent variable names:
+
+- `MERIDIAN_ENVIRONMENT=dev|staging|prod`
+- `MERIDIAN_REGION`
+- `MERIDIAN_INSTANCE_ROLE=api|worker|desktop-gateway`
+
+## Configuration contract
+
+- Non-secret config from environment-specific overlays (`config/appsettings.<env>.json`).
+- Secret values from secret manager references only (no inline plaintext in manifests).
+- All config keys mapped through options binding and validated on startup.
+
+## Secret management rules
+
+- Store provider/API credentials in external secret stores.
+- Inject into runtime via mounted files or environment references.
+- Rotate secrets without image rebuild; support dual-key overlap during rotation.
+- Never emit secret values in logs, metrics labels, or error payloads.
+
+## Promotion standard
+
+1. Build immutable artifact once.
+2. Promote same artifact across environments with env/secret overlays only.
+3. Run readiness gate + synthetic surge validation before production promotion.
+4. Attach evidence packet to release record.
