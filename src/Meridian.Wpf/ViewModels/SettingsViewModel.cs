@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Application.Config;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -60,20 +62,28 @@ public sealed class SettingsViewModel : BindableBase
     public SettingsViewModel(
         WpfServices.ConfigService configService,
         WpfServices.NotificationService notificationService,
-        WpfServices.StatusService statusService)
+        WpfServices.StatusService statusService,
+        IFeatureCapabilityGate? capabilityGate = null,
+        IEnumerable<FeatureCapabilityDescriptor>? capabilityDescriptors = null)
     {
         _configService = configService;
         _notificationService = notificationService;
         _statusService = statusService;
         _settingsConfigService = SettingsConfigurationService.Instance;
-
         StoredCredentials = new ObservableCollection<CredentialDisplayInfo>();
         RecentActivity = new ObservableCollection<SettingsActivityItem>();
+        CapabilityToggles = new ObservableCollection<FeatureCapabilityToggleViewModel>(
+            BuildCapabilityToggles(capabilityGate, capabilityDescriptors));
         ShellDensityModes =
         [
             ShellDensityMode.Standard,
             ShellDensityMode.Compact
         ];
+
+        if (capabilityGate is not null)
+        {
+            capabilityGate.Changes.Subscribe(new CapabilityChangeObserver(this));
+        }
 
         // Navigation commands
         AddProviderCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("AddProviderWizard"));
@@ -108,6 +118,7 @@ public sealed class SettingsViewModel : BindableBase
 
     public ObservableCollection<CredentialDisplayInfo> StoredCredentials { get; }
     public ObservableCollection<SettingsActivityItem> RecentActivity { get; }
+    public ObservableCollection<FeatureCapabilityToggleViewModel> CapabilityToggles { get; }
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
 
     // ── Bindable Properties ───────────────────────────────────────────────────
@@ -323,6 +334,7 @@ public sealed class SettingsViewModel : BindableBase
     public void Initialize()
     {
         LoadDesktopPreferences();
+        RefreshCapabilityToggles();
         ConfigPath = _configService.ConfigPath;
         RefreshStoredCredentials();
         RefreshCredentialVault();
@@ -343,6 +355,35 @@ public sealed class SettingsViewModel : BindableBase
         {
             _loadingDesktopPreferences = false;
         }
+    }
+
+    private static IEnumerable<FeatureCapabilityToggleViewModel> BuildCapabilityToggles(
+        IFeatureCapabilityGate? capabilityGate,
+        IEnumerable<FeatureCapabilityDescriptor>? descriptors)
+    {
+        if (capabilityGate is null || descriptors is null)
+        {
+            return [];
+        }
+
+        return descriptors
+            .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .Select(descriptor => new FeatureCapabilityToggleViewModel(descriptor, capabilityGate));
+    }
+
+    private void RefreshCapabilityToggles()
+    {
+        foreach (var toggle in CapabilityToggles)
+        {
+            toggle.Refresh();
+        }
+    }
+
+    private void OnCapabilityChanged(CapabilityChangedEvent change)
+    {
+        var toggle = CapabilityToggles.FirstOrDefault(item =>
+            string.Equals(item.CapabilityKey, change.CapabilityKey, StringComparison.OrdinalIgnoreCase));
+        toggle?.Refresh(change.IsEnabled);
     }
 
     // ── Credential Vault ──────────────────────────────────────────────────────
@@ -628,5 +669,92 @@ public sealed class SettingsViewModel : BindableBase
     private static void OpenUrl(string url)
     {
         Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+    }
+
+    private sealed class CapabilityChangeObserver : IObserver<CapabilityChangedEvent>
+    {
+        private readonly SettingsViewModel _owner;
+
+        public CapabilityChangeObserver(SettingsViewModel owner)
+        {
+            _owner = owner;
+        }
+
+        public void OnCompleted()
+        {
+        }
+
+        public void OnError(Exception error)
+        {
+        }
+
+        public void OnNext(CapabilityChangedEvent value)
+        {
+            _owner.OnCapabilityChanged(value);
+        }
+    }
+}
+
+public sealed class FeatureCapabilityToggleViewModel : BindableBase
+{
+    private readonly IFeatureCapabilityGate _gate;
+    private bool _isEnabled;
+
+    public FeatureCapabilityToggleViewModel(
+        FeatureCapabilityDescriptor descriptor,
+        IFeatureCapabilityGate gate)
+    {
+        Descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+        _gate = gate ?? throw new ArgumentNullException(nameof(gate));
+        _isEnabled = _gate.IsEnabled(descriptor.CapabilityKey);
+    }
+
+    public FeatureCapabilityDescriptor Descriptor { get; }
+
+    public string CapabilityKey => Descriptor.CapabilityKey;
+
+    public string DisplayName => Descriptor.DisplayName;
+
+    public string Description => Descriptor.Description;
+
+    public bool IsPermanent => Descriptor.IsPermanent;
+
+    public bool CanToggle => !Descriptor.IsPermanent;
+
+    public string StateText => IsPermanent
+        ? "Always on"
+        : IsEnabled
+            ? "Enabled"
+            : "Disabled";
+
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
+        {
+            if (Descriptor.IsPermanent)
+            {
+                value = true;
+            }
+
+            if (!SetProperty(ref _isEnabled, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(StateText));
+            _gate.SetEnabled(CapabilityKey, value);
+        }
+    }
+
+    public void Refresh()
+        => Refresh(_gate.IsEnabled(CapabilityKey));
+
+    public void Refresh(bool isEnabled)
+    {
+        if (SetProperty(ref _isEnabled, isEnabled, nameof(IsEnabled)))
+        {
+            RaisePropertyChanged(nameof(StateText));
+        }
     }
 }

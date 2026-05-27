@@ -82,6 +82,10 @@ public static class ArchiveMaintenanceEndpoints
             {
                 return Results.BadRequest(ex.Message);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to update schedule: {ex.Message}");
@@ -98,6 +102,10 @@ public static class ArchiveMaintenanceEndpoints
                 return deleted
                     ? Results.Ok(new { message = $"Schedule '{scheduleId}' deleted" })
                     : Results.NotFound($"Schedule '{scheduleId}' not found");
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -121,6 +129,10 @@ public static class ArchiveMaintenanceEndpoints
             catch (KeyNotFoundException)
             {
                 return Results.NotFound($"Schedule '{scheduleId}' not found");
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -148,6 +160,10 @@ public static class ArchiveMaintenanceEndpoints
 
                 return Results.Json(execution, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Maintenance execution failed: {ex.Message}");
@@ -164,6 +180,10 @@ public static class ArchiveMaintenanceEndpoints
                 return cancelled
                     ? Results.Ok(new { message = $"Execution '{executionId}' cancelled" })
                     : Results.NotFound($"Execution '{executionId}' not found or not running");
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -182,6 +202,10 @@ public static class ArchiveMaintenanceEndpoints
                 var executions = scheduleManager.ExecutionHistory.GetRecentExecutions(limit ?? 50);
                 return Results.Json(executions, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get executions: {ex.Message}");
@@ -199,6 +223,10 @@ public static class ArchiveMaintenanceEndpoints
                     ? Results.NotFound($"Execution '{executionId}' not found")
                     : Results.Json(execution, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get execution: {ex.Message}");
@@ -215,6 +243,10 @@ public static class ArchiveMaintenanceEndpoints
                 var executions = scheduleManager.ExecutionHistory.GetExecutionsForSchedule(scheduleId, limit ?? 50);
                 return Results.Json(executions, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get schedule executions: {ex.Message}");
@@ -229,6 +261,10 @@ public static class ArchiveMaintenanceEndpoints
             {
                 var executions = scheduleManager.ExecutionHistory.GetFailedExecutions(limit ?? 50);
                 return Results.Json(executions, JsonOptions);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -245,6 +281,10 @@ public static class ArchiveMaintenanceEndpoints
                 var summary = scheduleManager.GetStatusSummary();
                 return Results.Json(summary, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get schedule summary: {ex.Message}");
@@ -260,6 +300,10 @@ public static class ArchiveMaintenanceEndpoints
             {
                 var summary = scheduleManager.ExecutionHistory.GetScheduleSummary(scheduleId, recentCount ?? 10);
                 return Results.Json(summary, JsonOptions);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -288,6 +332,10 @@ public static class ArchiveMaintenanceEndpoints
 
                 return Results.Json(enrichedStats, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get statistics: {ex.Message}");
@@ -302,6 +350,10 @@ public static class ArchiveMaintenanceEndpoints
             {
                 var status = maintenanceService.GetStatus();
                 return Results.Json(status, JsonOptions);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -343,6 +395,10 @@ public static class ArchiveMaintenanceEndpoints
             catch (TimeZoneNotFoundException)
             {
                 return Results.BadRequest($"Invalid timezone: {req.TimeZoneId}");
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -402,6 +458,10 @@ public static class ArchiveMaintenanceEndpoints
 
                 return Results.Json(presets, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get presets: {ex.Message}");
@@ -425,6 +485,10 @@ public static class ArchiveMaintenanceEndpoints
 
                 return Results.Json(taskTypes, JsonOptions);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Problem($"Failed to get task types: {ex.Message}");
@@ -446,6 +510,10 @@ public static class ArchiveMaintenanceEndpoints
                     message = $"Cleaned up {deletedCount} old execution records",
                     deletedCount
                 });
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

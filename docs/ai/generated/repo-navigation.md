@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-05-03T11:26:49Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-05-27T03:07:32Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -9,6 +9,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 | Task shape | Start here | Authoritative docs |
 |---|---|---|
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
+| Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
 | WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/plans/trading-workstation-migration-blueprint.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.McpServer`, `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
@@ -39,9 +40,9 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
-- Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Wpf/App.xaml.cs`, `src/Meridian.Wpf/MainWindow.xaml`
-- Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Wpf/App.xaml.cs`, `src/Meridian.Wpf/MainWindow.xaml`
+- Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
+- Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
 
@@ -79,9 +80,9 @@ Core domain rules, F# interop, ledger logic, and direct lending aggregates.
 
 MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LLMs.
 
-- Projects: `Meridian.Mcp`, `Meridian.McpServer`
-- Entrypoints: `src/Meridian.Mcp/Program.cs`, `src/Meridian.McpServer/Program.cs`, `src/Meridian.McpServer/Prompts`, `src/Meridian.McpServer/Resources`
-- Key contracts: `src/Meridian.Mcp/Program.cs`, `src/Meridian.McpServer/Program.cs`
+- Projects: `Meridian.Mcp`
+- Entrypoints: `src/Meridian.Mcp/Program.cs`
+- Key contracts: `src/Meridian.Mcp/Program.cs`
 - Common tasks: mcp work, new mcp tool, resource routing
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
 
@@ -99,10 +100,31 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | `IRiskRule` | interface | `Meridian.Risk` | Key contract for pre-trade risk validation work. |
 | `IStrategyLifecycle` | interface | `Meridian.Strategies` | Primary lifecycle abstraction for strategy run work. |
 | `MainWindow` | wpf-shell | `Meridian.Wpf` | Desktop shell entrypoint for WPF workflow and navigation issues. |
-| `Program` | mcp-entrypoint | `Meridian.McpServer` | Registration point for MCP tools, resources, and prompts. |
 
 ## Dependency Highlights
 
 | From | To | Why it matters |
 |---|---|---|
+
+## What Changed Recently
+
+Recent source-file activity from the last 14 days.
+
+| File | Subsystem | Last commit | Touches |
+|---|---|---|---|
+| `src/Meridian.Application/Accounts/IAccountManagementService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Accounts/IAccountQueryService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/AutoGapRemediationService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/BackfillCostEstimator.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/BackfillRequest.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/BackfillResult.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/BackfillStatusStore.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/BackfillStatusStoreJsonContext.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/GapBackfillService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backfill/SymbolValidationSignal.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backtesting/BacktestPreflightService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Application/Backtesting/BacktestStudioContracts.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
 

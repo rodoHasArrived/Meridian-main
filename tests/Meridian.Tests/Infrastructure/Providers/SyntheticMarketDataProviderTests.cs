@@ -15,7 +15,7 @@ public sealed class SyntheticMarketDataProviderTests
     [Fact]
     public async Task HistoricalProvider_ReturnsAdjustedBars_WithCorporateActions()
     {
-        var provider = new SyntheticHistoricalDataProvider(new SyntheticMarketDataConfig(Enabled: true));
+        var provider = SyntheticProviderTestHarness.CreateHistorical();
 
         var bars = await provider.GetAdjustedDailyBarsAsync("NVDA", new DateOnly(2024, 6, 3), new DateOnly(2024, 6, 14));
         var dividends = await provider.GetDividendsAsync("NVDA", new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31));
@@ -31,7 +31,7 @@ public sealed class SyntheticMarketDataProviderTests
     [Fact]
     public async Task HistoricalProvider_ReturnsQuotesTradesAndAuctions()
     {
-        var provider = new SyntheticHistoricalDataProvider(new SyntheticMarketDataConfig(Enabled: true, HistoricalTradeDensityPerDay: 12, HistoricalQuoteDensityPerDay: 16));
+        var provider = SyntheticProviderTestHarness.CreateHistorical(SyntheticProviderTestHarness.BuildScenarioConfig(replayBarsLimit: 20));
         var start = new DateTimeOffset(2024, 3, 18, 13, 30, 0, TimeSpan.Zero);
         var end = new DateTimeOffset(2024, 3, 18, 20, 0, 0, TimeSpan.Zero);
 
@@ -70,6 +70,31 @@ public sealed class SyntheticMarketDataProviderTests
     }
 
     [Fact]
+    public async Task StreamingClient_SessionClose_DisconnectStopsSyntheticPublishLoops()
+    {
+        var publisher = new RecordingPublisher();
+        await using var client = new SyntheticMarketDataClient(
+            publisher,
+            new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 50));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await client.ConnectAsync(timeout.Token);
+        client.SubscribeTrades(new SymbolConfig("MSFT", SubscribeTrades: true, SubscribeDepth: false));
+
+        while (publisher.Events.IsEmpty)
+        {
+            await Task.Delay(20, timeout.Token);
+        }
+
+        await client.DisconnectAsync(timeout.Token);
+        var countAfterDisconnect = publisher.Events.Count;
+
+        await Task.Delay(150, timeout.Token);
+
+        publisher.Events.Count.Should().Be(countAfterDisconnect);
+    }
+
+    [Fact]
     public void SubscribeTrades_NullConfig_ThrowsArgumentNullException()
     {
         var publisher = new RecordingPublisher();
@@ -91,6 +116,22 @@ public sealed class SyntheticMarketDataProviderTests
 
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("cfg");
+    }
+
+
+    [Fact]
+    public async Task HistoricalProvider_ScenarioTimeout_IsRepeatable()
+    {
+        var provider = SyntheticProviderTestHarness.CreateHistorical(
+            SyntheticProviderTestHarness.BuildScenarioConfig(timeoutEveryNCalls: 2));
+
+        var start = new DateOnly(2024, 4, 1);
+        var end = new DateOnly(2024, 4, 5);
+
+        await provider.GetAdjustedDailyBarsAsync("AAPL", start, end);
+        var act = async () => await provider.GetAdjustedDailyBarsAsync("AAPL", start, end);
+
+        await act.Should().ThrowAsync<TimeoutException>();
     }
 
     private sealed class RecordingPublisher : IMarketEventPublisher

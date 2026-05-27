@@ -22,6 +22,10 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private Microsoft.AspNetCore.Builder.WebApplication? _app;
     private string? _tempConfigDir;
     private string? _originalAuthMode;
+    private string? _originalApiKey;
+    private string? _originalUsername;
+    private string? _originalPassword;
+    private string? _originalUsers;
     private string? _originalDisableRateLimit;
 
     public HttpClient Client { get; private set; } = null!;
@@ -42,8 +46,16 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
+        _originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        _originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
+        _originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
+        _originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         _originalDisableRateLimit = Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT");
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+        Environment.SetEnvironmentVariable("MDC_USERNAME", null);
+        Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
+        Environment.SetEnvironmentVariable("MDC_USERS", null);
         // All TestServer requests share a null RemoteIpAddress which maps to the "unknown"
         // partition key; 10 requests would exhaust the production limit immediately.
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
@@ -86,6 +98,10 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         if (_app != null)
             await _app.DisposeAsync();
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", _originalAuthMode);
+        Environment.SetEnvironmentVariable("MDC_API_KEY", _originalApiKey);
+        Environment.SetEnvironmentVariable("MDC_USERNAME", _originalUsername);
+        Environment.SetEnvironmentVariable("MDC_PASSWORD", _originalPassword);
+        Environment.SetEnvironmentVariable("MDC_USERS", _originalUsers);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", _originalDisableRateLimit);
         if (_tempConfigDir != null && Directory.Exists(_tempConfigDir))
         {

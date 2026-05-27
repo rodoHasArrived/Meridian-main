@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -11,11 +12,6 @@ namespace Meridian.Ui.Shared.Workflows;
 public sealed class FileWorkflowPresetStore : IWorkflowPresetStore
 {
     private const int SnapshotVersion = 1;
-
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        WriteIndented = true
-    };
 
     private readonly string _snapshotPath;
     private readonly ILogger<FileWorkflowPresetStore> _logger;
@@ -76,8 +72,22 @@ public sealed class FileWorkflowPresetStore : IWorkflowPresetStore
         try
         {
             await using var stream = File.OpenRead(_snapshotPath);
-            var snapshot = await JsonSerializer.DeserializeAsync<WorkflowPresetSnapshot>(stream, JsonOptions, ct)
+            var snapshot = await JsonSerializer.DeserializeAsync(
+                    stream,
+                    WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot,
+                    ct)
                 .ConfigureAwait(false);
+            if (snapshot is null)
+            {
+                return [];
+            }
+
+            if (snapshot.Version != SnapshotVersion)
+            {
+                throw new InvalidOperationException(
+                    $"Workflow preset snapshot version {snapshot.Version} is not supported. Expected version {SnapshotVersion}: {_snapshotPath}");
+            }
+
             return snapshot?.Presets ?? [];
         }
         catch (JsonException ex)
@@ -91,9 +101,13 @@ public sealed class FileWorkflowPresetStore : IWorkflowPresetStore
     {
         ct.ThrowIfCancellationRequested();
         var snapshot = new WorkflowPresetSnapshot(SnapshotVersion, presets);
-        var json = JsonSerializer.Serialize(snapshot, JsonOptions);
+        var json = JsonSerializer.Serialize(snapshot, WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);
         await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
     }
-
-    private sealed record WorkflowPresetSnapshot(int Version, IReadOnlyList<WorkflowPresetDto> Presets);
 }
+
+internal sealed record WorkflowPresetSnapshot(int Version, IReadOnlyList<WorkflowPresetDto> Presets);
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web, WriteIndented = true)]
+[JsonSerializable(typeof(WorkflowPresetSnapshot))]
+internal sealed partial class WorkflowPresetJsonContext : JsonSerializerContext;

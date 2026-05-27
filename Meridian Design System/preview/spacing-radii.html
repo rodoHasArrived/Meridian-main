@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Radii</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 18px; }
   .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -13,6 +15,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Radii">
+<h1 class="preview-sr-only">Radii</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="grid">
     <div class="card" style="border-radius: 4px;"><div class="label">sm</div><div class="val">4px</div></div>
     <div class="card" style="border-radius: 6px;"><div class="label">md</div><div class="val">6px</div></div>
@@ -20,5 +25,6 @@
     <div class="card" style="border-radius: 10px;"><div class="label">xl</div><div class="val">10px</div></div>
     <div class="card" style="border-radius: 9999px;"><div class="label">full</div><div class="val">pill</div></div>
   </div>
+</main>
 </body>
 </html>

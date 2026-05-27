@@ -75,6 +75,7 @@ public sealed class WebSocketProviderBaseTests
         // Expose protected helpers for testing
         public bool IsConnectedPublic => Connected;
         public SubscriptionManager SubscriptionsPublic => Subscriptions;
+        public void RecordActivityPublic() => RecordActivity();
     }
 
     // -----------------------------------------------------------------------
@@ -142,6 +143,64 @@ public sealed class WebSocketProviderBaseTests
         provider.SubscriptionsPublic.GetSymbolsByKind("depth").Should().Contain("NVDA");
     }
 
+    [Fact]
+    public async Task SubscribeOrGetExisting_DuplicateSymbolAndKind_ReturnsExistingId()
+    {
+        await using var provider = new StubProvider();
+
+        var firstId = provider.SubscriptionsPublic.SubscribeOrGetExisting(" spy ", " trades ", "watchlist");
+        var secondId = provider.SubscriptionsPublic.SubscribeOrGetExisting("SPY", "trades", "strategy");
+
+        secondId.Should().Be(firstId, "reconnect recovery should not duplicate an active upstream subscription");
+        provider.SubscriptionsPublic.Count.Should().Be(1);
+        provider.SubscriptionsPublic.GetSubscription(firstId)!.SourceOfRequest.Should().Be("watchlist");
+    }
+
+    [Fact]
+    public async Task ValidateSubscriptionRequest_DetectsDuplicateAndMissingFields()
+    {
+        await using var provider = new StubProvider();
+        var existingId = provider.SubscriptionsPublic.Subscribe("MSFT", "quotes");
+
+        var duplicate = provider.SubscriptionsPublic.ValidateSubscriptionRequest(" msft ", "quotes");
+        var missingSymbol = provider.SubscriptionsPublic.ValidateSubscriptionRequest(" ", "quotes");
+        var missingKind = provider.SubscriptionsPublic.ValidateSubscriptionRequest("MSFT", " ");
+
+        duplicate.IsValid.Should().BeTrue();
+        duplicate.IsDuplicate.Should().BeTrue();
+        duplicate.ExistingSubscriptionId.Should().Be(existingId);
+        duplicate.NormalizedSymbol.Should().Be("msft");
+        missingSymbol.IsValid.Should().BeFalse();
+        missingSymbol.FailureReason.Should().Contain("Symbol");
+        missingKind.IsValid.Should().BeFalse();
+        missingKind.FailureReason.Should().Contain("kind");
+    }
+
+    [Fact]
+    public async Task SubscriptionDiagnostics_TrackMessagesErrorsRecoveryAndStaleness()
+    {
+        await using var provider = new StubProvider();
+        var now = DateTimeOffset.UtcNow;
+        var id = provider.SubscriptionsPublic.Subscribe("QQQ", "trades", "strategy-run");
+
+        provider.SubscriptionsPublic.RecordMessageReceived(id, now.AddMinutes(-10)).Should().BeTrue();
+        provider.SubscriptionsPublic.GetStaleSubscriptions(TimeSpan.FromMinutes(5), now)
+            .Should().ContainSingle(s => s.Id == id);
+
+        provider.SubscriptionsPublic.RecordSubscriptionError(id, "provider rejected subscription").Should().BeTrue();
+        provider.SubscriptionsPublic.RecordRecoveryAttempt(id, "recovering after reconnect").Should().BeTrue();
+
+        var subscription = provider.SubscriptionsPublic.GetSubscription(id);
+        subscription.Should().NotBeNull();
+        subscription!.Status.Should().Be(SubscriptionStatus.Recovering);
+        subscription.RecoveryAttempts.Should().Be(1);
+        subscription.LastError.Should().Be("recovering after reconnect");
+
+        var snapshot = provider.SubscriptionsPublic.GetSnapshot();
+        snapshot.RecoveringSubscriptions.Should().Be(1);
+        snapshot.FailedSubscriptions.Should().Be(0);
+    }
+
     // -----------------------------------------------------------------------
     // Initial state
     // -----------------------------------------------------------------------
@@ -152,6 +211,71 @@ public sealed class WebSocketProviderBaseTests
         await using var provider = new StubProvider();
 
         provider.IsConnectedPublic.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnosticsSource_BeforeConnect_ExposesProviderLifecycleSnapshot()
+    {
+        await using var provider = new StubProvider(providerName: "stub-diagnostics");
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.ProviderName.Should().Be("stub-diagnostics");
+        snapshot.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Configured);
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.IsReconnecting.Should().BeFalse();
+        snapshot.LastError.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnosticsSource_ForwardsLifecycleChangeEvents()
+    {
+        await using var provider = new StubProvider();
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+        var observedStates = new List<ProviderConnectionLifecycleState>();
+
+        diagnosticsSource.ConnectionDiagnosticsChanged += snapshot => observedStates.Add(snapshot.LifecycleState);
+
+        await provider.DisconnectAsync();
+
+        observedStates.Should().Contain(ProviderConnectionLifecycleState.Disconnecting);
+        observedStates.Should().Contain(ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    [Fact]
+    public async Task RecordActivity_UpdatesProviderLevelHeartbeatDiagnostics()
+    {
+        await using var provider = new StubProvider();
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+
+        provider.RecordActivityPublic();
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+        snapshot.LastHeartbeatReceivedAt.Should().NotBeNull();
+        snapshot.LastMessageReceivedAt.Should().BeNull("manual provider heartbeat activity is not a market-data payload");
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnosticsSource_IncludesSubscriptionHealthCounts()
+    {
+        await using var provider = new StubProvider();
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)provider;
+        var now = DateTimeOffset.UtcNow;
+        var activeId = provider.SubscriptionsPublic.Subscribe("SPY", "trades");
+        var failedId = provider.SubscriptionsPublic.Subscribe("QQQ", "quotes");
+        var recoveringId = provider.SubscriptionsPublic.Subscribe("IWM", "depth");
+
+        provider.SubscriptionsPublic.RecordMessageReceived(activeId, now.AddSeconds(-5)).Should().BeTrue();
+        provider.SubscriptionsPublic.RecordSubscriptionError(failedId, "provider rejected subscription").Should().BeTrue();
+        provider.SubscriptionsPublic.RecordRecoveryAttempt(recoveringId, "recovering after reconnect").Should().BeTrue();
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.ActiveSubscriptions.Should().Be(3);
+        snapshot.FailedSubscriptions.Should().Be(1);
+        snapshot.RecoveringSubscriptions.Should().Be(1);
+        snapshot.LastSubscriptionMessageAt.Should().Be(now.AddSeconds(-5));
     }
 
     // -----------------------------------------------------------------------

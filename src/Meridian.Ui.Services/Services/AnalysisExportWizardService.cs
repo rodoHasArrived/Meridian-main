@@ -1,5 +1,7 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace Meridian.Ui.Services;
 
@@ -9,6 +11,11 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public sealed class AnalysisExportWizardService
 {
+    private static readonly JsonSerializerOptions NotebookJsonOptions = new(DesktopJsonOptions.PrettyPrint)
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private readonly DataCompletenessService _completenessService;
     private readonly StorageAnalyticsService _storageService;
     private readonly ConfigService _configService;
@@ -624,25 +631,25 @@ public sealed class AnalysisExportWizardService
             var appConfig = await _configService.LoadConfigAsync();
             var dataRoot = _configService.ResolveDataRoot(appConfig);
 
-            // Determine source files based on data types requested
+            // Determine source files based on data types requested.
+            // Symbols like BRK/B appear in file names with provider-specific separators,
+            // so search normalized filename tokens instead of embedding the raw symbol in a glob.
             var sourceFiles = new List<string>();
+            var seenSourceFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var dataType in config.DataTypes)
             {
-                var pattern = dataType switch
-                {
-                    "trades" => $"*{symbol}*trade*.jsonl*",
-                    "quotes" => $"*{symbol}*quote*.jsonl*",
-                    "depth" => $"*{symbol}*depth*.jsonl*",
-                    "bars_1m" or "bars_5m" or "bars_1h" or "bars_1d" => $"*{symbol}*bar*.jsonl*",
-                    _ => $"*{symbol}*.jsonl*"
-                };
-
                 if (Directory.Exists(dataRoot))
                 {
-                    var files = Directory.GetFiles(dataRoot, pattern, SearchOption.AllDirectories)
-                        .Where(f => IsInDateRange(f, config.FromDate, config.ToDate))
-                        .ToList();
-                    sourceFiles.AddRange(files);
+                    foreach (var pattern in BuildSourceFileSearchPatterns(symbol, dataType))
+                    {
+                        var files = Directory.GetFiles(dataRoot, pattern, SearchOption.AllDirectories)
+                            .Where(f => IsInDateRange(f, config.FromDate, config.ToDate));
+                        foreach (var file in files)
+                        {
+                            if (seenSourceFiles.Add(file))
+                                sourceFiles.Add(file);
+                        }
+                    }
                 }
             }
 
@@ -714,6 +721,61 @@ public sealed class AnalysisExportWizardService
         return true;
     }
 
+    private static IEnumerable<string> BuildSourceFileSearchPatterns(string symbol, string dataType)
+    {
+        var dataFragment = dataType switch
+        {
+            "trades" => "trade",
+            "quotes" => "quote",
+            "depth" => "depth",
+            "bars_1m" or "bars_5m" or "bars_1h" or "bars_1d" => "bar",
+            _ => string.Empty
+        };
+
+        foreach (var token in BuildSymbolFileNameTokens(symbol))
+        {
+            yield return string.IsNullOrEmpty(dataFragment)
+                ? $"*{token}*.jsonl*"
+                : $"*{token}*{dataFragment}*.jsonl*";
+        }
+    }
+
+    private static IEnumerable<string> BuildSymbolFileNameTokens(string symbol)
+    {
+        var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        AddToken(CreateSafeFileStem(symbol));
+        AddToken(ReplaceUnsafeSymbolFileNameCharacters(symbol, '-'));
+        AddToken(ReplaceUnsafeSymbolFileNameCharacters(symbol, '_'));
+
+        var compact = new string(symbol.Trim().Where(char.IsLetterOrDigit).ToArray());
+        AddToken(compact);
+        return tokens;
+
+        void AddToken(string token)
+        {
+            var trimmed = token.Trim('.', ' ', '-', '_');
+            if (trimmed.Length > 0)
+                tokens.Add(trimmed);
+        }
+    }
+
+    private static string ReplaceUnsafeSymbolFileNameCharacters(string symbol, char replacement)
+    {
+        var trimmed = symbol.Trim();
+        if (trimmed.Length == 0)
+            return "symbol";
+
+        var builder = new StringBuilder(trimmed.Length);
+        foreach (var character in trimmed)
+        {
+            builder.Append(char.IsLetterOrDigit(character) || character is '.' or '-' or '_'
+                ? character
+                : replacement);
+        }
+
+        return builder.ToString();
+    }
+
     /// <summary>
     /// Exports data to CSV format.
     /// </summary>
@@ -724,7 +786,7 @@ public sealed class AnalysisExportWizardService
         CancellationToken ct)
     {
         var result = new SymbolExportResult { Symbol = symbol };
-        var outputFile = Path.Combine(config.OutputPath, $"{CreateSafeFileStem(symbol)}.csv");
+        var outputFile = Path.Combine(config.OutputPath, $"{CreateUniqueFileStem(symbol)}.csv");
         var headers = await DiscoverCsvHeadersAsync(sourceFiles, ct);
 
         await using var writer = new StreamWriter(outputFile, false, Encoding.UTF8);
@@ -895,6 +957,15 @@ public sealed class AnalysisExportWizardService
         return builder.ToString();
     }
 
+    internal static string CreateUniqueFileStem(string symbol)
+    {
+        var safeStem = CreateSafeFileStem(symbol);
+        var normalizedSymbol = symbol.Trim();
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedSymbol));
+        var suffix = Convert.ToHexString(hashBytes, 0, 4).ToLowerInvariant();
+        return $"{safeStem}_{suffix}";
+    }
+
     /// <summary>
     /// Placeholder for Parquet export (requires Apache.Arrow or Parquet.Net library).
     /// </summary>
@@ -907,18 +978,19 @@ public sealed class AnalysisExportWizardService
         // Parquet export requires additional libraries (Apache.Arrow.Parquet)
         // For now, fall back to CSV with a note
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         // Rename to indicate it's a placeholder
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
+            var csvFileName = Path.GetFileName(csvFile);
             var parquetNote = Path.Combine(config.OutputPath, $"{safeStem}_parquet_note.txt");
             await File.WriteAllTextAsync(parquetNote,
                 "Note: Full Parquet export requires Apache.Arrow library.\n" +
                 "CSV data has been exported as a fallback.\n" +
                 "To convert to Parquet, use the generated Python loader with pandas:\n" +
-                "  df = pd.read_csv('" + $"{safeStem}.csv" + "')\n" +
+                "  df = pd.read_csv('" + csvFileName + "')\n" +
                 "  df.to_parquet('" + $"{safeStem}.parquet" + "')", ct);
             result.OutputFile = csvFile;
             result.GeneratedFiles.Add(parquetNote);
@@ -941,12 +1013,13 @@ public sealed class AnalysisExportWizardService
         // Excel export requires additional libraries (EPPlus, ClosedXML, etc.)
         // For now, export to CSV which can be opened in Excel
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         // Add a note file explaining the Excel fallback
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
+            var csvFileName = Path.GetFileName(csvFile);
             var excelNote = Path.Combine(config.OutputPath, $"{safeStem}_excel_note.txt");
             await File.WriteAllTextAsync(excelNote,
                 "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" +
@@ -955,7 +1028,7 @@ public sealed class AnalysisExportWizardService
                 "  Option 1: Open the CSV directly in Excel and save as .xlsx\n" +
                 "  Option 2: Use Python with openpyxl:\n" +
                 "    import pandas as pd\n" +
-                $"    df = pd.read_csv('{safeStem}.csv')\n" +
+                $"    df = pd.read_csv('{csvFileName}')\n" +
                 $"    df.to_excel('{safeStem}.xlsx', index=False)\n\n" +
                 "  Option 3: Use the generated Python loader and export to Excel\n\n" +
                 "The CSV file is fully compatible with Excel and can be imported using:\n" +
@@ -981,11 +1054,12 @@ public sealed class AnalysisExportWizardService
         // HDF5 export requires additional libraries (HDF5.NET, or Python h5py)
         // For now, export to CSV with conversion instructions
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
+            var csvFileName = Path.GetFileName(csvFile);
             var hdf5Note = Path.Combine(config.OutputPath, $"{safeStem}_hdf5_note.txt");
             await File.WriteAllTextAsync(hdf5Note,
                 "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" +
@@ -994,7 +1068,7 @@ public sealed class AnalysisExportWizardService
                 "  import pandas as pd\n" +
                 "  import h5py\n" +
                 "  import numpy as np\n\n" +
-                $"  df = pd.read_csv('{safeStem}.csv')\n" +
+                $"  df = pd.read_csv('{csvFileName}')\n" +
                 $"  with h5py.File('{safeStem}.h5', 'w') as f:\n" +
                 "      # Store numeric columns as datasets\n" +
                 "      for col in df.select_dtypes(include=[np.number]).columns:\n" +
@@ -1027,12 +1101,13 @@ public sealed class AnalysisExportWizardService
         // ClickHouse native export requires ClickHouse client tools
         // Export to CSV with ClickHouse import instructions
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
         var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
+            var csvFileName = Path.GetFileName(csvFile);
             var chScript = Path.Combine(config.OutputPath, $"{safeStem}_clickhouse_import.sql");
             var sb = new StringBuilder();
             sb.AppendLine($"-- ClickHouse Import Script for {symbol}");
@@ -1049,10 +1124,10 @@ public sealed class AnalysisExportWizardService
             sb.AppendLine("ORDER BY (symbol, timestamp);");
             sb.AppendLine();
             sb.AppendLine("-- Import from CSV using clickhouse-client:");
-            sb.AppendLine($"-- clickhouse-client --query=\"INSERT INTO {tableName} FORMAT CSV\" < {safeStem}.csv");
+            sb.AppendLine($"-- clickhouse-client --query=\"INSERT INTO {tableName} FORMAT CSV\" < {csvFileName}");
             sb.AppendLine();
             sb.AppendLine("-- Or using HTTP interface:");
-            sb.AppendLine($"-- curl 'http://localhost:8123/?query=INSERT%20INTO%20{tableName}%20FORMAT%20CSV' --data-binary @{safeStem}.csv");
+            sb.AppendLine($"-- curl 'http://localhost:8123/?query=INSERT%20INTO%20{tableName}%20FORMAT%20CSV' --data-binary @{csvFileName}");
             sb.AppendLine();
             sb.AppendLine("-- Benefits of ClickHouse:");
             sb.AppendLine("--   - Columnar storage with high compression");
@@ -1081,7 +1156,7 @@ public sealed class AnalysisExportWizardService
         // Lean format requires specific directory structure and format
         // Export to CSV with instructions for Lean format conversion
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
@@ -1122,7 +1197,7 @@ public sealed class AnalysisExportWizardService
         CancellationToken ct)
     {
         var result = new SymbolExportResult { Symbol = symbol };
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
         var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
 
         // First export data as CSV for COPY command
@@ -1171,7 +1246,8 @@ public sealed class AnalysisExportWizardService
     {
         // First export as CSV
         var csvResult = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
+        var csvFileName = Path.GetFileName(csvResult.OutputFile);
 
         // Generate Jupyter notebook
         var notebookFile = Path.Combine(config.OutputPath, $"{safeStem}_analysis.ipynb");
@@ -1214,7 +1290,7 @@ public sealed class AnalysisExportWizardService
                         "from pathlib import Path\n",
                         "\n",
                         "# Load data\n",
-                        $"df = pd.read_csv('{safeStem}.csv')\n",
+                        $"df = pd.read_csv('{csvFileName}')\n",
                         "print(f'Loaded {len(df):,} records')\n",
                         "df.head()"
                     },
@@ -1256,7 +1332,7 @@ public sealed class AnalysisExportWizardService
             }
         };
 
-        var notebookJson = JsonSerializer.Serialize(notebook, DesktopJsonOptions.PrettyPrint);
+        var notebookJson = JsonSerializer.Serialize(notebook, NotebookJsonOptions);
         await File.WriteAllTextAsync(notebookFile, notebookJson, ct);
 
         var result = csvResult;

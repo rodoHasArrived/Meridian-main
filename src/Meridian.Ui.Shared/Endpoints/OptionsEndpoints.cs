@@ -83,6 +83,14 @@ public static class OptionsEndpoints
             if (service is null)
                 return ServiceUnavailableError("OptionsChainService", jsonOptions);
 
+            if (strikeRange.HasValue && !IsValidStrikeRange(strikeRange.Value))
+            {
+                return ValidationError(
+                    "strikeRange",
+                    $"Strike range must be between 0 and {MaxStrikeRange}.",
+                    jsonOptions);
+            }
+
             // If expiration is specified, fetch that specific chain
             if (!string.IsNullOrWhiteSpace(expiration))
             {
@@ -212,6 +220,14 @@ public static class OptionsEndpoints
                 if (!DateOnly.TryParse(request.Expiration, out var expDate))
                     return ValidationError("expiration", "Invalid expiration date format. Use yyyy-MM-dd.", jsonOptions);
 
+                if (request.StrikeRange.HasValue && !IsValidStrikeRange(request.StrikeRange.Value))
+                {
+                    return ValidationError(
+                        "strikeRange",
+                        $"Strike range must be between 0 and {MaxStrikeRange}.",
+                        jsonOptions);
+                }
+
                 var chain = await service.FetchChainSnapshotAsync(
                     request.UnderlyingSymbol, expDate, request.StrikeRange, ct);
 
@@ -243,6 +259,13 @@ public static class OptionsEndpoints
             ErrorResponse.Validation(message, new[] { new FieldError(field, message) }),
             jsonOptions,
             statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private const int MaxStrikeRange = OptionsChainService.MaxStrikeRange;
+
+    private static bool IsValidStrikeRange(int strikeRange)
+    {
+        return strikeRange >= 0 && strikeRange <= MaxStrikeRange;
     }
 
     private static OptionsChainResponse MapChainToResponse(OptionChainSnapshot chain)

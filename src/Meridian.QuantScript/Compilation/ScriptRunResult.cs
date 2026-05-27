@@ -4,6 +4,17 @@ using Meridian.QuantScript.Plotting;
 namespace Meridian.QuantScript.Compilation;
 
 /// <summary>
+/// Typed trade/fill row surfaced from script execution output.
+/// </summary>
+public sealed record ScriptTradeResult(
+    DateTimeOffset Timestamp,
+    string Symbol,
+    string Side,
+    decimal Quantity,
+    decimal Price,
+    decimal Commission);
+
+/// <summary>
 /// The complete result of a single script execution run.
 /// </summary>
 public sealed record ScriptRunResult(
@@ -17,7 +28,7 @@ public sealed record ScriptRunResult(
     string ConsoleOutput,
     IReadOnlyList<KeyValuePair<string, string>> Metrics,
     IReadOnlyList<PlotRequest> Plots,
-    IReadOnlyList<string> TradesSummary,
+    IReadOnlyList<ScriptTradeResult> Trades,
     IReadOnlyList<BacktestResult> CapturedBacktests,
     IReadOnlyList<ParameterDescriptor> RuntimeParameters,
     ScriptExecutionCheckpoint? Checkpoint = null);

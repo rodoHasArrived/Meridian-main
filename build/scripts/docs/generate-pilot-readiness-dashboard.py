@@ -28,7 +28,7 @@ from dashboard_rendering import (
 
 DATA_SOURCES = [
     "docs/status/provider-validation-matrix.md",
-    "docs/status/dk1-pilot-parity-runbook.md",
+    "docs/status/evidence/dk1-pilot-parity-runbook.md",
     "docs/status/kernel-readiness-dashboard.md",
     "artifacts/pilot-acceptance/latest/pilot-readiness.json",
     "scripts/dev/*dk1*",
@@ -47,6 +47,22 @@ EXPECTED_STAGE_SEQUENCE = [
     "Reconciliation",
     "GovernedReportPack",
 ]
+
+EXPECTED_WAVE_CLAIMS_BY_STAGE = {
+    "TrustedData": ["W2", "W3", "W4"],
+    "ResearchRun": ["W3"],
+    "RunComparison": ["W3"],
+    "PaperPromotion": ["W2", "W3"],
+    "PaperSession": ["W2"],
+    "PortfolioLedgerReview": ["W3", "W4"],
+    "Reconciliation": ["W3", "W4"],
+    "GovernedReportPack": ["W4"],
+}
+
+REQUIRED_LEDGER_ARTIFACT_ROUTES = {
+    "ledger-journal": "/ledger/journal",
+    "ledger-trial-balance": "/ledger/trial-balance",
+}
 
 CHECKS = [
     {
@@ -80,7 +96,7 @@ CHECKS = [
         "id": "parity-runbook",
         "category": "Provider Evidence",
         "label": "DK1 parity runbook names generated packet and run-date artifact requirements",
-        "paths": ["docs/status/dk1-pilot-parity-runbook.md"],
+        "paths": ["docs/status/evidence/dk1-pilot-parity-runbook.md"],
         "terms": [
             "dk1-pilot-parity-packet",
             "operator sign-off",
@@ -195,6 +211,7 @@ def load_pilot_acceptance_artifact_from_payload(
     artifact: dict[str, Any],
     relative_path: str,
 ) -> dict[str, Any]:
+    ledger_artifact_refs = load_ledger_artifact_refs(artifact)
     stage_gates = [
         {
             "stage": str(gate.get("stage", "")),
@@ -202,6 +219,10 @@ def load_pilot_acceptance_artifact_from_payload(
             "status": str(gate.get("status", "")),
             "evidence_ids": [str(item) for item in gate.get("evidenceIds", [])],
             "blockers": [str(item) for item in gate.get("blockers", [])],
+            "wave_claims": [
+                str(item)
+                for item in gate.get("waveClaims", gate.get("wave_claims", []))
+            ],
             "validation": str(gate.get("validation", "")),
         }
         for gate in artifact.get("stageGates", [])
@@ -242,6 +263,10 @@ def load_pilot_acceptance_artifact_from_payload(
         consistency_issues.append(
             "Top-level readiness counts do not match the stage gate details."
         )
+    wave_claim_issues = wave_claim_consistency_issues(stage_gates)
+    if wave_claim_issues:
+        all_stages_ready = False
+        consistency_issues.extend(wave_claim_issues)
     if artifact.get("allStagesReady", False) is True and not all_stages_ready:
         consistency_issues.append(
             "Top-level allStagesReady=true is inconsistent with the stage gate details."
@@ -265,6 +290,13 @@ def load_pilot_acceptance_artifact_from_payload(
         all_stages_ready = False
         consistency_issues.append(f"{self_edge_count} evidence graph self-edge(s) detected.")
 
+    ledger_artifact_issues = []
+    if artifact.get("ledgerEvidenceId"):
+        ledger_artifact_issues = ledger_artifact_consistency_issues(ledger_artifact_refs)
+        if ledger_artifact_issues:
+            all_stages_ready = False
+            consistency_issues.extend(ledger_artifact_issues)
+
     return {
         "status": "loaded",
         "path": relative_path,
@@ -281,6 +313,8 @@ def load_pilot_acceptance_artifact_from_payload(
         "evidence_graph": evidence_graph,
         "evidence_edge_count": len(evidence_graph),
         "evidence_self_edge_count": self_edge_count,
+        "ledger_artifact_refs": ledger_artifact_refs,
+        "ledger_artifact_count": len(ledger_artifact_refs),
         "key_evidence": {
             "provider_evidence_id": artifact.get("providerEvidenceId"),
             "dataset_evidence_id": artifact.get("datasetEvidenceId"),
@@ -295,25 +329,88 @@ def load_pilot_acceptance_artifact_from_payload(
     }
 
 
+def wave_claim_consistency_issues(stage_gates: Sequence[dict[str, Any]]) -> list[str]:
+    issues: list[str] = []
+    for gate in stage_gates:
+        stage = str(gate.get("stage", ""))
+        expected_claims = EXPECTED_WAVE_CLAIMS_BY_STAGE.get(stage)
+        if expected_claims is None:
+            continue
+
+        actual_claims = [str(claim) for claim in gate.get("wave_claims", [])]
+        if actual_claims != expected_claims:
+            actual_text = ", ".join(actual_claims) if actual_claims else "none"
+            issues.append(
+                f"{stage} W2-W4 claims are {actual_text}; expected {', '.join(expected_claims)}."
+            )
+
+        if actual_claims and gate.get("status") != "Ready" and not gate.get("blockers", []):
+            issues.append(
+                f"{stage} carries W2-W4 claims but records no blocker for its non-ready status."
+            )
+
+    return issues
+
+
+def load_ledger_artifact_refs(artifact: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {
+            "artifact_id": str(item.get("artifactId", "")),
+            "kind": str(item.get("kind", "")),
+            "path": item.get("path"),
+            "route": item.get("route"),
+            "generated_at": item.get("generatedAt"),
+            "hash": item.get("hash"),
+            "retained": bool(item.get("retained", False)),
+        }
+        for item in artifact.get("ledgerArtifactRefs", [])
+        if isinstance(item, dict)
+    ]
+
+
+def ledger_artifact_consistency_issues(
+    ledger_artifact_refs: Sequence[dict[str, Any]],
+) -> list[str]:
+    issues: list[str] = []
+    for kind, route_suffix in REQUIRED_LEDGER_ARTIFACT_ROUTES.items():
+        if not any(
+            artifact.get("kind") == kind
+            and str(artifact.get("route") or "").endswith(route_suffix)
+            and not artifact.get("path")
+            and not artifact.get("hash")
+            for artifact in ledger_artifact_refs
+        ):
+            issues.append(
+                f"Ledger artifact ref {kind} is missing a route-only {route_suffix} reference."
+            )
+    return issues
+
+
 def apply_pilot_acceptance_artifact_consistency(payload: dict[str, Any]) -> None:
     artifact = payload.get("pilot_acceptance_artifact", {})
     if artifact.get("status") != "loaded" or not artifact.get("consistency_issues"):
         return
 
+    consistency_issues = artifact.get("consistency_issues", [])
     for check in payload.get("checks", []):
         if check.get("id") != "pilot-acceptance-artifact":
             continue
 
-        check["status"] = "gap"
-        check["score"] = 0
-        check["missing_terms"] = [
+        missing_terms = [
             *check.get("missing_terms", []),
             "consistent stage gates and evidence graph",
         ]
-        check["detail"] = " ".join(artifact.get("consistency_issues", []))
+        if any(str(issue).startswith("Ledger artifact") for issue in consistency_issues):
+            missing_terms.append("route-only ledger artifact refs")
+
+        check["status"] = "gap"
+        check["score"] = 0
+        check["missing_terms"] = missing_terms
+        check["detail"] = " ".join(consistency_issues)
         check["remediation"] = (
             "Regenerate the pilot readiness artifact and verify stage gates, counts, "
-            "and evidence graph edges before claiming golden-path readiness."
+            "evidence graph edges, and route-only ledger artifact refs before claiming "
+            "golden-path readiness."
         )
         break
 
@@ -345,6 +442,10 @@ def _format_evidence_ids(evidence_ids: Sequence[str], *, limit: int = 3) -> str:
 
 
 def _format_graph_endpoint(value: str) -> str:
+    return f"`{value}`" if value else "-"
+
+
+def _format_optional_artifact_ref(value: Any) -> str:
     return f"`{value}`" if value else "-"
 
 
@@ -380,17 +481,44 @@ def render_pilot_acceptance_artifact_section(payload: dict[str, Any]) -> str:
             f"| Paper session | `{key_evidence.get('paper_session_id', '-')}` |",
             f"| Portfolio evidence | `{key_evidence.get('portfolio_evidence_id', '-')}` |",
             f"| Ledger evidence | `{key_evidence.get('ledger_evidence_id', '-')}` |",
+            f"| Ledger artifact refs | {artifact.get('ledger_artifact_count', 0)} |",
             f"| Report pack | `{key_evidence.get('report_pack_id', '-')}` |",
             "",
+        ]
+    )
+
+    ledger_artifacts = artifact.get("ledger_artifact_refs", [])
+    if ledger_artifacts:
+        lines.extend(
+            [
+                "### Ledger Artifact Refs",
+                "",
+                "| Kind | Route | Path | Hash |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
+        for ledger_artifact in ledger_artifacts:
+            lines.append(
+                f"| {ledger_artifact.get('kind', '')} | "
+                f"{_format_optional_artifact_ref(ledger_artifact.get('route'))} | "
+                f"{_format_optional_artifact_ref(ledger_artifact.get('path'))} | "
+                f"{_format_optional_artifact_ref(ledger_artifact.get('hash'))} |"
+            )
+        lines.append("")
+
+    lines.extend(
+        [
             "### Stage Gates",
             "",
-            "| Stage | Status | Evidence | Validation |",
-            "| --- | --- | --- | --- |",
+            "| Stage | W2-W4 claims | Status | Evidence | Validation |",
+            "| --- | --- | --- | --- | --- |",
         ]
     )
     for gate in artifact.get("stage_gates", []):
+        wave_claims = gate.get("wave_claims", [])
+        wave_claim_text = ", ".join(wave_claims) if wave_claims else "-"
         lines.append(
-            f"| {gate.get('label', gate.get('stage', ''))} | {gate.get('status', '')} | "
+            f"| {gate.get('label', gate.get('stage', ''))} | {wave_claim_text} | {gate.get('status', '')} | "
             f"{_format_evidence_ids(gate.get('evidence_ids', []))} | {gate.get('validation', '')} |"
         )
 

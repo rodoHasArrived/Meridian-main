@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-03T11:26:49Z",
+  "generatedAt": "2026-05-27T03:07:32Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
+  "repositoryRoot": "Meridian-main",
   "subsystems": [
     {
       "id": "host-shell",
@@ -135,12 +135,14 @@
       "projects": [
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared",
-        "Meridian.Wpf"
+        "Meridian.Wpf",
+        "Meridian.Ui.Dashboard"
       ],
       "projectPaths": [
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
-        "src/Meridian.Wpf"
+        "src/Meridian.Wpf",
+        "src/Meridian.Ui/dashboard"
       ],
       "commonTasks": [
         "wpf issue",
@@ -149,28 +151,37 @@
         "ui polish"
       ],
       "keywords": [
+        "browser",
         "components",
         "contracts",
+        "dashboard",
         "desktop",
+        "react",
         "shared state",
         "shared ui",
         "shell",
+        "typescript",
         "ui",
         "ui services",
         "viewmodel",
         "viewmodel services",
         "workspace",
+        "workstation",
         "wpf"
       ],
       "keyContracts": [
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
+        "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/main.tsx",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml"
       ],
       "entrypoints": [
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
+        "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/main.tsx",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml",
         "src/Meridian.Wpf/ViewModels"
@@ -359,12 +370,10 @@
       "title": "MCP Integration",
       "summary": "MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LLMs.",
       "projects": [
-        "Meridian.Mcp",
-        "Meridian.McpServer"
+        "Meridian.Mcp"
       ],
       "projectPaths": [
-        "src/Meridian.Mcp",
-        "src/Meridian.McpServer"
+        "src/Meridian.Mcp"
       ],
       "commonTasks": [
         "mcp work",
@@ -375,23 +384,16 @@
         "client",
         "mcp",
         "prompt",
-        "prompts",
         "resource",
-        "resources",
         "server",
         "tool",
         "tools"
       ],
       "keyContracts": [
-        "src/Meridian.Mcp/Program.cs",
-        "src/Meridian.McpServer/Program.cs"
+        "src/Meridian.Mcp/Program.cs"
       ],
       "entrypoints": [
-        "src/Meridian.Mcp/Program.cs",
-        "src/Meridian.McpServer/Program.cs",
-        "src/Meridian.McpServer/Prompts",
-        "src/Meridian.McpServer/Resources",
-        "src/Meridian.McpServer/Tools"
+        "src/Meridian.Mcp/Program.cs"
       ],
       "relatedDocs": [
         "docs/ai/README.md",
@@ -436,6 +438,7 @@
         "..\\Meridian.Infrastructure.CppTrader\\Meridian.Infrastructure.CppTrader",
         "..\\Meridian.Infrastructure\\Meridian.Infrastructure",
         "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk",
+        "..\\Meridian.QuantScript\\Meridian.QuantScript",
         "..\\Meridian.Storage\\Meridian.Storage",
         "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
       ],
@@ -779,42 +782,6 @@
       "relatedDocs": []
     },
     {
-      "name": "Meridian.McpServer",
-      "path": "src/Meridian.McpServer",
-      "kind": "mcp-server",
-      "subsystem": "mcp-integration",
-      "summary": "Attribute-driven MCP server exposing tools, prompts, and resources over stdio.",
-      "commonTasks": [
-        "mcp server",
-        "new tool",
-        "resource surface",
-        "prompt integration"
-      ],
-      "keywords": [
-        "mcp",
-        "prompts",
-        "resources",
-        "server",
-        "tools"
-      ],
-      "entrypoints": [
-        "src/Meridian.McpServer/Program.cs",
-        "src/Meridian.McpServer/Tools",
-        "src/Meridian.McpServer/Resources",
-        "src/Meridian.McpServer/Prompts"
-      ],
-      "keyContracts": [
-        "src/Meridian.McpServer/Program.cs"
-      ],
-      "projectReferences": [
-        "..\\Meridian.Application\\Meridian.Application",
-        "..\\Meridian.Contracts\\Meridian.Contracts",
-        "..\\Meridian.Core\\Meridian.Core",
-        "..\\Meridian.Storage\\Meridian.Storage"
-      ],
-      "relatedDocs": []
-    },
-    {
       "name": "Meridian.ProviderSdk",
       "path": "src/Meridian.ProviderSdk",
       "kind": "sdk",
@@ -942,6 +909,7 @@
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Core\\Meridian.Core",
         "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.Ledger\\Meridian.Ledger",
         "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk"
       ],
       "relatedDocs": [
@@ -1008,6 +976,7 @@
       "projectReferences": [
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Infrastructure\\Meridian.Infrastructure",
+        "..\\Meridian.Storage\\Meridian.Storage",
         "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
       ],
       "relatedDocs": []
@@ -1036,9 +1005,12 @@
       ],
       "projectReferences": [
         "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
+        "..\\Meridian.Backtesting\\Meridian.Backtesting",
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Execution\\Meridian.Execution",
         "..\\Meridian.Infrastructure.CppTrader\\Meridian.Infrastructure.CppTrader",
+        "..\\Meridian.QuantScript\\Meridian.QuantScript",
         "..\\Meridian.Storage\\Meridian.Storage",
         "..\\Meridian.Strategies\\Meridian.Strategies"
       ],
@@ -1195,6 +1167,35 @@
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.fsharp.md"
       ]
+    },
+    {
+      "name": "Meridian.Ui.Dashboard",
+      "path": "src/Meridian.Ui/dashboard",
+      "kind": "browser-ui",
+      "subsystem": "workstation-ui",
+      "summary": "Browser workstation dashboard implemented with TypeScript and React.",
+      "commonTasks": [
+        "browser workstation issue",
+        "react component flow",
+        "dashboard routing"
+      ],
+      "keywords": [
+        "browser",
+        "dashboard",
+        "react",
+        "typescript",
+        "workstation"
+      ],
+      "entrypoints": [
+        "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/main.tsx"
+      ],
+      "keyContracts": [
+        "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/main.tsx"
+      ],
+      "projectReferences": [],
+      "relatedDocs": []
     }
   ],
   "documents": [
@@ -1437,18 +1438,6 @@
         "shell",
         "desktop"
       ]
-    },
-    {
-      "name": "Program",
-      "kind": "mcp-entrypoint",
-      "path": "src/Meridian.McpServer/Program.cs",
-      "project": "Meridian.McpServer",
-      "reason": "Registration point for MCP tools, resources, and prompts.",
-      "keywords": [
-        "mcp",
-        "server",
-        "registration"
-      ]
     }
   ],
   "taskRoutes": [
@@ -1498,6 +1487,37 @@
       ],
       "recommendedSkill": "meridian-provider-builder",
       "recommendedAgent": "provider-builder-agent"
+    },
+    {
+      "id": "browser-workstation",
+      "title": "Browser workstation and dashboard UI issues",
+      "description": "Use when the task touches TypeScript/React dashboard screens, browser routing, operator interactions, or workstation UI state in src/Meridian.Ui/dashboard.",
+      "keywords": [
+        "browser",
+        "dashboard",
+        "typescript",
+        "react",
+        "workstation",
+        "ui"
+      ],
+      "subsystems": [
+        "workstation-ui"
+      ],
+      "subsystemTitles": [
+        "Desktop and UI Workflows"
+      ],
+      "startProjects": [
+        "Meridian.Ui.Dashboard",
+        "Meridian.Ui.Services",
+        "Meridian.Ui.Shared"
+      ],
+      "startSymbols": [],
+      "authoritativeDocs": [
+        "docs/ai/navigation/README.md",
+        "docs/ai/ai-known-errors.md"
+      ],
+      "recommendedSkill": "meridian-browser-workstation",
+      "recommendedAgent": "software-engineer-agent-v1"
     },
     {
       "id": "wpf-workflow",
@@ -1602,13 +1622,7 @@
         "Meridian.McpServer",
         "Meridian.Mcp"
       ],
-      "startSymbols": [
-        {
-          "name": "Program",
-          "path": "src/Meridian.McpServer/Program.cs",
-          "reason": "Registration point for MCP tools, resources, and prompts."
-        }
-      ],
+      "startSymbols": [],
       "authoritativeDocs": [
         "docs/ai/navigation/README.md",
         "docs/ai/README.md"
@@ -1618,6 +1632,329 @@
     }
   ],
   "dependencies": [],
+  "recentChanges": [
+    {
+      "path": "src/Meridian.Application/Accounts/IAccountManagementService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Accounts/IAccountQueryService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/AutoGapRemediationService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillCostEstimator.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillRequest.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillResult.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillStatusStore.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/BackfillStatusStoreJsonContext.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/GapBackfillService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/SymbolValidationSignal.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backtesting/BacktestPreflightService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Backtesting/BacktestStudioContracts.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Banking/BankingException.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Banking/IBankingService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Banking/InMemoryBankingService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Banking/PostgresBankingService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Canonicalization/EventCanonicalizer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Canonicalization/VenueMicMapper.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/CertificatesOfDeposit/CertificateOfDepositProjectionService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/CertificatesOfDeposit/ICertificateOfDepositReferenceService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/CatalogCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/CliArguments.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/CommandDispatcher.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/ConfigCommands.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/ConfigPresetCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/DiagnosticsCommands.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/DryRunCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/EtlCommands.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/GenerateLoaderCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/HelpCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/ICliCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/LedgerCliCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Commands/PackageCommands.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-05-26T19:44:22-07:00",
+      "lastCommit": "b8dd6a0",
+      "lastSummary": "Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope",
+      "touches": 1
+    }
+  ],
+  "recentChangesWindowDays": 14,
   "notes": {
     "purpose": "Orientation-first navigation dataset for assistants working inside Meridian.",
     "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search."

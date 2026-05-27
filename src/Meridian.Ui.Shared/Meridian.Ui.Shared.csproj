@@ -14,6 +14,11 @@
     <Copyright>Copyright 2024 Meridian Team</Copyright>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EnableCppTraderIntegration Condition="'$(EnableCppTraderIntegration)' == ''">false</EnableCppTraderIntegration>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableCppTraderIntegration)' == 'true'">
+    <DefineConstants>$(DefineConstants);MERIDIAN_ENABLE_CPPTRADER</DefineConstants>
   </PropertyGroup>
 
   <!-- Web/ASP.NET Core dependencies for endpoint mapping -->
@@ -32,8 +37,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Execution\Meridian.Execution.csproj" />
-    <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" />
+    <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" Condition="'$(EnableCppTraderIntegration)' == 'true'" />
+    <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
   </ItemGroup>

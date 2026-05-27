@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "shared-enums.v1.schema.json",
+  "title": "Canonical Shared Enums",
+  "type": "object",
+  "$defs": {
+    "status": {
+      "type": "string",
+      "enum": ["not_started", "in_progress", "blocked", "completed", "cancelled"]
+    },
+    "health": {
+      "type": "string",
+      "enum": ["green", "yellow", "red", "unknown"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "evidence_posture": {
+      "type": "string",
+      "enum": ["none", "draft", "partial", "verified", "audited"]
+    },
+    "completion_term": {
+      "type": "string",
+      "enum": ["done", "complete", "completed", "closed", "shipped"]
+    }
+  }
+}

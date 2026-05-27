@@ -1,0 +1,9 @@
+modules:
+  - id: valid-module
+    path: tools/source_docs/fixtures/readme_contract/valid
+  - id: missing-front-matter-module
+    path: tools/source_docs/fixtures/readme_contract/missing_front_matter
+  - id: missing-heading-module
+    path: tools/source_docs/fixtures/readme_contract/missing_heading
+  - id: missing-markers-module
+    path: tools/source_docs/fixtures/readme_contract/missing_markers

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "description": "Canonical registry for TODO IDs referenced in source and documentation annotations.",
+  "entries": [
+    {
+      "id": "TODO-META-0001",
+      "owner": "@meridian-platform",
+      "scope": "Repository-wide metadata contract bootstrap",
+      "status": "active"
+    }
+  ]
+}

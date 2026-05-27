@@ -1,0 +1,48 @@
+schema:
+  id: meridian.stage-gates
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+stage_gates:
+  - id: DataConfidence
+    title: Data confidence
+    purpose: Provider and market-data evidence is trustworthy enough for downstream operations.
+    owner_lane: Data Confidence and Validation
+    exit_evidence:
+      - docs/status/provider-validation-matrix.md
+  - id: PaperSession
+    title: Paper session readiness
+    purpose: Paper trading sessions can be replayed, audited, and accepted by operators.
+    owner_lane: Execution and Fund Accounts
+    exit_evidence:
+      - docs/testing/WAVE2_ACCEPTANCE_TESTS.md
+  - id: PromotionReview
+    title: Promotion review
+    purpose: Research-to-paper handoffs carry enough evidence for operator approval.
+    owner_lane: Execution and Fund Accounts
+    exit_evidence: []
+  - id: ResearchContinuity
+    title: Research continuity
+    purpose: Strategy research outputs remain traceable through paper validation.
+    owner_lane: Strategy and Research
+    exit_evidence: []
+  - id: PortfolioLedgerReview
+    title: Portfolio ledger review
+    purpose: Ledger and reconciliation records can support books and operator sign-off.
+    owner_lane: Governance and Ledger
+    exit_evidence: []
+  - id: GovernedReportPack
+    title: Governed report pack
+    purpose: Report packs carry approval and export evidence.
+    owner_lane: Governance and Ledger
+    exit_evidence: []
+  - id: BacktestingEvidence
+    title: Backtesting evidence
+    purpose: Backtest results can be traced to strategy decisions and later paper validation.
+    owner_lane: Strategy and Research
+    exit_evidence: []
+  - id: LiveReadiness
+    title: Live readiness
+    purpose: Live operation remains gated by prior evidence-backed stages.
+    owner_lane: Governance and Ledger
+    exit_evidence: []

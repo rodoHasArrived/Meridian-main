@@ -117,10 +117,27 @@ foreach ($definition in $selectedWorkflows) {
         $runnerArguments.SkipBuild = $true
     }
 
-    $runResult = & $runnerPath @runnerArguments
+    $runInvocationOutput = @(& $runnerPath @runnerArguments)
+    $runResult = $runInvocationOutput |
+        Where-Object {
+            $null -ne $_ -and
+            $_.PSObject.Properties.Name -contains 'manifestPath' -and
+            $_.PSObject.Properties.Name -contains 'runDirectory'
+        } |
+        Select-Object -Last 1
+
+    if ($null -eq $runResult) {
+        throw "Workflow '$($definition.name)' did not return a valid PassThru result object."
+    }
+
+    $manifestPath = [string]$runResult.manifestPath
+    if ([string]::IsNullOrWhiteSpace($manifestPath)) {
+        throw "Workflow '$($definition.name)' returned a PassThru result object without a manifest path."
+    }
+
     $buildSkipped = $true
 
-    $manifest = Get-Content -LiteralPath $runResult.manifestPath -Raw | ConvertFrom-Json -AsHashtable
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
     $workflowScreenshotDirectory = Join-Path $resolvedScreenshotRoot $definition.name
 
     if (Test-Path -LiteralPath $workflowScreenshotDirectory) {
@@ -151,7 +168,7 @@ foreach ($definition in $selectedWorkflows) {
         screenshotDirectory = $workflowScreenshotDirectory
         steps = $publishedSteps
     }
-    Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($workflowScreenshotDirectory, $runResult.manifestPath)
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($workflowScreenshotDirectory, $manifestPath)
 }
 
 $generatedAt = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss zzz')

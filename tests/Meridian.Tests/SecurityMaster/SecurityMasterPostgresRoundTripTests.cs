@@ -117,4 +117,93 @@ public sealed class SecurityMasterPostgresRoundTripTests
         resolved.Should().NotBeNull();
         resolved!.SecurityId.Should().Be(securityId);
     }
+
+    [SecurityMasterDatabaseFact]
+    public async Task GetByIdentifierAsync_ResolvesNormalizedIdentifierAndProviderValues()
+    {
+        var eventStore = new PostgresSecurityMasterEventStore(_fixture.Options, NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        var snapshotStore = new PostgresSecurityMasterSnapshotStore(_fixture.Options);
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            _fixture.Options,
+            NullLogger<SecurityMasterService>.Instance);
+        var securityId = Guid.NewGuid();
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+
+        await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "Equity",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Apple Inc.",
+                currency = "USD",
+                countryOfRisk = "US",
+                issuerName = "Apple Inc.",
+                exchange = "XNAS",
+                lotSize = 1,
+                tickSize = 0.01m
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                shareClass = "Common"
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.Isin, "us-0378331005", true, effectiveFrom, null, "xnas")
+            },
+            effectiveFrom,
+            "test",
+            "codex",
+            null,
+            "create with raw vendor identifier"));
+
+        await store.UpsertAliasAsync(new SecurityAliasDto(
+            Guid.NewGuid(),
+            securityId,
+            SecurityIdentifierKind.Ric.ToString(),
+            " aapl.o ",
+            "refinitiv",
+            SecurityAliasScope.Collector,
+            "vendor alias",
+            "codex",
+            DateTimeOffset.UtcNow,
+            effectiveFrom,
+            null,
+            true));
+
+        var resolvedByIdentifier = await store.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            "XNAS",
+            DateTimeOffset.UtcNow,
+            includeInactive: false);
+        var resolvedByAlias = await store.GetByIdentifierAsync(
+            SecurityIdentifierKind.Ric,
+            "AAPL.O",
+            "REFINITIV",
+            DateTimeOffset.UtcNow,
+            includeInactive: false);
+        var resolvedWithoutProvider = await store.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            null,
+            DateTimeOffset.UtcNow,
+            includeInactive: false);
+
+        resolvedByIdentifier.Should().NotBeNull();
+        resolvedByIdentifier!.SecurityId.Should().Be(securityId);
+        resolvedByIdentifier.Identifiers.Should().ContainSingle(identifier =>
+            identifier.NormalizedValue == "US0378331005" &&
+            identifier.NormalizedProvider == "XNAS");
+
+        resolvedByAlias.Should().NotBeNull();
+        resolvedByAlias!.SecurityId.Should().Be(securityId);
+
+        resolvedWithoutProvider.Should().BeNull();
+    }
 }

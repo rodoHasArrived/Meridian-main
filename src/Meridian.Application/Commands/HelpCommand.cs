@@ -18,6 +18,7 @@ internal sealed class HelpCommand : ICliCommand
         ["security-master"] = ShowSecurityMasterHelp,
         ["runbooks"] = ShowRunbooksHelp,
         ["statements"] = ShowStatementsHelp,
+        ["ledger"] = ShowLedgerHelp,
     };
 
     public bool CanHandle(string[] args)
@@ -63,8 +64,39 @@ internal sealed class HelpCommand : ICliCommand
         Console.WriteLine("  --help security-master  Security Master bulk ingest and conflict resolution");
         Console.WriteLine("  --help runbooks         Runbook preset create/list/run commands");
         Console.WriteLine("  --help statements       Statement import/validation/reconciliation");
+        Console.WriteLine("  --help ledger           Ledger-compatible text journal reports");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
+    }
+
+    private static void ShowLedgerHelp()
+    {
+        Console.WriteLine(@"
+LEDGER
+══════
+
+Read a Ledger-compatible plain-text journal and run in-memory double-entry reports.
+The source file is read-only; Meridian never rewrites it.
+
+COMMANDS:
+    ledger -f <journal-file> balance [account-filter]     Show account balances
+    ledger -f <journal-file> register [account-filter]    Show postings and running balance
+    ledger -f <journal-file> print                        Normalize supported entries
+    ledger -f <journal-file> accounts                     List accounts
+
+SUPPORTED V1 JOURNAL SYNTAX:
+    yyyy/MM/dd Payee
+        Assets:Checking        $-23.00
+        Expenses:Phone          $23.00
+
+    One posting amount may be omitted; Meridian infers it from the balancing amount.
+    Supported account roots: Assets, Liabilities, Equity, Income/Revenue, Expenses.
+
+EXAMPLES:
+    Meridian ledger -f ledger.dat balance
+    Meridian ledger -f ledger.dat register checking
+    Meridian ledger -f ledger.dat accounts
+");
     }
 
     private static void ShowRunbooksHelp()
@@ -108,13 +140,19 @@ COMMANDS:
     --statement-reconcile                      Run matching and produce unresolved cases
 
 REQUIRED OPTIONS:
-    --statement-source-kind <local|s3|sftp>   Statement source adapter kind
+    --statement-source-kind <local>           Statement source adapter kind
     --statement-source-path <path>             Source file or directory path
+    --statement-broker <broker>                Broker schema for canonical import (samplebroker)
+    --statement-date <yyyy-MM-dd>              Statement date for canonical import
 
 EXAMPLES:
     Meridian --statement-validate --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
 
+    Meridian --statement-validate --statement-broker samplebroker --statement-source-path ./statements/sample.csv --statement-date 2026-01-31
+
     Meridian --statement-import --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+
+    Meridian --statement-import --statement-broker samplebroker --statement-source-path ./statements/sample.csv --statement-date 2026-01-31
 
     Meridian --statement-reconcile --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
 ");
@@ -250,6 +288,8 @@ CONFIG FILE PRIORITY:
     3. appsettings.json (default)
 
 FIRST-TIME SETUP:
+    --setup                 First-run setup alias for --quickstart
+    --first-run             First-run setup alias for --quickstart
     --quickstart            Auto-detect, validate, and configure (fastest)
     --wizard                Interactive configuration wizard (step-by-step)
     --auto-config           Auto-configure from environment variables
@@ -260,8 +300,8 @@ FIRST-TIME SETUP:
                             backfill, production, docker
 
 EXAMPLES:
-    # Fastest setup (auto-detect everything)
-    Meridian --quickstart
+    # Easiest first-time setup (auto-detect everything)
+    Meridian --setup
 
     # Interactive first-time setup
     Meridian --wizard
@@ -294,7 +334,7 @@ CREATE OPTIONS:
     --package-events <list>         Event types (Trade,BboQuote,L2Snapshot)
     --package-from <date>           Start date (YYYY-MM-DD)
     --package-to <date>             End date (YYYY-MM-DD)
-    --package-format <fmt>          Format: zip, tar.gz (default: zip)
+    --package-format <fmt>          Format: zip, tar.gz, 7z (default: zip)
     --package-compression <level>   Compression: none, fast, balanced, max
     --no-quality-report             Exclude quality report from package
     --no-data-dictionary            Exclude data dictionary
@@ -429,12 +469,14 @@ HELP TOPICS:
     --help package        Data packaging and import/export
     --help diagnostics    Diagnostics and troubleshooting
     --help providers      Data provider information
+    --help ledger         Ledger-compatible text journal reports
 
 MODES:
     --mode <desktop|headless> Unified deployment mode selector
     --backfill              Run historical data backfill
     --replay <path>         Replay events from JSONL file
     --package               Create a portable data package
+    ledger -f <file> <report> Read a Ledger-compatible journal and run a report
     --import-package <path> Import a package into storage
     --list-package <path>   List contents of a package
     --validate-package <path> Validate a package
@@ -445,6 +487,8 @@ MODES:
     --help, -h              Show this help message
 
 AUTO-CONFIGURATION (First-time setup):
+    --setup                 Easiest first-run setup; alias for --quickstart
+    --first-run             Easiest first-run setup; alias for --quickstart
     --quickstart            Zero-config setup: auto-detect, validate, and configure (fastest)
     --wizard                Interactive configuration wizard (recommended for new users)
     --auto-config           Quick auto-configuration based on environment variables
@@ -509,7 +553,7 @@ PACKAGING OPTIONS:
     --package-events <list>         Event types (Trade,BboQuote,L2Snapshot)
     --package-from <date>           Start date (YYYY-MM-DD)
     --package-to <date>             End date (YYYY-MM-DD)
-    --package-format <fmt>          Format: zip, tar.gz (default: zip)
+    --package-format <fmt>          Format: zip, tar.gz, 7z (default: zip)
     --package-compression <level>   Compression: none, fast, balanced, max
     --no-quality-report             Exclude quality report from package
     --no-data-dictionary            Exclude data dictionary
@@ -577,7 +621,10 @@ EXAMPLES:
     # Validate a package
     Meridian --validate-package ./packages/my-data.zip
 
-    # Run interactive configuration wizard (recommended for new users)
+    # Easiest first-time setup
+    Meridian --setup
+
+    # Run interactive configuration wizard (recommended when you want step-by-step prompts)
     Meridian --wizard
 
     # Quick auto-configuration based on environment variables
@@ -667,8 +714,8 @@ SUPPORT:
     Documentation: ./HELP.md
 
 ╔══════════════════════════════════════════════════════════════════════╗
+║  FIRST SETUP:  Run: ./Meridian --setup                    ║
 ║  QUICKSTART:   Run: ./Meridian --quickstart                ║
-║  NEW USER?     Run: ./Meridian --wizard                   ║
 ║  QUICK CHECK:  Run: ./Meridian --quick-check              ║
 ║  START API:    Run: ./Meridian --mode desktop             ║
 ║  Local API:    http://localhost:8080                                 ║

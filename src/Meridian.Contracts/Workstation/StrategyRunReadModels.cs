@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
@@ -327,7 +328,14 @@ public sealed record PortfolioSummary(
     [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
-    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    string? SourceEventId = null,
+    Guid? SourceJournalEntryId = null);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -433,7 +441,40 @@ public sealed record StrategyRunComparison(
     DateTimeOffset LastUpdatedAt,
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
     bool HasLedger = false,
-    bool HasAuditTrail = false);
+    bool HasAuditTrail = false,
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+
+/// <summary>
+/// Completeness indicator for run artifacts used by comparison workflows.
+/// </summary>
+public sealed record StrategyRunArtifactCompleteness(
+    bool HasPortfolio,
+    bool HasLedger,
+    bool HasCashFlow,
+    bool HasFills,
+    bool HasAuditTrail);
+
+
+
+/// <summary>Projection mode for workstation run timeline queries.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunTimelineProjection>))]
+public enum StrategyRunTimelineProjection : byte
+{
+    Flat,
+    Lineage
+}
+
+/// <summary>Promotion/lineage event type emitted on strategy run timelines.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunLineageEventType>))]
+public enum StrategyRunLineageEventType : byte
+{
+    RunStarted,
+    RunCompleted,
+    PromotionDecision,
+    CrossModeTransition,
+    ReplayVerified
+}
 
 /// <summary>Filter options used for workstation run history retrieval.</summary>
 public sealed record StrategyRunHistoryQuery(
@@ -455,6 +496,33 @@ public sealed record StrategyRunTimelineEntry(
     decimal? NetPnl,
     decimal? TotalReturn,
     int FillCount);
+
+
+/// <summary>Cross-mode transition metadata for lineage timeline events.</summary>
+public sealed record StrategyRunCrossModeTransitionMetadata(
+    StrategyRunMode? SourceMode = null,
+    StrategyRunMode? TargetMode = null,
+    string? SourceRunId = null,
+    string? TargetRunId = null,
+    string? PromotionReference = null,
+    string? ReplayAuditReference = null,
+    DateTimeOffset? ReplayVerifiedAt = null,
+    bool? HasReplayAudit = null);
+
+/// <summary>Lineage timeline event grouped by canonical run identity.</summary>
+public sealed record StrategyRunLineageTimelineEntry(
+    string? CanonicalRunKey = null,
+    string? ParentCanonicalRunKey = null,
+    string? RunId = null,
+    string? StrategyId = null,
+    string? StrategyName = null,
+    StrategyRunMode? Mode = null,
+    StrategyRunStatus? Status = null,
+    DateTimeOffset? EventTimestamp = null,
+    StrategyRunLineageEventType? EventType = null,
+    string? PromotionDecision = null,
+    StrategyRunCrossModeTransitionMetadata? CrossModeTransition = null);
+
 /// <summary>
 /// Normalized cross-mode run comparison DTO that includes the full set of
 /// <c>BacktestMetrics</c> fields plus equity curve data and parentage chain info.
@@ -493,7 +561,15 @@ public sealed record RunComparisonDto(
     DateTimeOffset LastUpdatedAt,
     StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None,
     bool HasLedger = false,
-    bool HasAuditTrail = false);
+    bool HasAuditTrail = false,
+    string ContinuityStatus = "Unknown",
+    int ReconciliationBreakCount = 0,
+    ReconciliationBreakSeverity ReconciliationHighestSeverity = ReconciliationBreakSeverity.Info,
+    bool HasLedgerEntryCoverage = false,
+    string LedgerCoverageStatus = "Missing",
+    string CashFlowHealth = "Missing",
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
 
 // ---------------------------------------------------------------------------
 // Track C drill-in models
@@ -607,6 +683,21 @@ public sealed record RunCashFlowSummary(
     decimal NetCashFlow,
     IReadOnlyList<CashFlowEntryDto> Entries,
     RunCashLadder Ladder);
+
+/// <summary>
+/// Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices
+/// aligned under one additive, versioned contract.
+/// </summary>
+public sealed record RunPortfolioDrillInSummary(
+    string SchemaVersion,
+    string RunId,
+    DateTimeOffset AsOf,
+    string Currency,
+    StrategyRunMode Mode,
+    RunAttributionSummary? Attribution,
+    EquityCurveSummary? DrawdownProfile,
+    RunCashFlowSummary? CashFlow,
+    RunFillSummary? Trades);
 
 /// <summary>
 /// Lightweight run identity used to connect research, trading, and governance flows.

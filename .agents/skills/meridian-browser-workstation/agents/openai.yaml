@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Browser Workstation"
+  short_description: "Guide browser dashboard TypeScript/React work"
+  default_prompt: "Use $meridian-browser-workstation to route and execute browser workstation tasks in src/Meridian.Ui/dashboard with Meridian-specific UI guardrails and validation."

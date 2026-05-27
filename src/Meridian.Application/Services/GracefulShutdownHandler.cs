@@ -13,8 +13,12 @@ namespace Meridian.Application.Services;
 /// </summary>
 public sealed class GracefulShutdownHandler : IAsyncDisposable
 {
+    private const string ShutdownOperationName = "runtime.shutdown.sequence";
+    private const string ComponentName = nameof(GracefulShutdownHandler);
+
     private readonly ILogger _log = LoggingSetup.ForContext<GracefulShutdownHandler>();
     private readonly GracefulShutdownConfig _config;
+    private readonly ShutdownDiagnosticsService? _shutdownDiagnostics;
     private readonly List<IFlushable> _flushables = new();
     private readonly List<IAsyncDisposable> _disposables = new();
     private readonly List<Func<ShutdownContext, Task>> _shutdownCallbacks = new();
@@ -41,15 +45,22 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
     /// </summary>
     public event Action<ShutdownProgress>? OnProgress;
 
-    public GracefulShutdownHandler(GracefulShutdownConfig? config = null)
+    public GracefulShutdownHandler(
+        GracefulShutdownConfig? config = null,
+        ShutdownDiagnosticsService? shutdownDiagnostics = null)
     {
         _config = config ?? GracefulShutdownConfig.Default;
+        _shutdownDiagnostics = shutdownDiagnostics;
 
         // Register for process termination signals
         Console.CancelKeyPress += OnCancelKeyPress;
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
-        _log.Information("GracefulShutdownHandler initialized with timeout {TimeoutSeconds}s", _config.TimeoutSeconds);
+        _log.Information(
+            "Graceful shutdown handler initialized for {OperationName}; componentName={ComponentName}; timeoutSeconds={TimeoutSeconds}",
+            ShutdownOperationName,
+            ComponentName,
+            _config.TimeoutSeconds);
     }
 
     /// <summary>
@@ -107,7 +118,14 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
     {
         if (_isShuttingDown)
         {
-            _log.Warning("Shutdown already in progress, ignoring duplicate request");
+            _shutdownDiagnostics?.RecordDuplicateRequest(reason, _shutdownReason);
+            _log.Warning(
+                "Duplicate shutdown request ignored for {OperationName}; componentName={ComponentName}; reason={Reason}; activeReason={ActiveReason}; recoveryAction={RecoveryAction}",
+                ShutdownOperationName,
+                ComponentName,
+                reason,
+                _shutdownReason,
+                "Wait for the active shutdown sequence to complete");
             return new ShutdownResult(
                 Success: false,
                 Reason: _shutdownReason,
@@ -119,15 +137,35 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
         _shutdownReason = reason;
         _shutdownRequestedAt = DateTimeOffset.UtcNow;
         var startTime = Stopwatch.GetTimestamp();
+        var correlationId = Guid.NewGuid().ToString("N");
+        var safeMessage = RuntimeDiagnosticRedactor.SanitizeText(message);
 
-        _log.Information("Initiating graceful shutdown: {Reason} - {Message}", reason, message ?? "No message");
+        _log.Information(
+            "Shutdown sequence started for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; reason={Reason}; message={Message}; timeoutSeconds={TimeoutSeconds}; flushableComponents={FlushableCount}; disposableComponents={DisposableCount}; callbackCount={CallbackCount}",
+            ShutdownOperationName,
+            ComponentName,
+            correlationId,
+            reason,
+            string.IsNullOrWhiteSpace(safeMessage) ? "No message" : safeMessage,
+            _config.TimeoutSeconds,
+            _flushables.Count,
+            _disposables.Count,
+            _shutdownCallbacks.Count);
 
         var context = new ShutdownContext(
             Reason: reason,
-            Message: message,
+            Message: safeMessage,
             RequestedAt: _shutdownRequestedAt,
-            TimeoutSeconds: _config.TimeoutSeconds
+            TimeoutSeconds: _config.TimeoutSeconds,
+            CorrelationId: correlationId
         );
+        _shutdownDiagnostics?.RecordStarted(
+            correlationId,
+            reason,
+            _shutdownRequestedAt,
+            _flushables.Count,
+            _disposables.Count,
+            _shutdownCallbacks.Count);
 
         // Signal shutdown requested
         _shutdownRequested.TrySetResult();
@@ -144,18 +182,18 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
             await ExecuteShutdownCallbacksAsync(context, linkedCts.Token);
 
             // Phase 2: Stop accepting new events (signal producers)
-            ReportProgress("Stopping event producers", 1, 4);
+            ReportProgress("Stopping event producers", 1, 4, correlationId);
             _shutdownCts.Cancel();
 
             // Phase 3: Flush all pending events
-            ReportProgress("Flushing pending events", 2, 4);
-            var flushResult = await FlushAllAsync(linkedCts.Token);
+            ReportProgress("Flushing pending events", 2, 4, correlationId);
+            var flushResult = await FlushAllAsync(correlationId, linkedCts.Token);
 
             // Phase 4: Dispose resources
-            ReportProgress("Disposing resources", 3, 4);
-            var disposeResult = await DisposeAllAsync(linkedCts.Token);
+            ReportProgress("Disposing resources", 3, 4, correlationId);
+            var disposeResult = await DisposeAllAsync(correlationId, linkedCts.Token);
 
-            ReportProgress("Shutdown complete", 4, 4);
+            ReportProgress("Shutdown complete", 4, 4, correlationId);
 
             var elapsedMs = GetElapsedMs(startTime);
             var result = new ShutdownResult(
@@ -167,11 +205,22 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
                 EventsFlushed: flushResult.TotalEventsFlushed,
                 FlushTimeoutOccurred: flushResult.TimeoutOccurred,
                 ComponentsDisposed: disposeResult.DisposedCount,
-                Warnings: flushResult.Warnings.Concat(disposeResult.Warnings).ToArray()
+                Warnings: flushResult.Warnings.Concat(disposeResult.Warnings).ToArray(),
+                CorrelationId: correlationId
             );
+            _shutdownDiagnostics?.RecordCompleted(result);
 
-            _log.Information("Graceful shutdown completed in {ElapsedMs}ms: {EventsFlushed} events flushed, {ComponentsDisposed} components disposed",
-                elapsedMs, result.EventsFlushed, result.ComponentsDisposed);
+            _log.Information(
+                "Shutdown sequence completed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; reason={Reason}; elapsedMs={ElapsedMs}; eventsFlushed={EventsFlushed}; flushTimeoutOccurred={FlushTimeoutOccurred}; componentsDisposed={ComponentsDisposed}; warningCount={WarningCount}",
+                ShutdownOperationName,
+                ComponentName,
+                correlationId,
+                reason,
+                elapsedMs,
+                result.EventsFlushed,
+                result.FlushTimeoutOccurred,
+                result.ComponentsDisposed,
+                result.Warnings?.Length ?? 0);
 
             OnShutdownCompleted?.Invoke(result);
             return result;
@@ -180,7 +229,15 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
         {
             // Timeout occurred
             var elapsedMs = GetElapsedMs(startTime);
-            _log.Error("Graceful shutdown timed out after {TimeoutSeconds}s", _config.TimeoutSeconds);
+            _log.Error(
+                "Shutdown sequence timed out for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; reason={Reason}; elapsedMs={ElapsedMs}; timeoutSeconds={TimeoutSeconds}; recoveryAction={RecoveryAction}",
+                ShutdownOperationName,
+                ComponentName,
+                correlationId,
+                reason,
+                elapsedMs,
+                _config.TimeoutSeconds,
+                "Inspect shutdown phase logs and verify buffered data before restart");
 
             var result = new ShutdownResult(
                 Success: false,
@@ -189,8 +246,10 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
                 CompletedAt: DateTimeOffset.UtcNow,
                 DurationMs: elapsedMs,
                 FlushTimeoutOccurred: true,
-                ErrorMessage: $"Shutdown timed out after {_config.TimeoutSeconds} seconds"
+                ErrorMessage: $"Shutdown timed out after {_config.TimeoutSeconds} seconds",
+                CorrelationId: correlationId
             );
+            _shutdownDiagnostics?.RecordTimedOut(result);
 
             OnShutdownCompleted?.Invoke(result);
 
@@ -205,7 +264,16 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
         catch (Exception ex)
         {
             var elapsedMs = GetElapsedMs(startTime);
-            _log.Error(ex, "Error during graceful shutdown");
+            _log.Error(
+                "Shutdown sequence failed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; reason={Reason}; elapsedMs={ElapsedMs}; exceptionType={ExceptionType}; failureReason={FailureReason}; recoveryAction={RecoveryAction}",
+                ShutdownOperationName,
+                ComponentName,
+                correlationId,
+                reason,
+                elapsedMs,
+                ex.GetType().Name,
+                RuntimeDiagnosticRedactor.SanitizeText(ex.Message),
+                "Inspect failed shutdown component and verify buffered data before restart");
 
             var result = new ShutdownResult(
                 Success: false,
@@ -213,8 +281,10 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
                 StartedAt: _shutdownRequestedAt,
                 CompletedAt: DateTimeOffset.UtcNow,
                 DurationMs: elapsedMs,
-                ErrorMessage: ex.Message
+                ErrorMessage: RuntimeDiagnosticRedactor.SanitizeText(ex.Message),
+                CorrelationId: correlationId
             );
+            _shutdownDiagnostics?.RecordFailed(result);
 
             OnShutdownCompleted?.Invoke(result);
             return result;
@@ -245,7 +315,12 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
         if (_shutdownCallbacks.Count == 0)
             return;
 
-        _log.Debug("Executing {Count} shutdown callbacks", _shutdownCallbacks.Count);
+        _log.Debug(
+            "Executing shutdown callbacks for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; callbackCount={CallbackCount}",
+            ShutdownOperationName,
+            ComponentName,
+            context.CorrelationId,
+            _shutdownCallbacks.Count);
 
         foreach (var callback in _shutdownCallbacks)
         {
@@ -255,12 +330,19 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _log.Warning(ex, "Shutdown callback threw an exception");
+                _log.Warning(
+                    "Shutdown callback failed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; exceptionType={ExceptionType}; failureReason={FailureReason}; recoveryAction={RecoveryAction}",
+                    ShutdownOperationName,
+                    ComponentName,
+                    context.CorrelationId,
+                    ex.GetType().Name,
+                    RuntimeDiagnosticRedactor.SanitizeText(ex.Message),
+                    "Continue shutdown and inspect callback implementation");
             }
         }
     }
 
-    private async Task<FlushResult> FlushAllAsync(CancellationToken ct)
+    private async Task<FlushResult> FlushAllAsync(string correlationId, CancellationToken ct)
     {
         var warnings = new List<string>();
         long totalEventsFlushed = 0;
@@ -268,19 +350,33 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
 
         if (_flushables.Count == 0)
         {
-            _log.Debug("No flushables registered");
+            _log.Debug(
+                "No flushable components registered for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}",
+                ShutdownOperationName,
+                ComponentName,
+                correlationId);
             return new FlushResult(totalEventsFlushed, false, warnings);
         }
 
-        _log.Information("Flushing {Count} component(s)...", _flushables.Count);
+        _log.Information(
+            "Flushing shutdown components for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; flushableComponents={FlushableCount}",
+            ShutdownOperationName,
+            ComponentName,
+            correlationId,
+            _flushables.Count);
 
         foreach (var flushable in _flushables)
         {
             var componentName = flushable.GetType().Name;
+            var flushStart = Stopwatch.GetTimestamp();
 
             try
             {
-                _log.Debug("Flushing {Component}...", componentName);
+                _log.Debug(
+                    "Flushing shutdown component for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}",
+                    ShutdownOperationName,
+                    componentName,
+                    correlationId);
 
                 // Get queue size before flush if available
                 long queueSize = 0;
@@ -298,34 +394,68 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
 
                 if (completedTask != flushTask)
                 {
-                    _log.Warning("Flush timeout for {Component} after {Timeout}s",
-                        componentName, _config.FlushTimeoutPerComponentSeconds);
+                    _log.Warning(
+                        "Flush timeout for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; timeoutSeconds={TimeoutSeconds}; queueDepth={QueueDepth}; recoveryAction={RecoveryAction}",
+                        ShutdownOperationName,
+                        componentName,
+                        correlationId,
+                        _config.FlushTimeoutPerComponentSeconds,
+                        queueSize,
+                        "Verify latest buffered data before trusting this session");
                     warnings.Add($"Flush timeout for {componentName}");
                     timeoutOccurred = true;
                 }
                 else
                 {
-                    _log.Debug("Flushed {Component} successfully", componentName);
+                    await flushTask.ConfigureAwait(false);
+                    _log.Debug(
+                        "Shutdown component flushed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; elapsedMs={ElapsedMs}; queueDepth={QueueDepth}",
+                        ShutdownOperationName,
+                        componentName,
+                        correlationId,
+                        GetElapsedMs(flushStart),
+                        queueSize);
                 }
             }
             catch (OperationCanceledException)
             {
-                _log.Warning("Flush cancelled for {Component}", componentName);
+                _log.Warning(
+                    "Flush cancelled for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; elapsedMs={ElapsedMs}; recoveryAction={RecoveryAction}",
+                    ShutdownOperationName,
+                    componentName,
+                    correlationId,
+                    GetElapsedMs(flushStart),
+                    "Verify latest buffered data before trusting this session");
                 warnings.Add($"Flush cancelled for {componentName}");
                 timeoutOccurred = true;
             }
             catch (Exception ex)
             {
-                _log.Error(ex, "Error flushing {Component}", componentName);
-                warnings.Add($"Flush error for {componentName}: {ex.Message}");
+                _log.Error(
+                    "Flush failed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; elapsedMs={ElapsedMs}; exceptionType={ExceptionType}; failureReason={FailureReason}; recoveryAction={RecoveryAction}",
+                    ShutdownOperationName,
+                    componentName,
+                    correlationId,
+                    GetElapsedMs(flushStart),
+                    ex.GetType().Name,
+                    RuntimeDiagnosticRedactor.SanitizeText(ex.Message),
+                    "Inspect component logs and rerun affected ingestion or export");
+                warnings.Add($"Flush error for {componentName}: {RuntimeDiagnosticRedactor.SanitizeText(ex.Message)}");
             }
         }
 
-        _log.Information("Flush complete: approximately {EventCount} events flushed", totalEventsFlushed);
+        _log.Information(
+            "Shutdown component flush completed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; approximateEventsFlushed={EventCount}; timeoutOccurred={TimeoutOccurred}; warningCount={WarningCount}",
+            ShutdownOperationName,
+            ComponentName,
+            correlationId,
+            totalEventsFlushed,
+            timeoutOccurred,
+            warnings.Count);
         return new FlushResult(totalEventsFlushed, timeoutOccurred, warnings);
     }
 
-    private async Task<DisposeResult> DisposeAllAsync(CancellationToken ct)
+    private async Task<DisposeResult> DisposeAllAsync(string correlationId, CancellationToken ct)
     {
         var warnings = new List<string>();
         var disposedCount = 0;
@@ -335,12 +465,18 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
             return new DisposeResult(0, warnings);
         }
 
-        _log.Debug("Disposing {Count} component(s)...", _disposables.Count);
+        _log.Debug(
+            "Disposing shutdown components for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; disposableComponents={DisposableCount}",
+            ShutdownOperationName,
+            ComponentName,
+            correlationId,
+            _disposables.Count);
 
         // Dispose in reverse order (LIFO)
         foreach (var disposable in Enumerable.Reverse(_disposables))
         {
             var componentName = disposable.GetType().Name;
+            var disposeStart = Stopwatch.GetTimestamp();
 
             try
             {
@@ -352,43 +488,76 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
 
                 if (completedTask != disposeTask)
                 {
-                    _log.Warning("Dispose timeout for {Component}", componentName);
+                    _log.Warning(
+                        "Dispose timeout for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; timeoutSeconds={TimeoutSeconds}; recoveryAction={RecoveryAction}",
+                        ShutdownOperationName,
+                        componentName,
+                        correlationId,
+                        _config.DisposeTimeoutPerComponentSeconds,
+                        "Inspect resource lifecycle before restart");
                     warnings.Add($"Dispose timeout for {componentName}");
                 }
                 else
                 {
+                    await disposeTask.ConfigureAwait(false);
                     disposedCount++;
-                    _log.Debug("Disposed {Component}", componentName);
+                    _log.Debug(
+                        "Shutdown component disposed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; elapsedMs={ElapsedMs}",
+                        ShutdownOperationName,
+                        componentName,
+                        correlationId,
+                        GetElapsedMs(disposeStart));
                 }
             }
             catch (Exception ex)
             {
-                _log.Warning(ex, "Error disposing {Component}", componentName);
-                warnings.Add($"Dispose error for {componentName}: {ex.Message}");
+                _log.Warning(
+                    "Dispose failed for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; elapsedMs={ElapsedMs}; exceptionType={ExceptionType}; failureReason={FailureReason}; recoveryAction={RecoveryAction}",
+                    ShutdownOperationName,
+                    componentName,
+                    correlationId,
+                    GetElapsedMs(disposeStart),
+                    ex.GetType().Name,
+                    RuntimeDiagnosticRedactor.SanitizeText(ex.Message),
+                    "Inspect resource lifecycle before restart");
+                warnings.Add($"Dispose error for {componentName}: {RuntimeDiagnosticRedactor.SanitizeText(ex.Message)}");
             }
         }
 
         return new DisposeResult(disposedCount, warnings);
     }
 
-    private void ReportProgress(string phase, int current, int total)
+    private void ReportProgress(string phase, int current, int total, string correlationId)
     {
         var progress = new ShutdownProgress(
             Phase: phase,
             CurrentStep: current,
             TotalSteps: total,
             PercentComplete: (int)((double)current / total * 100),
-            Timestamp: DateTimeOffset.UtcNow
+            Timestamp: DateTimeOffset.UtcNow,
+            CorrelationId: correlationId
         );
 
-        _log.Debug("Shutdown progress: {Phase} ({Current}/{Total})", phase, current, total);
+        _log.Debug(
+            "Shutdown progress for {OperationName}; componentName={ComponentName}; correlationId={CorrelationId}; phase={ShutdownPhase}; currentStep={Current}; totalSteps={Total}; percentComplete={PercentComplete}",
+            ShutdownOperationName,
+            ComponentName,
+            correlationId,
+            phase,
+            current,
+            total,
+            progress.PercentComplete);
         OnProgress?.Invoke(progress);
     }
 
     private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         e.Cancel = true; // Prevent immediate termination
-        _log.Information("Received Ctrl+C signal");
+        _log.Information(
+            "Shutdown signal received for {OperationName}; componentName={ComponentName}; signal={Signal}",
+            ShutdownOperationName,
+            ComponentName,
+            "Ctrl+C");
 
         if (!_isShuttingDown)
         {
@@ -396,7 +565,11 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
         }
         else if (_config.ForceExitOnSecondSignal)
         {
-            _log.Warning("Second interrupt received, forcing immediate exit");
+            _log.Warning(
+                "Second shutdown signal received for {OperationName}; componentName={ComponentName}; recoveryAction={RecoveryAction}",
+                ShutdownOperationName,
+                ComponentName,
+                "Force immediate exit after active graceful shutdown did not finish");
             Environment.Exit(1);
         }
     }
@@ -405,7 +578,10 @@ public sealed class GracefulShutdownHandler : IAsyncDisposable
     {
         if (!_isShuttingDown)
         {
-            _log.Information("Process exit signal received");
+            _log.Information(
+                "Process exit signal received for {OperationName}; componentName={ComponentName}",
+                ShutdownOperationName,
+                ComponentName);
             // Use synchronous wait since we're in a ProcessExit handler
             InitiateShutdownAsync(ShutdownReason.ProcessExit, "ProcessExit event")
                 .GetAwaiter().GetResult();
@@ -479,7 +655,8 @@ public readonly record struct ShutdownContext(
     ShutdownReason Reason,
     string? Message,
     DateTimeOffset RequestedAt,
-    int TimeoutSeconds
+    int TimeoutSeconds,
+    string CorrelationId = ""
 );
 
 /// <summary>
@@ -495,7 +672,8 @@ public readonly record struct ShutdownResult(
     bool FlushTimeoutOccurred = false,
     int ComponentsDisposed = 0,
     string? ErrorMessage = null,
-    string[]? Warnings = null
+    string[]? Warnings = null,
+    string CorrelationId = ""
 );
 
 /// <summary>
@@ -506,7 +684,8 @@ public readonly record struct ShutdownProgress(
     int CurrentStep,
     int TotalSteps,
     int PercentComplete,
-    DateTimeOffset Timestamp
+    DateTimeOffset Timestamp,
+    string CorrelationId = ""
 );
 
 /// <summary>

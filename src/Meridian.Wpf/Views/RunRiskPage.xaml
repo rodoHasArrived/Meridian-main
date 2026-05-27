@@ -30,15 +30,44 @@
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}"
-                                Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Run Detail" Command="{Binding OpenRunDetailCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Cash Flow" Command="{Binding OpenCashFlowCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}" />
+                    <StackPanel Grid.Column="1"
+                                VerticalAlignment="Center"
+                                MaxWidth="420"
+                                AutomationProperties.AutomationId="RunRiskActionStatePanel"
+                                AutomationProperties.Name="{Binding RunActionStateTitle}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}"
+                                    Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="RunRiskOpenBrowserButton" />
+                            <Button Content="Run Detail" Command="{Binding OpenRunDetailCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="RunRiskOpenDetailButton" />
+                            <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="RunRiskOpenPortfolioButton" />
+                            <Button Content="Cash Flow" Command="{Binding OpenCashFlowCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunRiskOpenCashFlowButton" />
+                        </StackPanel>
+                        <ProgressBar Height="3"
+                                     IsIndeterminate="True"
+                                     Margin="0,10,0,8"
+                                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                                     AutomationProperties.AutomationId="RunRiskLoadProgress" />
+                        <TextBlock Text="{Binding RunActionStateTitle}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="RunRiskActionStateTitle" />
+                        <TextBlock Text="{Binding RunActionStateDetail}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,0"
+                                   AutomationProperties.AutomationId="RunRiskActionStateDetail" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -113,7 +142,34 @@
                         </StackPanel>
                     </Grid>
                     <scottplot:WpfPlot x:Name="VolatilityChart" Height="280"
-                                       behaviors:PlotRenderBehavior.Request="{Binding RollingVolatilityPlot}" />
+                                       behaviors:PlotRenderBehavior.Request="{Binding RollingVolatilityPlot}"
+                                       Visibility="{Binding HasRiskChart, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="RunRiskVolatilityChart" />
+                    <Border MinHeight="220"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="24"
+                            Visibility="{Binding IsRiskEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="RunRiskVolatilityEmptyState">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560">
+                            <TextBlock Text="{Binding RiskEmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="RunRiskVolatilityEmptyStateTitle" />
+                            <TextBlock Text="{Binding RiskEmptyStateDetail}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="RunRiskVolatilityEmptyStateDetail" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -125,6 +181,8 @@
                     <!-- Attribution chart -->
                     <scottplot:WpfPlot x:Name="AttributionChart" Height="220"
                                        behaviors:PlotRenderBehavior.Request="{Binding AttributionPlot}"
+                                       Visibility="{Binding HasAttributionRows, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="RunRiskAttributionChart"
                                        Margin="0,0,0,16" />
 
                     <!-- Attribution data grid -->
@@ -139,7 +197,9 @@
                               CanUserResizeRows="False"
                               CanUserSortColumns="True"
                               SelectionMode="Single"
-                              MaxHeight="340">
+                              MaxHeight="340"
+                              Visibility="{Binding HasAttributionRows, Converter={StaticResource BoolToVisibilityConverter}}"
+                              AutomationProperties.AutomationId="RunRiskAttributionGrid">
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="Transparent" />
@@ -177,6 +237,31 @@
                             <DataGridTextColumn Header="Commissions" Binding="{Binding CommissionsText}" Width="*" />
                         </DataGrid.Columns>
                     </DataGrid>
+                    <Border MinHeight="220"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="24"
+                            Visibility="{Binding IsAttributionEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="RunRiskAttributionEmptyState">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560">
+                            <TextBlock Text="{Binding AttributionEmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="RunRiskAttributionEmptyStateTitle" />
+                            <TextBlock Text="{Binding AttributionEmptyStateDetail}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="RunRiskAttributionEmptyStateDetail" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 

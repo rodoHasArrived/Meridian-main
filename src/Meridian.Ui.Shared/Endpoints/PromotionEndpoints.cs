@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Auth;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +21,9 @@ public static class PromotionEndpoints
 
         group.MapGet("/evaluate/{runId}", async (string runId, HttpContext context) =>
         {
+            if (TryAuthorizePromotionRead(context) is { } authorizationFailure)
+                return authorizationFailure;
+
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -33,18 +37,24 @@ public static class PromotionEndpoints
         })
         .WithName("EvaluatePromotion")
         .Produces<PromotionEvaluationResult>(200)
+        .Produces(401)
+        .Produces(403)
         .Produces(404)
         .Produces(501);
 
         group.MapPost("/approve", async (PromotionApprovalRequest request, HttpContext context) =>
         {
+            if (TryAuthorizePromotionMutation(context, jsonOptions) is { } authorizationFailure)
+                return authorizationFailure;
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var normalizedRequest = string.IsNullOrWhiteSpace(request.ApprovedBy)
-                ? request with { ApprovedBy = ResolveActor(context) }
-                : request;
+            var normalizedRequest = request with { ApprovedBy = actor };
 
             var result = await service.ApproveAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
@@ -55,27 +65,40 @@ public static class PromotionEndpoints
         .WithName("ApprovePromotion")
         .Produces<PromotionDecisionResult>(201)
         .Produces<PromotionDecisionResult>(400)
-        .Produces(501);
+        .Produces(401)
+        .Produces<PromotionDecisionResult>(403)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/reject", async (PromotionRejectionRequest request, HttpContext context) =>
         {
+            if (TryAuthorizePromotionMutation(context, jsonOptions) is { } authorizationFailure)
+                return authorizationFailure;
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var normalizedRequest = string.IsNullOrWhiteSpace(request.RejectedBy)
-                ? request with { RejectedBy = ResolveActor(context) }
-                : request;
+            var normalizedRequest = request with { RejectedBy = actor };
 
             var result = await service.RejectAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RejectPromotion")
         .Produces<PromotionDecisionResult>(200)
-        .Produces(501);
+        .Produces(401)
+        .Produces<PromotionDecisionResult>(403)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/history", async (HttpContext context) =>
         {
+            if (TryAuthorizePromotionRead(context) is { } authorizationFailure)
+                return authorizationFailure;
+
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -85,20 +108,31 @@ public static class PromotionEndpoints
         })
         .WithName("GetPromotionHistory")
         .Produces<IReadOnlyList<StrategyPromotionRecord>>(200)
+        .Produces(401)
+        .Produces(403)
         .Produces(501);
     }
 
-    private static string? ResolveActor(HttpContext context)
-    {
-        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorValues))
-        {
-            var actor = actorValues.ToString().Trim();
-            if (!string.IsNullOrWhiteSpace(actor))
-            {
-                return actor;
-            }
-        }
+    private static IResult? TryAuthorizePromotionRead(HttpContext context)
+        => EndpointAuthorization.TryGetPermissions(context, out _)
+            ? HasPromotionReadPermission(context)
+                ? null
+                : EndpointHelpers.Forbidden()
+            : Results.Unauthorized();
 
-        return null;
-    }
+    private static IResult? TryAuthorizePromotionMutation(HttpContext context, JsonSerializerOptions jsonOptions)
+        => EndpointAuthorization.TryGetPermissions(context, out _)
+            ? HasPromotionMutationPermission(context)
+                ? null
+                : Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden)
+            : Results.Unauthorized();
+
+    private static bool HasPromotionReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewStrategies,
+            UserPermission.ManageStrategies);
+
+    private static bool HasPromotionMutationPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.ManageStrategies);
 }

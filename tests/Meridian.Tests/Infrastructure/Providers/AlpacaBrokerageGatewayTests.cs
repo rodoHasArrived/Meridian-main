@@ -108,14 +108,16 @@ public sealed class AlpacaBrokerageGatewayTests
     }
 
     [Fact]
-    public void BrokerageCapabilities_DoesNotAdvertiseSessionScopedOrderTypes()
+    public void BrokerageCapabilities_AdvertisesDocumentedAdvancedOrderTypes()
     {
         var sut = CreateSut(new ConstantStubHandler(HttpStatusCode.OK, new StringContent("{}")));
 
-        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
-        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnClose);
-        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnOpen);
-        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().Contain(OrderType.MarketOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().Contain(OrderType.MarketOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().Contain(OrderType.LimitOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().Contain(OrderType.LimitOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().Contain(OrderType.TrailingStop);
+        sut.BrokerageCapabilities.Extensions.Should().ContainKey("supportsAdvancedOrderClasses");
     }
 
     // ── ConnectAsync ──────────────────────────────────────────────────────
@@ -135,6 +137,7 @@ public sealed class AlpacaBrokerageGatewayTests
     [Fact]
     public async Task ConnectAsync_MissingCredentials_ThrowsInvalidOperationException()
     {
+        using var env = AlpacaEnvScope.Clear();
         var options = new AlpacaOptions(KeyId: "", SecretKey: "");
         var sut = new AlpacaBrokerageGateway(
             new StubHttpClientFactory(new ConstantStubHandler(HttpStatusCode.OK, BuildAccountResponse())),
@@ -146,6 +149,47 @@ public sealed class AlpacaBrokerageGatewayTests
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*KeyId*SecretKey*");
+    }
+
+    [Fact]
+    public async Task ConnectAsync_DefaultOptions_UsesPaperAccountEndpointAndAlpacaHeaders()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        HttpRequestMessage? capturedRequest = null;
+        var sut = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(new CapturingStubHandler(
+                request => capturedRequest = request,
+                _ => BuildAccountResponse())),
+            new AlpacaOptions(KeyId: "paper-key", SecretKey: "paper-secret"),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.ConnectAsync(cts.Token);
+
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.ToString().Should().Be($"{PaperBaseUrl}/v2/account");
+        capturedRequest.Headers.GetValues("APCA-API-KEY-ID").Should().ContainSingle().Which.Should().Be("paper-key");
+        capturedRequest.Headers.GetValues("APCA-API-SECRET-KEY").Should().ContainSingle().Which.Should().Be("paper-secret");
+    }
+
+    [Fact]
+    public async Task ConnectAsync_LiveEnvironmentVariable_UsesLiveAccountEndpoint()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        Environment.SetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName, "live");
+        HttpRequestMessage? capturedRequest = null;
+        var sut = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(new CapturingStubHandler(
+                request => capturedRequest = request,
+                _ => BuildAccountResponse())),
+            new AlpacaOptions(KeyId: "live-key", SecretKey: "live-secret"),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.ConnectAsync(cts.Token);
+
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.ToString().Should().Be("https://api.alpaca.markets/v2/account");
     }
 
     // ── SubmitOrderAsync: equity orders ───────────────────────────────────
@@ -178,17 +222,22 @@ public sealed class AlpacaBrokerageGatewayTests
     }
 
     [Fact]
-    public async Task SubmitOrderAsync_RejectsMarketOnCloseBeforePostingOrder()
+    public async Task SubmitOrderAsync_MarketOnClose_UsesClosingAuctionTimeInForce()
     {
-        var responses = new Queue<HttpResponseMessage>(new[]
-        {
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
-        });
-        var sut = CreateSut(new SequentialStubHandler(responses));
+        string? capturedBody = null;
+        var sut = CreateSut(new CapturingStubHandler(
+            req =>
+            {
+                if (req.Content != null && req.RequestUri?.AbsolutePath == "/v2/orders")
+                    capturedBody = req.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            },
+            req => req.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildOrderResponse("ord-moc-1", "accepted", "AAPL")));
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await sut.ConnectAsync(cts.Token);
 
-        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        await sut.SubmitOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
@@ -196,9 +245,10 @@ public sealed class AlpacaBrokerageGatewayTests
             Quantity = 10m,
         }, cts.Token);
 
-        await act.Should().ThrowAsync<NotSupportedException>()
-            .WithMessage("*MarketOnClose*session timing qualifier*");
-        responses.Should().BeEmpty();
+        capturedBody.Should().NotBeNull();
+        using var doc = JsonDocument.Parse(capturedBody!);
+        doc.RootElement.GetProperty("type").GetString().Should().Be("market");
+        doc.RootElement.GetProperty("time_in_force").GetString().Should().Be("cls");
         await sut.DisposeAsync();
     }
 
@@ -230,7 +280,7 @@ public sealed class AlpacaBrokerageGatewayTests
     // ── SubmitOrderAsync: fixed income notional orders ────────────────────
 
     [Fact]
-    public async Task SubmitOrderAsync_NotionalMetadata_IsIgnoredAndQtyIsUsed()
+    public async Task SubmitOrderAsync_FixedIncomeMetadata_UsesFaceValueQtyAndAssetClass()
     {
         string? capturedBody = null;
 
@@ -255,7 +305,8 @@ public sealed class AlpacaBrokerageGatewayTests
             Metadata = new Dictionary<string, string>
             {
                 ["notional"] = "true",
-                ["asset_class"] = "us_treasury",
+                ["asset_class"] = "treasury",
+                ["broker_account_id"] = "broker-account-1",
             },
         }, cts.Token);
 
@@ -267,7 +318,7 @@ public sealed class AlpacaBrokerageGatewayTests
     }
 
     [Fact]
-    public async Task SubmitOrderAsync_NotionalOrderMetadata_DoesNotSetNotionalField()
+    public async Task SubmitOrderAsync_NotionalOrderMetadata_UsesNotionalInsteadOfQty()
     {
         string? capturedBody = null;
 
@@ -294,10 +345,8 @@ public sealed class AlpacaBrokerageGatewayTests
 
         capturedBody.Should().NotBeNull();
         using var doc = JsonDocument.Parse(capturedBody!);
-        doc.RootElement.TryGetProperty("qty", out var qtyProp).Should().BeTrue();
-        qtyProp.GetString().Should().Be("2500");
-
-        doc.RootElement.TryGetProperty("notional", out _).Should().BeFalse();
+        doc.RootElement.TryGetProperty("qty", out _).Should().BeFalse();
+        doc.RootElement.GetProperty("notional").GetString().Should().Be("2500");
         await sut.DisposeAsync();
     }
 
@@ -330,6 +379,235 @@ public sealed class AlpacaBrokerageGatewayTests
         using var doc = JsonDocument.Parse(capturedBody!);
         doc.RootElement.TryGetProperty("qty", out var qtyProp).Should().BeTrue();
         qtyProp.GetString().Should().Be("10");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_ExtendedHoursLimitOrder_SetsExtendedHours()
+    {
+        string? capturedBody = null;
+
+        var sut = CreateSut(new CapturingStubHandler(
+            req =>
+            {
+                if (req.Content != null && req.RequestUri?.AbsolutePath == "/v2/orders")
+                    capturedBody = req.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            },
+            req => req.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildOrderResponse("ord-ext-1", "accepted", "AAPL")));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 180.25m,
+            Metadata = new Dictionary<string, string> { ["extended_hours"] = "true" },
+        }, cts.Token);
+
+        capturedBody.Should().NotBeNull();
+        using var doc = JsonDocument.Parse(capturedBody!);
+        doc.RootElement.GetProperty("extended_hours").GetBoolean().Should().BeTrue();
+        doc.RootElement.GetProperty("type").GetString().Should().Be("limit");
+        doc.RootElement.GetProperty("time_in_force").GetString().Should().Be("day");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_BracketMetadata_SerializesTakeProfitAndStopLoss()
+    {
+        string? capturedBody = null;
+
+        var sut = CreateSut(new CapturingStubHandler(
+            req =>
+            {
+                if (req.Content != null && req.RequestUri?.AbsolutePath == "/v2/orders")
+                    capturedBody = req.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            },
+            req => req.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildOrderResponse("ord-bracket-1", "accepted", "SPY")));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            TimeInForce = TimeInForce.GoodTilCancelled,
+            Metadata = new Dictionary<string, string>
+            {
+                ["order_class"] = "bracket",
+                ["take_profit.limit_price"] = "301",
+                ["stop_loss.stop_price"] = "299",
+                ["stop_loss.limit_price"] = "298.5",
+            },
+        }, cts.Token);
+
+        capturedBody.Should().NotBeNull();
+        using var doc = JsonDocument.Parse(capturedBody!);
+        doc.RootElement.GetProperty("order_class").GetString().Should().Be("bracket");
+        doc.RootElement.GetProperty("take_profit").GetProperty("limit_price").GetString().Should().Be("301");
+        doc.RootElement.GetProperty("stop_loss").GetProperty("stop_price").GetString().Should().Be("299");
+        doc.RootElement.GetProperty("stop_loss").GetProperty("limit_price").GetString().Should().Be("298.5");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_TrailingStop_SerializesTrailPrice()
+    {
+        string? capturedBody = null;
+
+        var sut = CreateSut(new CapturingStubHandler(
+            req =>
+            {
+                if (req.Content != null && req.RequestUri?.AbsolutePath == "/v2/orders")
+                    capturedBody = req.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            },
+            req => req.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildOrderResponse("ord-trail-1", "accepted", "SPY")));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Sell,
+            Type = OrderType.TrailingStop,
+            Quantity = 100m,
+            TrailPrice = 6.15m,
+        }, cts.Token);
+
+        capturedBody.Should().NotBeNull();
+        using var doc = JsonDocument.Parse(capturedBody!);
+        doc.RootElement.GetProperty("type").GetString().Should().Be("trailing_stop");
+        doc.RootElement.GetProperty("trail_price").GetString().Should().Be("6.15");
+        doc.RootElement.TryGetProperty("trail_percent", out _).Should().BeFalse();
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_FixedIncomeWithStopOrder_ThrowsBeforePostingOrder()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "912797MU8",
+            Side = OrderSide.Buy,
+            Type = OrderType.StopMarket,
+            Quantity = 1000m,
+            StopPrice = 99m,
+            Metadata = new Dictionary<string, string> { ["asset_class"] = "treasury" },
+        }, cts.Token);
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*fixed-income*market and limit*");
+        responses.Should().BeEmpty();
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_OptionOrder_SerializesAssetClassAndPositionIntent()
+    {
+        string? capturedBody = null;
+
+        var sut = CreateSut(new CapturingStubHandler(
+            req =>
+            {
+                if (req.Content != null && req.RequestUri?.AbsolutePath == "/v2/orders")
+                    capturedBody = req.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            },
+            req => req.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildOrderResponse("ord-opt-1", "accepted", "AAPL260116C00200000")));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL260116C00200000",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 2.15m,
+            PositionIntent = PositionIntent.BuyToOpen,
+            Metadata = new Dictionary<string, string> { ["asset_class"] = "us_option" },
+        }, cts.Token);
+
+        capturedBody.Should().NotBeNull();
+        using var doc = JsonDocument.Parse(capturedBody!);
+        doc.RootElement.GetProperty("asset_class").GetString().Should().Be("us_option");
+        doc.RootElement.GetProperty("position_intent").GetString().Should().Be("buy_to_open");
+        doc.RootElement.GetProperty("qty").GetString().Should().Be("1");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_MultiLegOptionOrder_SerializesMlegPayload()
+    {
+        string? capturedBody = null;
+
+        var sut = CreateSut(new CapturingStubHandler(
+            req =>
+            {
+                if (req.Content != null && req.RequestUri?.AbsolutePath == "/v2/orders")
+                    capturedBody = req.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            },
+            req => req.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildOrderResponse("ord-mleg-1", "accepted", "AAPL")));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 1.00m,
+            Legs =
+            [
+                new OrderLeg
+                {
+                    Symbol = "AAPL260116C00190000",
+                    RatioQuantity = 1m,
+                    Side = OrderSide.Buy,
+                    PositionIntent = PositionIntent.BuyToOpen,
+                },
+                new OrderLeg
+                {
+                    Symbol = "AAPL260116C00210000",
+                    RatioQuantity = 1m,
+                    Side = OrderSide.Sell,
+                    PositionIntent = PositionIntent.SellToOpen,
+                },
+            ],
+        }, cts.Token);
+
+        capturedBody.Should().NotBeNull();
+        using var doc = JsonDocument.Parse(capturedBody!);
+        doc.RootElement.GetProperty("order_class").GetString().Should().Be("mleg");
+        doc.RootElement.TryGetProperty("symbol", out _).Should().BeFalse();
+        var legs = doc.RootElement.GetProperty("legs").EnumerateArray().ToArray();
+        legs.Should().HaveCount(2);
+        legs[0].GetProperty("ratio_qty").GetString().Should().Be("1");
+        legs[0].GetProperty("position_intent").GetString().Should().Be("buy_to_open");
+        legs[1].GetProperty("side").GetString().Should().Be("sell");
         await sut.DisposeAsync();
     }
 
@@ -545,6 +823,94 @@ public sealed class AlpacaBrokerageGatewayTests
             path.StartsWith("/v2/account/activities?direction=desc&page_size=100&after=", StringComparison.Ordinal));
     }
 
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_OptionsLifecycle_MapsPartialFillAndLegRejectStatuses()
+    {
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request =>
+            {
+                var uri = request.RequestUri!;
+                if (uri.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                if (uri.AbsolutePath == "/v2/orders")
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "ord-mleg-partial",
+                            client_order_id = "client-mleg-partial",
+                            symbol = "AAPL",
+                            side = "buy",
+                            type = "limit",
+                            qty = "2",
+                            filled_qty = "1",
+                            limit_price = "1.25",
+                            status = "partially_filled",
+                            created_at = "2026-04-25T14:30:00Z"
+                        },
+                        new
+                        {
+                            id = "ord-mleg-reject",
+                            client_order_id = "client-mleg-reject",
+                            symbol = "AAPL",
+                            side = "buy",
+                            type = "limit",
+                            qty = "1",
+                            filled_qty = "0",
+                            limit_price = "0.95",
+                            status = "rejected",
+                            created_at = "2026-04-25T14:31:00Z"
+                        }
+                    });
+                }
+
+                if (uri.AbsolutePath == "/v2/account/activities")
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "fill-partial-leg-1",
+                            activity_type = "FILL",
+                            transaction_time = "2026-04-25T14:35:00Z",
+                            symbol = "AAPL260116C00190000",
+                            qty = "1",
+                            price = "1.20",
+                            side = "buy",
+                            order_id = "ord-mleg-partial",
+                            commission = "0",
+                            exchange = "XNAS"
+                        }
+                    });
+                }
+
+                return BuildJson(new { });
+            });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            new DateTimeOffset(2026, 4, 25, 0, 0, 0, TimeSpan.Zero),
+            cts.Token);
+
+        activity.Orders.Should().Contain(order => order.OrderId == "ord-mleg-partial" && order.Status == OrderStatus.PartiallyFilled);
+        activity.Orders.Should().Contain(order => order.OrderId == "ord-mleg-reject" && order.Status == OrderStatus.Rejected);
+        activity.Fills.Should().ContainSingle(fill =>
+            fill.FillId == "fill-partial-leg-1" &&
+            fill.OrderId == "ord-mleg-partial" &&
+            fill.Symbol == "AAPL260116C00190000" &&
+            fill.Quantity == 1m &&
+            fill.Price == 1.20m);
+    }
+
     // ── Stub infrastructure ───────────────────────────────────────────────
 
     private sealed class ConstantStubHandler : HttpMessageHandler
@@ -625,5 +991,51 @@ public sealed class AlpacaBrokerageGatewayTests
 
         public HttpClient CreateClient(string name) =>
             new HttpClient(_handler, disposeHandler: false);
+    }
+
+    private sealed class AlpacaEnvScope : IDisposable
+    {
+        private static readonly string[] Names =
+        [
+            AlpacaCredentialEnvironment.KeyIdName,
+            AlpacaCredentialEnvironment.SecretKeyName,
+            AlpacaCredentialEnvironment.TradingEnvironmentName,
+            "APCA_API_KEY_ID",
+            "APCA_API_SECRET_KEY",
+            "ALPACA__KEYID",
+            "ALPACA__SECRETKEY"
+        ];
+
+        private readonly Dictionary<string, (string? Process, string? User)> _values;
+
+        private AlpacaEnvScope()
+        {
+            _values = Names.ToDictionary(
+                name => name,
+                name => (
+                    Environment.GetEnvironmentVariable(name),
+                    Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User)));
+        }
+
+        public static AlpacaEnvScope Clear()
+        {
+            var scope = new AlpacaEnvScope();
+            foreach (var name in Names)
+            {
+                Environment.SetEnvironmentVariable(name, null);
+                Environment.SetEnvironmentVariable(name, null, EnvironmentVariableTarget.User);
+            }
+
+            return scope;
+        }
+
+        public void Dispose()
+        {
+            foreach (var (name, value) in _values)
+            {
+                Environment.SetEnvironmentVariable(name, value.Process);
+                Environment.SetEnvironmentVariable(name, value.User, EnvironmentVariableTarget.User);
+            }
+        }
     }
 }

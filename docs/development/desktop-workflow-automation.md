@@ -1,6 +1,6 @@
 # Desktop Workflow Automation
 
-This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable operator flows, capture screenshots, and generate manual-ready markdown.
+This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable operator flows on the active WPF desktop surface, capture screenshots, and generate manual-ready markdown.
 
 ## What the Automation Covers
 
@@ -9,12 +9,16 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 - `scripts/dev/generate-desktop-user-manual.ps1` runs one or more manual workflows and produces a markdown user manual plus screenshot assets.
 - `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
 - `scripts/dev/desktop-workflows.json` is the catalog of named workflows and per-step notes.
+- `scripts/dev/desktop_screen_blueprint_checklist.py` validates the machine-readable desktop screen blueprint checklist and verifies any workflow steps linked through `blueprintChecklistIds`.
 
 The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states. In the desktop shell this is presented as neutral demo data, not as an operational warning.
 
 ## Quick Commands
 
 ```powershell
+# Validate the desktop screen blueprint checklist
+python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary
+
 # Walk the default debugging flow
 pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 
@@ -47,6 +51,16 @@ For migration context and replacement mappings, see:
 | `manual-research-and-trading` | Research, backtesting, Quant Script, and trading flow | Included in the generated user manual |
 | `manual-governance` | Governance, ledger, notifications, and reference data flow | Included in the generated user manual |
 
+The `Refresh UI Screenshots` GitHub workflow derives its desktop matrix from this same catalog via
+`scripts/dev/screenshot_workflow_plan.py`. A workflow named `screenshot-catalog` runs for catalog
+captures, and any workflow with `includeInManual: true` is automatically included when the manual
+screenshot group is selected. The web capture set is planned from
+`scripts/dev/web-screenshot-routes.json`, so screenshot additions should be made in the definition
+files rather than by editing the workflow matrix directly. Strategy Designer is part of that web
+evidence lane through `/workstation/strategy/designer`; keep its screenshot route paired with
+`scripts/dev/web-screenshot-fixtures.json` and the dashboard no-host fixtures for the designer
+template, field-catalog, and draft GET endpoints.
+
 ## Runner Behavior
 
 `run-desktop-workflow.ps1` uses two navigation mechanisms:
@@ -56,7 +70,7 @@ For migration context and replacement mappings, see:
 
 That keeps navigation aligned with Meridian's own startup and deep-link handling instead of relying on brittle screen coordinates.
 
-Restore and build now share the same configuration, WPF build flags, and isolation key before the runner uses `build --no-restore`. The restore step lets each project restore its declared target framework so shared `net9.0` libraries get matching assets, while the build step pins the desktop shell to `net9.0-windows10.0.19041.0`. When `-SkipBuild` is supplied, the runner uses the standard project output path so CI jobs can download prebuilt WPF binaries into `src/Meridian.Wpf/bin/...` and launch them without creating a new isolated output key.
+Restore and build now share the same configuration, WPF build flags, and isolation key before the runner uses `build --no-restore`. The restore step lets each project restore its declared target framework so shared `net10.0` and Windows-targeted libraries get matching assets, while the build step pins the desktop shell to `net10.0-windows10.0.19041.0`. When `-SkipBuild` is supplied, the runner uses the standard project output path so CI jobs can download prebuilt WPF binaries into `src/Meridian.Wpf/bin/...` and launch them without creating a new isolated output key.
 
 Before any screenshot is saved, the runner now:
 
@@ -95,6 +109,14 @@ Bundle contents:
 - `bundle-summary.md`: generated summary with top failure cause, first failing stage, and a suggested rerun command.
 
 The bundle is generated for successful runs and for failures that occur after the workflow runner enters its main execution path, so contributors can usually use one troubleshooting schema across local debugging and CI automation. Very early startup failures, such as preflight blocks or assembly-load errors, may not include the full bundle contents.
+
+Before each workflow run, `SharedBuild.ps1` applies retention to timestamped run directories
+(`yyyyMMdd-HHmmss-*`) under the configured screenshot output root. The default policy prunes runs
+older than 14 days or beyond the latest 10 runs so same-day screenshot/debug loops cannot grow
+without bound. Non-run folders such as `checkpoints/` are not retention candidates. Tune the policy
+with `screenshots.retention.maxAgeDays` and `screenshots.retention.retainLatest` in
+`scripts/dev/workflow-profiles/*.json`; set both values to `0` to disable workflow artifact
+retention for a one-off run.
 
 ## Manual Generation
 
@@ -150,10 +172,15 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
 }
 ```
 
+Once a new manual workflow is marked `includeInManual: true`, the screenshot refresh workflow picks
+it up dynamically. Use `purpose: "manual"` for operator manual flows and leave debug-only workflows
+without `includeInManual` so they do not expand scheduled screenshot capture time.
+
 Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
 - `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use canonical shell tags such as `StrategyShell`, `TradingShell`, `DataShell`, or `AccountingShell`; compatibility aliases remain accepted for existing workflows
+- `blueprintChecklistIds`: optional stable IDs from `docs/plans/desktop-workstation-screen-blueprint.checklist.json`; use this when a capture step proves a desktop workstation blueprint screen or support lane
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot

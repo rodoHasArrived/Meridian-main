@@ -177,7 +177,67 @@ public sealed record ReconciliationSummary(
     int OpenBreakCount,
     decimal BreakAmountTotal,
     IReadOnlyList<FundReconciliationItem> RecentRuns,
-    int SecurityCoverageIssueCount = 0);
+    int SecurityCoverageIssueCount = 0,
+    ReconciliationBreakQueueProjectionDto? BreakQueue = null,
+    LedgerImpactPreviewDto? LedgerImpactPreview = null,
+    bool HasCriticalBreakOpen = false);
+
+/// <summary>
+/// Shared governance lifecycle projection composed from operations continuity,
+/// reconciliation break queue, report-pack lifecycle, and evidence workflow references.
+/// </summary>
+public sealed record GovernanceLifecycleProjectionDto(
+    string DecisionPosture,
+    string SignoffPosture,
+    string CloseReadiness,
+    string AuditTraceability,
+    string? ActiveWorkflowId = null,
+    OperationsWorkflowStatusDto? WorkflowStatus = null,
+    OperationsApprovalStateDto? ApprovalState = null,
+    DateTimeOffset? WorkflowUpdatedAtUtc = null,
+    int TimelineEventCount = 0,
+    int EvidenceReferenceCount = 0,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<string>? AuditReferences = null);
+
+/// <summary>
+/// Reconciliation break-queue projection used by shared operator workflows.
+/// </summary>
+public sealed record ReconciliationBreakQueueProjectionDto(
+    int TotalCount,
+    int OpenCount,
+    int InReviewCount,
+    int ResolvedCount,
+    int DismissedCount,
+    int CriticalOpenCount,
+    IReadOnlyList<ReconciliationBreakQueueProjectionItemDto> Items);
+
+/// <summary>
+/// One projected reconciliation break row including routing and sign-off evidence fields.
+/// </summary>
+public sealed record ReconciliationBreakQueueProjectionItemDto(
+    string BreakId,
+    string? WorkflowId,
+    ReconciliationBreakSeverity Severity,
+    ReconciliationBreakQueueStatus Status,
+    string? Owner,
+    string? RequiredSignoffRole,
+    string? SignoffStatus,
+    string? RoutingTarget,
+    string? RoutingDetail,
+    string? EvidenceReference,
+    DateTimeOffset LastUpdatedAt);
+
+/// <summary>
+/// Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.
+/// </summary>
+public sealed record LedgerImpactPreviewDto(
+    int DraftEntryCount,
+    decimal NetDebitEffect,
+    decimal NetCreditEffect,
+    decimal NetBalanceDelta,
+    bool HasValidationWarnings,
+    IReadOnlyList<string> ValidationFlags);
 
 /// <summary>
 /// Lightweight audit row combining journal and reconciliation activity.

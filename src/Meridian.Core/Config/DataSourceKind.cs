@@ -14,6 +14,9 @@ public enum DataSourceKind : byte
     /// <summary>Polygon.io via WebSocket.</summary>
     Polygon = 2,
 
+    /// <summary>Yahoo Finance historical/backfill data.</summary>
+    Yahoo = 3,
+
     /// <summary>NYSE market data feed.</summary>
     NYSE = 4,
 

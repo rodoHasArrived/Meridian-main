@@ -130,7 +130,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <inheritdoc />
     public decimal PortfolioValue
     {
-        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue)); } }
+        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue) - a.MarginBalance); } }
     }
 
     /// <inheritdoc />
@@ -203,6 +203,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             return _accounts.TryGetValue(accountId, out var acc) ? acc : null;
         }
     }
+
+    /// <summary>
+    /// Returns aggregate open positions across all accounts for legacy single-account callers.
+    /// </summary>
+    public IReadOnlyList<IPosition> GetPositions() => Positions.Values.ToArray();
 
     /// <inheritdoc />
     public MultiAccountPortfolioSnapshot GetAggregateSnapshot()
@@ -578,11 +583,28 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash -= notional + commission;
         }
 
-        _ledger?.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-        [
-            (LedgerAccounts.Securities(symbol), notional, 0m),
-            (LedgerAccounts.Cash, 0m, notional),
-        ]);
+        if (_ledger is not null)
+        {
+            if (account.MarginModel is RegTMarginModel regtForLedger)
+            {
+                var cashRequired = notional * regtForLedger.LongInitialRate;
+                var borrowed = notional - cashRequired;
+                _ledger.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+                [
+                    (LedgerAccounts.Securities(symbol), notional, 0m),
+                    (LedgerAccounts.Cash, 0m, cashRequired),
+                    (LedgerAccounts.MarginLoanPayable, 0m, borrowed),
+                ]);
+            }
+            else
+            {
+                _ledger.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+                [
+                    (LedgerAccounts.Securities(symbol), notional, 0m),
+                    (LedgerAccounts.Cash, 0m, notional),
+                ]);
+            }
+        }
     }
 
     private void ApplyCoverShort(
@@ -653,7 +675,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
-            PostSellLongEntry(symbol, closeQty, price, costBasisRemoved, realised, ts);
+            PostSellLongEntry(symbol, closeQty, price, costBasisRemoved, realised, loanRepaid, ts);
     }
 
     private void ApplyShortSell(
@@ -698,30 +720,41 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     private void PostSellLongEntry(string symbol, decimal closeQty, decimal price,
-        decimal costBasisRemoved, decimal realised, DateTimeOffset ts)
+        decimal costBasisRemoved, decimal realised, decimal loanRepaid, DateTimeOffset ts)
     {
         var proceeds = closeQty * price;
+        var cashProceeds = proceeds - loanRepaid;
         var description = $"Sell {closeQty} {symbol} @ {price:F4}";
+        var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
+        AddNonZeroLine(lines, LedgerAccounts.Cash, cashProceeds, 0m);
+        AddNonZeroLine(lines, LedgerAccounts.MarginLoanPayable, loanRepaid, 0m);
+
         if (realised > 0)
-            _ledger!.PostLines(ts, description,
-            [
-                (LedgerAccounts.Cash, proceeds, 0m),
-                (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
-                (LedgerAccounts.RealizedGain, 0m, realised),
-            ]);
+        {
+            AddNonZeroLine(lines, LedgerAccounts.Securities(symbol), 0m, costBasisRemoved);
+            AddNonZeroLine(lines, LedgerAccounts.RealizedGain, 0m, realised);
+        }
         else if (realised < 0)
-            _ledger!.PostLines(ts, description,
-            [
-                (LedgerAccounts.Cash, proceeds, 0m),
-                (LedgerAccounts.RealizedLoss, Math.Abs(realised), 0m),
-                (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
-            ]);
+        {
+            AddNonZeroLine(lines, LedgerAccounts.RealizedLoss, Math.Abs(realised), 0m);
+            AddNonZeroLine(lines, LedgerAccounts.Securities(symbol), 0m, costBasisRemoved);
+        }
         else
-            _ledger!.PostLines(ts, description,
-            [
-                (LedgerAccounts.Cash, proceeds, 0m),
-                (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
-            ]);
+        {
+            AddNonZeroLine(lines, LedgerAccounts.Securities(symbol), 0m, costBasisRemoved);
+        }
+
+        _ledger!.PostLines(ts, description, lines);
+    }
+
+    private static void AddNonZeroLine(
+        List<(LedgerAccount Account, decimal Debit, decimal Credit)> lines,
+        LedgerAccount account,
+        decimal debit,
+        decimal credit)
+    {
+        if (debit != 0m || credit != 0m)
+            lines.Add((account, debit, credit));
     }
 
     private void PostCoverShortEntry(string symbol, decimal coverQty, decimal price,
@@ -984,7 +1017,25 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             }
         }
 
+        CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
+
         return removedCostBasis;
+    }
+
+    private decimal CalculateRemainingLotCostBasis(bool isCoveringShort)
+    {
+        var remainingLots = isCoveringShort
+            ? _lots.Where(static lot => lot.OpenQuantity < 0m)
+            : _lots.Where(static lot => lot.OpenQuantity > 0m);
+
+        var remainingQuantity = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity));
+        if (remainingQuantity == 0m)
+        {
+            return 0m;
+        }
+
+        var remainingNotional = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity) * lot.EntryPrice);
+        return remainingNotional / remainingQuantity;
     }
 
     private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)

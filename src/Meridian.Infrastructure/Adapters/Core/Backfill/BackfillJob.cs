@@ -45,6 +45,11 @@ public sealed class BackfillJob
     public List<string> PreferredProviders { get; init; } = new();
 
     /// <summary>
+    /// Job IDs that must complete successfully before this job can run.
+    /// </summary>
+    public List<string> DependsOnJobIds { get; init; } = new();
+
+    /// <summary>
     /// Current job status.
     /// </summary>
     public BackfillJobStatus Status { get; set; } = BackfillJobStatus.Pending;

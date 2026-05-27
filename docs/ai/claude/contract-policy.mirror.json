@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "todo_annotation_contract": "TODO comments must include TODO-ID and OWNER metadata",
+    "todo_registry_path": "docs/source/todo-registry.json",
+    "sync_mirrors": [
+      "docs/ai/copilot/contract-policy.mirror.json",
+      "docs/ai/claude/contract-policy.mirror.json"
+    ]
+  }
+}

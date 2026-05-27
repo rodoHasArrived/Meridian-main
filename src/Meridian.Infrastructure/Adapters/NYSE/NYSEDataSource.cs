@@ -230,6 +230,12 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
         await EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
 
+        if (_reconnectCts.IsCancellationRequested)
+        {
+            _reconnectCts.Dispose();
+            _reconnectCts = new CancellationTokenSource();
+        }
+
         Log.Information("Connecting to NYSE WebSocket at {Url}", _options.EffectiveWebSocketUrl);
 
         try

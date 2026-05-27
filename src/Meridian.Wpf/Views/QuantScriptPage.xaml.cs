@@ -18,8 +18,6 @@ public partial class QuantScriptPage : Page
         InitializeComponent();
         _vm = viewModel;
         DataContext = _vm;
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -59,6 +57,14 @@ public partial class QuantScriptPage : Page
             Resources.MergedDictionaries.Add(new ResourceDictionary
             {
                 Source = new Uri("/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Relative)
+            });
+        }
+
+        if (TryFindResource("ChartLegendStripStyle") is null)
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Meridian.Desktop;component/Styles/ThemeSurfaces.xaml", UriKind.Relative)
             });
         }
     }

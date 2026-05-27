@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services;
+using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
@@ -17,10 +18,9 @@ public partial class RetentionAssurancePage : Page
 {
     private readonly WpfServices.RetentionAssuranceService _retentionService;
     private readonly WpfServices.LoggingService _loggingService;
+    private readonly RetentionAssuranceViewModel _viewModel;
     private readonly ObservableCollection<LegalHoldItem> _legalHolds = new();
     private readonly ObservableCollection<AuditReportItem> _auditReports = new();
-    private readonly ObservableCollection<ValidationResultItem> _validationResults = new();
-    private RetentionDryRunResult? _lastDryRun;
 
     public RetentionAssurancePage()
     {
@@ -28,10 +28,12 @@ public partial class RetentionAssurancePage : Page
 
         _retentionService = WpfServices.RetentionAssuranceService.Instance;
         _loggingService = WpfServices.LoggingService.Instance;
+        _viewModel = new RetentionAssuranceViewModel(new RetentionAssuranceClient(_retentionService));
+        _viewModel.CleanupCompleted += (_, _) => LoadAuditReports();
+        DataContext = _viewModel;
 
         LegalHoldsList.ItemsSource = _legalHolds;
         AuditReportsList.ItemsSource = _auditReports;
-        ResultsList.ItemsSource = _validationResults;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -43,17 +45,7 @@ public partial class RetentionAssurancePage : Page
 
     private void LoadConfiguration()
     {
-        var config = _retentionService.Configuration;
-        if (config.Guardrails != null)
-        {
-            MinTickDaysBox.Text = config.Guardrails.MinTickDataDays.ToString();
-            MinBarDaysBox.Text = config.Guardrails.MinBarDataDays.ToString();
-            MinQuoteDaysBox.Text = config.Guardrails.MinQuoteDataDays.ToString();
-            MaxDailyDeletesBox.Text = config.Guardrails.MaxDailyDeletedFiles.ToString();
-            RequireChecksumCheck.IsChecked = config.Guardrails.RequireChecksumVerification;
-            RequireDryRunCheck.IsChecked = config.Guardrails.RequireDryRunPreview;
-            AllowTradingHoursCheck.IsChecked = config.Guardrails.AllowDeleteDuringTradingHours;
-        }
+        _viewModel.LoadConfiguration(_retentionService.Configuration);
     }
 
     private void LoadLegalHolds()
@@ -93,173 +85,6 @@ public partial class RetentionAssurancePage : Page
         }
 
         NoAuditsPanel.Visibility = _auditReports.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    private async void SaveGuardrails_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var config = _retentionService.Configuration;
-            config.Guardrails ??= new RetentionGuardrails();
-
-            if (int.TryParse(MinTickDaysBox.Text, out var minTick))
-                config.Guardrails.MinTickDataDays = minTick;
-            if (int.TryParse(MinBarDaysBox.Text, out var minBar))
-                config.Guardrails.MinBarDataDays = minBar;
-            if (int.TryParse(MinQuoteDaysBox.Text, out var minQuote))
-                config.Guardrails.MinQuoteDataDays = minQuote;
-            if (int.TryParse(MaxDailyDeletesBox.Text, out var maxDeletes))
-                config.Guardrails.MaxDailyDeletedFiles = maxDeletes;
-            config.Guardrails.RequireChecksumVerification = RequireChecksumCheck.IsChecked == true;
-            config.Guardrails.RequireDryRunPreview = RequireDryRunCheck.IsChecked == true;
-            config.Guardrails.AllowDeleteDuringTradingHours = AllowTradingHoursCheck.IsChecked == true;
-
-            await _retentionService.SaveConfigurationAsync();
-            ShowStatus("Guardrails saved successfully.", false);
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Failed to save guardrails", ex);
-            ShowStatus($"Failed to save guardrails: {ex.Message}", false);
-        }
-    }
-
-    private void ValidatePolicy_Click(object sender, RoutedEventArgs e)
-    {
-        var policy = BuildPolicyFromUI();
-        var result = _retentionService.ValidateRetentionPolicy(policy);
-
-        _validationResults.Clear();
-
-        foreach (var violation in result.Violations)
-        {
-            _validationResults.Add(new ValidationResultItem
-            {
-                Severity = "ERROR",
-                Message = violation.Message,
-                SeverityColor = (Brush)FindResource("ErrorColorBrush")
-            });
-        }
-
-        foreach (var warning in result.Warnings)
-        {
-            _validationResults.Add(new ValidationResultItem
-            {
-                Severity = "WARN",
-                Message = warning.Message,
-                SeverityColor = (Brush)FindResource("WarningColorBrush")
-            });
-        }
-
-        ResultsPanel.Visibility = Visibility.Visible;
-        ResultsHeader.Text = "Validation Results";
-
-        if (result.IsValid && _validationResults.Count == 0)
-        {
-            ResultsText.Text = "Policy is valid. No violations detected.";
-            ResultsList.Visibility = Visibility.Collapsed;
-        }
-        else if (result.IsValid)
-        {
-            ResultsText.Text = $"Policy is valid with {_validationResults.Count} warning(s).";
-            ResultsList.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            ResultsText.Text = $"Policy has {result.Violations.Count} violation(s) and {result.Warnings.Count} warning(s).";
-            ResultsList.Visibility = Visibility.Visible;
-        }
-    }
-
-    private async void DryRun_Click(object sender, RoutedEventArgs e)
-    {
-        DryRunButton.IsEnabled = false;
-        ShowStatus("Running dry run...", true);
-
-        try
-        {
-            var policy = BuildPolicyFromUI();
-            var config = await WpfServices.ConfigService.Instance.LoadConfigAsync();
-            var dataRoot = WpfServices.ConfigService.Instance.ResolveDataRoot(config);
-            _lastDryRun = await _retentionService.PerformDryRunAsync(policy, dataRoot);
-
-            ResultsPanel.Visibility = Visibility.Visible;
-            ResultsHeader.Text = "Dry Run Results";
-            ResultsList.Visibility = Visibility.Collapsed;
-
-            if (_lastDryRun.Errors.Any())
-            {
-                ResultsText.Text = $"Dry run completed with errors:\n{string.Join("\n", _lastDryRun.Errors)}";
-            }
-            else
-            {
-                ResultsText.Text = $"Found {_lastDryRun.FilesToDelete.Count} files to delete " +
-                                   $"({FormatHelpers.FormatBytes(_lastDryRun.TotalBytesToDelete)})\n" +
-                                   $"Skipped: {_lastDryRun.SkippedFiles.Count} files (legal holds)\n" +
-                                   $"Symbols affected: {_lastDryRun.BySymbol.Count}";
-                ExecuteCleanupButton.IsEnabled = _lastDryRun.FilesToDelete.Count > 0;
-            }
-
-            HideStatus();
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Dry run failed", ex);
-            ShowStatus($"Dry run failed: {ex.Message}", false);
-        }
-        finally
-        {
-            DryRunButton.IsEnabled = true;
-        }
-    }
-
-    private async void ExecuteCleanup_Click(object sender, RoutedEventArgs e)
-    {
-        if (_lastDryRun == null || _lastDryRun.FilesToDelete.Count == 0)
-        {
-            MessageBox.Show("Please run a dry run first.", "No Dry Run", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        var confirm = MessageBox.Show(
-            $"This will permanently delete {_lastDryRun.FilesToDelete.Count} files ({FormatHelpers.FormatBytes(_lastDryRun.TotalBytesToDelete)}).\n\nContinue?",
-            "Confirm Cleanup",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.Yes)
-            return;
-
-        ExecuteCleanupButton.IsEnabled = false;
-        ShowStatus("Executing cleanup...", true);
-
-        try
-        {
-            var verifyChecksums = RequireChecksumCheck.IsChecked == true;
-            var report = await _retentionService.ExecuteRetentionCleanupAsync(_lastDryRun, verifyChecksums);
-
-            ResultsPanel.Visibility = Visibility.Visible;
-            ResultsHeader.Text = "Cleanup Results";
-            ResultsList.Visibility = Visibility.Collapsed;
-            ResultsText.Text = $"Status: {report.Status}\n" +
-                               $"Files deleted: {report.DeletedFiles.Count}\n" +
-                               $"Bytes freed: {FormatHelpers.FormatBytes(report.ActualBytesDeleted)}\n" +
-                               (report.Errors.Any() ? $"Errors: {string.Join(", ", report.Errors)}\n" : "") +
-                               (report.Notes.Any() ? $"Notes: {string.Join(", ", report.Notes)}" : "");
-
-            _lastDryRun = null;
-            LoadAuditReports();
-            HideStatus();
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Cleanup failed", ex);
-            ShowStatus($"Cleanup failed: {ex.Message}", false);
-        }
-        finally
-        {
-            ExecuteCleanupButton.IsEnabled = false;
-        }
     }
 
     private async void CreateHold_Click(object sender, RoutedEventArgs e)
@@ -318,18 +143,6 @@ public partial class RetentionAssurancePage : Page
         }
     }
 
-    private RetentionPolicy BuildPolicyFromUI()
-    {
-        return new RetentionPolicy
-        {
-            TickDataDays = int.TryParse(TickDataDaysBox.Text, out var tick) ? tick : 30,
-            BarDataDays = int.TryParse(BarDataDaysBox.Text, out var bar) ? bar : 365,
-            QuoteDataDays = int.TryParse(QuoteDataDaysBox.Text, out var quote) ? quote : 30,
-            DeletedFilesPerRun = int.TryParse(FilesPerRunBox.Text, out var files) ? files : 100,
-            CompressBeforeDelete = CompressBeforeDeleteCheck.IsChecked == true
-        };
-    }
-
     private Brush GetStatusBrush(CleanupStatus status)
     {
         return status switch
@@ -341,19 +154,6 @@ public partial class RetentionAssurancePage : Page
             _ => (Brush)FindResource("InfoColorBrush")
         };
     }
-
-    private void ShowStatus(string message, bool showProgress)
-    {
-        StatusPanel.Visibility = Visibility.Visible;
-        StatusText.Text = message;
-        StatusProgress.Visibility = showProgress ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    private void HideStatus()
-    {
-        StatusPanel.Visibility = Visibility.Collapsed;
-    }
-
 
     private static string FormatTimestamp(DateTime timestamp)
     {
@@ -385,10 +185,36 @@ public partial class RetentionAssurancePage : Page
         public string TimeText { get; set; } = string.Empty;
     }
 
-    public sealed class ValidationResultItem
+    private sealed class RetentionAssuranceClient : IRetentionAssuranceClient
     {
-        public string Severity { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
-        public Brush SeverityColor { get; set; } = Brushes.Gray;
+        private readonly WpfServices.RetentionAssuranceService _retentionService;
+
+        public RetentionAssuranceClient(WpfServices.RetentionAssuranceService retentionService)
+        {
+            _retentionService = retentionService;
+        }
+
+        public RetentionConfiguration Configuration => _retentionService.Configuration;
+
+        public Task SaveConfigurationAsync(CancellationToken ct = default) =>
+            _retentionService.SaveConfigurationAsync(ct);
+
+        public RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy) =>
+            _retentionService.ValidateRetentionPolicy(policy);
+
+        public async Task<RetentionDryRunResult> PerformDryRunAsync(
+            RetentionPolicy policy,
+            CancellationToken ct = default)
+        {
+            var config = await WpfServices.ConfigService.Instance.LoadConfigAsync();
+            var dataRoot = WpfServices.ConfigService.Instance.ResolveDataRoot(config);
+            return await _retentionService.PerformDryRunAsync(policy, dataRoot, ct);
+        }
+
+        public Task<RetentionAuditReport> ExecuteRetentionCleanupAsync(
+            RetentionDryRunResult dryRun,
+            bool verifyChecksums,
+            CancellationToken ct = default) =>
+            _retentionService.ExecuteRetentionCleanupAsync(dryRun, verifyChecksums, ct);
     }
 }

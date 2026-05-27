@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Semantic colors</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
   .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
@@ -14,6 +16,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Semantic colors">
+<h1 class="preview-sr-only">Semantic colors</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="grid">
     <div class="sw" style="background: rgba(38, 191, 134, 0.10); border-color: rgba(38, 191, 134, 0.30); color:#26BF86;">
       <span class="dot" style="background:#26BF86;"></span>
@@ -36,5 +41,6 @@
       <div><div class="label">Live</div><div class="hex">#2AB2D4</div></div>
     </div>
   </div>
+</main>
 </body>
 </html>

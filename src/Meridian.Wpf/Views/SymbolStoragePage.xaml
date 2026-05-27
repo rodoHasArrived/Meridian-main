@@ -4,6 +4,9 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Symbol Storage">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel MaxWidth="1200">
 
@@ -22,8 +25,11 @@
                     <TextBlock Text="Per-symbol storage analytics, file breakdown, and data timeline"
                                Style="{StaticResource CardDescriptionStyle}" />
                 </StackPanel>
-                <Button Grid.Column="1" x:Name="RefreshButton" Click="Refresh_Click"
-                        Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center">
+                <Button Grid.Column="1" x:Name="RefreshButton"
+                        Command="{Binding RefreshCommand}"
+                        IsEnabled="{Binding CanRefresh}"
+                        Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="SymbolStorageRefreshButton">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE72C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" Margin="0,0,6,0" />
                         <TextBlock Text="Refresh" />
@@ -41,33 +47,59 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="TotalSizeText" Text="--" FontSize="28" FontWeight="Bold"
+                        <TextBlock x:Name="TotalSizeText" Text="{Binding TotalSizeText}" FontSize="28" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Total Size" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="TotalFilesText" Text="--" FontSize="28" FontWeight="Bold"
+                        <TextBlock x:Name="TotalFilesText" Text="{Binding TotalFilesText}" FontSize="28" FontWeight="Bold"
                                    Foreground="{StaticResource SuccessColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Total Files" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="4" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="SymbolCountText" Text="--" FontSize="28" FontWeight="Bold"
+                        <TextBlock x:Name="SymbolCountText" Text="{Binding SymbolCountText}" FontSize="28" FontWeight="Bold"
                                    Foreground="{StaticResource WarningColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Symbols" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="6" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock x:Name="DailyGrowthText" Text="--" FontSize="28" FontWeight="Bold"
+                        <TextBlock x:Name="DailyGrowthText" Text="{Binding DailyGrowthText}" FontSize="28" FontWeight="Bold"
                                    Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Daily Growth" HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <!-- Status / Error -->
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24"
+                    AutomationProperties.AutomationId="SymbolStorageStatusPanel">
+                <StackPanel>
+                    <TextBlock Text="{Binding StatusText}"
+                               FontSize="13"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="SymbolStorageStatusText" />
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            BorderBrush="{StaticResource ErrorColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,12,0,0"
+                            Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="SymbolStorageErrorPanel">
+                        <TextBlock Text="{Binding ErrorText}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ErrorColorBrush}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SymbolStorageErrorText" />
+                    </Border>
+                </StackPanel>
+            </Border>
 
             <!-- Data Type Breakdown -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
@@ -84,27 +116,27 @@
                         <Border Grid.Column="0" Background="{StaticResource ConsoleBackgroundLightBrush}" CornerRadius="6" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="Trade Data" FontSize="14" FontWeight="Bold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock x:Name="TradeSizeText" Text="--" FontSize="20" FontWeight="Bold"
+                                <TextBlock x:Name="TradeSizeText" Text="{Binding TradeSizeText}" FontSize="20" FontWeight="Bold"
                                            Foreground="{StaticResource InfoColorBrush}" Margin="0,4,0,0" />
-                                <TextBlock x:Name="TradeFilesText" Text="-- files" FontSize="12"
+                                <TextBlock x:Name="TradeFilesText" Text="{Binding TradeFilesText}" FontSize="12"
                                            Foreground="{StaticResource ConsoleTextMutedBrush}" />
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="2" Background="{StaticResource ConsoleBackgroundLightBrush}" CornerRadius="6" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="Depth Data" FontSize="14" FontWeight="Bold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock x:Name="DepthSizeText" Text="--" FontSize="20" FontWeight="Bold"
+                                <TextBlock x:Name="DepthSizeText" Text="{Binding DepthSizeText}" FontSize="20" FontWeight="Bold"
                                            Foreground="{StaticResource SuccessColorBrush}" Margin="0,4,0,0" />
-                                <TextBlock x:Name="DepthFilesText" Text="-- files" FontSize="12"
+                                <TextBlock x:Name="DepthFilesText" Text="{Binding DepthFilesText}" FontSize="12"
                                            Foreground="{StaticResource ConsoleTextMutedBrush}" />
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="4" Background="{StaticResource ConsoleBackgroundLightBrush}" CornerRadius="6" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="Historical Data" FontSize="14" FontWeight="Bold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock x:Name="HistoricalSizeText" Text="--" FontSize="20" FontWeight="Bold"
+                                <TextBlock x:Name="HistoricalSizeText" Text="{Binding HistoricalSizeText}" FontSize="20" FontWeight="Bold"
                                            Foreground="{StaticResource WarningColorBrush}" Margin="0,4,0,0" />
-                                <TextBlock x:Name="HistoricalFilesText" Text="-- files" FontSize="12"
+                                <TextBlock x:Name="HistoricalFilesText" Text="{Binding HistoricalFilesText}" FontSize="12"
                                            Foreground="{StaticResource ConsoleTextMutedBrush}" />
                             </StackPanel>
                         </Border>
@@ -117,7 +149,10 @@
                 <StackPanel>
                     <TextBlock Text="Per-Symbol Breakdown" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
                     <ListView x:Name="SymbolList" SelectionMode="Single" MaxHeight="400"
-                              Background="Transparent" BorderThickness="0">
+                              ItemsSource="{Binding Symbols}"
+                              Background="Transparent" BorderThickness="0"
+                              Visibility="{Binding HasSymbols, Converter={StaticResource BoolToVisibilityConverter}}"
+                              AutomationProperties.AutomationId="SymbolStorageSymbolsList">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -155,7 +190,10 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel x:Name="NoSymbolsPanel" Visibility="Collapsed" Margin="0,12,0,0">
+                    <StackPanel x:Name="NoSymbolsPanel"
+                                Visibility="{Binding IsSymbolListEmpty, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,12,0,0"
+                                AutomationProperties.AutomationId="SymbolStorageEmptyPanel">
                         <TextBlock Text="No symbol data found. Start collecting data to see per-symbol analytics."
                                    FontSize="13" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
@@ -163,16 +201,24 @@
             </Border>
 
             <!-- Disk Projection -->
-            <Border x:Name="ProjectionPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
+            <Border x:Name="ProjectionPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24"
+                    Visibility="{Binding HasProjection, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="SymbolStorageProjectionPanel">
                 <StackPanel>
                     <TextBlock Text="Storage Projection" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock x:Name="ProjectionText" Text="" FontSize="13"
-                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="ProjectionText"
+                               Text="{Binding ProjectionText}"
+                               FontSize="13"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="SymbolStorageProjectionText" />
                 </StackPanel>
             </Border>
 
             <!-- Loading -->
-            <Border x:Name="LoadingPanel" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+            <Border x:Name="LoadingPanel" Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="SymbolStorageLoadingPanel">
                 <StackPanel HorizontalAlignment="Center">
                     <ProgressBar IsIndeterminate="True" Height="4" Width="200" Margin="0,0,0,8"
                                  Foreground="{StaticResource InfoColorBrush}" />

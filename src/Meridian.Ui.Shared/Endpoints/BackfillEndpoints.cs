@@ -50,7 +50,7 @@ public static class BackfillEndpoints
         .Produces(404);
 
         // Preview backfill (dry run - shows what would be fetched)
-        group.MapPost(UiApiRoutes.BackfillRun + "/preview", async (BackfillCoordinator backfill, BackfillRequestDto req) =>
+        group.MapPost(UiApiRoutes.BackfillRunPreview, async (BackfillCoordinator backfill, BackfillRequestDto req) =>
         {
             try
             {
@@ -106,7 +106,7 @@ public static class BackfillEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Backfill progress endpoint
-        group.MapGet("/api/backfill/progress", (BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillProgress, (BackfillCoordinator backfill) =>
         {
             var progress = backfill.GetProgress();
             return progress is not null

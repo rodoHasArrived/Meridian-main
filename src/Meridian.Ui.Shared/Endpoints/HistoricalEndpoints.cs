@@ -100,6 +100,59 @@ public static class HistoricalEndpoints
         .WithName("GetSymbolDateRange")
         .Produces(200)
         .Produces(400);
+
+        // Aggregate stored trades into OHLCV bars at a chosen interval. Powers price charts.
+        group.MapGet("/{symbol}/bars", async (
+            HttpContext context,
+            HistoricalDataQueryService queryService,
+            string symbol,
+            int? intervalMinutes = null,
+            DateOnly? from = null,
+            DateOnly? to = null,
+            int? maxBars = null) =>
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+            {
+                return Results.BadRequest(new { error = "Symbol is required" });
+            }
+
+            var interval = intervalMinutes ?? 5;
+            if (interval <= 0 || interval > 1440)
+            {
+                return Results.BadRequest(new { error = "intervalMinutes must be between 1 and 1440" });
+            }
+
+            var capped = maxBars is null ? 5000 : Math.Clamp(maxBars.Value, 1, 5000);
+
+            var query = new HistoricalBarsQuery(
+                Symbol: symbol.ToUpperInvariant(),
+                IntervalMinutes: interval,
+                From: from,
+                To: to,
+                MaxBars: capped);
+
+            try
+            {
+                var result = await queryService.GetBarsAsync(query, context.RequestAborted);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (OperationCanceledException)
+            {
+                return Results.StatusCode(499);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetSymbolBars")
+        .Produces(200)
+        .Produces(400)
+        .Produces(499);
     }
 
     /// <summary>

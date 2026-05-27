@@ -1,25 +1,118 @@
-import { FileText, Landmark } from "lucide-react";
+import { type KeyboardEvent, useEffect, useRef } from "react";
+import { FileText, Landmark, Network } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
-import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
+import {
+  resolveReportPackProfileKeyCommand,
+  useReportingScreenViewModel,
+  type ReportingProfileRow
+} from "@/screens/reporting-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
 
 interface ReportingScreenProps {
   data: GovernanceWorkspaceResponse | null;
 }
 
+const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (profile) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{profile.name}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{profile.id}</span>
+      </span>
+    )
+  },
+  {
+    id: "target",
+    label: "Target",
+    render: (profile) => (
+      <span className="block min-w-0">
+        <span className="block font-medium text-foreground">{profile.targetLabel}</span>
+        <span className="mt-1 block break-words text-xs leading-5 text-muted-foreground">{profile.description}</span>
+      </span>
+    )
+  },
+  {
+    id: "format",
+    label: "Format",
+    render: (profile) => <span className="font-mono text-xs text-foreground">{profile.formatLabel}</span>
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (profile) => (
+      <span className="flex flex-wrap gap-1.5">
+        {profile.badges.length > 0 ? profile.badges.map((badge) => (
+          <Badge key={badge.label} variant={badge.variant}>
+            {badge.label}
+          </Badge>
+        )) : (
+          <Badge variant="outline">Evidence pending</Badge>
+        )}
+      </span>
+    )
+  }
+];
+
 export function ReportingScreen({ data }: ReportingScreenProps) {
-  const vm = useReportingScreenViewModel(data?.reporting ?? null);
+  const { pathname } = useLocation();
+  const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
+  const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const shouldFocusReportPackProfile = useRef(false);
+
+  useEffect(() => {
+    if (!shouldFocusReportPackProfile.current) {
+      return;
+    }
+
+    shouldFocusReportPackProfile.current = false;
+    const selectedProfileId = vm.workflowTaskPanel?.selectedProfileId;
+    if (selectedProfileId) {
+      reportPackProfileButtonRefs.current[selectedProfileId]?.focus();
+    }
+  }, [vm.workflowTaskPanel?.selectedProfileId]);
+
+  function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const command = resolveReportPackProfileKeyCommand(event.key);
+    if (!command) {
+      return;
+    }
+
+    event.preventDefault();
+    shouldFocusReportPackProfile.current = true;
+    vm.selectAdjacentReportPackProfile(command);
+  }
 
   if (!data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{vm.loadingTitle}</CardTitle>
-          <CardDescription>{vm.loadingDetail}</CardDescription>
+      <Card
+        role={vm.loadingState.role}
+        aria-busy={vm.loadingState.ariaBusy}
+        aria-live={vm.loadingState.ariaLive}
+        aria-labelledby={vm.loadingState.titleId}
+        aria-describedby={vm.loadingState.detailId}
+        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+      >
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
+              dot
+            >
+              {vm.loadingState.badgeLabel}
+            </Badge>
+            <ReportingChip label="Route" value={vm.loadingState.routeLabel} />
+          </div>
+          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
+          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -27,134 +120,365 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
   return (
     <div className="space-y-8">
+      <section
+        role="region"
+        aria-label="Reporting workbench context"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Reporting lane</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            Governed export workbench
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Report packs, export routes, and review evidence stay in one cockpit so governed output can be
+            checked before it leaves Reporting.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {vm.workbenchActions.map((action) => (
+            <Button key={action.id} asChild variant="outline" size="sm">
+              <Link to={action.href} aria-label={action.ariaLabel}>
+                <Network className="h-4 w-4" aria-hidden="true" />
+                {action.label}
+              </Link>
+            </Button>
+          ))}
+          {vm.workbenchChips.map((chip) => (
+            <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
+        </div>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
           <MetricCard key={metric.id} {...metric} />
         ))}
       </section>
 
+      {vm.workflowTaskPanel ? (
+        <section
+          role="region"
+          aria-label={vm.workflowTaskPanel.regionLabel}
+          className="panel-surface-strong grid gap-4 px-4 py-4 xl:grid-cols-[1.05fr_0.95fr]"
+        >
+          <div className="min-w-0 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="eyebrow-label">{vm.workflowTaskPanel.eyebrow}</div>
+                <h3 className="mt-2 text-lg font-semibold text-foreground">{vm.workflowTaskPanel.title}</h3>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                  {vm.workflowTaskPanel.description}
+                </p>
+              </div>
+              <Badge variant={vm.workflowTaskPanel.statusVariant}>
+                {vm.workflowTaskPanel.statusLabel}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {vm.workflowTaskPanel.chips.map((chip) => (
+                <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
+            </div>
+            <div
+              role="status"
+              id={vm.workflowTaskPanel.selectedSummaryId}
+              aria-label="Selected report-pack profile"
+              className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
+            >
+              {vm.workflowTaskPanel.selectedSummary}
+            </div>
+            <div>
+              <div className="eyebrow-label">Actions</div>
+              {vm.workflowTaskPanel.hasActions ? (
+                <div
+                  id={vm.workflowTaskPanel.actionPanelId}
+                  role="list"
+                  aria-label={vm.workflowTaskPanel.actionListLabel}
+                  className="mt-2 grid gap-2 sm:grid-cols-2"
+                >
+                  {vm.workflowTaskPanel.actions.map((action) => (
+                    <div
+                      key={action.id}
+                      role="listitem"
+                      className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          asChild={action.method === "GET" && !action.isDisabled}
+                          disabled={action.isDisabled}
+                          busy={action.isRunning}
+                          busyLabel={action.busyLabel}
+                          disabledReason={action.disabledReason}
+                          size="sm"
+                          variant={action.variant}
+                          aria-label={action.ariaLabel}
+                          aria-describedby={action.describedById}
+                          onClick={
+                            action.method === "POST" && vm.selectedProfile
+                              ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                              : undefined
+                          }
+                        >
+                          {action.isDisabled ? (
+                            action.label
+                          ) : action.method === "POST" ? (
+                            action.label
+                          ) : (
+                            <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                              {action.label}
+                            </a>
+                          )}
+                        </Button>
+                        <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                          {action.statusBadgeLabel}
+                        </Badge>
+                      </div>
+                      <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {action.descriptionText}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p
+                  id={vm.workflowTaskPanel.actionPanelId}
+                  role="status"
+                  aria-label={vm.workflowTaskPanel.actionsEmptyAriaLabel}
+                  className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+                >
+                  {vm.workflowTaskPanel.actionsEmptyText}
+                </p>
+              )}
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <div className="eyebrow-label">Targets</div>
+                {vm.workflowTaskPanel.hasTargets ? (
+                  <div role="list" aria-label={vm.workflowTaskPanel.targetsLabel} className="mt-2 grid gap-2">
+                    {vm.workflowTaskPanel.targets.map((target) => (
+                      <div
+                        key={target.id}
+                        role="listitem"
+                        aria-label={target.ariaLabel}
+                        className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2"
+                      >
+                        <span className="font-mono text-sm text-foreground">{target.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p
+                    role="status"
+                    aria-label={vm.workflowTaskPanel.targetsEmptyAriaLabel}
+                    className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+                  >
+                    {vm.workflowTaskPanel.targetsEmptyText}
+                  </p>
+                )}
+              </div>
+              <div>
+                <div className="eyebrow-label">Backend</div>
+                <div
+                  id={vm.workflowTaskPanel.backendPanelId}
+                  aria-label={vm.workflowTaskPanel.backendLinksLabel}
+                  className="mt-2 grid gap-2"
+                >
+                  {vm.workflowTaskPanel.backendLinks.map((link) => link.isBrowserNavigable ? (
+                    <a
+                      key={link.id}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={link.ariaLabel}
+                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <ReportingBackendReference link={link} />
+                    </a>
+                  ) : (
+                    <div
+                      key={link.id}
+                      role="group"
+                      aria-label={link.ariaLabel}
+                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+                    >
+                      <ReportingBackendReference link={link} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="eyebrow-label">Approval profile</div>
+            {vm.workflowTaskPanel.hasProfiles ? (
+              <div
+                role="list"
+                aria-label={vm.workflowTaskPanel.profileListLabel}
+                aria-describedby={vm.workflowTaskPanel.profileKeyboardHelpId}
+                className="mt-3 grid gap-2"
+                onKeyDown={handleReportPackProfileKeyDown}
+              >
+                <span id={vm.workflowTaskPanel.profileKeyboardHelpId} className="sr-only">
+                  {vm.workflowTaskPanel.profileKeyboardHelpText}
+                </span>
+                {vm.workflowTaskPanel.profiles.map((profile) => (
+                  <div key={profile.id} role="listitem">
+                    <button
+                      ref={(node) => {
+                        reportPackProfileButtonRefs.current[profile.id] = node;
+                      }}
+                      type="button"
+                      aria-pressed={profile.isSelected}
+                      aria-controls={profile.controlsId}
+                      aria-expanded={profile.isExpanded}
+                      aria-describedby={profile.descriptionId}
+                      aria-label={profile.selectAriaLabel}
+                      tabIndex={profile.tabIndex}
+                      onClick={() => vm.selectProfile(profile.id)}
+                      className={cn(
+                        "w-full rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                        profile.isSelected
+                          ? "border-primary/45 bg-primary/10"
+                          : "border-border/70 bg-secondary/25 hover:bg-secondary/45"
+                      )}
+                    >
+                      <span className="flex items-start justify-between gap-3">
+                        <span>
+                          <span className="block font-semibold text-foreground">{profile.name}</span>
+                          <span id={profile.descriptionId} className="mt-1 block text-xs text-muted-foreground">
+                            {profile.summary}
+                          </span>
+                        </span>
+                        <Badge variant={profile.readinessVariant}>{profile.readinessLabel}</Badge>
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p
+                role="status"
+                aria-label={vm.workflowTaskPanel.profilesEmptyAriaLabel}
+                className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+              >
+                {vm.workflowTaskPanel.profilesEmptyText}
+              </p>
+            )}
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Reporting Lane</div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Governed report packs
+              Evidence and distribution
             </CardTitle>
             <CardDescription>
-              Export profiles tied to accounting evidence, ledger outputs, and report-pack targets.
+              Export profiles stay tied to accounting evidence, loader posture, and governed delivery targets.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-3 md:grid-cols-3">
             <ReportingHighlight
-              title="Export profiles"
-              description="Profiles determine format, target tool, loader scripts, and data dictionaries for each governed export."
+              title="Profile wiring"
+              description="Each queue row keeps profile ID, format, target tool, and loader posture visible before export."
             />
             <ReportingHighlight
-              title="Report-pack targets"
-              description="Targets map export profiles to board, audit, and compliance outputs from the same accounting evidence."
+              title="Pack routing"
+              description="Report-pack targets map the same evidence to board, audit, and compliance distribution lanes."
             />
             <ReportingHighlight
-              title="Approval posture"
-              description="Governed outputs track approval and version state so restated reports remain auditable."
+              title="Review posture"
+              description="Dictionary and loader evidence remain attached so governed output can be reviewed without context switching."
             />
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="panel-surface-strong text-foreground">
           <CardHeader>
             <div className="eyebrow-label">Pack targets</div>
             <CardTitle>Report-pack targets</CardTitle>
-            <CardDescription className="text-slate-300">{vm.packTargetsSummary}</CardDescription>
+            <CardDescription>{vm.packTargetsSummary}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-slate-200">
+          <CardContent className="space-y-3 text-sm text-foreground/85">
+            <div className="flex flex-wrap gap-2">
+              {vm.packTargetChips.map((chip) => (
+                <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
+            </div>
             {vm.hasPackTargets ? (
-              <div role="list" aria-label={vm.packTargetsListLabel} className="space-y-2">
+              <div
+                role="list"
+                aria-label={vm.packTargetsListLabel}
+                className="data-grid-surface space-y-2 border-0 bg-background/40 p-3"
+              >
                 {vm.packTargets.map((target) => (
-                <div
-                  key={target.id}
-                  role="listitem"
-                  aria-label={target.ariaLabel}
-                  className="flex items-center gap-2 rounded-lg border border-border/70 bg-background/20 px-3 py-2"
-                >
-                  <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <span className="font-mono capitalize">{target.label}</span>
-                </div>
+                  <div
+                    key={target.id}
+                    role="listitem"
+                    aria-label={target.ariaLabel}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-background/20 px-3 py-2"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      <span className="font-mono capitalize text-foreground">{target.label}</span>
+                    </span>
+                    <Badge variant="outline">Target</Badge>
+                  </div>
                 ))}
               </div>
             ) : (
-              <p role="status" aria-label="No report-pack targets" className="text-slate-300">Configure report-pack targets in the governance policy.</p>
+              <p
+                role="status"
+                aria-label={vm.packTargetsEmptyState.ariaLabel}
+                className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+              >
+                {vm.packTargetsEmptyState.text}
+              </p>
             )}
           </CardContent>
         </Card>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Landmark className="h-4 w-4 text-primary" />
-                  {vm.title}
+                  Governed export queue
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.description}</CardDescription>
               </div>
-              <span className="w-fit rounded-sm border border-primary/35 bg-primary/10 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
-                {vm.countLabel}
-              </span>
+              <Badge variant="outline">{vm.countLabel}</Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {vm.listLabel}
-              </span>
-              <span className="font-mono text-muted-foreground">{vm.visibleCountLabel}</span>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {vm.queueChips.map((chip) => (
+                <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
             </div>
-            <div role="list" aria-label={vm.listLabel} className="space-y-2">
+            <div>
               {vm.hasRows ? (
-                vm.rows.map((profile) => (
-                  <div key={profile.id} role="listitem">
-                    <button
-                      type="button"
-                      aria-pressed={profile.isSelected}
-                      aria-controls={vm.detailId}
-                      aria-label={profile.selectAriaLabel}
-                      onClick={() => vm.selectProfile(profile.id)}
-                      className={cn(
-                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
-                        profile.isSelected
-                          ? "border-primary/45 bg-primary/10"
-                          : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-foreground">{profile.name}</div>
-                          <div className="mt-1 truncate font-mono text-xs text-muted-foreground">
-                            {profile.targetLabel}
-                          </div>
-                        </div>
-                        <span className="shrink-0 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
-                          {profile.formatLabel}
-                        </span>
-                      </div>
-                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
-                        {profile.description}
-                      </p>
-                      {profile.badges.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {profile.badges.map((badge) => (
-                            <Badge key={badge.label} variant={badgeVariant(badge.tone)}>
-                              {badge.label}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </button>
-                  </div>
-                ))
+                <DenseDataTable
+                  columns={reportingProfileColumns}
+                  rows={vm.rows}
+                  getRowId={(profile) => profile.id}
+                  getRowAriaLabel={(profile) => profile.selectAriaLabel}
+                  getRowSelectAriaLabel={(profile) => profile.selectAriaLabel}
+                  getRowAriaControls={(profile) => profile.controlsId}
+                  getRowAriaExpanded={(profile) => profile.isExpanded}
+                  onRowSelect={(profile) => vm.selectProfile(profile.id)}
+                  selectedRowId={vm.selectedProfile?.id ?? null}
+                  emptyText={vm.emptyText}
+                  ariaLabel={vm.listLabel}
+                  caption={`${vm.listLabel}. Select a row to inspect export evidence and actions.`}
+                />
               ) : (
                 <div
                   role="status"
@@ -169,82 +493,148 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
         <aside
           id={vm.detailId}
-          role="complementary"
+          role="region"
           aria-label={vm.statusTitle}
           aria-live="polite"
-          className="h-fit min-w-0 overflow-hidden rounded-lg border border-border/70 bg-background/35 p-4"
+          className="row-detail-panel h-fit min-w-0"
         >
-          <div className="eyebrow-label">{vm.statusTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
-          <p className="mt-2 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
-          {vm.selectedProfile ? (
-            <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
-              <div className="font-semibold text-foreground">{vm.selectedProfile.title}</div>
-              <div className="font-mono text-xs text-muted-foreground">{vm.selectedProfile.subtitle}</div>
-              <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
+          <div className="head flex items-center justify-between gap-3">
+            <span>Selected profile inspector</span>
+            <Badge variant={vm.statusBadgeVariant}>
+              {vm.statusBadgeLabel}
+            </Badge>
+          </div>
+          <div className="body">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-foreground">
+                {vm.selectedProfile?.title ?? vm.statusTitle}
+              </h3>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                {vm.selectedProfile ? `${vm.selectedProfile.id} · ${vm.selectedProfile.subtitle}` : vm.nextAction}
+              </p>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
+            {vm.exportStatus ? (
               <div
                 role="status"
-                aria-label={`${vm.selectedProfile.title} readiness`}
-                className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
+                aria-label={vm.exportStatus.ariaLabel}
+                className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
               >
-                {vm.selectedProfile.readinessSummary}
+                <p>{vm.exportStatus.text}</p>
+                {vm.exportStatus.fields.length > 0 ? (
+                  <dl className="grid gap-2 sm:grid-cols-2">
+                    {vm.exportStatus.fields.map((field) => (
+                      <div
+                        key={field.label}
+                        className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                      >
+                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {field.label}
+                        </dt>
+                        <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
+                          {field.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
+                {vm.exportStatus.warnings.length > 0 ? (
+                  <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+                    {vm.exportStatus.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {vm.exportStatus.artifacts.length > 0 ? (
+                  <dl
+                    aria-label="Export artifacts"
+                    className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                  >
+                    {vm.exportStatus.artifacts.map((artifact) => (
+                      <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
+                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {artifact.label}
+                        </dt>
+                        <dd className={cn("break-words font-mono text-xs", artifact.className)}>
+                          {artifact.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
               </div>
-              {vm.exportStatus ? (
+            ) : null}
+            <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
+            {vm.selectedProfile ? (
+              <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
+                <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
                 <div
                   role="status"
-                  aria-label={vm.exportStatus.ariaLabel}
-                  className={cn(
-                    "rounded-md border px-3 py-2 text-sm leading-6",
-                    exportStatusToneClass(vm.exportStatus.tone)
-                  )}
+                  aria-label={`${vm.selectedProfile.title} readiness`}
+                  className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
                 >
-                  {vm.exportStatus.text}
+                  {vm.selectedProfile.readinessSummary}
                 </div>
-              ) : null}
-              <dl className="grid gap-2">
-                {vm.selectedProfile.fields.map((field) => (
-                  <div
-                    key={field.label}
-                    className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                  >
-                    <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                    <dd className={cn("text-right font-mono text-xs", fieldToneClass(field.tone))}>
-                      {field.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <div className="flex gap-3 pt-2">
-                {vm.selectedProfile.actions.map((action) => (
-                  <Button
-                    key={action.href}
-                    asChild={action.method === "GET" && !action.isDisabled}
-                    disabled={action.isDisabled}
-                    size="sm"
-                    variant={action.variant}
-                    aria-label={action.ariaLabel}
-                    aria-busy={action.isRunning || undefined}
-                    title={action.disabledReason ?? undefined}
-                    onClick={
-                      action.method === "POST"
-                        ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
-                        : undefined
-                    }
-                  >
-                    {action.isDisabled ? (
-                      action.label
-                    ) : action.method === "POST" ? (
-                      action.label
-                    ) : (
-                      <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
-                        {action.label}
-                      </a>
-                    )}
-                  </Button>
-                ))}
+                <dl className="grid gap-2">
+                  {vm.selectedProfile.fields.map((field) => (
+                    <div
+                      key={field.label}
+                      className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                    >
+                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                      <dd className={cn("text-right font-mono text-xs", field.className)}>
+                        {field.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
+                  {vm.selectedProfile.actions.map((action) => (
+                    <div
+                      key={action.id}
+                      role="listitem"
+                      className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          asChild={action.method === "GET" && !action.isDisabled}
+                          disabled={action.isDisabled}
+                          busy={action.isRunning}
+                          busyLabel={action.busyLabel}
+                          disabledReason={action.disabledReason}
+                          size="sm"
+                          variant={action.variant}
+                          aria-label={action.ariaLabel}
+                          aria-describedby={action.describedById}
+                          onClick={
+                            action.method === "POST"
+                              ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                              : undefined
+                          }
+                        >
+                          {action.isDisabled ? (
+                            action.label
+                          ) : action.method === "POST" ? (
+                            action.label
+                          ) : (
+                            <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                              {action.label}
+                            </a>
+                          )}
+                        </Button>
+                        <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                          {action.statusBadgeLabel}
+                        </Badge>
+                      </div>
+                      <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {action.descriptionText}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </aside>
       </section>
     </div>
@@ -253,29 +643,42 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
 function ReportingHighlight({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
+    <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }
 
-function badgeVariant(tone: "primary" | "success" | "warning" | "muted"): "default" | "success" | "warning" | "outline" {
-  if (tone === "success") return "success";
-  if (tone === "warning") return "warning";
-  if (tone === "muted") return "outline";
-  return "default";
+function ReportingChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="toolbar-chip" aria-label={`${label} ${value}`}>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono text-foreground">{value}</span>
+    </div>
+  );
 }
 
-function fieldToneClass(tone: "default" | "success" | "warning" | "muted") {
-  if (tone === "success") return "text-success";
-  if (tone === "warning") return "text-warning";
-  if (tone === "muted") return "text-muted-foreground";
-  return "text-foreground";
-}
-
-function exportStatusToneClass(tone: "default" | "success" | "danger") {
-  if (tone === "success") return "border-success/30 bg-success/10 text-success";
-  if (tone === "danger") return "border-danger/35 bg-danger/10 text-danger";
-  return "border-border/70 bg-secondary/25 text-muted-foreground";
+function ReportingBackendReference({
+  link
+}: {
+  link: {
+    method: string;
+    label: string;
+    href: string;
+    interactionLabel: string;
+  };
+}) {
+  return (
+    <>
+      <Badge variant="outline">{link.method}</Badge>
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground">{link.label}</span>
+        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
+        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          {link.interactionLabel}
+        </span>
+      </span>
+    </>
+  );
 }

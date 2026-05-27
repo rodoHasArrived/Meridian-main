@@ -8,7 +8,7 @@ namespace Meridian.Application.Config;
 /// <summary>
 /// Watches a JSON config file and raises debounced change events with the parsed AppConfig.
 /// </summary>
-public sealed class ConfigWatcher : IDisposable
+public sealed class ConfigWatcher : IDisposable, IAsyncDisposable
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<ConfigWatcher>();
 
@@ -16,6 +16,8 @@ public sealed class ConfigWatcher : IDisposable
     private readonly FileSystemWatcher _fsw;
     private readonly Timer _debounce;
     private readonly object _gate = new();
+    private readonly HashSet<Task> _flushTasks = [];
+    private readonly CancellationTokenSource _disposeCts = new();
 
     private volatile bool _pending;
     private volatile bool _disposed;
@@ -81,8 +83,26 @@ public sealed class ConfigWatcher : IDisposable
         if (!doWork)
             return;
 
-        // Fire-and-forget async flush with proper error handling
-        _ = FlushAsyncCore();
+        var flushTask = FlushAsyncCore(_disposeCts.Token);
+        lock (_gate)
+        {
+            if (_disposed)
+                return;
+
+            _flushTasks.Add(flushTask);
+        }
+
+        _ = flushTask.ContinueWith(
+            task =>
+            {
+                lock (_gate)
+                {
+                    _flushTasks.Remove(task);
+                }
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private async Task FlushAsyncCore(CancellationToken ct = default)
@@ -91,12 +111,17 @@ public sealed class ConfigWatcher : IDisposable
         {
             // File writes can be non-atomic; retry briefly.
             var cfg = await TryLoadWithRetriesAsync(_path, attempts: 5, delayMs: 120).ConfigureAwait(false);
-            if (cfg is not null)
+            if (cfg is not null && !_disposed)
                 ConfigChanged?.Invoke(cfg);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested || _disposed)
+        {
+            Log.Debug("Config watcher flush cancelled for {ConfigPath}", _path);
         }
         catch (Exception ex)
         {
-            Error?.Invoke(ex);
+            if (!_disposed)
+                Error?.Invoke(ex);
         }
     }
 
@@ -108,7 +133,7 @@ public sealed class ConfigWatcher : IDisposable
             {
                 if (!File.Exists(path))
                     return new AppConfig();
-                var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
+                var json = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
                 var cfg = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);
                 return cfg ?? new AppConfig();
             }
@@ -120,17 +145,51 @@ public sealed class ConfigWatcher : IDisposable
                     i + 1,
                     attempts,
                     ex.GetType().Name);
-                await Task.Delay(delayMs).ConfigureAwait(false);
+                await Task.Delay(delayMs, ct).ConfigureAwait(false);
             }
         }
         return null;
     }
 
     public void Dispose()
+        => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    public async ValueTask DisposeAsync()
     {
-        _disposed = true;
+        Task[] flushTasks;
+        lock (_gate)
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            _pending = false;
+            flushTasks = _flushTasks.ToArray();
+        }
+
         Stop();
+        _disposeCts.Cancel();
         _fsw.Dispose();
         _debounce.Dispose();
+
+        if (flushTasks.Length > 0)
+        {
+            try
+            {
+                await Task.WhenAll(flushTasks)
+                    .WaitAsync(TimeSpan.FromSeconds(5))
+                    .ConfigureAwait(false);
+            }
+            catch (TimeoutException ex)
+            {
+                Log.Warning(ex, "Timed out waiting for config watcher flush tasks to finish for {ConfigPath}", _path);
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Debug("Config watcher flush tasks cancelled for {ConfigPath}", _path);
+            }
+        }
+
+        _disposeCts.Dispose();
     }
 }

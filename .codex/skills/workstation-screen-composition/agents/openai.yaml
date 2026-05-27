@@ -1,0 +1,4 @@
+interface:
+  display_name: "Workstation Screen Composition"
+  short_description: "Compose desktop workspaces from shared primitives"
+  default_prompt: "Use $workstation-screen-composition to design or implement this workstation screen from shared layout, command, state, and navigation primitives."

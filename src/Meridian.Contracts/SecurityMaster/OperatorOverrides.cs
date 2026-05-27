@@ -1,0 +1,58 @@
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace Meridian.Contracts.SecurityMaster;
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityOverrideApprovalStatusDto>))]
+public enum SecurityOverrideApprovalStatusDto
+{
+    NotRequested = 0,
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3
+}
+
+public sealed record SecurityOverrideAuditEntryDto(
+    string EventType,
+    string Actor,
+    DateTimeOffset OccurredAt,
+    SecurityOverrideApprovalStatusDto ApprovalStatus,
+    string? ReasonCode = null,
+    string? Comment = null,
+    string? Reviewer = null,
+    DateTimeOffset? ReviewedAt = null);
+
+/// <summary>
+/// Operator-supplied per-security override values that supplement the authoritative
+/// Security Master record. Values are free-form string key/value pairs used by the
+/// operator workstation to record annotations and corrections (e.g. ratings, sector
+/// classification, factor adjustments) without amending the canonical security terms.
+/// </summary>
+public sealed record OperatorOverridesDto(
+    Guid SecurityId,
+    IReadOnlyDictionary<string, string> Values,
+    string UpdatedBy,
+    DateTimeOffset UpdatedAt)
+{
+    public SecurityOverrideApprovalStatusDto ApprovalStatus { get; init; } = SecurityOverrideApprovalStatusDto.NotRequested;
+
+    public string? ReasonCode { get; init; }
+
+    public string? ReviewedBy { get; init; }
+
+    public DateTimeOffset? ReviewedAt { get; init; }
+
+    public IReadOnlyList<SecurityOverrideAuditEntryDto> AuditTrail { get; init; } = [];
+}
+
+/// <summary>
+/// Partial update request for operator overrides. <see cref="SetValues"/> upserts the
+/// listed keys; <see cref="RemoveKeys"/> deletes the listed keys. Both collections are
+/// optional and may be empty (no-op patch).
+/// </summary>
+public sealed record OperatorOverridesPatchRequest(
+    IReadOnlyDictionary<string, string>? SetValues,
+    IReadOnlyList<string>? RemoveKeys)
+{
+    public string? ReasonCode { get; init; }
+}

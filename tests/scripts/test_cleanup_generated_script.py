@@ -56,6 +56,62 @@ class CleanupGeneratedScriptTests(unittest.TestCase):
             self.assertFalse((repo_root / "artifacts" / "publish" / "run-a").exists())
             self.assertTrue((repo_root / "artifacts" / "provider-validation" / "keep.json").exists())
 
+    def test_node_modules_cleanup_is_opt_in_and_covers_dashboard_install(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            script_copy = repo_root / "scripts" / "dev" / "cleanup-generated.ps1"
+            script_copy.parent.mkdir(parents=True)
+            shutil.copy2(SCRIPT_PATH, script_copy)
+
+            dashboard_node_modules = repo_root / "src" / "Meridian.Ui" / "dashboard" / "node_modules"
+            package_bin = dashboard_node_modules / "vite" / "bin" / "vite.js"
+            self._write_file(repo_root / "tracked.txt", "tracked")
+            self._write_file(package_bin, "console.log('vite')\n")
+
+            subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "add", "tracked.txt"],
+                cwd=repo_root,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            default_preview = self._run_script(powershell, script_copy, repo_root)
+
+            self.assertEqual(default_preview.returncode, 0, default_preview.stderr)
+            self.assertNotIn("vite\\bin", default_preview.stdout)
+            self.assertNotIn("Generated .NET build/test output", default_preview.stdout)
+            self.assertNotIn("Restorable Node.js dependencies", default_preview.stdout)
+
+            default_execute = self._run_script(powershell, script_copy, repo_root, "-Execute")
+
+            self.assertEqual(default_execute.returncode, 0, default_execute.stderr)
+            self.assertTrue(package_bin.exists())
+
+            opt_in_preview = self._run_script(powershell, script_copy, repo_root, "-IncludeNodeModules")
+
+            self.assertEqual(opt_in_preview.returncode, 0, opt_in_preview.stderr)
+            self.assertIn("Restorable Node.js dependencies", opt_in_preview.stdout)
+            self.assertIn("Meridian.Ui", opt_in_preview.stdout)
+            self.assertIn("dashboard", opt_in_preview.stdout)
+            self.assertIn("node_modules", opt_in_preview.stdout)
+
+            opt_in_execute = self._run_script(
+                powershell,
+                script_copy,
+                repo_root,
+                "-IncludeNodeModules",
+                "-Execute",
+            )
+
+            self.assertEqual(opt_in_execute.returncode, 0, opt_in_execute.stderr)
+            self.assertFalse(dashboard_node_modules.exists())
+
     @staticmethod
     def _write_file(path: Path, content: str) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
