@@ -16,12 +16,12 @@ This index links the orphaned Markdown files reported in `/docs/status/doc-healt
 
 ### `Meridian Design System/`
 
-- [Meridian Design System/BRAND_GUIDELINES.md](../../Meridian%20Design%20System/BRAND_GUIDELINES.md)
-- [Meridian Design System/CONTENT_FUNDAMENTALS.md](../../Meridian%20Design%20System/CONTENT_FUNDAMENTALS.md)
-- [Meridian Design System/ICONOGRAPHY.md](../../Meridian%20Design%20System/ICONOGRAPHY.md)
-- [Meridian Design System/INSPIRATION_BRIEF.md](../../Meridian%20Design%20System/INSPIRATION_BRIEF.md)
-- [Meridian Design System/SKILL.md](../../Meridian%20Design%20System/SKILL.md)
-- [Meridian Design System/VISUAL_FOUNDATIONS.md](../../Meridian%20Design%20System/VISUAL_FOUNDATIONS.md)
+- [Meridian Design System/BRAND_GUIDELINES.md](<../../Meridian Design System/BRAND_GUIDELINES.md>)
+- [Meridian Design System/CONTENT_FUNDAMENTALS.md](<../../Meridian Design System/CONTENT_FUNDAMENTALS.md>)
+- [Meridian Design System/ICONOGRAPHY.md](<../../Meridian Design System/ICONOGRAPHY.md>)
+- [Meridian Design System/INSPIRATION_BRIEF.md](<../../Meridian Design System/INSPIRATION_BRIEF.md>)
+- [Meridian Design System/SKILL.md](<../../Meridian Design System/SKILL.md>)
+- [Meridian Design System/VISUAL_FOUNDATIONS.md](<../../Meridian Design System/VISUAL_FOUNDATIONS.md>)
 
 ### `benchmarks/`
 
