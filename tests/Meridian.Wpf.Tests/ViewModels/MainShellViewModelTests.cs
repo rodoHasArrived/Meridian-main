@@ -9,6 +9,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Sdk;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -216,6 +217,46 @@ public sealed class MainShellViewModelTests
 
             vm.CurrentPageTag.Should().Be("Backfill");
             vm.CurrentPageTitle.Should().Be("Backfill");
+        });
+    }
+
+    [Fact]
+    public void NavigateToPageCommand_UsesActiveWorkspaceScopeForFrameNavigation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            var frame = new Frame();
+            navigationService.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            navigationService.SetServiceProvider(rootProvider);
+
+            var scopedPage = new WorkspaceCapabilityHomePage();
+            var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddScoped(_ => scopedPage);
+            using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
+
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+            var workspaceService = WorkspaceService.Instance;
+            workspaceService.ResetForTests();
+            workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
+            await workspaceService.ActivateWorkspaceAsync("strategy");
+
+            var fixtureModeDetector = FixtureModeDetector.Instance;
+            fixtureModeDetector.SetFixtureMode(false);
+            fixtureModeDetector.UpdateBackendReachability(true);
+
+            using var vm = new MainPageViewModel(navigationService, fixtureModeDetector);
+
+            vm.NavigateToPageCommand.Execute("PortfolioShell");
+
+            frame.Content.Should().BeSameAs(scopedPage);
+            frame.Content.Should().NotBeSameAs(rootPage);
         });
     }
 

@@ -421,7 +421,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             if (!_suppressNavigation)
             {
-                _navigationService.NavigateTo(normalized);
+                NavigateToWithWorkspaceScope(normalized);
             }
         }
     }
@@ -551,7 +551,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (_navigationService.GetBreadcrumbs().Count == 0)
         {
             ApplyCurrentPage(CurrentPageTag);
-            _navigationService.NavigateTo(CurrentPageTag);
+            NavigateToWithWorkspaceScope(CurrentPageTag);
             SyncNavigationState();
             UpdateShellRefreshStamp();
             RequestShellRefresh();
@@ -833,8 +833,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void RefreshCurrentPage()
     {
         UpdateShellRefreshStamp();
-        _navigationService.NavigateTo(CurrentPageTag);
+        NavigateToWithWorkspaceScope(CurrentPageTag);
         RequestShellRefresh();
+    }
+
+    private bool NavigateToWithWorkspaceScope(string pageTag, object? parameter = null)
+    {
+        var workspaceScope = WorkspaceService.Instance.ActiveWorkspaceScope;
+        if (_navigationService is NavigationService navigationService)
+        {
+            return navigationService.NavigateTo(pageTag, parameter, workspaceScope);
+        }
+
+        return _navigationService.NavigateTo(pageTag, parameter);
     }
 
     private void ToggleSecondaryWorkflowSummaries()

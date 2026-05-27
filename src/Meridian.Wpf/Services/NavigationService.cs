@@ -46,6 +46,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
+    private IServiceProvider? _navigationScopedProvider;
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -121,6 +122,23 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode, workspaceScope?.ServiceProvider);
     }
 
+    /// <summary>
+    /// Navigates using a workspace-scoped service provider when provided.
+    /// </summary>
+    public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
+    {
+        var previousProvider = _navigationScopedProvider;
+        _navigationScopedProvider = workspaceScope?.ServiceProvider;
+        try
+        {
+            return base.NavigateTo(pageTag, parameter);
+        }
+        finally
+        {
+            _navigationScopedProvider = previousProvider;
+        }
+    }
+
     /// <inheritdoc />
     protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
@@ -129,7 +147,12 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         try
         {
-            var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
+            var content = CreatePageContentCore(
+                pageTag,
+                pageType,
+                parameter,
+                WorkspaceChromePresentationMode.Standalone,
+                _navigationScopedProvider);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
             {

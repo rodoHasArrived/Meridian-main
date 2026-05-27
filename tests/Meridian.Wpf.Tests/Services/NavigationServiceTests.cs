@@ -179,6 +179,36 @@ public sealed class NavigationServiceTests : IDisposable
     }
 
     [Fact]
+    public void NavigateTo_WithWorkspaceScope_ShouldResolvePageFromScope()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var frame = new Frame();
+            service.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var scopedPage = new WorkspaceCapabilityHomePage();
+
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            service.SetServiceProvider(rootProvider);
+
+            var scopedServices = new ServiceCollection();
+            scopedServices.AddSingleton(scopedPage);
+            using var scopedProvider = scopedServices.BuildServiceProvider();
+            using var scope = scopedProvider.CreateScope();
+
+            var result = service.NavigateTo("PortfolioShell", workspaceScope: scope);
+
+            result.Should().BeTrue();
+            frame.Content.Should().BeSameAs(scopedPage);
+            frame.Content.Should().NotBeSameAs(rootPage);
+        });
+    }
+
+    [Fact]
     public void IsPageRegistered_WithKnownPage_ShouldReturnTrue()
     {
         // Arrange
