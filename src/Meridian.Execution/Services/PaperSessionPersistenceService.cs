@@ -377,11 +377,7 @@ public sealed class PaperSessionPersistenceService
             ? persistedFills.Max(fill => fill.Timestamp)
             : (DateTimeOffset?)null;
         var lastPersistedOrderUpdateAt = persistedOrders.Count > 0
-            ? persistedOrders
-                .Where(order => order.LastUpdatedAt.HasValue)
-                .Select(order => order.LastUpdatedAt!.Value)
-                .DefaultIfEmpty(persistedOrders.Max(order => order.CreatedAt))
-                .Max()
+            ? persistedOrders.Max(order => order.LastUpdatedAt ?? order.CreatedAt)
             : (DateTimeOffset?)null;
         if (_store is not null)
         {
