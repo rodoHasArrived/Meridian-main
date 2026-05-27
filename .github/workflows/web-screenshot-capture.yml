@@ -51,7 +51,14 @@ jobs:
         run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Install Playwright browser
-        run: npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          if timeout 12m npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium; then
+            echo "[INFO] Playwright browser and dependency install completed."
+          else
+            echo "::warning::Playwright install with dependencies timed out or failed; retrying browser-only install."
+            npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+          fi
 
       - name: Capture web screenshots
         continue-on-error: true
