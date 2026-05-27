@@ -16,3 +16,13 @@ public sealed record ReconciliationCaseSummaryDto(
     decimal Confidence,
     string Rationale,
     string CreatedAtUtc);
+
+public sealed record ReconciliationQueueAccountStatusDto(
+    Guid AccountId,
+    string AccountCode,
+    string QueueState,
+    int UnresolvedBreakCount,
+    bool SignOffReady,
+    string NextBestAction,
+    string BlockerReason,
+    IReadOnlyList<string> EvidenceLinks);

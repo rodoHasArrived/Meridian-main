@@ -6,6 +6,7 @@ using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -549,6 +550,37 @@ public static class FundAccountEndpoints
         })
         .WithName("GetAccountReconciliationRuns")
         .Produces<IReadOnlyList<AccountReconciliationRunDto>>(StatusCodes.Status200OK);
+
+
+        group.MapGet("/{accountId:guid}/reconciliation-queue-status", async (Guid accountId, HttpContext context) =>
+        {
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
+                return ServiceUnavailable();
+
+            var runs = await queryService.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var latestRun = runs.OrderByDescending(run => run.AsOfDate).FirstOrDefault();
+            var unresolvedBreaks = latestRun is null
+                ? 0
+                : (await queryService.GetReconciliationResultsAsync(latestRun.ReconciliationRunId, context.RequestAborted).ConfigureAwait(false))
+                    .Count(result => !string.Equals(result.Status, "Matched", StringComparison.OrdinalIgnoreCase));
+
+            var payload = new ReconciliationQueueAccountStatusDto(
+                AccountId: accountId,
+                AccountCode: latestRun?.AccountCode ?? "unknown",
+                QueueState: unresolvedBreaks == 0 ? "Ready" : "Blocked",
+                UnresolvedBreakCount: unresolvedBreaks,
+                SignOffReady: unresolvedBreaks == 0 && latestRun is not null,
+                NextBestAction: unresolvedBreaks == 0 ? "Proceed with operator sign-off." : "Resolve unresolved breaks before sign-off.",
+                BlockerReason: unresolvedBreaks == 0 ? "None" : "One or more unresolved reconciliation breaks remain.",
+                EvidenceLinks: latestRun is null
+                    ? Array.Empty<string>()
+                    : [ $"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results" ]);
+
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetAccountReconciliationQueueStatus")
+        .Produces<ReconciliationQueueAccountStatusDto>(StatusCodes.Status200OK);
 
         group.MapGet("/reconciliation-runs/{runId:guid}/results", async (Guid runId, HttpContext context) =>
         {

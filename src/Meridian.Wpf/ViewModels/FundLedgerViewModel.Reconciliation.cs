@@ -61,6 +61,9 @@ public sealed partial class FundLedgerViewModel
     private string _reconciliationDetailBreakAmountText = "-";
     private string _reconciliationDetailSecurityIssuesText = "0";
     private string _reconciliationBreakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
+    private string _reconciliationNextBestActionText = "Select a break to view the recommended next action.";
+    private string _reconciliationBlockerReasonText = "No blocker is selected.";
+    private string _reconciliationEvidenceLinksText = "Evidence links appear after selecting a break.";
     private string _reconciliationRunsEmptyStateText = "No reconciliation runs are available for this fund.";
     private FundReconciliationBreakQueueRow? _selectedBreakQueueItem;
     private FundReconciliationRunRow? _selectedReconciliationRun;
@@ -146,6 +149,7 @@ public sealed partial class FundLedgerViewModel
             }
 
             NotifyReconciliationDerivedStateChanged();
+            UpdateReconciliationOperatorGuidance();
             if (!_isApplyingReconciliationSelection && _selectedReconciliationQueueView == FundReconciliationQueueView.BreakQueue)
             {
                 _ = LoadSelectedReconciliationDetailAsync();
@@ -379,6 +383,25 @@ public sealed partial class FundLedgerViewModel
     {
         get => _reconciliationBreakQueueEmptyStateText;
         private set => SetProperty(ref _reconciliationBreakQueueEmptyStateText, value);
+    }
+
+
+    public string ReconciliationNextBestActionText
+    {
+        get => _reconciliationNextBestActionText;
+        private set => SetProperty(ref _reconciliationNextBestActionText, value);
+    }
+
+    public string ReconciliationBlockerReasonText
+    {
+        get => _reconciliationBlockerReasonText;
+        private set => SetProperty(ref _reconciliationBlockerReasonText, value);
+    }
+
+    public string ReconciliationEvidenceLinksText
+    {
+        get => _reconciliationEvidenceLinksText;
+        private set => SetProperty(ref _reconciliationEvidenceLinksText, value);
     }
 
     public string ReconciliationRunsEmptyStateText
@@ -1179,6 +1202,25 @@ public sealed partial class FundLedgerViewModel
         {
             target.Add(item);
         }
+    }
+
+    private void UpdateReconciliationOperatorGuidance()
+    {
+        if (SelectedBreakQueueItem is null)
+        {
+            ReconciliationNextBestActionText = "Select a break to view the recommended next action.";
+            ReconciliationBlockerReasonText = "No blocker is selected.";
+            ReconciliationEvidenceLinksText = "Evidence links appear after selecting a break.";
+            return;
+        }
+
+        ReconciliationNextBestActionText = SelectedBreakQueueItem.Status is ReconciliationBreakQueueStatus.Open
+            ? "Review evidence, assign owner, and move the break to InReview."
+            : "Capture operator decision and finalize resolution notes.";
+        ReconciliationBlockerReasonText = string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Summary)
+            ? "Awaiting break summary from workstation host."
+            : SelectedBreakQueueItem.Summary;
+        ReconciliationEvidenceLinksText = $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}";
     }
 
     private static string HumanizeLedgerScope(FundLedgerScope scope)
