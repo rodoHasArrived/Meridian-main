@@ -105,6 +105,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<ReportPackValidationService>();
+        services.TryAddSingleton<ReportTemplateRegistryService>();
+        services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
