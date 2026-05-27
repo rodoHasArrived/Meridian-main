@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { BookOpen, Braces, Check, FunctionSquare, LayoutGrid, PlayCircle, Search, Sigma } from "lucide-react";
+import { BookOpen, Braces, FunctionSquare, LayoutGrid, PlayCircle, Search, Sigma } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -150,7 +150,7 @@ export function StrategyFormulaWorkbench({
             <textarea
               value={source}
               onChange={(event) => setSource(event.target.value)}
-              className="min-h-52 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-sm leading-6 text-foreground shadow-panel outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
+              className="min-h-52 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-sm leading-6 text-foreground shadow-[var(--shadow-panel)] outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
               aria-label="Strategy formula source"
               spellCheck={false}
             />

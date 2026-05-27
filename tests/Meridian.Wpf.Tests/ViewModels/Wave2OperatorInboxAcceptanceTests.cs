@@ -301,8 +301,8 @@ public sealed class Wave2OperatorInboxAcceptanceTests
 
             await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 0);
 
-            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Neutral,
-                "after refresh returns an empty inbox the shell must drop the Danger tone");
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Success,
+                "after refresh returns an empty inbox the shell must drop the Danger tone and show the existing clear-queue tone");
             vm.OperatorInboxReviewCount.Should().Be(0,
                 "stale blocked items must not persist in-memory after a refresh that returns no items");
             vm.OperatorInboxSummary.Should().Contain("No operator work items",
