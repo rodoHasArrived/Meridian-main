@@ -297,6 +297,98 @@ public sealed class FundOpsCloseLaneScenarioTests
             "reconciliation step must appear in the audit trail");
     }
 
+    [Fact]
+    public async Task FundOpsPeriodClose_SubmitForApproval_BlockedWhenReportPackNotReady()
+    {
+        // The operator advances the workflow to the point where reconciliation is complete,
+        // but forgets to mark the report pack as ready before submitting for approval.
+        // The workflow should block submission and surface a clear blocker code.
+        // Once the operator marks the report pack ready, submission succeeds.
+
+        var service = CreateService(out _, out _);
+        var fundAccountId = Guid.NewGuid();
+
+        // Advance to post-reconciliation state.
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            fundAccountId, "2026-05", null, "custodian", "ops-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+
+        var import = await service.ImportBrokerDataAsync(workflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(workflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(workflowId,
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user"));
+        var draft = await service.BuildLedgerDraftAsync(workflowId,
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "ops-user", "preview-rp-gate", true));
+        var validated = await service.ValidateLedgerDraftAsync(workflowId,
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
+        var posted = await service.PostLedgerEntriesAsync(workflowId,
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version, "ops-user",
+                LedgerBatchId: "batch-rp-gate",
+                PostingKind: "period-close",
+                PeriodOpen: true,
+                JournalCandidate: CreateJournalCandidate(fundAccountId)));
+        var reconciled = await service.RunReconciliationAsync(workflowId,
+            new OperationsReconciliationRunRequestDto(
+                posted.Workflow!.Version, "ops-user",
+                "Clean reconciliation run",
+                BreakCases: []));
+
+        reconciled.Success.Should().BeTrue();
+
+        // Attempt to submit for approval WITHOUT marking the report pack as ready first.
+        // A dummy report-pack ID is provided; the workflow should still block because
+        // ReportPackReadiness.IsReady is false in the domain state.
+        var blockedSubmit = await service.SubmitForApprovalAsync(workflowId,
+            new OperationsSubmitApprovalRequestDto(
+                reconciled.Workflow!.Version,
+                Actor: "ops-user",
+                Reviewer: "controller",
+                Rationale: "Trying to submit without a ready report pack",
+                ReportPackId: "report-pack-not-yet-ready"));
+
+        blockedSubmit.Success.Should().BeFalse(
+            "submission must be blocked when the report pack has not been marked ready");
+        blockedSubmit.Blockers.Should().NotBeEmpty("at least one blocker record must be present");
+        blockedSubmit.Blockers[0].Code.Should().NotBeNullOrWhiteSpace(
+            "the blocker must carry a machine-readable code so the UI can route the operator correctly");
+
+        // The approval state stays at Pending — the blocked submit must not record an approval submission.
+        // Note: Status derives as ApprovalPending once all four gates are clean, which is expected
+        // at this stage of the workflow. What must NOT change is the ApprovalState.
+        var wfAfterBlock = await service.GetAsync(workflowId);
+        wfAfterBlock!.ApprovalState.Should().Be(OperationsApprovalStateDto.Pending,
+            "a blocked submission must not advance the approval state");
+
+        // Operator corrects the gap by marking the report pack ready.
+        var posture = await service.RefreshGatePostureAsync(workflowId,
+            new OperationsGatePostureRequestDto(
+                wfAfterBlock.Version, "ops-user",
+                ReportPackReady: true,
+                ReportPackId: "report-pack-rp-gate",
+                Rationale: "Report pack generated and reviewed by fund administrator"));
+
+        posture.Success.Should().BeTrue();
+        posture.Workflow!.ReportPackReadiness.IsReady.Should().BeTrue(
+            "the report pack gate should now show as ready");
+        posture.Workflow.ReportPackReadiness.ReportPackId.Should().Be("report-pack-rp-gate");
+
+        // Submission now succeeds.
+        var submitted = await service.SubmitForApprovalAsync(workflowId,
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow.Version,
+                "ops-user",
+                Reviewer: "controller",
+                Rationale: "Report pack confirmed — submitting for approval",
+                ReportPackId: "report-pack-rp-gate"));
+
+        submitted.Success.Should().BeTrue(
+            "submission must succeed once the report pack is marked ready");
+        submitted.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+    }
+
     private static OperationsContinuityWorkflowService CreateService(
         out InMemoryOperationsContinuityRepository repository,
         out InMemoryOperationsWorkflowAuditStore auditStore)
