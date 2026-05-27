@@ -275,6 +275,18 @@ export function SettingsScreen({
     () => vm.providerConnectionCenter.groups.flatMap((group) => group.rows),
     [vm.providerConnectionCenter.groups]
   );
+  const providerRowIdsSignature = useMemo(
+    () => allProviderRows.map((row) => row.providerId).sort().join("|"),
+    [allProviderRows]
+  );
+  const providerFieldDefinitions = useMemo(
+    () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, buildProviderFieldDefinitions(row)])),
+    [allProviderRows]
+  );
+  const providerRiskScores = useMemo(
+    () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, providerRiskScore(row)])),
+    [allProviderRows]
+  );
 
   useEffect(() => {
     if (!inlineProviderManagementEnabled) {
@@ -282,16 +294,18 @@ export function SettingsScreen({
     }
 
     setProviderInlineState((current) => {
+      let changed = false;
       const next = { ...current };
       for (const row of allProviderRows) {
         if (next[row.providerId]) {
           continue;
         }
         next[row.providerId] = createProviderInlineState(row);
+        changed = true;
       }
-      return next;
+      return changed ? next : current;
     });
-  }, [allProviderRows, inlineProviderManagementEnabled]);
+  }, [inlineProviderManagementEnabled, providerRowIdsSignature]);
 
   const filteredProviderGroups = useMemo(() => {
     const search = providerSearch.trim().toLowerCase();
@@ -302,7 +316,7 @@ export function SettingsScreen({
           if (providerSort === "name") {
             return left.displayName.localeCompare(right.displayName);
           }
-          const riskScore = providerRiskScore(right) - providerRiskScore(left);
+          const riskScore = (providerRiskScores[right.providerId] ?? 0) - (providerRiskScores[left.providerId] ?? 0);
           return riskScore !== 0 ? riskScore : left.displayName.localeCompare(right.displayName);
         });
       return {
@@ -313,6 +327,7 @@ export function SettingsScreen({
   }, [
     providerCapabilityFilter,
     providerHealthFilter,
+    providerRiskScores,
     providerSearch,
     providerSort,
     providerVerificationFilter,
@@ -414,7 +429,7 @@ export function SettingsScreen({
     if (!state) {
       return;
     }
-    const definitions = buildProviderFieldDefinitions(row);
+    const definitions = providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row);
     const missingField = definitions.find((definition) => (
       definition.required && !state.values[definition.field].trim()
     ));
@@ -827,7 +842,7 @@ export function SettingsScreen({
                         <ProviderInlineActionPanel
                           row={row}
                           state={providerInlineState[row.providerId] ?? createProviderInlineState(row)}
-                          fieldDefinitions={buildProviderFieldDefinitions(row)}
+                          fieldDefinitions={providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row)}
                           onToggleEdit={() => toggleProviderEdit(row.providerId)}
                           onFieldChange={(field, value) => updateProviderField(row.providerId, field, value)}
                           onEnvironmentChange={(value) => updateProviderEnvironment(row.providerId, value)}
@@ -880,6 +895,7 @@ export function SettingsScreen({
                         <ProviderReadinessChecklist
                           row={row}
                           state={providerInlineState[row.providerId] ?? createProviderInlineState(row)}
+                          fieldDefinitions={providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row)}
                         />
                       ) : null}
                     </article>
@@ -1612,20 +1628,62 @@ function ProviderInlineActionPanel({
   return (
     <section className="mb-3 grid gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label={`${row.displayName} inline provider actions`}>
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onToggleEdit} disabled={busy}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onToggleEdit}
+          disabled={busy}
+          aria-label={state.editing ? `Close ${row.displayName} editor` : `Edit ${row.displayName} credentials`}
+        >
           {state.editing ? "Close editor" : "Edit"}
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onTest} busy={state.busyAction === "test"} disabled={busy} busyLabel="Testing provider">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onTest}
+          busy={state.busyAction === "test"}
+          disabled={busy}
+          busyLabel="Testing provider"
+          aria-label={`Test ${row.displayName} connection`}
+        >
           Test
         </Button>
-        <Button type="button" size="sm" onClick={onSave} busy={state.busyAction === "save"} disabled={busy || (state.environment === "live" && !state.liveAcknowledged)} busyLabel="Saving draft">
+        <Button
+          type="button"
+          size="sm"
+          onClick={onSave}
+          busy={state.busyAction === "save"}
+          disabled={busy || (state.environment === "live" && !state.liveAcknowledged)}
+          busyLabel="Saving draft"
+          aria-label={`Save ${row.displayName} credentials`}
+        >
           <Save className="h-3.5 w-3.5" aria-hidden="true" />
           Save
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onVerify} busy={state.busyAction === "verify"} disabled={busy} busyLabel="Verifying provider">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onVerify}
+          busy={state.busyAction === "verify"}
+          disabled={busy}
+          busyLabel="Verifying provider"
+          aria-label={`Re-verify ${row.displayName} connection`}
+        >
           Re-verify
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onClear} busy={state.busyAction === "clear"} disabled={busy} busyLabel="Clearing credentials">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onClear}
+          busy={state.busyAction === "clear"}
+          disabled={busy}
+          busyLabel="Clearing credentials"
+          aria-label={`Clear ${row.displayName} credentials`}
+        >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           Clear credentials
         </Button>
@@ -1696,14 +1754,20 @@ function ProviderInlineActionPanel({
 
 function ProviderReadinessChecklist({
   row,
-  state
+  state,
+  fieldDefinitions
 }: {
-  row: { credentialLabel: string; verificationLabel: string; fallbackLabel: string; displayName: string };
+  row: { credentialStatus: "present" | "missing" | "not-required"; verificationStatus: "verified" | "pending" | "failed"; fallbackStatus: "active" | "available" | "missing"; displayName: string };
   state: ProviderInlineState;
+  fieldDefinitions: ProviderInlineFieldDefinition[];
 }) {
-  const credentialsReady = state.dirty ? Boolean(state.values.apiKey || state.values.apiSecret || state.values.endpoint) : row.credentialLabel !== "Missing";
-  const verified = !state.verificationFailed && /verified|certified/i.test(row.verificationLabel);
-  const fallbackSet = !/not declared|none/i.test(row.fallbackLabel);
+  const credentialsReady = state.dirty
+    ? fieldDefinitions
+      .filter((definition) => definition.required)
+      .every((definition) => state.values[definition.field].trim().length > 0)
+    : row.credentialStatus !== "missing";
+  const verified = !state.verificationFailed && row.verificationStatus === "verified";
+  const fallbackSet = row.fallbackStatus !== "missing";
   const checks = [
     { label: "Credentials present", ready: credentialsReady },
     { label: "Verified recently", ready: verified },
@@ -1725,14 +1789,13 @@ function ProviderReadinessChecklist({
 
 function createProviderInlineState(row: {
   environmentLabel: string;
-  maskedKeyPreviewLabel: string;
-  credentialLabel: string;
-  verificationLabel: string;
+  credentialStatus: "present" | "missing" | "not-required";
+  verificationStatus: "verified" | "pending" | "failed";
 }): ProviderInlineState {
   return {
     editing: false,
     values: {
-      apiKey: row.maskedKeyPreviewLabel === "Masked after save" ? "" : row.maskedKeyPreviewLabel,
+      apiKey: "",
       apiSecret: "",
       endpoint: ""
     },
@@ -1743,7 +1806,7 @@ function createProviderInlineState(row: {
     statusMessage: null,
     statusDetails: [],
     statusTone: "default",
-    verificationFailed: /failed/i.test(row.verificationLabel) || /invalid/i.test(row.credentialLabel),
+    verificationFailed: row.verificationStatus === "failed" || row.credentialStatus === "missing",
     testLatencyLabel: null
   };
 }
@@ -1758,8 +1821,10 @@ function normalizeInlineEnvironment(label: string): ProviderInlineState["environ
 
 function buildProviderFieldDefinitions(row: { providerId: string; displayName: string }): ProviderInlineFieldDefinition[] {
   const normalizedId = row.providerId.toLowerCase();
+  const idTokens = normalizedId.split(/[^a-z0-9]+/).filter(Boolean);
+  const displayTokens = row.displayName.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const fromCatalog = PROVIDER_KIND_CATALOG.find((provider) => (
-    normalizedId.includes(provider.kind) || row.displayName.toLowerCase().includes(provider.kind)
+    idTokens.includes(provider.kind) || displayTokens.includes(provider.kind)
   ));
   const fields: ProviderInlineFieldDefinition[] = [];
 
@@ -1809,7 +1874,7 @@ function buildProviderFieldDefinitions(row: { providerId: string; displayName: s
 }
 
 function filterProviderRow(
-  row: { displayName: string; recommendedAction: string; affectedWorkflowsLabel: string; capabilityLabel: string; healthTone: string; verificationLabel: string },
+  row: { displayName: string; recommendedAction: string; affectedWorkflowsLabel: string; capabilityGroup: "brokerage" | "data"; healthTone: string; verificationStatus: "verified" | "pending" | "failed" },
   search: string,
   capabilityFilter: "all" | "brokerage" | "data",
   healthFilter: "all" | "healthy" | "warning" | "blocked",
@@ -1822,10 +1887,10 @@ function filterProviderRow(
     }
   }
 
-  if (capabilityFilter === "brokerage" && !row.capabilityLabel.toLowerCase().includes("brokerage")) {
+  if (capabilityFilter === "brokerage" && row.capabilityGroup !== "brokerage") {
     return false;
   }
-  if (capabilityFilter === "data" && row.capabilityLabel.toLowerCase().includes("brokerage")) {
+  if (capabilityFilter === "data" && row.capabilityGroup !== "data") {
     return false;
   }
 
@@ -1833,30 +1898,30 @@ function filterProviderRow(
   if (healthFilter === "warning" && row.healthTone !== "warning") return false;
   if (healthFilter === "blocked" && row.healthTone !== "danger") return false;
 
-  const verified = /verified|certified|ready/i.test(row.verificationLabel);
+  const verified = row.verificationStatus === "verified";
   if (verificationFilter === "verified" && !verified) return false;
   if (verificationFilter === "unverified" && verified) return false;
 
   return true;
 }
 
-function providerRiskScore(row: { healthTone: string; credentialTone: string; verificationLabel: string; fallbackLabel: string }): number {
+function providerRiskScore(row: { healthTone: string; credentialTone: string; verificationStatus: "verified" | "pending" | "failed"; fallbackStatus: "active" | "available" | "missing" }): number {
   const healthScore = row.healthTone === "danger" ? 100 : row.healthTone === "warning" ? 70 : 20;
   const credentialScore = row.credentialTone === "danger" ? 40 : row.credentialTone === "warning" ? 20 : 0;
-  const verificationScore = /failed|pending|not verified/i.test(row.verificationLabel) ? 25 : 0;
-  const fallbackScore = /fallback active/i.test(row.fallbackLabel) ? 10 : 0;
+  const verificationScore = row.verificationStatus === "failed" ? 30 : row.verificationStatus === "pending" ? 20 : 0;
+  const fallbackScore = row.fallbackStatus === "active" ? 10 : row.fallbackStatus === "missing" ? 20 : 0;
   return healthScore + credentialScore + verificationScore + fallbackScore;
 }
 
-function providerDraftStatusLabel(state: ProviderInlineState | undefined, row: { verificationLabel: string }): string {
+function providerDraftStatusLabel(state: ProviderInlineState | undefined, row: { verificationStatus: "verified" | "pending" | "failed" }): string {
   if (!state) return "Active";
   if (state.busyAction === "save") return "Saving";
   if (state.dirty) return "Unsaved";
-  if (state.verificationFailed || /failed/i.test(row.verificationLabel)) return "Verification failed";
+  if (state.verificationFailed || row.verificationStatus === "failed") return "Verification failed";
   return "Active";
 }
 
-function providerDraftStatusVariant(state: ProviderInlineState | undefined, row: { verificationLabel: string }): "outline" | "success" | "warning" | "danger" {
+function providerDraftStatusVariant(state: ProviderInlineState | undefined, row: { verificationStatus: "verified" | "pending" | "failed" }): "outline" | "success" | "warning" | "danger" {
   const label = providerDraftStatusLabel(state, row);
   if (label === "Saving") return "warning";
   if (label === "Unsaved") return "warning";

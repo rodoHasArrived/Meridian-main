@@ -311,13 +311,13 @@ describe("SettingsScreen", () => {
       />
     );
 
-    await user.click(screen.getAllByRole("button", { name: "Edit" })[0]);
+    await user.click(screen.getByRole("button", { name: "Edit Alpaca credentials" }));
     await user.type(screen.getByLabelText("Alpaca API key"), "alpaca-key");
     await user.type(screen.getByLabelText("Alpaca API secret"), "alpaca-secret");
-    await user.click(screen.getAllByRole("button", { name: "Test" })[0]);
-    await user.click(screen.getAllByRole("button", { name: "Save" })[0]);
-    await user.click(screen.getAllByRole("button", { name: "Re-verify" })[0]);
-    await user.click(screen.getAllByRole("button", { name: "Clear credentials" })[0]);
+    await user.click(screen.getByRole("button", { name: "Test Alpaca connection" }));
+    await user.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
+    await user.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
+    await user.click(screen.getByRole("button", { name: "Clear Alpaca credentials" }));
 
     expect(apiMocks.testProviderConnection).toHaveBeenCalledWith("alpaca");
     expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
