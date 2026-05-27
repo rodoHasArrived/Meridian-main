@@ -26,6 +26,7 @@ concurrency:
 
 env:
   CI: true
+  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 720
 
 jobs:
   capture-web-screenshots:
@@ -51,7 +52,23 @@ jobs:
         run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Install Playwright browser
-        run: npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
+          set +e
+          timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
+          playwright_install_exit_code=$?
+          set -e
+
+          if [ "$playwright_install_exit_code" -eq 0 ]; then
+            echo "[INFO] Playwright browser and dependency install completed."
+          elif [ "$playwright_install_exit_code" -eq 124 ]; then
+            echo "::warning::Playwright dependency install timed out after ${install_timeout_seconds}s; retrying browser-only install."
+            npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+          else
+            echo "::warning::Playwright dependency install failed with exit code ${playwright_install_exit_code}; retrying browser-only install."
+            npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+          fi
 
       - name: Capture web screenshots
         continue-on-error: true
