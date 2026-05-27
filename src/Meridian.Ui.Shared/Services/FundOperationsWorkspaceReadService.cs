@@ -163,6 +163,7 @@ public sealed class FundOperationsWorkspaceReadService
         var reporting = BuildReportingSummary();
         var governance = await BuildGovernanceLifecycleProjectionAsync(
             normalizedFundProfileId,
+            accountSummaries,
             reconciliation,
             ct).ConfigureAwait(false);
         var workspace = BuildWorkspaceSummary(
@@ -1336,6 +1337,7 @@ public sealed class FundOperationsWorkspaceReadService
 
     private async Task<GovernanceLifecycleProjectionDto> BuildGovernanceLifecycleProjectionAsync(
         string fundProfileId,
+        IReadOnlyList<FundAccountSummary> accounts,
         ReconciliationSummary reconciliation,
         CancellationToken ct)
     {
@@ -1347,8 +1349,14 @@ public sealed class FundOperationsWorkspaceReadService
             var summaries = await _operationsContinuityWorkflowService
                 .ListAsync(ct: ct)
                 .ConfigureAwait(false);
+            var accountIds = accounts
+                .Select(static account => account.AccountId)
+                .ToHashSet();
+            var scopedSummaries = summaries
+                .Where(summary => accountIds.Contains(summary.FundAccountId))
+                .ToArray();
 
-            activeWorkflowSummary = summaries
+            activeWorkflowSummary = (scopedSummaries.Length > 0 ? scopedSummaries : summaries)
                 .OrderByDescending(static item => item.UpdatedAtUtc)
                 .FirstOrDefault();
 
