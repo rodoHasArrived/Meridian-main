@@ -5,7 +5,7 @@ for development or release distribution.
 
 ## CI Release Packaging
 
-Tag pushes matching `v*` trigger `.github/workflows/desktop-installer-release.yml`, which:
+Tag pushes matching `v*` trigger `.github/workflows/desktop-installer-packaging.yml`, which:
 
 - builds `win-x64` and `win-arm64` MSIX installers,
 - uploads installer artifacts to the workflow run, and
