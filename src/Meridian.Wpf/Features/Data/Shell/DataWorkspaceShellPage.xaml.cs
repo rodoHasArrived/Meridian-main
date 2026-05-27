@@ -56,7 +56,6 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
     {
         var viewModel = DataViewModel;
 
-        ContextStrip.ShellContext = viewModel.ShellContext;
         CommandBar.CommandGroup = viewModel.CommandGroup;
         OperationsHeroScopeText.Text = viewModel.HeroScopeText;
         OperationsHeroSummaryText.Text = viewModel.HeroSummaryText;

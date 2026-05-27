@@ -167,6 +167,31 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_DataWorkspaceHome_ShouldCollapseRedundantShellChrome()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.Click(facade.DataWorkspaceButton);
+
+            facade.ViewModel.CurrentPageTag.Should().Be("DataShell");
+            facade.ViewModel.DataWorkspaceHomeChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.TopBarContextChrome.Visibility.Should().Be(Visibility.Collapsed);
+            facade.WorkspacePageHeader.Visibility.Should().Be(Visibility.Collapsed);
+            facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Collapsed);
+
+            facade.SelectWorkspaceNavigationPage(facade.WorkspaceSecondaryNavList, "SecurityMaster");
+
+            facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
+            facade.ViewModel.DataWorkspaceHomeChromeVisibility.Should().Be(Visibility.Visible);
+            facade.TopBarContextChrome.Visibility.Should().Be(Visibility.Visible);
+            facade.WorkspacePageHeader.Visibility.Should().Be(Visibility.Visible);
+            facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Visible);
+        });
+    }
+
+    [Fact]
     public void MainPage_WorkspaceNavigationSelection_WhenCleared_ShouldKeepCurrentPage()
     {
         WpfTestThread.Run(() =>

@@ -370,6 +370,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public bool IsWorkspaceHomePageActive
         => string.Equals(CurrentPageTag, GetWorkspaceHomePageTag(CurrentWorkspace), StringComparison.OrdinalIgnoreCase);
 
+    public bool IsDataWorkspaceHomePageActive
+        => string.Equals(CurrentPageTag, "DataShell", StringComparison.OrdinalIgnoreCase);
+
+    public Visibility DataWorkspaceHomeChromeVisibility
+        => IsDataWorkspaceHomePageActive ? Visibility.Collapsed : Visibility.Visible;
+
     public bool IsWorkflowPageActive => !IsWorkspaceHomePageActive;
 
     public bool IsStrategyWorkspaceActive => string.Equals(_currentWorkspace, "strategy", StringComparison.OrdinalIgnoreCase);
@@ -411,6 +417,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             UpdateCurrentPageContent(normalized);
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
@@ -708,6 +716,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(RecentPagesSummaryText));
             RaisePropertyChanged(nameof(CurrentWorkspaceHomePageTag));
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
