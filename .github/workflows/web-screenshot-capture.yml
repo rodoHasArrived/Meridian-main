@@ -55,19 +55,35 @@ jobs:
         run: |
           set -euo pipefail
           install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
-          set +e
-          timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
-          playwright_install_exit_code=$?
-          set -e
+          run_playwright_install() {
+            set +e
+            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install "$@"
+            install_exit_code=$?
+            set -e
+            return "$install_exit_code"
+          }
 
-          if [ "$playwright_install_exit_code" -eq 0 ]; then
+          if run_playwright_install --with-deps chromium; then
             echo "[INFO] Playwright browser and dependency install completed."
-          elif [ "$playwright_install_exit_code" -eq 124 ]; then
-            echo "::warning::Playwright dependency install timed out after ${install_timeout_seconds}s; retrying browser-only install."
-            npx --prefix src/Meridian.Ui/dashboard playwright install chromium
           else
-            echo "::warning::Playwright dependency install failed with exit code ${playwright_install_exit_code}; retrying browser-only install."
-            npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+            playwright_install_exit_code=$?
+            if [ "$playwright_install_exit_code" -eq 124 ]; then
+              echo "::warning::Playwright dependency install timed out after ${install_timeout_seconds}s; retrying browser-only install."
+            else
+              echo "::warning::Playwright dependency install failed with exit code ${playwright_install_exit_code}; retrying browser-only install."
+            fi
+
+            if run_playwright_install chromium; then
+              echo "[INFO] Playwright browser-only install completed."
+            else
+              browser_only_install_exit_code=$?
+              if [ "$browser_only_install_exit_code" -eq 124 ]; then
+                echo "::error::Playwright browser-only install timed out after ${install_timeout_seconds}s."
+              else
+                echo "::error::Playwright browser-only install failed with exit code ${browser_only_install_exit_code}."
+              fi
+              exit "$browser_only_install_exit_code"
+            fi
           fi
 
       - name: Capture web screenshots
@@ -76,6 +92,9 @@ jobs:
           OUTPUT_DIR: ${{ inputs.output_dir }}
           ROUTES_CONFIG: ${{ inputs.config }}
         run: |
+          if [ -d "$OUTPUT_DIR" ]; then
+            find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' -delete
+          fi
           node scripts/dev/capture-web-screenshots.mjs \
             --output-dir "$OUTPUT_DIR" \
             --config "$ROUTES_CONFIG"
