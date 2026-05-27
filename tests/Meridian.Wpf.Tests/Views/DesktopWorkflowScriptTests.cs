@@ -285,7 +285,8 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("Stop-MeridianRepoOwnedTestHostProcesses");
         sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
 
-        workflow.Should().Contain("$devArgs += '-Restore'");
+        workflow.Should().Contain("$devArgs = @{");
+        workflow.Should().Contain("Restore = $true");
 
         makefile.Should().Contain("desktop-test-dev:");
         makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");
