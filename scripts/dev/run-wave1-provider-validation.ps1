@@ -184,6 +184,23 @@ $activeProviderRows = @(
     }
 )
 
+
+function Convert-ToSummarySafeText {
+    param(
+        [Parameter(Mandatory=$true)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    $normalized = $Text
+    if (-not [string]::IsNullOrWhiteSpace($repoRoot)) {
+        $escapedRepoRoot = [Regex]::Escape($repoRoot)
+        $normalized = [Regex]::Replace($normalized, $escapedRepoRoot, '{repo-root}', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    }
+
+    return $normalized
+}
+
 $pilotReplaySampleSet = @(
     [ordered]@{
         id = "DK1-ALPACA-QUOTE-GOLDEN"
@@ -280,6 +297,7 @@ function Invoke-Step {
     $commandText = ($Step.Command | ForEach-Object {
         if ($_ -match '\s') { '"{0}"' -f $_ } else { $_ }
     }) -join ' '
+    $commandText = Convert-ToSummarySafeText -Text $commandText
 
     Write-Host "==> $($Step.Name)"
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -305,7 +323,7 @@ function Invoke-Step {
         durationSeconds = [Math]::Round($stopwatch.Elapsed.TotalSeconds, 2)
         command = $commandText
         logPath = $logPath.Substring($repoRoot.Length + 1).Replace('\', '/')
-        tail = ($output | Select-Object -Last 20) -join [Environment]::NewLine
+        tail = Convert-ToSummarySafeText -Text (($output | Select-Object -Last 20) -join [Environment]::NewLine)
     }
 }
 
@@ -384,7 +402,7 @@ $summary = [ordered]@{
     dateStamp = $DateStamp
     runId = "wave1-provider-validation-$DateStamp"
     configuration = $Configuration
-    repoRoot = $repoRoot
+    repoRoot = "{repo-root}"
     scope = "Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof"
     result = if ($failedResults.Count -eq 0) { "passed" } else { "failed" }
     readinessImpact = [ordered]@{
