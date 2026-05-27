@@ -1,6 +1,6 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-05-19
+Last reviewed: 2026-05-27
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -115,7 +115,7 @@ The browser workstation dashboard consumes shared workstation DTO/enum payloads 
 
 Run the narrowest contract-focused checks:
 
-- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness|FullyQualifiedName~MapWorkstationEndpoints_OperatorInbox|FullyQualifiedName~WorkstationContractSnapshotTests"`
+- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness|FullyQualifiedName~MapWorkstationEndpoints_OperatorInbox|FullyQualifiedName~WorkstationContractSnapshotTests|FullyQualifiedName~WorkstationEndpointContractCompatibilityTests"`
 - `npm --prefix src/Meridian.Ui/dashboard run test -- operator-readiness-console.view-model.test.ts trading-screen.view-model.test.ts`
 
 ### Approval rule
@@ -171,6 +171,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-05-19: Added TradeStation payload mapping modules for canonical brokerage account/position/order/fill DTOs plus deterministic enum translation (unknown status -> `PendingNew`, unsupported side/type -> explicit failure). Added strict readiness projection validation for required shared fields (`OverallStatus`, `SnapshotVersion`, `AcceptanceGates`, and `EvidenceCompleteness`) so incomplete trading-readiness payloads fail fast instead of projecting partial operator posture. Changes are additive; no route removal, DTO member removal, or enum-member removal was introduced.
 - 2026-05-19: Extended compatibility-gate coverage with regression tests so v1 compatibility workflows now fail when DTO deltas introduce new required fields; the shared interop packet must now explicitly attest no route removals/renames, no required-field regressions, and additive-only field/enum changes.
 - 2026-05-19: Documented v2 deprecation-window policy hook: any planned v2-only required-field or route-shape break must be pre-registered in this matrix with a dated migration note and at least a two-minor-release (or 60-day) coexistence window unless a release-manager emergency waiver is recorded.
+- 2026-05-27: Added `WorkstationEndpointContractCompatibilityTests` in `tests/Meridian.Tests/Ui/` to snapshot critical readiness/inbox/replay/report-pack DTO fingerprints, enforce enum member/value stability for backward compatibility, and assert additive-only top-level payload evolution for workstation readiness, operator inbox, and replay verification payloads. CI now fails contract lanes when these critical payloads drift without explicit snapshot/versioning updates and migration handling notes.
 
 ## Pull Request Author Checklist
 
