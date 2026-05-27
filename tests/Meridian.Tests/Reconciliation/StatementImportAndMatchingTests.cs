@@ -42,4 +42,21 @@ public sealed class StatementImportAndMatchingTests
         Assert.Equal(2, outcomes.Count);
         Assert.Contains(outcomes, o => o.OutcomeType == "unmatched" && o.Confidence < 0.5m);
     }
+
+    [Fact]
+    public void Matcher_applies_rule_tiers_with_confidence_bands()
+    {
+        var matcher = new StatementMatchingService();
+        var outcomes = matcher.MatchRows([
+            new("i1",1,"A1","SPY",10,500,5000,"BUY",new DateOnly(2026,1,1),"exact"),
+            new("i1",2,"A1","QQQ",10,0,0,"BUY",new DateOnly(2026,1,1),"tolerance"),
+            new("i1",3,"A1","LONGSYM",0,0,0,"DIV",new DateOnly(2026,1,1),"heuristic"),
+            new("i1",4,"A1","VERYLONGSYMBOL",0,0,0,"DIV",new DateOnly(2026,1,1),"unmatched")
+        ]);
+
+        Assert.Contains(outcomes, o => o.RowChecksum == "exact" && o.OutcomeType == "exact-match" && o.Confidence >= 0.95m);
+        Assert.Contains(outcomes, o => o.RowChecksum == "tolerance" && o.OutcomeType == "tolerance-match" && o.Confidence is >= 0.8m and < 0.95m);
+        Assert.Contains(outcomes, o => o.RowChecksum == "heuristic" && o.OutcomeType == "heuristic-match" && o.Confidence is >= 0.6m and < 0.8m);
+        Assert.Contains(outcomes, o => o.RowChecksum == "unmatched" && o.OutcomeType == "unmatched" && o.Confidence < 0.5m);
+    }
 }
