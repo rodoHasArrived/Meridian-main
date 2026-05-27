@@ -109,11 +109,6 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         var securityCoverageIssues = await BuildSecurityCoverageIssuesAsync(runDetail, request.RunId, ct).ConfigureAwait(false);
         var bankBreakCount = breaks.Count(b => bankCheckIds.Contains(b.CheckId));
 
-        var bankTransactions = normalizedInputs.InternalCashMovements
-            .Select(static movement => movement.BankTransaction)
-            .OfType<BankTransactionDto>()
-            .ToArray();
-
         // Build Security Master classification map from already-resolved security references
         // in the portfolio and ledger read models (populated by PortfolioReadService /
         // LedgerReadService when ISecurityReferenceLookup is wired into those services).

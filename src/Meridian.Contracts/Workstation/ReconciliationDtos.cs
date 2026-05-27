@@ -262,7 +262,6 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationMatchDto> Matches,
     IReadOnlyList<ReconciliationBreakDto> Breaks,
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
-    IReadOnlyList<BankTransactionDto>? BankTransactions = null,
     /// <summary>
     /// Security Master classification keyed by ticker symbol, populated for every
     /// symbol resolved at reconciliation time from the shared workstation instrument layer.
