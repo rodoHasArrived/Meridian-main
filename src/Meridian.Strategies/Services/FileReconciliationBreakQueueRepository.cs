@@ -272,7 +272,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 LastUpdatedAt = now,
                 ResolutionNote = request.ResolutionNote,
                 SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
-                    ? "signed-off"
+                    ? "pending-signoff"
                     : "dismissed",
                 LifecycleState = request.Status == ReconciliationBreakQueueStatus.Resolved
                     ? ReconciliationCaseLifecycleState.Closed
