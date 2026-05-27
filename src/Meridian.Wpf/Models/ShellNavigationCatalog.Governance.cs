@@ -1,3 +1,4 @@
+using Meridian.Wpf.Features.Reporting.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Views;
 
@@ -7,7 +8,7 @@ public static partial class ShellNavigationCatalog
 {
     private static readonly ShellPageDescriptor[] AccountingPages =
     [
-        Page<WorkspaceCapabilityHomePage>("AccountingShell", "Accounting Workspace", "Review ledger, cash, reconciliation, trial balance, and audit workflows.", "accounting", "Launchpad", "\uE8D7", 0, ShellNavigationVisibilityTier.Primary, ["accounting", "ledger", "workspace", "control"], ["FundLedger", "FundReconciliation", "FundTrialBalance", "FundAuditTrail"], ["GovernanceShell", "GovernanceWorkspace"]),
+        Page<GovernanceWorkspaceShellPage>("AccountingShell", "Accounting Workspace", "Review ledger, cash, reconciliation, trial balance, and audit workflows.", "accounting", "Launchpad", "\uE8D7", 0, ShellNavigationVisibilityTier.Primary, ["accounting", "ledger", "workspace", "control"], ["FundLedger", "FundReconciliation", "FundTrialBalance", "FundAuditTrail"], ["GovernanceShell", "GovernanceWorkspace"]),
         Page<FundLedgerPage>("FundLedger", "Fund operations", "Review journal, account, and accounting readiness in one view.", "accounting", "Fund Ops", "\uE82D", 10, ShellNavigationVisibilityTier.Primary, ["fund ledger", "journal", "operations"], ["FundAccounts", "FundTrialBalance", "FundAuditTrail"], ["FundOperations"]),
         Page<RunLedgerPage>("RunLedger", "Run ledger", "Review run postings and execution-linked cash movement.", "accounting", "Run Inspectors", "\uE82D", 20, ShellNavigationVisibilityTier.Primary, ["ledger", "postings", "review"], ["PositionBlotter", "RunRisk", "FundLedger"], ["LedgerInspector"]),
         Page<RunCashFlowPage>("RunCashFlow", "Run cash flow", "Review simulated cash, financing, and funding impacts.", "accounting", "Run Inspectors", "\uEAFD", 30, ShellNavigationVisibilityTier.Primary, ["cash flow", "cash", "financing"], ["RunPortfolio", "RunLedger"]),
@@ -20,7 +21,7 @@ public static partial class ShellNavigationCatalog
 
     private static readonly ShellPageDescriptor[] ReportingPages =
     [
-        Page<WorkspaceCapabilityHomePage>("ReportingShell", "Reporting Workspace", "Prepare report packs, dashboards, analysis exports, and export presets.", "reporting", "Launchpad", "\uE8A5", 0, ShellNavigationVisibilityTier.Primary, ["reporting", "reports", "workspace", "export"], ["FundReportPack", "Dashboard", "AnalysisExport", "ExportPresets"]),
+        Page<ReportingWorkspaceShellPage>("ReportingShell", "Reporting Workspace", "Prepare report packs, dashboards, analysis exports, and export presets.", "reporting", "Launchpad", "\uE8A5", 0, ShellNavigationVisibilityTier.Primary, ["reporting", "reports", "workspace", "export"], ["FundReportPack", "Dashboard", "AnalysisExport", "ExportPresets"]),
         Page<FundLedgerPage>("FundReportPack", "Fund report pack", "Preview report packs and downstream handoff readiness.", "reporting", "Report Packs", "\uE8A5", 10, ShellNavigationVisibilityTier.Primary, ["report pack", "reporting", "board pack"], ["FundCashFinancing", "FundAuditTrail", "FundTrialBalance"]),
         Page<DashboardPage>("Dashboard", "Reporting dashboard", "Monitor holdings, quality exceptions, maturities, and export readiness.", "reporting", "Dashboard", "\uE71D", 20, ShellNavigationVisibilityTier.Primary, ["overview", "portfolio", "holdings", "quality"], ["ReportingShell", "DataQuality", "SecurityMaster"], hideFromDefaultPalette: true),
         Page<AnalysisExportPage>("AnalysisExport", "Analysis export", "Export analysis packages for downstream review.", "reporting", "Exports", "\uEDE1", 30, ShellNavigationVisibilityTier.Primary, ["analysis", "export", "review"], ["AnalysisExportWizard", "DataExport"]),

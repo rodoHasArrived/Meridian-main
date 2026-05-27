@@ -1,4 +1,6 @@
 using Meridian.Wpf.Copy;
+using Meridian.Wpf.Features.Portfolio.Shell;
+using Meridian.Wpf.Features.Reporting.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -62,7 +64,7 @@ public static partial class ShellNavigationCatalog
 
     private static readonly ShellPageDescriptor[] PortfolioPages =
     [
-        Page<WorkspaceCapabilityHomePage>("PortfolioShell", "Portfolio Workspace", "Review account, aggregate, fund, lending, and import workflows.", "portfolio", "Launchpad", "\uE821", 0, ShellNavigationVisibilityTier.Primary, ["portfolio", "home", "workspace", "accounts"], ["AccountPortfolio", "AggregatePortfolio", "FundPortfolio", "FundAccounts"]),
+        Page<PortfolioWorkspaceShellPage>("PortfolioShell", "Portfolio Workspace", "Review account, aggregate, fund, lending, and import workflows.", "portfolio", "Launchpad", "\uE821", 0, ShellNavigationVisibilityTier.Primary, ["portfolio", "home", "workspace", "accounts"], ["AccountPortfolio", "AggregatePortfolio", "FundPortfolio", "FundAccounts"]),
         Page<AccountPortfolioPage>("AccountPortfolio", "Account portfolio", "Review account positions and allocation changes.", "portfolio", "Accounts", "\uE821", 10, ShellNavigationVisibilityTier.Primary, ["account", "portfolio", "review"], ["AggregatePortfolio", "FundPortfolio", "PositionBlotter"]),
         Page<AggregatePortfolioPage>("AggregatePortfolio", "Aggregate portfolio", "Monitor exposure across all accounts.", "portfolio", "Accounts", "\uE821", 20, ShellNavigationVisibilityTier.Primary, ["aggregate", "portfolio", "monitor"], ["AccountPortfolio", "FundPortfolio", "RunPortfolio"]),
         Page<RunPortfolioPage>("RunPortfolio", "Run portfolio", "Review holdings, exposures, and weights for the selected run.", "portfolio", "Run Inspectors", "\uE821", 30, ShellNavigationVisibilityTier.Primary, ["portfolio", "positions", "review"], ["RunLedger", "RunCashFlow", "AccountingShell"], ["PortfolioInspector"]),
@@ -152,8 +154,8 @@ public static partial class ShellNavigationCatalog
                 Pane("FundTrialBalance", PaneDropAction.SplitRight),
                 Pane("FundAuditTrail", PaneDropAction.SplitBelow)
             ],
-            StateProviderType: typeof(AccountingWorkspaceShellStateProvider),
-            ViewModelType: typeof(AccountingWorkspaceShellViewModel));
+            StateProviderType: typeof(GovernanceWorkspaceShellStateProvider),
+            ViewModelType: typeof(GovernanceWorkspaceShellViewModel));
 
     private static readonly WorkspaceShellDefinition ReportingWorkspaceShellDefinition =
         new(

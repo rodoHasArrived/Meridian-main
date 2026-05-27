@@ -273,3 +273,25 @@ public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWor
     {
     }
 }
+
+public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
+{
+    protected PortfolioWorkspaceShellPageBase(
+        NavigationService navigationService,
+        PortfolioWorkspaceShellStateProvider stateProvider,
+        PortfolioWorkspaceShellViewModel viewModel)
+        : base(navigationService, stateProvider, viewModel)
+    {
+    }
+}
+
+public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
+{
+    protected ReportingWorkspaceShellPageBase(
+        NavigationService navigationService,
+        ReportingWorkspaceShellStateProvider stateProvider,
+        ReportingWorkspaceShellViewModel viewModel)
+        : base(navigationService, stateProvider, viewModel)
+    {
+    }
+}
