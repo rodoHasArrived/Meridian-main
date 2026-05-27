@@ -107,11 +107,11 @@ jobs:
 
               if [ "$attempt" -lt "$max_push_attempts" ]; then
                 echo "::warning::Push was rejected on attempt $attempt; retrying after refreshing from remote."
-                sleep 2
+                sleep $((2 * attempt))
               fi
             done
 
-            if [ "$pushed" != true ]; then
+            if [ "$pushed" = false ]; then
               echo "::error::Unable to push screenshot updates after $max_push_attempts attempts."
               exit 1
             fi
