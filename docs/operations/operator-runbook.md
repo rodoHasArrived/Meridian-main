@@ -2,6 +2,24 @@
 
 Use [Provider Confidence Baseline](../providers/provider-confidence-baseline.md) as the source of truth for what Meridian validates offline today for Polygon, NYSE, Interactive Brokers, and StockSharp. This runbook focuses on operator workflows and deliberately avoids implying broader provider readiness than the repo evidence supports.
 
+
+## SLO Escalation Ownership and Postmortem Linkage
+
+When SLO alerts fire, use this ownership model:
+
+| Priority | Primary owner | Secondary owner | Initial SLA | Required artifact |
+|---|---|---|---|---|
+| P1 | Incident Commander (on-call) | Reliability Lead | Acknowledge <= 5 minutes | Linked postmortem within 2 business days |
+| P2 | Service Owner (affected subsystem) | Reliability Lead | Acknowledge <= 15 minutes | Linked postmortem or incident review within 5 business days |
+
+Required linkage rules:
+
+1. Every P1/P2 SLO incident must include a postmortem link in the monthly SLO report (`docs/status/slo-reports/YYYY-MM-slo-review.md`).
+2. If no postmortem exists yet, mark the incident as **unmitigated** and keep launch gate status as failed.
+3. Incident action items must map to owners and due dates and be recorded in the monthly action register.
+
+See [Error Budget Policy Runbook](./error-budget-policy-runbook.md) for deployment freeze and reliability sprint triggers.
+
 ## Startup
 
 ### Headless / Test Mode

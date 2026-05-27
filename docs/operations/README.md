@@ -10,7 +10,9 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 | [Operator Runbook](operator-runbook.md) | Day-to-day operational procedures |
 | [Performance Tuning](performance-tuning.md) | Optimization and performance guidance |
 | [High Availability](high-availability.md) | High-availability configuration |
-| [Service Level Objectives](service-level-objectives.md) | SLO definitions and monitoring |
+| [Service Level Objectives](service-level-objectives.md) | SLO definitions, monitoring, and monthly publication workflow |
+| [SLO Review Template](slo-review-template.md) | Monthly SLO compliance, burn-rate, incident, and action review template |
+| [Error Budget Policy Runbook](error-budget-policy-runbook.md) | Deployment freeze and reliability sprint trigger policy |
 | [Portable Data Packager](portable-data-packager.md) | Creating and importing data packages |
 | [MSIX Packaging](msix-packaging.md) | Desktop application packaging |
 | [Web Workstation Installer](web-workstation-installer.md) | Browser workstation local app installation |
