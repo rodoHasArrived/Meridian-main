@@ -422,6 +422,11 @@ public sealed class Dk1TrustGateReadinessService
 
         if (string.Equals(contract.Status, "validated", StringComparison.OrdinalIgnoreCase))
         {
+            if (!IsContractPayloadComplete(contract))
+            {
+                blockers.Add($"DK1 {label} contract is validated but missing required contract fields.");
+            }
+
             return;
         }
 
@@ -429,6 +434,28 @@ public sealed class Dk1TrustGateReadinessService
             ? $": missing {string.Join(", ", contract.MissingRequirements)}"
             : ".";
         blockers.Add($"DK1 {label} contract is {contract.Status}{missing}");
+    }
+
+    private static bool IsContractPayloadComplete(TradingTrustGateContractReadinessDto contract)
+    {
+        if (string.IsNullOrWhiteSpace(contract.DocumentPath))
+        {
+            return false;
+        }
+
+        if (contract.ContractId == "trust-rationale")
+        {
+            return contract.RequiredPayloadFields.Count > 0 &&
+                   contract.RequiredReasonCodes.Count > 0;
+        }
+
+        if (contract.ContractId == "baseline-threshold")
+        {
+            return contract.RequiredMetrics.Count > 0 &&
+                   contract.FpFnReviewRequired.HasValue;
+        }
+
+        return true;
     }
 
     private static IReadOnlyList<TradingTrustGateSampleReviewDto> ReadSampleReviews(JsonElement? element)
