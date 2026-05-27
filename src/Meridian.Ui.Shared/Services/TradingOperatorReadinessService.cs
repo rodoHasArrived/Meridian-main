@@ -1718,7 +1718,12 @@ public sealed class TradingOperatorReadinessService
             ReadyGateIds: gates
                 .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
                 .Select(static gate => gate.GateId)
-                .ToArray());
+                .ToArray())
+        {
+            BlockingIssueCount = criticalCount,
+            WarningIssueCount = warningCount,
+            OrphanEvidenceIds = []
+        };
     }
 
     private static bool IsOperatorSignoffComplete(string status) =>

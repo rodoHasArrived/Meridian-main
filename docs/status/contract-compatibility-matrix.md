@@ -173,6 +173,8 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-05-19: Documented v2 deprecation-window policy hook: any planned v2-only required-field or route-shape break must be pre-registered in this matrix with a dated migration note and at least a two-minor-release (or 60-day) coexistence window unless a release-manager emergency waiver is recorded.
 - 2026-05-27: Added `WorkstationEndpointContractCompatibilityTests` in `tests/Meridian.Tests/Ui/` to snapshot critical readiness/inbox/replay/report-pack DTO fingerprints, enforce enum member/value stability for backward compatibility, and assert additive-only top-level payload evolution for workstation readiness, operator inbox, and replay verification payloads. CI now fails contract lanes when these critical payloads drift without explicit snapshot/versioning updates and migration handling notes.
 
+- 2026-05-27: Expanded evidence packet/workstation completeness contracts with additive diagnostics fields (`EvidenceCompletenessDto.BlockingIssueCount`, `WarningIssueCount`, `OrphanEvidenceIds`, plus matching `EvidenceCompletenessSummaryDto` counters) and retained-artifact canonical subject linkage (`EvidenceArtifactRefDto.CanonicalSubjectKind`/`CanonicalSubjectId`). Changes are additive-only; older clients may ignore new nullable fields but should treat new critical validation issues as blocking readiness/promotion gates.
+
 ## Pull Request Author Checklist
 
 When your PR touches any scoped surface above:

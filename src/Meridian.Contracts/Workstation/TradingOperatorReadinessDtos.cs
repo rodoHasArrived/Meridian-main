@@ -104,7 +104,12 @@ public sealed record EvidenceCompletenessSummaryDto(
     IReadOnlyList<string> BlockingGateIds,
     IReadOnlyList<string> ReviewGateIds,
     IReadOnlyList<string> MissingEvidenceIds,
-    IReadOnlyList<string>? ReadyGateIds = null);
+    IReadOnlyList<string>? ReadyGateIds = null)
+{
+    public int BlockingIssueCount { get; init; }
+    public int WarningIssueCount { get; init; }
+    public IReadOnlyList<string> OrphanEvidenceIds { get; init; } = [];
+}
 
 public sealed record TradingPaperSessionReadinessDto(
     string SessionId,
