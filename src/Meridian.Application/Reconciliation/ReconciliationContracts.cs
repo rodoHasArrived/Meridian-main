@@ -1,46 +1,75 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Meridian.Contracts.Domain.Reconciliation;
+
 namespace Meridian.Application.Reconciliation;
 
-public enum ReconciliationContractVersion
+public sealed record ReconciliationPollingSchedule(TimeSpan PollInterval, TimeSpan Timeout);
+
+public sealed record ReconciliationSourcePayload(
+    string SourceId,
+    ReconciliationSourceType SourceType,
+    IReadOnlyList<RawPositionRecord> RawPositions,
+    IReadOnlyList<RawCashRecord> RawCashEntries,
+    DateTimeOffset CapturedAt,
+    string Version);
+
+public sealed record RawPositionRecord(
+    string PositionId,
+    string? Cusip,
+    string? Isin,
+    string? Ticker,
+    string? InternalSecurityId,
+    decimal Quantity,
+    decimal Price,
+    decimal MarketValue,
+    string Currency,
+    DateTimeOffset AsOfTimestamp);
+
+public sealed record RawCashRecord(
+    string CashEntryId,
+    string AccountId,
+    string? CounterpartyReference,
+    string? SettlementId,
+    string? Comments,
+    decimal Amount,
+    string Currency,
+    DateTimeOffset BookingTimestamp);
+
+public interface IReconciliationSourceAdapter
 {
-    V1 = 1
+    string AdapterId { get; }
+    ReconciliationSourceType SourceType { get; }
+    Task<ReconciliationSourcePayload> PollAsync(CancellationToken cancellationToken);
 }
 
-public enum ReconciliationMessageKind
+public interface IPrimeBrokerSourceAdapter : IReconciliationSourceAdapter;
+public interface ICustodianSourceAdapter : IReconciliationSourceAdapter;
+public interface IAdministratorSourceAdapter : IReconciliationSourceAdapter;
+public interface IInternalLedgerSourceAdapter : IReconciliationSourceAdapter;
+
+public interface IReconciliationSourceIngestionScheduler
 {
-    ReconciliationRequested,
-    ReconciliationCompleted,
-    BreakRaised,
-    BreakTransitioned,
-    ApprovalPolicyEvaluated
+    Task<IReadOnlyList<ReconciliationSourcePayload>> IngestScheduledAsync(
+        IReadOnlyList<IReconciliationSourceAdapter> adapters,
+        ReconciliationPollingSchedule schedule,
+        CancellationToken cancellationToken);
 }
 
-public sealed record ReconciliationContractEnvelope(
-    string ContractName,
-    ReconciliationContractVersion ContractVersion,
-    ReconciliationMessageKind MessageKind,
-    string CorrelationId,
-    string CausationId,
-    string IdempotencyKey,
-    DateTimeOffset OccurredAtUtc,
-    string Producer,
-    string Tenant,
-    string Counterparty,
-    IReadOnlyDictionary<string, string>? Tags = null);
-
-public static class ReconciliationContractCatalog
+public interface IInstrumentMappingService
 {
-    public const string RequestContract = "meridian.reconciliation.request";
-    public const string ResultContract = "meridian.reconciliation.result";
-    public const string BreakWorkflowContract = "meridian.reconciliation.break-workflow";
-    public const string ApprovalPolicyContract = "meridian.reconciliation.approval-policy";
+    string ResolveInstrumentKey(string? cusip, string? isin, string? ticker, string? internalSecurityId);
+}
 
-    public static bool IsSupported(string contractName, ReconciliationContractVersion version)
-    {
-        if (version != ReconciliationContractVersion.V1)
-        {
-            return false;
-        }
+public interface IFxConversionService
+{
+    decimal GetFxRate(string fromCurrency, string toCurrency, DateTimeOffset timestamp);
+}
 
-        return contractName is RequestContract or ResultContract or BreakWorkflowContract or ApprovalPolicyContract;
-    }
+public interface IAccountingPeriodService
+{
+    DateOnly ResolvePeriod(DateTimeOffset bookingTimestamp, string sourceId);
+    DateTimeOffset AlignTimestamp(DateTimeOffset timestamp, string sourceId);
 }
