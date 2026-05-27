@@ -81,6 +81,7 @@ describe("workspace nav view model", () => {
 
     expect(strategy?.subItems.map((item) => item.route)).toEqual([
       "/strategy/designer",
+      "/strategy/formula-workbench",
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/research",

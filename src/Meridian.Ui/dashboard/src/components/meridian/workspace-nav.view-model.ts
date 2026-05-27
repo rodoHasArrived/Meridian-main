@@ -82,6 +82,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
   ],
   strategy: [
     { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner },
+    { label: "Formula Workbench", route: WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench },
     { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
     { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
     { label: "Research Lab", route: WORKSTATION_ROUTE_CATALOG.strategyResearch },

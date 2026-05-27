@@ -376,10 +376,13 @@ describe("WatchlistScreen", () => {
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
 
     expect(api.removeSymbol).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i })).toBeInTheDocument();
+    const confirmButton = screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i });
+    expect(confirmButton).toBeInTheDocument();
+    expect(confirmButton).toHaveAttribute("aria-describedby", "watchlist-remove-msft-status");
+    expect(screen.getByText("Pending confirmation")).toHaveAttribute("role", "status");
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveAccessibleName(/Remove confirmation pending/i);
 
-    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
+    await user.click(confirmButton);
 
     await waitFor(() => expect(api.removeSymbol).toHaveBeenCalledWith("MSFT"));
   });

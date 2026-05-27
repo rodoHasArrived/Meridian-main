@@ -73,6 +73,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   reportingExports: "/reporting/exports",
   strategy: "/strategy",
   strategyDesigner: "/strategy/designer",
+  strategyFormulaWorkbench: "/strategy/formula-workbench",
   strategyCoveredCall: "/strategy/covered-call",
   strategyPromotions: "/strategy/promotions",
   strategyResearch: "/strategy/research",
