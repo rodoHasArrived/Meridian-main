@@ -94,6 +94,48 @@ public sealed class CashFlowViewModelTests
         return (vm, runId);
     }
 
+    private static async Task<(CashFlowViewModel Vm, string RunId)> CreateWithTradeRunAndBlockedContinuityAsync()
+    {
+        var store = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var ledgerReadService = new LedgerReadService();
+        var readService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+        var runService = new StrategyRunWorkspaceService(store, readService);
+
+        var started = new DateTimeOffset(2026, 3, 1, 9, 30, 0, TimeSpan.Zero);
+        var cashFlows = new CashFlowEntry[]
+        {
+            new TradeCashFlow(started.AddMinutes(1), 500m, "AAPL", 10, 50m),
+            new CommissionCashFlow(started.AddMinutes(1), -1m, "AAPL", Guid.NewGuid()),
+            new DividendCashFlow(started.AddDays(5), 20m, "MSFT", 100, 0.20m),
+        };
+        var request = new BacktestRequest(
+            From: DateOnly.FromDateTime(started.UtcDateTime),
+            To: DateOnly.FromDateTime(started.AddDays(10).UtcDateTime),
+            Symbols: ["AAPL", "MSFT"],
+            InitialCash: 100_000m,
+            DataRoot: "./data/test");
+
+        var runId = await runService.RecordBacktestRunAsync(request, "Blocked Continuity Strategy", BuildResult(started, cashFlows));
+        var reconciliationRepository = new InMemoryReconciliationRunRepository();
+        await reconciliationRepository.SaveAsync(new ReconciliationRunDetail(
+            new ReconciliationRunSummary("recon-blocked", runId, started.AddHours(2), started, started.AddHours(2), 0, 1, 1, false, 10m, 5, 0, false, 0, 0, 0, 0, 0, false),
+            [],
+            [new ReconciliationBreakDto("cash-balance", "Cash balance", ReconciliationBreakCategory.CashMismatch, ReconciliationBreakStatus.Open, "ledger", 100m, 110m, 10m, ReconciliationBreakSeverity.High, "variance", started.AddHours(2), started.AddHours(2))],
+            []));
+        var reconciliationService = new ReconciliationRunService(
+            readService,
+            new ReconciliationProjectionService(),
+            reconciliationRepository);
+        var continuityService = new StrategyRunContinuityService(
+            readService,
+            new CashFlowProjectionService(store),
+            reconciliationService);
+
+        var vm = new CashFlowViewModel(runService, NavigationService.Instance, continuityService);
+        return (vm, runId);
+    }
+
     private static BacktestResult BuildResult(DateTimeOffset started, CashFlowEntry[] cashFlows)
     {
         return new BacktestResult(
@@ -314,6 +356,22 @@ public sealed class CashFlowViewModelTests
         vm.ContinuityDetailText.Should().Contain("cash flow Healthy");
         vm.ContinuityDetailText.Should().Contain("reconciliation Missing");
         vm.ContinuityWarningText.Should().Contain("missing-");
+    }
+
+    [Fact]
+    public async Task Parameter_WhenCashFlowsLoadButContinuityIsBlocked_ShouldSurfaceSharedBlocker()
+    {
+        var (vm, runId) = await CreateWithTradeRunAndBlockedContinuityAsync();
+
+        vm.Parameter = runId;
+        await Task.Delay(100);
+
+        vm.StatusText.Should().Contain("cash-flow event(s) loaded");
+        vm.HasEntries.Should().BeTrue();
+        vm.ContinuityPostureText.Should().Be("Continuity blocked");
+        vm.ContinuityDetailText.Should().Contain("cash flow Healthy");
+        vm.ContinuityDetailText.Should().Contain("reconciliation Healthy");
+        vm.ContinuityWarningText.Should().Contain("open-reconciliation-breaks");
     }
 
     // ── Entry ordering ────────────────────────────────────────────────────

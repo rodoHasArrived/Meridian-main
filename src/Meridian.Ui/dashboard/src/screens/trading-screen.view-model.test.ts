@@ -2087,6 +2087,23 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("replay");
   });
 
+  it("preserves the PaperReplay session-replay panel when shared metadata targets the Trading shell", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("PaperReplay", {
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Verify replay");
+    expect(action?.href).toBe("/trading#session-replay-panel");
+  });
+
   it("routes ExecutionControl work items to the trading risk route", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("ExecutionControl"), refreshing: false, errorText: null });
     const action = state.visibleWorkItems[0].action;
@@ -2097,6 +2114,23 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("guardrails");
   });
 
+  it("uses shared TradingShell metadata for ExecutionControl work items when present", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("ExecutionControl", {
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Review risk controls");
+    expect(action?.href).toBe("/trading");
+  });
+
   it("routes PromotionReview work items to the promotion gate panel", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("PromotionReview", { runId: "run-001" }), refreshing: false, errorText: null });
     const action = state.visibleWorkItems[0].action;
@@ -2104,6 +2138,24 @@ describe("trading readiness work-item action routing", () => {
     expect(action).not.toBeNull();
     expect(action?.label).toBe("Open promotion gate");
     expect(action?.href).toBe("/trading#promotion-gate-panel");
+  });
+
+  it("uses shared TradingShell metadata for PromotionReview work items when present", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("PromotionReview", {
+        runId: "run-001",
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Open promotion gate");
+    expect(action?.href).toBe("/trading");
   });
 
   it("routes SecurityMasterCoverage work items to the security master route", () => {

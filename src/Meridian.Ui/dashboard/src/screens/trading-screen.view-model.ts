@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -729,6 +729,8 @@ function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingRe
 }
 
 function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingReadinessWorkItemAction | null {
+  const sharedTargetHref = resolveTradingReadinessSharedTargetHref(item);
+
   switch (item.kind) {
     case "BrokerageSync":
       return {
@@ -749,15 +751,13 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
     case "ExecutionControl":
       return {
         label: "Review risk controls",
-        href: WORKSTATION_ROUTE_CATALOG.tradingRisk,
+        href: sharedTargetHref ?? WORKSTATION_ROUTE_CATALOG.tradingRisk,
         ariaLabel: `Open risk controls for ${item.label}`,
         detail: "Review execution guardrails and circuit-breaker state in Trading."
       };
 
     case "PromotionReview": {
-      const href = item.runId
-        ? `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`
-        : `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
+      const href = sharedTargetHref ?? `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
       return {
         label: "Open promotion gate",
         href,
@@ -785,6 +785,15 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
     default:
       return null;
   }
+}
+
+function resolveTradingReadinessSharedTargetHref(item: OperatorWorkItem): string | null {
+  if (item.kind === "PaperReplay") {
+    return null;
+  }
+
+  return normalizeLocalWorkstationRoute(item.targetRoute)
+    ?? (item.targetPageTag || item.workspace ? workflowTargetPath(item.targetPageTag, item.workspace) : null);
 }
 
 function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessWarningRow[] {
