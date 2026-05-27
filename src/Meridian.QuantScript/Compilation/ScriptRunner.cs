@@ -135,7 +135,6 @@ public sealed class ScriptRunner : IScriptRunner
         var runtimeDiagnostics = new List<ScriptDiagnostic>();
         ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
         var runPlotQueue = new PlotQueue();
-        TimeSpan continuationCompileTime = TimeSpan.Zero;
 
         await Task.Run(async () =>
         {
@@ -154,12 +153,9 @@ public sealed class ScriptRunner : IScriptRunner
                 }
                 else
                 {
-                    var continuationCompileWatch = Stopwatch.StartNew();
                     scriptState = await checkpoint.ScriptState
                         .ContinueWithAsync(source, cancellationToken: runCt)
                         .ConfigureAwait(false);
-                    continuationCompileWatch.Stop();
-                    continuationCompileTime = continuationCompileWatch.Elapsed;
                 }
 
                 nextCheckpoint = new ScriptExecutionCheckpoint(scriptState, globals);
@@ -173,12 +169,6 @@ public sealed class ScriptRunner : IScriptRunner
             }
             catch (CompilationErrorException ex)
             {
-                if (checkpoint is not null)
-                {
-                    continuationCompileTime = continuationCompileTime == TimeSpan.Zero
-                        ? wallClock.Elapsed
-                        : continuationCompileTime;
-                }
                 continuationDiagnostics = ex.Diagnostics
                     .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
                     .Select(MapDiagnostic)
@@ -235,9 +225,6 @@ public sealed class ScriptRunner : IScriptRunner
         }
 
         var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0 && runtimeDiagnostics.Count == 0;
-        if (checkpoint is not null)
-            compileTime = continuationCompileTime;
-
         return new ScriptRunResult(
             Success: resultSuccess,
             Elapsed: wallClock.Elapsed,
