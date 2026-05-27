@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Docs"
+  short_description: "Keep Meridian docs accurate and scoped"
+  default_prompt: "Use $meridian-docs to update Meridian documentation with repo-grounded evidence, minimal edits, narrow validation, and current desktop-app guidance."

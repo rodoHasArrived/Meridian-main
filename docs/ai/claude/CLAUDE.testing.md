@@ -52,8 +52,8 @@ dotnet test tests/Meridian.Wpf.Tests
 # Run UI service tests (cross-platform)
 dotnet test tests/Meridian.Ui.Tests
 
-# Run all desktop tests
-make test-desktop-services
+# Run active desktop tests
+make desktop-test
 
 # Run with verbose output
 dotnet test --logger "console;verbosity=detailed"

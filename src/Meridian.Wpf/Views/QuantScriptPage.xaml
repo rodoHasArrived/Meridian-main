@@ -339,6 +339,30 @@
         <Button DockPanel.Dock="Left"
                 Margin="4,0,0,0"
                 Padding="10,6"
+                Command="{Binding DuplicateCellCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Duplicate" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="4,0,0,0"
+                Padding="10,6"
+                Command="{Binding MoveCellUpCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Move Up" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="4,0,0,0"
+                Padding="10,6"
+                Command="{Binding MoveCellDownCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Move Down" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="4,0,0,0"
+                Padding="10,6"
                 Command="{Binding DeleteCellCommand}"
                 IsEnabled="{Binding CanDeleteCell}"
                 Style="{StaticResource GhostButtonStyle}">
@@ -913,6 +937,13 @@
                           Style="{StaticResource GhostButtonStyle}"
                           AutomationProperties.AutomationId="QuantScriptRunHistoryOpenDetailButton">
                     <TextBlock FontSize="11" Text="Open Detail" />
+                  </Button>
+                  <Button Margin="0,0,6,0"
+                          Padding="10,5"
+                          Command="{Binding ExportSelectedRunHistoryCommand}"
+                          Style="{StaticResource GhostButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryExportButton">
+                    <TextBlock FontSize="11" Text="Export" />
                   </Button>
                   <Button Padding="10,5"
                           Command="{Binding CompareInResearchCommand}"

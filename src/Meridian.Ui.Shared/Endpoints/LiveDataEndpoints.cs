@@ -73,6 +73,8 @@ public static class LiveDataEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
+            var sessionStats = ctx.RequestServices.GetService<SessionStatsCollector>();
+
             QuoteDataResponse? quoteDto = null;
             if (quoteCollector.TryGet(symbol, out var bbo) && bbo is not null)
             {
@@ -87,7 +89,8 @@ public static class LiveDataEndpoints
                     Spread: bbo.Spread,
                     SequenceNumber: bbo.SequenceNumber,
                     StreamId: bbo.StreamId,
-                    Venue: bbo.Venue);
+                    Venue: bbo.Venue,
+                    Session: ToSessionDto(sessionStats?.TryGet(bbo.Symbol)));
             }
 
             var response = new QuotesResponse(
@@ -98,6 +101,85 @@ public static class LiveDataEndpoints
             return Results.Json(response, jsonOptions);
         })
         .WithName("GetQuotes")
+        .Produces(200)
+        .Produces(503);
+
+        // GET /api/data/quotes-snapshot — latest BBO (and last trade) for every tracked symbol
+        // in a single request. Optional ?symbols=AAPL,MSFT filters the result.
+        group.MapGet(UiApiRoutes.DataQuotesSnapshot, (HttpContext ctx, string? symbols) =>
+        {
+            var quoteCollector = ctx.RequestServices.GetService<QuoteCollector>();
+            if (quoteCollector is null)
+            {
+                return Results.Json(
+                    new { error = "Quote collector not available" },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var tradeCollector = ctx.RequestServices.GetService<TradeDataCollector>();
+            var sessionStats = ctx.RequestServices.GetService<SessionStatsCollector>();
+            var snapshot = quoteCollector.Snapshot();
+
+            HashSet<string>? filter = null;
+            if (!string.IsNullOrWhiteSpace(symbols))
+            {
+                filter = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var part in symbols.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    if (part.Length > 0) filter.Add(part);
+                }
+            }
+
+            var items = new List<QuotesSnapshotItem>(snapshot.Count);
+            foreach (var (symbol, bbo) in snapshot)
+            {
+                if (filter is not null && !filter.Contains(symbol))
+                    continue;
+
+                decimal? lastPrice = null;
+                long? lastSize = null;
+                DateTimeOffset? lastTs = null;
+                if (tradeCollector is not null)
+                {
+                    var recent = tradeCollector.GetRecentTrades(symbol, limit: 1);
+                    if (recent.Count > 0)
+                    {
+                        var last = recent[0];
+                        lastPrice = last.Price;
+                        lastSize = last.Size;
+                        lastTs = last.Timestamp;
+                    }
+                }
+
+                items.Add(new QuotesSnapshotItem(
+                    Symbol: bbo.Symbol,
+                    Timestamp: bbo.Timestamp,
+                    BidPrice: bbo.BidPrice,
+                    BidSize: bbo.BidSize,
+                    AskPrice: bbo.AskPrice,
+                    AskSize: bbo.AskSize,
+                    MidPrice: bbo.MidPrice,
+                    Spread: bbo.Spread,
+                    LastPrice: lastPrice,
+                    LastSize: lastSize,
+                    LastTradeTimestamp: lastTs,
+                    SequenceNumber: bbo.SequenceNumber,
+                    StreamId: bbo.StreamId,
+                    Venue: bbo.Venue,
+                    Session: ToSessionDto(sessionStats?.TryGet(bbo.Symbol))));
+            }
+
+            items.Sort(static (a, b) => string.Compare(a.Symbol, b.Symbol, StringComparison.OrdinalIgnoreCase));
+
+            var response = new QuotesSnapshotResponse(
+                Timestamp: DateTimeOffset.UtcNow,
+                Count: items.Count,
+                Quotes: items);
+
+            return Results.Json(response, jsonOptions);
+        })
+        .WithName("GetQuotesSnapshot")
         .Produces(200)
         .Produces(503);
 
@@ -397,5 +479,23 @@ public static class LiveDataEndpoints
         })
         .WithName("GetDataHealth")
         .Produces(200);
+    }
+
+    private static SessionStatsDto? ToSessionDto(Meridian.Contracts.Domain.Models.SessionStats? stats)
+    {
+        if (stats is null) return null;
+        return new SessionStatsDto(
+            SessionDate: stats.SessionDate.ToString("yyyy-MM-dd"),
+            Open: stats.Open,
+            High: stats.High,
+            Low: stats.Low,
+            Last: stats.Last,
+            Volume: stats.Volume,
+            Vwap: stats.Vwap,
+            TradeCount: stats.TradeCount,
+            Change: stats.Change,
+            ChangePercent: stats.ChangePercent,
+            FirstTradeAt: stats.FirstTradeAt,
+            LastTradeAt: stats.LastTradeAt);
     }
 }

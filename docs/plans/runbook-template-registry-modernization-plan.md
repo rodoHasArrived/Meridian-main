@@ -1,5 +1,13 @@
 # Runbook + Template Registry Modernization Plan
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **runbook template registry modernization plan** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the runbook template registry modernization plan workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 ## Scope (Approved Candidate #1)
 
 This plan introduces a composable Runbook and Template Registry capability to let operators save, reuse, execute, and audit multi-step workflows across CLI/API/web surfaces.

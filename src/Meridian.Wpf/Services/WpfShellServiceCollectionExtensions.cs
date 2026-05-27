@@ -1,47 +1,103 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Features;
+using Meridian.Wpf.Shell.Refresh;
+using Meridian.Wpf.Shell.Root;
+using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.Shell.Session;
+using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
 
 public static class WpfShellServiceCollectionExtensions
 {
-    public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services)
+    public static IServiceCollection AddWorkspaceScoped<TService>(this IServiceCollection services)
+        where TService : class, IWorkspaceScopedService
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddScoped<TService>();
+        return services;
+    }
+
+    public static IServiceCollection AddWorkspaceScoped<TService, TImplementation>(this IServiceCollection services)
+        where TService : class
+        where TImplementation : class, TService, IWorkspaceScopedService
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddScoped<TService, TImplementation>();
+        return services;
+    }
+
+    public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services)
+        => AddMeridianWpfShell(services, configuration: null);
+
+    public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services, IConfiguration? configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IShellRouteRegistry, ShellRouteRegistry>();
+        services.AddSingleton<ViewModelViewResolver>();
+        services.AddSingleton<IViewModelViewResolver>(sp => sp.GetRequiredService<ViewModelViewResolver>());
+        services.AddSingleton<IWindowStateStore, WindowStateStore>();
+        services.AddSingleton<DesktopShellSessionService>();
+        services.AddSingleton<DesktopLaunchRouter>();
+        services.AddSingleton<FileDropRouter>();
+        services.AddSingleton<DesktopShellCoordinator>();
+        services.AddTransient<ShellRefreshCoordinator>();
+        services.AddTransient<CommandPaletteViewModel>();
+        services.AddTransient<OperatorInboxViewModel>();
+        services.AddTransient<WorkflowSummaryStripViewModel>();
+        services.AddTransient<IPageContentFactory, PageContentFactory>();
+        services.AddTransient<IShellNavigationCoordinator, ShellNavigationCoordinator>();
+        services.AddTransient<PaneHostViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<Meridian.Wpf.Views.MainPage>();
-        services.AddTransient(sp => new ResearchWorkspaceShellPresentationService(
-            sp.GetRequiredService<StrategyRunWorkspaceService>(),
-            sp.GetRequiredService<IResearchBriefingWorkspaceService>(),
-            sp.GetRequiredService<WatchlistService>(),
-            sp.GetRequiredService<FundContextService>(),
-            sp.GetService<WorkstationOperatingContextService>(),
-            sp.GetRequiredService<WorkspaceShellContextService>(),
-            sp.GetService<WorkstationWorkflowSummaryService>(),
-            sp.GetService<Meridian.Strategies.Services.PromotionService>()));
-        services.AddTransient<TradingWorkspaceShellPresentationService>();
+        services.AddWorkspaceScoped<ResearchWorkspaceShellPresentationService>();
+        if (configuration is null)
+        {
+            services.AddMeridianWpfFeatureModules();
+        }
+        else
+        {
+            services.AddMeridianWpfFeatureModules(configuration);
+        }
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.GovernanceWorkspaceShellStateProvider));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.GovernanceWorkspaceShellViewModel));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Views.GovernanceWorkspaceShellPage));
 
         foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
         {
-            services.AddTransient(pageType);
+            AddTransientIfMissing(services, pageType);
         }
 
         foreach (var shellDefinition in ShellNavigationCatalog.WorkspaceShells)
         {
             if (shellDefinition.StateProviderType is not null)
             {
-                services.AddTransient(shellDefinition.StateProviderType);
+                AddTransientIfMissing(services, shellDefinition.StateProviderType);
             }
 
             if (shellDefinition.ViewModelType is not null)
             {
-                services.AddTransient(shellDefinition.ViewModelType);
+                AddTransientIfMissing(services, shellDefinition.ViewModelType);
             }
         }
 
         return services;
+    }
+
+    private static void AddTransientIfMissing(IServiceCollection services, Type serviceType)
+    {
+        if (services.Any(descriptor => descriptor.ServiceType == serviceType))
+        {
+            return;
+        }
+
+        services.AddTransient(serviceType);
     }
 }

@@ -2,12 +2,16 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.DirectLending;
+using Meridian.Application.FundOperationsPersistence;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage.DirectLending;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +26,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     private readonly string? _originalSecurityMasterSchema;
     private readonly string? _originalDirectLendingConnectionString;
     private readonly string? _originalDirectLendingSchema;
+    private readonly string? _originalLedgerConnectionString;
+    private readonly string? _originalLedgerSchema;
 
     public StorageFeatureRegistrationTests()
     {
@@ -29,6 +35,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         _originalSecurityMasterSchema = Environment.GetEnvironmentVariable(SecurityMasterStartup.SchemaVariable);
         _originalDirectLendingConnectionString = Environment.GetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable);
         _originalDirectLendingSchema = Environment.GetEnvironmentVariable(DirectLendingStartup.SchemaVariable);
+        _originalLedgerConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable);
+        _originalLedgerSchema = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable);
     }
 
     [Fact]
@@ -38,6 +46,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
 
         var services = new ServiceCollection();
 
@@ -48,8 +58,15 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().NotContain(sd => sd.ServiceType == typeof(ISecurityMasterStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterIngestStatusService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IPolygonCorporateActionFetcher));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IUflProjectionRebuilder) && sd.ImplementationType == typeof(NullUflProjectionRebuilder));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(LedgerJournalStoreOptions));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(ILedgerJournalStore));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
+            sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
@@ -65,6 +82,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, "Host=dl-db;Port=5432;Database=loans;Username=postgres;Password=secret");
         Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
 
         var services = new ServiceCollection();
 
@@ -75,9 +94,13 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterIngestStatusService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IPolygonCorporateActionFetcher));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IUflProjectionRebuilder) && sd.ImplementationType == typeof(UflProjectionRebuilder));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingOptions));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
+            sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
@@ -86,11 +109,59 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(DailyAccrualWorker));
     }
 
+    [Fact]
+    public void Register_ResolvesProjectionReconciliationJobs_ForEachFundOperationsDomain()
+    {
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        using var provider = services.BuildServiceProvider();
+        var jobs = provider.GetRequiredService<IEnumerable<IDomainProjectionReconciliationJob>>();
+
+        jobs.Select(job => job.Domain).Should().BeEquivalentTo(Enum.GetValues<FundOperationsDomain>());
+    }
+
+    [Fact]
+    public void Register_AddsLedgerBackedOperationsContinuityServices_WhenLedgerConnectionStringIsConfigured()
+    {
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, "Host=ledger-db;Port=5432;Database=ledger;Username=postgres;Password=secret");
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(LedgerJournalStoreOptions));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresLedgerJournalStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(ILedgerJournalStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(ITransactionalLedgerJournalStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(LedgerMigrationRunner));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(ILedgerBookService));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresOperationsContinuityStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityRepository));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsWorkflowAuditStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
+    }
+
     public void Dispose()
     {
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, _originalSecurityMasterConnectionString);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, _originalSecurityMasterSchema);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, _originalDirectLendingConnectionString);
         Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, _originalDirectLendingSchema);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, _originalLedgerConnectionString);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, _originalLedgerSchema);
     }
 }

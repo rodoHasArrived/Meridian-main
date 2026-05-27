@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian - Preview catalogue</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
+<style>
+  body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .preview-index { max-width: 1180px; margin: 0 auto; padding: 28px; }
+  .preview-index-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); }
+  .preview-index-sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.14em; }
+  h1 { margin: 4px 0 0; font-family: var(--font-display); font-size: 28px; color: var(--fg-strong); letter-spacing: 0; }
+  .preview-index-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; }
+  .preview-index-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .preview-index-section { border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: hsl(var(--card)); overflow: hidden; }
+  .preview-index-section h2 { margin: 0; padding: 11px 12px; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--fg-strong); text-transform: uppercase; letter-spacing: 0.12em; }
+  .preview-index-links { display: grid; gap: 1px; padding: 4px; background: hsl(var(--background)); }
+  .preview-index-links a { display: flex; justify-content: space-between; gap: 10px; min-height: 30px; padding: 7px 9px; border-radius: var(--radius-sm); color: var(--fg); text-decoration: none; font-size: 12px; background: hsl(var(--card)); outline: none; }
+  .preview-index-links a:hover, .preview-index-links a:focus-visible { color: var(--fg-strong); background: hsl(var(--primary) / 0.10); box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.42); }
+  .preview-index-links span:last-child { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); white-space: nowrap; }
+  @media (max-width: 980px) { .preview-index-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 680px) { .preview-index { padding: 18px; } .preview-index-head, .preview-index-grid { grid-template-columns: 1fr; } .preview-index-meta { text-align: left; } }
+</style>
+</head>
+<body>
+<main class="preview-index" aria-labelledby="preview-index-title">
+  <header class="preview-index-head">
+    <div>
+      <div class="preview-index-sub">Design system previews</div>
+      <h1 id="preview-index-title">Preview catalogue</h1>
+    </div>
+    <div class="preview-index-meta">37 review cards - tokens, components, charts, recipes</div>
+  </header>
+
+  <section class="preview-index-grid" aria-label="Preview pages">
+    <article class="preview-index-section">
+      <h2>Foundations</h2>
+      <nav class="preview-index-links" aria-label="Foundations previews">
+        <a href="design-standards.html"><span>Design standards</span><span>rules</span></a>
+        <a href="colors-brand.html"><span>Brand colors</span><span>color</span></a>
+        <a href="colors-semantic.html"><span>Semantic colors</span><span>state</span></a>
+        <a href="colors-surfaces.html"><span>Surface colors</span><span>surface</span></a>
+        <a href="colors-ambient.html"><span>Ambient colors</span><span>ambient</span></a>
+        <a href="spacing-scale.html"><span>Spacing scale</span><span>space</span></a>
+        <a href="spacing-radii.html"><span>Radii</span><span>shape</span></a>
+        <a href="spacing-shadows.html"><span>Shadows</span><span>depth</span></a>
+        <a href="type-display.html"><span>Display type</span><span>type</span></a>
+        <a href="type-body.html"><span>Body type</span><span>type</span></a>
+        <a href="type-mono.html"><span>Mono and numerals</span><span>data</span></a>
+      </nav>
+    </article>
+
+    <article class="preview-index-section">
+      <h2>Components</h2>
+      <nav class="preview-index-links" aria-label="Component previews">
+        <a href="component-state-matrix.html"><span>Component state matrix</span><span>states</span></a>
+        <a href="state-patterns.html"><span>State patterns</span><span>states</span></a>
+        <a href="components-buttons.html"><span>Buttons</span><span>control</span></a>
+        <a href="components-inputs.html"><span>Inputs</span><span>control</span></a>
+        <a href="components-badges.html"><span>Badges</span><span>state</span></a>
+        <a href="components-banners.html"><span>Banners</span><span>state</span></a>
+        <a href="components-metrics.html"><span>Metrics</span><span>kpi</span></a>
+        <a href="components-nav.html"><span>Navigation</span><span>route</span></a>
+        <a href="components-table.html"><span>Tables</span><span>data</span></a>
+      </nav>
+    </article>
+
+    <article class="preview-index-section">
+      <h2>Workstation recipes</h2>
+      <nav class="preview-index-links" aria-label="Workstation previews">
+        <a href="institutional-workstation.html"><span>Institutional workstation</span><span>shell</span></a>
+        <a href="screen-recipes.html"><span>Screen recipes</span><span>handoff</span></a>
+        <a href="reference-workbench.html"><span>Reference workbench</span><span>security</span></a>
+        <a href="chart-table-standards.html"><span>Chart and table standards</span><span>data</span></a>
+        <a href="brand-marks.html"><span>Brand marks</span><span>brand</span></a>
+        <a href="brand-icons.html"><span>Icon catalogue</span><span>icons</span></a>
+      </nav>
+    </article>
+
+    <article class="preview-index-section">
+      <h2>Charts</h2>
+      <nav class="preview-index-links" aria-label="Chart previews">
+        <a href="charts-equity.html"><span>Equity chart</span><span>chart</span></a>
+        <a href="charts-equity-print.html"><span>Equity chart print</span><span>print</span></a>
+        <a href="charts-candlestick.html"><span>Candlestick chart</span><span>chart</span></a>
+        <a href="charts-orderbook.html"><span>Order book chart</span><span>depth</span></a>
+        <a href="charts-scatter.html"><span>Scatter chart</span><span>risk</span></a>
+        <a href="charts-histogram.html"><span>Histogram</span><span>dist</span></a>
+        <a href="charts-heatmap.html"><span>Heatmap</span><span>matrix</span></a>
+        <a href="charts-correlation.html"><span>Correlation matrix</span><span>matrix</span></a>
+        <a href="charts-sparklines.html"><span>Sparklines</span><span>micro</span></a>
+        <a href="charts-volsurface.html"><span>Volatility surface</span><span>options</span></a>
+        <a href="charts-yieldcurve.html"><span>Yield curve</span><span>rates</span></a>
+      </nav>
+    </article>
+  </section>
+</main>
+</body>
+</html>

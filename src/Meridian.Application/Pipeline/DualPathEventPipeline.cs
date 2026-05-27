@@ -64,9 +64,11 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     private long _hotTradePublished;
     private long _hotTradeDropped;
     private long _hotTradeConsumed;
+    private long _hotTradeFallbacks;
     private long _hotQuotePublished;
     private long _hotQuoteDropped;
     private long _hotQuoteConsumed;
+    private long _hotQuoteFallbacks;
 
     private int _disposed;
 
@@ -182,7 +184,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     /// </summary>
     /// <returns>
     /// <see langword="true"/> when the event was written;
-    /// <see langword="false"/> when the ring buffer was full and the event was dropped.
+    /// <see langword="false"/> only when both the ring buffer and the slow-path fallback reject the event.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublishTrade(in RawTradeEvent trade)
@@ -193,8 +195,8 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
             return true;
         }
 
-        Interlocked.Increment(ref _hotTradeDropped);
-        return false;
+        Interlocked.Increment(ref _hotTradeFallbacks);
+        return TryPublishTradeFallback(in trade);
     }
 
     /// <summary>
@@ -203,7 +205,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     /// </summary>
     /// <returns>
     /// <see langword="true"/> when the event was written;
-    /// <see langword="false"/> when the ring buffer was full and the event was dropped.
+    /// <see langword="false"/> only when both the ring buffer and the slow-path fallback reject the event.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublishQuote(in RawQuoteEvent quote)
@@ -214,8 +216,8 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
             return true;
         }
 
-        Interlocked.Increment(ref _hotQuoteDropped);
-        return false;
+        Interlocked.Increment(ref _hotQuoteFallbacks);
+        return TryPublishQuoteFallback(in quote);
     }
 
     // -------------------------------------------------------------------------
@@ -235,20 +237,26 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     /// <summary>Gets the total number of trade events written to the hot-path ring buffer.</summary>
     public long HotTradePublished => Interlocked.Read(ref _hotTradePublished);
 
-    /// <summary>Gets the total number of trade events dropped because the ring buffer was full.</summary>
+    /// <summary>Gets the total number of trade events that could not be accepted by either the hot path or the slow path.</summary>
     public long HotTradeDropped => Interlocked.Read(ref _hotTradeDropped);
 
     /// <summary>Gets the total number of trade events drained from the ring buffer and forwarded to storage.</summary>
     public long HotTradeConsumed => Interlocked.Read(ref _hotTradeConsumed);
 
+    /// <summary>Gets the number of trade events that bypassed the ring buffer and fell back to the slow path.</summary>
+    public long HotTradeFallbacks => Interlocked.Read(ref _hotTradeFallbacks);
+
     /// <summary>Gets the total number of quote events written to the hot-path ring buffer.</summary>
     public long HotQuotePublished => Interlocked.Read(ref _hotQuotePublished);
 
-    /// <summary>Gets the total number of quote events dropped because the ring buffer was full.</summary>
+    /// <summary>Gets the total number of quote events that could not be accepted by either the hot path or the slow path.</summary>
     public long HotQuoteDropped => Interlocked.Read(ref _hotQuoteDropped);
 
     /// <summary>Gets the total number of quote events drained from the ring buffer and forwarded to storage.</summary>
     public long HotQuoteConsumed => Interlocked.Read(ref _hotQuoteConsumed);
+
+    /// <summary>Gets the number of quote events that bypassed the ring buffer and fell back to the slow path.</summary>
+    public long HotQuoteFallbacks => Interlocked.Read(ref _hotQuoteFallbacks);
 
     /// <summary>Gets the current number of trade events waiting in the ring buffer.</summary>
     public int TradeBufferCount => _tradeBuffer.Count;
@@ -307,7 +315,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
         }
 
         // Ring buffer full — fall back to slow path to avoid data loss.
-        Interlocked.Increment(ref _hotTradeDropped);
+        Interlocked.Increment(ref _hotTradeFallbacks);
         return _slowPath.TryPublish(in evt);
     }
 
@@ -334,7 +342,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
         }
 
         // Ring buffer full — fall back to slow path to avoid data loss.
-        Interlocked.Increment(ref _hotQuoteDropped);
+        Interlocked.Increment(ref _hotQuoteFallbacks);
         return _slowPath.TryPublish(in evt);
     }
 
@@ -348,7 +356,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
         try
         {
-            while (!_cts.Token.IsCancellationRequested)
+            while (!ct.IsCancellationRequested)
             {
                 var drained = _tradeBuffer.DrainTo(_tradeBatch, _batchDrainSize);
 
@@ -364,12 +372,10 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
                     ref readonly var raw = ref _tradeBatch[i];
                     var evt = ReconstituteTrade(in raw);
 
-                    // Ensure we do not silently drop hot-path events under backpressure.
-                    while (!_slowPath.TryPublish(in evt))
-                    {
-                        // Back off briefly to avoid busy-waiting when the slow path is saturated.
-                        await Task.Delay(1, _cts.Token).ConfigureAwait(false);
-                    }
+                    // Wait for slow-path capacity instead of retrying TryPublish().
+                    // Repeated TryPublish() calls in Wait mode distort drop metrics and
+                    // audit trails because the event is eventually persisted, not lost.
+                    await _slowPath.PublishAsync(evt, ct).ConfigureAwait(false);
                 }
 
                 Interlocked.Add(ref _hotTradeConsumed, drained);
@@ -388,13 +394,13 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
         try
         {
-            while (!_cts.Token.IsCancellationRequested)
+            while (!ct.IsCancellationRequested)
             {
                 var drained = _quoteBuffer.DrainTo(_quoteBatch, _batchDrainSize);
 
                 if (drained == 0)
                 {
-                    await Task.Delay(0, _cts.Token).ConfigureAwait(false);
+                    await Task.Delay(0, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -403,7 +409,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
                     ref readonly var raw = ref _quoteBatch[i];
                     var evt = ReconstituteQuote(in raw);
 
-                    await _slowPath.PublishAsync(evt).ConfigureAwait(false);
+                    await _slowPath.PublishAsync(evt, ct).ConfigureAwait(false);
                 }
                 Interlocked.Add(ref _hotQuoteConsumed, drained);
             }
@@ -452,6 +458,40 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
             sequenceNumber: raw.Sequence);
 
         return MarketEvent.BboQuote(ts, symbol, quote, raw.Sequence);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryPublishTradeFallback(in RawTradeEvent raw)
+    {
+        if (_symbolTable.TryGetSymbol(raw.SymbolHash) is not { Length: > 0 })
+        {
+            Interlocked.Increment(ref _hotTradeDropped);
+            return false;
+        }
+
+        var evt = ReconstituteTrade(in raw);
+        var accepted = _slowPath.TryPublish(in evt);
+        if (!accepted)
+            Interlocked.Increment(ref _hotTradeDropped);
+
+        return accepted;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryPublishQuoteFallback(in RawQuoteEvent raw)
+    {
+        if (_symbolTable.TryGetSymbol(raw.SymbolHash) is not { Length: > 0 })
+        {
+            Interlocked.Increment(ref _hotQuoteDropped);
+            return false;
+        }
+
+        var evt = ReconstituteQuote(in raw);
+        var accepted = _slowPath.TryPublish(in evt);
+        if (!accepted)
+            Interlocked.Increment(ref _hotQuoteDropped);
+
+        return accepted;
     }
 
     // Drains remaining items from the trade ring buffer into the slow path

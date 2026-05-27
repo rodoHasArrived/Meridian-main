@@ -1,10 +1,12 @@
 # Agent Skills
 
 This directory indexes Meridian's AI skill surfaces. The current project-scoped workflow is
-centered on repo-local Codex skills under `.codex/skills/`, while `.claude/skills/` holds the
-portable mirrored skill packages for hosts that consume Claude-style Agent Skills.
+centered on repo-local Codex skills under `.codex/skills/`, while `.agents/skills/` and
+`.claude/skills/` hold portable mirrored skill packages for Agent Skills-compatible hosts.
 Shared skill policy, cross-provider safety rules, and alignment checks live in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
+Codex-specific execution gates, current skill validation, and repo-local skill maintenance live in
+[`../codex/README.md`](../codex/README.md).
 
 ---
 
@@ -32,26 +34,48 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation` | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | Clean code and docs without changing observable behavior |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
-| `meridian-implementation-assurance` | Implement and verify work with explicit evidence |
+| `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
+| `meridian-implementation-assurance` | Implement and verify work with strict Codex gates, explicit evidence, and docs sync |
 | `meridian-provider-builder` | Build and extend providers with the right contracts |
 | `meridian-repo-navigation` | Route large-repo tasks before deeper work |
 | `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Produce scenario-first Meridian tests |
+| `modular-desktop-mvvm` | Implement modular WPF MVVM workstation changes |
+| `workstation-screen-composition` | Compose desktop screens from shared workstation primitives |
+| `shared-component-extraction` | Extract repeated desktop patterns into reusable components |
+| `provider-management-workflow` | Build secure provider setup, health, credential, and recovery workflows |
+| `research-data-acquisition` | Build research acquisition, preview, validation, and lineage workflows |
+| `dense-data-grid-inspector-panel` | Build scalable dense grids and inspector panels |
+| `diagnostics-audit-timeline` | Build diagnostics panels, audit timelines, and evidence trails |
+| `performance-resource-review` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `safe-refactoring` | Refactor desktop code incrementally without behavior drift |
+| `desktop-test-generation` | Generate focused WPF view-model, command, service, and binding tests |
 
-The shared Codex grounding file is [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md).
+Shared grounding files:
+
+- [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md)
+- [`.codex/skills/_shared/codex-execution-contract.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/codex-execution-contract.md)
+- [`.agents/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills/_shared/project-context.md)
+- [`.claude/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/_shared/project-context.md)
 
 ---
 
 ## Available Portable Skills
+
+Portable packages are mirrored under [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills)
+for Agent Skills-compatible hosts and [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills)
+for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes.
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |
 | `meridian-archive-organizer` | [`SKILL.md`](../../../.claude/skills/meridian-archive-organizer/SKILL.md) | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
+| `meridian-browser-workstation` | [`SKILL.md`](../../../.claude/skills/meridian-browser-workstation/SKILL.md) | Route and implement browser workstation TypeScript/React work |
 | `meridian-code-review` | [`SKILL.md`](../../../.claude/skills/meridian-code-review/SKILL.md) | Apply Meridian’s 7-lens review framework |
 | `meridian-implementation-assurance` | [`SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md) | Validate completed work against requirements and evidence |
 | `meridian-provider-builder` | [`SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md) | Scaffold and extend providers with the right contracts and resilience patterns |
@@ -70,9 +94,11 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 | ---------- | --------- |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Provider-agnostic workflow and skill/agent alignment checklist |
+| [`../codex/README.md`](../codex/README.md) | Codex repo-local skill workflow and validation gates |
 | [`../navigation/README.md`](../navigation/README.md) | Repo navigation workflow |
 | [`../agents/README.md`](../agents/README.md) | Agent catalog |
 | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skills and their maintenance rules |
+| [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills) | Host-neutral portable Agent Skills packages |
 
 ---
 
@@ -81,10 +107,11 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 Validate skill packaging with:
 
 ```bash
+python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-05-23_

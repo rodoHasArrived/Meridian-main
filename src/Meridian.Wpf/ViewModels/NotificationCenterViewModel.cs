@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -9,6 +10,18 @@ using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
+
+public readonly record struct NotificationAlertSummaryPresentation(
+    string AlertTotalText,
+    string CriticalAlertCountText,
+    bool IsCriticalAlertBadgeVisible,
+    string ErrorAlertCountText,
+    bool IsErrorAlertBadgeVisible,
+    string WarningAlertCountText,
+    bool IsWarningAlertBadgeVisible,
+    string SnoozedAlertCountText,
+    bool IsSnoozedAlertCountVisible,
+    string AlertSummaryAutomationName);
 
 /// <summary>
 /// ViewModel for the Notification Center page.
@@ -30,6 +43,36 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
 
     private int _totalCount;
     public int TotalCount { get => _totalCount; private set => SetProperty(ref _totalCount, value); }
+
+    private string _alertTotalText = "0 active";
+    public string AlertTotalText { get => _alertTotalText; private set => SetProperty(ref _alertTotalText, value); }
+
+    private string _criticalAlertCountText = "0 Critical";
+    public string CriticalAlertCountText { get => _criticalAlertCountText; private set => SetProperty(ref _criticalAlertCountText, value); }
+
+    private bool _isCriticalAlertBadgeVisible;
+    public bool IsCriticalAlertBadgeVisible { get => _isCriticalAlertBadgeVisible; private set => SetProperty(ref _isCriticalAlertBadgeVisible, value); }
+
+    private string _errorAlertCountText = "0 Errors";
+    public string ErrorAlertCountText { get => _errorAlertCountText; private set => SetProperty(ref _errorAlertCountText, value); }
+
+    private bool _isErrorAlertBadgeVisible;
+    public bool IsErrorAlertBadgeVisible { get => _isErrorAlertBadgeVisible; private set => SetProperty(ref _isErrorAlertBadgeVisible, value); }
+
+    private string _warningAlertCountText = "0 Warnings";
+    public string WarningAlertCountText { get => _warningAlertCountText; private set => SetProperty(ref _warningAlertCountText, value); }
+
+    private bool _isWarningAlertBadgeVisible;
+    public bool IsWarningAlertBadgeVisible { get => _isWarningAlertBadgeVisible; private set => SetProperty(ref _isWarningAlertBadgeVisible, value); }
+
+    private string _snoozedAlertCountText = string.Empty;
+    public string SnoozedAlertCountText { get => _snoozedAlertCountText; private set => SetProperty(ref _snoozedAlertCountText, value); }
+
+    private bool _isSnoozedAlertCountVisible;
+    public bool IsSnoozedAlertCountVisible { get => _isSnoozedAlertCountVisible; private set => SetProperty(ref _isSnoozedAlertCountVisible, value); }
+
+    private string _alertSummaryAutomationName = "Active alerts: 0 active";
+    public string AlertSummaryAutomationName { get => _alertSummaryAutomationName; private set => SetProperty(ref _alertSummaryAutomationName, value); }
 
     private bool _noNotificationsVisible = true;
     public bool NoNotificationsVisible { get => _noNotificationsVisible; private set => SetProperty(ref _noNotificationsVisible, value); }
@@ -147,7 +190,7 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
 
     /// <summary>
     /// Fires when the grouped alerts display needs to be refreshed.
-    /// Code-behind handles RefreshGroupedAlerts/RefreshAlertSummary (require FindResource).
+    /// Code-behind handles grouped alert cards because they still require FindResource.
     /// </summary>
     public event EventHandler? AlertsRefreshRequested;
 
@@ -167,9 +210,10 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         _alertService.AlertResolved += OnAlertChanged;
 
         LoadNotifications();
+        RefreshAlertState();
 
         _alertRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
-        _alertRefreshTimer.Tick += (_, _) => AlertsRefreshRequested?.Invoke(this, EventArgs.Empty);
+        _alertRefreshTimer.Tick += (_, _) => RefreshAlertState();
         _alertRefreshTimer.Start();
     }
 
@@ -201,6 +245,47 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         }
 
         ApplyFilters();
+    }
+
+    public void RefreshAlertState()
+    {
+        ApplyAlertSummary(BuildAlertSummaryPresentation(_alertService.GetSummary()));
+        AlertsRefreshRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public static NotificationAlertSummaryPresentation BuildAlertSummaryPresentation(AlertSummary summary)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+
+        var criticalText = $"{summary.CriticalCount} Critical";
+        var errorText = $"{summary.ErrorCount} Error{(summary.ErrorCount == 1 ? string.Empty : "s")}";
+        var warningText = $"{summary.WarningCount} Warning{(summary.WarningCount == 1 ? string.Empty : "s")}";
+        var snoozedText = summary.SnoozedCount > 0
+            ? $"{summary.SnoozedCount} snoozed"
+            : string.Empty;
+        var totalText = $"{summary.TotalActive} active";
+
+        var automationParts = new List<string> { $"Active alerts: {totalText}" };
+        if (summary.CriticalCount > 0)
+            automationParts.Add(criticalText);
+        if (summary.ErrorCount > 0)
+            automationParts.Add(errorText);
+        if (summary.WarningCount > 0)
+            automationParts.Add(warningText);
+        if (summary.SnoozedCount > 0)
+            automationParts.Add(snoozedText);
+
+        return new NotificationAlertSummaryPresentation(
+            totalText,
+            criticalText,
+            summary.CriticalCount > 0,
+            errorText,
+            summary.ErrorCount > 0,
+            warningText,
+            summary.WarningCount > 0,
+            snoozedText,
+            summary.SnoozedCount > 0,
+            string.Join("; ", automationParts));
     }
 
     private void ApplyFilters()
@@ -368,8 +453,22 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     {
         _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
         {
-            AlertsRefreshRequested?.Invoke(this, EventArgs.Empty);
+            RefreshAlertState();
         });
+    }
+
+    private void ApplyAlertSummary(NotificationAlertSummaryPresentation presentation)
+    {
+        AlertTotalText = presentation.AlertTotalText;
+        CriticalAlertCountText = presentation.CriticalAlertCountText;
+        IsCriticalAlertBadgeVisible = presentation.IsCriticalAlertBadgeVisible;
+        ErrorAlertCountText = presentation.ErrorAlertCountText;
+        IsErrorAlertBadgeVisible = presentation.IsErrorAlertBadgeVisible;
+        WarningAlertCountText = presentation.WarningAlertCountText;
+        IsWarningAlertBadgeVisible = presentation.IsWarningAlertBadgeVisible;
+        SnoozedAlertCountText = presentation.SnoozedAlertCountText;
+        IsSnoozedAlertCountVisible = presentation.IsSnoozedAlertCountVisible;
+        AlertSummaryAutomationName = presentation.AlertSummaryAutomationName;
     }
 
     private bool MatchesTypeFilter(NotificationItem item) =>

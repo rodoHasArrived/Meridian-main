@@ -44,6 +44,11 @@ create table if not exists __SCHEMA__.loan_terms_version (
     default_rate_spread_bps numeric(18,8),
     prepayment_allowed boolean not null,
     covenants_json jsonb,
+    interest_only_months integer not null default 0,
+    grace_period_days integer,
+    effective_rate_floor numeric(18,8),
+    effective_rate_cap numeric(18,8),
+    prepayment_penalty_rate numeric(18,8),
     primary key (loan_id, terms_version)
 );
 

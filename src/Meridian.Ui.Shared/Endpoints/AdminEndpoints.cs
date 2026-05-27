@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Maintenance;
@@ -22,8 +23,11 @@ public static class AdminEndpoints
         var group = app.MapGroup("").WithTags("Admin");
 
         // Maintenance schedule
-        group.MapGet(UiApiRoutes.AdminMaintenanceSchedule, ([FromServices] ArchiveMaintenanceScheduleManager? schedMgr) =>
+        group.MapGet(UiApiRoutes.AdminMaintenanceSchedule, (HttpContext ctx, [FromServices] ArchiveMaintenanceScheduleManager? schedMgr) =>
         {
+            if (!HasAdminMaintenancePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             if (schedMgr is null)
                 return Results.Json(new { schedules = Array.Empty<object>() }, jsonOptions);
 
@@ -40,10 +44,14 @@ public static class AdminEndpoints
 
         // Run maintenance
         group.MapPost(UiApiRoutes.AdminMaintenanceRun, async (
+            HttpContext ctx,
             [FromServices] ScheduledArchiveMaintenanceService? maintService,
             MaintenanceRunRequest? req,
             CancellationToken ct) =>
         {
+            if (!HasAdminMaintenancePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             if (maintService is null)
                 return Results.Json(new { error = "Maintenance service not available" }, jsonOptions, statusCode: 503);
 
@@ -59,8 +67,11 @@ public static class AdminEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Get maintenance run by ID
-        group.MapGet(UiApiRoutes.AdminMaintenanceRunById, (string runId, [FromServices] MaintenanceExecutionHistory? history) =>
+        group.MapGet(UiApiRoutes.AdminMaintenanceRunById, (HttpContext ctx, string runId, [FromServices] MaintenanceExecutionHistory? history) =>
         {
+            if (!HasAdminMaintenancePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var execution = history?.GetExecution(runId);
             return execution is null ? Results.NotFound() : Results.Json(execution, jsonOptions);
         })
@@ -69,8 +80,11 @@ public static class AdminEndpoints
         .Produces(404);
 
         // Maintenance history
-        group.MapGet(UiApiRoutes.AdminMaintenanceHistory, (int? limit, [FromServices] MaintenanceExecutionHistory? history) =>
+        group.MapGet(UiApiRoutes.AdminMaintenanceHistory, (HttpContext ctx, int? limit, [FromServices] MaintenanceExecutionHistory? history) =>
         {
+            if (!HasAdminMaintenancePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var executions = history?.GetRecentExecutions(limit ?? 50) ?? [];
             return Results.Json(new
             {
@@ -84,8 +98,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Storage tiers
-        group.MapGet(UiApiRoutes.AdminStorageTiers, async ([FromServices] ITierMigrationService? tierService, CancellationToken ct) =>
+        group.MapGet(UiApiRoutes.AdminStorageTiers, async (HttpContext ctx, [FromServices] ITierMigrationService? tierService, CancellationToken ct) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             if (tierService is null)
                 return Results.Json(new { tiers = new Dictionary<string, object>() }, jsonOptions);
 
@@ -96,8 +113,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Storage migrate
-        group.MapPost(UiApiRoutes.AdminStorageMigrate, async (string targetTier, [FromServices] ITierMigrationService? tierService, CancellationToken ct) =>
+        group.MapPost(UiApiRoutes.AdminStorageMigrate, async (HttpContext ctx, string targetTier, [FromServices] ITierMigrationService? tierService, CancellationToken ct) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             if (tierService is null)
                 return Results.Json(new { error = "Tier migration service not available" }, jsonOptions, statusCode: 503);
 
@@ -115,8 +135,11 @@ public static class AdminEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Storage usage
-        group.MapGet(UiApiRoutes.AdminStorageUsage, ([FromServices] StorageOptions? storageOptions) =>
+        group.MapGet(UiApiRoutes.AdminStorageUsage, (HttpContext ctx, [FromServices] StorageOptions? storageOptions) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var rootPath = storageOptions?.RootPath ?? "data";
             long totalBytes = 0;
             int fileCount = 0;
@@ -136,7 +159,8 @@ public static class AdminEndpoints
                         breakdown[subDir.Name] = new { fileCount = files.Length, bytes = dirBytes };
                     }
                 }
-                catch { /* ignore */ }
+                catch (IOException) { /* return partial data if filesystem access fails */ }
+                catch (UnauthorizedAccessException) { /* return partial data if permission denied */ }
             }
 
             return Results.Json(new
@@ -152,8 +176,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Retention policies
-        group.MapGet(UiApiRoutes.AdminRetention, ([FromServices] ConfigStore store) =>
+        group.MapGet(UiApiRoutes.AdminRetention, (HttpContext ctx, [FromServices] ConfigStore store) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var config = store.Load();
             var maxSizeGb = config.Storage?.MaxTotalMegabytes.HasValue == true
                 ? (double)config.Storage.MaxTotalMegabytes.Value / 1024
@@ -169,8 +196,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Delete retention policy
-        group.MapDelete(UiApiRoutes.AdminRetentionDelete, (string policyId) =>
+        group.MapDelete(UiApiRoutes.AdminRetentionDelete, (HttpContext ctx, string policyId) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             return Results.Json(new
             {
                 deleted = true,
@@ -183,8 +213,11 @@ public static class AdminEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Apply retention
-        group.MapPost(UiApiRoutes.AdminRetentionApply, () =>
+        group.MapPost(UiApiRoutes.AdminRetentionApply, (HttpContext ctx) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             return Results.Json(new
             {
                 applied = true,
@@ -196,8 +229,11 @@ public static class AdminEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Cleanup preview
-        group.MapGet(UiApiRoutes.AdminCleanupPreview, ([FromServices] StorageOptions? storageOptions) =>
+        group.MapGet(UiApiRoutes.AdminCleanupPreview, (HttpContext ctx, [FromServices] StorageOptions? storageOptions) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var rootPath = storageOptions?.RootPath ?? "data";
             var candidates = new List<object>();
             long reclaimableBytes = 0;
@@ -217,7 +253,8 @@ public static class AdminEndpoints
                         }
                     }
                 }
-                catch { /* ignore */ }
+                catch (IOException) { /* return partial data if filesystem access fails */ }
+                catch (UnauthorizedAccessException) { /* return partial data if permission denied */ }
             }
 
             return Results.Json(new
@@ -232,8 +269,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Execute cleanup
-        group.MapPost(UiApiRoutes.AdminCleanupExecute, () =>
+        group.MapPost(UiApiRoutes.AdminCleanupExecute, (HttpContext ctx) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             return Results.Json(new
             {
                 executed = false,
@@ -246,8 +286,11 @@ public static class AdminEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Storage permissions
-        group.MapGet(UiApiRoutes.AdminStoragePermissions, ([FromServices] StorageOptions? storageOptions) =>
+        group.MapGet(UiApiRoutes.AdminStoragePermissions, (HttpContext ctx, [FromServices] StorageOptions? storageOptions) =>
         {
+            if (!HasManageStoragePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var rootPath = storageOptions?.RootPath ?? "data";
             var readable = false;
             var writable = false;
@@ -264,10 +307,12 @@ public static class AdminEndpoints
                         File.Delete(testFile);
                         writable = true;
                     }
-                    catch { /* not writable */ }
+                    catch (IOException) { /* not writable due to I/O error */ }
+                    catch (UnauthorizedAccessException) { /* not writable due to permission denied */ }
                 }
             }
-            catch { /* not readable */ }
+            catch (IOException) { /* not readable due to I/O error */ }
+            catch (UnauthorizedAccessException) { /* not readable due to permission denied */ }
 
             return Results.Json(new { rootPath, readable, writable, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
@@ -275,8 +320,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Admin selftest
-        group.MapPost(UiApiRoutes.AdminSelftest, ([FromServices] ConfigStore store) =>
+        group.MapPost(UiApiRoutes.AdminSelftest, (HttpContext ctx, [FromServices] ConfigStore store) =>
         {
+            if (!HasAdminMaintenancePermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var config = store.Load();
             var checks = new List<object>
             {
@@ -297,9 +345,12 @@ public static class AdminEndpoints
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Admin error codes
-        group.MapGet(UiApiRoutes.AdminErrorCodes, () =>
+        // Admin error codes — requires ViewDiagnostics (low-sensitivity enumeration)
+        group.MapGet(UiApiRoutes.AdminErrorCodes, (HttpContext ctx) =>
         {
+            if (!HasViewDiagnosticsPermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var codes = Enum.GetValues<Meridian.Application.ResultTypes.ErrorCode>()
                 .Select(e => new { code = (int)e, name = e.ToString() });
             return Results.Json(new { errorCodes = codes, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
@@ -308,8 +359,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Admin show config
-        group.MapGet(UiApiRoutes.AdminShowConfig, ([FromServices] ConfigStore store) =>
+        group.MapGet(UiApiRoutes.AdminShowConfig, (HttpContext ctx, [FromServices] ConfigStore store) =>
         {
+            if (!HasViewConfigPermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var config = store.Load();
             return Results.Json(new
             {
@@ -324,8 +378,11 @@ public static class AdminEndpoints
         .Produces(200);
 
         // Admin quick check
-        group.MapGet(UiApiRoutes.AdminQuickCheck, ([FromServices] ConfigStore store) =>
+        group.MapGet(UiApiRoutes.AdminQuickCheck, (HttpContext ctx, [FromServices] ConfigStore store) =>
         {
+            if (!HasViewConfigPermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             var config = store.Load();
             return Results.Json(new
             {
@@ -341,6 +398,29 @@ public static class AdminEndpoints
         .Produces(200);
     }
 
+    private static bool HasAdminMaintenancePermission(HttpContext context) =>
+        HasPermission(context, UserPermission.AdminMaintenance);
+
+    private static bool HasManageStoragePermission(HttpContext context) =>
+        HasPermission(context, UserPermission.ManageStorage);
+
+    private static bool HasViewConfigPermission(HttpContext context) =>
+        HasPermission(context, UserPermission.ViewConfig);
+
+    private static bool HasViewDiagnosticsPermission(HttpContext context) =>
+        HasPermission(context, UserPermission.ViewDiagnostics);
+
+    private static bool HasPermission(HttpContext context, UserPermission required)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) &&
+            value is UserPermission current)
+        {
+            return (current & required) == required;
+        }
+
+        return false;
+    }
+
     private static bool IsWritable(string path)
     {
         if (!Directory.Exists(path))
@@ -352,7 +432,8 @@ public static class AdminEndpoints
             File.Delete(testFile);
             return true;
         }
-        catch { return false; }
+        catch (IOException) { return false; }
+        catch (UnauthorizedAccessException) { return false; }
     }
 
     private sealed record MaintenanceRunRequest(string? TaskType, string[]? TargetPaths);

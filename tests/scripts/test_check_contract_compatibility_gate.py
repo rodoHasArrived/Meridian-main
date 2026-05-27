@@ -114,11 +114,11 @@ diff --git a/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs b/src/Me
         with tempfile.TemporaryDirectory(dir="src/Meridian.Contracts/Workstation") as tmp_dir:
             temp_path = Path(tmp_dir) / "GovernanceInstrumentContractDto.cs"
             temp_path.write_text("public sealed record GovernanceInstrumentContractDto(string InstrumentTicker);", encoding="utf-8")
-            changed_files = [str(temp_path)]
+            changed_files = [str(temp_path.relative_to(Path.cwd()))]
             patch = f"""
-diff --git a/{temp_path} b/{temp_path}
---- a/{temp_path}
-+++ b/{temp_path}
+diff --git a/{changed_files[0]} b/{changed_files[0]}
+--- a/{changed_files[0]}
++++ b/{changed_files[0]}
 @@ -1,0 +1 @@
 +    string InstrumentTicker,
 """
@@ -132,17 +132,77 @@ diff --git a/{temp_path} b/{temp_path}
             temp_path.write_text(
                 "public sealed record GovernanceInstrumentContractDto(string InstrumentTicker, Guid SecurityId, string SecurityMasterSource);",
                 encoding="utf-8")
-            changed_files = [str(temp_path)]
+            changed_files = [str(temp_path.relative_to(Path.cwd()))]
             patch = f"""
-diff --git a/{temp_path} b/{temp_path}
---- a/{temp_path}
-+++ b/{temp_path}
+diff --git a/{changed_files[0]} b/{changed_files[0]}
+--- a/{changed_files[0]}
++++ b/{changed_files[0]}
 @@ -1,0 +1,2 @@
 +    string InstrumentTicker,
 +    Guid SecurityId,
 """
             violations = gate.find_missing_security_master_instrument_references(changed_files, patch)
             self.assertEqual([], violations)
+
+    def test_find_required_field_regressions_flags_required_property_addition(self) -> None:
+        changed_files = ["src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"]
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
++++ b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
+@@ -200,0 +201 @@ public sealed class TradingOperatorReadinessDto
++    public required string ContractVersion { get; init; }
+"""
+
+        violations = gate.find_required_field_regressions(changed_files, patch)
+        self.assertEqual(changed_files, violations)
+
+    def test_find_required_field_regressions_flags_non_nullable_record_parameter_addition(self) -> None:
+        changed_files = ["src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"]
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
++++ b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
+@@ -102,0 +103 @@ public sealed record TradingOperatorReadinessDto(
++    string ContractVersion,
+"""
+
+        violations = gate.find_required_field_regressions(changed_files, patch)
+        self.assertEqual(changed_files, violations)
+
+    def test_find_required_field_regressions_flags_required_primitive_array_property_addition(self) -> None:
+        changed_files = ["src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"]
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
++++ b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
+@@ -200,0 +201 @@ public sealed class TradingOperatorReadinessDto
++    public required string[] Symbols { get; init; }
+"""
+
+        violations = gate.find_required_field_regressions(changed_files, patch)
+        self.assertEqual(changed_files, violations)
+
+    def test_find_required_field_regressions_flags_non_nullable_primitive_array_record_parameter_addition(self) -> None:
+        changed_files = ["src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"]
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
++++ b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
+@@ -102,0 +103 @@ public sealed record TradingOperatorReadinessDto(
++    string[] Symbols,
+"""
+
+        violations = gate.find_required_field_regressions(changed_files, patch)
+        self.assertEqual(changed_files, violations)
+
+    def test_find_required_field_regressions_allows_nullable_record_parameter_addition(self) -> None:
+        changed_files = ["src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs"]
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
++++ b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs
+@@ -102,0 +103 @@ public sealed record TradingOperatorReadinessDto(
++    string? ContractVersion = null,
+"""
+
+        violations = gate.find_required_field_regressions(changed_files, patch)
+        self.assertEqual([], violations)
 
 
 if __name__ == "__main__":

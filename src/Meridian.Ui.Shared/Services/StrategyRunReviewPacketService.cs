@@ -185,7 +185,8 @@ public sealed class StrategyRunReviewPacketService
                     ? OperatorWorkItemToneDto.Critical
                     : OperatorWorkItemToneDto.Warning,
                 runId,
-                fundAccountId));
+                fundAccountId,
+                providerId: brokerageStatus.ProviderId));
         }
 
         if (items.Count == 0)
@@ -214,9 +215,10 @@ public sealed class StrategyRunReviewPacketService
         OperatorWorkItemToneDto tone,
         string? runId,
         Guid? fundAccountId = null,
-        string? auditReference = null)
+        string? auditReference = null,
+        string? providerId = null)
     {
-        var navigation = ResolveNavigation(kind, runId, fundAccountId);
+        var navigation = ResolveNavigation(kind, runId, fundAccountId, providerId);
         var scope = fundAccountId?.ToString("N") ?? runId ?? auditReference ?? label;
         return new(
             WorkItemId: BuildScopedId(idPrefix, scope),
@@ -236,7 +238,8 @@ public sealed class StrategyRunReviewPacketService
     private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveNavigation(
         OperatorWorkItemKindDto kind,
         string? runId,
-        Guid? fundAccountId)
+        Guid? fundAccountId,
+        string? providerId)
     {
         return kind switch
         {
@@ -249,16 +252,14 @@ public sealed class StrategyRunReviewPacketService
                 UiApiRoutes.ReconciliationBreakQueue,
                 "FundReconciliation"),
             OperatorWorkItemKindDto.BrokerageSync => (
-                "Trading",
-                fundAccountId.HasValue
-                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
-                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
-                "TradingShell"),
+                "Settings",
+                ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId),
+                "ProviderConnectionCenter"),
             _ => (
                 "Trading",
                 string.IsNullOrWhiteSpace(runId)
                     ? UiApiRoutes.WorkstationTradingReadiness
-                    : UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal),
+                    : UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", runId),
                 "TradingShell")
         };
     }

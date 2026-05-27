@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Spacing scale</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
   .row { display: grid; grid-template-columns: 70px 1fr 80px; align-items: center; gap: 12px; margin-bottom: 8px; }
@@ -13,6 +15,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Spacing scale">
+<h1 class="preview-sr-only">Spacing scale</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="row"><span class="tok">1</span><span class="bar" style="width: 4px;"></span><span class="px">4px · 0.25rem</span></div>
   <div class="row"><span class="tok">2</span><span class="bar" style="width: 8px;"></span><span class="px">8px · 0.5rem</span></div>
   <div class="row"><span class="tok">3</span><span class="bar" style="width: 12px;"></span><span class="px">12px · 0.75rem</span></div>
@@ -21,5 +26,6 @@
   <div class="row"><span class="tok">6</span><span class="bar" style="width: 24px;"></span><span class="px">24px · 1.5rem</span></div>
   <div class="row"><span class="tok">8</span><span class="bar" style="width: 32px;"></span><span class="px">32px · 2rem</span></div>
   <div class="row"><span class="tok">12</span><span class="bar" style="width: 48px;"></span><span class="px">48px · 3rem</span></div>
+</main>
 </body>
 </html>

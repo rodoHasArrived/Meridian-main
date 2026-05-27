@@ -5,6 +5,7 @@ using Meridian.Contracts.Api;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk;
+using ProviderCapabilityDescriptor = Meridian.ProviderSdk.ProviderCapabilityDescriptor;
 
 namespace Meridian.Application.ProviderRouting;
 

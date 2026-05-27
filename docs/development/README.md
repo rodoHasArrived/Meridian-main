@@ -11,9 +11,11 @@ This directory is the working index for Meridian developer guidance. Use it when
 
 If you are new to the repository, read these in order:
 
-1. [Repository Organization Guide](repository-organization-guide.md) for folder placement, naming, and doc location rules.
-2. [Repository Rule Set](repository-rule-set.md) for repository-wide contribution and quality expectations.
-3. [Documentation Contribution Guide](documentation-contribution-guide.md) if your change adds, moves, or retires docs.
+1. [Developer Setup](../developer/setup.md) for local prerequisites and restore commands.
+2. [Build, Test, Run](../developer/build-test-run.md) for the shortest current command path.
+3. [Repository Organization Guide](repository-organization-guide.md) for folder placement, naming, and doc location rules.
+4. [Repository Rule Set](repository-rule-set.md) for repository-wide contribution and quality expectations.
+5. [Documentation Contribution Guide](documentation-contribution-guide.md) if your change adds, moves, or retires docs.
 
 For a broader docs map, return to the main [docs index](../README.md).
 
@@ -39,6 +41,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
+| [Developer Setup](../developer/setup.md) | bootstrap the local checkout at `C:\Dev\Meridian-main` |
+| [Build, Test, Run](../developer/build-test-run.md) | choose a narrow build, test, or local run command |
+| [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
+| [Publish Standalone EXE](../developer/publish-standalone-exe.md) | produce local standalone publish output |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |
@@ -62,6 +68,11 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
 | [Desktop Workflow Automation](desktop-workflow-automation.md) | drive scripted desktop flows, screenshots, and manual-generation workflows |
+| [Codex Desktop Workstation Workflow](codex-workflow.md) | use Codex skills, prompt templates, and quality scripts for modular desktop work |
+| [Modular Desktop Architecture](modular-desktop-architecture.md) | keep WPF workspaces reusable, MVVM-aligned, and refactorable |
+| [Desktop Resource Management](desktop-resource-management.md) | apply memory, CPU, I/O, rendering, concurrency, and lifecycle guardrails |
+| [Shared Workstation Components](shared-workstation-components.md) | inventory and extract reusable desktop workstation controls and view-model patterns |
+| [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
 
 ### CI, Build, And Observability
@@ -71,6 +82,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [GitHub Actions Summary](github-actions-summary.md) | get the short reference for the repo's core workflows |
 | [GitHub Actions Testing Checklist](github-actions-testing.md) | validate workflow changes before or after editing GitHub Actions |
 | [Build Observability System](build-observability.md) | capture structured build telemetry, metrics, and diagnostics |
+| [Runtime Observability And Diagnostics](runtime-observability.md) | apply runtime logging, redaction, correlation, provider-health, and diagnostic-bundle standards |
 | [OTLP Trace Visualization](otlp-trace-visualization.md) | inspect Meridian traces and metrics in a local telemetry UI |
 | [Git Hooks](git-hooks.md) | install the repo-managed local quality gate before committing |
 
@@ -78,7 +90,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Documentation Automation Guide](documentation-automation.md) | run or understand the documentation workflow and generated outputs |
+| [Documentation Automation Guide](documentation-automation.md) | run documentation automation scripts and understand generated outputs |
 | [Expanding Documentation Scripts](expanding-scripts.md) | add new scripts under `build/scripts/docs/` using existing conventions |
 | [Adding Custom Documentation Rules](adding-custom-rules.md) | extend `build/rules/doc-rules.yaml` and the rules engine safely |
 
@@ -86,7 +98,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 Some topics in this folder have deeper source material outside `docs/development/`:
 
-- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/README.md) is the authoritative workflow inventory referenced by the GitHub Actions summary.
+- [`docs/status/workflow-manifest.json`](../status/workflow-manifest.json), [`docs/generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), and [`docs/status/workflow-validation-summary.json`](../status/workflow-validation-summary.json) are the canonical workflow inventory source of truth surfaces referenced by the GitHub Actions summary.
 - [`build/scripts/docs/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
 - [`scripts/dev/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/scripts/dev) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
 

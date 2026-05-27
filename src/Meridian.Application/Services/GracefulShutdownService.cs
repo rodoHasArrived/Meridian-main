@@ -13,6 +13,8 @@ namespace Meridian.Application.Services;
 /// </summary>
 public sealed class GracefulShutdownService : IHostedService
 {
+    private const string ShutdownOperationName = "runtime.shutdown.flush";
+
     private readonly IReadOnlyList<IFlushable> _flushables;
     private readonly ILogger _log;
     private readonly TimeSpan _shutdownTimeout;
@@ -36,43 +38,61 @@ public sealed class GracefulShutdownService : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _sessionStopwatch.Start();
-        _log.Information("Graceful shutdown service initialized with {Count} flushable components",
-            _flushables.Count);
+        _log.Information(
+            "Graceful shutdown service initialized for {OperationName}; flushableComponents={FlushableCount}; shutdownTimeoutSeconds={ShutdownTimeoutSeconds}",
+            ShutdownOperationName,
+            _flushables.Count,
+            _shutdownTimeout.TotalSeconds);
         return Task.CompletedTask;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         _sessionStopwatch.Stop();
-        _log.Information("Graceful shutdown initiated - flushing all buffers...");
+        var correlationId = Guid.NewGuid().ToString("N");
+        var shutdownStopwatch = Stopwatch.StartNew();
+        _log.Information(
+            "Graceful shutdown initiated for {OperationName} with {CorrelationId}; flushableComponents={FlushableCount}; uptimeMs={UptimeMs}",
+            ShutdownOperationName,
+            correlationId,
+            _flushables.Count,
+            _sessionStopwatch.ElapsedMilliseconds);
 
         using var timeoutCts = new CancellationTokenSource(_shutdownTimeout);
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken, timeoutCts.Token);
 
-        var flushTasks = new List<Task>();
+        var flushTasks = new List<Task<FlushOutcome>>();
 
         foreach (var flushable in _flushables)
         {
             var name = flushable.GetType().Name;
-            _log.Debug("Flushing {Component}...", name);
+            _log.Debug(
+                "Flushing {ComponentName} for {OperationName} with {CorrelationId}",
+                name,
+                ShutdownOperationName,
+                correlationId);
 
-            flushTasks.Add(FlushWithLoggingAsync(flushable, name, linkedCts.Token));
+            flushTasks.Add(FlushWithLoggingAsync(flushable, name, correlationId, linkedCts.Token));
         }
 
+        FlushOutcome[] outcomes = [];
         try
         {
-            await Task.WhenAll(flushTasks).ConfigureAwait(false);
-            _log.Information("All {Count} buffers flushed successfully", _flushables.Count);
-        }
-        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-        {
-            _log.Warning("Shutdown timeout ({Timeout}s) reached - some data may be lost",
-                _shutdownTimeout.TotalSeconds);
+            outcomes = await Task.WhenAll(flushTasks).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "Error during graceful shutdown flush");
+            _log.Error(
+                ex,
+                "Unexpected error collecting flush outcomes for {OperationName} with {CorrelationId}",
+                ShutdownOperationName,
+                correlationId);
+        }
+        finally
+        {
+            shutdownStopwatch.Stop();
+            LogShutdownOutcome(correlationId, outcomes, timeoutCts.IsCancellationRequested, shutdownStopwatch.Elapsed);
         }
 
         PrintSessionSummary();
@@ -147,22 +167,104 @@ public sealed class GracefulShutdownService : IHostedService
         return $"{duration.Seconds}s";
     }
 
-    private async Task FlushWithLoggingAsync(IFlushable flushable, string name, CancellationToken ct)
+    private void LogShutdownOutcome(
+        string correlationId,
+        IReadOnlyCollection<FlushOutcome> outcomes,
+        bool timedOut,
+        TimeSpan elapsed)
     {
+        var succeeded = outcomes.Count(static outcome => outcome.Status == FlushStatus.Succeeded);
+        var failed = outcomes.Count(static outcome => outcome.Status == FlushStatus.Failed);
+        var cancelled = outcomes.Count(static outcome => outcome.Status == FlushStatus.Cancelled);
+        var missing = _flushables.Count - outcomes.Count;
+
+        if (timedOut || cancelled > 0 || missing > 0)
+        {
+            _log.Warning(
+                "Graceful shutdown completed with incomplete flushes for {OperationName} with {CorrelationId}; succeeded={Succeeded}; failed={Failed}; cancelled={Cancelled}; missing={Missing}; elapsedMs={ElapsedMs}; timeoutSeconds={TimeoutSeconds}; recoveryAction={RecoveryAction}",
+                ShutdownOperationName,
+                correlationId,
+                succeeded,
+                failed,
+                cancelled,
+                missing,
+                elapsed.TotalMilliseconds,
+                _shutdownTimeout.TotalSeconds,
+                "Review component logs before trusting latest buffered data");
+            return;
+        }
+
+        if (failed > 0)
+        {
+            _log.Error(
+                "Graceful shutdown completed with flush failures for {OperationName} with {CorrelationId}; succeeded={Succeeded}; failed={Failed}; elapsedMs={ElapsedMs}; recoveryAction={RecoveryAction}",
+                ShutdownOperationName,
+                correlationId,
+                succeeded,
+                failed,
+                elapsed.TotalMilliseconds,
+                "Inspect failed component and rerun affected ingestion or export");
+            return;
+        }
+
+        _log.Information(
+            "Graceful shutdown completed for {OperationName} with {CorrelationId}; succeeded={Succeeded}; failed=0; cancelled=0; elapsedMs={ElapsedMs}",
+            ShutdownOperationName,
+            correlationId,
+            succeeded,
+            elapsed.TotalMilliseconds);
+    }
+
+    private async Task<FlushOutcome> FlushWithLoggingAsync(
+        IFlushable flushable,
+        string name,
+        string correlationId,
+        CancellationToken ct)
+    {
+        var stopwatch = Stopwatch.StartNew();
         try
         {
             await flushable.FlushAsync(ct).ConfigureAwait(false);
-            _log.Debug("Successfully flushed {Component}", name);
+            stopwatch.Stop();
+            _log.Debug(
+                "Successfully flushed {ComponentName} for {OperationName} with {CorrelationId} in {ElapsedMs} ms",
+                name,
+                ShutdownOperationName,
+                correlationId,
+                stopwatch.ElapsedMilliseconds);
+            return new FlushOutcome(name, FlushStatus.Succeeded, stopwatch.Elapsed);
         }
         catch (OperationCanceledException)
         {
-            _log.Warning("Flush of {Component} was cancelled", name);
-            throw;
+            stopwatch.Stop();
+            _log.Warning(
+                "Flush of {ComponentName} was cancelled for {OperationName} with {CorrelationId} after {ElapsedMs} ms",
+                name,
+                ShutdownOperationName,
+                correlationId,
+                stopwatch.ElapsedMilliseconds);
+            return new FlushOutcome(name, FlushStatus.Cancelled, stopwatch.Elapsed);
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "Failed to flush {Component}", name);
-            throw;
+            stopwatch.Stop();
+            _log.Error(
+                ex,
+                "Failed to flush {ComponentName} for {OperationName} with {CorrelationId} after {ElapsedMs} ms",
+                name,
+                ShutdownOperationName,
+                correlationId,
+                stopwatch.ElapsedMilliseconds);
+            return new FlushOutcome(name, FlushStatus.Failed, stopwatch.Elapsed);
         }
+    }
+
+    private sealed record FlushOutcome(string ComponentName, FlushStatus Status, TimeSpan Elapsed);
+
+    private enum FlushStatus
+    {
+        Succeeded,
+        Failed,
+        Cancelled
     }
 }

@@ -1,0 +1,31 @@
+{
+  "schema_version": "2026-04-14",
+  "mode": "release_gate",
+  "artifact_type": "ship-readiness",
+  "artifact_paths": [
+    "artifacts/desktop-workflows/example-run/manifest.json",
+    "tests/Meridian.Wpf.Tests/Views/ExampleSmokeTests.cs",
+    "docs/screenshots/desktop/example-screen.png"
+  ],
+  "artifact_summary": "Release-gate bundle for a near-ship feature.",
+  "persona_set": {
+    "panel": "operations-controls",
+    "required_roles": [
+      "Owner-Operator",
+      "Fund Operations Lead"
+    ]
+  },
+  "focus_areas": [
+    "release_readiness",
+    "trust_and_controls"
+  ],
+  "constraints": [
+    "Separate launch blockers from polish."
+  ],
+  "success_criteria": [
+    "The feature is trusted enough to ship.",
+    "Launch blockers are called out explicitly.",
+    "The owner receives a clear ship recommendation."
+  ],
+  "decision_deadline": "before go-live"
+}

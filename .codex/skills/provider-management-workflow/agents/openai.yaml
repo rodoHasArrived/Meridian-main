@@ -1,0 +1,4 @@
+interface:
+  display_name: "Provider Management Workflow"
+  short_description: "Build secure provider management workflows"
+  default_prompt: "Use $provider-management-workflow to implement provider setup, credential, health, degradation, or validation workflows in Meridian."

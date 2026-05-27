@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Export;
 using Meridian.Storage;
 using Meridian.Storage.Export;
 using Microsoft.AspNetCore.Builder;
@@ -78,15 +79,19 @@ public static class ExportEndpoints
 
         // Analysis export — wired to real AnalysisExportService
         group.MapPost(UiApiRoutes.ExportAnalysis, async (
-            ExportAnalysisRequest req,
+            ExportAnalysisApiRequest? req,
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
             CleanupOldExportDirectories();
+            var normalizedRequest = NormalizeExportAnalysisRequest(req);
 
             if (exportService is null)
             {
-                return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
+                return Results.Json(
+                    CreateUnavailableExportResponse(normalizedRequest.ProfileId),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
             var outputDir = Path.Combine(
@@ -96,40 +101,17 @@ public static class ExportEndpoints
 
             var exportRequest = new ExportRequest
             {
-                ProfileId = req.ProfileId ?? "python-pandas",
-                Symbols = req.Symbols,
-                StartDate = req.StartDate ?? DateTime.UtcNow.AddDays(-7),
-                EndDate = req.EndDate ?? DateTime.UtcNow,
+                ProfileId = normalizedRequest.ProfileId,
+                Symbols = normalizedRequest.Symbols,
+                StartDate = normalizedRequest.StartDate ?? DateTime.UtcNow.AddDays(-7),
+                EndDate = normalizedRequest.EndDate ?? DateTime.UtcNow,
                 OutputDirectory = outputDir,
                 EventTypes = new[] { "Trade", "BboQuote" }
             };
 
             var result = await exportService.ExportAsync(exportRequest, ct);
 
-            return Results.Json(new
-            {
-                jobId = result.JobId,
-                success = result.Success,
-                status = result.Success ? "completed" : "failed",
-                profileId = result.ProfileId,
-                symbols = result.Symbols,
-                filesGenerated = result.FilesGenerated,
-                totalRecords = result.TotalRecords,
-                totalBytes = result.TotalBytes,
-                outputDirectory = result.OutputDirectory,
-                durationSeconds = result.DurationSeconds,
-                error = result.Error,
-                warnings = result.Warnings,
-                files = result.Files.Select(f => new
-                {
-                    path = f.RelativePath,
-                    symbol = f.Symbol,
-                    format = f.Format,
-                    sizeBytes = f.SizeBytes,
-                    recordCount = f.RecordCount
-                }),
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            return Results.Json(CreateExportResponse(result), jsonOptions);
         })
         .WithName("ExportAnalysis")
         .Produces(200)
@@ -355,7 +337,6 @@ public static class ExportEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
-    private sealed record ExportAnalysisRequest(string? ProfileId, string[]? Symbols, string? Format, DateTime? StartDate, DateTime? EndDate);
     private sealed record ExportPreviewRequest(string? ProfileId, string[]? Symbols, string[]? EventTypes, DateTime? StartDate, DateTime? EndDate, int? SampleSize);
     private sealed record QualityReportExportRequest(string? Format, string[]? Symbols);
     private sealed record OrderflowExportRequest(string[]? Symbols, string? Format);
@@ -368,6 +349,65 @@ public static class ExportEndpoints
 
         return value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
     }
+
+    private static ExportAnalysisApiRequest NormalizeExportAnalysisRequest(ExportAnalysisApiRequest? request)
+    {
+        var profileId = string.IsNullOrWhiteSpace(request?.ProfileId)
+            ? "python-pandas"
+            : request.ProfileId.Trim();
+
+        var symbols = request?.Symbols?
+            .Select(static symbol => symbol?.Trim())
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new ExportAnalysisApiRequest(
+            profileId,
+            symbols is { Length: > 0 } ? symbols! : null,
+            request?.Format?.Trim(),
+            request?.StartDate,
+            request?.EndDate);
+    }
+
+    private static ExportAnalysisApiResponse CreateUnavailableExportResponse(string profileId)
+        => new(
+            JobId: null,
+            Success: false,
+            Status: "unavailable",
+            ProfileId: profileId,
+            Symbols: null,
+            FilesGenerated: 0,
+            TotalRecords: 0,
+            TotalBytes: 0,
+            OutputDirectory: null,
+            DurationSeconds: 0,
+            Error: "Export service not available",
+            Warnings: Array.Empty<string>(),
+            Files: Array.Empty<ExportAnalysisApiFile>(),
+            Timestamp: DateTimeOffset.UtcNow);
+
+    private static ExportAnalysisApiResponse CreateExportResponse(ExportResult result)
+        => new(
+            JobId: result.JobId,
+            Success: result.Success,
+            Status: result.Success ? "completed" : "failed",
+            ProfileId: result.ProfileId,
+            Symbols: result.Symbols,
+            FilesGenerated: result.FilesGenerated,
+            TotalRecords: result.TotalRecords,
+            TotalBytes: result.TotalBytes,
+            OutputDirectory: result.OutputDirectory,
+            DurationSeconds: result.DurationSeconds,
+            Error: result.Error,
+            Warnings: result.Warnings?.ToArray() ?? Array.Empty<string>(),
+            Files: result.Files.Select(static f => new ExportAnalysisApiFile(
+                f.RelativePath,
+                f.Symbol,
+                f.Format,
+                f.SizeBytes,
+                f.RecordCount)).ToArray(),
+            Timestamp: DateTimeOffset.UtcNow);
 
     /// <summary>
     /// Removes export directories older than <see cref="ExportMaxAge"/> to prevent unbounded disk usage.

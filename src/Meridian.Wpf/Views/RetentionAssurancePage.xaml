@@ -35,34 +35,35 @@
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Min tick data retention:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="MinTickDaysBox" Width="60" Text="7" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="MinTickDaysBox" Width="60" Text="{Binding MinTickDataDaysText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                                 <TextBlock Text=" days" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Min bar data retention:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="MinBarDaysBox" Width="60" Text="30" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="MinBarDaysBox" Width="60" Text="{Binding MinBarDataDaysText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                                 <TextBlock Text=" days" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Min quote data retention:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="MinQuoteDaysBox" Width="60" Text="7" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="MinQuoteDaysBox" Width="60" Text="{Binding MinQuoteDataDaysText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                                 <TextBlock Text=" days" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Max daily deletions:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="MaxDailyDeletesBox" Width="80" Text="1000" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="MaxDailyDeletesBox" Width="80" Text="{Binding MaxDailyDeletesText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                             </StackPanel>
-                            <CheckBox x:Name="RequireChecksumCheck" Content="Require checksum verification" IsChecked="True"
+                            <CheckBox x:Name="RequireChecksumCheck" Content="Require checksum verification" IsChecked="{Binding RequireChecksumVerification}"
                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,8" />
-                            <CheckBox x:Name="RequireDryRunCheck" Content="Require dry-run preview" IsChecked="True"
+                            <CheckBox x:Name="RequireDryRunCheck" Content="Require dry-run preview" IsChecked="{Binding RequireDryRunPreview}"
                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,8" />
-                            <CheckBox x:Name="AllowTradingHoursCheck" Content="Allow deletion during trading hours" IsChecked="False"
+                            <CheckBox x:Name="AllowTradingHoursCheck" Content="Allow deletion during trading hours" IsChecked="{Binding AllowDeleteDuringTradingHours}"
                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                         </StackPanel>
                     </Grid>
-                    <Button Content="Save Guardrails" Click="SaveGuardrails_Click" Style="{StaticResource PrimaryButtonStyle}"
+                    <Button Content="Save Guardrails" Command="{Binding SaveGuardrailsCommand}" Style="{StaticResource PrimaryButtonStyle}"
+                            AutomationProperties.AutomationId="RetentionAssuranceSaveGuardrailsButton"
                             HorizontalAlignment="Left" Margin="0,12,0,0" />
                 </StackPanel>
             </Border>
@@ -80,46 +81,80 @@
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Tick data retention:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="TickDataDaysBox" Width="60" Text="30" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="TickDataDaysBox" Width="60" Text="{Binding TickDataDaysText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                                 <TextBlock Text=" days" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Bar data retention:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="BarDataDaysBox" Width="60" Text="365" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="BarDataDaysBox" Width="60" Text="{Binding BarDataDaysText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                                 <TextBlock Text=" days" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Quote data retention:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="QuoteDataDaysBox" Width="60" Text="30" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="QuoteDataDaysBox" Width="60" Text="{Binding QuoteDataDaysText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                                 <TextBlock Text=" days" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Files per cleanup run:" Width="180" Foreground="{StaticResource ConsoleTextSecondaryBrush}" VerticalAlignment="Center" />
-                                <TextBox x:Name="FilesPerRunBox" Width="80" Text="100" Style="{StaticResource FormTextBoxStyle}" />
+                                <TextBox x:Name="FilesPerRunBox" Width="80" Text="{Binding FilesPerRunText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
                             </StackPanel>
-                            <CheckBox x:Name="CompressBeforeDeleteCheck" Content="Compress before delete" IsChecked="True"
+                            <CheckBox x:Name="CompressBeforeDeleteCheck" Content="Compress before delete" IsChecked="{Binding CompressBeforeDelete}"
                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,8" />
                         </StackPanel>
                     </Grid>
+
+                    <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,12,0,0"
+                            AutomationProperties.Name="Retention cleanup readiness"
+                            AutomationProperties.AutomationId="RetentionAssuranceCleanupReadinessCard">
+                        <StackPanel>
+                            <TextBlock Text="{Binding CleanupReadinessTitle}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="RetentionAssuranceCleanupReadinessTitle" />
+                            <TextBlock Text="{Binding CleanupReadinessDetail}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"
+                                       AutomationProperties.AutomationId="RetentionAssuranceCleanupReadinessDetail" />
+                            <TextBlock Text="{Binding CleanupReadinessScope}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="RetentionAssuranceCleanupReadinessScope" />
+                        </StackPanel>
+                    </Border>
+
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                        <Button Content="Validate Policy" Click="ValidatePolicy_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,12,0" />
-                        <Button x:Name="DryRunButton" Content="Dry Run" Click="DryRun_Click" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,12,0" />
-                        <Button x:Name="ExecuteCleanupButton" Content="Execute Cleanup" Click="ExecuteCleanup_Click"
-                                Style="{StaticResource SecondaryButtonStyle}" IsEnabled="False" />
+                        <Button Content="Validate Policy" Command="{Binding ValidatePolicyCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,12,0"
+                                AutomationProperties.AutomationId="RetentionAssuranceValidatePolicyButton" />
+                        <Button x:Name="DryRunButton" Content="Dry Run" Command="{Binding DryRunCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,12,0"
+                                AutomationProperties.AutomationId="RetentionAssuranceDryRunButton" />
+                        <Button x:Name="ExecuteCleanupButton" Content="Review Cleanup" Command="{Binding RequestCleanupCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                AutomationProperties.AutomationId="RetentionAssuranceReviewCleanupButton" />
                     </StackPanel>
                 </StackPanel>
             </Border>
 
             <!-- Validation / Dry Run Results -->
-            <Border x:Name="ResultsPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
+            <Border x:Name="ResultsPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="{Binding ResultsVisibility}">
                 <StackPanel>
-                    <TextBlock x:Name="ResultsHeader" Text="Results" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock x:Name="ResultsText" Text="" FontSize="13"
+                    <TextBlock x:Name="ResultsHeader" Text="{Binding ResultsHeader}" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <TextBlock x:Name="ResultsText" Text="{Binding ResultsText}" FontSize="13"
                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
                     <ListView x:Name="ResultsList" SelectionMode="Single" MaxHeight="200"
-                              Background="Transparent" BorderThickness="0" Margin="0,8,0,0" Visibility="Collapsed">
+                              ItemsSource="{Binding Results}"
+                              Background="Transparent" BorderThickness="0" Margin="0,8,0,0" Visibility="{Binding ResultsListVisibility}">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -144,6 +179,44 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+
+                    <Border Visibility="{Binding CleanupConfirmationVisibility}"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource WarningColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="RetentionAssuranceCleanupConfirmationPanel">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding CleanupConfirmationTitle}"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource WarningColorBrush}" />
+                                <TextBlock Text="{Binding CleanupConfirmationDetail}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0">
+                                <Button Content="Cancel"
+                                        Command="{Binding CancelCleanupCommand}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,8,0"
+                                        AutomationProperties.AutomationId="RetentionAssuranceCancelCleanupButton" />
+                                <Button Content="Confirm Delete"
+                                        Command="{Binding ConfirmCleanupCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RetentionAssuranceConfirmCleanupButton" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -283,12 +356,12 @@
             </Border>
 
             <!-- Status -->
-            <Border x:Name="StatusPanel" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+            <Border x:Name="StatusPanel" Style="{StaticResource CardStyle}" Visibility="{Binding StatusVisibility}">
                 <StackPanel>
-                    <TextBlock x:Name="StatusText" Text="" FontSize="13"
+                    <TextBlock x:Name="StatusText" Text="{Binding StatusText}" FontSize="13"
                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     <ProgressBar x:Name="StatusProgress" IsIndeterminate="True" Height="4" Margin="0,8,0,0"
-                                 Visibility="Collapsed" Foreground="{StaticResource InfoColorBrush}" />
+                                 Visibility="{Binding StatusProgressVisibility}" Foreground="{StaticResource InfoColorBrush}" />
                 </StackPanel>
             </Border>
 

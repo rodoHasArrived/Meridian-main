@@ -17,7 +17,11 @@ public sealed class WorkflowLibraryViewModel : BindableBase
     private readonly ObservableCollection<WorkflowLibraryWorkflowItem> _workflows = [];
     private string _searchQuery = string.Empty;
     private string _summaryText = string.Empty;
-    private string _emptyStateText = "No workflows match the current filter.";
+    private string _resultScopeText = "No workflows loaded";
+    private string _emptyStateTitle = "No workflows are registered";
+    private string _emptyStateDetail = "Refresh the library after workflow providers are available.";
+    private string _emptyStateActionText = "Refresh library";
+    private int _totalActionCount;
 
     public WorkflowLibraryViewModel(
         WorkflowLibraryService workflowLibraryService,
@@ -28,6 +32,7 @@ public sealed class WorkflowLibraryViewModel : BindableBase
         Workflows = new ReadOnlyObservableCollection<WorkflowLibraryWorkflowItem>(_workflows);
         OpenWorkflowCommand = new RelayCommand<string>(OpenWorkflow, CanOpenWorkflow);
         RefreshCommand = new RelayCommand(Load);
+        ClearSearchCommand = new RelayCommand(ClearSearch, () => HasActiveSearch);
         Load();
     }
 
@@ -37,6 +42,8 @@ public sealed class WorkflowLibraryViewModel : BindableBase
 
     public RelayCommand RefreshCommand { get; }
 
+    public RelayCommand ClearSearchCommand { get; }
+
     public string SearchQuery
     {
         get => _searchQuery;
@@ -44,6 +51,8 @@ public sealed class WorkflowLibraryViewModel : BindableBase
         {
             if (SetProperty(ref _searchQuery, value ?? string.Empty))
             {
+                RaisePropertyChanged(nameof(HasActiveSearch));
+                ClearSearchCommand.NotifyCanExecuteChanged();
                 ApplyFilter();
             }
         }
@@ -55,19 +64,40 @@ public sealed class WorkflowLibraryViewModel : BindableBase
         private set => SetProperty(ref _summaryText, value);
     }
 
-    public string EmptyStateText
+    public string ResultScopeText
     {
-        get => _emptyStateText;
-        private set => SetProperty(ref _emptyStateText, value);
+        get => _resultScopeText;
+        private set => SetProperty(ref _resultScopeText, value);
+    }
+
+    public string EmptyStateTitle
+    {
+        get => _emptyStateTitle;
+        private set => SetProperty(ref _emptyStateTitle, value);
+    }
+
+    public string EmptyStateDetail
+    {
+        get => _emptyStateDetail;
+        private set => SetProperty(ref _emptyStateDetail, value);
+    }
+
+    public string EmptyStateActionText
+    {
+        get => _emptyStateActionText;
+        private set => SetProperty(ref _emptyStateActionText, value);
     }
 
     public bool HasWorkflows => _workflows.Count > 0;
+
+    public bool HasActiveSearch => !string.IsNullOrWhiteSpace(SearchQuery);
 
     public void Load()
     {
         var library = _workflowLibraryService.GetLibrary();
         _allWorkflows.Clear();
         _allWorkflows.AddRange(library.Workflows.Select(static workflow => new WorkflowLibraryWorkflowItem(workflow)));
+        _totalActionCount = library.Actions.Count;
         SummaryText = $"{library.Workflows.Count} workflows / {library.Actions.Count} actions";
         ApplyFilter();
     }
@@ -87,11 +117,59 @@ public sealed class WorkflowLibraryViewModel : BindableBase
             _workflows.Add(item);
         }
 
-        EmptyStateText = string.IsNullOrWhiteSpace(query)
-            ? "No workflows are registered."
-            : "No workflows match the current filter.";
+        var presentation = BuildFilterPresentation(_allWorkflows.Count, _workflows.Count, _totalActionCount, query);
+        ResultScopeText = presentation.ResultScopeText;
+        EmptyStateTitle = presentation.EmptyStateTitle;
+        EmptyStateDetail = presentation.EmptyStateDetail;
+        EmptyStateActionText = presentation.EmptyStateActionText;
         RaisePropertyChanged(nameof(HasWorkflows));
         OpenWorkflowCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static WorkflowLibraryFilterPresentation BuildFilterPresentation(
+        int totalWorkflowCount,
+        int visibleWorkflowCount,
+        int totalActionCount,
+        string? searchQuery)
+    {
+        var query = (searchQuery ?? string.Empty).Trim();
+        var hasQuery = query.Length > 0;
+        var workflowText = FormatCount(totalWorkflowCount, "workflow", "workflows");
+        var visibleText = FormatCount(visibleWorkflowCount, "workflow", "workflows");
+        var actionText = FormatCount(totalActionCount, "action", "actions");
+
+        if (totalWorkflowCount == 0)
+        {
+            return new WorkflowLibraryFilterPresentation(
+                $"0 workflows / {actionText}",
+                "No workflows are registered",
+                "Refresh the library after workflow providers are available.",
+                "Refresh library");
+        }
+
+        if (visibleWorkflowCount == 0 && hasQuery)
+        {
+            return new WorkflowLibraryFilterPresentation(
+                $"0 of {workflowText} match \"{Shorten(query, 32)}\"",
+                "No workflows match the current filter",
+                "Clear the search or try a workspace, evidence tag, market pattern, or action name.",
+                "Clear search");
+        }
+
+        if (hasQuery)
+        {
+            return new WorkflowLibraryFilterPresentation(
+                $"{visibleText} of {workflowText} match \"{Shorten(query, 32)}\"",
+                "No workflows match the current filter",
+                "Clear the search or try a workspace, evidence tag, market pattern, or action name.",
+                "Clear search");
+        }
+
+        return new WorkflowLibraryFilterPresentation(
+            $"Showing {workflowText} / {actionText}",
+            "No workflows are registered",
+            "Refresh the library after workflow providers are available.",
+            "Refresh library");
     }
 
     private void OpenWorkflow(string? pageTag)
@@ -106,7 +184,36 @@ public sealed class WorkflowLibraryViewModel : BindableBase
 
     private static bool CanOpenWorkflow(string? pageTag)
         => !string.IsNullOrWhiteSpace(pageTag);
+
+    private void ClearSearch()
+    {
+        if (!HasActiveSearch)
+        {
+            return;
+        }
+
+        SearchQuery = string.Empty;
+    }
+
+    private static string FormatCount(int value, string singular, string plural)
+        => $"{value} {(value == 1 ? singular : plural)}";
+
+    private static string Shorten(string value, int maxLength)
+    {
+        if (value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[..Math.Max(0, maxLength - 1)] + "...";
+    }
 }
+
+internal readonly record struct WorkflowLibraryFilterPresentation(
+    string ResultScopeText,
+    string EmptyStateTitle,
+    string EmptyStateDetail,
+    string EmptyStateActionText);
 
 public sealed class WorkflowLibraryWorkflowItem
 {

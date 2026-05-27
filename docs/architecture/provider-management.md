@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.1 | **Last Updated:** 2026-03-14
+**Version:** 3.5 | **Last Updated:** 2026-05-20
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -280,6 +280,7 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 **Key behaviors:**
 
 - Tracks all active subscriptions (depth and trades) in concurrent dictionaries
+- Returns existing per-symbol subscription IDs for duplicate requests so the active provider is not subscribed twice for the same stream
 - On failover: connects new provider, re-subscribes all active symbols, then disconnects the old provider
 - On connect failure: iterates backup providers until one succeeds
 - Thread-safe switching via `SemaphoreSlim`
@@ -290,6 +291,63 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 **Location:** `src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs`
 
 Singleton that holds the runtime `StreamingFailoverService` instance, allowing API endpoint handlers to query failover state without direct project references.
+
+---
+
+## Streaming Lifecycle Diagnostics
+
+`WebSocketConnectionManager` owns the shared raw-WebSocket lifecycle used by streaming providers that derive from `WebSocketProviderBase`.
+It now exposes a secret-safe `WebSocketConnectionDiagnostics` snapshot for health surfaces, logs, and tests.
+
+The snapshot includes:
+
+- Provider name
+- Lifecycle state: `Configured`, `Connecting`, `Connected`, `Degraded`, `Reconnecting`, `Disconnecting`, `Disconnected`, or `Failed`
+- Current `ClientWebSocket` state
+- Reconnect attempt count and latest reconnect attempt timestamp
+- Last connected, disconnected, and message timestamps
+- Current connection age and idle duration
+- Last error message
+
+The diagnostics record intentionally excludes endpoint URIs, headers, credentials, account IDs, and payload data. Provider-specific code should use this snapshot for operator status and diagnostic exports instead of logging connection internals directly.
+
+---
+
+## Subscription Recovery Diagnostics
+
+`SubscriptionManager` is the shared subscription ledger used by streaming provider bases and provider test doubles.
+It records enough metadata for reconnect, failover, and diagnostic flows to explain active subscription posture without logging payloads or secrets.
+
+Tracked subscription fields include:
+
+- Subscription ID
+- Normalized symbol and subscription kind
+- Created timestamp
+- Status: `Active`, `Recovering`, or `Failed`
+- Last accepted message timestamp
+- Last subscription-specific error
+- Recovery attempt count
+- Optional source of request, such as a watchlist, strategy run, or workspace flow
+
+Existing providers can keep using `Subscribe(...)` when they need independent subscription IDs for separate callers. Reconnect and failover code should prefer `SubscribeOrGetExisting(...)` when duplicate upstream subscriptions are unsafe. `ValidateSubscriptionRequest(...)` returns normalized fields, duplicate detection, the existing subscription ID when present, and a non-secret failure reason for missing symbol/kind inputs.
+
+`GetSnapshot()` now includes total, failed, and recovering subscription counts for health surfaces. `GetStaleSubscriptions(...)` identifies active streams whose last accepted message is older than the caller's threshold so provider diagnostics can distinguish connected-but-stale streams from fully failed connections.
+
+---
+
+## Provider Boundary Data Validation
+
+Streaming adapters should validate normalized provider messages before they enter collectors or the event pipeline. `ProviderDataQualityValidator` provides the shared boundary validator for common market-data invariants:
+
+- Required symbol and timestamp
+- Timestamp not beyond the configured future-skew window
+- Non-negative trade prices and sizes
+- Non-negative quote prices and sizes
+- No crossed BBO quotes unless a provider-specific adapter has documented and explicitly handled that condition
+
+Validation failures return `ProviderDataQualityIssue` records with severity, provider name, field path, entity context, message, and suggested recovery. Adapters must not silently discard invalid provider data; they should reject or flag it with structured log context and avoid high-frequency per-tick success logging.
+
+Alpaca streaming now applies this validator to trade and quote messages after provider-specific JSON parsing and before forwarding to `TradeDataCollector` or `QuoteCollector`.
 
 ---
 
@@ -419,6 +477,52 @@ Aggregates provider metrics for the `/api/providers/metrics` endpoint.
 
 ## Credential Management
 
+### Shared encrypted provider store
+
+**Locations:** `src/Meridian.Application/Config/Credentials/IProviderCredentialStore.cs`,
+`src/Meridian.Application/Config/Credentials/FileProviderCredentialStore.cs`
+
+Provider credentials are managed through `IProviderCredentialStore`. The default implementation
+stores encrypted per-user provider records below the resolved Meridian data root:
+
+```text
+<DataRoot>/.mdc/provider-credentials.vault
+<DataRoot>/.mdc/provider-credentials.audit.jsonl
+```
+
+The vault uses the current Windows user profile on Windows and a local profile key on non-Windows
+hosts. Audit records include provider id, action, actor, state, source, verification posture, field
+names, environment, and external account id. Audit records do not include raw credential values.
+
+Runtime provider construction resolves through `StoredProviderCredentialResolver` first and then
+falls back to the legacy config/environment resolver. Environment variables remain read-only
+compatibility fallback; new browser flows must not write process, user, or machine environment
+variables.
+
+### ProviderSetupService
+
+**Location:** `src/Meridian.Application/ProviderRouting/ProviderSetupService.cs`
+
+`ProviderSetupService` is the application-layer boundary for the legacy
+`POST /api/providers/configure` setup flow. It normalizes the provider family through the shared
+credential catalog, saves submitted credentials only through `IProviderCredentialStore`, creates a
+redacted legacy `DataSourceConfig` entry for backward compatibility, and seeds
+`ProviderConnectionsConfig` connections and bindings for the requested setup capabilities.
+
+The setup service never stores submitted API keys or API secrets in `DataSourceConfig`, endpoint
+responses, or routing DTOs. Responses expose only safe setup metadata: provider id, connection id,
+binding ids, credential state/source, credential reference, environment, and warnings. New setup
+connections start with `ProductionReady = false` until certification or verification promotes the
+connection.
+
+Capability mapping for this compatibility flow is intentionally narrow:
+
+| Setup capability | Provider routing capability |
+|------------------|-----------------------------|
+| `streaming` | `RealtimeMarketData` |
+| `backfill` | `HistoricalBars` |
+| `reference` | `ReferenceData` |
+
 ### CredentialValidator
 
 **Location:** `src/Meridian.ProviderSdk/CredentialValidator.cs`
@@ -481,12 +585,25 @@ UI-side health monitoring service:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
+| `/api/providers/configure` | POST | Compatibility setup flow that stores credentials through the encrypted provider store, creates a redacted legacy data source, and seeds provider-routing connections/bindings |
+| `/api/providers/connections` | GET | Data and brokerage provider rows with credential state, verification state, continuity health, fallback posture, masked key preview, affected workflows, and repair action |
+| `/api/providers/{providerId}/credentials` | PUT/DELETE | Save or delete provider credentials in the encrypted provider store |
+| `/api/providers/{providerId}/verify` | POST | Verify stored provider credentials without returning secrets |
 | `/api/providers/status` | GET | All provider status including active provider |
 | `/api/providers/metrics` | GET | Provider metrics (latency, error rates) |
 | `/api/providers/latency` | GET | Latency histograms per provider |
 | `/api/providers/catalog` | GET | Provider catalog with capabilities metadata |
 | `/api/providers/comparison` | GET | Feature comparison across providers |
 | `/api/connections` | GET | Connection health status |
+
+### Provider Routing API (`/api/provider-routing/`)
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/provider-routing/connections` | GET | Configured provider-routing connections with safe credential references and production-ready state |
+| `/api/provider-routing/bindings` | GET | Capability bindings used by the routing engine |
+| `/api/provider-routing/trust-snapshots` | GET | Trust-score snapshots for configured routing connections |
+| `/api/provider-routing/preview` | POST | Deterministic route preview for a requested provider capability |
 
 ### Failover API (`/api/failover/`)
 
@@ -579,6 +696,7 @@ export TIINGO__TOKEN=your-token
    - Implement `IProviderModule` for custom DI registration.
 
 5. **Close the loop on data quality**
+   - Validate streaming adapter inputs with `ProviderDataQualityValidator` before collector ingress.
    - Use `DataGapAnalyzer` to detect missing data periods.
    - Trigger `DataGapRepair` for automated gap filling.
    - Score quality with `DataQualityMonitor` and emit metrics.
@@ -609,3 +727,34 @@ export TIINGO__TOKEN=your-token
 - Added `BackfillProgressTracker` – real-time ETA and progress tracking for backfill jobs; available via `/api/backfill/status` endpoint.
 - Added `ProviderSubscriptionRanges` utility for splitting large symbol lists into provider-compatible batches.
 - Updated version and date.
+
+## Migration Notes (v3.1 -> v3.2)
+
+- Added the encrypted `IProviderCredentialStore` foundation and runtime `StoredProviderCredentialResolver`.
+- Added the canonical provider connection API for listing, saving, verifying, and deleting provider credentials.
+- Kept legacy `/api/credentials/*`, provider-credential validation/test, and Alpaca brokerage routes as compatibility wrappers over the shared store.
+- Updated Alpaca paper verification to use the explicit Trading API endpoint `https://paper-api.alpaca.markets/v2/account`.
+
+## Migration Notes (v3.2 -> v3.3)
+
+- Moved legacy provider setup DTOs into shared contracts and routed `/api/providers/configure`
+  through `ProviderSetupService`.
+- Hardened provider setup so newly submitted secrets are written only to `IProviderCredentialStore`
+  and never into legacy `DataSourceConfig` entries.
+- Added `/api/provider-routing/connections`, `/api/provider-routing/bindings`,
+  `/api/provider-routing/trust-snapshots`, and `/api/provider-routing/preview` endpoint mappings.
+- Seeded provider-routing connections and bindings from setup so configured providers are visible
+  to route previews and trust snapshots immediately.
+
+## Migration Notes (v3.3 -> v3.4)
+
+- Added secret-safe `WebSocketConnectionDiagnostics` and explicit streaming lifecycle states to `WebSocketConnectionManager`.
+- Added `ProviderDataQualityValidator` for provider-boundary trade and quote checks.
+- Routed Alpaca streaming trade and quote messages through the boundary validator before collector ingress.
+- Hardened `FailoverAwareMarketDataClient` so duplicate per-symbol trade/depth subscription requests return the existing subscription ID instead of creating duplicate upstream provider subscriptions.
+
+## Migration Notes (v3.4 -> v3.5)
+
+- Extended `SubscriptionManager` with subscription status, last-message timestamps, last-error text, recovery-attempt counts, and optional request-source metadata.
+- Added `ValidateSubscriptionRequest(...)`, `SubscribeOrGetExisting(...)`, `RecordMessageReceived(...)`, `RecordSubscriptionError(...)`, `RecordRecoveryAttempt(...)`, and `GetStaleSubscriptions(...)` for reconnect/failover-safe subscription supervision.
+- Kept the existing `Subscribe(...)` behavior intact for providers that intentionally maintain separate per-caller subscription IDs.

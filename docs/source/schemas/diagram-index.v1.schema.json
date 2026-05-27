@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.diagram-index.v1",
+  "type": "object",
+  "required": ["schema", "diagrams"],
+  "properties": {
+    "schema": { "type": "object" },
+    "diagrams": { "type": "array" }
+  },
+  "additionalProperties": false
+}

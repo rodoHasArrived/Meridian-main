@@ -8,7 +8,7 @@ This document is the central registry for dependency vulnerabilities that have b
 - **Single source of truth:** Security workflow exceptions must point back to this file rather than duplicating rationale inline.
 - **Required fields for accepted risk:** package, advisory/CVE, source, justification, mitigation, review cadence, and named owner/approver.
 - **Review cadence:** Accepted vulnerabilities must be reviewed at least quarterly and removed promptly when an upstream fix becomes available.
-- **Workflow integration:** `.github/workflows/security.yml` may filter or annotate accepted findings only when they are documented here.
+- **Workflow integration:** `.github/workflows/security.yml` may filter or annotate accepted findings only when they are documented here. `Directory.Build.props` may suppress a NuGet audit finding only by exact advisory URL after the same accepted-risk review.
 
 ## Accepted Vulnerabilities
 
@@ -30,6 +30,11 @@ Transitive dependency from QuantConnect.Lean packages (required for backtesting 
 - QuantConnect.Common 2.5.17414
 - QuantConnect.Indicators 2.5.17414
 
+Current NuGet audit surfaces:
+- `src/Meridian/Meridian.csproj`
+- `tests/Meridian.Tests/Meridian.Tests.csproj`
+- `benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj`
+
 **Status:**
 - **No fix available** - DotNetZip is deprecated and no longer maintained
 - **Cannot be upgraded** - Baked into QuantConnect.Lean binary dependencies
@@ -49,10 +54,25 @@ Transitive dependency from QuantConnect.Lean packages (required for backtesting 
 - Consider submitting PR to QuantConnect to update their dependency
 - Re-evaluate if application requirements change to include zip extraction from external sources
 
-**Tracking Reference:** Filtered in `.github/workflows/security.yml` during the NuGet vulnerability scan.
-**Review Date:** 2026-02-10
-**Next Review:** 2026-05-10 (quarterly)
+**NuGet Audit Disposition:** Suppressed by exact advisory URL in `Directory.Build.props`; do not suppress `NU1903` globally or disable NuGet audit.
+**Tracking Reference:** Filtered in `.github/workflows/security.yml` during the NuGet vulnerability scan and suppressed for NuGet audit in `Directory.Build.props` after the accepted-risk review.
+**Review Date:** 2026-05-17
+**Next Review:** 2026-08-17 (quarterly)
 **Approved By:** Security maintainers / repository owners
+
+---
+
+## Fixed Vulnerabilities (2026-05-17)
+
+The following vulnerability was fixed by pinning a transitive dependency in `Directory.Packages.props`:
+
+### Snappier 1.3.0 → 1.3.1
+- **CVE:** CVE-2026-44302 (GHSA-pggp-6c3x-2xmx)
+- **Severity:** High
+- **Fix:** Upgraded transitive pin to 1.3.1 (fixed in 1.3.1+)
+- **Source:** Transitive dependency from Parquet.Net 5.5.0
+- **Resolution:** `Directory.Packages.props` uses central transitive pinning so Parquet.Net can keep requesting Snappier 1.3.0 while restore resolves Snappier 1.3.1.
+- **Validation:** `dotnet package list --project src\Meridian.Storage\Meridian.Storage.csproj --vulnerable --include-transitive --no-restore --verbosity normal` reports no vulnerable packages.
 
 ---
 

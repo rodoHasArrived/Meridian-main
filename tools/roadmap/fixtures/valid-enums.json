@@ -1,0 +1,1 @@
+{"id":"RD-001","title":"Roadmap item","owner":{"team":"Platform","accountable":"ops@meridian"},"status":"in_progress","health":"green","priority":"high","evidence_posture":"verified","completion_term":"done","exit_criteria":["Evidence packet approved"],"links":["https://example.invalid/roadmap/RD-001"],"created_at":"2026-05-01T00:00:00Z","last_updated":"2026-05-20T00:00:00Z"}

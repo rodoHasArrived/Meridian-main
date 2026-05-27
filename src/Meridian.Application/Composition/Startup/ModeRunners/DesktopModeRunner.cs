@@ -31,7 +31,7 @@ public sealed class DesktopModeRunner
     {
         _log.Information("Desktop mode: starting UI server ({ModeDescription})...", ctx.Deployment.ModeDescription);
 
-        IHostDashboardServer uiServer = _dashboardServerFactory(ctx.ConfigPath, ctx.Deployment.HttpPort);
+        IHostDashboardServer uiServer = _dashboardServerFactory(ctx.ConfigPath, ctx.Deployment.HttpPort, ctx.Lifecycle);
         await uiServer.StartAsync(ct);
         _log.Information("Desktop mode UI server started at http://localhost:{Port}", ctx.Deployment.HttpPort);
 
@@ -47,9 +47,22 @@ public sealed class DesktopModeRunner
         }
         finally
         {
-            var shutdownToken = ct.IsCancellationRequested ? CancellationToken.None : ct;
-            await uiServer.StopAsync(shutdownToken);
-            await uiServer.DisposeAsync();
+            using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            try
+            {
+                _log.Information("Desktop mode: stopping UI server");
+                await uiServer.StopAsync(shutdownCts.Token);
+                _log.Information("Desktop mode: UI server stopped");
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Warning("Desktop mode: UI server stop timed out after {TimeoutSeconds} seconds", 15);
+            }
+            finally
+            {
+                await uiServer.DisposeAsync();
+                _log.Information("Desktop mode: UI server disposed");
+            }
         }
     }
 }

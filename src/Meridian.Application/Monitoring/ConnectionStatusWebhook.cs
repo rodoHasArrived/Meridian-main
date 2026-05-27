@@ -55,8 +55,9 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Connection Lost");
+            await _webhook.SendMessageAsync(message, "Connection Lost", _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Warning(ex, "Failed to send connection lost webhook");
@@ -77,8 +78,9 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Connection Recovered");
+            await _webhook.SendMessageAsync(message, "Connection Recovered", _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Warning(ex, "Failed to send connection recovered webhook");
@@ -103,8 +105,9 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Heartbeat Warning");
+            await _webhook.SendMessageAsync(message, "Heartbeat Warning", _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Warning(ex, "Failed to send heartbeat missed webhook");
@@ -129,8 +132,9 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, "High Latency Alert");
+            await _webhook.SendMessageAsync(message, "High Latency Alert", _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Warning(ex, "Failed to send high latency webhook");

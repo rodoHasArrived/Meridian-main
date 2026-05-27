@@ -95,7 +95,7 @@ public sealed class ScriptRunner : IScriptRunner
                     ConsoleOutput: string.Empty,
                     Metrics: Array.Empty<KeyValuePair<string, string>>(),
                     Plots: Array.Empty<PlotRequest>(),
-                    TradesSummary: Array.Empty<string>(),
+                    Trades: Array.Empty<ScriptTradeResult>(),
                     CapturedBacktests: Array.Empty<BacktestResult>(),
                     RuntimeParameters: Array.Empty<ParameterDescriptor>(),
                     Checkpoint: checkpoint);
@@ -202,8 +202,20 @@ public sealed class ScriptRunner : IScriptRunner
         var plots = runPlotQueue.DrainRemaining();
         var metrics = globals.DrainMetrics();
         var capturedBacktests = globals.Backtest.DrainCapturedResults();
+        IReadOnlyList<ScriptTradeResult> trades = capturedBacktests.Count == 0
+            ? Array.Empty<ScriptTradeResult>()
+            : globals.Backtest.CapturedFills
+                .OrderBy(static fill => fill.FilledAt)
+                .Select(static fill => new ScriptTradeResult(
+                    fill.FilledAt,
+                    fill.Symbol,
+                    fill.FilledQuantity >= 0 ? "Buy" : "Sell",
+                    Math.Abs(fill.FilledQuantity),
+                    fill.FillPrice,
+                    fill.Commission))
+                .ToList();
 
-        var outputItemsCount = metrics.Count + plots.Count + capturedBacktests.Count;
+        var outputItemsCount = metrics.Count + plots.Count + capturedBacktests.Count + trades.Count;
         if (_options.MaxMemoryDeltaBytes > 0 && peakMemory > _options.MaxMemoryDeltaBytes)
         {
             runtimeDiagnostics.Add(new ScriptDiagnostic(
@@ -249,7 +261,7 @@ public sealed class ScriptRunner : IScriptRunner
             ConsoleOutput: globals.DrainConsoleOutput(),
             Metrics: metrics,
             Plots: plots,
-            TradesSummary: Array.Empty<string>(),
+            Trades: trades,
             CapturedBacktests: capturedBacktests,
             RuntimeParameters: globals.SnapshotRuntimeParameters(),
             Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
@@ -281,7 +293,7 @@ public sealed class ScriptRunner : IScriptRunner
             ConsoleOutput: string.Empty,
             Metrics: Array.Empty<KeyValuePair<string, string>>(),
             Plots: Array.Empty<PlotRequest>(),
-            TradesSummary: Array.Empty<string>(),
+            Trades: Array.Empty<ScriptTradeResult>(),
             CapturedBacktests: Array.Empty<BacktestResult>(),
             RuntimeParameters: Array.Empty<ParameterDescriptor>(),
             Checkpoint: checkpoint);

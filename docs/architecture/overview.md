@@ -1,6 +1,6 @@
 # Meridian - System Architecture
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-22
 
 Meridian is a modular, event-driven trading platform that is being productized as an evidence-backed investment operations system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, retained desktop workflows, and a browser dashboard. The current roadmap extends that baseline into a connected product where trusted data, research, paper validation, books, reconciliation, approvals, and governed reports share one evidence chain.
 
@@ -28,8 +28,8 @@ This is an expansion of the existing architecture, not a replacement of it.
 ### Presentation layer
 
 - browser workstation dashboard
-- WPF desktop application retained for compatibility and regression support
-- desktop-local API host and retained workstation API surfaces
+- WPF desktop application — active desktop shell for operator workflows
+- desktop-local API host and workstation API surfaces
 - CLI and operator tooling
 
 This layer should present workflows, not isolated technical pages. The current migration focus is on real workspace-first shells.
@@ -105,6 +105,7 @@ These capabilities are intended to live inside the existing Governance workspace
 ## Related Documents
 
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
+- [Current Direction and Status](../plans/current-direction-and-status.md)
 - [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
 - [Project Roadmap](../status/ROADMAP.md)

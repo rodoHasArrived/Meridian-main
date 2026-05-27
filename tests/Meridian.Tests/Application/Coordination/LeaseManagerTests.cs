@@ -133,6 +133,31 @@ public sealed class LeaseManagerTests
         }
     }
 
+    [Fact]
+    public async Task LeaseManager_RemovesHeldLease_WhenRenewThrowsInBackgroundLoop()
+    {
+        var config = new CoordinationConfig(
+            Enabled: true,
+            Mode: CoordinationMode.SharedStorage,
+            InstanceId: "instance-a",
+            LeaseTtlSeconds: 30,
+            RenewIntervalSeconds: 1,
+            TakeoverDelaySeconds: 1,
+            RootPath: Path.Combine(Path.GetTempPath(), $"meridian_coord_{Guid.NewGuid():N}"));
+        var store = new ThrowingRenewStore();
+
+        await using var manager = new LeaseManager(config, store);
+        const string resourceId = "leader/cluster-coordinator";
+
+        var acquired = await manager.TryAcquireAsync(resourceId);
+        acquired.Acquired.Should().BeTrue();
+        manager.HoldsLease(resourceId).Should().BeTrue();
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        manager.HoldsLease(resourceId).Should().BeFalse();
+    }
+
     private static CoordinationConfig CreateConfig(
         string dataRoot,
         int leaseTtlSeconds,
@@ -158,5 +183,48 @@ public sealed class LeaseManagerTests
     {
         if (Directory.Exists(path))
             Directory.Delete(path, true);
+    }
+
+    private sealed class ThrowingRenewStore : ICoordinationStore
+    {
+        private LeaseRecord? _lease;
+
+        public string RootPath => Path.GetTempPath();
+
+        public Task<LeaseAcquireResult> TryAcquireLeaseAsync(
+            string resourceId,
+            string instanceId,
+            TimeSpan leaseTtl,
+            TimeSpan takeoverDelay,
+            CancellationToken ct = default)
+        {
+            _lease = new LeaseRecord(
+                resourceId,
+                instanceId,
+                Version: 1,
+                AcquiredAtUtc: DateTimeOffset.UtcNow,
+                ExpiresAtUtc: DateTimeOffset.UtcNow.Add(leaseTtl),
+                LastRenewedAtUtc: DateTimeOffset.UtcNow);
+
+            return Task.FromResult(new LeaseAcquireResult(true, false, _lease, null, null, null));
+        }
+
+        public Task<bool> RenewLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, CancellationToken ct = default)
+            => throw new IOException("Simulated renew failure");
+
+        public Task<bool> ReleaseLeaseAsync(string resourceId, string instanceId, CancellationToken ct = default)
+        {
+            _lease = null;
+            return Task.FromResult(true);
+        }
+
+        public Task<LeaseRecord?> GetLeaseAsync(string resourceId, CancellationToken ct = default)
+            => Task.FromResult(_lease);
+
+        public Task<IReadOnlyList<LeaseRecord>> GetAllLeasesAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LeaseRecord>>(_lease is null ? Array.Empty<LeaseRecord>() : [_lease]);
+
+        public Task<IReadOnlyList<string>> GetCorruptedLeaseFilesAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
     }
 }

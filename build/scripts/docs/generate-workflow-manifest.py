@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -70,6 +71,7 @@ def load_manifest(path: Path) -> dict[str, Any]:
         "executionCommands",
         "expectedArtifacts",
         "validationChecks",
+        "artifactPolicy",
     }
 
     seen_ids: set[str] = set()
@@ -90,6 +92,39 @@ def load_manifest(path: Path) -> dict[str, Any]:
 
         if not isinstance(workflow["executionCommands"], list) or not workflow["executionCommands"]:
             raise ValueError(f"workflow '{workflow_id}' must declare at least one execution command.")
+
+        artifact_policy = workflow["artifactPolicy"]
+        if not isinstance(artifact_policy, dict):
+            raise ValueError(f"workflow '{workflow_id}'.artifactPolicy must be an object.")
+
+        policy_required_keys = {"ownerLane", "refreshTrigger", "retention", "canonicalOutputRoots", "driftChecks"}
+        policy_missing = [key for key in policy_required_keys if key not in artifact_policy]
+        if policy_missing:
+            raise ValueError(
+                f"workflow '{workflow_id}'.artifactPolicy missing required keys: {', '.join(policy_missing)}"
+            )
+
+        retention = artifact_policy["retention"]
+        if not isinstance(retention, dict):
+            raise ValueError(f"workflow '{workflow_id}'.artifactPolicy.retention must be an object.")
+        for retention_key in ("policy", "maxAgeDays", "retainLatest"):
+            if retention_key not in retention:
+                raise ValueError(
+                    f"workflow '{workflow_id}'.artifactPolicy.retention missing required key: {retention_key}"
+                )
+
+        canonical_roots = artifact_policy["canonicalOutputRoots"]
+        if not isinstance(canonical_roots, list) or not canonical_roots:
+            raise ValueError(f"workflow '{workflow_id}'.artifactPolicy.canonicalOutputRoots must be a non-empty list.")
+
+        drift_checks = artifact_policy["driftChecks"]
+        if not isinstance(drift_checks, dict):
+            raise ValueError(f"workflow '{workflow_id}'.artifactPolicy.driftChecks must be an object.")
+        for drift_key in ("enforceMissing", "enforceFreshness", "enforceCanonicalPaths"):
+            if drift_key not in drift_checks:
+                raise ValueError(
+                    f"workflow '{workflow_id}'.artifactPolicy.driftChecks missing required key: {drift_key}"
+                )
 
     return payload
 
@@ -167,6 +202,80 @@ def command_script_path(command: str) -> str | None:
     return path
 
 
+def contains_template_token(path: str) -> bool:
+    return "<" in path and ">" in path
+
+
+def _is_within_roots(relative_path: str, roots: list[str]) -> bool:
+    normalized_path = relative_path.strip("/").replace("\\", "/")
+    for root in roots:
+        normalized_root = root.strip("/").replace("\\", "/")
+        if normalized_path == normalized_root or normalized_path.startswith(normalized_root + "/"):
+            return True
+    return False
+
+
+def evaluate_artifact_governance(
+    repo_root: Path, workflows: list[dict[str, Any]], generated_outputs: list[str]
+) -> dict[str, list[str]]:
+    missing_artifacts: list[str] = []
+    stale_artifacts: list[str] = []
+    outside_canonical_paths: list[str] = []
+    orphan_generated_outputs: list[str] = []
+
+    expected_artifacts: set[str] = set()
+    docs_automation_roots: list[str] = []
+    stale_now = datetime.now(timezone.utc)
+
+    for workflow in workflows:
+        workflow_id = str(workflow["id"])
+        policy = workflow["artifactPolicy"]
+        roots = [str(root) for root in policy["canonicalOutputRoots"]]
+        checks = policy["driftChecks"]
+        max_age_days = int(policy["retention"]["maxAgeDays"])
+        freshness_cutoff = stale_now - timedelta(days=max_age_days)
+
+        for artifact in workflow["expectedArtifacts"]:
+            artifact_path = str(artifact)
+            expected_artifacts.add(artifact_path)
+            if contains_template_token(artifact_path):
+                continue
+
+            if checks.get("enforceCanonicalPaths", False) and not _is_within_roots(artifact_path, roots):
+                outside_canonical_paths.append(f"{workflow_id}:{artifact_path}")
+
+            resolved_artifact = repo_root / artifact_path
+            if checks.get("enforceMissing", False) and not resolved_artifact.exists():
+                missing_artifacts.append(f"{workflow_id}:{artifact_path}")
+
+            if (
+                checks.get("enforceFreshness", False)
+                and max_age_days > 0
+                and resolved_artifact.exists()
+            ):
+                modified_at = datetime.fromtimestamp(resolved_artifact.stat().st_mtime, tz=timezone.utc)
+                if modified_at < freshness_cutoff:
+                    stale_artifacts.append(
+                        f"{workflow_id}:{artifact_path} (last modified {modified_at.date().isoformat()})"
+                    )
+
+        if workflow_id == "docs-automation-core":
+            docs_automation_roots = roots
+
+    for generated_output in generated_outputs:
+        if generated_output not in expected_artifacts:
+            orphan_generated_outputs.append(generated_output)
+        elif docs_automation_roots and not _is_within_roots(generated_output, docs_automation_roots):
+            outside_canonical_paths.append(f"docs-automation-core:{generated_output}")
+
+    return {
+        "missingArtifacts": missing_artifacts,
+        "staleArtifacts": stale_artifacts,
+        "outsideCanonicalPaths": outside_canonical_paths,
+        "orphanGeneratedOutputs": orphan_generated_outputs,
+    }
+
+
 def build_help_snippet(workflows: list[dict[str, Any]]) -> str:
     lines = [
         "### Canonical Workflow Manifest (Generated)",
@@ -217,6 +326,13 @@ def write_commands_reference(path: Path, workflows: list[dict[str, Any]]) -> Non
         lines.append("")
         lines.append(f"- Owners: {', '.join(workflow['owners'])}")
         lines.append(f"- Expected artifacts: {', '.join(workflow['expectedArtifacts'])}")
+        lines.append(f"- Owner lane: {workflow['artifactPolicy']['ownerLane']}")
+        lines.append(f"- Refresh trigger: {workflow['artifactPolicy']['refreshTrigger']}")
+        lines.append(f"- Canonical output roots: {', '.join(workflow['artifactPolicy']['canonicalOutputRoots'])}")
+        retention = workflow["artifactPolicy"]["retention"]
+        lines.append(
+            f"- Retention: {retention['policy']} (maxAgeDays={retention['maxAgeDays']}, retainLatest={retention['retainLatest']})"
+        )
         lines.append("- Commands:")
         for command_entry in workflow["executionCommands"]:
             command = command_entry["command"] if isinstance(command_entry, dict) else str(command_entry)
@@ -263,7 +379,11 @@ def main() -> int:
     undeclared_make_candidates = sorted(target for target in existing_make if target not in referenced_make)
     undeclared_script_candidates = sorted(path for path in existing_scripts if path not in referenced_scripts)
 
-    drift_status = "clean" if not missing_make and not missing_scripts else "drift-detected"
+    generated_outputs = [args.summary_output, args.drift_output, args.commands_output, args.help_doc, args.dev_doc]
+    governance_violations = evaluate_artifact_governance(repo_root, workflows, generated_outputs)
+    has_governance_violations = any(governance_violations.values())
+
+    drift_status = "clean" if not missing_make and not missing_scripts and not has_governance_violations else "drift-detected"
 
     summary = {
         "manifest": args.manifest,
@@ -276,6 +396,7 @@ def main() -> int:
             "makeTargets": missing_make,
             "scriptPaths": missing_scripts,
         },
+        "governance": governance_violations,
         "status": drift_status,
     }
 
@@ -296,6 +417,25 @@ def main() -> int:
         "",
         f"- Missing Make targets ({len(missing_make)}): " + (", ".join(f"`{t}`" for t in missing_make) if missing_make else "None"),
         f"- Missing scripts ({len(missing_scripts)}): " + (", ".join(f"`{s}`" for s in missing_scripts) if missing_scripts else "None"),
+        "",
+        "## Artifact governance violations",
+        "",
+        f"- Missing expected artifacts ({len(governance_violations['missingArtifacts'])}): "
+        + (", ".join(f"`{entry}`" for entry in governance_violations["missingArtifacts"]) if governance_violations["missingArtifacts"] else "None"),
+        f"- Stale artifacts ({len(governance_violations['staleArtifacts'])}): "
+        + (", ".join(f"`{entry}`" for entry in governance_violations["staleArtifacts"]) if governance_violations["staleArtifacts"] else "None"),
+        f"- Outside canonical paths ({len(governance_violations['outsideCanonicalPaths'])}): "
+        + (
+            ", ".join(f"`{entry}`" for entry in governance_violations["outsideCanonicalPaths"])
+            if governance_violations["outsideCanonicalPaths"]
+            else "None"
+        ),
+        f"- Orphan generated outputs ({len(governance_violations['orphanGeneratedOutputs'])}): "
+        + (
+            ", ".join(f"`{entry}`" for entry in governance_violations["orphanGeneratedOutputs"])
+            if governance_violations["orphanGeneratedOutputs"]
+            else "None"
+        ),
         "",
         "## Undeclared actual inventory (top 25)",
         "",
@@ -321,7 +461,7 @@ def main() -> int:
 
     print(f"Generated workflow artifacts for {len(workflows)} workflows.")
     print(f"Status: {drift_status}")
-    return 0
+    return 1 if drift_status != "clean" else 0
 
 
 if __name__ == "__main__":

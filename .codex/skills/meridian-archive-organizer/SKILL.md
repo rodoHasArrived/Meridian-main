@@ -9,9 +9,32 @@ Use this skill when the task is to retire stale material without losing useful h
 
 Read these in order:
 1. `../_shared/project-context.md`
-2. `../../../archive/docs/README.md`
-3. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
-4. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
+2. `../_shared/codex-execution-contract.md`
+3. `../../../archive/docs/README.md`
+4. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
+5. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
+
+## Use When
+
+Use this skill for archive and structure decisions where evidence must determine whether material
+stays active, moves under `archive/`, or is deleted.
+
+Trigger examples:
+
+- "Classify these stale roadmap snapshots and move the historical ones."
+- "Where should this superseded provider prototype live?"
+- "Clean up root folder sprawl without losing useful history."
+
+## Do Not Use When
+
+Use `meridian-cleanup` for behavior-preserving source cleanup, `meridian-roadmap-strategist` for
+active roadmap reconciliation, and `meridian-repo-navigation` when the user only needs directions.
+
+Non-trigger examples:
+
+- "Refactor this service to remove duplication."
+- "Refresh the active roadmap status."
+- "Which subsystem owns provider health?"
 
 ## Definition of Done
 
@@ -61,14 +84,20 @@ Use for code or tests that may need historical retention.
 1. Pick the classification lane that matches the target.
 2. Gather evidence before moving anything: active references, project or solution inclusion, docs links, test usage, and whether the item still reflects current guidance.
 3. Use `scripts/trace_archive_candidates.py` for docs, dated snapshots, JSON sidecars, or root-structure ambiguity.
-3. Apply the smallest structure-preserving move:
+4. Apply the smallest structure-preserving move:
    - keep current material in canonical active folders
    - move historical docs into the right `archive/docs/<bucket>/` folder
    - move retired code into `archive/code/` and preserve the original relative path when practical
-4. Update indexes, links, or nearby docs when discoverability changes.
-5. Run the narrowest validation that proves the move did not break build, test, or documentation navigation.
-6. For broad or ambiguous sweeps, run the evaluation harness.
-7. Report what moved, why it moved, what stayed active, and any follow-up cleanup still worth doing.
+5. Update indexes, links, or nearby docs when discoverability changes.
+6. Run the narrowest validation that proves the move did not break build, test, or documentation navigation.
+7. For broad or ambiguous sweeps, run the evaluation harness.
+8. Report what moved, why it moved, what stayed active, and any follow-up cleanup still worth doing.
+
+## Handoffs
+
+- Hand off to `meridian-repo-navigation` when ownership is unclear before classification.
+- Hand off to `meridian-roadmap-strategist` when the target is still an active planning source.
+- Hand off to `meridian-implementation-assurance` when archive work changes indexes, scripts, or AI skill behavior and needs final evidence.
 
 ## Decision Rules
 
@@ -105,7 +134,7 @@ Use for code or tests that may need historical retention.
 - Preserve filenames unless a rename materially improves placement clarity.
 - Update the archive indexes or placement guide when a move introduces a new recurring pattern.
 
-## Validation Guidance
+## Validation
 
 - For docs-only moves, update links and search for stale references in docs, config, and README-style entrypoints.
 - For code moves, confirm the files are no longer referenced by `*.csproj`, `Meridian.sln`, `Directory.Build.props`, tests, or active docs before moving them.

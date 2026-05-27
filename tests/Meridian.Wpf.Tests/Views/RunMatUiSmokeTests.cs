@@ -38,7 +38,7 @@ public sealed class RunMatUiSmokeTests
             facade.ContentFrame.Content.Should().BeOfType<WorkspaceDeepPageHostPage>();
             NavigationHostInspector.ResolveInnermostPage(facade.ContentFrame.Content).Should().BeOfType<RunMatPage>();
             facade.ShellAutomationStateText.Text.Should().Be("RunMat");
-            facade.ViewModel.CurrentPageTitle.Should().Be("Run Mat");
+            facade.ViewModel.CurrentPageTitle.Should().Be("Run scripts");
 
             var runMatXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunMatPage.xaml"));
             runMatXaml.Should().Contain("AutomationProperties.AutomationId=\"RunMatPageTitle\"");

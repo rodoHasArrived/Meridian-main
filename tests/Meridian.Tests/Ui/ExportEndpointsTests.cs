@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Contracts.Export;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
@@ -39,9 +40,21 @@ public sealed class ExportEndpointsTests
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
 
-        var response = await client.PostAsJsonAsync("/api/export/analysis", new { profileId = "audit-pack" });
+        var response = await client.PostAsJsonAsync("/api/export/analysis", new
+        {
+            profileId = " audit-pack ",
+            symbols = new[] { " SPY ", "", "spy", "QQQ" }
+        });
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var payload = await response.Content.ReadFromJsonAsync<ExportAnalysisApiResponse>(JsonOptions);
+        payload.Should().NotBeNull();
+        payload!.Success.Should().BeFalse();
+        payload.Status.Should().Be("unavailable");
+        payload.ProfileId.Should().Be("audit-pack");
+        payload.Error.Should().Be("Export service not available");
+        payload.Files.Should().BeEmpty();
+        payload.Warnings.Should().BeEmpty();
     }
 
     private static async Task<WebApplication> CreateAppAsync()
@@ -53,11 +66,7 @@ public sealed class ExportEndpointsTests
         builder.WebHost.UseTestServer();
 
         var app = builder.Build();
-        app.MapExportEndpoints(new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() }
-        });
+        app.MapExportEndpoints(JsonOptions);
 
         await app.StartAsync();
         return app;
@@ -70,4 +79,10 @@ public sealed class ExportEndpointsTests
         await using var stream = await response.Content.ReadAsStreamAsync();
         return await JsonDocument.ParseAsync(stream);
     }
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter() }
+    };
 }

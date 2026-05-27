@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfNavigationEventArgs = System.Windows.Navigation.NavigationEventArgs;
@@ -12,13 +13,21 @@ namespace Meridian.Wpf.Views;
 public partial class MainPage : Page
 {
     private readonly WpfNavigationService _navigationService;
+    private readonly IShellNavigationCoordinator _shellNavigationCoordinator;
     private readonly MainPageViewModel _viewModel;
     private readonly TaskCompletionSource _shellReadyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    public MainPage(MainPageViewModel viewModel)
+    public MainPage(
+        MainPageViewModel viewModel,
+        IShellNavigationCoordinator? shellNavigationCoordinator = null)
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _navigationService = (WpfNavigationService)_viewModel.NavigationService;
+        _shellNavigationCoordinator = shellNavigationCoordinator
+            ?? new ShellNavigationCoordinator(
+                _navigationService,
+                new ShellRouteRegistry(),
+                new PageContentFactory(_navigationService));
 
         InitializeComponent();
         DataContext = _viewModel;

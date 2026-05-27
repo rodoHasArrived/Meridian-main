@@ -2,10 +2,22 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **backtest studio unification pr sequenced roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the backtest studio unification pr sequenced roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
 
-> **Retirement note (2026-04-09):** References in this roadmap to `src/Meridian.Ui/dashboard` or "web workstation" slices are historical remnants of the retired browser dashboard. Re-scope those slices to WPF or the retained desktop-local API surface before implementation.
+> **UI lane refresh (2026-05-12):** References in this roadmap to
+> `src/Meridian.Ui/dashboard` and the web workstation are active shared-contract-first
+> implementation targets again. Treat WPF slices as active desktop workstation support,
+> shared-contract regression coverage, or compatibility work unless a roadmap
+> owner explicitly pulls a WPF-first operator workflow forward.
 
 ## Purpose
 
@@ -23,7 +35,7 @@ Use this with:
 - [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md)
 - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
 - [../status/ROADMAP.md](../status/ROADMAP.md)
-- [../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+- [../status/FULL_IMPLEMENTATION_TODO.md](../status/FULL_IMPLEMENTATION_TODO.md)
 
 ## How to Use This Document
 

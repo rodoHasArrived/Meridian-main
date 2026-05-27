@@ -137,6 +137,13 @@ public sealed class BackfillApiServiceTests
     {
         UiApiRoutes.BackfillRun.Should().NotBeNullOrEmpty();
         UiApiRoutes.BackfillRun.Should().StartWith("/api/");
+        UiApiRoutes.BackfillRunPreview.Should().Be($"{UiApiRoutes.BackfillRun}/preview");
+        UiApiRoutes.BackfillProgress.Should().Be("/api/backfill/progress");
+        UiApiRoutes.BackfillCheckpointsResumable.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/resumable");
+        UiApiRoutes.BackfillCheckpointsValidation.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/validation");
+        UiApiRoutes.BackfillCheckpointById.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}");
+        UiApiRoutes.BackfillCheckpointPending.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}/pending");
+        UiApiRoutes.BackfillCheckpointResume.Should().Be($"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}/resume");
     }
 
     [Fact]
@@ -149,13 +156,57 @@ public sealed class BackfillApiServiceTests
     }
 
     [Fact]
+    public void UiApiRoutes_WithParam_ShouldEncodeSegmentsAndConstrainedPlaceholders()
+    {
+        UiApiRoutes.WithParam("/api/workstation/runs/{runId}/ledger", "runId", " run / 1 ")
+            .Should()
+            .Be("/api/workstation/runs/run%20%2F%201/ledger");
+
+        UiApiRoutes.WithParam(UiApiRoutes.RunsEquityCurve, "runId", " run / 1 ")
+            .Should()
+            .Be("/api/workstation/runs/run%20%2F%201/equity-curve");
+
+        UiApiRoutes.WithParam(
+                UiApiRoutes.WorkstationSecurityMasterById,
+                "securityId",
+                "11111111-1111-1111-1111-111111111111")
+            .Should()
+            .Be("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111");
+
+        UiApiRoutes.WithParam(
+                UiApiRoutes.WorkstationSecurityMasterHistory,
+                "securityId",
+                "11111111-1111-1111-1111-111111111111")
+            .Should()
+            .Be("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/history");
+
+        UiApiRoutes.WithParam(
+                UiApiRoutes.WorkstationSecurityMasterEconomicDefinition,
+                "securityId",
+                "11111111-1111-1111-1111-111111111111")
+            .Should()
+            .Be("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/economic-definition");
+
+        Action blankSegment = () => UiApiRoutes.WithParam("/api/workstation/runs/{runId}", "runId", "   ");
+        blankSegment.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void UiApiRoutes_BackfillRoutes_ShouldBeDistinct()
     {
         var routes = new[]
         {
             UiApiRoutes.BackfillProviders,
             UiApiRoutes.BackfillStatus,
-            UiApiRoutes.BackfillRun
+            UiApiRoutes.BackfillRun,
+            UiApiRoutes.BackfillRunPreview,
+            UiApiRoutes.BackfillProgress,
+            UiApiRoutes.BackfillCheckpoints,
+            UiApiRoutes.BackfillCheckpointsResumable,
+            UiApiRoutes.BackfillCheckpointsValidation,
+            UiApiRoutes.BackfillCheckpointById,
+            UiApiRoutes.BackfillCheckpointPending,
+            UiApiRoutes.BackfillCheckpointResume
         };
 
         routes.Distinct().Should().HaveCount(routes.Length);

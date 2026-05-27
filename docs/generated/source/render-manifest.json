@@ -1,0 +1,40 @@
+{
+  "artifacts": [
+    {
+      "input": "docs/source/data/source-modules.yml",
+      "output": "docs/generated/source/diagrams/source-modules.mmd",
+      "sha256": "ea1fa91eb49c44fbdfbec594264562109947364e1f48e802a11c6d7b21c51f22"
+    },
+    {
+      "input": "docs/source/data/source-readme-coverage.yml",
+      "output": "docs/generated/source/diagrams/source-readme-coverage.mmd",
+      "sha256": "0ebbb226329f9cdae01557236b001641e788e32ecff0d2a0020cf50113fbf4d4"
+    },
+    {
+      "input": "docs/source/data/source-modules.yml",
+      "output": "docs/generated/source/source-modules.json",
+      "sha256": "c0d429be029db28992d7c9535382055a3a9ad3e70d8979ced66d9642e5503515"
+    },
+    {
+      "input": "docs/source/data/source-modules.yml",
+      "output": "docs/generated/source/source-modules.normalized.yml",
+      "sha256": "3494355b2571ed6db404c21753eaa6539ddd5f6a19a790a5c1d89a58e132406a"
+    },
+    {
+      "input": "docs/source/data/source-readme-coverage.yml",
+      "output": "docs/generated/source/source-readme-coverage.json",
+      "sha256": "fda39f0ea09a9bb48c7b633381576a332faa08c91fa39d0c4f1d163b355eb3b1"
+    },
+    {
+      "input": "docs/source/data/source-readme-coverage.yml",
+      "output": "docs/generated/source/source-readme-coverage.normalized.yml",
+      "sha256": "754123f19016c1e00b7aeea3a5b1af852d4d3f44858de9d8f020bc6c863161a5"
+    }
+  ],
+  "normalization": {
+    "date_format": "YYYY-MM-DD",
+    "key_order": "lexicographic by normalized key",
+    "newlines": "LF",
+    "unicode": "NFC"
+  }
+}

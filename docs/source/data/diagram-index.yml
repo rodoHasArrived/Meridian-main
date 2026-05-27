@@ -1,0 +1,53 @@
+schema:
+  id: meridian.diagram-index
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+diagrams:
+  - id: DIA-ASSURANCE-LOOP
+    title: Meridian assurance loop
+    source: docs/architecture/diagrams/meridian-assurance-loop.mmd
+    output: docs/architecture/assets/meridian-assurance-loop.svg
+    type: mermaid
+    modules:
+      - SRC-HOST
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-WPF
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W4-RECON-001
+      - W4-RPT-001
+    update_when:
+      - Stage gate order or evidence posture changes.
+      - Roadmap acceptance evidence semantics change.
+  - id: DIA-BROWSER-WORKSTATION
+    title: Browser workstation flow
+    source: docs/architecture/diagrams/meridian-browser-workstation-flow.mmd
+    output: docs/architecture/assets/meridian-browser-workstation-flow.svg
+    type: mermaid
+    modules:
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    roadmap_items:
+      - W2-TRD-001
+      - W3-CONT-001
+    update_when:
+      - Browser workstation routing, endpoint projection, or read-model boundaries change.
+  - id: DIA-PAPER-SESSION-REPLAY
+    title: Paper session replay flow
+    source: docs/architecture/diagrams/meridian-paper-session-replay-flow.mmd
+    output: docs/architecture/assets/meridian-paper-session-replay-flow.svg
+    type: mermaid
+    modules:
+      - SRC-APP
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+    roadmap_items:
+      - W2-TRD-001
+    update_when:
+      - Paper session persistence changes.
+      - Replay diagnostics change.
+      - Trading readiness route changes.

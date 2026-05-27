@@ -1,163 +1,53 @@
-# AI Instructions Sync Workflow
+# Historical AI Instructions Sync Workflow
 
-This document covers the AI instruction sync mechanism — the GitHub Actions workflow that keeps AI
-assistant files (`CLAUDE.md`, `docs/ai/`, `.github/agents/`) up to date as the codebase evolves.
-The compact Copilot guide intentionally links to generated navigation instead of embedding a full
-repository tree.
+This page preserves the behavior of the retired AI instructions sync workflow for traceability.
+It is not an active operating runbook.
 
----
+The workflow file that used to own this job was archived with the legacy GitHub Actions inventory
+on 2026-05-18. Current AI guidance maintenance should use the local docs and inventory commands
+listed below, then update the shared AI contract and nearest indexes in the same change.
 
-## Fix Summary (2026-02-05)
+## Current Maintenance Path
 
-**Workflow:** `documentation.yml` (AI Instructions Sync job)
-**Issue resolved:** `GitHub Actions is not permitted to create or approve pull requests`
-**Status:** ✅ Fixed with graceful fallback
-
-### What Was Changed
-
-1. **Added Graceful Fallback Mechanism**
-   - `continue-on-error: true` on the PR creation step
-   - Fallback step commits directly if PR creation fails
-   - Workflow completes successfully in both scenarios
-
-2. **Enhanced User Communication**
-   - Header comments explaining repository settings requirement
-   - Workflow summary shows PR creation status
-   - Warning and notice messages guide users to enable PR creation
-
-### How It Works Now
-
-#### Default Behavior (Direct Commit)
-When `create_pr` is **not** checked:
-- Changes are committed directly to the main branch
-- No special repository settings required
-- ✅ Works out of the box
-
-#### PR Creation Path
-When `create_pr` **is** checked:
-
-| Repository setting | Outcome |
-|--------------------|---------|
-| PR creation **disabled** | Fallback commits directly; warning logged |
-| PR creation **enabled** | PR created on `automation/ai-instructions-sync` |
-
-### How to Enable PR Creation (Optional)
-
-1. Go to repository **Settings → Actions → General**
-2. Scroll to **Workflow permissions**
-3. Check ☑️ **"Allow GitHub Actions to create and approve pull requests"**
-4. Click **Save**
-
-For organization repositories, the setting must be enabled at **both** the organization and repository level.
-
----
-
-## Testing the Sync Workflow
-
-### Scenario 1: Direct Commit (Default)
-
-```
-Actions > AI Instructions Sync > Run workflow  (leave create_pr unchecked)
-```
-
-**Expected:** Workflow completes, changes committed to main, summary shows `Create PR mode: no`.
-
-### Scenario 2: PR Creation (Fallback Path)
-
-Ensure **"Allow GitHub Actions to create and approve pull requests"** is **disabled**, then:
-
-```
-Actions > AI Instructions Sync > Run workflow  (check create_pr)
-```
-
-**Expected:** PR creation step shows `continued on error`; fallback commits directly; summary shows
-`PR Creation: ⚠️ Failed (fell back to direct commit)`.
-
-### Scenario 3: PR Creation (Happy Path)
-
-Enable PR creation in repository settings (see above), then:
-
-```
-Actions > AI Instructions Sync > Run workflow  (check create_pr)
-```
-
-**Expected:** PR created on `automation/ai-instructions-sync`; summary shows `PR Creation: ✅ Success`.
-
-### Scenario 4: Dry Run
-
-```
-Actions > AI Instructions Sync > Run workflow  (check dry_run)
-```
-
-**Expected:** No commits or PRs created; diff shown in logs; summary shows `Dry run: yes`.
-
-### Verification Checklist
+Use these local commands when changing AI instructions, prompt catalogs, agent definitions, skills,
+or generated navigation:
 
 ```bash
-# View recent commits
-git log --oneline -5
-
-# Check if AI files were updated
-git log --oneline -1 -- CLAUDE.md docs/ai/copilot/instructions.md .github/agents/documentation-agent.md
-
-# View repository structure section in CLAUDE.md
-grep -A 50 "## Repository Structure" CLAUDE.md
+python build/scripts/docs/check-ai-inventory.py --summary
+python build/scripts/docs/run-docs-automation.py --profile quick --dry-run
+python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary
+git diff --check
 ```
 
----
+Use the narrowest subset that covers the touched files. For docs-only Copilot guidance changes,
+`check-ai-inventory.py --summary` plus `git diff --check` is usually enough.
 
-## Troubleshooting
+## Historical Summary
 
-| Issue | Fix |
-|-------|-----|
-| Workflow still fails | Verify "Read and write permissions" are set under Workflow permissions |
-| Files not updated | Check `build/scripts/docs/` scripts are executable; look for errors in "Generate repository structure" step |
-| PR creation fails with setting enabled | Wait a few minutes (cache refresh); check organization-level settings |
+The retired sync workflow kept assistant files such as `CLAUDE.md`, `docs/ai/`, and
+`.github/agents/` synchronized with repository structure and generated navigation. It also had a
+PR-creation fallback path for repositories where GitHub Actions could not create pull requests.
 
----
+Historical behavior:
 
-## Schedule
+- Direct-commit mode updated AI files without requiring PR creation permissions.
+- PR mode used an `automation/ai-instructions-sync` branch when repository settings allowed it.
+- Dry-run mode generated a diff without committing.
+- A separate README tree marker sync maintained broad tree snapshots.
 
-The sync workflow runs automatically:
-- **Trigger:** Every Monday at 03:00 UTC
-- **Default behavior:** Direct commit (no PR)
-- **Purpose:** Keeps AI instruction files synchronized with repository structure and generated
-  navigation without duplicating tree snapshots in the compact Copilot guide
-
-Manual runs can be triggered at any time via `workflow_dispatch` with custom options.
-
----
+Do not re-enable that workflow just to refresh AI docs. Prefer the local scripts above and the
+provider-agnostic rules in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 ## Related Files
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/documentation.yml` | Workflow definition (AI Instructions Sync job) |
-| `.github/workflows/readme-tree.yml` | Keeps README/AI markdown tree markers synchronized with the live repository layout |
-| `docs/ai/README.md` | Master AI resource index |
-| `CLAUDE.md` | Root AI context document |
-| `docs/ai/copilot/instructions.md` | Compact Copilot guide and routing links; no embedded repository tree |
-
-## README Tree Marker Sync
-
-Repository tree snapshots embedded in markdown are now maintained by a separate workflow:
-
-- **Workflow:** `readme-tree.yml`
-- **Trigger:** Every push to `main` and manual dispatch
-- **Action:** `RavelloH/readme-tree`
-- **Managed files:** `README.md`, `docs/ai/README.md`, `docs/ai/claude/CLAUDE.structure.md`
-
-To opt a markdown document into automatic tree updates, add:
-
-```md
-<!-- readme-tree start -->
-<!-- readme-tree end -->
-```
-
-Do not apply repository-structure block sync to `docs/ai/copilot/instructions.md`; use
-`docs/ai/generated/repo-navigation.md`, `docs/ai/generated/repo-navigation.json`, or
-`docs/generated/repository-structure.md` when Copilot needs layout context.
+| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive inventory for retired GitHub Actions workflows |
+| [`../README.md`](../README.md) | Master AI resource index |
+| [`../../../CLAUDE.md`](../../../CLAUDE.md) | Root AI context document |
+| [`instructions.md`](instructions.md) | Compact Copilot guide and routing links |
+| [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Shared provider-agnostic AI workflow contract |
 
 ---
 
-*Last Updated: 2026-03-20*
+*Last Updated: 2026-05-20*
