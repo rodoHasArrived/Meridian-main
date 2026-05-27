@@ -430,7 +430,11 @@
                                    Margin="12,0,0,0" />
                     </StackPanel>
                     <!-- Mode badge + search icon -->
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel x:Name="TopBarContextChrome"
+                                DockPanel.Dock="Right"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding DataWorkspaceHomeChromeVisibility}">
                         <Border Background="{StaticResource TopBarBorderBrush}"
                                 CornerRadius="3"
                                 Padding="8,3"
@@ -855,13 +859,15 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1"
+                <Border x:Name="WorkspacePageHeader"
+                        Grid.Row="1"
                         Background="{StaticResource ConsoleBackgroundLightBrush}"
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
                         BorderThickness="0,0,0,1"
                         CornerRadius="0"
                         Padding="24,12"
-                        Margin="0,0,0,0">
+                        Margin="0,0,0,0"
+                        Visibility="{Binding DataWorkspaceHomeChromeVisibility}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -1285,9 +1291,13 @@
                                                         AutomationProperties.Name="Workspace Shell Context Strip" />
 
                 <DockPanel Grid.Row="3">
-                    <Border DockPanel.Dock="Top" Height="32"
+                    <Border x:Name="SplitPaneLayoutChrome"
+                            DockPanel.Dock="Top"
+                            Height="32"
                             Background="{StaticResource CommandBarBackground}"
-                            BorderBrush="{StaticResource CommandBarBorderBrush}" BorderThickness="0,0,0,1">
+                            BorderBrush="{StaticResource CommandBarBorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Visibility="{Binding DataWorkspaceHomeChromeVisibility}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
                             <TextBlock Text="Layout:" VerticalAlignment="Center" FontSize="11" Margin="0,0,8,0" Opacity="0.7"/>
                             <ItemsControl ItemsSource="{Binding SplitPane.Layouts}">

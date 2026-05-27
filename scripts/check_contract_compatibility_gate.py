@@ -65,6 +65,14 @@ REQUIRED_SECURITY_MASTER_HINTS = (
     "provenance",
     "source",
 )
+RECORD_PARAMETER_ADDITION_PATTERN = re.compile(
+    r"^\+\s*(?:\[property:\s*[^\]]+\]\s*)?"
+    rf"({CS_CONTRACT_TYPE_PATTERN})\s+@?([A-Za-z_]\w*)\s*(?:=\s*([^,)]+))?\s*[,)]\s*;?\s*$"
+)
+PROPERTY_ADDITION_PATTERN = re.compile(
+    r"^\+\s*public\s+(required\s+)?(?:static\s+|virtual\s+|override\s+|sealed\s+|readonly\s+)*"
+    rf"({CS_CONTRACT_TYPE_PATTERN})\s+([A-Za-z_]\w*)\s*\{{\s*(?:get|init|set)\b"
+)
 
 
 def run_git(args: list[str]) -> str:
@@ -112,6 +120,48 @@ def is_breaking_removal_line(line: str) -> bool:
 
 def patch_has_breaking_removal(patch: str) -> bool:
     return any(is_breaking_removal_line(line) for line in patch.splitlines())
+
+
+def _is_contract_source_file(path: str) -> bool:
+    normalized = path.lower()
+    return normalized.startswith("src/meridian.contracts/") and normalized.endswith(".cs")
+
+
+def find_required_field_regressions(changed_files: list[str], patch: str) -> list[str]:
+    current_file: str | None = None
+    violations: set[str] = set()
+    tracked_contract_files = {path for path in changed_files if _is_contract_source_file(path)}
+    if not tracked_contract_files:
+        return []
+
+    for raw_line in patch.splitlines():
+        if raw_line.startswith("+++ b/"):
+            current_file = raw_line[len("+++ b/"):].strip()
+            continue
+        if not current_file or current_file not in tracked_contract_files:
+            continue
+        if not raw_line.startswith("+") or raw_line.startswith("+++"):
+            continue
+
+        line = raw_line.rstrip()
+        property_match = PROPERTY_ADDITION_PATTERN.match(line)
+        if property_match:
+            required_prefix, property_type, _ = property_match.groups()
+            is_required = bool(required_prefix) or not property_type.endswith("?")
+            if is_required:
+                violations.add(current_file)
+            continue
+
+        parameter_match = RECORD_PARAMETER_ADDITION_PATTERN.match(line)
+        if not parameter_match:
+            continue
+        parameter_type, _, default_expression = parameter_match.groups()
+        is_nullable = parameter_type.endswith("?")
+        has_safe_default = bool(default_expression and default_expression.strip() in ("null", "default", "default!"))
+        if not is_nullable and not has_safe_default:
+            violations.add(current_file)
+
+    return sorted(violations)
 
 
 def _is_governance_contract_dto_path(path: str) -> bool:
@@ -181,6 +231,13 @@ def main() -> int:
         print("Contract compatibility gate failed: governance/accounting/reporting DTO instrument metadata must include Security Master identity/provenance fields.")
         for violation in security_master_reference_violations:
             print(f"- Add required Security Master identity/provenance fields to `{violation}` (for example: SecurityId + SecurityMasterSource/Provenance).")
+        return 1
+
+    required_field_violations = find_required_field_regressions(tracked_changed_files, patch)
+    if required_field_violations:
+        print("Contract compatibility gate failed: v1 contract changes must be additive-only and cannot introduce new required fields.")
+        for violation in required_field_violations:
+            print(f"- Make new DTO members optional in `{violation}` (nullable or null/default-backed) or defer to a versioned v2 contract.")
         return 1
 
     is_breaking = patch_has_breaking_removal(patch)

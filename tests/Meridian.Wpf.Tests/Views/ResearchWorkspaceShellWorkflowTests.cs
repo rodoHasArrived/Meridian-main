@@ -52,7 +52,7 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
             var briefing = BuildBriefing(runId, expectedSummary);
             services.RemoveAll(typeof(IWorkstationResearchBriefingApiClient));
             services.AddSingleton<IWorkstationResearchBriefingApiClient>(new FakeWorkstationResearchBriefingApiClient

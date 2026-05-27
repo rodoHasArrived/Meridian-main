@@ -85,7 +85,7 @@ internal static class SecurityEconomicDefinitionAdapter
     private static JsonElement BuildEconomicTermsJson(SecurityEconomicDefinition definition)
         => JsonSerializer.SerializeToElement(new
         {
-            schemaVersion = 2,
+            schemaVersion = SecurityMasterSchemaVersions.EconomicTerms,
             maturity = definition.Terms.Maturity is null ? null : new
             {
                 effectiveDate = definition.Terms.Maturity.Value.EffectiveDate,

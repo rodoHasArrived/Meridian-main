@@ -27,13 +27,19 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private readonly WpfServices.WatchlistService _watchlistService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly DispatcherTimer _clipboardBannerTimer;
+    private readonly DispatcherTimer _startupBannerTimer;
 
     private IReadOnlyList<string> _pendingClipboardSymbols = [];
     private Visibility _fixtureModeBannerVisibility = Visibility.Collapsed;
     private string _fixtureModeText = string.Empty;
     private Brush _fixtureModeBannerBackground = FixtureBrush;
+    private Visibility _startupBannerVisibility = Visibility.Collapsed;
+    private string _startupBannerStatusText = "Startup briefing";
+    private string _startupBannerMessage = "Review the active operating context, shell mode, and readiness posture before taking live actions.";
+    private string _startupBannerDetail = "Use Welcome for the full workstation briefing, then move through Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings from the same governed shell.";
     private Visibility _clipboardBannerVisibility = Visibility.Collapsed;
     private string _clipboardBannerText = string.Empty;
+    private bool _startupExperienceShown;
 
     public MainWindowViewModel(
         IConnectionService connectionService,
@@ -60,8 +66,11 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         StopCollectorCommand = new AsyncRelayCommand(StopCollectorAsync);
         RefreshCommand = new RelayCommand(() => _messagingService.Send("RefreshStatus"));
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
+        DismissStartupBannerCommand = new RelayCommand(HideStartupBanner);
         DismissClipboardBannerCommand = new RelayCommand(HideClipboardBanner);
 
+        _startupBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(18) };
+        _startupBannerTimer.Tick += OnStartupBannerTimerTick;
         _clipboardBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _clipboardBannerTimer.Tick += OnClipboardBannerTimerTick;
 
@@ -80,6 +89,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     public IRelayCommand RefreshCommand { get; }
 
     public IAsyncRelayCommand AddClipboardSymbolsCommand { get; }
+
+    public IRelayCommand DismissStartupBannerCommand { get; }
 
     public IRelayCommand DismissClipboardBannerCommand { get; }
 
@@ -101,6 +112,30 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _fixtureModeBannerBackground, value);
     }
 
+    public Visibility StartupBannerVisibility
+    {
+        get => _startupBannerVisibility;
+        private set => SetProperty(ref _startupBannerVisibility, value);
+    }
+
+    public string StartupBannerStatusText
+    {
+        get => _startupBannerStatusText;
+        private set => SetProperty(ref _startupBannerStatusText, value);
+    }
+
+    public string StartupBannerMessage
+    {
+        get => _startupBannerMessage;
+        private set => SetProperty(ref _startupBannerMessage, value);
+    }
+
+    public string StartupBannerDetail
+    {
+        get => _startupBannerDetail;
+        private set => SetProperty(ref _startupBannerDetail, value);
+    }
+
     public Visibility ClipboardBannerVisibility
     {
         get => _clipboardBannerVisibility;
@@ -116,6 +151,39 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     public async Task StartAsync(CancellationToken ct = default)
     {
         await StatusBar.StartAsync(ct);
+    }
+
+    public void ShowStartupExperience()
+    {
+        if (_startupExperienceShown)
+        {
+            return;
+        }
+
+        _startupExperienceShown = true;
+
+        var isNonLiveMode = _fixtureModeDetector.IsNonLiveMode;
+        StartupBannerStatusText = isNonLiveMode
+            ? _fixtureModeDetector.ModeLabel
+            : "Startup briefing";
+        StartupBannerMessage = isNonLiveMode
+            ? "Meridian opened in a non-live environment. Validate workflows, data posture, and operator routes here before moving to production credentials or capital."
+            : "Review the active operating context, shell mode, and readiness posture before taking live actions.";
+        StartupBannerDetail = isNonLiveMode
+            ? "Use Welcome for the full workstation briefing, confirm the mode banner, and keep live-provider changes gated until the environment is intentionally switched."
+            : "Use Welcome for the full workstation briefing, then move through Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings from the same governed shell.";
+        StartupBannerVisibility = Visibility.Visible;
+
+        _startupBannerTimer.Stop();
+        _startupBannerTimer.Start();
+
+        _notificationService.ShowNotification(
+            "Meridian ready",
+            isNonLiveMode
+                ? $"Meridian started in {_fixtureModeDetector.ModeLabel}. Review operating context and readiness before leaving the safe test lane."
+                : "Meridian started successfully. Review operating context and readiness before live actions.",
+            NotificationType.Info,
+            6000);
     }
 
     public void ShowClipboardSymbols(IReadOnlyList<string> symbols)
@@ -142,6 +210,12 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         ClipboardBannerText = string.Empty;
         ClipboardBannerVisibility = Visibility.Collapsed;
         AddClipboardSymbolsCommand.NotifyCanExecuteChanged();
+    }
+
+    public void HideStartupBanner()
+    {
+        _startupBannerTimer.Stop();
+        StartupBannerVisibility = Visibility.Collapsed;
     }
 
     public void HandleShortcut(string actionId)
@@ -300,6 +374,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        _startupBannerTimer.Stop();
+        _startupBannerTimer.Tick -= OnStartupBannerTimerTick;
         _clipboardBannerTimer.Stop();
         _clipboardBannerTimer.Tick -= OnClipboardBannerTimerTick;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
@@ -321,6 +397,11 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private void OnClipboardBannerTimerTick(object? sender, EventArgs e)
     {
         HideClipboardBanner();
+    }
+
+    private void OnStartupBannerTimerTick(object? sender, EventArgs e)
+    {
+        HideStartupBanner();
     }
 
     private void UpdateFixtureModeBanner()

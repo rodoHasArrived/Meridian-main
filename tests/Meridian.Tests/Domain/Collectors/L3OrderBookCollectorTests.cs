@@ -59,6 +59,21 @@ public class L3OrderBookCollectorTests
     }
 
     [Fact]
+    public void OnOrderAdd_StartsCollectorActivityForPublish()
+    {
+        using var listener = ActivityTestListenerFactory.CreateForMeridianSource();
+        var publisher = new ActivityCapturingPublisher();
+        var collector = new L3OrderBookCollector(publisher, requireExplicitSubscription: false);
+
+        collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));
+
+        publisher.TraceIds.Should().HaveCount(2);
+        publisher.TraceIds.Should().OnlyContain(id => !string.IsNullOrWhiteSpace(id));
+        publisher.OperationNames.Should().HaveCount(2);
+        publisher.OperationNames.Should().OnlyContain(name => name == "l3-collector.publish");
+    }
+
+    [Fact]
     public void OnOrderModify_PublishesL3ThenL2()
     {
         _collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));
@@ -352,4 +367,5 @@ public class L3OrderBookCollectorTests
         snap.Should().NotBeNull("an L2 snapshot should have been published");
         return snap!;
     }
+
 }

@@ -2,14 +2,31 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-27
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **waves 2 4 operator readiness addendum** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the waves 2 4 operator readiness addendum workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
+
+Planning review note 2026-05-18: this addendum remains the active dependency plan for Waves 2-4.
+It should be interpreted through the shared-contract-first browser and WPF operator UI policy,
+the consolidated current-direction entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md), and the active plan index in
+[`README.md`](README.md).
 
 ---
 
 ## Summary
 
 This addendum sharpens Meridian's active Waves 2-4 path without changing the canonical roadmap shape in [`../status/ROADMAP.md`](../status/ROADMAP.md).
+Desktop implementation is now explicitly acceptance-matrix-driven: each retained desktop slice must
+name lane (W2/W3/W4), scenario (happy/blocker/recovery), shared-contract/read-model check, focused
+test evidence, and browser-parity posture before it can be counted as progress.
 
 The repo already has the right platform baseline and many of the right read-side seams:
 
@@ -50,6 +67,7 @@ Current shell-support evidence also includes Welcome readiness progress for prov
 
 It should be read with:
 
+- [`current-direction-and-status.md`](current-direction-and-status.md)
 - [`trading-workstation-migration-blueprint.md`](trading-workstation-migration-blueprint.md)
 - [`paper-trading-cockpit-reliability-sprint.md`](paper-trading-cockpit-reliability-sprint.md)
 - [`brokerage-portfolio-sync-blueprint.md`](brokerage-portfolio-sync-blueprint.md)
@@ -103,7 +121,7 @@ It should be read with:
 
 ### Workstation Shell and UX
 
-- Owns browser-dashboard navigation and operator interaction patterns for new UI work, plus retained WPF shell consumption, operating-context switching, notification center, command palette, and workflow deep-linking where shared-contract regression coverage requires it.
+- Owns browser-dashboard and WPF shell navigation, operator interaction patterns, operating-context switching, notification center, command palette, and workflow deep-linking where shared contracts require both surfaces to stay aligned.
 - Primary repo anchors: `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui.Shared/Endpoints/`, `src/Meridian.Wpf/Models/`, `src/Meridian.Wpf/ViewModels/`, `src/Meridian.Wpf/Services/`.
 
 ### Data Confidence and Validation
@@ -116,8 +134,8 @@ It should be read with:
 ## Cross-Wave Dependency Rules
 
 1. Wave 1 trust-gate evidence stays green before any Wave 2-4 readiness claim is promoted.
-2. Wave 2 durable promotion traceability is a prerequisite for Wave 3 continuity and Wave 4 governance handoff.
-3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; new operator UI scope belongs in the browser dashboard while WPF remains retained support.
+2. Wave 2 durable promotion traceability is a prerequisite for **Wave 3 exit claims** and Wave 4 governance handoff; limited Wave 3 pre-work may proceed in parallel when it stays release-neutral and does not bypass DK2 entry/exit criteria.
+3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; browser and WPF UI scope must consume shared contracts rather than define client-local business state.
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
 6. Accounting-led commercial slices must start with shared contract/readiness definitions such as accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness before web dashboard workflow expansion.
@@ -125,6 +143,11 @@ It should be read with:
 8. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
 9. Desktop workflow automation must use canonical workspace tags, confirmed page-readiness markers, deterministic restore/build inputs, local single-instance behavior, diagnostic artifacts, and single-commit screenshot publication so screenshot/manual evidence does not drift from the shell routes operators actually use.
 10. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
+11. This addendum is a technical dependency plan, not an owner-sprint assignment artifact; scheduling can vary by lane while dependency and gate constraints remain fixed.
+12. Detailed W3/W4 pre-work definition is mandatory even during Wave 2/DK2 execution windows so downstream work can start without contract drift.
+13. Desktop/WPF delivery is measured by [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md); support evidence is not an exit claim unless the row's happy/blocker/recovery evidence is complete.
+14. For desktop work, prioritize high-traffic page-body workflow outcomes before additional shell chrome or framing polish.
+15. Do not widen live-readiness language while Wave 2 cockpit reliability remains non-green in Lane A acceptance and pilot-readiness stage posture.
 
 ---
 
@@ -133,6 +156,7 @@ It should be read with:
 ### Objective
 
 Turn the current paper-trading cockpit from "visible" into "dependable" by making session continuity, replay proof, promotion review, and operator triage durable and explainable.
+Wave 2 closure remains the first desktop-forward gate; W3 and W4 scope should not dilute cockpit reliability completion.
 
 ### W2-A: Paper Cockpit Reliability Gate
 
@@ -196,7 +220,7 @@ Turn the current paper-trading cockpit from "visible" into "dependable" by makin
 
 ### Objective
 
-Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser dashboard, and retained WPF support surfaces.
+Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser and WPF workstations, and WPF desktop surfaces.
 
 Current WPF evidence now includes RunCashFlow guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Keep that in the Wave 3 continuity lane; governance-wide cash-flow projections and reporting still belong to Wave 4.
 
@@ -360,14 +384,14 @@ Finish governance and fund-operations productization by making casework, report 
 - **Deliverables:**
   - named scenario suites for `Backtest -> Paper`, paper-session restore, promotion review, run continuity, brokerage divergence, reconciliation break review, and report publish
   - command matrix that maps each scenario to the narrowest useful validation command
-  - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md))
+  - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/evidence/wave4-evidence-template.md`](../status/evidence/wave4-evidence-template.md))
 - **Exit criteria:**
   - each active wave has at least one repo-backed scenario suite tied to its own exit criteria
   - regression checks describe operator behavior, not only isolated method coverage
 
 ### Wave 4 Evidence Template Baseline (Applied)
 
-The Wave 4 evidence template is now active in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md) and is seeded with the first three deterministic governance scenarios:
+The Wave 4 evidence template is now active in [`../status/evidence/wave4-evidence-template.md`](../status/evidence/wave4-evidence-template.md) and is seeded with the first three deterministic governance scenarios:
 
 1. `wave4-governance-identifier-conflict-resolution-v1`
 2. `wave4-governance-corporate-action-propagation-impact-v1`
@@ -405,9 +429,17 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 11. W4-C Fund-Operations Workspace Consolidation
 12. W4-D Operator Inbox v2 and Remediation Playbooks
 
+### Controlled parallel pre-work allowance
+
+Limited parallel W3 pre-work is allowed before DK2 is fully green when all constraints below hold:
+
+- scope is restricted to contract-first shaping, projection extraction, read-only continuity seams, and deterministic scenario harnesses
+- work items are explicitly tagged as `release-neutral pre-work` and cannot be used for Wave 3/Wave 4 completion claims
+- no pre-work item may change DK2 gate definitions, bypass reconciliation calibration/sign-off requirements, or weaken promotion/export parity checks
+- each parallel item must keep rollback-safe boundaries and document unresolved DK2 dependencies in the PR description
+
 This ordering keeps the work honest:
 
 - Wave 2 proves the operator lane.
 - Wave 3 turns that lane into the shared system of record.
 - Wave 4 builds durable governance workflows on top of the same seams.
-

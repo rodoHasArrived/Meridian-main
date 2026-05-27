@@ -133,6 +133,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public TextBlock ShellAutomationStateText => GetRequired<TextBlock>("ShellAutomationStateText");
 
+    public StackPanel TopBarContextChrome => GetRequired<StackPanel>("TopBarContextChrome");
+
+    public Border WorkspacePageHeader => GetRequired<Border>("WorkspacePageHeader");
+
     public TextBlock PageTitleText => GetRequired<TextBlock>("PageTitleTextBlock");
 
     public TextBlock PageSubtitleText => GetRequired<TextBlock>("PageSubtitleText");
@@ -142,6 +146,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     public Page? InnermostContentPage => NavigationHostInspector.ResolveInnermostPage(ContentFrame.Content);
 
     public Border WorkflowSummaryStrip => GetRequired<Border>("WorkflowSummaryStrip");
+
+    public Border SplitPaneLayoutChrome => GetRequired<Border>("SplitPaneLayoutChrome");
 
     public ItemsControl WorkflowSummaryItemsControl => GetRequired<ItemsControl>("WorkflowSummaryItemsControl");
 

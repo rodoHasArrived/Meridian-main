@@ -1,10 +1,18 @@
 # QuantScript, L3 Inference & Multi-Instance: Round 2 Feature Roadmap (Ideas #19–#30)
 
 **Version:** 1.1
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **quantscript l3 multiinstance round2 roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the quantscript l3 multiinstance round2 roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Audience:** Quantitative researchers, core contributors, platform engineers, institutional operators
 **Related Plans:**
-- QuantScript v1 blueprint: [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
+- QuantScript v1 blueprint: [`archive/docs/plans/quant-script-environment-blueprint.md`](../../archive/docs/plans/quant-script-environment-blueprint.md)
 - L3 inference implementation plan: [`docs/plans/l3-inference-implementation-plan.md`](l3-inference-implementation-plan.md)
 - Previous brainstorm (ideas #1–#18): [`docs/evaluations/quant-script-blueprint-brainstorm.md`](../evaluations/quant-script-blueprint-brainstorm.md)
 
@@ -106,7 +114,7 @@ rendered via `WatchTradeGridViewModel`.
 | Dependency | Status | Location |
 |---|---|---|
 | QuantScript v1 `IScriptRunner` | Implemented baseline | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
-| QuantScript v1 cell execution model (idea #1 from Round 1) | Implemented baseline | `src/Meridian.QuantScript/Compilation/ScriptRunner.cs`; `docs/plans/quant-script-environment-blueprint.md` |
+| QuantScript v1 cell execution model (idea #1 from Round 1) | Implemented baseline | `src/Meridian.QuantScript/Compilation/ScriptRunner.cs`; `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -618,7 +626,7 @@ services.AddSingleton<HtmlReportWriter>();
 |---|---|---|
 | QuantScript v1 `QuantScriptGlobals` | Implemented baseline | `src/Meridian.QuantScript/Compilation/QuantScriptGlobals.cs` |
 | `AnalysisExportService` (Parquet/Excel) | Implemented | `src/Meridian.Storage/Export/AnalysisExportService.cs` |
-| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `docs/plans/quant-script-environment-blueprint.md` |
+| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -1173,7 +1181,7 @@ services.AddSingleton<TcaHtmlReportWriter>();
 |---|---|---|
 | L3 fill tape (`fill-tape.jsonl`) | Planned | `docs/plans/l3-inference-implementation-plan.md` |
 | `BacktestMetricsEngine` | Planned | `src/Meridian.Backtesting/Metrics/` |
-| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `docs/plans/quant-script-environment-blueprint.md` |
+| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -2191,7 +2199,7 @@ independently of Track H and Track I on top of the implemented QuantScript v1 fo
 
 ## Related Documents
 
-- **QuantScript v1 blueprint:** [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
+- **QuantScript v1 blueprint:** [`archive/docs/plans/quant-script-environment-blueprint.md`](../../archive/docs/plans/quant-script-environment-blueprint.md)
 - **L3 inference implementation plan:** [`docs/plans/l3-inference-implementation-plan.md`](l3-inference-implementation-plan.md)
 - **Previous brainstorm (ideas #1–#18):** [`docs/evaluations/quant-script-blueprint-brainstorm.md`](../evaluations/quant-script-blueprint-brainstorm.md)
 - **Feature inventory:** [`docs/status/FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md)
@@ -2244,4 +2252,4 @@ paths that will be created when implementing the corresponding feature.
 
 ---
 
-_Last Updated: 2026-04-08_
+_Last Updated: 2026-05-20_

@@ -1,6 +1,10 @@
 using Meridian.Application.DirectLending;
+using Meridian.Application.Ledger;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.DirectLending;
+using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
+using Meridian.Storage.Ledger;
 using Npgsql;
 using Testcontainers.PostgreSql;
 
@@ -17,6 +21,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 {
     private const string EnvVar = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";
     private const string DisableDockerEnvVar = "MERIDIAN_DISABLE_DOCKER_TESTS";
+    private static readonly ILedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
 
     private readonly PostgreSqlContainer? _container;
 
@@ -36,7 +41,12 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
         Store = new PostgresDirectLendingStateStore(Options);
         Rebuilder = new DirectLendingEventRebuilder();
         QueryService = new PostgresDirectLendingQueryService(Store, Store, Rebuilder);
-        CommandService = new PostgresDirectLendingCommandService(Store, Store, QueryService, Options);
+        CommandService = new PostgresDirectLendingCommandService(
+            Store,
+            Store,
+            QueryService,
+            new LoanAccountingProjector(_noOpLedgerJournalStore, new AccountingPolicyService()),
+            Options);
         Service = new PostgresDirectLendingService(CommandService, QueryService);
     }
 
@@ -135,5 +145,47 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             command.CommandText = $"drop schema if exists {Schema} cascade;";
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
+    }
+
+    private sealed class InMemoryNoOpLedgerJournalStore : ILedgerJournalStore
+    {
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
+            Task.FromResult<LedgerAccountingPeriod?>(null);
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            Task.FromResult(period);
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =>
+            Task.FromResult<LedgerBookRecord?>(null);
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerBookRecord>>([]);
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =>
+            Task.FromResult(book);
     }
 }

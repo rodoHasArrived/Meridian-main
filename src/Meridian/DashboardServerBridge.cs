@@ -4,8 +4,11 @@ namespace Meridian;
 
 internal static class DashboardServerBridge
 {
-    public static IHostDashboardServer Create(string configPath, int port)
-        => new UiDashboardServer(new UiServer(configPath, port));
+    public static IHostDashboardServer Create(
+        string configPath,
+        int port,
+        IApplicationLifecycleCoordinator lifecycle)
+        => new UiDashboardServer(new UiServer(configPath, port, lifecycle));
 
     private sealed class UiDashboardServer : IHostDashboardServer
     {

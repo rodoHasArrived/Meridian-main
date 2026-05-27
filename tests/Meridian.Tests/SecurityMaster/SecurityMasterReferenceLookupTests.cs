@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -247,6 +248,72 @@ public sealed class SecurityMasterReferenceLookupTests
             Arg.Any<string>(),
             Arg.Any<string?>(),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetByCanonicalAsync_WithSecurityIdVenueMismatch_FallsBackToRequestedVenue()
+    {
+        var requestedSecurityId = Guid.NewGuid();
+        var mismatchedVenueDetail = BuildDetail(
+            requestedSecurityId,
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow, null, "XNAS")]);
+        var expectedDetail = BuildDetail(
+            Guid.NewGuid(),
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow, null, "XNYS")]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetByIdAsync(requestedSecurityId, Arg.Any<CancellationToken>()).Returns(mismatchedVenueDetail);
+        queryService.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "AAPL", "XNYS", Arg.Any<CancellationToken>())
+            .Returns(expectedDetail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetByCanonicalAsync(
+            new SecurityReferenceLookupRequest(
+                SecurityId: requestedSecurityId,
+                IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                IdentifierValue: "AAPL",
+                Symbol: "AAPL",
+                Venue: "XNYS",
+                Source: "test"));
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(expectedDetail.SecurityId);
+        result.LookupPath.Should().Be("identifier+venue");
+        await queryService.Received(1).GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker,
+            "AAPL",
+            "XNYS",
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetByCanonicalAsync_NormalizesMatchedProvider_ForOperatorProjection()
+    {
+        var detail = BuildDetail(
+            Guid.NewGuid(),
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow, null, "xnas")]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "aapl", "xnas", Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetByCanonicalAsync(
+            new SecurityReferenceLookupRequest(
+                IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                IdentifierValue: "aapl",
+                Symbol: "aapl",
+                Venue: "xnas",
+                Source: "test"));
+
+        result.Should().NotBeNull();
+        result!.MatchedIdentifierValue.Should().Be("AAPL");
+        result.MatchedProvider.Should().Be("XNAS");
     }
 
     [Theory]

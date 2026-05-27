@@ -2,7 +2,7 @@
 # Tests
 # =============================================================================
 
-.PHONY: test test-unit test-fsharp test-integration test-all test-coverage
+.PHONY: test test-unit test-fsharp test-integration test-scenario test-all test-coverage
 
 test: ## Run unit tests (C# + F#)
 	@echo "$(BLUE)Running tests...$(NC)"
@@ -21,14 +21,21 @@ test-integration: ## Run integration tests
 	@echo "$(BLUE)Running integration tests...$(NC)"
 	dotnet test $(TEST_PROJECT) --filter "Category=Integration" --logger "console;verbosity=normal"
 
-test-all: ## Run all tests with coverage report
+test-scenario: ## Run operator-style scenario tests only (multi-step workflow exercises)
+	@echo "$(BLUE)Running scenario tests...$(NC)"
+	dotnet test Meridian.sln \
+		--filter "Category=Scenario" \
+		--logger "console;verbosity=normal" \
+		/p:EnableWindowsTargeting=true
+
+test-all: ## Run all tests with coverage report (including scenario tests)
 	@echo "$(BLUE)Running all tests with coverage...$(NC)"
 	dotnet test Meridian.sln \
 		--collect:"XPlat Code Coverage" \
 		--results-directory ./TestResults \
 		--settings tests/coverlet.runsettings \
 		--logger "console;verbosity=normal" \
-		--filter "Category!=Integration" \
+		--filter "Category!=Integration&Category!=Performance" \
 		/p:EnableWindowsTargeting=true
 	@echo "$(GREEN)Coverage reports at ./TestResults/$(NC)"
 

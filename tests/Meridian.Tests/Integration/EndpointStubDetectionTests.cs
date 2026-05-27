@@ -419,6 +419,11 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
             ["SecurityMaster"] = routes.Count(r => r.Route.StartsWith("/api/security-master")),
             ["CppTrader"] = routes.Count(r => r.Route.StartsWith("/api/cpptrader")),
             ["Workstation"] = routes.Count(r => r.Route.StartsWith("/api/workstation")),
+            ["ReferenceData"] = routes.Count(r => r.Route.StartsWith("/api/reference-data")),
+            ["FundStructure"] = routes.Count(r => r.Route.StartsWith("/api/fund-structure")),
+            ["FundAccounts"] = routes.Count(r => r.Route.StartsWith("/api/fund-accounts")),
+            ["Quant"] = routes.Count(r => r.Route.StartsWith("/api/quant")),
+            ["Demo"] = routes.Count(r => r.Route.StartsWith("/api/demo")),
             ["Other"] = 0
         };
 

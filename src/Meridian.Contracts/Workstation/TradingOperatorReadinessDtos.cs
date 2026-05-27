@@ -12,7 +12,8 @@ public enum OperatorWorkItemKindDto
     ReconciliationBreak = 4,
     ReportPackApproval = 5,
     ProviderTrustGate = 6,
-    ExecutionControl = 7
+    ExecutionControl = 7,
+    LedgerPeriodClose = 8
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperatorWorkItemToneDto>))]
@@ -29,7 +30,9 @@ public enum TradingAcceptanceGateStatusDto
 {
     Ready = 0,
     ReviewRequired = 1,
-    Blocked = 2
+    Blocked = 2,
+    /// <summary>Gate status has not yet been evaluated.</summary>
+    Unknown = 99
 }
 
 public sealed record OperatorWorkItemDto(
@@ -44,7 +47,18 @@ public sealed record OperatorWorkItemDto(
     string? AuditReference = null,
     string? Workspace = null,
     string? TargetRoute = null,
-    string? TargetPageTag = null);
+    string? TargetPageTag = null,
+    string? Scope = null,
+    string? RequiredSignoffRole = null,
+    string? ToleranceProfileId = null,
+    string? SignoffStatus = null)
+{
+    /// <summary>Alias for <see cref="Label"/> to satisfy operator-triage surface naming.</summary>
+    public string Title => Label;
+
+    /// <summary>Alias for <see cref="Detail"/> to satisfy operator-triage surface naming.</summary>
+    public string Description => Detail;
+}
 
 public sealed record OperatorInboxDto(
     DateTimeOffset AsOf,
@@ -52,7 +66,11 @@ public sealed record OperatorInboxDto(
     int CriticalCount,
     int WarningCount,
     int ReviewCount,
-    string Summary);
+    string Summary)
+{
+    /// <summary>Compatibility alias for workstation readiness callers that still use the readiness work-item name.</summary>
+    public IReadOnlyList<OperatorWorkItemDto> WorkItems => Items;
+}
 
 public sealed record TradingAcceptanceGateDto(
     string GateId,
@@ -61,7 +79,10 @@ public sealed record TradingAcceptanceGateDto(
     string Detail,
     string? SessionId = null,
     string? RunId = null,
-    string? AuditReference = null);
+    string? AuditReference = null,
+    string? Reason = null,
+    DateTimeOffset? LastEvidenceAt = null,
+    string? RequiredNextAction = null);
 
 public sealed record EvidenceCompletenessSummaryDto(
     TradingAcceptanceGateStatusDto Status,
@@ -72,7 +93,8 @@ public sealed record EvidenceCompletenessSummaryDto(
     int ScorePercent,
     IReadOnlyList<string> BlockingGateIds,
     IReadOnlyList<string> ReviewGateIds,
-    IReadOnlyList<string> MissingEvidenceIds);
+    IReadOnlyList<string> MissingEvidenceIds,
+    IReadOnlyList<string>? ReadyGateIds = null);
 
 public sealed record TradingPaperSessionReadinessDto(
     string SessionId,
@@ -218,6 +240,12 @@ public sealed record TradingTrustGateReadinessDto(
     public TradingTrustGateContractReadinessDto? TrustRationaleContract { get; init; }
 
     public TradingTrustGateContractReadinessDto? BaselineThresholdContract { get; init; }
+
+    public string? CalibrationVersion { get; init; }
+
+    public DateTimeOffset? CalibrationValidatedAt { get; init; }
+
+    public string? PromotionPosture { get; init; }
 }
 
 public sealed record TradingReportPackReadinessDto(
@@ -230,6 +258,18 @@ public sealed record TradingReportPackReadinessDto(
     int ArtifactCount,
     int WarningCount,
     string? ManifestPath);
+
+
+public sealed record ProviderPromotionChecklistDto(
+    bool ContractCompatibilityValidated,
+    bool FocusedAdapterTestsValidated,
+    bool ReplayEvidenceGenerated,
+    bool DegradationCalibrationOutputValidated,
+    bool ReadyForPaperEnablement,
+    bool ReadyForLiveEnablement,
+    IReadOnlyList<string> Blockers,
+    string? EvidenceBundlePath,
+    DateTimeOffset EvaluatedAt);
 
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,
@@ -252,6 +292,12 @@ public sealed record TradingOperatorReadinessDto(
     public TradingReportPackReadinessDto? ReportPack { get; init; }
 
     public EvidenceCompletenessSummaryDto? EvidenceCompleteness { get; init; }
+
+    public DateTimeOffset SnapshotMaterializedAt { get; init; }
+
+    public string SnapshotVersion { get; init; } = string.Empty;
+
+    public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(

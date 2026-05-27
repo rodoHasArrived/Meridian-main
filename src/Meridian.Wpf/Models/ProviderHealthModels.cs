@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -30,6 +31,51 @@ public sealed class BackfillProviderModel
     public SolidColorBrush StatusColor { get; set; } = new(Colors.Gray);
     public string RateLimitText { get; set; } = string.Empty;
     public string LastUsedText { get; set; } = string.Empty;
+}
+
+/// <summary>Summary card for the retained desktop provider-management command center.</summary>
+public sealed class ProviderManagementSummaryCardModel
+{
+    public string Label { get; init; } = string.Empty;
+    public string Value { get; init; } = string.Empty;
+    public string Detail { get; init; } = string.Empty;
+    public SolidColorBrush AccentBrush { get; init; } = new(Colors.Gray);
+}
+
+/// <summary>Unified provider row derived from streaming, backfill, credential, and routing posture.</summary>
+public sealed class ProviderManagementRowModel
+{
+    public string ProviderId { get; init; } = string.Empty;
+    public string DisplayName { get; init; } = string.Empty;
+    public string CapabilityText { get; init; } = string.Empty;
+    public string HealthText { get; init; } = string.Empty;
+    public string CredentialStateText { get; init; } = string.Empty;
+    public string CredentialSourceText { get; init; } = string.Empty;
+    public string VerificationStateText { get; init; } = string.Empty;
+    public string LastSuccessfulConnectionText { get; init; } = string.Empty;
+    public string LastVerifiedText { get; init; } = string.Empty;
+    public string LastFailureText { get; init; } = string.Empty;
+    public string LastErrorText { get; init; } = string.Empty;
+    public string AffectedWorkflowsText { get; init; } = string.Empty;
+    public string RecommendedActionText { get; init; } = string.Empty;
+    public string ActionText { get; init; } = string.Empty;
+    public string EnvironmentText { get; init; } = string.Empty;
+    public string MaskedKeyPreviewText { get; init; } = string.Empty;
+    public string ExternalAccountIdText { get; init; } = string.Empty;
+    public string FallbackText { get; init; } = string.Empty;
+    public string TrustExplanationText { get; init; } = string.Empty;
+    public bool IsFallbackActive { get; init; }
+    public SolidColorBrush HealthBrush { get; init; } = new(Colors.Gray);
+    public ObservableCollection<ProviderManagementDiagnosticModel> Diagnostics { get; } = new();
+}
+
+/// <summary>Read-only diagnostic checklist row for the desktop provider center MVP.</summary>
+public sealed class ProviderManagementDiagnosticModel
+{
+    public string Label { get; init; } = string.Empty;
+    public string StatusText { get; init; } = string.Empty;
+    public string Detail { get; init; } = string.Empty;
+    public SolidColorBrush StatusBrush { get; init; } = new(Colors.Gray);
 }
 
 /// <summary>Display model for a connection history event row.</summary>

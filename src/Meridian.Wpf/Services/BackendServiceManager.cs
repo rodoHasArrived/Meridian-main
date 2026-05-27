@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services.Services;
@@ -71,7 +72,8 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
     protected override IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
         => new Dictionary<string, string?>(StringComparer.Ordinal)
         {
-            ["MDC_CONFIG_PATH"] = FirstRunService.Instance.ConfigFilePath
+            ["MDC_CONFIG_PATH"] = FirstRunService.Instance.ConfigFilePath,
+            ["MDC_SHUTDOWN_TOKEN"] = Convert.ToHexString(RandomNumberGenerator.GetBytes(32))
         };
 
     internal static IReadOnlyList<string> BuildProcessArguments(string configPath, string serviceUrl)
@@ -89,6 +91,21 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         if (Uri.TryCreate(serviceUrl, UriKind.Absolute, out var serviceUri) && serviceUri.Port > 0)
         {
             return serviceUri.Port;
+        }
+
+        return DefaultDesktopPort;
+    }
+
+    private static int ResolveHttpPort(IReadOnlyList<string> arguments)
+    {
+        for (var index = 0; index < arguments.Count - 1; index++)
+        {
+            if (string.Equals(arguments[index], "--http-port", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(arguments[index + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var port) &&
+                port > 0)
+            {
+                return port;
+            }
         }
 
         return DefaultDesktopPort;
@@ -137,12 +154,99 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
             if (process.HasExited)
                 return true;
 
+            LogInfo("Backend graceful shutdown failed; terminating owned process", ("Pid", processId.ToString(CultureInfo.InvariantCulture)));
             process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(ct);
             process.Dispose();
             return true;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    protected override async Task<bool> RequestGracefulStopAsync(BackendRuntimeInfo runtime, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(runtime.ShutdownToken))
+            return false;
+
+        var port = ResolveHttpPort(runtime.Arguments);
+        var shutdownUrl = $"http://localhost:{port}/api/system/shutdown";
+
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, shutdownUrl);
+            request.Headers.TryAddWithoutValidation("X-Meridian-Shutdown-Token", runtime.ShutdownToken);
+            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                LogInfo(
+                    "Backend graceful shutdown endpoint returned non-success",
+                    ("StatusCode", ((int)response.StatusCode).ToString(CultureInfo.InvariantCulture)));
+                return false;
+            }
+
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(10);
+            while (DateTimeOffset.UtcNow < deadline)
+            {
+                if (!IsProcessRunning(runtime.ProcessId))
+                {
+                    LogInfo("Backend process exited after graceful shutdown", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
+                    return true;
+                }
+
+                await Task.Delay(250, ct).ConfigureAwait(false);
+            }
+
+            LogInfo("Backend graceful shutdown timed out", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
+            return false;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            LogError("Backend graceful shutdown request failed", ex);
+            return false;
+        }
+    }
+
+    protected override bool IsTrackedProcessOwned(BackendRuntimeInfo runtime)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(runtime.ProcessId);
+            if (process.HasExited)
+                return false;
+
+            try
+            {
+                var startedAtUtc = process.StartTime.ToUniversalTime();
+                if (startedAtUtc < runtime.StartedAtUtc.AddSeconds(-5))
+                    return false;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                LogInfo("Unable to verify backend process start time", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(runtime.ExecutablePath))
+            {
+                try
+                {
+                    var actualPath = process.MainModule?.FileName;
+                    if (string.Equals(actualPath, runtime.ExecutablePath, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException)
+                {
+                    LogInfo("Unable to verify backend process executable path", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
+                }
+            }
+
+            return process.ProcessName.Contains("Meridian", StringComparison.OrdinalIgnoreCase)
+                && runtime.Arguments.Contains("--mode", StringComparer.OrdinalIgnoreCase)
+                && runtime.Arguments.Contains("desktop", StringComparer.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             return false;
         }

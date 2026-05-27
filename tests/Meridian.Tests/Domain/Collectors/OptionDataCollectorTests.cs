@@ -47,6 +47,20 @@ public sealed class OptionDataCollectorTests
     }
 
     [Fact]
+    public void OnOptionQuote_StartsCollectorActivityForPublish()
+    {
+        using var listener = ActivityTestListenerFactory.CreateForMeridianSource();
+        var publisher = new ActivityCapturingPublisher();
+        var sut = new OptionDataCollector(publisher);
+        var quote = CreateOptionQuote("AAPL", 150m, OptionRight.Call);
+
+        sut.OnOptionQuote(quote);
+
+        publisher.TraceIds.Should().ContainSingle(id => !string.IsNullOrWhiteSpace(id));
+        publisher.OperationNames.Should().ContainSingle(name => name == "option-collector.publish");
+    }
+
+    [Fact]
     public void OnOptionQuote_CachesQuoteByContract()
     {
         var contract = CreateContract("AAPL", 150m, OptionRight.Call);

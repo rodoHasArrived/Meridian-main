@@ -138,6 +138,27 @@ public sealed class AlpacaMessageParsingTests
     }
 
     [Fact]
+    public void HandleMessage_TradeMessage_NegativePrice_IsDropped()
+    {
+        var json = BuildTradeJson("SPY", -1m, 100L, "2024-06-15T14:30:00Z");
+
+        Dispatch(json);
+
+        Published.Should().BeEmpty("provider-boundary validation must reject negative prices");
+    }
+
+    [Fact]
+    public void HandleMessage_TradeMessage_FutureTimestamp_IsDropped()
+    {
+        var future = DateTimeOffset.UtcNow.AddMinutes(10).ToString("O");
+        var json = BuildTradeJson("SPY", 450m, 100L, future);
+
+        Dispatch(json);
+
+        Published.Should().BeEmpty("provider-boundary validation must reject timestamps beyond the future-skew threshold");
+    }
+
+    [Fact]
     public void HandleMessage_QuoteMessage_UnparseableTimestamp_IsDropped()
     {
         // Arrange
@@ -163,6 +184,26 @@ public sealed class AlpacaMessageParsingTests
         // Assert
         Published.Should().HaveCount(1);
         Published[0].Type.Should().Be(MarketEventType.BboQuote);
+    }
+
+    [Fact]
+    public void HandleMessage_QuoteMessage_CrossedMarket_IsDropped()
+    {
+        var json = """{"T":"q","S":"AAPL","bp":185.55,"bs":500,"ap":185.50,"as":300,"t":"2024-06-15T14:30:00Z"}""";
+
+        Dispatch(json);
+
+        Published.Should().BeEmpty("provider-boundary validation must reject crossed BBO quotes");
+    }
+
+    [Fact]
+    public void HandleMessage_QuoteMessage_NegativeAskSize_IsDropped()
+    {
+        var json = """{"T":"q","S":"AAPL","bp":185.50,"bs":500,"ap":185.55,"as":-1,"t":"2024-06-15T14:30:00Z"}""";
+
+        Dispatch(json);
+
+        Published.Should().BeEmpty("provider-boundary validation must reject negative quote sizes");
     }
 
     // ── Content-based deduplication (issue 1.4) ──────────────────────────────

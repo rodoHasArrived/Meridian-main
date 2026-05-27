@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Services;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -14,6 +15,7 @@ public sealed class CashFlowViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly NavigationService _navigationService;
+    private readonly StrategyRunContinuityService? _continuityService;
     private string? _runId;
     private object? _parameter;
     private CashFlowEntryDto? _selectedEntry;
@@ -98,6 +100,27 @@ public sealed class CashFlowViewModel : BindableBase
     {
         get => _netCashFlowText;
         private set => SetProperty(ref _netCashFlowText, value);
+    }
+
+    private string _continuityPostureText = "Shared continuity appears after a retained run is selected.";
+    public string ContinuityPostureText
+    {
+        get => _continuityPostureText;
+        private set => SetProperty(ref _continuityPostureText, value);
+    }
+
+    private string _continuityDetailText = "Select a run to compare portfolio, ledger, cash-flow, reconciliation, and warning posture from the shared continuity model.";
+    public string ContinuityDetailText
+    {
+        get => _continuityDetailText;
+        private set => SetProperty(ref _continuityDetailText, value);
+    }
+
+    private string _continuityWarningText = "No shared continuity payload is loaded.";
+    public string ContinuityWarningText
+    {
+        get => _continuityWarningText;
+        private set => SetProperty(ref _continuityWarningText, value);
     }
 
     private string _bucketSummaryText = "-";
@@ -206,10 +229,12 @@ public sealed class CashFlowViewModel : BindableBase
 
     internal CashFlowViewModel(
         StrategyRunWorkspaceService runService,
-        NavigationService navigationService)
+        NavigationService navigationService,
+        StrategyRunContinuityService? continuityService = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _continuityService = continuityService;
         OpenBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
@@ -226,17 +251,25 @@ public sealed class CashFlowViewModel : BindableBase
             return;
         }
 
-        var summary = await _runService.GetCashFlowAsync(runId, ct: ct).ConfigureAwait(false);
+        var summaryTask = _runService.GetCashFlowAsync(runId, ct: ct);
+        var continuityTask = _continuityService?.GetRunContinuityAsync(runId, ct) ??
+                             Task.FromResult<StrategyRunContinuityDetail?>(null);
+
+        await Task.WhenAll(summaryTask, continuityTask).ConfigureAwait(false);
+
+        var summary = await summaryTask.ConfigureAwait(false);
+        var continuity = await continuityTask.ConfigureAwait(false);
         if (summary is null)
         {
             ResetLoadedState($"No cash flow data is available for run '{runId}'.");
+            ApplyContinuity(null);
             return;
         }
 
-        ApplySummary(summary);
+        ApplySummary(summary, continuity);
     }
 
-    private void ApplySummary(RunCashFlowSummary summary)
+    private void ApplySummary(RunCashFlowSummary summary, StrategyRunContinuityDetail? continuity)
     {
         _runId = summary.RunId;
         Title = $"Cash Flow ({summary.RunId[..Math.Min(8, summary.RunId.Length)]})";
@@ -262,6 +295,7 @@ public sealed class CashFlowViewModel : BindableBase
             LadderBuckets.Add(bucket);
         }
 
+        ApplyContinuity(continuity);
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
@@ -283,6 +317,7 @@ public sealed class CashFlowViewModel : BindableBase
         LadderBuckets.Clear();
         SelectedEntry = null;
         StatusText = statusText;
+        ResetContinuityState();
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
@@ -300,7 +335,80 @@ public sealed class CashFlowViewModel : BindableBase
         RaisePropertyChanged(nameof(EntriesEmptyStateDetail));
         RaisePropertyChanged(nameof(LadderEmptyStateTitle));
         RaisePropertyChanged(nameof(LadderEmptyStateDetail));
+        RaisePropertyChanged(nameof(ContinuityPostureText));
+        RaisePropertyChanged(nameof(ContinuityDetailText));
+        RaisePropertyChanged(nameof(ContinuityWarningText));
     }
+
+    private void ApplyContinuity(StrategyRunContinuityDetail? continuity)
+    {
+        if (continuity is null)
+        {
+            ContinuityPostureText = _continuityService is null
+                ? "Shared continuity is not connected in this desktop context."
+                : "Shared continuity is unavailable for this run.";
+            ContinuityDetailText = _continuityService is null
+                ? "Open the WPF shell through the hosted app so the registered continuity service can compare portfolio, ledger, cash-flow, and reconciliation seams."
+                : "The shared continuity service did not return canonical run, portfolio, ledger, cash-flow, and reconciliation posture for this run.";
+            ContinuityWarningText = "No continuity warnings were returned.";
+            return;
+        }
+
+        var status = continuity.ContinuityStatus;
+        ContinuityPostureText = BuildContinuityPostureText(status);
+        ContinuityDetailText =
+            $"Run {FormatSeamHealth(status.RunHealth)}; portfolio {FormatSeamHealth(status.PortfolioHealth)}; ledger {FormatSeamHealth(status.LedgerHealth)}; cash flow {FormatSeamHealth(status.CashFlowHealth)}; reconciliation {FormatSeamHealth(status.ReconciliationHealth)}.";
+        ContinuityWarningText = BuildContinuityWarningText(status);
+    }
+
+    private void ResetContinuityState()
+    {
+        ContinuityPostureText = "Shared continuity appears after a retained run is selected.";
+        ContinuityDetailText = "Select a run to compare portfolio, ledger, cash-flow, reconciliation, and warning posture from the shared continuity model.";
+        ContinuityWarningText = "No shared continuity payload is loaded.";
+    }
+
+    private static string BuildContinuityPostureText(StrategyRunContinuityStatus status)
+    {
+        if (status.Warnings.Any(static warning => warning.Severity == StrategyRunContinuityWarningSeverity.Critical) ||
+            status.OpenReconciliationBreaks > 0)
+        {
+            return "Continuity blocked";
+        }
+
+        if (status.HasWarnings)
+        {
+            return "Continuity needs review";
+        }
+
+        return status.HasRun &&
+               status.HasPortfolio &&
+               status.HasLedger &&
+               status.HasCashFlow &&
+               status.HasReconciliation
+            ? "Continuity ready"
+            : "Continuity incomplete";
+    }
+
+    private static string BuildContinuityWarningText(StrategyRunContinuityStatus status)
+    {
+        var warning = status.Warnings
+            .OrderByDescending(static item => item.Severity)
+            .FirstOrDefault();
+
+        return warning is null
+            ? "No continuity warnings were returned."
+            : $"{warning.Code}: {warning.Message}";
+    }
+
+    private static string FormatSeamHealth(StrategyRunContinuitySeamHealthStatus status)
+        => status switch
+        {
+            StrategyRunContinuitySeamHealthStatus.Healthy => "Healthy",
+            StrategyRunContinuitySeamHealthStatus.Missing => "Missing",
+            StrategyRunContinuitySeamHealthStatus.Stale => "Stale",
+            _ => status.ToString()
+        };
 
     private void OpenRunDetail()
     {

@@ -169,6 +169,45 @@ public sealed class AnalysisExportResponse
     public string[]? Warnings { get; set; }
 }
 
+/// <summary>
+/// Browser and desktop request contract for the shared analysis export endpoint.
+/// </summary>
+public sealed record ExportAnalysisApiRequest(
+    string? ProfileId,
+    string[]? Symbols,
+    string? Format,
+    DateTime? StartDate,
+    DateTime? EndDate);
+
+/// <summary>
+/// File-level evidence returned from an analysis export run.
+/// </summary>
+public sealed record ExportAnalysisApiFile(
+    string Path,
+    string? Symbol,
+    string? Format,
+    long SizeBytes,
+    long RecordCount);
+
+/// <summary>
+/// Shared response contract for the analysis export endpoint.
+/// </summary>
+public sealed record ExportAnalysisApiResponse(
+    string? JobId,
+    bool Success,
+    string Status,
+    string ProfileId,
+    string[]? Symbols,
+    int FilesGenerated,
+    long TotalRecords,
+    long TotalBytes,
+    string? OutputDirectory,
+    double DurationSeconds,
+    string? Error,
+    string[] Warnings,
+    IReadOnlyList<ExportAnalysisApiFile> Files,
+    DateTimeOffset Timestamp);
+
 public sealed class ExportFormatsResponse
 {
     public List<ExportFormatInfo>? Formats { get; set; }

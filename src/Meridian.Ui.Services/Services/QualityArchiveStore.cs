@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Services.Services;
@@ -53,10 +54,21 @@ public sealed class QualityArchiveStore : IQualityArchiveStore
     public QualityArchiveStore(ILogger<QualityArchiveStore> logger)
     {
         _logger = logger;
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var meridianDir = Path.Combine(localAppData, "Meridian");
-        Directory.CreateDirectory(meridianDir);
-        _filePath = Path.Combine(meridianDir, "quality-archive.json");
+        _filePath = GetDefaultArchivePath();
+
+        LoadFromDisk();
+        _logger.LogInformation("QualityArchiveStore initialized with file: {FilePath}", _filePath);
+    }
+
+    internal QualityArchiveStore(ILogger<QualityArchiveStore> logger, string filePath)
+    {
+        _logger = logger;
+        _filePath = Path.GetFullPath(filePath);
+        var directory = Path.GetDirectoryName(_filePath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
 
         LoadFromDisk();
         _logger.LogInformation("QualityArchiveStore initialized with file: {FilePath}", _filePath);
@@ -165,7 +177,7 @@ public sealed class QualityArchiveStore : IQualityArchiveStore
             }
 
             var json = JsonSerializer.Serialize(data, s_jsonOptions);
-            await File.WriteAllTextAsync(_filePath, json, ct).ConfigureAwait(false);
+            await AtomicFileWriter.WriteAsync(_filePath, json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -174,6 +186,14 @@ public sealed class QualityArchiveStore : IQualityArchiveStore
     }
 
     private static string NormalizeSymbol(string symbol) => symbol.ToUpperInvariant();
+
+    private static string GetDefaultArchivePath()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var meridianDir = Path.Combine(localAppData, "Meridian");
+        Directory.CreateDirectory(meridianDir);
+        return Path.Combine(meridianDir, "quality-archive.json");
+    }
 
     private void ThrowIfDisposed()
     {

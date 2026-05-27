@@ -5,12 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Screen recipes</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
 </style>
 </head>
 <body>
   <main class="screen-recipe-shell">
+<a class="preview-home-link" href="index.html">Catalogue</a>
     <header class="screen-recipe-head">
       <div>
         <div class="screen-recipe-sub">Workstation recipes · seven visible workspaces</div>
@@ -45,14 +47,14 @@
       </article>
 
       <article class="screen-recipe-card">
-        <div class="screen-recipe-title"><b>Accounting</b><span>Reconciliation queue</span></div>
+        <div class="screen-recipe-title"><b>Accounting</b><span>Reconciliation and Security Master</span></div>
         <div class="screen-recipe-body">
-          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Queue toolbar, grouped reconciliation table, bottom status window, selected break detail panel.</div></div>
-          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Break age, account, ledger ID, cash movement, matched status, owner, last update, source system.</div></div>
-          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Assign owner, mark reviewed, open ledger, export packet, clear resolved breaks.</div></div>
-          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Pending, observe, critical aging, selected break, disabled close, empty queue, error loading audit.</div></div>
-          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, status-window, row-detail-panel, entity-summary.</div></div>
-          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No reconciliation breaks. Change date scope or refresh. Audit load failed. Retry with same filter set.</div></div>
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Queue toolbar, grouped reconciliation table, reference-workbench command deck, master list, selected security detail, bottom status window.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Break age, account, ledger ID, canonical identifiers, asset class, cash-flow/factor schedule rows, override counts, owner, last update.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Assign owner, mark reviewed, open ledger, inspect security, export packet, import reference data, refresh conflicts, gate bulk edits.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Pending, observe, critical aging, selected break, selected security, hidden overrides, disabled bulk edit, empty queue, error loading audit.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, reference-workbench, status-window, row-detail-panel, entity-summary.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No reconciliation breaks. No securities match filters. Audit load failed. Retry with the same selected account and filter set.</div></div>
         </div>
       </article>
 

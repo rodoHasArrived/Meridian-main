@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Meridian.Application.Ledger;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Storage.DirectLending;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +13,7 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
     private readonly IDirectLendingOperationsStore _operationsStore;
     private readonly IDirectLendingCommandService _commandService;
     private readonly IDirectLendingQueryService _queryService;
+    private readonly IAccountingPolicyService _accountingPolicyService;
     private readonly DirectLendingOptions _options;
     private readonly ILogger<DirectLendingOutboxDispatcher> _logger;
 
@@ -19,13 +22,15 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         IDirectLendingCommandService commandService,
         IDirectLendingQueryService queryService,
         DirectLendingOptions options,
-        ILogger<DirectLendingOutboxDispatcher> logger)
+        ILogger<DirectLendingOutboxDispatcher> logger,
+        IAccountingPolicyService? accountingPolicyService = null)
     {
         _operationsStore = operationsStore;
         _commandService = commandService;
         _queryService = queryService;
         _options = options;
         _logger = logger;
+        _accountingPolicyService = accountingPolicyService ?? new AccountingPolicyService();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -123,6 +128,20 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             return;
         }
 
+        var accountingDate = envelope.EffectiveDate ?? contract.EffectiveDate;
+        var policy = await _accountingPolicyService
+            .ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary, accountingDate), ct)
+            .ConfigureAwait(false);
+        var lineDimensionsJson = JsonSerializer.Serialize(new
+        {
+            accountingBasis = policy.AccountingBasis.ToString(),
+            accountingPolicyId = policy.PolicyId,
+            accountingPolicyVersion = policy.Version,
+            ruleId = sourceEvent.EventType,
+            ruleVersion = policy.Version,
+            sourceEventId = envelope.SourceEventId
+        }, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
         using var payload = JsonDocument.Parse(sourceEvent.PayloadJson);
         var lines = new List<JournalLineDto>();
         var description = sourceEvent.EventType;
@@ -131,8 +150,8 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             case "loan.drawdown-booked":
                 var drawdownAmount = payload.RootElement.GetProperty("amount").GetDecimal();
                 description = "Drawdown funding";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "LoanPrincipal", drawdownAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "Cash", 0m, drawdownAmount, contract.CurrentTerms.BaseCurrency, null));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "LoanPrincipal", drawdownAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "Cash", 0m, drawdownAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.daily-accrual-posted":
@@ -141,36 +160,36 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 description = "Daily accrual";
                 if (interest > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, null));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, null));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
                 if (commitmentFee > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeReceivable", commitmentFee, 0m, contract.CurrentTerms.BaseCurrency, null));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeIncome", 0m, commitmentFee, contract.CurrentTerms.BaseCurrency, null));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeReceivable", commitmentFee, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeIncome", 0m, commitmentFee, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
                 break;
 
             case "loan.mixed-payment-applied":
                 var paymentAmount = payload.RootElement.GetProperty("amount").GetDecimal();
                 description = "Mixed payment";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, null));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.fee-assessed":
                 var feeAmount = payload.RootElement.GetProperty("amount").GetDecimal();
                 description = "Fee assessment";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "FeeReceivable", feeAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "FeeIncome", 0m, feeAmount, contract.CurrentTerms.BaseCurrency, null));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "FeeReceivable", feeAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "FeeIncome", 0m, feeAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.write-off-applied":
                 var writeOffAmount = payload.RootElement.GetProperty("Amount").GetDecimal();
                 description = "Write-off";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "WriteOffExpense", writeOffAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanPrincipal", 0m, writeOffAmount, contract.CurrentTerms.BaseCurrency, null));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "WriteOffExpense", writeOffAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanPrincipal", 0m, writeOffAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.prepayment-penalty-charged":
@@ -178,8 +197,8 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 description = "Prepayment penalty";
                 if (prepaymentPenaltyAmount > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "PenaltyReceivable", prepaymentPenaltyAmount, 0m, contract.CurrentTerms.BaseCurrency, null));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PenaltyIncome", 0m, prepaymentPenaltyAmount, contract.CurrentTerms.BaseCurrency, null));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "PenaltyReceivable", prepaymentPenaltyAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PenaltyIncome", 0m, prepaymentPenaltyAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
                 break;
         }
@@ -192,11 +211,11 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         var entry = new JournalEntryDto(
             Guid.NewGuid(),
             envelope.LoanId,
-            envelope.EffectiveDate ?? contract.EffectiveDate,
-            envelope.EffectiveDate ?? contract.EffectiveDate,
+            accountingDate,
+            accountingDate,
             envelope.SourceEventId,
             sourceEvent.EventType,
-            "Primary",
+            policy.AccountingBasis.ToString(),
             description,
             DateTimeOffset.UtcNow,
             null,

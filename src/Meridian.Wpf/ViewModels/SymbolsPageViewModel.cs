@@ -347,6 +347,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
                 });
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load symbols from configuration", ex);
@@ -643,6 +647,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
                 NotificationType.Success);
             return true;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load watchlist", ex);
@@ -682,6 +690,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             }
 
             await LoadWatchlistsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -799,6 +811,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             _navigationService.NavigateTo("LiveData", _selectedItem.Symbol);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to navigate to Live Data for symbol", ex);
@@ -816,6 +832,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         try
         {
             _navigationService.NavigateTo("OrderBook", _selectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -835,6 +855,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             _navigationService.NavigateTo("Backfill", _selectedItem.Symbol);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to navigate to Backfill for symbol", ex);
@@ -853,6 +877,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             _navigationService.NavigateTo("Charts", _selectedItem.Symbol);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to navigate to Charts for symbol", ex);
@@ -870,6 +898,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         try
         {
             _navigationService.NavigateTo("DataExport", _selectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -905,6 +937,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
             await _configService.SaveSymbolsAsync(symbolDtos);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to persist symbols to config", ex);
@@ -919,6 +955,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             await _symbolManagementService.AddSymbolAsync(
                 symbol, subscribeTrades, subscribeDepth, depthLevels, exchange);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError($"Backend sync failed for add symbol: {symbol}", ex);
@@ -930,6 +970,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         try
         {
             await _symbolManagementService.RemoveSymbolAsync(symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -1055,6 +1099,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             _navigationService.NavigateTo("SecurityMaster", SelectedSymbolTicker);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to navigate to Security Master for adding symbol", ex);
@@ -1082,6 +1130,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         try
         {
             _navigationService.NavigateTo("SecurityMaster", SelectedSymbolSecurityId);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

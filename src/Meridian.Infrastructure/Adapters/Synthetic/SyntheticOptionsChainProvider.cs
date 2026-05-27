@@ -27,8 +27,8 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
     private const int WeeklyCount = 4;
     private const int MonthlyCount = 3;
     private const int QuarterlyCount = 2;
-    internal const int DefaultStrikeRange = 10;
-    internal const int MaxStrikeRange = 100;
+    public const int DefaultStrikeRange = 10;
+    public const int MaxStrikeRange = 100;
 
     private readonly SyntheticMarketDataConfig _config;
 

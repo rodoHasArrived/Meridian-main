@@ -2,12 +2,13 @@
 
 ## Overview
 
-Meridian now uses a desktop-first operator surface plus a local API companion:
+Meridian uses a browser-first operator workstation plus WPF desktop shell and local API surfaces:
 
-1. **WPF Desktop (`Meridian.Wpf`)** for rich Windows-first operator workflows.
-2. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
+1. **Browser workstation (`src/Meridian.Ui/dashboard`)** for new operator-facing workflow delivery, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`.
+2. **WPF Desktop (`Meridian.Wpf`)** as the active Windows desktop shell for operator workflows.
+3. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
 
-These surfaces share contracts and application logic through shared libraries, with clear boundaries between the desktop shell, the local host, and reusable UI functionality.
+These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, WPF desktop shell, the local host, and reusable UI functionality.
 
 ## Layer Diagram
 
@@ -15,10 +16,10 @@ These surfaces share contracts and application logic through shared libraries, w
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                          UI Host Layer                                    │
 │  ┌────────────────────────────┐     ┌──────────────────────────────────┐  │
-│  │ Meridian.Wpf               │     │ src/Meridian                    │  │
-│  │ (Windows desktop host)     │     │ (desktop-local API host)        │  │
-│  │ - XAML views/viewmodels    │     │ - Thin Program.cs host          │  │
-│  │ - WPF-only services        │     │ - localhost APIs + Swagger      │  │
+│  │ Browser workstation        │     │ Meridian.Wpf + src/Meridian     │  │
+│  │ (active operator UI)       │     │ (active desktop + API host)   │  │
+│  │ - React/Vite dashboard     │     │ - XAML desktop shell      │  │
+│  │ - /workstation assets      │     │ - localhost APIs + Swagger      │  │
 │  └──────────────┬─────────────┘     └──────────────────┬───────────────┘  │
 └─────────────────┼────────────────────────────────────────┼──────────────────┘
                   │                                        │
@@ -51,11 +52,17 @@ These surfaces share contracts and application logic through shared libraries, w
 
 ## Project Responsibilities
 
-### `src/Meridian.Wpf/` (Desktop host)
+### `src/Meridian.Ui/dashboard/` (Active browser workstation)
+
+- Owns new operator-facing workflow surfaces and route-level workstation UX.
+- Builds static workstation assets served from `src/Meridian.Ui/wwwroot/workstation/`.
+- Consumes shared contracts, workstation endpoints, and browser view models instead of WPF shell state.
+
+### `src/Meridian.Wpf/` (Active desktop host)
 
 - Owns XAML views, viewmodels, and WPF shell/navigation.
 - Registers DI container and composes page/service graph.
-- Contains truly platform-specific implementations (theme, keyboard shortcuts, windowing, etc.).
+- Contains truly platform-specific implementations (theme, keyboard shortcuts, windowing, retained feature modules, etc.).
 - References `Meridian.Ui.Services` for shared UI/domain helpers and desktop-local API clients.
 
 #### WPF shell MVVM boundary
@@ -87,20 +94,32 @@ These surfaces share contracts and application logic through shared libraries, w
 
 ### ✅ Allowed
 
-1. **WPF host → Ui.Services**
-2. **Desktop-local API host (`src/Meridian`) → Ui.Shared**
-3. **Ui.Shared → Application + Contracts**
-4. **Ui.Services → Contracts models (linked/shared consumption pattern)**
-5. **All UI-facing layers → Contracts**
+1. **Browser dashboard → Ui.Shared endpoint contracts / local API**
+2. **WPF host → Ui.Services**
+3. **Desktop-local API host (`src/Meridian`) → Ui.Shared**
+4. **Ui.Shared → Application + Contracts**
+5. **Ui.Services → Contracts models (linked/shared consumption pattern)**
+6. **All UI-facing layers → Contracts**
 
 ### ❌ Forbidden
 
 1. **Ui.Services → WPF host types** (no dependency back into desktop UI shell)
 2. **Ui.Shared → WPF-only APIs** (must stay host-agnostic)
-3. **WPF host → Ui.Shared endpoint mapping directly** (desktop UI should consume the local API seam or shared services, not re-host endpoint code)
-4. **Contracts → UI or application hosts**
+3. **Browser dashboard → WPF shell state** (new operator workflows should be shared-contract/API-backed)
+4. **WPF host → Ui.Shared endpoint mapping directly** (desktop UI should consume the local API seam or shared services, not re-host endpoint code)
+5. **Contracts → UI or application hosts**
 
 ## Communication Flow
+
+### Browser workstation path
+
+```
+Route/View (React)
+   → Dashboard view model / API client
+   → Desktop-local API (`src/Meridian`)
+   → Ui.Shared endpoint/service mapping
+   → Application services
+```
 
 ### WPF path
 
@@ -124,10 +143,10 @@ HTTP Request
 ## Why this layering
 
 - Keeps each host thin and focused on platform concerns.
-- Keeps the desktop-local API host aligned with the desktop shell without reviving a standalone browser product.
+- Keeps the desktop-local API host aligned with the browser workstation and WPF desktop shell without duplicating business workflow logic.
 - Preserves reusable business-facing UI logic in shared libraries.
 - Supports local tooling and automation against the same APIs without coupling them to WPF code.
 
 ---
 
-*Last Updated: 2026-04-09*
+*Last Updated: 2026-05-22*

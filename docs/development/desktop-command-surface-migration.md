@@ -26,4 +26,5 @@ Meridian now treats **PowerShell scripts under `scripts/dev/` as the authoritati
 
 - Keep desktop automation and workflow docs on PowerShell command examples.
 - Keep Make usage limited to maintained targets that exist in `make/*.mk` (for example `make desktop-build` and `make desktop-test`).
+- Keep `scripts/dev/desktop-dev.ps1` as the bootstrap entry point for desktop developer readiness; it validates the selected workflow profile and uses shared isolated build output by default.
 - Run the desktop command docs lint check (`make docs-lint`) after editing workflow/testing docs.

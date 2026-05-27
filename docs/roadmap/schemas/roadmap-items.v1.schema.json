@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.roadmap-items.v1",
+  "type": "object",
+  "required": ["schema", "registry", "items"],
+  "properties": {
+    "schema": {
+      "type": "object",
+      "required": ["id", "version", "minimum_renderer_version"],
+      "properties": {
+        "id": { "const": "meridian.roadmap-items" },
+        "version": { "type": "string", "pattern": "^1\\." },
+        "minimum_renderer_version": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "registry": { "type": "object" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "wave", "status", "health", "priority", "owner_lane", "evidence_posture", "current_summary", "exit_criteria", "source_modules", "last_reviewed"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "wave": { "type": "string" },
+          "stage_gates": { "type": "array", "items": { "type": "string" } },
+          "workspace": { "type": "array", "items": { "type": "string" } },
+          "owner_lane": { "type": "string" },
+          "status": { "enum": ["planned", "in_progress", "ready_for_acceptance", "accepted", "done"] },
+          "health": { "enum": ["green", "yellow", "red", "on_track", "watch", "at_risk", "blocked"] },
+          "priority": { "type": "string" },
+          "evidence_posture": { "type": "string" },
+          "current_summary": { "type": "string" },
+          "exit_criteria": { "type": "array", "items": { "type": "string" } },
+          "source_modules": { "type": "array", "items": { "type": "string" } },
+          "diagrams": { "type": "array", "items": { "type": "string" } },
+          "evidence": { "type": "array" },
+          "blockers": { "type": "array", "items": { "type": "string" } },
+          "last_reviewed": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

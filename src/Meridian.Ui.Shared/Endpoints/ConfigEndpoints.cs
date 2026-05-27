@@ -41,8 +41,7 @@ public static class ConfigEndpoints
                         keyId = SensitiveValueMasker.Mask(cfg.Alpaca.KeyId),
                         secretKey = SensitiveValueMasker.MaskCompletely(cfg.Alpaca.SecretKey),
                         feed = cfg.Alpaca.Feed,
-                        useSandbox = cfg.Alpaca.UseSandbox,
-                        baseUrl = cfg.Alpaca.BaseUrl
+                        useSandbox = cfg.Alpaca.UseSandbox
                     },
                 storage = cfg.Storage,
                 symbols = cfg.Symbols ?? Array.Empty<SymbolConfig>(),
@@ -196,7 +195,7 @@ public static class ConfigEndpoints
             var next = cfg with { Symbols = list.ToArray() };
             await store.SaveAsync(next);
             return Results.Ok();
-        }).WithName("DeleteSymbol")
+        }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 

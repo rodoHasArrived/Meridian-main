@@ -18,7 +18,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ../..:/workspaces/meridian:cached
+      # Mount only this repository, not its host parent directory.
+      - ..:/workspaces/meridian:cached
     # Keep the container running so VS Code can attach
     command: sleep infinity
     environment:

@@ -19,7 +19,7 @@ public sealed class ResearchWorkspaceShellSmokeTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 

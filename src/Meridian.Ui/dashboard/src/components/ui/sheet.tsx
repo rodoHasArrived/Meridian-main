@@ -1,5 +1,6 @@
-import { type HTMLAttributes, type ReactNode, useEffect, useRef } from "react";
+import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { resolveDialogTabTarget, resolveInitialDialogFocus } from "@/components/ui/dialog.view-model";
 import { cn } from "@/lib/utils";
 
 /**
@@ -41,15 +42,62 @@ interface SheetProps {
 
 export function Sheet({ open, onOpenChange, side = "right", children }: SheetProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  const requestClose = useCallback(() => {
+    onOpenChange?.(false);
+  }, [onOpenChange]);
+
+  const handleDocumentKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!open) {
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      requestClose();
+      return;
+    }
+
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const nextFocus = resolveDialogTabTarget(overlayRef.current, getActiveElement(), event.shiftKey);
+    if (!nextFocus) {
+      return;
+    }
+
+    event.preventDefault();
+    nextFocus.focus();
+  }, [open, requestClose]);
 
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange?.(false);
+    if (!open || typeof window === "undefined") return undefined;
+
+    window.addEventListener("keydown", handleDocumentKeyDown, true);
+    return () => window.removeEventListener("keydown", handleDocumentKeyDown, true);
+  }, [handleDocumentKeyDown, open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    restoreFocusRef.current = getActiveElement();
+    const cancelFocus = scheduleFocus(() => {
+      resolveInitialDialogFocus(overlayRef.current, getActiveElement())?.focus();
+    });
+
+    return () => {
+      cancelFocus();
+
+      const restoreFocus = restoreFocusRef.current;
+      restoreFocusRef.current = null;
+
+      if (restoreFocus?.isConnected) {
+        restoreFocus.focus();
+      }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onOpenChange]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -61,12 +109,34 @@ export function Sheet({ open, onOpenChange, side = "right", children }: SheetPro
         side === "left" ? "justify-start" : "justify-end"
       )}
       onMouseDown={(e) => {
-        if (e.target === overlayRef.current) onOpenChange?.(false);
+        if (e.target === overlayRef.current) requestClose();
       }}
     >
       {children}
     </div>
   );
+}
+
+function getActiveElement(): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return document.activeElement instanceof HTMLElement ? document.activeElement : null;
+}
+
+function scheduleFocus(callback: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  if (typeof window.requestAnimationFrame === "function") {
+    const frame = window.requestAnimationFrame(callback);
+    return () => window.cancelAnimationFrame(frame);
+  }
+
+  const timeout = window.setTimeout(callback, 0);
+  return () => window.clearTimeout(timeout);
 }
 
 interface SheetContentProps extends HTMLAttributes<HTMLDivElement> {
@@ -82,7 +152,7 @@ export function SheetContent({ className, side = "right", ...props }: SheetConte
       tabIndex={-1}
       className={cn(
         "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-float focus:outline-none",
-        side === "left" ? "border-r" : "border-l",
+        side === "left" ? "border-r sheet-slide-left" : "border-l sheet-slide-right",
         className
       )}
       {...props}

@@ -1,0 +1,1 @@
+{"id":"DOC-002","name":"Doc B","status":"completed","health":"yellow","priority":"medium","evidence_posture":"partial","completion_term":"closed","exit_criteria":["Published"],"links":["https://example.invalid/source/DOC-002"],"created_at":"2026-05-01T00:00:00Z","last_updated":"2026-05-20T00:00:00Z"}
