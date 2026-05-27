@@ -13,6 +13,8 @@ public sealed record ReportPackValidationContext(
     int RunCount,
     int SecurityMissingCount,
     IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
+    int StaleReplayCount = 0,
+    int UnresolvedSecurityMasterConflictCount = 0,
     IReadOnlyList<SecurityValidationGateResultDto>? SecurityValidationResults = null);
 
 public sealed class ReportPackValidationService
@@ -80,12 +82,38 @@ public sealed class ReportPackValidationService
             issues.Add(Issue(
                 context,
                 "report-pack.open-reconciliation-breaks",
-                GovernanceReportValidationSeverityDto.Warning,
+                GovernanceReportValidationSeverityDto.Critical,
                 "Open reconciliation breaks",
                 $"{context.Reconciliation.OpenBreakCount} open reconciliation break(s) were present at generation time.",
                 affectedSection: "reconciliation",
                 suggestedAction: "Resolve or approve reconciliation breaks before final report-pack sign-off.",
                 evidenceLink: "/workstation/accounting/reconciliation"));
+        }
+
+        if (context.StaleReplayCount > 0)
+        {
+            issues.Add(Issue(
+                context,
+                "report-pack.stale-replay-evidence",
+                GovernanceReportValidationSeverityDto.Critical,
+                "Stale replay evidence",
+                $"{context.StaleReplayCount} replay verification evidence item(s) are stale for this report pack context.",
+                affectedSection: "execution-replay",
+                suggestedAction: "Re-run paper replay verification and regenerate report-pack evidence before publishing.",
+                evidenceLink: "/workstation/trading/readiness"));
+        }
+
+        if (context.UnresolvedSecurityMasterConflictCount > 0)
+        {
+            issues.Add(Issue(
+                context,
+                "report-pack.unresolved-security-master-conflicts",
+                GovernanceReportValidationSeverityDto.Critical,
+                "Unresolved Security Master conflicts",
+                $"{context.UnresolvedSecurityMasterConflictCount} unresolved Security Master conflict(s) block publication readiness.",
+                affectedSection: "security-master",
+                suggestedAction: "Resolve Security Master conflicts and refresh downstream report-pack lineage evidence.",
+                evidenceLink: "/workstation/data/security-master"));
         }
 
         if (context.Ledger.JournalEntryCount == 0 || context.Ledger.LedgerEntryCount == 0)

@@ -1247,6 +1247,7 @@ public sealed partial class WorkstationEndpointsTests
                     OpenReconciliationBreakCount: 0,
                     SecurityResolvedCount: 1,
                     SecurityMissingCount: 0,
+                    LineagePointers: [],
                     SourceSnapshotHash: new string('a', 64)),
                 Artifacts: [],
                 Warnings: [])
