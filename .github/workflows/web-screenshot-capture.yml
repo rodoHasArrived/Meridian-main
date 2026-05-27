@@ -26,6 +26,7 @@ concurrency:
 
 env:
   CI: true
+  PLAYWRIGHT_INSTALL_TIMEOUT: 12m
 
 jobs:
   capture-web-screenshots:
@@ -53,7 +54,7 @@ jobs:
       - name: Install Playwright browser
         run: |
           set -euo pipefail
-          if timeout 12m npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium; then
+          if timeout "$PLAYWRIGHT_INSTALL_TIMEOUT" npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium; then
             echo "[INFO] Playwright browser and dependency install completed."
           else
             echo "::warning::Playwright install with dependencies timed out or failed; retrying browser-only install."
