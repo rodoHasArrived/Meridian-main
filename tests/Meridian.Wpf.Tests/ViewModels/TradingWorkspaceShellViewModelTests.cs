@@ -339,6 +339,119 @@ public sealed class TradingWorkspaceShellViewModelTests
     }
 
     [Fact]
+    public void BuildDeskHeroState_AfterBlockerClearsOnRefresh_RecoveriesToReadyPosture()
+    {
+        // Step 1: build the blocked state as it would look before a refresh
+        var blockedReadiness = CreateReadiness(
+            workItems:
+            [
+                new OperatorWorkItemDto(
+                    WorkItemId: "replay-stale-recovery-1",
+                    Kind: OperatorWorkItemKindDto.PaperReplay,
+                    Label: "Replay verification is stale",
+                    Detail: "Session state changed after the last replay audit.",
+                    Tone: OperatorWorkItemToneDto.Critical,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 30, 0, TimeSpan.Zero),
+                    TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                    TargetPageTag: "TradingShell")
+            ],
+            overallStatus: TradingAcceptanceGateStatusDto.Blocked,
+            readyForPaperOperation: false);
+
+        var blockedHero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-recovery-1", "Recovery Desk", "Paper"),
+            workflow: null,
+            blockedReadiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Recovery Desk");
+
+        blockedHero.FocusLabel.Should().Be("Readiness blocked",
+            "the desk hero must reflect the blocked posture before the blocker clears");
+
+        // Step 2: simulate a refresh that returns a cleared state (no work items, ready)
+        var clearedReadiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true);
+
+        var clearedHero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-recovery-1", "Recovery Desk", "Paper"),
+            workflow: null,
+            clearedReadiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Recovery Desk");
+
+        clearedHero.BadgeText.Should().Be("Ready",
+            "after refresh returns a cleared readiness payload the hero must show Ready");
+        clearedHero.FocusLabel.Should().NotBe("Readiness blocked",
+            "stale blocked state must not persist once the shared endpoint returns no blocking items");
+        clearedHero.FocusLabel.Should().Be("Paper oversight",
+            "the cleared hero must project the paper oversight posture");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_ReplayBlockerClearsAfterVerification_RecoversToPaperOversight()
+    {
+        // Before verification: replay is inconsistent and blocks paper operation
+        var replayBlockedReadiness = CreateReadiness(
+            replay: new TradingReplayReadinessDto(
+                SessionId: "paper-verify-recovery",
+                ReplaySource: "local",
+                IsConsistent: false,
+                ComparedFillCount: 10,
+                ComparedOrderCount: 8,
+                ComparedLedgerEntryCount: 6,
+                VerifiedAt: new DateTimeOffset(2026, 4, 27, 14, 0, 0, TimeSpan.Zero),
+                LastPersistedFillAt: null,
+                LastPersistedOrderUpdateAt: null,
+                VerificationAuditId: "audit-stale",
+                MismatchReasons: ["Fill count mismatch: expected 10, found 8."]),
+            workItems:
+            [
+                new OperatorWorkItemDto(
+                    WorkItemId: "replay-mismatch-recovery",
+                    Kind: OperatorWorkItemKindDto.PaperReplay,
+                    Label: "Replay mismatch detected",
+                    Detail: "Fill count mismatch: expected 10, found 8.",
+                    Tone: OperatorWorkItemToneDto.Critical,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 14, 5, 0, TimeSpan.Zero),
+                    TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                    TargetPageTag: "TradingShell")
+            ],
+            overallStatus: TradingAcceptanceGateStatusDto.Blocked,
+            readyForPaperOperation: false);
+
+        var blockedHero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-verify-recovery", "Verify Desk", "Paper"),
+            workflow: null,
+            replayBlockedReadiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Verify Desk");
+
+        blockedHero.FocusLabel.Should().Be("Replay",
+            "before recovery the hero must focus on the replay blocker");
+        blockedHero.PrimaryActionId.Should().Be("FundAuditTrail");
+
+        // After successful verification: replay is consistent, no blocking work items
+        var replayVerifiedReadiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true);
+
+        var recoveredHero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("paper-verify-recovery", "Verify Desk", "Paper"),
+            workflow: null,
+            replayVerifiedReadiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Verify Desk");
+
+        recoveredHero.BadgeText.Should().Be("Ready",
+            "a successful replay verification must recover the desk hero to Ready");
+        recoveredHero.FocusLabel.Should().NotBe("Replay",
+            "the replay-mismatch posture must not persist after the shared endpoint returns a consistent replay");
+    }
+
+    [Fact]
     public void ExecuteCommandAction_WithNoActiveRun_RaisesAccountPortfolioRequest()
     {
         var viewModel = new TradingWorkspaceShellViewModel();

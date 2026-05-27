@@ -2355,6 +2355,109 @@ describe("trading readiness fund account threading", () => {
   });
 });
 
+// ─── Lane A / W2 blocker-path recovery: browser parity ───────────────────────
+
+describe("trading readiness blocker recovery", () => {
+  it("drops blocked work items from view state when refresh returns an empty work-item list", () => {
+    // Step 1: build blocked state as seen before recovery
+    const blockedState = buildTradingReadinessState({
+      readiness: blockedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(blockedState.hasOperatorAttention).toBe(true);
+    expect(blockedState.visibleWorkItems).toHaveLength(1);
+    expect(blockedState.visibleWorkItems[0].tone).toBe("Critical");
+
+    // Step 2: simulate the refresh returning a cleared readiness payload
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:30:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      brokerageSync: {
+        ...blockedReadiness.brokerageSync!,
+        health: "Healthy",
+        isStale: false,
+        lastError: null,
+        warnings: []
+      },
+      workItems: [],
+      warnings: []
+    };
+
+    const clearedState = buildTradingReadinessState({
+      readiness: clearedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(clearedState.hasOperatorAttention).toBe(false,
+      "cleared readiness must not surface any operator attention state");
+    expect(clearedState.visibleWorkItems).toHaveLength(0,
+      "stale blocked work items must not persist after refresh returns an empty list");
+    expect(clearedState.workItemSummaryText).toBe("0 readiness items and 0 warnings.",
+      "the work item summary must reflect the cleared state");
+  });
+
+  it("transitions status announcement from blocked to ready when blockers clear", () => {
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:35:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      workItems: [],
+      warnings: []
+    };
+
+    const state = buildTradingReadinessState({
+      readiness: clearedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.statusAnnouncement).toContain("ready",
+      "the status announcement must reflect Ready after blockers clear — not repeat the previous Blocked copy");
+    expect(state.statusAnnouncement).not.toContain("blocked");
+  });
+
+  it("refresh via hook applies cleared readiness payload and drops blocked work items", async () => {
+    const blockerWorkItem = blockedReadiness.workItems[0];
+    expect(blockerWorkItem).toBeDefined();
+
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:40:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      workItems: [],
+      warnings: []
+    };
+
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>()
+      .mockResolvedValueOnce(clearedReadiness);
+    const services: TradingReadinessServices = { getTradingReadiness };
+
+    const { result } = renderHook(() =>
+      useTradingReadinessViewModel({ initialReadiness: blockedReadiness, services })
+    );
+
+    expect(result.current.readiness?.workItems).toHaveLength(1);
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(result.current.readiness?.workItems).toHaveLength(0,
+      "the hook must replace the stale blocked payload with the cleared refresh result");
+    expect(result.current.readiness?.overallStatus).toBe("Ready",
+      "overall readiness status must update to Ready after the cleared payload is applied");
+    expect(result.current.readiness?.readyForPaperOperation).toBe(true,
+      "readyForPaperOperation must become true once all blockers are cleared");
+  });
+});
+
 // ─── Milestone 7: Green cockpit proof ────────────────────────────────────────
 
 describe("green cockpit: ReadyForPaperOperation proof", () => {

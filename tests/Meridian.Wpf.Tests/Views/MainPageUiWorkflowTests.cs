@@ -503,6 +503,56 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_OperatorInboxWorkflow_BlockerItemNavigatesToSharedTargetPage()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            // Arrange: a critical PaperReplay blocker carrying the shared TradingShell target
+            var operatorInboxClient = new RecordingOperatorInboxApiClient(
+                new OperatorInboxDto(
+                    AsOf: DateTimeOffset.UtcNow,
+                    Items:
+                    [
+                        new OperatorWorkItemDto(
+                            WorkItemId: "paper-replay-blocker-ui-workflow",
+                            Kind: OperatorWorkItemKindDto.PaperReplay,
+                            Label: "Replay verification required",
+                            Detail: "Session changed after the last replay audit. Verify before paper operation.",
+                            Tone: OperatorWorkItemToneDto.Critical,
+                            CreatedAt: DateTimeOffset.UtcNow,
+                            TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                            TargetPageTag: "TradingShell")
+                    ],
+                    CriticalCount: 1,
+                    WarningCount: 0,
+                    ReviewCount: 1,
+                    Summary: "1 critical item is blocking paper operation."));
+
+            using var facade = new MainPageUiAutomationFacade(operatorInboxApiClient: operatorInboxClient);
+            await WaitForConditionAsync(() => facade.ViewModel.OperatorInboxReviewCount == 1).ConfigureAwait(true);
+
+            // Assert: inbox presents the correct tone and label before navigation
+            facade.ViewModel.OperatorInboxTone.Should().Be(WorkspaceTone.Danger,
+                "a Critical PaperReplay blocker must surface as Danger tone in the shell");
+            facade.ViewModel.OperatorInboxPrimaryLabel.Should().Contain("Replay verification required",
+                "the blocker work item label must be visible in the inbox primary label");
+            facade.ViewModel.OperatorInboxTargetText.Should().Be("TradingShell",
+                "the shared TargetPageTag from the work item must drive WPF navigation");
+
+            // Act: operator opens the inbox queue to act on the blocker
+            facade.Click(facade.OperatorInboxButton);
+
+            // Assert: WPF navigates to the shared target — not a desktop-only page
+            facade.ViewModel.CurrentPageTag.Should().Be("TradingShell",
+                "WPF must navigate to TradingShell as specified by the shared TargetPageTag");
+            facade.ViewModel.CurrentWorkspace.Should().Be("trading",
+                "the trading workspace must be activated when navigating to TradingShell");
+            facade.ShellAutomationStateText.Text.Should().Be("TradingShell",
+                "the shell automation state must reflect the navigation target for accessibility");
+        });
+    }
+
+    [Fact]
     public void MainPage_AccountingDeepLink_ShouldAnnounceWorkbenchTarget()
     {
         WpfTestThread.Run(async () =>
