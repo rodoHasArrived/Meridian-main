@@ -96,11 +96,11 @@ jobs:
             echo "[INFO] No changes to commit."
           else
             git commit -m "chore: refresh web workstation screenshot catalog [skip ci]"
-            pushed=false
+            pushed=0
             for attempt in 1 2 3; do
               git pull --rebase
               if git push; then
-                pushed=true
+                pushed=1
                 break
               fi
 
@@ -110,7 +110,7 @@ jobs:
               fi
             done
 
-            if [ "$pushed" != true ]; then
+            if [ "$pushed" -ne 1 ]; then
               echo "::error::Unable to push screenshot updates after 3 attempts."
               exit 1
             fi
