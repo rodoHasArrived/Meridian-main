@@ -788,9 +788,12 @@ export interface SettingsProviderConnectionRow {
   rowAnchorId: string;
   displayName: string;
   capabilityLabel: string;
+  capabilityGroup: "brokerage" | "data";
   credentialLabel: string;
   credentialTone: "default" | "success" | "warning" | "danger" | "muted";
+  credentialStatus: "present" | "missing" | "not-required";
   verificationLabel: string;
+  verificationStatus: "verified" | "pending" | "failed";
   healthLabel: string;
   healthTone: "default" | "success" | "warning" | "danger" | "muted";
   sourceLabel: string;
@@ -798,6 +801,7 @@ export interface SettingsProviderConnectionRow {
   maskedKeyPreviewLabel: string;
   lastHeartbeatLabel: string;
   fallbackLabel: string;
+  fallbackStatus: "active" | "available" | "missing";
   routingBindingsLabel: string;
   trustScoreLabel: string;
   productionStateLabel: string;
@@ -1739,8 +1743,8 @@ function buildProviderConnectionCenter(
         buildProviderRoutingRowContext(connection, bindingRows, trustRows)
       ))
   ];
-  const brokerageRows = rows.filter((row) => row.capabilityLabel.includes("Brokerage"));
-  const dataRows = rows.filter((row) => !row.capabilityLabel.includes("Brokerage"));
+  const brokerageRows = rows.filter((row) => row.capabilityGroup === "brokerage");
+  const dataRows = rows.filter((row) => row.capabilityGroup === "data");
   const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
   const warningCount = rows.filter((row) => row.healthTone === "warning").length;
   const verifiedCount = rows.filter((row) => row.credentialLabel === "Verified" || row.credentialLabel === "Not required").length;
@@ -1809,9 +1813,20 @@ function buildProviderConnectionRow(
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
     displayName: row.displayName,
     capabilityLabel: providerCapabilityLabel(row.capability),
+    capabilityGroup: row.capability === "Brokerage" || row.capability === "DataAndBrokerage" ? "brokerage" : "data",
     credentialLabel: providerCredentialLabel(row.credentialState),
     credentialTone,
+    credentialStatus: row.credentialState === "NotRequired"
+      ? "not-required"
+      : row.credentialState === "Missing" || row.credentialState === "Partial" || row.credentialState === "Invalid"
+        ? "missing"
+        : "present",
     verificationLabel: providerVerificationLabel(row.verificationState),
+    verificationStatus: row.verificationState === "Failed"
+      ? "failed"
+      : row.verificationState === "Verified" || row.verificationState === "NotRequired"
+        ? "verified"
+        : "pending",
     healthLabel: providerHealthLabel(row.health),
     healthTone,
     sourceLabel: providerCredentialSourceLabel(row.credentialSource),
@@ -1819,6 +1834,7 @@ function buildProviderConnectionRow(
     maskedKeyPreviewLabel: row.maskedKeyPreview ?? "Masked after save",
     lastHeartbeatLabel: formatSettingsUtcMinute(row.lastSuccessfulAt ?? row.lastVerifiedAt),
     fallbackLabel: row.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(routingContext.bindings),
+    fallbackStatus: row.fallbackActive ? "active" : routingContext.bindings.length > 0 ? "available" : "missing",
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
     productionStateLabel: providerRoutingProductionStateLabel(routingContext.connection),
@@ -1848,9 +1864,14 @@ function buildProviderRoutingConnectionRow(
     rowAnchorId: `provider-${connection.connectionId}-connection`,
     displayName: connection.displayName,
     capabilityLabel: providerRoutingCapabilityLabel(routingContext.bindings, connection),
+    capabilityGroup: routingContext.bindings.some((binding) => providerRoutingCapabilityGroup(binding.capability) === "brokerage")
+      ? "brokerage"
+      : "data",
     credentialLabel: credentialConfigured ? "Configured" : "Not required",
     credentialTone,
+    credentialStatus: credentialConfigured ? "present" : "not-required",
     verificationLabel: connection.productionReady ? "Certified" : "Certification pending",
+    verificationStatus: connection.productionReady ? "verified" : "pending",
     healthLabel: providerRoutingHealthLabel(connection, routingContext.trustSnapshot),
     healthTone,
     sourceLabel: credentialConfigured ? "Vault reference" : "Not required",
@@ -1858,6 +1879,11 @@ function buildProviderRoutingConnectionRow(
     maskedKeyPreviewLabel: "Hidden by routing API",
     lastHeartbeatLabel: "Live routing snapshot",
     fallbackLabel: providerRoutingFallbackLabel(routingContext.bindings),
+    fallbackStatus: routingContext.bindings.length === 0
+      ? "missing"
+      : routingContext.bindings.some((binding) => binding.failoverConnectionIds.length > 0)
+        ? "active"
+        : "available",
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
     productionStateLabel: providerRoutingProductionStateLabel(connection),
