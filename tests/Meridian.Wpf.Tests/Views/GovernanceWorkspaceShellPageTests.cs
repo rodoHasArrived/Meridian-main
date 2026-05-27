@@ -227,4 +227,94 @@ public sealed class GovernanceWorkspaceShellPageTests
         hero.SecondaryActionLabel.Should().Be("Audit Trail");
         hero.TargetLabel.Should().Be("Target page: FundReconciliation");
     }
+
+    [Fact]
+    public void BuildLaneSummaries_WithGovernanceProjection_UsesSharedLifecyclePosture()
+    {
+        var asOf = new DateTimeOffset(2026, 4, 25, 15, 30, 0, TimeSpan.Zero);
+        var profile = new FundProfileDetail(
+            FundProfileId: "fund-001",
+            DisplayName: "Atlas Opportunities",
+            LegalEntityName: "Atlas Opportunities LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "governance",
+            DefaultLandingPageTag: "GovernanceShell",
+            DefaultLedgerScope: FundLedgerScope.Consolidated);
+        var workspace = new FundOperationsWorkspaceDto(
+            FundProfileId: profile.FundProfileId,
+            DisplayName: profile.DisplayName,
+            BaseCurrency: profile.BaseCurrency,
+            AsOf: asOf,
+            RecordedRunCount: 1,
+            RelatedRunIds: ["paper-run-1"],
+            Workspace: new FundWorkspaceSummary(
+                FundProfileId: profile.FundProfileId,
+                FundDisplayName: profile.DisplayName,
+                BaseCurrency: profile.BaseCurrency,
+                AsOf: asOf,
+                TotalAccounts: 1,
+                BankAccountCount: 1,
+                BrokerageAccountCount: 0,
+                CustodyAccountCount: 0,
+                TotalCash: 100m,
+                GrossExposure: 100m,
+                NetExposure: 100m,
+                TotalEquity: 100m,
+                FinancingCost: 0m,
+                PendingSettlement: 0m,
+                OpenReconciliationBreaks: 0,
+                ReconciliationRuns: 1,
+                JournalEntryCount: 1,
+                TrialBalanceLineCount: 1),
+            Ledger: new FundLedgerSummary(
+                FundProfileId: profile.FundProfileId,
+                FundDisplayName: profile.DisplayName,
+                ScopeKind: FundLedgerScope.Consolidated,
+                ScopeId: null,
+                AsOf: asOf,
+                JournalEntryCount: 1,
+                LedgerEntryCount: 1,
+                AssetBalance: 100m,
+                LiabilityBalance: 0m,
+                EquityBalance: 100m,
+                RevenueBalance: 0m,
+                ExpenseBalance: 0m,
+                TrialBalance: [new FundTrialBalanceLine("Cash", "Asset", "USD", "fa-1", 100m, 1)],
+                Journal: [new FundJournalLine(Guid.NewGuid(), asOf, "Daily close", 100m, 100m, 2)],
+                EntityCount: 1,
+                SleeveCount: 0,
+                VehicleCount: 0),
+            LedgerReconciliationSnapshot: new FundLedgerReconciliationSnapshot(
+                FundProfileId: profile.FundProfileId,
+                AsOf: asOf,
+                Consolidated: new FundLedgerDimensionSnapshot(asOf, 1, 1, []),
+                Entities: new Dictionary<string, FundLedgerDimensionSnapshot>(),
+                Sleeves: new Dictionary<string, FundLedgerDimensionSnapshot>(),
+                Vehicles: new Dictionary<string, FundLedgerDimensionSnapshot>()),
+            Accounts: [],
+            BankSnapshots: [],
+            CashFinancing: new CashFinancingSummary("USD", 100m, 0m, 0m, 0m, 0m, 0m, 100m, 0m, 100m, 100m, 100m, []),
+            Reconciliation: new ReconciliationSummary(1, 0, 0m, []),
+            Nav: new FundNavAttributionSummaryDto("USD", 100m, 1, 1, 0, 0, []),
+            Reporting: new FundReportingSummaryDto(1, ["excel"], ["board"], [], "ready"),
+            Governance: new GovernanceLifecycleProjectionDto(
+                DecisionPosture: "Reconciliation decisions are cleared in shared lifecycle state.",
+                SignoffPosture: "Sign-off is submitted and awaiting reviewer decision in shared lifecycle.",
+                CloseReadiness: "Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.",
+                AuditTraceability: "Traceability is backed by 3 lifecycle event(s) and 5 evidence reference(s).",
+                TimelineEventCount: 3,
+                EvidenceReferenceCount: 5));
+
+        var summaries = GovernanceWorkspacePresentationService.BuildLaneSummaries(
+            profile,
+            workspace,
+            workflow: null,
+            notifications: [],
+            unreadAlerts: 0);
+
+        summaries.Reconciliation.Summary.Should().Contain("shared lifecycle");
+        summaries.Reconciliation.Detail.Should().Contain("Sign-off is submitted");
+        summaries.Reporting.Detail.Should().Contain("Close readiness remains blocked");
+        summaries.Audit.Summary.Should().Contain("Traceability is backed");
+    }
 }
