@@ -289,3 +289,36 @@ public sealed record FundReportPackHistoryItemDto(
 
     public int LifecycleEventCount { get; init; }
 }
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportPackWorkflowStateDto>))]
+public enum ReportPackWorkflowStateDto
+{
+    Draft = 0,
+    InReview = 1,
+    Approved = 2,
+    Published = 3,
+    Restated = 4
+}
+
+public sealed record VersionedReportTemplateIdDto(string Name, int Version);
+public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
+public sealed record ReportTemplateDefinitionDto(VersionedReportTemplateIdDto TemplateId, string DisplayName, IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters);
+public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters);
+public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
+
+public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue);
+public sealed record ReportPackRestatementMetadataDto(string ReasonCode, string Approver, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines);
+public sealed record ReportPackWorkflowRecordDto(
+    Guid ReportId,
+    string FundProfileId,
+    string FundAccountId,
+    string Period,
+    VersionedReportTemplateIdDto TemplateId,
+    ReportPackWorkflowStateDto State,
+    int Version,
+    DateTimeOffset CreatedAt,
+    string CreatedBy,
+    DateTimeOffset UpdatedAt,
+    IReadOnlyList<ReportPackAuditEventDto> AuditTrail,
+    ReportPackRestatementMetadataDto? Restatement);

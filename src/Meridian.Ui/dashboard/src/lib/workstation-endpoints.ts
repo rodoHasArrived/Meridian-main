@@ -6,6 +6,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingReadiness: "/api/workstation/trading/readiness",
   operatorInbox: "/api/workstation/operator/inbox",
   portfolio: "/api/workstation/portfolio",
+  portfolioSummary: "/api/workstation/portfolio/summary",
   data: "/api/workstation/data",
   accounting: "/api/workstation/accounting",
   reporting: "/api/workstation/reporting",

@@ -483,6 +483,31 @@ public sealed class EvidenceWorkflowFabricTests
             IsRouteOnlyArtifact(artifact, "ledger-trial-balance", "/api/workstation/runs/run-ledger-proof/ledger/trial-balance"));
     }
 
+    [Fact]
+    public async Task EvidenceEndpoints_VaultSearch_FindsBundlesByRunReportPackAndReconciliationCase()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new EvidencePacketExportRequest("operator", "seed")
+            {
+                Linkage = new EvidenceSubjectLinkageDto("report-pack/current", "run-123", "period-2026-05", "rp-55", "case-77")
+            });
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(null, "run-123", null, "rp-55", "case-77"));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var matches = await response.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        matches.Should().NotBeNull();
+        matches!.Should().ContainSingle();
+        matches[0].SubjectKind.Should().Be("report-pack");
+        matches[0].SubjectId.Should().Be("current");
+    }
+
     private static EvidenceGraphService CreateGraphService(IReadOnlyList<IEvidenceContributor> contributors)
     {
         var services = new ServiceCollection().BuildServiceProvider();

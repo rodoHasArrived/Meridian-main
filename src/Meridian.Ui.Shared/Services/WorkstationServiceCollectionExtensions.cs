@@ -60,6 +60,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
+        services.TryAddSingleton<SensitiveActionPolicyEngine>();
+        services.TryAddSingleton<ImmutableAuditLogService>();
+        services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
@@ -94,9 +97,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
 
+        services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
+
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
@@ -105,6 +111,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<ReportPackValidationService>();
+        services.TryAddSingleton<ReportTemplateRegistryService>();
+        services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
