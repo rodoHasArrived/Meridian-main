@@ -155,6 +155,7 @@ public static class UiEndpoints
         app.MapCronEndpoints(jsonOptions);
         app.MapLeanEndpoints(jsonOptions);
         app.MapMessagingEndpoints(jsonOptions);
+        app.MapOmsIntegrationEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
         if (mapCppTraderEndpoints)
         {

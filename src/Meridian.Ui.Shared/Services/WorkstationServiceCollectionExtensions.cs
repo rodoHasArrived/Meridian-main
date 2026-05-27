@@ -157,6 +157,7 @@ public static class WorkstationServiceCollectionExtensions
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
+        services.TryAddSingleton<OmsIntegrationService>();
         services.AddCoveredCallBacktestServices();
 
         return services;
