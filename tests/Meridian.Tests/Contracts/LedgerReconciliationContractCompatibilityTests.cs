@@ -83,6 +83,39 @@ public sealed class LedgerReconciliationContractCompatibilityTests
 
         AssertMembers(typeof(StrategyRunContinuityDto),
             "Run", "Lineage", "CashFlow", "Reconciliation", "ContinuityStatus");
+
+        AssertMembers(typeof(ReconciliationSchemaVersion),
+            "ContractName", "Major", "Minor", "Patch", "ContentType");
+
+        AssertMembers(typeof(ReconciliationCorrelationContext),
+            "TraceId", "SpanId", "ParentSpanId", "WorkflowId", "JobId");
+
+        AssertMembers(typeof(ReconciliationPayloadEnvelope<ReconciliationRunSummary>),
+            "PayloadId", "Schema", "Correlation", "CreatedAt", "Producer", "Direction", "IdempotencyKey", "Payload");
+    }
+
+    [Fact]
+    public void ReconciliationEnvelope_SerializesCanonicalVersionAndCorrelationShape()
+    {
+        var envelope = new ReconciliationPayloadEnvelope<ReconciliationRunSummary>(
+            PayloadId: "payload-1",
+            Schema: new ReconciliationSchemaVersion("ReconciliationRunSummary", 1, 0, 0),
+            Correlation: new ReconciliationCorrelationContext("trace-1", "span-1", "parent-1", "workflow-1", "job-1"),
+            CreatedAt: DateTimeOffset.Parse("2026-01-05T12:00:00Z"),
+            Producer: "workstation-api",
+            Direction: "outbound",
+            IdempotencyKey: "recon:run-1:v1",
+            Payload: new ReconciliationRunSummary(
+                "recon-1", "run-1", DateTimeOffset.Parse("2026-01-05T12:00:00Z"),
+                null, null, 12, 1, 1, false, 0.01m, 5));
+
+        var json = JsonSerializer.Serialize(envelope, JsonOptions);
+        Assert.Contains("\"schema\"", json);
+        Assert.Contains("\"correlation\"", json);
+        Assert.Contains("\"contractName\":\"ReconciliationRunSummary\"", json);
+        Assert.Contains("\"major\":1", json);
+        Assert.Contains("\"traceId\":\"trace-1\"", json);
+        Assert.Contains("\"idempotencyKey\":\"recon:run-1:v1\"", json);
     }
 
     private static void AssertMembers(Type type, params string[] expectedMembers)
