@@ -161,6 +161,11 @@ The same 2026-05-27 desktop pass added W4 support evidence in Fund Ledger: selec
 breaks now show lifecycle and required sign-off posture from shared queue metadata in the retained
 WPF detail panel. Treat this as blocker-path support evidence, not durable close/casework
 acceptance, until operations-continuity and browser-parity gates are green.
+It also added W3 support evidence in Run Cash Flow: the retained WPF cash-flow drill-in now consumes
+`StrategyRunContinuityService` and shows shared portfolio, ledger, cash-flow, reconciliation, and
+warning posture for the selected run. Treat this as blocker-path support evidence, not Milestone 2
+completion, until the full run -> portfolio -> ledger -> reconciliation workflow and browser parity
+are proven.
 
 ---
 

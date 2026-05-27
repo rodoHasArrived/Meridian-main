@@ -50,6 +50,7 @@ The target lanes are:
 ## Current Support Evidence
 
 - 2026-05-27: Lane C blocker-path support evidence now includes selected Fund Ledger reconciliation-break lifecycle and sign-off posture projected from shared break queue rows into `FundLedgerViewModel`/`FundLedgerPage`. Focused validation: `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundLedgerViewModelTests|FullyQualifiedName~FundReconciliationWorkbenchServiceTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:UseSharedCompilation=false -maxcpucount:1 --logger "console;verbosity=normal"` (9 passed). This is W4 support evidence only; durable close/casework acceptance still requires the operations-continuity and browser-parity gates in the matrix.
+- 2026-05-27: Lane B blocker-path support evidence now includes Run Cash Flow continuity posture projected from `StrategyRunContinuityService` into `CashFlowViewModel`/`RunCashFlowPage`. Focused validation: `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~CashFlowViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:UseSharedCompilation=false -maxcpucount:1 --logger "console;verbosity=normal"` (15 passed). This is W3 support evidence only; Milestone 2 still requires the broader run -> portfolio -> ledger -> reconciliation happy/blocker/recovery proof and browser parity.
 
 ## Validation Command Patterns
 
