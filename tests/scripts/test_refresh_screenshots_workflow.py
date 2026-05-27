@@ -26,8 +26,12 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
         self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package.json", self.web_workflow)
         self.assertIn("find \"$OUTPUT_DIR\" -maxdepth 1 -type f -name '*.png' -delete", self.web_workflow)
+        self.assertIn("pull-requests: write", self.web_workflow)
+        self.assertIn("uses: peter-evans/create-pull-request@v7", self.web_workflow)
+        self.assertIn("title: \"chore: refresh web workstation screenshot catalog\"", self.web_workflow)
         self.assertNotIn("npm ci", self.web_workflow)
         self.assertNotIn("package-lock.json", self.web_workflow)
+        self.assertNotIn("git push", self.web_workflow)
         self.assertNotIn("<<<<<<<", self.web_workflow)
         self.assertNotIn(">>>>>>>", self.web_workflow)
 
