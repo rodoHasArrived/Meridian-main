@@ -542,6 +542,7 @@ public sealed record OperationsSubmitApprovalRequestDto(
     string Reviewer,
     string Rationale,
     string ReportPackId,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
@@ -551,6 +552,7 @@ public sealed record OperationsApprovalDecisionRequestDto(
     string Reviewer,
     string Rationale,
     string ReportPackId,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
