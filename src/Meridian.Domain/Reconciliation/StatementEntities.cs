@@ -47,3 +47,27 @@ public sealed record ReconciliationCaseHistoryEntry(
     public string Actor { get; init; } = "system";
     public string? EvidenceId { get; init; }
 }
+
+
+public sealed record StatementReconciliationRun(
+    string RunId,
+    string ImportId,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset CompletedAtUtc,
+    int PositionMatches,
+    int CashMatches,
+    int TransactionMatches,
+    int OpenExceptionCount);
+
+public sealed record ReconciliationBreakRecord(
+    string BreakId,
+    string RunId,
+    string ImportId,
+    string SourceReference,
+    string BreakCode,
+    string Category,
+    decimal Delta,
+    decimal Tolerance,
+    bool ToleranceBreached,
+    DateTimeOffset CreatedAtUtc,
+    string Status);
