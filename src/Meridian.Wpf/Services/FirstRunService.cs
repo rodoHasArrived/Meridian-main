@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Application.Config;
 using Meridian.Contracts.Configuration;
 
 namespace Meridian.Wpf.Services;
@@ -186,42 +188,11 @@ public sealed class FirstRunService
 
     private void CreateDefaultConfiguration()
     {
-        var defaultConfig = """
-            {
-              "DataRoot": "data",
-              "DataSource": "NoOp",
-              "Symbols": [],
-              "Storage": {
-                "NamingConvention": "BySymbol",
-                "CompressionProfile": "Standard"
-              },
-              "Backfill": {
-                "Enabled": false,
-                "Provider": "stooq",
-                "EnableFallback": true,
-                "EnableSymbolResolution": true,
-                "Providers": {
-                  "Alpaca": { "Enabled": true, "Priority": 5, "RateLimitPerMinute": 200 },
-                  "Polygon": { "Enabled": true, "Priority": 12, "RateLimitPerMinute": 5 },
-                  "Tiingo": { "Enabled": true, "Priority": 15, "RateLimitPerHour": 50 },
-                  "Finnhub": { "Enabled": true, "Priority": 18, "RateLimitPerMinute": 60 },
-                  "Stooq": { "Enabled": true, "Priority": 20 },
-                  "Yahoo": { "Enabled": true, "Priority": 22, "RateLimitPerHour": 2000 },
-                  "AlphaVantage": { "Enabled": false, "Priority": 25, "RateLimitPerMinute": 5 },
-                  "NasdaqDataLink": { "Enabled": true, "Priority": 30 }
-                }
-              },
-              "Logging": {
-                "Level": "Information"
-              },
-              "UI": {
-                "Theme": "Light",
-                "RefreshIntervalMs": 1000
-              }
-            }
-            """;
+        // CreateDefaultConfiguration: first-run bootstrap must use the same canonical defaults as Settings reset.
+        var defaultConfig = AppConfigDefaults.CreateDefaultAppConfig();
+        var defaultConfigJson = JsonSerializer.Serialize(defaultConfig, AppConfigJsonOptions.Write);
 
-        File.WriteAllText(ConfigFilePath, defaultConfig);
+        File.WriteAllText(ConfigFilePath, defaultConfigJson);
 
         LoggingService.Instance.LogInfo(
             "Created default configuration file",
