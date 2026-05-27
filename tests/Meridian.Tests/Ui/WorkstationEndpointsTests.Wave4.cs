@@ -118,4 +118,32 @@ public sealed partial class WorkstationEndpointsTests
         using var timelineDoc = JsonDocument.Parse(timelineJson);
         timelineDoc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
     }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_ChecklistAndAcknowledgement_ShouldRequireEvidenceBackedCompletion()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            RegisterOperationsContinuityServices(services);
+        });
+        var client = app.GetTestClient();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(Guid.NewGuid(), "2026-07", null, "custodian", "local-actor", EvidenceLinks: []));
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+
+        using var checklistResponse = await client.GetAsync(UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityChecklist, "workflowId", workflowId.ToString()));
+        checklistResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var checklist = await checklistResponse.Content.ReadFromJsonAsync<List<OperationsCloseChecklistTaskDto>>(ServerJsonOptions);
+        checklist.Should().NotBeNullOrEmpty();
+
+        var firstTask = checklist![0];
+        using var ackResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityChecklistAcknowledge, "workflowId", workflowId.ToString()), "taskId", firstTask.TaskId),
+            new OperationsChecklistAcknowledgeRequestDto(start.Workflow.Version, "ops-user", "ack"));
+        ackResponse.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.Conflict);
+    }
 }

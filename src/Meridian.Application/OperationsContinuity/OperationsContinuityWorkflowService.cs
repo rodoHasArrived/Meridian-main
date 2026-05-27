@@ -98,6 +98,12 @@ public interface IOperationsContinuityWorkflowService
     Task<OperationsContinuityWorkflowDto?> GetAsync(Guid workflowId, CancellationToken ct = default);
 
     Task<IReadOnlyList<OperationsTimelineEntryDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default);
+    Task<IReadOnlyList<OperationsCloseChecklistTaskDto>> GetChecklistAsync(Guid workflowId, CancellationToken ct = default);
+    Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(
+        Guid workflowId,
+        string taskId,
+        OperationsChecklistAcknowledgeRequestDto request,
+        CancellationToken ct = default);
 }
 
 public sealed class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
@@ -945,6 +951,56 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         return timeline.Select(ToTimelineEntry).ToArray();
     }
 
+    public async Task<IReadOnlyList<OperationsCloseChecklistTaskDto>> GetChecklistAsync(Guid workflowId, CancellationToken ct = default)
+    {
+        var workflow = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
+        if (workflow is null)
+        {
+            return [];
+        }
+
+        var timeline = await GetTimelineAsync(workflowId, ct).ConfigureAwait(false);
+        return BuildChecklist(workflow, timeline);
+    }
+
+    public async Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(Guid workflowId, string taskId, OperationsChecklistAcknowledgeRequestDto request, CancellationToken ct = default)
+    {
+        var checklist = await GetChecklistAsync(workflowId, ct).ConfigureAwait(false);
+        var task = checklist.FirstOrDefault(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase));
+        if (task is null)
+        {
+            return Failure("NOT_FOUND", "Checklist task was not found.", []);
+        }
+
+        if (!task.CanAcknowledge)
+        {
+            return Failure("EVIDENCE_REQUIRED", "Checklist task evidence is required before acknowledgment.", [
+                new OperationsWorkflowBlockerDto("CHECKLIST_EVIDENCE_REQUIRED", "Checklist task cannot be acknowledged before gate evidence exists.", task.Gate, "Error", [])
+            ]);
+        }
+
+        return await ExecuteTransitionAsync(
+            workflowId,
+            request,
+            request.CorrelationId,
+            null,
+            "checklist-task-acknowledged",
+            task.Gate,
+            command: (workflow, _, now) =>
+            {
+                var gate = GetGate(workflow, task.Gate);
+                if (gate.Status != OperationsGateStatusDto.Completed)
+                {
+                    return new OperationsWorkflowBlockerDto("CHECKLIST_GATE_NOT_COMPLETE", "Checklist tasks can only be acknowledged when the gate is complete.", task.Gate, "Error", []);
+                }
+
+                gate.CompletedBy = request.Actor.Trim();
+                gate.CompletedAtUtc ??= now;
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
     private async Task<OperationsContinuityWorkflowDto> ToDtoAsync(OperationsContinuityWorkflow workflow, CancellationToken ct)
     {
         var timeline = await GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
@@ -976,9 +1032,44 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflow.LedgerPreview,
             workflow.Approvals,
             workflow.ReportPackReadiness,
+            BuildChecklist(workflow, timeline),
             evidenceLinks,
             blockers,
             nextActions);
+    }
+
+    private static IReadOnlyList<OperationsCloseChecklistTaskDto> BuildChecklist(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline)
+    {
+        var dueBase = DateOnly.FromDateTime(workflow.CreatedAtUtc.UtcDateTime).AddDays(2);
+        return workflow.Gates.Select((gate, index) =>
+        {
+            var evidence = timeline.SelectMany(static entry => entry.References).FirstOrDefault(link =>
+                string.Equals(link.Source, "operations-continuity", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(link.Source, gate.GateKey.ToString(), StringComparison.OrdinalIgnoreCase));
+            var status = gate.Status switch
+            {
+                OperationsGateStatusDto.Completed => "Done",
+                OperationsGateStatusDto.Blocked => "Blocked",
+                OperationsGateStatusDto.InProgress => "InProgress",
+                _ => "Pending"
+            };
+
+            return new OperationsCloseChecklistTaskDto(
+                $"close-gate-{gate.GateKey}".ToLowerInvariant(),
+                gate.GateKey,
+                $"{DisplayName(gate.GateKey)} close gate",
+                gate.CompletedBy ?? "accounting-operator",
+                dueBase.AddDays(index),
+                status,
+                gate.Blockers.FirstOrDefault()?.Message,
+                evidence?.EvidenceId,
+                gate.NextActions.FirstOrDefault()?.Route,
+                CanAcknowledge: gate.Status == OperationsGateStatusDto.Completed && evidence is not null,
+                gate.CompletedAtUtc,
+                gate.CompletedBy);
+        }).ToArray();
     }
 
     private static OperationsContinuityWorkflow CloneWorkflow(OperationsContinuityWorkflow workflow)

@@ -1033,6 +1033,54 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsContinuityLedgerPreview");
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityChecklist), async (Guid workflowId, HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var checklist = await service.GetChecklistAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(checklist, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityChecklist");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityChecklistAcknowledge), async (
+            Guid workflowId,
+            string taskId,
+            OperationsChecklistAcknowledgeRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasOperationsContinuityMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var currentUser = EndpointHelpers.GetCurrentUser(context);
+            if (string.IsNullOrWhiteSpace(currentUser))
+            {
+                return EndpointHelpers.Unauthorized();
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.AcknowledgeChecklistTaskAsync(workflowId, taskId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .WithName("AcknowledgeOperationsContinuityChecklistTask");
+
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {

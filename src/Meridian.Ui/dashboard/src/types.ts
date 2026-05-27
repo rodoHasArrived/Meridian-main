@@ -531,8 +531,24 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   ledgerPreview: OperationsLedgerPreview | null;
   approvals: OperationsApproval[];
   reportPackReadiness: OperationsReportPackReadiness;
+  closeChecklist: OperationsCloseChecklistTask[];
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
+}
+
+export interface OperationsCloseChecklistTask {
+  taskId: string;
+  gate: OperationsGateKey;
+  label: string;
+  owner: string;
+  dueDate: string | null;
+  status: string;
+  blockingReason: string | null;
+  evidencePointer: string | null;
+  remediationRoute: string | null;
+  canAcknowledge: boolean;
+  acknowledgedAtUtc: string | null;
+  acknowledgedBy: string | null;
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
