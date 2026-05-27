@@ -25,6 +25,10 @@ public interface IEvidenceArtifactStore
     Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
         string vaultId,
         CancellationToken ct = default);
+
+    Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
+        EvidenceVaultLookupRequestDto request,
+        CancellationToken ct = default);
 }
 
 public sealed record EvidenceManifestFile(
@@ -82,7 +86,9 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Edges: packet.Edges,
             Actions: packet.Actions,
             Warnings: request.IncludeWarnings ? packet.Warnings : [],
-            VaultIdentity: null);
+            VaultIdentity: null,
+            Lifecycle: request.Lifecycle,
+            Linkage: request.Linkage);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
         var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
         var vaultIdentity = new EvidenceVaultIdentityDto(
@@ -175,6 +181,64 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian");
+    }
+
+    public async Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
+        EvidenceVaultLookupRequestDto request,
+        CancellationToken ct = default)
+    {
+        var vaultDir = Path.Combine(_rootDirectory, "_vault");
+        if (!Directory.Exists(vaultDir))
+        {
+            return [];
+        }
+
+        var matches = new List<EvidenceVaultIdentityDto>();
+        foreach (var indexPath in Directory.EnumerateFiles(vaultDir, "*.json"))
+        {
+            ct.ThrowIfCancellationRequested();
+            var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
+            if (identity is null)
+            {
+                continue;
+            }
+
+            var manifestPath = ResolveVaultManifestPath(identity, identity.VaultId);
+            if (manifestPath is null || !File.Exists(manifestPath))
+            {
+                continue;
+            }
+
+            var linkage = await TryReadLinkageAsync(manifestPath, ct).ConfigureAwait(false);
+            if (MatchesLookup(request, linkage, identity))
+            {
+                matches.Add(identity);
+            }
+        }
+
+        return matches.OrderByDescending(x => x.RetainedAt).ToArray();
+    }
+
+    private static bool MatchesLookup(EvidenceVaultLookupRequestDto request, EvidenceSubjectLinkageDto? linkage, EvidenceVaultIdentityDto identity)
+    {
+        if (!string.IsNullOrWhiteSpace(request.EvidenceSubject) && !string.Equals(request.EvidenceSubject, linkage?.EvidenceSubject, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.IsNullOrWhiteSpace(request.RunId) && !string.Equals(request.RunId, linkage?.RunId, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.IsNullOrWhiteSpace(request.PeriodId) && !string.Equals(request.PeriodId, linkage?.PeriodId, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.IsNullOrWhiteSpace(request.ReportPackId) && !string.Equals(request.ReportPackId, linkage?.ReportPackId, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.IsNullOrWhiteSpace(request.ReconciliationCaseId) && !string.Equals(request.ReconciliationCaseId, linkage?.ReconciliationCaseId, StringComparison.OrdinalIgnoreCase))
+            return false;
+        return true;
+    }
+
+    private async Task<EvidenceSubjectLinkageDto?> TryReadLinkageAsync(string manifestPath, CancellationToken ct)
+    {
+        await using var stream = File.OpenRead(manifestPath);
+        var manifest = await JsonSerializer.DeserializeAsync<EvidenceManifestDto>(stream, _jsonOptions, ct).ConfigureAwait(false);
+        return manifest?.Linkage;
     }
 
     private static string SanitizePathSegment(string value)
@@ -427,5 +491,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         IReadOnlyList<EvidenceEdgeDto> Edges,
         IReadOnlyList<WorkflowActionDto> Actions,
         IReadOnlyList<string> Warnings,
-        EvidenceVaultIdentityDto? VaultIdentity);
+        EvidenceVaultIdentityDto? VaultIdentity,
+        EvidenceLifecycleMetadataDto? Lifecycle,
+        EvidenceSubjectLinkageDto? Linkage);
 }

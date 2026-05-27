@@ -52,4 +52,7 @@ public sealed record ReconciliationBreakQueueAuditEvent(
     string? SignoffStatus = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
-    string? UpstreamSyncCursor = null);
+    string? UpstreamSyncCursor = null,
+    string? Actor = null,
+    string? BeforePayload = null,
+    string? AfterPayload = null);

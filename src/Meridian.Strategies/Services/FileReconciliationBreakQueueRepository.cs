@@ -82,7 +82,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 return false;
             }
 
-            _items[item.BreakId] = item;
+            _items[item.BreakId] = ApplyScoringAndSla(item);
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
@@ -103,7 +103,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 SignoffStatus: item.SignoffStatus,
                 ExternalAccountId: item.ExternalAccountId,
                 CustodianId: item.CustodianId,
-                UpstreamSyncCursor: item.UpstreamSyncCursor), ct).ConfigureAwait(false);
+                UpstreamSyncCursor: item.UpstreamSyncCursor,
+                Actor: item.AssignedTo ?? item.ReviewedBy ?? item.ResolvedBy,
+                BeforePayload: null,
+                AfterPayload: JsonSerializer.Serialize(item, _jsonOptions)), ct).ConfigureAwait(false);
 
             return true;
         }
@@ -186,14 +189,15 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 LastUpdatedAt = now,
                 ResolutionNote = request.ReviewNote,
                 SignoffStatus = "in-review",
-                LifecycleState = ReconciliationCaseLifecycleState.Triaged,
+                LifecycleState = ReconciliationCaseLifecycleState.Investigating,
                 LifecycleRationale = request.ReviewNote,
                 StateTransitions = (item.StateTransitions ?? []).Concat(
                 [
-                    new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, ReconciliationCaseLifecycleState.Triaged, request.ReviewedBy, request.ReviewNote, now)
+                    new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, ReconciliationCaseLifecycleState.Investigating, request.ReviewedBy, request.ReviewNote, now)
                 ]).ToArray()
             };
 
+            updated = ApplyScoringAndSla(updated);
             _items[request.BreakId] = updated;
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -215,7 +219,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 SignoffStatus: updated.SignoffStatus,
                 ExternalAccountId: updated.ExternalAccountId,
                 CustodianId: updated.CustodianId,
-                UpstreamSyncCursor: updated.UpstreamSyncCursor), ct).ConfigureAwait(false);
+                UpstreamSyncCursor: updated.UpstreamSyncCursor,
+                Actor: request.ReviewedBy,
+                BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
+                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }
@@ -275,8 +282,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     ? "pending-signoff"
                     : "dismissed",
                 LifecycleState = request.Status == ReconciliationBreakQueueStatus.Resolved
-                    ? ReconciliationCaseLifecycleState.Closed
-                    : ReconciliationCaseLifecycleState.Superseded,
+                    ? ReconciliationCaseLifecycleState.Resolved
+                    : ReconciliationCaseLifecycleState.Resolved,
                 LifecycleRationale = request.OperatorRationale,
                 SignoffHistory = (item.SignoffHistory ?? []).Concat(
                 [
@@ -284,10 +291,11 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ]).ToArray(),
                 StateTransitions = (item.StateTransitions ?? []).Concat(
                 [
-                    new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, request.Status == ReconciliationBreakQueueStatus.Resolved ? ReconciliationCaseLifecycleState.Closed : ReconciliationCaseLifecycleState.Superseded, request.ResolvedBy, request.OperatorRationale, now)
+                    new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, request.Status == ReconciliationBreakQueueStatus.Resolved ? ReconciliationCaseLifecycleState.Resolved : ReconciliationCaseLifecycleState.Resolved, request.ResolvedBy, request.OperatorRationale, now)
                 ]).ToArray()
             };
 
+            updated = ApplyScoringAndSla(updated);
             _items[request.BreakId] = updated;
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -309,7 +317,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 SignoffStatus: updated.SignoffStatus,
                 ExternalAccountId: updated.ExternalAccountId,
                 CustodianId: updated.CustodianId,
-                UpstreamSyncCursor: updated.UpstreamSyncCursor), ct).ConfigureAwait(false);
+                UpstreamSyncCursor: updated.UpstreamSyncCursor,
+                Actor: request.ReviewedBy,
+                BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
+                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }
@@ -391,6 +402,31 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     {
         var line = JsonSerializer.Serialize(auditEvent, _jsonOptions);
         await AtomicFileWriter.AppendLinesAsync(_auditPath, [line], ct).ConfigureAwait(false);
+    }
+
+
+
+    private static ReconciliationBreakQueueItem ApplyScoringAndSla(ReconciliationBreakQueueItem item)
+    {
+        var ageHours = Math.Max(0d, (DateTimeOffset.UtcNow - item.DetectedAt).TotalHours);
+        var ageScore = (decimal)Math.Min(25d, ageHours / 4d);
+        var materialityScore = Math.Min(40m, Math.Abs(item.Variance) / 2500m);
+        var counterpartyScore = string.IsNullOrWhiteSpace(item.CustodianId) ? 5m : 20m;
+        var recurringScore = string.IsNullOrWhiteSpace(item.UpstreamSyncCursor) ? 5m : 15m;
+        var total = (int)Math.Clamp(materialityScore + ageScore + counterpartyScore + recurringScore, 0m, 100m);
+        var band = total >= 80 ? "P1" : total >= 60 ? "P2" : total >= 40 ? "P3" : "P4";
+        var slaDue = item.DetectedAt.AddHours(total >= 80 ? 4 : total >= 60 ? 8 : 24);
+        return item with
+        {
+            PriorityScore = total,
+            PriorityBand = band,
+            MaterialityScore = materialityScore,
+            AgeScore = ageScore,
+            CounterpartyCriticalityScore = counterpartyScore,
+            RecurringPatternScore = recurringScore,
+            SlaDueAt = slaDue,
+            IsSlaBreached = DateTimeOffset.UtcNow > slaDue
+        };
     }
 
     private sealed record BreakQueueSnapshot(IReadOnlyList<ReconciliationBreakQueueItem> Items);

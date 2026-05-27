@@ -3231,6 +3231,18 @@ public sealed partial class WorkstationEndpointsTests
             .Select(profile => profile.GetString())
             .Should()
             .Contain("excel");
+        var controlCenter = governance.RootElement.GetProperty("controlCenter");
+        controlCenter.GetProperty("closeReadiness").GetString().Should().NotBeNullOrWhiteSpace();
+        controlCenter.GetProperty("blockerSeverityDistribution").GetArrayLength().Should().BeGreaterThan(0);
+        controlCenter.GetProperty("agingCurves").GetArrayLength().Should().Be(3);
+        controlCenter.GetProperty("ownerWorkload").GetArrayLength().Should().BeGreaterThan(0);
+        controlCenter.GetProperty("slaBreachCount").GetInt32().Should().BeGreaterThanOrEqualTo(0);
+        controlCenter.GetProperty("trendSnapshots").GetArrayLength().Should().BeGreaterThan(0);
+        controlCenter.GetProperty("drillLinks").EnumerateArray()
+            .Select(link => link.GetProperty("href").GetString())
+            .Should()
+            .Contain(new[] { "/trading/readiness", "/accounting/reconciliation", "/reporting/report-packs", "/reporting/evidence" });
+        controlCenter.GetProperty("alerts").GetArrayLength().Should().BeGreaterThan(0);
 
         governance.RootElement.GetProperty("metrics").EnumerateArray()
             .Should()
