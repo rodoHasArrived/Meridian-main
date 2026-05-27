@@ -66,6 +66,7 @@ import type {
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
   ResearchRunRecord,
+  StrategyRunSummaryApiRecord,
   ResearchWorkspaceResponse,
   RunAttributionSummary,
   RunComparisonRow,
@@ -744,7 +745,8 @@ export function getReplayStatus(sessionId: string) {
 // --- Strategy runs ---
 
 export function getStrategyRuns(strategyId: string, type?: "backtest" | "paper" | "live") {
-  return getJson<ResearchRunRecord[]>(strategyRunsEndpoint(strategyId, type));
+  const params = type ? `?type=${encodeURIComponent(type)}` : "";
+  return getJson<StrategyRunSummaryApiRecord[]>(`/api/strategies/${encodeURIComponent(strategyId)}/runs${params}`);
 }
 
 // --- Multi-run comparison and diff ---
