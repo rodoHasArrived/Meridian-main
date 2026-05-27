@@ -112,7 +112,7 @@ jobs:
               fi
             done
 
-            if [ "$pushed" == false ]; then
+            if [ "$pushed" = false ]; then
               echo "::error::Unable to push screenshot updates after $max_push_attempts attempts."
               exit 1
             fi
