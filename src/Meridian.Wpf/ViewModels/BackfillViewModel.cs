@@ -1301,6 +1301,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void ClearNasdaqApiKey()
     {
+        Environment.SetEnvironmentVariable("NASDAQDATALINK__APIKEY", null, EnvironmentVariableTarget.User);
         NasdaqKeyStatusText = "No API key stored";
         IsNasdaqKeyClearVisible = false;
     }
@@ -1315,6 +1316,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void ClearOpenFigiApiKey()
     {
+        Environment.SetEnvironmentVariable("OPENFIGI__APIKEY", null, EnvironmentVariableTarget.User);
         OpenFigiKeyStatusText = "No API key stored (optional)";
         IsOpenFigiKeyClearVisible = false;
     }
