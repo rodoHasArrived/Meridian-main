@@ -293,7 +293,7 @@ export type OperatorWorkItemKind =
   | "LedgerPeriodClose";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
-export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
+export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unknown";
 
 export interface OperatorWorkItem {
   workItemId: string;
