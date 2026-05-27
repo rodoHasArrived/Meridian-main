@@ -28,6 +28,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("find \"$OUTPUT_DIR\" -maxdepth 1 -type f -name '*.png' -delete", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
         self.assertIn("uses: peter-evans/create-pull-request@v7", self.web_workflow)
+        self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
+        self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
         self.assertIn("title: \"chore: refresh web workstation screenshot catalog\"", self.web_workflow)
         self.assertNotIn("npm ci", self.web_workflow)
         self.assertNotIn("package-lock.json", self.web_workflow)
