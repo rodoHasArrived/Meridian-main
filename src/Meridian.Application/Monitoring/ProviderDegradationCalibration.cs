@@ -64,6 +64,8 @@ public sealed record ProviderKernelCalibrationSnapshot(
     IReadOnlyList<SeverityThresholdMetrics> BaselineMetrics,
     IReadOnlyList<SeverityThresholdMetrics> CandidateMetrics,
     CalibrationComparisonSummary Comparison,
+    PromotionCriteriaSummary PromotionCriteria,
+    KernelLineageMetadata KernelLineage,
     string RunBy,
     bool CalibrationPass);
 
@@ -86,6 +88,22 @@ public sealed record CalibrationComparisonSummary(
     double CandidateRecall,
     double BaselinePrecision,
     double BaselineRecall);
+
+public sealed record PromotionCriteriaSummary(
+    double BaselineDeltaPrecision,
+    double BaselineDeltaRecall,
+    bool StabilityThresholdsMet,
+    double CandidatePrecisionLowerConfidence,
+    double CandidateRecallLowerConfidence,
+    double IncidentCoverageQuality,
+    IReadOnlyList<string> BlockingReasons);
+
+public sealed record KernelLineageMetadata(
+    string BaselineKernelVersion,
+    string CandidateKernelVersion,
+    string DatasetId,
+    DateTimeOffset CalibratedAt,
+    string CalibratedBy);
 
 /// <summary>
 /// Candidate kernel profile used by calibration and governance promotion.
@@ -140,8 +158,22 @@ public sealed class ProviderDegradationCalibrationRunner
             BaselinePrecision: baselineDecision.Precision,
             BaselineRecall: baselineDecision.Recall);
 
-        var calibrationPass = candidateDecision.Precision >= baselineDecision.Precision
-            && candidateDecision.Recall >= baselineDecision.Recall;
+        var baselineDeltaPrecision = candidateDecision.Precision - baselineDecision.Precision;
+        var baselineDeltaRecall = candidateDecision.Recall - baselineDecision.Recall;
+        var precisionLowerConfidence = Math.Max(0, candidateDecision.Precision - 0.05);
+        var recallLowerConfidence = Math.Max(0, candidateDecision.Recall - 0.05);
+        var coveredIncidentWindows = dataset.Windows.Count(w => w.ObservedSeverity >= IncidentSeverity.Minor && w.EventsObserved > 0);
+        var totalIncidentWindows = Math.Max(1, dataset.Windows.Count(w => w.ObservedSeverity >= IncidentSeverity.Minor));
+        var coverageQuality = (double)coveredIncidentWindows / totalIncidentWindows;
+
+        var criteriaBlockers = new List<string>();
+        if (baselineDeltaPrecision < 0) criteriaBlockers.Add("Candidate precision regressed below baseline.");
+        if (baselineDeltaRecall < 0) criteriaBlockers.Add("Candidate recall regressed below baseline.");
+        if (precisionLowerConfidence < 0.60) criteriaBlockers.Add("Candidate precision confidence band is below 0.60.");
+        if (recallLowerConfidence < 0.60) criteriaBlockers.Add("Candidate recall confidence band is below 0.60.");
+        if (coverageQuality < 0.75) criteriaBlockers.Add("Incident coverage quality is below 0.75.");
+
+        var calibrationPass = criteriaBlockers.Count == 0;
 
         return new ProviderKernelCalibrationSnapshot(
             SnapshotId: Guid.NewGuid().ToString("N"),
@@ -152,6 +184,20 @@ public sealed class ProviderDegradationCalibrationRunner
             BaselineMetrics: baselineMetrics,
             CandidateMetrics: candidateMetrics,
             Comparison: comparison,
+            PromotionCriteria: new PromotionCriteriaSummary(
+                BaselineDeltaPrecision: baselineDeltaPrecision,
+                BaselineDeltaRecall: baselineDeltaRecall,
+                StabilityThresholdsMet: criteriaBlockers.Count == 0,
+                CandidatePrecisionLowerConfidence: precisionLowerConfidence,
+                CandidateRecallLowerConfidence: recallLowerConfidence,
+                IncidentCoverageQuality: coverageQuality,
+                BlockingReasons: criteriaBlockers),
+            KernelLineage: new KernelLineageMetadata(
+                BaselineKernelVersion: baseline.KernelVersion,
+                CandidateKernelVersion: candidate.KernelVersion,
+                DatasetId: dataset.DatasetId,
+                CalibratedAt: now ?? DateTimeOffset.UtcNow,
+                CalibratedBy: runBy),
             RunBy: runBy,
             CalibrationPass: calibrationPass);
     }
@@ -308,6 +354,14 @@ public sealed record ProviderKernelCalibrationPolicy(
             }
         }
 
+        if (snapshot is not null)
+        {
+            foreach (var blocker in snapshot.PromotionCriteria.BlockingReasons)
+            {
+                errors.Add($"Promotion criteria: {blocker}");
+            }
+        }
+
         return new CalibrationGateDecision(errors.Count == 0, freshnessPass, errors);
     }
 }
@@ -379,6 +433,15 @@ public static class ProviderCalibrationReportWriter
         }
 
         builder.AppendLine();
+        builder.AppendLine("## Promotion criteria");
+        builder.AppendLine();
+        builder.AppendLine($"- Baseline precision delta: `{snapshot.PromotionCriteria.BaselineDeltaPrecision:F3}`");
+        builder.AppendLine($"- Baseline recall delta: `{snapshot.PromotionCriteria.BaselineDeltaRecall:F3}`");
+        builder.AppendLine($"- Stability thresholds met: `{snapshot.PromotionCriteria.StabilityThresholdsMet}`");
+        builder.AppendLine($"- Precision lower confidence: `{snapshot.PromotionCriteria.CandidatePrecisionLowerConfidence:F3}`");
+        builder.AppendLine($"- Recall lower confidence: `{snapshot.PromotionCriteria.CandidateRecallLowerConfidence:F3}`");
+        builder.AppendLine($"- Incident coverage quality: `{snapshot.PromotionCriteria.IncidentCoverageQuality:F3}`");
+
         builder.AppendLine("## Alert volume impact");
         builder.AppendLine();
         builder.AppendLine($"- Decision severity: `{snapshot.Comparison.DecisionSeverity}`");
