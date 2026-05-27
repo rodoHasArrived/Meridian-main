@@ -101,9 +101,42 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("/api/workstation/strategy/designer/drafts", fixture_routes)
         self.assertIn("/api/workstation/strategy/designer/drafts/strategy-designer-fixture-1", fixture_routes)
         self.assertEqual(
+            [
+                "/api/workstation/strategy",
+                "/api/workstation/strategy/designer/templates",
+                "/api/workstation/strategy/designer/field-catalog",
+                "/api/workstation/strategy/designer/drafts",
+            ],
+            designer_capture.get("requiredApiRoutes"),
+        )
+        self.assertIn("Mean Reversion FX", designer_capture.get("waitForTexts", []))
+        self.assertEqual(
             "strategy-designer-fixture-1",
             fixture_routes["/api/workstation/strategy/designer/templates"][0]["document"]["documentId"],
         )
+
+    def test_web_screenshot_routes_require_fixture_coverage_for_each_capture(self) -> None:
+        captures = self.web_screenshot_routes.get("captures", [])
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        fixture_route_names = set(fixture_routes.keys())
+
+        self.assertGreater(len(captures), 0)
+        for capture in captures:
+            capture_name = capture.get("name", "<unnamed>")
+            required_routes = capture.get("requiredApiRoutes")
+            wait_for_texts = capture.get("waitForTexts")
+
+            self.assertIsInstance(required_routes, list, f"{capture_name} must define requiredApiRoutes")
+            self.assertGreater(len(required_routes), 0, f"{capture_name} must require at least one fixture route")
+            self.assertIsInstance(wait_for_texts, list, f"{capture_name} must define waitForTexts")
+            self.assertGreater(len(wait_for_texts), 0, f"{capture_name} must require at least one specific wait text")
+
+            for required_route in required_routes:
+                self.assertIn(
+                    required_route,
+                    fixture_route_names,
+                    f"{capture_name} requires fixture route '{required_route}' that is missing from web-screenshot-fixtures.json",
+                )
 
 
 if __name__ == "__main__":
