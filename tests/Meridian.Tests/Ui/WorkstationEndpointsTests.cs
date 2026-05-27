@@ -1902,7 +1902,7 @@ public sealed class WorkstationEndpointsTests
         resolved.Should().NotBeNull();
         resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
         resolved.ResolvedBy.Should().Be("qa-resolve");
-        resolved.SignoffStatus.Should().Be("signed-off");
+        resolved.SignoffStatus.Should().Be("pending-signoff");
     }
 
     [Fact]
