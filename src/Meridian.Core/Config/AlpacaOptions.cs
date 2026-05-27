@@ -17,7 +17,7 @@ namespace Meridian.Application.Config;
 public sealed record AlpacaOptions(
     string KeyId = "",
     string SecretKey = "",
-    string Feed = "iex",            // v2/{feed}: iex, sip, delayed_sip
-    bool UseSandbox = false,        // stream.data.sandbox.alpaca.markets
+    string Feed = "iex",            // stocks: iex, sip, delayed_sip, boats, overnight, otc; streams also support test
+    bool UseSandbox = false,        // stream.data.sandbox.alpaca.markets / paper-api.alpaca.markets
     bool SubscribeQuotes = false    // if true, subscribes to quotes too (currently not wired to L2 collector)
 );

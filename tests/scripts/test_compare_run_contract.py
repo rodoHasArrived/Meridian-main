@@ -69,6 +69,18 @@ class CompareRunContractTests(unittest.TestCase):
 
         self.assertTrue(any(item.category == "degraded_metric" and item.severity == "failure" for item in regressions))
 
+    def test_compare_contracts_rejects_current_threshold_weakened_from_baseline(self) -> None:
+        baseline = {"workflows": [self._workflow(metric_value=100.0)]}
+        current_workflow = self._workflow(metric_value=90.0)
+        current_workflow["acceptedToleranceWindows"][0]["warningDegradationPercent"] = 50.0
+        current_workflow["acceptedToleranceWindows"][0]["failureDegradationPercent"] = 75.0
+        current = {"workflows": [current_workflow]}
+
+        regressions = comparator.compare_contracts(baseline, current)
+
+        self.assertTrue(any(item.category == "tolerance_window" for item in regressions))
+        self.assertTrue(any(item.category == "degraded_metric" and item.severity == "failure" for item in regressions))
+
     def test_compare_contracts_flags_gate_status_regression(self) -> None:
         baseline = {"workflows": [self._workflow(gate_status="pass")]}
         current = {"workflows": [self._workflow(gate_status="warning")]}

@@ -1,0 +1,287 @@
+<views:SettingsWorkspaceShellPageBase x:Class="Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="clr-namespace:Meridian.Wpf.Models"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      mc:Ignorable="d"
+      d:DesignHeight="900"
+      d:DesignWidth="1400"
+      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Settings Workspace"
+      AutomationProperties.AutomationId="SettingsWorkspaceShellPage">
+
+    <Page.Resources>
+        <DataTemplate x:Key="QueueItemTemplate" DataType="{x:Type models:WorkspaceQueueItem}">
+            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <WrapPanel Margin="0,0,0,8">
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <Border Style="{StaticResource WorkspaceToneBadgeStyle}" Margin="10,0,8,0">
+                                <TextBlock Text="{Binding StatusLabel}"
+                                           FontSize="10"
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                            </Border>
+                            <Border Style="{StaticResource NeutralBadgeStyle}">
+                                <TextBlock Text="{Binding CountLabel}"
+                                           FontSize="10"
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                            </Border>
+                        </WrapPanel>
+
+                        <TextBlock Text="{Binding Detail}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="16,0,0,0">
+                        <Button Tag="{Binding PrimaryActionId}"
+                                Content="{Binding PrimaryActionLabel}"
+                                Click="OnItemPrimaryActionClick"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,0" />
+                        <Button Tag="{Binding SecondaryActionId}"
+                                Content="{Binding SecondaryActionLabel}"
+                                Click="OnItemSecondaryActionClick">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SecondaryActionLabel}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="QuickLinkTemplate" DataType="{x:Type models:WorkspaceRecentItem}">
+            <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <TextBlock Text="{Binding Detail}"
+                               Margin="0,6,0,0"
+                               FontSize="11"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Meta}"
+                               Margin="0,6,0,0"
+                               FontSize="10"
+                               Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                    <Button Tag="{Binding ActionId}"
+                            Content="{Binding ActionLabel}"
+                            Click="OnQuickLinkActionClick"
+                            HorizontalAlignment="Left"
+                            Margin="0,12,0,0"
+                            Style="{StaticResource GhostButtonStyle}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
+                                                 ShellContext="{Binding ShellContext}" />
+
+        <views:WorkspaceCommandBarControl x:Name="CommandBar"
+                                           Grid.Row="1"
+                                           CommandGroup="{Binding CommandGroup}"
+                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                           Margin="0,16,0,0" />
+
+        <Border Grid.Row="2"
+                Style="{StaticResource SectionCardStyle}"
+                Margin="0,16,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44"
+                                Height="44"
+                                CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}"
+                                BorderThickness="1">
+                            <TextBlock Text="&#xE713;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Settings Workspace"
+                                       Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Preferences, credentials, diagnostics, notifications, services, and support from one operator shell."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding HeroSummaryText}"
+                               Margin="0,18,0,0"
+                               FontSize="14"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding HeroDetailText}"
+                               Margin="0,8,0,0"
+                               FontSize="12"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Margin="16,0,0,0"
+                        Padding="16,14"
+                        CornerRadius="12"
+                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Next Handoff"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <Border x:Name="HeroBadgeBorder"
+                                    DockPanel.Dock="Right"
+                                    Style="{StaticResource NeutralBadgeStyle}">
+                                <TextBlock x:Name="HeroBadgeText"
+                                           Text="{Binding HeroBadgeText}"
+                                           FontSize="10"
+                                           Foreground="{StaticResource InfoColorBrush}" />
+                            </Border>
+                        </DockPanel>
+                        <TextBlock Text="{Binding HeroFocusText}"
+                                   Margin="0,10,0,0"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,14,0,0">
+                            <Button Content="Credentials"
+                                    Tag="CredentialManagement"
+                                    Click="OnHeroActionClick"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Diagnostics"
+                                    Tag="Diagnostics"
+                                    Click="OnHeroActionClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="System Health"
+                                    Tag="SystemHealth"
+                                    Click="OnHeroActionClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.05*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="1.2*" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <Border Style="{StaticResource WorkspaceWorkbenchCardStyle}" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Operations Review"
+                                       Style="{StaticResource CardHeaderStyle}" />
+                            <ItemsControl ItemsSource="{Binding OperationsItems}"
+                                          ItemTemplate="{StaticResource QueueItemTemplate}"
+                                          Margin="0,12,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource WorkspaceWorkbenchCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Support Review"
+                                       Style="{StaticResource CardHeaderStyle}" />
+                            <ItemsControl ItemsSource="{Binding SupportItems}"
+                                          ItemTemplate="{StaticResource QueueItemTemplate}"
+                                          Margin="0,12,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Column="2"
+                    Style="{StaticResource WorkspaceWorkbenchCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Docked Settings Workbench"
+                                   Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="Default Settings panes stay docked here; quick links open supporting pages as tabs."
+                                   Margin="0,6,0,12"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <views:MeridianDockingManager x:Name="SettingsDockManager"
+                                                      Grid.Row="0"
+                                                      PaneDropRequested="OnPaneDropRequested" />
+
+                        <ItemsControl Grid.Row="1"
+                                      ItemsSource="{Binding QuickLinks}"
+                                      ItemTemplate="{StaticResource QuickLinkTemplate}"
+                                      Margin="0,14,0,0" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</views:SettingsWorkspaceShellPageBase>

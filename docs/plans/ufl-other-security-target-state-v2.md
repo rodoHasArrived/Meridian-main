@@ -2,7 +2,15 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **ufl other security target state v2** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the ufl other security target state v2 workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** active
 **Reviewed:** 2026-03-26
 
@@ -50,7 +58,7 @@ This package turns the existing `OtherSecurityTerms` support into an implementat
 
 ## Scope
 
-**In Scope:** canonical generic-security identity, governed category/subtype metadata, issuer and settlement hints, review state, promotion candidate tracking, replay-safe rebuilds, and governance/reference APIs.
+**In Scope:** canonical generic-security identity, governed category/subtype metadata, issuer and settlement hints, review state, promotion candidate tracking, replay-safe rebuilds, and controlled review and reference APIs.
 
 **Out of Scope:** bypasses around modeling discipline, provider-specific payload dumping, and permanent reliance on `OtherSecurity` for asset types that should have dedicated packages.
 
@@ -67,7 +75,7 @@ flowchart TD
     Snapshot --> Promotion["Promotion Candidate Projection"]
     Snapshot --> Exposure["Generic Exposure Projection"]
 
-    Review --> Governance["Governance UI"]
+    Review --> Governance["Accounting / Reporting workstation"]
     Taxonomy --> Reporting["Taxonomy Reporting"]
     Promotion --> Roadmap["Modeling Roadmap"]
     Exposure --> Controls["Control / Cleanup Views"]
@@ -104,7 +112,7 @@ flowchart TD
 1. `OtherSecurity` is a governed fallback, not a permanent modeling shortcut.
 2. Category and subtype metadata must be explicit, searchable, and reviewable.
 3. Promotion to a dedicated asset package should preserve identity and lineage where possible.
-4. Governance views should make repeated `OtherSecurity` usage visible and actionable.
+4. Fund-ops workstation views should make repeated `OtherSecurity` usage visible and actionable.
 5. Replay must deterministically rebuild review and promotion states from event history.
 
 ## 2. F# Aggregate and Domain Shapes
@@ -256,7 +264,7 @@ type OtherSecurityPromotionProjection = {
 
 ### 7.1 Phase 1 goal
 
-Deliver governed `OtherSecurity` identity, taxonomy and review projections, and governance/reference APIs.
+Deliver governed `OtherSecurity` identity, taxonomy and review projections, and controlled review and reference APIs.
 
 ### 7.2 Phase 1 implementation order
 
@@ -327,11 +335,11 @@ tests/
 3. Add promotion-candidate projection records.
 4. Implement generic-security reference service.
 5. Implement review-state service.
-6. Expose governance review endpoints.
+6. Expose controlled review endpoints.
 7. Add taxonomy normalization tests.
 8. Add promotion-candidate detection coverage.
 9. Add rebuild orchestration coverage.
-10. Add governance dashboards for `OtherSecurity` usage and promotion tracking.
+10. Add fund-ops workstation dashboards for `OtherSecurity` usage and promotion tracking.
 
 ## 11. Final Target State
 

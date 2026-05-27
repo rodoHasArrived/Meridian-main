@@ -149,6 +149,23 @@ public sealed class CashFlowProjectionTests
         narrowBuckets.Ladder.Buckets.Count.Should().BeGreaterThanOrEqualTo(wideBuckets.Ladder.Buckets.Count);
     }
 
+    [Fact]
+    public async Task GetAsync_BucketDays_TooLarge_IsClampedToSafeRange()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildRunWithMixedFlows("cf-buckets-clamped-1");
+        await store.RecordRunAsync(run);
+
+        var service = new CashFlowProjectionService(store);
+        var asOf = run.StartedAt;
+        var maxBucketDays = Math.Max(1, (int)Math.Floor((DateTimeOffset.MaxValue - asOf).TotalDays));
+
+        var result = await service.GetAsync("cf-buckets-clamped-1", asOf: asOf, bucketDays: int.MaxValue);
+
+        result.Should().NotBeNull();
+        result!.Ladder.BucketDays.Should().Be(maxBucketDays);
+    }
+
     // -----------------------------------------------------------------------
     // Event kind mapping
     // -----------------------------------------------------------------------

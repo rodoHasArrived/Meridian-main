@@ -6,6 +6,7 @@ describe("button command view model", () => {
       disabled: false,
       ariaBusy: undefined,
       ariaDisabled: undefined,
+      asChildTabIndex: undefined,
       title: undefined,
       displayBusyLabel: null,
       showBusyIndicator: false,
@@ -21,6 +22,7 @@ describe("button command view model", () => {
 
     expect(viewModel.disabled).toBe(true);
     expect(viewModel.ariaDisabled).toBe(true);
+    expect(viewModel.asChildTabIndex).toBe(-1);
     expect(viewModel.title).toBe("Preview the request before running.");
     expect(viewModel.showBusyIndicator).toBe(false);
   });
@@ -37,5 +39,18 @@ describe("button command view model", () => {
     expect(viewModel.title).toBe("Previewing...");
     expect(viewModel.displayBusyLabel).toBe("Previewing...");
     expect(viewModel.showBusyIndicator).toBe(true);
+  });
+
+  it("keeps the disabled reason as the tooltip when a command is busy", () => {
+    const viewModel = buildButtonCommandViewModel({
+      busy: true,
+      busyLabel: "Running...",
+      disabledReason: "Export is already running."
+    });
+
+    expect(viewModel.disabled).toBe(true);
+    expect(viewModel.ariaBusy).toBe(true);
+    expect(viewModel.title).toBe("Export is already running.");
+    expect(viewModel.displayBusyLabel).toBe("Running...");
   });
 });

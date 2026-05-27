@@ -45,7 +45,8 @@ public sealed class NullSecurityMasterQueryService
         SecurityIdentifierKind identifierKind,
         string identifierValue,
         string? provider,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        DateTimeOffset? asOfUtc = null)
         => Task.FromResult<SecurityDetailDto?>(null);
 
     public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(
@@ -214,4 +215,23 @@ internal sealed class NullSecurityMasterEventStore : ISecurityMasterEventStore
         Guid securityId,
         CancellationToken ct = default)
         => Task.FromResult(_emptyActions);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Operator overrides store — reports as missing when Security Master is offline
+// ──────────────────────────────────────────────────────────────────────────────
+
+internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
+{
+    public Task<OperatorOverridesDto?> GetAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<OperatorOverridesDto?>(null);
+
+    public Task<OperatorOverridesDto> PatchAsync(
+        Guid securityId,
+        OperatorOverridesPatchRequest request,
+        string updatedBy,
+        CancellationToken ct = default)
+        => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
 }

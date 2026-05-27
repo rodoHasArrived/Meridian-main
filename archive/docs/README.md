@@ -1,23 +1,24 @@
-# Archived Documentation
+# Documentation Archive
 
-This folder contains historical and superseded Meridian documentation that has been moved out of `docs/` to keep the active docs tree focused.
+This folder is for historical or superseded documentation moved out of active
+navigation during docs-tree cleanup. Files here are retained for traceability
+and are not active implementation guidance unless they link back to a current
+maintained document.
 
-## Structure
+Current maintained entry points:
 
-- `assessments/` - Archived audits, evaluations, and analysis reports
-- `plans/` - Completed or superseded plans and cleanup roadmaps
-- `summaries/` - Historical summaries, snapshots, and one-off reports
-- `migrations/` - Legacy migration notes and platform-transition material
-- `assets/` - Archived diagrams and supporting assets
+- [Project Structure](../../docs/architecture/project-structure.md)
+- [Module Map](../../docs/architecture/module-map.md)
+- [Developer Setup](../../docs/developer/setup.md)
+- [Build, Test, Run](../../docs/developer/build-test-run.md)
+- [Cleanup and Maintenance](../../docs/operations/cleanup-and-maintenance.md)
+- [Automation Prompts](../../docs/prompts/automation-prompts.md)
+- [Repo Maintenance Prompts](../../docs/prompts/repo-maintenance-prompts.md)
 
-## Current Documentation
+Workflow modernization archive:
 
-- Main docs index: [`../../docs/README.md`](../../docs/README.md)
-- Status docs: [`../../docs/status/README.md`](../../docs/status/README.md)
-- Current changelog: [`../../docs/status/CHANGELOG.md`](../../docs/status/CHANGELOG.md)
+- [Legacy GitHub Actions Inventory - 2026-05-18](workflows/legacy-github-actions-2026-05-18.md)
 
-## Notes
+Chief of Staff runtime archive:
 
-- Active documentation belongs under `docs/`.
-- Historical documents should be moved here instead of being deleted when they still have reference value.
-- If archived content becomes active again, move it back into the appropriate `docs/` section and update links.
+- [Chief of Staff runtime integration doc - 2026-05-23](plans/chief-of-staff-runtime.md)

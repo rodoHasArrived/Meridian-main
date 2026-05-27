@@ -64,4 +64,31 @@ public sealed class LiveDataEndpointTests
             response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
         }
     }
+
+    [Fact]
+    public async Task QuotesSnapshot_ReturnsJsonOrServiceUnavailable()
+    {
+        var response = await _client.GetAsync("/api/data/quotes-snapshot");
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            using var doc = await JsonDocument.ParseAsync(stream);
+            doc.RootElement.TryGetProperty("count", out _).Should().BeTrue();
+            doc.RootElement.TryGetProperty("quotes", out var quotes).Should().BeTrue();
+            quotes.ValueKind.Should().Be(JsonValueKind.Array);
+        }
+    }
+
+    [Fact]
+    public async Task QuotesSnapshot_WithSymbolsFilter_ReturnsValidStatusCode()
+    {
+        var response = await _client.GetAsync("/api/data/quotes-snapshot?symbols=SPY,AAPL");
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+    }
 }

@@ -1,0 +1,26 @@
+readme_coverage:
+  modules:
+    - id: missing-front-matter-module
+      readme_path: tools/source_docs/fixtures/readme_contract/missing_front_matter/README.md
+      transitions:
+        - type: added
+          roadmap:
+            id: roadmap-1
+            url: https://example.test/roadmap/1
+            status: planned
+    - id: missing-heading-module
+      readme_path: tools/source_docs/fixtures/readme_contract/missing_heading/README.md
+      transitions:
+        - type: added
+          roadmap:
+            id: roadmap-2
+            url: https://example.test/roadmap/2
+            status: planned
+    - id: missing-markers-module
+      readme_path: tools/source_docs/fixtures/readme_contract/missing_markers/README.md
+      transitions:
+        - type: added
+          roadmap:
+            id: roadmap-3
+            url: https://example.test/roadmap/3
+            status: planned

@@ -1,6 +1,9 @@
 using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -16,6 +19,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public sealed class LoginSessionMiddleware
 {
+    private const string LocalShutdownTokenEnvironmentVariable = "MDC_SHUTDOWN_TOKEN";
+    private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
     public const string SessionCookieName = "mdc-session";
 
@@ -55,6 +61,12 @@ public sealed class LoginSessionMiddleware
 
         // Exempt health probes
         if (ExemptPaths.Contains(trimmedPath))
+        {
+            await _next(context);
+            return;
+        }
+
+        if (IsLifecycleTokenRequest(context, trimmedPath))
         {
             await _next(context);
             return;
@@ -127,6 +139,32 @@ public sealed class LoginSessionMiddleware
         context.Response.ContentType = "text/plain; charset=utf-8";
         await context.Response.WriteAsync(
             "Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development.");
+    }
+
+    private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
+    {
+        if (!trimmedPath.Equals("/api/system/lifecycle", StringComparison.OrdinalIgnoreCase) &&
+            !trimmedPath.Equals("/api/system/shutdown", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var remoteIp = context.Connection.RemoteIpAddress;
+        if (remoteIp is not null && !IPAddress.IsLoopback(remoteIp))
+            return false;
+
+        var expected = Environment.GetEnvironmentVariable(LocalShutdownTokenEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(expected))
+            return false;
+
+        var supplied = context.Request.Headers[LocalShutdownTokenHeader].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(supplied))
+            return false;
+
+        var expectedBytes = Encoding.UTF8.GetBytes(expected);
+        var suppliedBytes = Encoding.UTF8.GetBytes(supplied);
+        return suppliedBytes.Length == expectedBytes.Length
+            && CryptographicOperations.FixedTimeEquals(suppliedBytes, expectedBytes);
     }
 }
 

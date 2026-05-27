@@ -27,6 +27,25 @@ public sealed record TradesResponse(
 );
 
 /// <summary>
+/// Per-symbol intraday session statistics surfaced alongside live quotes so the watchlist
+/// and quote screens can render day open / high / low / change without an extra round trip.
+/// </summary>
+public sealed record SessionStatsDto(
+    string SessionDate,
+    decimal Open,
+    decimal High,
+    decimal Low,
+    decimal Last,
+    long Volume,
+    decimal Vwap,
+    long TradeCount,
+    decimal Change,
+    decimal? ChangePercent,
+    DateTimeOffset FirstTradeAt,
+    DateTimeOffset LastTradeAt
+);
+
+/// <summary>
 /// Response DTO for a single quote snapshot.
 /// </summary>
 public sealed record QuoteDataResponse(
@@ -40,7 +59,8 @@ public sealed record QuoteDataResponse(
     decimal? Spread,
     long SequenceNumber,
     string? StreamId,
-    string? Venue
+    string? Venue,
+    SessionStatsDto? Session = null
 );
 
 /// <summary>
@@ -50,6 +70,40 @@ public sealed record QuotesResponse(
     string Symbol,
     QuoteDataResponse? Quote,
     DateTimeOffset Timestamp
+);
+
+/// <summary>
+/// One row in the multi-symbol quotes snapshot — the latest BBO plus the last trade
+/// (if any) so a watchlist can render bid / ask / last / spread for every symbol from
+/// a single request. <see cref="Session"/> carries the intraday day-statistics for the
+/// symbol when at least one trade has been observed since the session anchor.
+/// </summary>
+public sealed record QuotesSnapshotItem(
+    string Symbol,
+    DateTimeOffset Timestamp,
+    decimal BidPrice,
+    long BidSize,
+    decimal AskPrice,
+    long AskSize,
+    decimal? MidPrice,
+    decimal? Spread,
+    decimal? LastPrice,
+    long? LastSize,
+    DateTimeOffset? LastTradeTimestamp,
+    long SequenceNumber,
+    string? StreamId,
+    string? Venue,
+    SessionStatsDto? Session = null
+);
+
+/// <summary>
+/// Multi-symbol quotes snapshot response. Used by the watchlist screen to refresh prices for
+/// every subscribed symbol from a single endpoint.
+/// </summary>
+public sealed record QuotesSnapshotResponse(
+    DateTimeOffset Timestamp,
+    int Count,
+    IReadOnlyList<QuotesSnapshotItem> Quotes
 );
 
 /// <summary>

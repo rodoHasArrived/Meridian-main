@@ -1,0 +1,822 @@
+{
+  "version": 1,
+  "description": "Static fixture responses served by Playwright page.route() during web screenshot capture. Keeps screenshots independent of a running Meridian API backend. Update when API response shapes change.",
+  "routes": {
+    "/api/workstation/session": {
+      "displayName": "Ops Desk",
+      "role": "Operator",
+      "environment": "paper",
+      "activeWorkspace": "trading",
+      "commandCount": 7
+    },
+    "/api/status": {
+      "systemStatus": "Degraded",
+      "providersOnline": 3,
+      "providersTotal": 4,
+      "activeRuns": 2,
+      "openPositions": 5,
+      "activeBackfills": 1,
+      "symbolsMonitored": 128,
+      "storageHealth": "Warning",
+      "lastHeartbeatUtc": "2026-04-28T18:15:00Z",
+      "metrics": [
+        { "id": "providers", "label": "Providers Online", "value": "3 / 4", "delta": "1 degraded", "tone": "warning" },
+        { "id": "runs", "label": "Active Runs", "value": "2", "delta": "+1", "tone": "default" },
+        { "id": "positions", "label": "Open Positions", "value": "5", "delta": "+2", "tone": "default" },
+        { "id": "backfills", "label": "Active Backfills", "value": "1", "delta": "review", "tone": "warning" }
+      ],
+      "recentEvents": []
+    },
+    "/api/workstation/trading": {
+      "metrics": [
+        { "id": "pnl", "label": "Net P&L", "value": "+$3,100", "delta": "+2.1%", "tone": "success" },
+        { "id": "orders", "label": "Open Orders", "value": "4", "delta": "+1", "tone": "default" },
+        { "id": "fills", "label": "Fills", "value": "13", "delta": "+3", "tone": "success" },
+        { "id": "risk", "label": "Risk", "value": "Observe", "delta": "0%", "tone": "warning" }
+      ],
+      "positions": [
+        {
+          "symbol": "AAPL",
+          "side": "Long",
+          "quantity": "100",
+          "averagePrice": "188.10",
+          "markPrice": "189.00",
+          "dayPnl": "+$90",
+          "unrealizedPnl": "+$90",
+          "exposure": "$18,900"
+        }
+      ],
+      "openOrders": [
+        {
+          "orderId": "PO-1",
+          "symbol": "MSFT",
+          "side": "Buy",
+          "type": "Limit",
+          "quantity": "20",
+          "limitPrice": "414.20",
+          "status": "Working",
+          "submittedAt": "09:42:00 ET"
+        }
+      ],
+      "fills": [
+        {
+          "fillId": "FL-1",
+          "orderId": "PO-0",
+          "symbol": "NVDA",
+          "side": "Sell",
+          "quantity": "10",
+          "price": "948.20",
+          "venue": "NASDAQ",
+          "timestamp": "09:40:10 ET"
+        }
+      ],
+      "risk": {
+        "state": "Observe",
+        "summary": "Guardrails are active.",
+        "netExposure": "$120,000",
+        "grossExposure": "$150,000",
+        "var95": "$9,000",
+        "maxDrawdown": "-1.1%",
+        "buyingPowerUsed": "58%",
+        "activeGuardrails": ["Cap per single-name", "Throttle at 70%"]
+      },
+      "brokerage": {
+        "provider": "Interactive Brokers",
+        "account": "DU1009034",
+        "environment": "paper",
+        "connection": "Connected",
+        "lastHeartbeat": "2s ago",
+        "orderIngress": "healthy",
+        "fillFeed": "healthy",
+        "notes": "Adapter wiring from screenshot fixtures."
+      },
+      "readiness": null
+    },
+    "/api/workstation/trading/readiness": {
+      "asOf": "2026-04-28T18:15:00Z",
+      "overallStatus": "ReviewRequired",
+      "readyForPaperOperation": false,
+      "acceptanceGates": [],
+      "activeSession": {
+        "sessionId": "paper-dev-42",
+        "strategyId": "strat-mean-reversion",
+        "strategyName": "Mean Reversion FX",
+        "isActive": true,
+        "initialCash": 100000,
+        "createdAt": "2026-04-28T17:30:00Z",
+        "closedAt": null,
+        "symbolCount": 4,
+        "orderCount": 3,
+        "positionCount": 2,
+        "portfolioValue": 101240
+      },
+      "sessions": [],
+      "replay": null,
+      "controls": {
+        "circuitBreakerOpen": false,
+        "circuitBreakerReason": null,
+        "circuitBreakerChangedBy": null,
+        "circuitBreakerChangedAt": null,
+        "manualOverrideCount": 1,
+        "symbolLimitCount": 3,
+        "defaultMaxPositionSize": 50000
+      },
+      "promotion": {
+        "state": "ReviewRequired",
+        "reason": "Checklist items pending.",
+        "requiresReview": true,
+        "sourceRunId": "run-dev-1",
+        "targetRunId": null,
+        "suggestedNextMode": "paper",
+        "auditReference": "audit-promo-dev-1",
+        "approvalStatus": "pending",
+        "manualOverrideId": null,
+        "approvedBy": null,
+        "approvalChecklist": ["DK1 trust packet", "Replay consistency"]
+      },
+      "trustGate": {
+        "gateId": "dk1-provider-trust",
+        "status": "signed",
+        "readyForOperatorReview": true,
+        "operatorSignoffRequired": true,
+        "operatorSignoffStatus": "signed",
+        "generatedAt": "2026-04-27T21:00:00Z",
+        "packetPath": "artifacts/dk1-pilot-parity-packet.json",
+        "sourceSummary": "wave1-validation-summary.json",
+        "requiredSampleCount": 4,
+        "readySampleCount": 4
+      },
+      "brokerageSync": null,
+      "workItems": [
+        {
+          "workItemId": "promotion-review-run-dev-1",
+          "kind": "PromotionReview",
+          "label": "Promotion checklist review pending",
+          "detail": "Strategy-to-Trading handoff requires operator review.",
+          "tone": "Warning",
+          "createdAt": "2026-04-28T18:00:00Z",
+          "runId": "run-dev-1",
+          "fundAccountId": null,
+          "auditReference": "audit-promo-dev-1",
+          "workspace": "Trading",
+          "targetRoute": "/trading/readiness",
+          "targetPageTag": "TradingShell"
+        }
+      ],
+      "warnings": []
+    },
+    "/api/workstation/operator/inbox": {
+      "asOf": "2026-04-28T18:15:00Z",
+      "criticalCount": 0,
+      "warningCount": 3,
+      "reviewCount": 3,
+      "summary": "3 operator review items need attention.",
+      "items": [
+        {
+          "workItemId": "promotion-review-run-dev-1",
+          "kind": "PromotionReview",
+          "label": "Promotion checklist review pending",
+          "detail": "Strategy-to-Trading handoff requires operator review.",
+          "tone": "Warning",
+          "createdAt": "2026-04-28T18:00:00Z",
+          "runId": "run-dev-1",
+          "fundAccountId": null,
+          "auditReference": "audit-promo-dev-1",
+          "workspace": "Trading",
+          "targetRoute": "/trading/readiness",
+          "targetPageTag": "TradingShell"
+        }
+      ]
+    },
+    "/api/workstation/portfolio": {
+      "metrics": [
+        { "id": "equity", "label": "Total Equity", "value": "$312,400", "delta": "+1.2%", "tone": "success" },
+        { "id": "cash", "label": "Cash", "value": "$87,500", "delta": "-0.3%", "tone": "default" },
+        { "id": "positions", "label": "Positions", "value": "3", "delta": "0", "tone": "default" },
+        { "id": "pnl", "label": "Unrealized P&L", "value": "+$9,451", "delta": "+3.1%", "tone": "success" }
+      ],
+      "positions": [
+        {
+          "symbol": "AAPL",
+          "side": "Long",
+          "quantity": "38",
+          "averagePrice": "142.20",
+          "markPrice": "188.40",
+          "dayPnl": "+$190",
+          "unrealizedPnl": "+$1,756",
+          "exposure": "$7,159"
+        },
+        {
+          "symbol": "VTI",
+          "side": "Long",
+          "quantity": "120",
+          "averagePrice": "205.00",
+          "markPrice": "254.50",
+          "dayPnl": "+$495",
+          "unrealizedPnl": "+$5,940",
+          "exposure": "$30,540"
+        }
+      ],
+      "risk": {
+        "state": "Observe",
+        "summary": "Guardrails active.",
+        "netExposure": "$312,400",
+        "grossExposure": "$312,400",
+        "var95": "$15,000",
+        "maxDrawdown": "-0.9%",
+        "buyingPowerUsed": "22%",
+        "activeGuardrails": []
+      },
+      "brokerage": {
+        "provider": "Alpaca",
+        "account": "PA-DEMO",
+        "environment": "paper",
+        "connection": "Connected",
+        "lastHeartbeat": "5s ago",
+        "orderIngress": "healthy",
+        "fillFeed": "healthy",
+        "notes": "Alpaca paper account from screenshot fixtures."
+      },
+      "runs": [
+        {
+          "runId": "run-dev-1",
+          "strategyName": "Mean Reversion FX",
+          "engine": "Meridian Native",
+          "mode": "paper",
+          "status": "Running",
+          "pnl": "+4.2%",
+          "sharpe": "1.41",
+          "dataset": "FX Majors",
+          "window": "90d",
+          "lastUpdated": "2m ago",
+          "notes": "Primary paper candidate.",
+          "promotionState": "ReviewRequired"
+        }
+      ],
+      "cashFlow": null
+    },
+    "/api/workstation/strategy": {
+      "metrics": [
+        { "id": "runs", "label": "Runs", "value": "24", "delta": "+8%", "tone": "success" },
+        { "id": "queued", "label": "Queued", "value": "3", "delta": "0%", "tone": "default" },
+        { "id": "review", "label": "Needs Review", "value": "2", "delta": "-1%", "tone": "warning" },
+        { "id": "promotions", "label": "Promotions", "value": "5", "delta": "+2", "tone": "default" }
+      ],
+      "runs": [
+        {
+          "id": "run-dev-1",
+          "strategyName": "Mean Reversion FX",
+          "engine": "Meridian Native",
+          "mode": "paper",
+          "status": "Running",
+          "dataset": "FX Majors",
+          "window": "90d",
+          "pnl": "+4.2%",
+          "sharpe": "1.41",
+          "lastUpdated": "2m ago",
+          "notes": "Primary paper candidate for development preview."
+        },
+        {
+          "id": "run-dev-2",
+          "strategyName": "Index Momentum",
+          "engine": "Lean",
+          "mode": "backtest",
+          "status": "Completed",
+          "dataset": "US Equities",
+          "window": "180d",
+          "pnl": "+1.9%",
+          "sharpe": "0.91",
+          "lastUpdated": "5m ago",
+          "notes": "Completed backtest run available for compare and diff review."
+        }
+      ]
+    },
+    "/api/workstation/strategy/designer/templates": [
+      {
+        "templateId": "quality-momentum-rotation",
+        "name": "Quality momentum rotation",
+        "description": "Rank liquid equities by momentum, quality, and volatility before risk-gate review.",
+        "category": "Equity rotation",
+        "sourcePrototype": "Strategy Designer screenshot fixture",
+        "tags": ["momentum", "quality", "risk-gate"],
+        "document": {
+          "documentId": "strategy-designer-fixture-1",
+          "name": "Quality momentum rotation",
+          "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
+          "version": "1.0",
+          "datasetReference": "fixture://strategy-designer/quality-momentum",
+          "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+          "cells": [
+            {
+              "cellId": "universe",
+              "label": "Liquid equity universe",
+              "kind": "universe",
+              "purpose": "Seed the candidate universe with liquid large-cap equities.",
+              "source": "Provider historical bars / security master",
+              "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
+              "parameters": { "minimumDollarVolume": "25000000" },
+              "disabledReason": null
+            },
+            {
+              "cellId": "momentum-score",
+              "label": "Momentum score",
+              "kind": "score",
+              "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
+              "source": "Meridian factor library",
+              "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
+              "parameters": { "lookback": "63" },
+              "disabledReason": null
+            }
+          ],
+          "transitions": [
+            {
+              "transitionId": "universe-to-score",
+              "fromCellId": "universe",
+              "toCellId": "momentum-score",
+              "kind": "filter",
+              "condition": "avgDollarVolume20d >= 25000000",
+              "maxIterations": null,
+              "rationale": "Keep low-liquidity symbols out of the scoring pass."
+            }
+          ],
+          "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+          "createdAt": "2026-05-15T15:00:00Z",
+          "updatedAt": "2026-05-15T15:00:00Z"
+        }
+      }
+    ],
+    "/api/workstation/strategy/designer/field-catalog": [
+      {
+        "fieldId": "PRICE",
+        "label": "Price",
+        "source": "Provider historical bars / live quotes",
+        "dataSet": "market-data",
+        "typeName": "decimal",
+        "description": "Canonical last or close price resolved through Meridian providers.",
+        "isEnabled": true,
+        "disabledReason": null,
+        "synonyms": ["close", "last", "bar.close"]
+      },
+      {
+        "fieldId": "MOMENTUM_63D",
+        "label": "63-day momentum",
+        "source": "Provider historical bars",
+        "dataSet": "market-data",
+        "typeName": "decimal",
+        "description": "Return over the last 63 trading sessions.",
+        "isEnabled": true,
+        "disabledReason": null,
+        "synonyms": ["return", "trend"]
+      },
+      {
+        "fieldId": "AMX_PRIVATE_SCORE",
+        "label": "AMX private score",
+        "source": "External research upload",
+        "dataSet": "research-import",
+        "typeName": "decimal",
+        "description": "Analyst model extension field kept disabled until provenance is attached.",
+        "isEnabled": false,
+        "disabledReason": "No Meridian canonical source",
+        "synonyms": ["analyst", "custom", "amx"]
+      }
+    ],
+    "/api/workstation/strategy/designer/drafts": [
+      {
+        "documentId": "strategy-designer-fixture-1",
+        "name": "Quality momentum rotation",
+        "version": "1.0",
+        "datasetReference": "fixture://strategy-designer/quality-momentum",
+        "cellCount": 2,
+        "transitionCount": 1,
+        "updatedAt": "2026-05-15T15:00:00Z",
+        "validationSummary": "Fixture draft passes no-host validation."
+      }
+    ],
+    "/api/workstation/strategy/designer/drafts/strategy-designer-fixture-1": {
+      "documentId": "strategy-designer-fixture-1",
+      "name": "Quality momentum rotation",
+      "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
+      "version": "1.0",
+      "datasetReference": "fixture://strategy-designer/quality-momentum",
+      "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+      "cells": [
+        {
+          "cellId": "universe",
+          "label": "Liquid equity universe",
+          "kind": "universe",
+          "purpose": "Seed the candidate universe with liquid large-cap equities.",
+          "source": "Provider historical bars / security master",
+          "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
+          "parameters": { "minimumDollarVolume": "25000000" },
+          "disabledReason": null
+        },
+        {
+          "cellId": "momentum-score",
+          "label": "Momentum score",
+          "kind": "score",
+          "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
+          "source": "Meridian factor library",
+          "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
+          "parameters": { "lookback": "63" },
+          "disabledReason": null
+        }
+      ],
+      "transitions": [
+        {
+          "transitionId": "universe-to-score",
+          "fromCellId": "universe",
+          "toCellId": "momentum-score",
+          "kind": "filter",
+          "condition": "avgDollarVolume20d >= 25000000",
+          "maxIterations": null,
+          "rationale": "Keep low-liquidity symbols out of the scoring pass."
+        }
+      ],
+      "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+      "createdAt": "2026-05-15T15:00:00Z",
+      "updatedAt": "2026-05-15T15:00:00Z"
+    },
+    "/api/workstation/accounting": {
+      "metrics": [
+        { "id": "breaks", "label": "Open Breaks", "value": "2", "delta": "+1", "tone": "warning" },
+        { "id": "drift", "label": "Timing Drift", "value": "1", "delta": "0%", "tone": "warning" },
+        { "id": "coverage", "label": "Security Gaps", "value": "0", "delta": "0%", "tone": "success" },
+        { "id": "audit", "label": "Audit Ready", "value": "4", "delta": "+2", "tone": "success" }
+      ],
+      "reconciliationQueue": [
+        {
+          "runId": "run-42",
+          "strategyName": "Paper Index Mean Reversion",
+          "mode": "paper",
+          "status": "Running",
+          "lastUpdated": "3m ago",
+          "breakCount": 2,
+          "openBreakCount": 1,
+          "reconciliationStatus": "BreaksOpen"
+        },
+        {
+          "runId": "run-57",
+          "strategyName": "Intraday Vol Carry",
+          "mode": "paper",
+          "status": "Paused",
+          "lastUpdated": "7m ago",
+          "breakCount": 1,
+          "openBreakCount": 0,
+          "reconciliationStatus": "Resolved"
+        }
+      ],
+      "breakQueue": [
+        {
+          "breakId": "run-42:cash",
+          "runId": "run-42",
+          "strategyName": "Paper Index Mean Reversion",
+          "category": "AmountMismatch",
+          "status": "Open",
+          "variance": 500,
+          "reason": "Cash variance over tolerance.",
+          "assignedTo": null,
+          "detectedAt": "2026-01-01T00:00:00Z",
+          "lastUpdatedAt": "2026-01-01T00:00:00Z",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "resolvedBy": null,
+          "resolvedAt": null,
+          "resolutionNote": null
+        }
+      ],
+      "cashFlow": {
+        "totalCash": 120000,
+        "totalLedgerCash": 120500,
+        "netVariance": 500,
+        "totalFinancing": 1400,
+        "runsWithCashSignals": 4,
+        "runsWithCashVariance": 1,
+        "tone": "warning",
+        "summary": "Cash-flow coverage available for 4 runs; 1 run needs variance review."
+      },
+      "reporting": {
+        "profileCount": 4,
+        "recommendedProfiles": ["excel"],
+        "profiles": [
+          {
+            "id": "excel",
+            "name": "Excel",
+            "targetTool": "Excel",
+            "format": "Xlsx",
+            "description": "Board-ready workbook export.",
+            "loaderScript": false,
+            "dataDictionary": true
+          }
+        ],
+        "reportPackTargets": ["board"],
+        "summary": "4 export/reporting profiles available for governance workflows."
+      }
+    },
+    "/api/workstation/reporting": {
+      "metrics": [
+        { "id": "packs", "label": "Report Packs", "value": "4", "delta": "+1", "tone": "success" },
+        { "id": "pending", "label": "Pending Review", "value": "1", "delta": "+1", "tone": "warning" },
+        { "id": "exports", "label": "Exports Ready", "value": "3", "delta": "0", "tone": "success" },
+        { "id": "approved", "label": "Approved", "value": "3", "delta": "+2", "tone": "success" }
+      ],
+      "reconciliationQueue": [],
+      "breakQueue": [],
+      "cashFlow": {
+        "totalCash": 120000,
+        "totalLedgerCash": 120500,
+        "netVariance": 500,
+        "totalFinancing": 1400,
+        "runsWithCashSignals": 4,
+        "runsWithCashVariance": 1,
+        "tone": "warning",
+        "summary": "Cash-flow data available for governed export review."
+      },
+      "reporting": {
+        "profileCount": 4,
+        "recommendedProfiles": ["excel"],
+        "profiles": [
+          {
+            "id": "excel",
+            "name": "Excel",
+            "targetTool": "Excel",
+            "format": "Xlsx",
+            "description": "Board-ready workbook export.",
+            "loaderScript": false,
+            "dataDictionary": true
+          },
+          {
+            "id": "python-pandas",
+            "name": "Python / Pandas",
+            "targetTool": "Python",
+            "format": "Parquet",
+            "description": "Research pack for quant analyst review.",
+            "loaderScript": true,
+            "dataDictionary": false
+          }
+        ],
+        "reportPackTargets": ["board", "research"],
+        "summary": "4 export/reporting profiles available for governed export."
+      }
+    },
+    "/api/workstation/data": {
+      "metrics": [
+        { "id": "providers", "label": "Providers Healthy", "value": "4", "delta": "0", "tone": "success" },
+        { "id": "backfills", "label": "Backfills Running", "value": "2", "delta": "+1", "tone": "default" },
+        { "id": "exports", "label": "Exports Ready", "value": "3", "delta": "+1", "tone": "success" },
+        { "id": "review", "label": "Needs Review", "value": "1", "delta": "+1", "tone": "warning" }
+      ],
+      "providers": [
+        {
+          "provider": "Polygon",
+          "status": "Healthy",
+          "capability": "Streaming equities",
+          "latency": "18ms p50",
+          "note": "Realtime subscriptions are stable.",
+          "trustScore": "0.96",
+          "signalSource": "wave1-validation-summary",
+          "reasonCode": "provider-ready",
+          "recommendedAction": "Keep provider in the active trust set.",
+          "gateImpact": "Supports DK1"
+        },
+        {
+          "provider": "Databento",
+          "status": "Warning",
+          "capability": "Backfill bars",
+          "latency": "42ms p50",
+          "note": "One options-chain backfill waiting on operator review.",
+          "trustScore": "0.82",
+          "signalSource": "backfill-monitor",
+          "reasonCode": "review-backfill",
+          "recommendedAction": "Review queued options-chain backfill before report-pack use.",
+          "gateImpact": "Review required"
+        }
+      ],
+      "backfills": [
+        {
+          "jobId": "BF-1042",
+          "scope": "US equities / 30d",
+          "provider": "Databento",
+          "status": "Running",
+          "progress": "62%",
+          "updatedAt": "2m ago"
+        },
+        {
+          "jobId": "BF-1044",
+          "scope": "Options chains / 7d",
+          "provider": "Databento",
+          "status": "Review",
+          "progress": "95%",
+          "updatedAt": "5m ago"
+        }
+      ],
+      "exports": [
+        {
+          "exportId": "EX-2201",
+          "profile": "python-pandas",
+          "target": "research pack",
+          "status": "Ready",
+          "rows": "124k",
+          "updatedAt": "4m ago"
+        }
+      ]
+    },
+    "/api/brokerage-connections/alpaca/status": {
+      "providerId": "alpaca",
+      "displayName": "Alpaca paper",
+      "state": "Connected",
+      "isConfigured": true,
+      "isConnected": true,
+      "authorizationUrl": null,
+      "connectedAt": "2026-05-07T11:50:00Z",
+      "expiresAt": null,
+      "lastError": null,
+      "warnings": [],
+      "scopes": ["trading:account", "brokerage-sync:read"],
+      "environment": "paper",
+      "externalAccountId": "PA-DEMO",
+      "verifiedAt": "2026-05-07T11:50:00Z",
+      "maskedKeyId": "********DEMO"
+    },
+    "/api/portfolio/household": {
+      "providerId": "alpaca",
+      "asOf": "2026-05-07T12:00:00Z",
+      "totalCash": 87500,
+      "totalEquity": 312400,
+      "totalBuyingPower": 87500,
+      "currency": "USD",
+      "warnings": [],
+      "accounts": [
+        {
+          "fundAccountId": "fixture-roth",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-roth",
+          "displayName": "Alpaca Roth IRA",
+          "accountKind": "RothIra",
+          "health": "Healthy",
+          "cash": 18500,
+          "equity": 104200,
+          "buyingPower": 18500,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T12:00:00Z",
+          "positionCount": 2,
+          "cashTransactionCount": 4,
+          "warnings": []
+        }
+      ],
+      "positions": [
+        {
+          "fundAccountId": "fixture-roth",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-roth",
+          "accountKind": "RothIra",
+          "symbol": "AAPL",
+          "quantity": 38,
+          "averageEntryPrice": 142.2,
+          "marketPrice": 188.4,
+          "marketValue": 7159.2,
+          "unrealizedPnl": 1755.6,
+          "assetClass": "equity",
+          "security": null,
+          "description": "Apple Inc.",
+          "positionId": "fixture-roth-aapl",
+          "currency": "USD"
+        }
+      ]
+    },
+    "/api/workstation/workflows": {
+      "generatedAt": "2026-04-28T18:15:00Z",
+      "workflows": [
+        {
+          "workflowId": "paper-trading-readiness",
+          "title": "Paper Trading Readiness",
+          "summary": "Review context, replay, controls, and cockpit readiness before live escalation.",
+          "workspaceId": "trading",
+          "workspaceTitle": "Trading",
+          "entryPageTag": "TradingShell",
+          "tone": "Warning",
+          "actions": [],
+          "evidenceTags": ["readiness gates", "replay verification"],
+          "marketPatternTags": ["paper trading", "live readiness gate"]
+        }
+      ],
+      "actions": []
+    },
+    "/api/workstation/workflows/presets": {
+      "generatedAt": "2026-04-28T18:15:00Z",
+      "presets": [
+        {
+          "presetId": "daily-paper-readiness",
+          "name": "Daily paper readiness",
+          "description": "Review session, replay, and controls before the desk opens.",
+          "workflowId": "paper-trading-readiness",
+          "workflowTitle": "Paper Trading Readiness",
+          "actionId": "workflow.trading.review-paper-candidate",
+          "actionLabel": "Review Candidate for Paper",
+          "workspaceId": "trading",
+          "workspaceTitle": "Trading",
+          "targetPageTag": "TradingShell",
+          "isPinned": true,
+          "useCount": 4,
+          "lastUsedAt": "2026-04-28T08:00:00Z",
+          "createdAt": "2026-04-01T00:00:00Z"
+        }
+      ]
+    },
+    "/api/workstation/settings/feature-capabilities": {
+      "capabilities": [
+        {
+          "capabilityKey": "provider-routing",
+          "displayName": "Provider Routing",
+          "description": "Controls provider routing settings and trust snapshots.",
+          "isEnabled": true,
+          "defaultEnabled": true,
+          "isPermanent": false,
+          "isOverridden": false,
+          "canToggle": true,
+          "disabledReason": null
+        },
+        {
+          "capabilityKey": "brokerage-sync",
+          "displayName": "Brokerage Sync",
+          "description": "Enables brokerage account synchronization workflows.",
+          "isEnabled": true,
+          "defaultEnabled": true,
+          "isPermanent": false,
+          "isOverridden": false,
+          "canToggle": true,
+          "disabledReason": null
+        }
+      ]
+    },
+    "/api/providers/connections": [
+      {
+        "providerId": "alpaca",
+        "displayName": "Alpaca paper",
+        "capability": "Brokerage",
+        "credentialState": "Configured",
+        "credentialSource": "Operator",
+        "verificationState": "Verified",
+        "health": "Healthy",
+        "fallbackActive": false,
+        "lastVerifiedAt": "2026-05-07T11:50:00Z",
+        "lastSuccessfulAt": "2026-05-07T11:50:00Z",
+        "lastFailureAt": null,
+        "lastError": null,
+        "maskedKeyPreview": "********DEMO",
+        "environment": "paper",
+        "externalAccountId": "PA-DEMO",
+        "affectedWorkflows": ["Trading readiness", "Portfolio brokerage sync"],
+        "recommendedAction": "Keep provider in paper mode for workstation capture.",
+        "actionHref": "/workstation/settings/integrations"
+      }
+    ],
+    "/api/provider-routing/connections": [
+      {
+        "connectionId": "alpaca-paper",
+        "providerFamilyId": "alpaca",
+        "displayName": "Alpaca paper",
+        "connectionType": "Brokerage",
+        "connectionMode": "Paper",
+        "enabled": true,
+        "credentialReference": "alpaca-paper",
+        "institutionId": "alpaca",
+        "externalAccountId": "PA-DEMO",
+        "scope": null,
+        "tags": ["paper", "brokerage"],
+        "description": "Paper brokerage route for screenshots.",
+        "productionReady": true
+      }
+    ],
+    "/api/provider-routing/bindings": [
+      {
+        "bindingId": "binding-brokerage-paper",
+        "capability": "BrokerageExecution",
+        "connectionId": "alpaca-paper",
+        "target": null,
+        "priority": 1,
+        "enabled": true,
+        "failoverConnectionIds": [],
+        "safetyModeOverride": null,
+        "notes": "Default brokerage route for screenshot fixtures."
+      }
+    ],
+    "/api/provider-routing/trust-snapshots": [
+      {
+        "connectionId": "alpaca-paper",
+        "providerFamilyId": "alpaca",
+        "score": 0.92,
+        "isHealthy": true,
+        "healthStatus": "Healthy",
+        "isProductionReady": true,
+        "isCertificationFresh": true,
+        "signals": ["latency:p50=18ms", "continuity:stable"]
+      }
+    ],
+    "/api/workstation/workflow-summary": {
+      "generatedAt": "2026-04-28T18:15:00Z",
+      "totalWorkflows": 1,
+      "activeWorkflows": 1,
+      "reviewRequired": 1
+    }
+  }
+}

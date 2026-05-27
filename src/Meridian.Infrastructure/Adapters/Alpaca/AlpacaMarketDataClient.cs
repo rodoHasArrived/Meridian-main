@@ -372,6 +372,13 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
                     : null
             );
 
+            var issues = ProviderDataQualityValidator.ValidateTrade(ProviderId, update);
+            if (HasBlockingIssues(issues))
+            {
+                LogDataQualityRejection("trade", sym!, issues);
+                return;
+            }
+
             _tradeCollector.OnTrade(update);
         }
 
@@ -408,8 +415,30 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
                 Venue: "ALPACA"
             );
 
+            var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quoteUpdate);
+            if (HasBlockingIssues(issues))
+            {
+                LogDataQualityRejection("quote", sym!, issues);
+                return;
+            }
+
             _quoteCollector.OnQuote(quoteUpdate);
         }
+    }
+
+    private static bool HasBlockingIssues(IReadOnlyList<ProviderDataQualityIssue> issues)
+        => issues.Any(issue => issue.Severity == ProviderDataQualitySeverity.Error);
+
+    private void LogDataQualityRejection(
+        string messageType,
+        string symbol,
+        IReadOnlyList<ProviderDataQualityIssue> issues)
+    {
+        Log.Warning(
+            "Rejected Alpaca {MessageType} for {Symbol} due to provider data quality issues: {Issues}",
+            messageType,
+            symbol,
+            string.Join("; ", issues.Select(issue => $"{issue.FieldPath}: {issue.Message}")));
     }
 
 }

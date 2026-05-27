@@ -47,7 +47,7 @@ public sealed class BackgroundTaskSchedulerService
     private static readonly Lazy<BackgroundTaskSchedulerService> _instance =
         new(() => new BackgroundTaskSchedulerService());
 
-    private readonly ConcurrentDictionary<string, (ScheduledTask Task, CancellationTokenSource Cts)> _scheduledTasks = new();
+    private readonly ConcurrentDictionary<string, (ScheduledTask Task, CancellationTokenSource Cts, Task Loop)> _scheduledTasks = new();
     private CancellationTokenSource? _cts;
     private bool _isRunning;
 
@@ -96,25 +96,53 @@ public sealed class BackgroundTaskSchedulerService
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
     public Task StopAsync()
+        => StopAsync(CancellationToken.None);
+
+    /// <summary>
+    /// Stops the background task scheduler and waits for running task loops to observe cancellation.
+    /// </summary>
+    public async Task StopAsync(CancellationToken ct)
     {
         if (!_isRunning)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        // Cancel all individual task tokens
-        foreach (var (_, (_, taskCts)) in _scheduledTasks)
+        var entries = _scheduledTasks.ToArray();
+        foreach (var (_, (_, taskCts, _)) in entries)
         {
             taskCts.Cancel();
-            taskCts.Dispose();
         }
+
+        var loops = entries.Select(entry => entry.Value.Loop).ToArray();
+        if (loops.Length > 0)
+        {
+            try
+            {
+                await Task.WhenAll(loops).WaitAsync(ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                LoggingService.Instance.LogWarning(
+                    "Background task scheduler stop timed out while waiting for task loops");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError(
+                    "Background task scheduler observed a task failure during shutdown",
+                    ex);
+            }
+        }
+
+        foreach (var (_, (_, taskCts, _)) in entries)
+            taskCts.Dispose();
+
         _scheduledTasks.Clear();
 
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
         _isRunning = false;
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -135,10 +163,22 @@ public sealed class BackgroundTaskSchedulerService
             return;
 
         var taskCts = CancellationTokenSource.CreateLinkedTokenSource(_cts?.Token ?? CancellationToken.None);
-        _scheduledTasks[task.Id] = (task, taskCts);
+        var loop = RunTaskLoopAsync(task, taskCts.Token);
+        _scheduledTasks[task.Id] = (task, taskCts, loop);
 
-        // Fire and forget the background loop
-        _ = RunTaskLoopAsync(task, taskCts.Token);
+        _ = loop.ContinueWith(
+            completed =>
+            {
+                if (completed.IsFaulted)
+                {
+                    LoggingService.Instance.LogError(
+                        $"Background task '{task.Name}' failed",
+                        completed.Exception?.GetBaseException());
+                }
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     /// <summary>
@@ -166,7 +206,11 @@ public sealed class BackgroundTaskSchedulerService
         if (_scheduledTasks.TryRemove(taskId, out var entry))
         {
             entry.Cts.Cancel();
-            entry.Cts.Dispose();
+            _ = entry.Loop.ContinueWith(
+                _ => entry.Cts.Dispose(),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
         }
     }
 
@@ -195,7 +239,9 @@ public sealed class BackgroundTaskSchedulerService
                 }
                 catch (Exception ex) when (ex is not OutOfMemoryException)
                 {
-                    // Individual task failures don't stop the scheduler.
+                    LoggingService.Instance.LogError(
+                        $"Scheduled background task '{task.Name}' failed",
+                        ex);
                 }
             }
         }

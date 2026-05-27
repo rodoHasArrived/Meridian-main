@@ -49,11 +49,19 @@ class ScanTodosTests(unittest.TestCase):
             root = Path(tmp)
             included = root / "src" / "Active.cs"
             excluded_dist = root / "dist" / "bundle.js"
+            excluded_tool_cache = root / ".tools" / ".store" / "dotnet-dump" / "sosdocsunix.txt"
             excluded_worktree = root / ".claude" / "worktrees" / "copy" / "Active.cs"
             excluded_status = root / "docs" / "status" / "TODO.md"
             excluded_local_config = root / "config" / "appsettings.json"
 
-            for path in (included, excluded_dist, excluded_worktree, excluded_status, excluded_local_config):
+            for path in (
+                included,
+                excluded_dist,
+                excluded_tool_cache,
+                excluded_worktree,
+                excluded_status,
+                excluded_local_config,
+            ):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("// TODO: placeholder\n", encoding="utf-8")
 

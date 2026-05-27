@@ -92,6 +92,22 @@ public sealed class ProviderModuleLoaderTests
         report.AnyLoaded.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task LoadFromAssembliesAsync_ModuleConstructorThrows_ReportsFailureWithoutBubbling()
+    {
+        var loader = new ProviderModuleLoader();
+        var services = new ServiceCollection();
+        var registry = new DataSourceRegistry();
+
+        var report = await loader.LoadFromAssembliesAsync(
+            services, registry, CancellationToken.None,
+            typeof(ThrowingConstructorProviderModule).Assembly);
+
+        report.LoadedCount.Should().BeGreaterThan(0);
+        report.FailedCount.Should().BeGreaterThan(0);
+        report.Failed.Should().Contain(f => f.ModuleId == nameof(ThrowingConstructorProviderModule));
+    }
+
     // -----------------------------------------------------------------------
     // Explicit module list
     // -----------------------------------------------------------------------
@@ -374,6 +390,16 @@ internal sealed class ThrowingRegisterProviderModule : IProviderModule
 
     public void Register(IServiceCollection services, DataSourceRegistry registry)
         => throw new InvalidOperationException("Simulated registration failure.");
+}
+
+internal sealed class ThrowingConstructorProviderModule : IProviderModule
+{
+    public ThrowingConstructorProviderModule()
+    {
+        throw new InvalidOperationException("Simulated constructor failure.");
+    }
+
+    public void Register(IServiceCollection services, DataSourceRegistry registry) { }
 }
 
 /// <summary>

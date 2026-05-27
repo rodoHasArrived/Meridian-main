@@ -39,7 +39,7 @@ internal static class DirectLendingStartup
             return;
         }
 
-        migrationRunner.EnsureMigratedAsync().GetAwaiter().GetResult();
+        Task.Run(() => migrationRunner.EnsureMigratedAsync()).GetAwaiter().GetResult();
         logger?.LogInformation("Direct lending schema is ready.");
     }
 }

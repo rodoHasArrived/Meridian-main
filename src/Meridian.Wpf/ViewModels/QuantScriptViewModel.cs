@@ -19,6 +19,8 @@ namespace Meridian.Wpf.ViewModels;
 
 public sealed class QuantScriptViewModel : BindableBase, IDisposable
 {
+    private const int ChartsTabIndex = 0;
+    private const int MetricsTabIndex = 1;
     private const int LocalDataTabIndex = 3;
     private const int BacktestOutputTabIndex = 4;
     private const int RunHistoryTabIndex = 5;
@@ -46,6 +48,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private readonly QuantScriptOptions _options;
     private readonly ILogger<QuantScriptViewModel> _logger;
     private readonly NotebookExecutionSession _session = new();
+    private readonly QuantScriptCollectionsSectionViewModel _collectionsSection = new();
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
@@ -72,6 +75,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private string _elapsedText = "--";
     private string _memoryText = "--";
     private int _activeResultsTab;
+
+    internal QuantScriptCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -106,11 +111,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RefreshScriptsCommand = new RelayCommand(RefreshScripts, () => !IsRunning);
         ClearConsoleCommand = new RelayCommand(() => ConsoleOutput.Clear());
         AddCellCommand = new RelayCommand(AddCell, () => !IsRunning);
+        DuplicateCellCommand = new RelayCommand(DuplicateSelectedCell, () => !IsRunning && SelectedCell is not null);
+        MoveCellUpCommand = new RelayCommand(MoveSelectedCellUp, () => !IsRunning && CanMoveSelectedCellUp);
+        MoveCellDownCommand = new RelayCommand(MoveSelectedCellDown, () => !IsRunning && CanMoveSelectedCellDown);
         DeleteCellCommand = new RelayCommand(DeleteSelectedCell, () => !IsRunning && NotebookCells.Count > 1);
         TemplatesCommand = new RelayCommand(OpenTemplates, () => !IsRunning);
         OpenRunBrowserCommand = new RelayCommand(OpenRunBrowser, () => CanOpenSelectedHistoryRun);
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => CanOpenSelectedHistoryRun);
         CompareInResearchCommand = new RelayCommand(CompareInResearch, () => CanCompareSelectedHistoryRun);
+        ExportSelectedRunHistoryCommand = new AsyncRelayCommand(ExportSelectedRunHistoryAsync, () => SelectedExecutionRecord is not null && !IsRunning);
 
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
         Charts.CollectionChanged += (_, _) => { RaisePropertyChanged(nameof(ChartsTabHeader)); UpdatePrimaryChart(); };
@@ -148,7 +157,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public bool HasChart => Charts.Count > 0;
     public bool HasNoChart => Charts.Count == 0;
     public bool HasLegend => LegendEntries.Count > 0;
-    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
+    public ObservableCollection<ChartLegendEntry> LegendEntries => _collectionsSection.LegendEntries;
 
     public string ScriptSource
     {
@@ -165,16 +174,16 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
     }
 
-    public ObservableCollection<ScriptDocumentEntry> Documents { get; } = [];
-    public ObservableCollection<QuantScriptTemplateDefinition> Templates { get; } = [];
-    public ObservableCollection<NotebookCellViewModel> NotebookCells { get; } = [];
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
-    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } = new(10_000);
-    public ObservableCollection<PlotViewModel> Charts { get; } = [];
-    public ObservableCollection<MetricEntry> Metrics { get; } = [];
-    public ObservableCollection<TradeEntry> Trades { get; } = [];
-    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
-    public ObservableCollection<QuantScriptExecutionRecord> RunHistory { get; } = [];
+    public ObservableCollection<ScriptDocumentEntry> Documents => _collectionsSection.Documents;
+    public ObservableCollection<QuantScriptTemplateDefinition> Templates => _collectionsSection.Templates;
+    public ObservableCollection<NotebookCellViewModel> NotebookCells => _collectionsSection.NotebookCells;
+    public ObservableCollection<ParameterViewModel> Parameters => _collectionsSection.Parameters;
+    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput => _collectionsSection.ConsoleOutput;
+    public ObservableCollection<PlotViewModel> Charts => _collectionsSection.Charts;
+    public ObservableCollection<MetricEntry> Metrics => _collectionsSection.Metrics;
+    public ObservableCollection<TradeEntry> Trades => _collectionsSection.Trades;
+    public ObservableCollection<DiagnosticEntry> Diagnostics => _collectionsSection.Diagnostics;
+    public ObservableCollection<QuantScriptExecutionRecord> RunHistory => _collectionsSection.RunHistory;
 
     public ScriptDocumentEntry? SelectedDocument
     {
@@ -211,6 +220,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             SyncScriptSourceFromCell();
             RaisePropertyChanged(nameof(CurrentCellTitle));
             RaisePropertyChanged(nameof(CurrentCellStatus));
+            RaisePropertyChanged(nameof(CanMoveSelectedCellUp));
+            RaisePropertyChanged(nameof(CanMoveSelectedCellDown));
             NotifyCommandStateChanged();
         }
     }
@@ -241,6 +252,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public string CurrentCellTitle => SelectedCell?.Title ?? "Cell";
     public string CurrentCellStatus => SelectedCell?.StatusText ?? "Idle";
     public bool CanDeleteCell => NotebookCells.Count > 1 && !IsRunning;
+    public bool CanMoveSelectedCellUp => SelectedCell is not null && NotebookCells.IndexOf(SelectedCell) > 0;
+    public bool CanMoveSelectedCellDown =>
+        SelectedCell is not null &&
+        NotebookCells.IndexOf(SelectedCell) >= 0 &&
+        NotebookCells.IndexOf(SelectedCell) < NotebookCells.Count - 1;
     public string ConsoleTabHeader => ConsoleOutput.Count > 0 ? $"Console ({ConsoleOutput.Count})" : "Console";
     public string ChartsTabHeader => Charts.Count > 0 ? $"Charts ({Charts.Count})" : "Charts";
     public string MetricsTabHeader => Metrics.Count > 0 ? $"Metrics ({Metrics.Count})" : "Metrics";
@@ -308,11 +324,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public IRelayCommand RefreshScriptsCommand { get; }
     public IRelayCommand ClearConsoleCommand { get; }
     public IRelayCommand AddCellCommand { get; }
+    public IRelayCommand DuplicateCellCommand { get; }
+    public IRelayCommand MoveCellUpCommand { get; }
+    public IRelayCommand MoveCellDownCommand { get; }
     public IRelayCommand DeleteCellCommand { get; }
     public IRelayCommand TemplatesCommand { get; }
     public IRelayCommand OpenRunBrowserCommand { get; }
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand CompareInResearchCommand { get; }
+    public IAsyncRelayCommand ExportSelectedRunHistoryCommand { get; }
 
     internal (double ChartHeight, double EditorHeight) OnActivated()
     {
@@ -557,10 +577,18 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (result.CapturedBacktests.Count > 0)
             ApplyCapturedBacktests(result.CapturedBacktests);
 
-        if (Metrics.Count > 0 && Charts.Count == 0 && Trades.Count == 0)
-            ActiveResultsTab = 1;
-        else if (Trades.Count > 0 && Charts.Count == 0)
-            ActiveResultsTab = BacktestOutputTabIndex;
+        foreach (var trade in result.Trades.OrderBy(static item => item.Timestamp))
+        {
+            Trades.Add(new TradeEntry(
+                trade.Timestamp,
+                trade.Symbol,
+                trade.Quantity,
+                trade.Price,
+                trade.Commission,
+                trade.Side));
+        }
+
+        ActiveResultsTab = ResolvePreferredResultsTab();
 
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
@@ -583,18 +611,21 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             AddOrUpdateMetric("Sharpe Ratio", backtest.Metrics.SharpeRatio.ToString("F3"), category, "Captured");
             AddOrUpdateMetric("Max Drawdown", backtest.Metrics.MaxDrawdownPercent.ToString("P2"), category, "Captured");
             AddOrUpdateMetric("Total Trades", backtest.Metrics.TotalTrades.ToString("N0"), category, "Captured");
-
-            foreach (var fill in backtest.Fills.OrderBy(static item => item.FilledAt))
-            {
-                Trades.Add(new TradeEntry(
-                    fill.FilledAt,
-                    fill.Symbol,
-                    Math.Abs(fill.FilledQuantity),
-                    fill.FillPrice,
-                    fill.Commission,
-                    fill.FilledQuantity >= 0 ? "Buy" : "Sell"));
-            }
         }
+    }
+
+    private int ResolvePreferredResultsTab()
+    {
+        if (Trades.Count > 0)
+            return BacktestOutputTabIndex;
+
+        if (Metrics.Count > 0 && Charts.Count == 0)
+            return MetricsTabIndex;
+
+        if (Charts.Count > 0)
+            return ChartsTabIndex;
+
+        return ChartsTabIndex;
     }
 
     private void StopRunning()
@@ -773,6 +804,57 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(CurrentDocumentKindText));
     }
 
+    private void DuplicateSelectedCell()
+    {
+        var selectedCell = SelectedCell;
+        if (selectedCell is null)
+            return;
+
+        var index = NotebookCells.IndexOf(selectedCell);
+        if (index < 0)
+            return;
+
+        var cloned = new NotebookCellViewModel(Guid.NewGuid().ToString("N"), selectedCell.Source, selectedCell.Collapsed);
+        AttachCell(cloned);
+        NotebookCells.Insert(index + 1, cloned);
+        SelectedCell = cloned;
+        _session.Reset();
+        MarkCellsStaleFrom(0);
+        MarkDirty();
+    }
+
+    private void MoveSelectedCellUp()
+    {
+        if (SelectedCell is null)
+            return;
+
+        var index = NotebookCells.IndexOf(SelectedCell);
+        if (index <= 0)
+            return;
+
+        NotebookCells.Move(index, index - 1);
+        SelectedCell = NotebookCells[index - 1];
+        _session.Reset();
+        MarkCellsStaleFrom(0);
+        MarkDirty();
+    }
+
+    private void MoveSelectedCellDown()
+    {
+        if (SelectedCell is null)
+            return;
+
+        var index = NotebookCells.IndexOf(SelectedCell);
+        if (index < 0 || index >= NotebookCells.Count - 1)
+            return;
+
+        NotebookCells.Move(index, index + 1);
+        SelectedCell = NotebookCells[index + 1];
+        _session.Reset();
+        MarkCellsStaleFrom(0);
+        MarkDirty();
+    }
+
     private void DeleteSelectedCell()
     {
         if (SelectedCell is null || NotebookCells.Count <= 1)
@@ -825,6 +907,27 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 PrimaryRunId: SelectedExecutionRecord.MirroredRunId,
                 ComparisonRunId: comparisonRunId,
                 AutoCompare: !string.IsNullOrWhiteSpace(comparisonRunId)));
+    }
+
+    private async Task ExportSelectedRunHistoryAsync(CancellationToken ct)
+    {
+        if (SelectedExecutionRecord is null)
+            return;
+
+        try
+        {
+            var path = await _executionHistoryService
+                .ExportExecutionRecordAsync(SelectedExecutionRecord, ct)
+                .ConfigureAwait(true);
+
+            StatusText = $"Exported run history: {Path.GetFileName(path)}";
+            AppendConsole($"Exported run history to {path}", ConsoleEntryKind.Output);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to export QuantScript run history record {ExecutionId}", SelectedExecutionRecord.ExecutionId);
+            AppendConsole($"Failed to export run history: {ex.Message}", ConsoleEntryKind.Error);
+        }
     }
 
     private string? ResolveComparisonRunId(QuantScriptExecutionRecord record)
@@ -1287,6 +1390,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         SaveScriptCommand.NotifyCanExecuteChanged();
         RefreshScriptsCommand.NotifyCanExecuteChanged();
         AddCellCommand.NotifyCanExecuteChanged();
+        DuplicateCellCommand.NotifyCanExecuteChanged();
+        MoveCellUpCommand.NotifyCanExecuteChanged();
+        MoveCellDownCommand.NotifyCanExecuteChanged();
         DeleteCellCommand.NotifyCanExecuteChanged();
         TemplatesCommand.NotifyCanExecuteChanged();
     }
@@ -1304,6 +1410,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         OpenRunBrowserCommand.NotifyCanExecuteChanged();
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         CompareInResearchCommand.NotifyCanExecuteChanged();
+        ExportSelectedRunHistoryCommand.NotifyCanExecuteChanged();
     }
 
     private static string FormatCount(int count, string noun) =>

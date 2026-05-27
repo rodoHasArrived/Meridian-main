@@ -2,15 +2,30 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-03-31
-**Status:** active
-**Reviewed:** 2026-03-31
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **ufl supported assets index** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the ufl supported assets index workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+**Status:** active reference index
+**Reviewed:** 2026-05-13
 
 ## Summary
 
-This index groups the active UFL target-state packages for the security-master asset classes Meridian currently models in `src/Meridian.FSharp/Domain/SecurityMaster.fs` and maps in `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs`.
+This index is the active entry point for UFL target-state packages. It groups the security-master asset classes Meridian models in `src/Meridian.FSharp/Domain/SecurityMaster.fs`, maps through `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs`, and exposes through shared workstation/reference-data surfaces as each slice matures.
 
-The existing direct-lending package remains the deepest vertical slice. The sibling packages below cover the other supported asset classes so architecture, storage, workflow, and validation decisions can be tracked consistently across the full security-master surface.
+The existing direct-lending package remains the deepest vertical slice. The sibling packages below are active reference designs for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation workflows. They are not milestone-closure documents; each package separates delivered baseline support from target-state additions that still need implementation evidence.
+
+## Current Evidence Boundary
+
+- Direct lending is the deepest UFL vertical slice and still owns the dedicated implementation roadmap.
+- Reference-data endpoint support currently exists for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit.
+- Commercial paper, treasury bill, repo, cash sweep, other-security, CFD, and warrant packages remain active target-state designs unless their individual checklist marks a narrower baseline as delivered.
+- Do not treat a target-state package as complete just because a `SecurityKind` case, CSV parser mapping, or basic projection exists.
 
 ## Naming Standard
 
@@ -31,28 +46,16 @@ All new F# types and C# DTOs proposed in these packages must follow the
 
 ## Asset Packages
 
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
-- [UFL Equity Target-State Package V2](ufl-equity-target-state-v2.md)
-- [UFL Option Target-State Package V2](ufl-option-target-state-v2.md)
-- [UFL Future Target-State Package V2](ufl-future-target-state-v2.md)
-- [UFL Bond Target-State Package V2](ufl-bond-target-state-v2.md)
-- [UFL FX Spot Target-State Package V2](ufl-fx-spot-target-state-v2.md)
-- [UFL Deposit Target-State Package V2](ufl-deposit-target-state-v2.md)
-- [UFL Money Market Fund Target-State Package V2](ufl-money-market-fund-target-state-v2.md)
-- [UFL Certificate of Deposit Target-State Package V2](ufl-certificate-of-deposit-target-state-v2.md)
-- [UFL Commercial Paper Target-State Package V2](ufl-commercial-paper-target-state-v2.md)
-- [UFL Treasury Bill Target-State Package V2](ufl-treasury-bill-target-state-v2.md)
-- [UFL Repo Target-State Package V2](ufl-repo-target-state-v2.md)
-- [UFL Cash Sweep Target-State Package V2](ufl-cash-sweep-target-state-v2.md)
-- [UFL Other Security Target-State Package V2](ufl-other-security-target-state-v2.md)
-- [UFL Swap Target-State Package V2](ufl-swap-target-state-v2.md)
-- [UFL Commodity Target-State Package V2](ufl-commodity-target-state-v2.md)
-- [UFL Crypto Target-State Package V2](ufl-crypto-target-state-v2.md)
-- [UFL CFD Target-State Package V2](ufl-cfd-target-state-v2.md)
-- [UFL Warrant Target-State Package V2](ufl-warrant-target-state-v2.md)
+| Group | Packages |
+| --- | --- |
+| Deep vertical slice | [Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md), [Direct Lending Implementation Roadmap](ufl-direct-lending-implementation-roadmap.md) |
+| Listed and derivative instruments | [Equity Target-State Package V2](ufl-equity-target-state-v2.md), [Option Target-State Package V2](ufl-option-target-state-v2.md), [Future Target-State Package V2](ufl-future-target-state-v2.md), [Warrant Target-State Package V2](ufl-warrant-target-state-v2.md), [CFD Target-State Package V2](ufl-cfd-target-state-v2.md), [Swap Target-State Package V2](ufl-swap-target-state-v2.md) |
+| Rates, cash, and credit | [Bond Target-State Package V2](ufl-bond-target-state-v2.md), [Treasury Bill Target-State Package V2](ufl-treasury-bill-target-state-v2.md), [Commercial Paper Target-State Package V2](ufl-commercial-paper-target-state-v2.md), [Certificate of Deposit Target-State Package V2](ufl-certificate-of-deposit-target-state-v2.md), [Deposit Target-State Package V2](ufl-deposit-target-state-v2.md), [Cash Sweep Target-State Package V2](ufl-cash-sweep-target-state-v2.md), [Money Market Fund Target-State Package V2](ufl-money-market-fund-target-state-v2.md), [Repo Target-State Package V2](ufl-repo-target-state-v2.md) |
+| Other asset coverage | [FX Spot Target-State Package V2](ufl-fx-spot-target-state-v2.md), [Commodity Target-State Package V2](ufl-commodity-target-state-v2.md), [Crypto Target-State Package V2](ufl-crypto-target-state-v2.md), [Other Security Target-State Package V2](ufl-other-security-target-state-v2.md) |
 
 ## Notes
 
 - These packages are intentionally grounded in Meridian's current `SecurityKind` union and validation rules.
-- Where a package proposes new projections, services, or endpoints, those are target-state additions rather than already-implemented components.
-- The direct-lending document stays authoritative for the deepest governance and fund-ops specialization; the others are thinner but implementation-ready companion blueprints.
+- Where a package proposes new projections, services, or endpoints, those are target-state additions unless current code evidence is named in the package.
+- The direct-lending document stays authoritative for the deepest fund-ops specialization; the others are thinner implementation-ready companion blueprints.
+- Keep UI references aligned with the current browser workstation workspaces: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.

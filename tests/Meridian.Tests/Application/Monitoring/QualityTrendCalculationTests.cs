@@ -8,6 +8,32 @@ namespace Meridian.Tests.Application.Monitoring;
 public sealed class QualityTrendCalculationTests
 {
     [Fact]
+    public async Task ScoreAsync_DoesNotPersistTrendPoints()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), $"meridian-quality-tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempRoot);
+        var filePath = Path.Combine(tempRoot, "sample.jsonl");
+        await File.WriteAllTextAsync(filePath, "{\"symbol\":\"AAPL\",\"timestamp\":\"2026-01-01T00:00:00Z\",\"price\":100}\n");
+
+        try
+        {
+            var store = new InMemoryQualityTrendStore(Array.Empty<QualityTrendPoint>());
+            var sut = new DataQualityService(new StorageOptions { RootPath = tempRoot }, trendStore: store);
+
+            _ = await sut.ScoreAsync(filePath);
+
+            store.AppendCount.Should().Be(0);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task GetTrendAsync_ImprovingFixture_ReportsImprovingDimensionsAndPositiveSlope()
     {
         var now = DateTimeOffset.UtcNow;
@@ -100,6 +126,7 @@ public sealed class QualityTrendCalculationTests
     private sealed class InMemoryQualityTrendStore : IQualityTrendStore
     {
         private readonly List<QualityTrendPoint> _points;
+        public int AppendCount { get; private set; }
 
         public InMemoryQualityTrendStore(IEnumerable<QualityTrendPoint> points)
         {
@@ -108,6 +135,7 @@ public sealed class QualityTrendCalculationTests
 
         public Task AppendAsync(QualityTrendPoint point, CancellationToken ct = default)
         {
+            AppendCount++;
             _points.Add(point);
             return Task.CompletedTask;
         }

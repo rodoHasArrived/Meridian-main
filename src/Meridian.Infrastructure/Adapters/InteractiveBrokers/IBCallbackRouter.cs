@@ -322,20 +322,68 @@ public sealed class IBCallbackRouter
         if (impliedVol < 0 || undPrice <= 0)
             return;
 
+        if (!TryToDecimal(impliedVol, out var impliedVolDecimal) ||
+            !TryToDecimal(undPrice, out var underlyingPriceDecimal))
+        {
+            return;
+        }
+
+        var deltaDecimal = TryGreekToDecimal(delta);
+        var gammaDecimal = TryGreekToDecimal(gamma, clampNegativeToZero: true);
+        var thetaDecimal = TryGreekToDecimal(theta);
+        var vegaDecimal = TryGreekToDecimal(vega, clampNegativeToZero: true);
+        if (!deltaDecimal.HasValue || !gammaDecimal.HasValue || !thetaDecimal.HasValue || !vegaDecimal.HasValue)
+            return;
+
+        decimal? theoreticalPrice = null;
+        if (optPrice > 0)
+        {
+            if (!TryToDecimal(optPrice, out var theoreticalPriceDecimal))
+                return;
+
+            theoreticalPrice = theoreticalPriceDecimal;
+        }
+
         var greeks = new GreeksSnapshot(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: contract.UnderlyingSymbol,
             Contract: contract,
-            Delta: delta < -1.5 ? 0m : (decimal)delta,
-            Gamma: gamma < -1.5 ? 0m : (decimal)gamma,
-            Theta: theta < -1.5 ? 0m : (decimal)theta,
-            Vega: vega < -1.5 ? 0m : (decimal)vega,
+            Delta: deltaDecimal.Value,
+            Gamma: gammaDecimal.Value,
+            Theta: thetaDecimal.Value,
+            Vega: vegaDecimal.Value,
             Rho: 0m,
-            ImpliedVolatility: (decimal)impliedVol,
-            UnderlyingPrice: (decimal)undPrice,
-            TheoreticalPrice: optPrice > 0 ? (decimal?)optPrice : null);
+            ImpliedVolatility: impliedVolDecimal,
+            UnderlyingPrice: underlyingPriceDecimal,
+            TheoreticalPrice: theoreticalPrice);
 
         _optionCollector.OnGreeksUpdate(greeks);
+    }
+
+    private static bool TryToDecimal(double value, out decimal converted)
+    {
+        if (!double.IsFinite(value) || value < (double)decimal.MinValue || value > (double)decimal.MaxValue)
+        {
+            converted = 0m;
+            return false;
+        }
+
+        converted = (decimal)value;
+        return true;
+    }
+
+    private static decimal? TryGreekToDecimal(double value, bool clampNegativeToZero = false)
+    {
+        if (value < -1.5)
+            return 0m;
+
+        if (!TryToDecimal(value, out var converted))
+            return null;
+
+        if (clampNegativeToZero && converted < 0m)
+            return 0m;
+
+        return converted;
     }
 
     private void TryEmitQuote(int tickerId, string symbol, QuoteState state)

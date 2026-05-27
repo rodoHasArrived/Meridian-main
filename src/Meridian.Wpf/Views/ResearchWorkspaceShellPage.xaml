@@ -56,7 +56,7 @@
                                 </Border>
                                 <StackPanel Margin="12,0,0,0">
                                     <TextBlock Text="Strategy" Style="{StaticResource PageTitleStyle}" />
-                                    <TextBlock Text="Market briefing, run studio, and paper-promotion review"
+                                    <TextBlock Text="Market briefing, PlotTool workstation, and paper-promotion review"
                                                Style="{StaticResource CardDescriptionStyle}" />
                                 </StackPanel>
                             </StackPanel>
@@ -177,7 +177,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel>
-                                    <TextBlock Text="Research Desk Briefing" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Strategy Desk Briefing" Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock x:Name="ResearchHeroFocusText"
                                                Margin="0,8,0,0"
                                                FontSize="12"
@@ -598,111 +598,191 @@
                     </StackPanel>
                 </Border>
 
-                <Grid Margin="0,0,0,24">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.1*" />
-                        <ColumnDefinition Width="1.5*" />
-                        <ColumnDefinition Width="1.1*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
-                        <StackPanel>
-                            <TextBlock Text="Scenario &amp; Session" Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock x:Name="ScenarioStrategyText"
-                                       Margin="0,10,0,0"
-                                       Style="{StaticResource StudioValueStyle}"
-                                       Text="{Binding ScenarioStrategyText}" />
-                            <TextBlock x:Name="ScenarioCoverageText"
-                                       Margin="0,8,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="{Binding ScenarioCoverageText}" />
-                            <Rectangle Margin="0,14,0,14"
-                                       Height="1"
-                                       Fill="{StaticResource ConsoleBorderBrush}" />
-                            <TextBlock Text="Studio posture" Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock Margin="0,8,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Left rail: strategy setup and data coverage. Center: run progress and compare surface. Right rail: portfolio, ledger, and attribution inspectors." />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
-                        <StackPanel>
-                            <TextBlock Text="Run Studio" Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock x:Name="RunStatusText"
-                                       Margin="0,10,0,0"
-                                       Style="{StaticResource StudioValueStyle}"
-                                       Text="{Binding RunStatusText}" />
-                            <TextBlock x:Name="RunPerformanceText"
-                                       Margin="0,8,0,0"
-                                       FontSize="13"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="{Binding RunPerformanceText}" />
-                            <TextBlock x:Name="RunCompareText"
-                                       Margin="0,8,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="{Binding RunCompareText}" />
-                            <Border Margin="0,16,0,0"
-                                    Padding="14"
-                                    CornerRadius="12"
-                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                    BorderBrush="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                    BorderThickness="1">
-                                <TextBlock Text="Drag pages into the dock below to split left, right, below, tab, or float them into a separate window."
-                                           FontSize="12"
-                                           Foreground="{StaticResource InfoColorBrush}"
-                                           TextWrapping="Wrap" />
-                            </Border>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Style="{StaticResource StudioPanelStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Inspector Rail" Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock Text="Portfolio"
-                                       Margin="0,10,0,0"
-                                       Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock x:Name="PortfolioPreviewText"
-                                       Margin="0,6,0,0"
-                                       FontSize="13"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="{Binding PortfolioPreviewText}" />
-                            <TextBlock Text="Ledger"
-                                       Margin="0,14,0,0"
-                                       Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock x:Name="LedgerPreviewText"
-                                       Margin="0,6,0,0"
-                                       FontSize="13"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="{Binding LedgerPreviewText}" />
-                            <TextBlock Text="Risk snapshot"
-                                       Margin="0,14,0,0"
-                                       Style="{StaticResource StudioPanelTitleStyle}" />
-                            <TextBlock x:Name="RiskPreviewText"
-                                       Margin="0,6,0,0"
-                                       FontSize="13"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="{Binding RiskPreviewText}" />
-                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
-                                <Button Content="Accounting Impact"
-                                        Click="OpenAccountingImpact_Click"
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                    <StackPanel>
+                        <Grid Style="{StaticResource WorkspaceCardHeaderGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="PlotTool workstation" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Bring PlotTool selection, compare posture, and run evidence into the retained desktop Strategy lane."
+                                           Margin="0,6,0,0"
+                                           Style="{StaticResource CardDescriptionStyle}" />
+                            </StackPanel>
+                            <WrapPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                                <Button Content="Run scripts"
+                                        Click="OpenRunMat_Click"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="0,0,10,10" />
+                                <Button Content="Charts"
+                                        Click="OpenCharts_Click"
                                         Style="{StaticResource GhostButtonStyle}"
-                                        Margin="0,0,10,8" />
-                                <Button Content="Reconciliation"
-                                        Click="OpenReconciliationPreview_Click"
+                                        Margin="0,0,10,10" />
+                                <Button Content="Run Browser"
+                                        Click="OpenStrategyRuns_Click"
                                         Style="{StaticResource GhostButtonStyle}"
-                                        Margin="0,0,10,8" />
-                                <Button Content="Audit Trail"
-                                        Click="OpenAuditTrail_Click"
-                                        Style="{StaticResource GhostButtonStyle}"
-                                        Margin="0,0,10,8" />
+                                        Margin="0,0,10,10" />
                             </WrapPanel>
-                        </StackPanel>
-                    </Border>
-                </Grid>
+                        </Grid>
+
+                        <Border Margin="0,16,0,0"
+                                Padding="14,12"
+                                CornerRadius="12"
+                                Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                BorderBrush="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="Selection"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding ActiveRunNameText}"
+                                               Margin="0,6,0,0"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding ActiveRunMetaText}"
+                                               Margin="0,6,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1"
+                                           Margin="16,0,0,0"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           Text="{Binding BriefingGeneratedText}" />
+                            </Grid>
+                        </Border>
+
+                        <Grid Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="1.2*" />
+                                <ColumnDefinition Width="1.1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Selection context" Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock x:Name="ScenarioStrategyText"
+                                               Margin="0,10,0,0"
+                                               Style="{StaticResource StudioValueStyle}"
+                                               Text="{Binding ScenarioStrategyText}" />
+                                    <TextBlock x:Name="ScenarioCoverageText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               Text="{Binding ScenarioCoverageText}" />
+                                    <Rectangle Margin="0,14,0,14"
+                                               Height="1"
+                                               Fill="{StaticResource ConsoleBorderBrush}" />
+                                    <TextBlock Text="Workstation structure" Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               Text="Left rail: selection and coverage. Center: PlotTool console, compare posture, and notebook cues. Right rail: portfolio, ledger, and risk inspectors." />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Console &amp; compare" Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock x:Name="RunStatusText"
+                                               Margin="0,10,0,0"
+                                               Style="{StaticResource StudioValueStyle}"
+                                               Text="{Binding RunStatusText}" />
+                                    <TextBlock x:Name="RunPerformanceText"
+                                               Margin="0,8,0,0"
+                                               FontSize="13"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               Text="{Binding RunPerformanceText}" />
+                                    <TextBlock x:Name="RunCompareText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               Text="{Binding RunCompareText}" />
+                                    <Border Margin="0,16,0,0"
+                                            Padding="14"
+                                            CornerRadius="12"
+                                            Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="Expression console"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding BriefingSummaryText}"
+                                                       Margin="0,8,0,0"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="Drag pages into the dock below to keep charts, run detail, and inspectors aligned with the same selected run."
+                                                       Margin="0,10,0,0"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource StudioPanelStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Inspector rail" Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock Text="Portfolio"
+                                               Margin="0,10,0,0"
+                                               Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock x:Name="PortfolioPreviewText"
+                                               Margin="0,6,0,0"
+                                               FontSize="13"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               Text="{Binding PortfolioPreviewText}" />
+                                    <TextBlock Text="Ledger"
+                                               Margin="0,14,0,0"
+                                               Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock x:Name="LedgerPreviewText"
+                                               Margin="0,6,0,0"
+                                               FontSize="13"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               Text="{Binding LedgerPreviewText}" />
+                                    <TextBlock Text="Risk snapshot"
+                                               Margin="0,14,0,0"
+                                               Style="{StaticResource StudioPanelTitleStyle}" />
+                                    <TextBlock x:Name="RiskPreviewText"
+                                               Margin="0,6,0,0"
+                                               FontSize="13"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               Text="{Binding RiskPreviewText}" />
+                                    <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
+                                        <Button Content="Accounting Impact"
+                                                Click="OpenAccountingImpact_Click"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Margin="0,0,10,8" />
+                                        <Button Content="Reconciliation"
+                                                Click="OpenReconciliationPreview_Click"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Margin="0,0,10,8" />
+                                        <Button Content="Audit Trail"
+                                                Click="OpenAuditTrail_Click"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Margin="0,0,10,8" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -853,7 +933,7 @@
                         <views:MeridianDockingManager x:Name="ResearchDockManager"
                                                       Height="360"
                                                       PaneDropRequested="OnPaneDropRequested"
-                                                      AutomationProperties.Name="Research Dock Manager" />
+                                                      AutomationProperties.Name="Strategy Dock Manager" />
                     </StackPanel>
                 </Border>
             </StackPanel>

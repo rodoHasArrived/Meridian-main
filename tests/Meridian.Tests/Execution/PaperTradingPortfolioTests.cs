@@ -634,6 +634,21 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
+    public void CheckMarginStatus_RegTLongPosition_TriggersMarginCall_WhenLoanConsumesEquity()
+    {
+        var portfolio = BuildRegTPortfolio(10_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 200, price: 100m));
+
+        var status = portfolio.CheckMarginStatus("margin-1",
+            new Dictionary<string, decimal> { ["AAPL"] = 50m });
+
+        status.IsMarginCall.Should().BeTrue();
+        status.PortfolioRequirement.MaintenanceMargin.Should().Be(2_500m);
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(-2_500m);
+        status.MarginDeficiency.Should().Be(2_500m);
+    }
+
+    [Fact]
     public void CheckMarginStatus_LongPosition_MarginCall_WhenPricePlumeges()
     {
         // $20 000 cash, buy 200 shares @ $100 on 50 % Reg T margin

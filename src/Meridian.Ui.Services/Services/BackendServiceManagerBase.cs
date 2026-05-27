@@ -38,6 +38,10 @@ public sealed class BackendRuntimeInfo
 {
     public int ProcessId { get; init; }
     public DateTime StartedAtUtc { get; init; }
+    public string? ExecutablePath { get; init; }
+    public string? WorkingDirectory { get; init; }
+    public string[] Arguments { get; init; } = [];
+    public string? ShutdownToken { get; init; }
 }
 
 
@@ -96,6 +100,14 @@ public abstract class BackendServiceManagerBase
 
     /// <summary>Kills a process by ID. Returns true if the process was successfully terminated.</summary>
     protected abstract Task<bool> KillProcessAsync(int processId, CancellationToken ct);
+
+    /// <summary>Requests cooperative shutdown for a tracked backend process. Returns true when the process exits.</summary>
+    protected virtual Task<bool> RequestGracefulStopAsync(BackendRuntimeInfo runtime, CancellationToken ct)
+        => Task.FromResult(false);
+
+    /// <summary>Checks whether a tracked process still matches the persisted runtime metadata.</summary>
+    protected virtual bool IsTrackedProcessOwned(BackendRuntimeInfo runtime)
+        => true;
 
     /// <summary>Checks if a process with the given ID is running.</summary>
     protected abstract bool IsProcessRunning(int processId);
@@ -200,7 +212,13 @@ public abstract class BackendServiceManagerBase
             var runtimeInfo = new BackendRuntimeInfo
             {
                 ProcessId = processId.Value,
-                StartedAtUtc = DateTime.UtcNow
+                StartedAtUtc = DateTime.UtcNow,
+                ExecutablePath = installation.ExecutablePath,
+                WorkingDirectory = workingDirectory,
+                Arguments = arguments.ToArray(),
+                ShutdownToken = environmentVariables.TryGetValue("MDC_SHUTDOWN_TOKEN", out var shutdownToken)
+                    ? shutdownToken
+                    : null
             };
 
             await File.WriteAllTextAsync(_runtimeFilePath, JsonSerializer.Serialize(runtimeInfo, SerializerOptions), ct);
@@ -243,7 +261,17 @@ public abstract class BackendServiceManagerBase
 
             try
             {
-                await KillProcessAsync(runtime.ProcessId, ct);
+                var stoppedGracefully = await RequestGracefulStopAsync(runtime, ct);
+                if (!stoppedGracefully)
+                {
+                    if (!IsTrackedProcessOwned(runtime))
+                    {
+                        return BackendServiceOperationResult.Failed(
+                            "Tracked backend process no longer matches the stored Meridian runtime metadata.");
+                    }
+
+                    await KillProcessAsync(runtime.ProcessId, ct);
+                }
             }
             finally
             {

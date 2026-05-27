@@ -21,6 +21,13 @@ public interface IPortfolioState
     decimal RealisedPnl { get; }
 
     /// <summary>
+    /// Available buying power for new orders. Defaults to <see cref="Cash"/>
+    /// for cash accounts; margin-aware implementations override this to apply
+    /// the regime's leverage (e.g. Reg T 2× cash equity).
+    /// </summary>
+    decimal BuyingPower => Cash;
+
+    /// <summary>
     /// Open positions keyed by symbol, typed against the cross-pillar <see cref="IPosition"/> interface.
     /// Replaces the former <c>IReadOnlyDictionary&lt;string, ExecutionPosition&gt;</c> surface.
     /// Callers that require the concrete <see cref="ExecutionPosition"/> type (e.g. serialisation

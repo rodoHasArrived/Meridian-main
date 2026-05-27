@@ -20,7 +20,6 @@ public sealed class SecurityMasterCsvParser
         { "CryptoCurrency", "CryptoCurrency" },
         { "Commodity", "Commodity" },
         { "CFD", "Cfd" },
-        { "Cfd", "Cfd" },
         { "Warrant", "Warrant" },
     };
 

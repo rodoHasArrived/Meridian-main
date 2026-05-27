@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
@@ -16,6 +17,7 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
     private const int MaxActivityItems = 50;
 
     private readonly WpfServices.MessagingService _messagingService;
+    private readonly Dispatcher _dispatcher;
     private readonly DispatcherTimer _refreshTimer;
     private readonly DateTime _pageLoadedAt = DateTime.UtcNow;
 
@@ -85,6 +87,7 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         Brush errorBrush)
     {
         _messagingService = messagingService;
+        _dispatcher = System.Windows.Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _infoBrush = infoBrush;
         _successBrush = successBrush;
         _errorBrush = errorBrush;
@@ -136,6 +139,12 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
 
     private void OnMessageReceived(string message)
     {
+        if (!_dispatcher.CheckAccess())
+        {
+            _ = _dispatcher.InvokeAsync(() => OnMessageReceived(message));
+            return;
+        }
+
         _totalMessages++;
 
         ActivityItems.Insert(0, new ActivityItem

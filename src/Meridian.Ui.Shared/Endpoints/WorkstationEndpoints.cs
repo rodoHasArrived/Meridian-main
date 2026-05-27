@@ -1,16 +1,22 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.Configuration;
+using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -20,6 +26,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
@@ -28,10 +35,11 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Endpoints for the desktop workstation API surface.
 /// </summary>
-public static class WorkstationEndpoints
+public static partial class WorkstationEndpoints
 {
     private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
+    private const string WorkstationApiRoutePrefix = "/api/workstation";
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -49,6 +57,12 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationResearch");
 
+        group.MapGet("/strategy", async (HttpContext context) =>
+        {
+            return await BuildResearchPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationStrategy");
+
         group.MapGet("/research/briefing", async (HttpContext context) =>
         {
             var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
@@ -56,6 +70,18 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationResearchBriefing")
         .Produces<ResearchBriefingDto>(200);
+
+        group.MapGet("/strategy/briefing", async (HttpContext context) =>
+        {
+            var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
+            return Results.Json(briefing, jsonOptions);
+        })
+        .WithName("GetWorkstationStrategyBriefing")
+        .Produces<ResearchBriefingDto>(200);
+
+        MapStrategyDesignerEndpoints(group, jsonOptions);
+        MapStrategyEngineEndpoints(group, jsonOptions);
+        MapFeatureCapabilityEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -121,7 +147,16 @@ public static class WorkstationEndpoints
                 return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            WorkflowPresetMutationResult result;
+            try
+            {
+                result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+
             return result.Success
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
@@ -142,9 +177,18 @@ public static class WorkstationEndpoints
                 return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var result = await service
-                .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
-                .ConfigureAwait(false);
+            WorkflowPresetMutationResult result;
+            try
+            {
+                result = await service
+                    .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
+                    .ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+
             return result.Success
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
@@ -251,6 +295,12 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationDataOperations");
 
+        group.MapGet("/data", async (HttpContext context) =>
+        {
+            return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationData");
+
         group.MapGet("/governance", async (HttpContext context) =>
         {
             return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
@@ -269,7 +319,675 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationReporting");
 
-        group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
+        group.MapGet("/portfolio", async (HttpContext context) =>
+        {
+            var payload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetWorkstationPortfolio")
+        .Produces<WorkstationPortfolioPayload>(200);
+
+        MapOperationsContinuityEndpoints(group, jsonOptions);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
+            Guid? fundAccountId,
+            string? periodId,
+            string? status,
+            HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var parsedStatus = ParseOperationsWorkflowStatus(status);
+            if (!string.IsNullOrWhiteSpace(status) && parsedStatus is null)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["status"] = [$"Status '{status}' is not a valid operations workflow status."]
+                });
+            }
+
+            var workflows = await service.ListAsync(fundAccountId, periodId, parsedStatus, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(workflows, jsonOptions);
+        })
+        .WithName("GetOperationsContinuitySummary");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
+            OperationsStartWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity start request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.StartWorkflowAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("StartOperationsContinuityWorkflow")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (Guid workflowId, HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow is null ? Results.NotFound() : Results.Json(workflow, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityDetail");
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            if (workflow is null)
+            {
+                return Results.NotFound();
+            }
+
+            var timeline = await service.GetTimelineAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(timeline, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityTimeline");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerImport), async (
+            Guid workflowId,
+            OperationsTransitionRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ImportBrokerDataAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ImportOperationsContinuityBrokerData")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerNormalize), async (
+            Guid workflowId,
+            OperationsTransitionRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity transition request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.NormalizeBrokerTransactionsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("NormalizeOperationsContinuityBrokerTransactions")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityPostureRefresh), async (
+            Guid workflowId,
+            OperationsGatePostureRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations continuity posture request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.RefreshGatePostureAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("RefreshOperationsContinuityGatePosture");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterResolve), async (
+            Guid workflowId,
+            OperationsSecurityMasterResolveRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A Security Master resolution request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ResolveSecurityMasterMappingsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ResolveOperationsContinuitySecurityMasterMappings");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove), async (
+            Guid workflowId,
+            string overrideId,
+            OperationsSecurityMasterOverrideApprovalRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasSecurityMasterOverrideApprovalPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A Security Master override approval request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId };
+            var result = await service.ApproveSecurityMasterOverrideAsync(workflowId, overrideId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ApproveOperationsContinuitySecurityMasterOverride")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerDraft), async (
+            Guid workflowId,
+            OperationsLedgerDraftRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A ledger draft request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.BuildLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("BuildOperationsContinuityLedgerDraft");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerValidate), async (
+            Guid workflowId,
+            OperationsLedgerValidationRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A ledger validation request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ValidateLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ValidateOperationsContinuityLedgerDraft");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPost), async (
+            Guid workflowId,
+            OperationsLedgerPostRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A ledger posting request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.PostLedgerEntriesAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("PostOperationsContinuityLedgerEntries")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationRun), async (
+            Guid workflowId,
+            OperationsReconciliationRunRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reconciliation run request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity reconciliation bridge is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.RunReconciliationAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("RunOperationsContinuityReconciliation");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakResolve), async (
+            Guid workflowId,
+            string breakId,
+            OperationsResolveBreakCaseRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reconciliation break resolution request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ResolveBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ResolveOperationsContinuityReconciliationBreak");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalSubmit), async (
+            Guid workflowId,
+            OperationsSubmitApprovalRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An approval submission request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("SubmitOperationsContinuityApproval");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalApprove), async (
+            Guid workflowId,
+            OperationsApprovalDecisionRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An approval decision request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ApproveOperationsContinuityWorkflow");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalReject), async (
+            Guid workflowId,
+            OperationsRejectWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An approval rejection request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("RejectOperationsContinuityWorkflow")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityClose), async (
+            Guid workflowId,
+            OperationsCloseWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A close workflow request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("CloseOperationsContinuityWorkflow");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReopen), async (
+            Guid workflowId,
+            OperationsReopenWorkflowRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasGovernedWorkflowReopenPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reopen workflow request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context) };
+            var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("ReopenOperationsContinuityWorkflow")
+        .Produces<OperationsTransitionResultDto>(200)
+        .Produces<OperationsTransitionResultDto>(400)
+        .Produces<OperationsTransitionResultDto>(409)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (Guid workflowId, HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow is null ? Results.NotFound() : Results.Json(workflow.BreakCases, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityBreaks");
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow is null ? Results.NotFound() : Results.Json(workflow.LedgerPreview, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityLedgerPreview");
+
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -282,12 +1000,19 @@ public static class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithName("CreateReconciliationRun")
         .Produces<ReconciliationRunDetail>(200)
-        .Produces(404);
+        .Produces(404)
+        .Produces(429);
 
-        group.MapGet("/reconciliation/runs/{reconciliationRunId}", async (string reconciliationRunId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
             {
@@ -303,7 +1028,7 @@ public static class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/reconciliation", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliation), async (string runId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -320,7 +1045,7 @@ public static class WorkstationEndpoints
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/reconciliation/history", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliationHistory), async (string runId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
@@ -339,6 +1064,11 @@ public static class WorkstationEndpoints
 
         group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {
+            if (!CanViewReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
@@ -394,13 +1124,32 @@ public static class WorkstationEndpoints
 
         group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
+            if (!CanMutateReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ReviewBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ReviewBreakAsync(context.RequestServices, request with
+            {
+                AssignedTo = ResolveCurrentActor(context),
+                ReviewedBy = ResolveCurrentActor(context)
+            }, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -411,10 +1160,17 @@ public static class WorkstationEndpoints
         .WithName("ReviewReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(400)
+        .Produces(401)
+        .Produces(403)
         .Produces(404);
 
         group.MapPost("/reconciliation/break-queue/{breakId}/resolve", async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
@@ -429,16 +1185,16 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
-            var currentUser = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
-            if (string.IsNullOrWhiteSpace(currentUser))
+            if (!CanMutateReconciliationBreakQueue(context))
             {
-                return Results.Unauthorized();
+                return Results.Forbid();
             }
 
-            var trustedRequest = request with { ResolvedBy = currentUser };
-
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ResolveBreakAsync(context.RequestServices, request with
+            {
+                ResolvedBy = ResolveCurrentActor(context)
+            }, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -449,6 +1205,8 @@ public static class WorkstationEndpoints
         .WithName("ResolveReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(400)
+        .Produces(401)
+        .Produces(403)
         .Produces(404);
 
         group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
@@ -676,7 +1434,7 @@ public static class WorkstationEndpoints
         .Produces<SecurityMasterWorkstationDto>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/history", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterHistory), async (
             Guid securityId,
             int? take,
             [FromServices] ContractSecurityMasterQueryService queryService,
@@ -697,7 +1455,7 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterIdentity), async (
             Guid securityId,
             [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
@@ -711,7 +1469,7 @@ public static class WorkstationEndpoints
         .Produces<SecurityIdentityDrillInDto>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterEconomicDefinition), async (
             Guid securityId,
             [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
@@ -725,11 +1483,16 @@ public static class WorkstationEndpoints
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/trust-snapshot", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterTrustSnapshot), async (
             Guid securityId,
             string? fundProfileId,
             HttpContext context) =>
         {
+            if (!HasPermission(context, UserPermission.ViewSecurityMaster))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
             var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
             if (workbenchService is null)
             {
@@ -746,10 +1509,11 @@ public static class WorkstationEndpoints
         })
         .WithName("GetSecurityMasterWorkstationTrustSnapshot")
         .Produces<SecurityMasterTrustSnapshotDto>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/security-master/conflicts/bulk-resolve", async (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterBulkResolveConflicts), async (
             BulkResolveSecurityMasterConflictsRequest request,
             HttpContext context) =>
         {
@@ -780,10 +1544,14 @@ public static class WorkstationEndpoints
 
         group.MapPost("/runs/compare", async (RunComparisonRequest request, HttpContext context) =>
         {
-            var readService = context.RequestServices.GetService<StrategyRunReadService>();
-            if (readService is null)
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
+            if (comparisonService is null)
             {
-                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                var readService = context.RequestServices.GetService<StrategyRunReadService>();
+                if (readService is null)
+                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+                comparisonService = new StrategyRunComparisonService(readService);
             }
 
             if (request.RunIds is not { Count: >= 2 })
@@ -796,7 +1564,7 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
+            var comparison = await comparisonService.CompareRunsAsync(request, context.RequestAborted).ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
                 var parsedModes = ParseModes(request.Modes);
@@ -816,21 +1584,22 @@ public static class WorkstationEndpoints
 
         group.MapPost("/runs/diff", async (RunDiffRequest request, HttpContext context) =>
         {
-            var readService = context.RequestServices.GetService<StrategyRunReadService>();
-            if (readService is null)
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
+            if (comparisonService is null)
             {
-                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                var readService = context.RequestServices.GetService<StrategyRunReadService>();
+                if (readService is null)
+                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+                comparisonService = new StrategyRunComparisonService(readService);
             }
 
-            var baseDetail = await readService.GetRunDetailAsync(request.BaseRunId, context.RequestAborted).ConfigureAwait(false);
-            var targetDetail = await readService.GetRunDetailAsync(request.TargetRunId, context.RequestAborted).ConfigureAwait(false);
-
-            if (baseDetail is null || targetDetail is null)
+            var diff = await comparisonService.BuildDiffAsync(request, context.RequestAborted).ConfigureAwait(false);
+            if (diff is null)
             {
                 return Results.NotFound(new { error = "One or both run IDs not found." });
             }
 
-            var diff = BuildRunDiff(baseDetail, targetDetail);
             return Results.Json(diff, jsonOptions);
         })
         .WithName("DiffRuns")
@@ -902,18 +1671,46 @@ public static class WorkstationEndpoints
             }
 
             var modes = ParseModes(mode);
-            var timeline = await readService.GetMergedTimelineAsync(
-                    new StrategyRunHistoryQuery(
-                        Modes: modes,
-                        Status: status,
-                        StrategyId: strategyId,
-                        Limit: Math.Clamp(limit ?? 100, 1, 500)),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var query = new StrategyRunHistoryQuery(
+                Modes: modes,
+                Status: status,
+                StrategyId: strategyId,
+                Limit: Math.Clamp(limit ?? 100, 1, 500));
+
+            var timeline = await readService.GetMergedTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
         .WithName("GetWorkstationMergedRunTimeline")
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
+        .Produces(501);
+
+        group.MapGet("/runs/lineage-timeline", async (
+            string? mode,
+            StrategyRunStatus? status,
+            string? strategyId,
+            int? limit,
+            HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var modes = ParseModes(mode);
+            var query = new StrategyRunHistoryQuery(
+                Modes: modes,
+                Status: status,
+                StrategyId: strategyId,
+                Limit: Math.Clamp(limit ?? 100, 1, 500));
+
+            var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(
+                timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
+                jsonOptions);
+        })
+        .WithName("GetWorkstationRunLineageTimeline")
+        .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
         group.MapGet("/runs/sweeps", async (int? limit, HttpContext context) =>
@@ -958,7 +1755,7 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
+            var comparison = await readService.GetRunComparisonDtosAsync(runIds, ct: context.RequestAborted).ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareStrategyRuns")
@@ -1079,84 +1876,12 @@ public static class WorkstationEndpoints
         }).ExcludeFromDescription();
     }
 
-    private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
+    private static string WorkstationSubroute(string route)
     {
-        var basePositions = baseRun.Portfolio?.Positions ?? [];
-        var targetPositions = targetRun.Portfolio?.Positions ?? [];
-
-        var baseSymbols = new HashSet<string>(basePositions.Select(static p => p.Symbol), StringComparer.OrdinalIgnoreCase);
-        var targetSymbols = new HashSet<string>(targetPositions.Select(static p => p.Symbol), StringComparer.OrdinalIgnoreCase);
-
-        var added = targetPositions
-            .Where(p => !baseSymbols.Contains(p.Symbol))
-            .Select(static p => new PositionDiffEntry(p.Symbol, 0, p.Quantity, 0m, p.RealizedPnl + p.UnrealizedPnl, "Added"))
-            .ToList();
-
-        var removed = basePositions
-            .Where(p => !targetSymbols.Contains(p.Symbol))
-            .Select(static p => new PositionDiffEntry(p.Symbol, p.Quantity, 0, p.RealizedPnl + p.UnrealizedPnl, 0m, "Removed"))
-            .ToList();
-
-        var modified = new List<PositionDiffEntry>();
-        foreach (var basePos in basePositions.Where(p => targetSymbols.Contains(p.Symbol)))
-        {
-            var targetPos = targetPositions.First(p =>
-                string.Equals(p.Symbol, basePos.Symbol, StringComparison.OrdinalIgnoreCase));
-            if (basePos.Quantity != targetPos.Quantity ||
-                basePos.AverageCostBasis != targetPos.AverageCostBasis)
-            {
-                modified.Add(new PositionDiffEntry(
-                    basePos.Symbol,
-                    basePos.Quantity,
-                    targetPos.Quantity,
-                    basePos.RealizedPnl + basePos.UnrealizedPnl,
-                    targetPos.RealizedPnl + targetPos.UnrealizedPnl,
-                    "Modified"));
-            }
-        }
-
-        var paramDiffs = BuildParameterDiff(baseRun.Parameters, targetRun.Parameters);
-
-        var metricsDiff = new MetricsDiff(
-            NetPnlDelta: (targetRun.Summary.NetPnl ?? 0m) - (baseRun.Summary.NetPnl ?? 0m),
-            TotalReturnDelta: (targetRun.Summary.TotalReturn ?? 0m) - (baseRun.Summary.TotalReturn ?? 0m),
-            FillCountDelta: targetRun.Summary.FillCount - baseRun.Summary.FillCount,
-            BaseNetPnl: baseRun.Summary.NetPnl,
-            TargetNetPnl: targetRun.Summary.NetPnl,
-            BaseTotalReturn: baseRun.Summary.TotalReturn,
-            TargetTotalReturn: targetRun.Summary.TotalReturn);
-
-        return new StrategyRunDiff(
-            BaseRunId: baseRun.Summary.RunId,
-            TargetRunId: targetRun.Summary.RunId,
-            BaseStrategyName: baseRun.Summary.StrategyName,
-            TargetStrategyName: targetRun.Summary.StrategyName,
-            AddedPositions: added,
-            RemovedPositions: removed,
-            ModifiedPositions: modified,
-            ParameterChanges: paramDiffs,
-            Metrics: metricsDiff);
-    }
-
-    private static IReadOnlyList<ParameterDiff> BuildParameterDiff(
-        IReadOnlyDictionary<string, string> baseParams,
-        IReadOnlyDictionary<string, string> targetParams)
-    {
-        var diffs = new List<ParameterDiff>();
-        var allKeys = new HashSet<string>(baseParams.Keys.Concat(targetParams.Keys), StringComparer.Ordinal);
-
-        foreach (var key in allKeys.Order())
-        {
-            baseParams.TryGetValue(key, out var baseVal);
-            targetParams.TryGetValue(key, out var targetVal);
-
-            if (!string.Equals(baseVal, targetVal, StringComparison.Ordinal))
-            {
-                diffs.Add(new ParameterDiff(key, baseVal, targetVal));
-            }
-        }
-
-        return diffs;
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
+            ? route[WorkstationApiRoutePrefix.Length..]
+            : route;
     }
 
     // PR-03: returns typed DTO instead of anonymous object
@@ -1169,7 +1894,7 @@ public static class WorkstationEndpoints
                 DisplayName: "Meridian Operator",
                 Role: "Research Lead",
                 Environment: "paper",
-                ActiveWorkspace: "research",
+                ActiveWorkspace: "strategy",
                 CommandCount: 6,
                 LatestRun: null,
                 WorkspaceSummary: new WorkstationSessionWorkspaceSummary(0, 0, 0, 0, 0));
@@ -1227,7 +1952,8 @@ public static class WorkstationEndpoints
                 Runs: Array.Empty<object>(),
                 Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
                 Timeline: Array.Empty<WorkstationTimelineCard>(),
-                Workspace: new WorkstationResearchWorkspaceSummary(0, null, null, false, false, 0));
+                Workspace: new WorkstationResearchWorkspaceSummary(0, null, null, false, false, 0),
+                PlotTool: BuildResearchPlotToolPayload(Array.Empty<StrategyRunSummary>(), selectedRunIds: Array.Empty<string>()));
         }
 
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
@@ -1256,7 +1982,8 @@ public static class WorkstationEndpoints
                 LatestStrategyName: latestRun.StrategyName,
                 HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
                 HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                PromotionCandidates: queuedPromotions));
+                PromotionCandidates: queuedPromotions),
+            PlotTool: BuildResearchPlotToolPayload(runs, selectedRunIds: Array.Empty<string>()));
     }
 
     private static async Task<ResearchBriefingDto> BuildResearchBriefingAsync(HttpContext context)
@@ -1341,7 +2068,7 @@ public static class WorkstationEndpoints
                         Tone: "success",
                         Summary: "Primary paper candidate with steady fill quality and stable financing.",
                         RunId: "run-research-001",
-                        DrillInRoute: "/api/workstation/runs/run-research-001/equity-curve"),
+                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001")),
                     new InsightWidget(
                         WidgetId: "insight-index-carry",
                         Title: "Index Carry Basket",
@@ -1350,7 +2077,7 @@ public static class WorkstationEndpoints
                         Tone: "default",
                         Summary: "Pinned chart compares carry spread compression against basket returns.",
                         RunId: "run-research-014",
-                        DrillInRoute: "/api/workstation/runs/run-research-014/equity-curve"),
+                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-014")),
                     new InsightWidget(
                         WidgetId: "insight-vol-breakout",
                         Title: "Volatility Breakout",
@@ -1359,7 +2086,7 @@ public static class WorkstationEndpoints
                         Tone: "warning",
                         Summary: "Transaction-cost preview deteriorated after the most recent parameter sweep.",
                         RunId: "run-research-022",
-                        DrillInRoute: "/api/workstation/runs/run-research-022/equity-curve")
+                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-022"))
                 ]),
             Watchlists:
             [
@@ -1400,12 +2127,12 @@ public static class WorkstationEndpoints
                     TotalReturn: 0.042m,
                     FinalEquity: 104200m,
                     DrillIn: new ResearchRunDrillInLinks(
-                        EquityCurve: "/api/workstation/runs/run-research-001/equity-curve",
-                        Fills: "/api/workstation/runs/run-research-001/fills",
-                        Attribution: "/api/workstation/runs/run-research-001/attribution",
-                        Ledger: "/api/workstation/runs/run-research-001/ledger",
-                        CashFlows: "/api/portfolio/run-research-001/cash-flows",
-                        Continuity: "/api/workstation/runs/run-research-001/continuity"))
+                        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001"),
+                        Fills: RunRoute(UiApiRoutes.RunsFills, "run-research-001"),
+                        Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-research-001"),
+                        Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-research-001"),
+                        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-research-001"),
+                        Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-research-001")))
             ],
             SavedComparisons:
             [
@@ -1424,12 +2151,12 @@ public static class WorkstationEndpoints
                             NetPnl: 4200m,
                             TotalReturn: 0.042m,
                             DrillIn: new ResearchRunDrillInLinks(
-                                EquityCurve: "/api/workstation/runs/run-research-001/equity-curve",
-                                Fills: "/api/workstation/runs/run-research-001/fills",
-                                Attribution: "/api/workstation/runs/run-research-001/attribution",
-                                Ledger: "/api/workstation/runs/run-research-001/ledger",
-                                CashFlows: "/api/portfolio/run-research-001/cash-flows",
-                                Continuity: "/api/workstation/runs/run-research-001/continuity"))
+                                EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001"),
+                                Fills: RunRoute(UiApiRoutes.RunsFills, "run-research-001"),
+                                Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-research-001"),
+                                Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-research-001"),
+                                CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-research-001"),
+                                Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-research-001")))
                     ])
             ],
             Alerts:
@@ -1512,7 +2239,8 @@ public static class WorkstationEndpoints
             ],
             Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
             Timeline: Array.Empty<WorkstationTimelineCard>(),
-            Workspace: new WorkstationResearchWorkspaceSummary(1, "run-research-001", "Mean Reversion FX", false, false, 0));
+            Workspace: new WorkstationResearchWorkspaceSummary(1, "run-research-001", "Mean Reversion FX", false, false, 0),
+            PlotTool: BuildResearchFallbackPlotToolPayload());
     }
 
     // PR-03: returns typed DTO instead of anonymous object
@@ -1522,6 +2250,8 @@ public static class WorkstationEndpoints
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
+        var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
+        var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
 
         // When neither execution layer nor strategy run service is active, use fixture data
         if (portfolio is null && oms is null && readService is null)
@@ -1547,25 +2277,37 @@ public static class WorkstationEndpoints
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
         // --- Positions (live execution layer when available) — PR-03: typed rows ---
+        // Live marks (BBO mid → last trade → cost basis) drive MarkPrice, UnrealizedPnl,
+        // and Exposure so operators see real-time PnL as quotes update.
         WorkstationTradingPositionRow[] positions;
         if (portfolio is not null && portfolio.Positions.Count > 0)
         {
-            positions = portfolio.Positions.Values.Select(pos => new WorkstationTradingPositionRow(
-                Symbol: pos.Symbol,
-                Side: pos.Quantity >= 0 ? "Long" : "Short",
-                Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                MarkPrice: "—",
-                DayPnl: "—",
-                UnrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
-                Exposure: "—")).ToArray();
+            positions = portfolio.Positions.Values.Select(pos =>
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var hasMark = mark.HasValue && mark.Value > 0m;
+                var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
+                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+
+                return new WorkstationTradingPositionRow(
+                    PositionKey: pos.Symbol,
+                    Symbol: pos.Symbol,
+                    Side: pos.Quantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                    MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                    DayPnl: "—",
+                    UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+            }).ToArray();
         }
         else
         {
             // No live positions yet — show an informational placeholder row
             positions =
             [
-                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "No open positions")
+                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "—", "No open positions")
             ];
         }
 
@@ -1591,13 +2333,24 @@ public static class WorkstationEndpoints
         // --- Risk state (derived from live portfolio when available) ---
         var riskState = "Healthy";
         var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
+        IReadOnlyList<string> activeGuardrails =
+        [
+            "Single-name concentration cap set at 30% notional.",
+            "Auto-throttle activates above 70% intraday buying power.",
+            "Strategy promotion to live blocked while state is Observe or Constrained."
+        ];
         var grossExposure = 0m;
         var netExposureValue = 0m;
 
         if (portfolio is not null)
         {
-            grossExposure = portfolio.Positions.Values.Sum(static pos => Math.Abs(pos.AverageCostBasis * pos.Quantity));
-            netExposureValue = portfolio.Positions.Values.Sum(pos => pos.AverageCostBasis * pos.Quantity);
+            foreach (var pos in portfolio.Positions.Values)
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
+                grossExposure += Math.Abs(pos.Quantity * px);
+                netExposureValue += pos.Quantity * px;
+            }
             var drawdownPct = portfolio.PortfolioValue > 0m
                 ? totalPnl / portfolio.PortfolioValue
                 : 0m;
@@ -1619,8 +2372,20 @@ public static class WorkstationEndpoints
             riskSummary = "Strategy is running at a loss. Monitoring active.";
         }
 
+        var runtimeRisk = await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false);
+        if (runtimeRisk is not null)
+        {
+            riskState = runtimeRisk.State;
+            riskSummary = runtimeRisk.Summary;
+            activeGuardrails = runtimeRisk.ActiveGuardrails;
+        }
+
         var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
             ? FormatPercent(totalPnl / portfolio.PortfolioValue)
+            : "—";
+
+        var buyingPowerUsedDisplay = portfolio is not null && portfolio.BuyingPower > 0m
+            ? FormatPercent(grossExposure / portfolio.BuyingPower)
             : "—";
 
         // --- Fills (completed orders from OMS) — PR-03: typed rows ---
@@ -1665,13 +2430,8 @@ public static class WorkstationEndpoints
                 GrossExposure: portfolio is not null ? FormatCurrency(grossExposure) : "—",
                 Var95: "—",
                 MaxDrawdown: maxDrawdownDisplay,
-                BuyingPowerUsed: "—",
-                ActiveGuardrails:
-                [
-                    "Single-name concentration cap set at 30% notional.",
-                    "Auto-throttle activates above 70% intraday buying power.",
-                    "Strategy promotion to live blocked while state is Observe or Constrained."
-                ]),
+                BuyingPowerUsed: buyingPowerUsedDisplay,
+                ActiveGuardrails: activeGuardrails),
             Brokerage: new WorkstationTradingBrokerageState(
                 Provider: brokerageValidation.GatewayDisplayName,
                 Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
@@ -1712,6 +2472,12 @@ public static class WorkstationEndpoints
 
         await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
         await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+        var operatorInbox = context.RequestServices.GetService<IOperatorInboxService>();
+        if (operatorInbox is not null)
+        {
+            var contributedItems = await operatorInbox.GetItemsAsync(context.RequestAborted).ConfigureAwait(false);
+            workItems.AddRange(contributedItems.Select(AttachOperatorNavigation));
+        }
 
         var items = workItems
             .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
@@ -1779,9 +2545,13 @@ public static class WorkstationEndpoints
                 .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
                 .ConfigureAwait(false);
 
-            foreach (var run in runs
-                         .Where(ShouldSurfaceRunReviewWorkItems)
-                         .OrderByDescending(GetRunReviewTimestamp))
+            var reviewRuns = runs
+                .Where(ShouldSurfaceRunReviewWorkItems)
+                .OrderByDescending(GetRunReviewTimestamp)
+                .ToArray();
+            var latestReviewRunId = reviewRuns.FirstOrDefault()?.RunId;
+
+            foreach (var run in reviewRuns)
             {
                 var packet = await reviewPacketService
                     .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
@@ -1791,8 +2561,14 @@ public static class WorkstationEndpoints
                     continue;
                 }
 
+                var isLatestReviewRun = string.Equals(run.RunId, latestReviewRunId, StringComparison.OrdinalIgnoreCase);
+                var hasStalePromotionAttention = HasStalePromotionAttention(packet);
                 workItems.AddRange(packet.WorkItems
-                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                    .Where(item =>
+                        item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical &&
+                        (isLatestReviewRun ||
+                         item.Kind != OperatorWorkItemKindDto.PromotionReview ||
+                         !hasStalePromotionAttention))
                     .Select(AttachOperatorNavigation));
             }
         }
@@ -1805,6 +2581,13 @@ public static class WorkstationEndpoints
             workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
         }
     }
+
+    private static bool HasStalePromotionAttention(StrategyRunReviewPacketDto packet)
+        => packet.Continuity?.ContinuityStatus.HasCashFlow == true &&
+           packet.WorkItems.Any(static item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.WorkItemId.StartsWith("continuity-promotion-target-run-missing-", StringComparison.OrdinalIgnoreCase) &&
+            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
 
     private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
         => run.Promotion?.RequiresReview == true ||
@@ -1941,6 +2724,10 @@ public static class WorkstationEndpoints
                 "Accounting",
                 UiApiRoutes.ReconciliationBreakQueue,
                 "AccountingShell"),
+            OperatorWorkItemKindDto.LedgerPeriodClose => (
+                "Accounting",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "FundReconciliation"),
             OperatorWorkItemKindDto.ReportPackApproval => (
                 "Reporting",
                 UiApiRoutes.FundReportPacks,
@@ -1948,7 +2735,7 @@ public static class WorkstationEndpoints
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Trading",
                 fundAccountId.HasValue
-                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    ? UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.Value.ToString())
                     : UiApiRoutes.FundAccountBrokerageSyncAccounts,
                 "AccountPortfolio"),
             _ => (
@@ -2053,8 +2840,8 @@ public static class WorkstationEndpoints
             ],
             Positions:
             [
-                new WorkstationTradingPositionRow("AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
-                new WorkstationTradingPositionRow("MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
+                new WorkstationTradingPositionRow("AAPL", "AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
+                new WorkstationTradingPositionRow("MSFT", "MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
             ],
             OpenOrders:
             [
@@ -2094,11 +2881,15 @@ public static class WorkstationEndpoints
             DrillIn: null);
     }
 
-    private static async Task<object> BuildDataOperationsPayloadAsync(HttpContext context)
+    private static async Task<WorkstationDataOperationsPayload> BuildDataOperationsPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
         var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
+        var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
+        var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
+        var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
+        var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
 
         if (readService is null && configStore is null)
         {
@@ -2114,31 +2905,29 @@ public static class WorkstationEndpoints
         // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
-        object[] providers = metricsStatus is { Providers.Length: > 0 }
-            ? metricsStatus.Providers.Select(static p =>
-            {
-                var trust = BuildProviderTrustRationale(p);
-                return (object)new
-                {
-                    provider = p.ProviderId,
-                    status = trust.Status,
-                    capability = p.ProviderType,
-                    latency = $"{p.AverageLatencyMs:F0}ms p50",
-                    note = p.IsConnected
-                        ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {trust.TrustScore}."
-                        : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC.",
-                    trustScore = trust.TrustScore,
-                    signalSource = trust.SignalSource,
-                    reasonCode = trust.ReasonCode,
-                    recommendedAction = trust.RecommendedAction,
-                    gateImpact = trust.GateImpact
-                };
-            }).ToArray()
+        var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
+        var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
+            ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
+        var routingConnections = routingConnectionService is not null
+            ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
+            : [];
+        var routingBindings = routingBindingService is not null
+            ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
+            : [];
+        var trustSnapshots = routingTrustService is not null
+            ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
+            : [];
+        var providers = BuildWorkstationDataProviderRecords(
+            metricsStatus,
+            connectionRows,
+            routingConnections,
+            routingBindings,
+            trustSnapshots);
 
         // --- Backfills (last known backfill result from status file) ---
         var lastBackfill = configStore?.TryLoadBackfillStatus();
-        object[] backfills;
+        WorkstationDataBackfillRecord[] backfills;
         if (lastBackfill is not null)
         {
             var symbolSummary = lastBackfill.Symbols.Length > 0
@@ -2153,15 +2942,13 @@ public static class WorkstationEndpoints
                 : $"{(int)age.TotalHours}h ago";
             backfills =
             [
-                new
-                {
-                    jobId = $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
-                    scope = $"{symbolSummary} / {days}",
-                    provider = lastBackfill.Provider,
-                    status = lastBackfill.Success ? "Completed" : "Failed",
-                    progress = lastBackfill.Success ? "100%" : "Error",
-                    updatedAt
-                }
+                new WorkstationDataBackfillRecord(
+                    JobId: $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
+                    Scope: $"{symbolSummary} / {days}",
+                    Provider: lastBackfill.Provider,
+                    Status: lastBackfill.Success ? "Completed" : "Failed",
+                    Progress: lastBackfill.Success ? "100%" : "Error",
+                    UpdatedAt: updatedAt)
             ];
         }
         else
@@ -2169,90 +2956,512 @@ public static class WorkstationEndpoints
             backfills = [];
         }
 
-        return new
+        return new WorkstationDataOperationsPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("providers-healthy", "Providers Healthy", healthyProviderCount.ToString(CultureInfo.InvariantCulture), "0", healthyProviderCount > 0 ? "success" : "default"),
+                new WorkstationMetricCard("backfills-running", "Backfills Running", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0" : $"+{activeRuns}", activeRuns > 0 ? "default" : "success"),
+                new WorkstationMetricCard("exports-ready", "Exports Ready", "0", "0", "default"),
+                new WorkstationMetricCard("ops-review", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0" : $"+{reviewRuns}", reviewRuns == 0 ? "default" : "warning"),
+                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
+            ],
+            Providers: providers,
+            Backfills: backfills,
+            Exports: [],
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static WorkstationDataOperationsPayload BuildDataOperationsFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
+    {
+        var interactiveBrokers = BuildFallbackDataProviderRecord(
+            providerId: "interactivebrokers",
+            displayName: "Interactive Brokers",
+            status: "Healthy",
+            capability: "Execution + fills",
+            latency: "21ms p50",
+            note: "Paper adapter routing is available.",
+            trustScore: "100%",
+            signalSource: "Provider baseline health snapshot",
+            reasonCode: "HEALTHY_BASELINE",
+            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
+            gateImpact: "Normal operation");
+        var polygon = BuildFallbackDataProviderRecord(
+            providerId: "polygon",
+            displayName: "Polygon",
+            status: "Healthy",
+            capability: "Streaming equities",
+            latency: "16ms p50",
+            note: "Realtime subscriptions are steady.",
+            trustScore: "100%",
+            signalSource: "Provider baseline health snapshot",
+            reasonCode: "HEALTHY_BASELINE",
+            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
+            gateImpact: "Normal operation");
+        var databento = BuildFallbackDataProviderRecord(
+            providerId: "databento",
+            displayName: "Databento",
+            status: "Warning",
+            capability: "Historical replay",
+            latency: "69ms p50",
+            note: "Replay queue is elevated but within tolerance.",
+            trustScore: "86%",
+            signalSource: "Latency monitor",
+            reasonCode: "LATENCY_REGRESSION",
+            recommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
+            gateImpact: "Watch");
+
+        return new WorkstationDataOperationsPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("providers-healthy", "Providers Healthy", "4", "0", "success"),
+                new WorkstationMetricCard("backfills-running", "Backfills Running", "2", "+1", "default"),
+                new WorkstationMetricCard("exports-ready", "Exports Ready", "3", "+1", "success"),
+                new WorkstationMetricCard("ops-review", "Needs Review", "1", "+1", "warning"),
+                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
+            ],
+            Providers: [interactiveBrokers, polygon, databento],
+            Backfills:
+            [
+                new WorkstationDataBackfillRecord("BF-1038", "US equities / 30d", "Databento", "Running", "58%", "3m ago"),
+                new WorkstationDataBackfillRecord("BF-1040", "FX majors / 14d", "Polygon", "Queued", "0%", "6m ago")
+            ],
+            Exports:
+            [
+                new WorkstationDataExportRecord("EX-2196", "python-pandas", "research pack", "Ready", "118k", "7m ago"),
+                new WorkstationDataExportRecord("EX-2198", "postgresql", "ops warehouse", "Attention", "42k", "9m ago")
+            ],
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static WorkstationDataProviderRecord[] BuildWorkstationDataProviderRecords(
+        ProviderMetricsStatus? metricsStatus,
+        IReadOnlyList<ProviderConnectionRowDto> connectionRows,
+        IReadOnlyList<ProviderConnectionDto> routingConnections,
+        IReadOnlyList<ProviderBindingDto> routingBindings,
+        IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots)
+    {
+        var metricLookup = metricsStatus?.Providers.ToDictionary(
+            static metric => NormalizeProviderKey(metric.ProviderId),
+            static metric => metric,
+            StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, ProviderMetrics>(StringComparer.OrdinalIgnoreCase);
+        var connectionLookup = connectionRows.ToDictionary(
+            static connection => NormalizeProviderKey(connection.ProviderId),
+            static connection => connection,
+            StringComparer.OrdinalIgnoreCase);
+        var routingLookup = routingConnections
+            .GroupBy(static connection => NormalizeProviderKey(connection.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<ProviderConnectionDto>)group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var trustLookup = trustSnapshots
+            .GroupBy(static snapshot => NormalizeProviderKey(snapshot.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<ProviderTrustSnapshotDto>)group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var bindingLookup = routingBindings
+            .GroupBy(static binding => NormalizeProviderKey(binding.ConnectionId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => (IReadOnlyList<ProviderBindingDto>)group.ToArray(), StringComparer.OrdinalIgnoreCase);
+
+        var providerIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var providerId in metricLookup.Keys)
         {
-            metrics = new[]
+            providerIds.Add(providerId);
+        }
+
+        foreach (var providerId in connectionLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
+        foreach (var providerId in routingLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
+        foreach (var providerId in trustLookup.Keys)
+        {
+            providerIds.Add(providerId);
+        }
+
+        return providerIds
+            .Select(providerId =>
             {
-                new { id = "providers-healthy", label = "Providers Healthy", value = healthyProviderCount.ToString(CultureInfo.InvariantCulture), delta = "0", tone = healthyProviderCount > 0 ? "success" : "default" },
-                new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
-                new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
-                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
-            },
-            providers,
-            backfills,
-            exports = Array.Empty<object>(),
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
+                metricLookup.TryGetValue(providerId, out var metrics);
+                connectionLookup.TryGetValue(providerId, out var connection);
+                routingLookup.TryGetValue(providerId, out var routingConnectionsForProvider);
+                trustLookup.TryGetValue(providerId, out var trustSnapshotsForProvider);
+
+                var routingConnection = SelectRepresentativeRoutingConnection(routingConnectionsForProvider);
+                var trustSnapshot = SelectRepresentativeTrustSnapshot(trustSnapshotsForProvider, routingConnection?.ConnectionId);
+                var bindings = ResolveRoutingBindings(bindingLookup, routingConnectionsForProvider);
+                var rationale = metrics is not null
+                    ? BuildProviderTrustRationale(metrics)
+                    : BuildProviderTrustRationaleFromConnection(connection, routingConnection, trustSnapshot);
+                var displayName = ResolveDataProviderDisplayName(providerId, connection, routingConnection, metrics);
+                var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
+                var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
+                var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
+                return new WorkstationDataProviderRecord(
+                    ProviderId: connection?.ProviderId ?? providerId,
+                    DisplayName: displayName,
+                    Status: connection is not null ? connection.Health.ToString() : rationale.Status,
+                    Capability: capability,
+                    Latency: latency,
+                    Note: note,
+                    TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : rationale.TrustScore,
+                    SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0
+                        ? string.Join(", ", trustSnapshot.Signals)
+                        : rationale.SignalSource,
+                    ReasonCode: rationale.ReasonCode,
+                    RecommendedAction: connection?.RecommendedAction ?? rationale.RecommendedAction,
+                    GateImpact: rationale.GateImpact,
+                    ConnectionSummary: connection,
+                    RoutingSummary: new WorkstationDataProviderRoutingSummary(
+                        ConnectionId: routingConnection?.ConnectionId,
+                        ProviderFamilyId: routingConnection?.ProviderFamilyId ?? connection?.ProviderId,
+                        ProductionReady: routingConnection?.ProductionReady,
+                        CertificationFresh: trustSnapshot?.IsCertificationFresh,
+                        BindingCount: bindings.Count,
+                        FallbackRouteCount: bindings.Sum(static binding => binding.FailoverConnectionIds.Length),
+                        HealthStatus: trustSnapshot?.HealthStatus ?? connection?.Health.ToString()),
+                    Diagnostics: BuildWorkstationProviderDiagnostics(
+                        providerId,
+                        connection,
+                        routingConnection,
+                        trustSnapshot,
+                        bindings,
+                        metrics,
+                        rationale));
+            })
+            .OrderBy(static provider => provider.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static WorkstationDataProviderRecord BuildFallbackDataProviderRecord(
+        string providerId,
+        string displayName,
+        string status,
+        string capability,
+        string latency,
+        string note,
+        string trustScore,
+        string signalSource,
+        string reasonCode,
+        string recommendedAction,
+        string gateImpact)
+        => new(
+            ProviderId: providerId,
+            DisplayName: displayName,
+            Status: status,
+            Capability: capability,
+            Latency: latency,
+            Note: note,
+            TrustScore: trustScore,
+            SignalSource: signalSource,
+            ReasonCode: reasonCode,
+            RecommendedAction: recommendedAction,
+            GateImpact: gateImpact,
+            ConnectionSummary: null,
+            RoutingSummary: new WorkstationDataProviderRoutingSummary(
+                ConnectionId: null,
+                ProviderFamilyId: providerId,
+                ProductionReady: null,
+                CertificationFresh: null,
+                BindingCount: 0,
+                FallbackRouteCount: 0,
+                HealthStatus: status),
+            Diagnostics:
+            [
+                new WorkstationDataProviderDiagnostic("provider-health", "Provider health", status == "Healthy" ? "pass" : "warning", status == "Healthy" ? "Pass" : "Review", note),
+                new WorkstationDataProviderDiagnostic("trust-state", "Trust state", status == "Healthy" ? "pass" : "warning", trustScore, $"{signalSource}. {recommendedAction}")
+            ]);
+
+    private static IReadOnlyList<ProviderBindingDto> ResolveRoutingBindings(
+        IReadOnlyDictionary<string, IReadOnlyList<ProviderBindingDto>> bindingLookup,
+        IReadOnlyList<ProviderConnectionDto>? routingConnections)
+    {
+        if (routingConnections is null || routingConnections.Count == 0)
+        {
+            return [];
+        }
+
+        var bindings = new List<ProviderBindingDto>();
+        foreach (var routingConnection in routingConnections)
+        {
+            if (bindingLookup.TryGetValue(NormalizeProviderKey(routingConnection.ConnectionId), out var connectionBindings))
+            {
+                bindings.AddRange(connectionBindings);
+            }
+        }
+
+        return bindings
+            .DistinctBy(static binding => binding.BindingId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static ProviderConnectionDto? SelectRepresentativeRoutingConnection(
+        IReadOnlyList<ProviderConnectionDto>? routingConnections)
+    {
+        if (routingConnections is null || routingConnections.Count == 0)
+        {
+            return null;
+        }
+
+        return routingConnections
+            .OrderByDescending(static connection => connection.Enabled)
+            .ThenByDescending(static connection => connection.ProductionReady)
+            .ThenBy(static connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static ProviderTrustSnapshotDto? SelectRepresentativeTrustSnapshot(
+        IReadOnlyList<ProviderTrustSnapshotDto>? trustSnapshots,
+        string? preferredConnectionId)
+    {
+        if (trustSnapshots is null || trustSnapshots.Count == 0)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(preferredConnectionId))
+        {
+            var exactMatch = trustSnapshots.FirstOrDefault(snapshot =>
+                snapshot.ConnectionId.Equals(preferredConnectionId, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch is not null)
+            {
+                return exactMatch;
+            }
+        }
+
+        return trustSnapshots
+            .OrderByDescending(static snapshot => snapshot.IsHealthy)
+            .ThenByDescending(static snapshot => snapshot.IsProductionReady)
+            .ThenByDescending(static snapshot => snapshot.Score)
+            .ThenBy(static snapshot => snapshot.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static string ResolveDataProviderDisplayName(
+        string providerId,
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderMetrics? metrics)
+        => connection?.DisplayName
+           ?? routingConnection?.DisplayName
+           ?? metrics?.ProviderId
+           ?? providerId;
+
+    private static string ResolveDataProviderCapability(
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderMetrics? metrics)
+    {
+        if (connection is not null)
+        {
+            return connection.Capability switch
+            {
+                ProviderConnectionCapabilityDto.DataAndBrokerage => "Data + Brokerage",
+                ProviderConnectionCapabilityDto.Brokerage => "Brokerage",
+                _ => "Data"
+            };
+        }
+
+        return metrics?.ProviderType
+            ?? routingConnection?.ConnectionType
+            ?? "Provider";
+    }
+
+    private static string BuildDataProviderNote(
+        ProviderMetrics? metrics,
+        ProviderConnectionRowDto? connection,
+        ProviderTrustSnapshotDto? trustSnapshot,
+        ProviderTrustRationalePayload rationale)
+    {
+        if (metrics is not null)
+        {
+            return metrics.IsConnected
+                ? $"Active subscriptions: {metrics.ActiveSubscriptions}. Quality score: {rationale.TrustScore}."
+                : $"Provider disconnected. Last seen: {metrics.Timestamp:HH:mm} UTC.";
+        }
+
+        if (connection?.LastError is { Length: > 0 } error)
+        {
+            return error;
+        }
+
+        if (trustSnapshot is not null && trustSnapshot.Signals.Length > 0)
+        {
+            return $"Trust signals: {string.Join(", ", trustSnapshot.Signals)}.";
+        }
+
+        return rationale.RecommendedAction;
+    }
+
+    private static ProviderTrustRationalePayload BuildProviderTrustRationaleFromConnection(
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderTrustSnapshotDto? trustSnapshot)
+    {
+        if (connection is null)
+        {
+            if (trustSnapshot is not null)
+            {
+                var trustScore = FormatScore(NormalizeScore(trustSnapshot.Score));
+                return new ProviderTrustRationalePayload(
+                    Status: trustSnapshot.IsHealthy ? "Healthy" : "Warning",
+                    TrustScore: trustScore,
+                    SignalSource: trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider trust snapshot",
+                    ReasonCode: trustSnapshot.IsHealthy ? "TRUST_SNAPSHOT_HEALTHY" : "TRUST_SNAPSHOT_REVIEW",
+                    RecommendedAction: trustSnapshot.IsHealthy
+                        ? "Provider trust snapshot is healthy."
+                        : "Inspect routing trust signals before routing new workflow traffic.",
+                    GateImpact: trustSnapshot.IsHealthy ? "Normal operation" : "Health gate needs review");
+            }
+
+            return new ProviderTrustRationalePayload(
+                Status: "Warning",
+                TrustScore: "Not reported",
+                SignalSource: "Provider center bootstrap",
+                ReasonCode: "PROVIDER_SUMMARY_PENDING",
+                RecommendedAction: routingConnection?.Enabled == false
+                    ? "Enable the routing connection before selecting this provider."
+                    : "Configure provider credentials and routing before relying on this workflow.",
+                GateImpact: routingConnection?.Enabled == false ? "Disabled for routing" : "No routing gate loaded");
+        }
+
+        return connection.Health switch
+        {
+            ProviderContinuityHealthDto.Healthy => new ProviderTrustRationalePayload(
+                Status: "Healthy",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "100%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_HEALTHY",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Normal operation"),
+            ProviderContinuityHealthDto.Degraded => new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "70%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_DEGRADED",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Degraded"),
+            ProviderContinuityHealthDto.Blocked => new ProviderTrustRationalePayload(
+                Status: "Blocked",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "40%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_BLOCKED",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Critical"),
+            _ => new ProviderTrustRationalePayload(
+                Status: "Warning",
+                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "80%",
+                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
+                ReasonCode: "CONNECTION_REVIEW",
+                RecommendedAction: connection.RecommendedAction,
+                GateImpact: "Watch")
         };
     }
 
-    private static object BuildDataOperationsFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
+    private static IReadOnlyList<WorkstationDataProviderDiagnostic> BuildWorkstationProviderDiagnostics(
+        string providerId,
+        ProviderConnectionRowDto? connection,
+        ProviderConnectionDto? routingConnection,
+        ProviderTrustSnapshotDto? trustSnapshot,
+        IReadOnlyList<ProviderBindingDto> bindings,
+        ProviderMetrics? metrics,
+        ProviderTrustRationalePayload rationale)
     {
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
-                new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
-                new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
-                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
-            },
-            providers = new[]
-            {
-                new
+        var diagnostics = new List<WorkstationDataProviderDiagnostic>();
+        var hasCredentials = connection is not null &&
+            connection.CredentialState is not ProviderCredentialStateDto.Missing and not ProviderCredentialStateDto.Partial;
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "credential-presence",
+            Label: "Credential presence",
+            Status: !hasCredentials ? "warning" : "pass",
+            StatusLabel: !hasCredentials ? "Review" : "Pass",
+            Detail: connection is null
+                ? "No provider credential summary is loaded for this provider."
+                : connection.CredentialState switch
                 {
-                    provider = "Interactive Brokers",
-                    status = "Healthy",
-                    capability = "Execution + fills",
-                    latency = "21ms p50",
-                    note = "Paper adapter routing is available.",
-                    trustScore = "100%",
-                    signalSource = "Provider baseline health snapshot",
-                    reasonCode = "HEALTHY_BASELINE",
-                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
-                    gateImpact = "Normal operation"
-                },
-                new
-                {
-                    provider = "Polygon",
-                    status = "Healthy",
-                    capability = "Streaming equities",
-                    latency = "16ms p50",
-                    note = "Realtime subscriptions are steady.",
-                    trustScore = "100%",
-                    signalSource = "Provider baseline health snapshot",
-                    reasonCode = "HEALTHY_BASELINE",
-                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
-                    gateImpact = "Normal operation"
-                },
-                new
-                {
-                    provider = "Databento",
-                    status = "Warning",
-                    capability = "Historical replay",
-                    latency = "69ms p50",
-                    note = "Replay queue is elevated but within tolerance.",
-                    trustScore = "86%",
-                    signalSource = "Latency monitor",
-                    reasonCode = "LATENCY_REGRESSION",
-                    recommendedAction = "Delay operator promotion actions; review latency trend and compare against baseline window.",
-                    gateImpact = "Watch"
-                }
-            },
-            backfills = new[]
+                    ProviderCredentialStateDto.NotRequired => "No credentials are required for this provider.",
+                    ProviderCredentialStateDto.Missing => "Required credential fields are missing.",
+                    ProviderCredentialStateDto.Partial => "Credential setup is incomplete.",
+                    ProviderCredentialStateDto.Invalid => "Stored credentials are invalid and must be replaced.",
+                    _ => $"Credential state: {connection.CredentialState}."
+                }));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "credential-verification",
+            Label: "Credential verification",
+            Status: connection is null
+                ? "pending"
+                : connection.VerificationState is ProviderVerificationStateDto.Verified or ProviderVerificationStateDto.NotRequired ? "pass"
+                : connection.VerificationState == ProviderVerificationStateDto.Failed ? "fail" : "warning",
+            StatusLabel: connection is null
+                ? "Pending"
+                : connection.VerificationState is ProviderVerificationStateDto.Verified or ProviderVerificationStateDto.NotRequired ? "Pass"
+                : connection.VerificationState == ProviderVerificationStateDto.Failed ? "Fail" : "Review",
+            Detail: connection?.LastError
+                ?? (connection is null
+                    ? "Verification requires a provider credential summary."
+                    : connection.VerificationState == ProviderVerificationStateDto.Verified
+                        ? $"Verified at {FormatProviderTimestamp(connection.LastVerifiedAt)}."
+                        : $"Verification state: {connection.VerificationState}.")));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "provider-health",
+            Label: "Provider health",
+            Status: rationale.Status switch
             {
-                new { jobId = "BF-1038", scope = "US equities / 30d", provider = "Databento", status = "Running", progress = "58%", updatedAt = "3m ago" },
-                new { jobId = "BF-1040", scope = "FX majors / 14d", provider = "Polygon", status = "Queued", progress = "0%", updatedAt = "6m ago" }
+                "Healthy" => "pass",
+                "Blocked" or "Degraded" => "fail",
+                _ => "warning"
             },
-            exports = new[]
-            {
-                new { exportId = "EX-2196", profile = "python-pandas", target = "research pack", status = "Ready", rows = "118k", updatedAt = "7m ago" },
-                new { exportId = "EX-2198", profile = "postgresql", target = "ops warehouse", status = "Attention", rows = "42k", updatedAt = "9m ago" }
-            },
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
-        };
+            StatusLabel: rationale.Status,
+            Detail: metrics is not null
+                ? $"Latency {metrics.AverageLatencyMs:F0}ms p50; dropped messages {metrics.MessagesDropped}; subscriptions {metrics.ActiveSubscriptions}."
+                : rationale.RecommendedAction));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "routing-readiness",
+            Label: "Routing readiness",
+            Status: routingConnection is null
+                ? "pending"
+                : !routingConnection.Enabled || !routingConnection.ProductionReady
+                    ? "warning"
+                    : "pass",
+            StatusLabel: routingConnection is null
+                ? "Pending"
+                : routingConnection.ProductionReady ? "Pass" : "Review",
+            Detail: routingConnection is null
+                ? "No routing connection is configured for this provider yet."
+                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}." ));
+
+        diagnostics.Add(new WorkstationDataProviderDiagnostic(
+            Id: "trust-state",
+            Label: "Trust state",
+            Status: trustSnapshot is null
+                ? rationale.Status == "Healthy" ? "pass" : "warning"
+                : trustSnapshot.IsHealthy ? "pass" : "warning",
+            StatusLabel: trustSnapshot?.HealthStatus ?? rationale.TrustScore,
+            Detail: trustSnapshot is not null
+                ? trustSnapshot.Signals.Length > 0
+                    ? string.Join(", ", trustSnapshot.Signals)
+                    : "Trust snapshot is available with no active signals."
+                : $"{rationale.SignalSource}. {rationale.RecommendedAction}"));
+
+        return diagnostics;
     }
+
+    private static string NormalizeProviderKey(string providerId)
+        => providerId.Trim().ToLowerInvariant();
+
+    private static string FormatProviderTimestamp(DateTimeOffset? value)
+        => value?.ToString("MMM dd, yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? "Never";
 
     private static ProviderTrustRationalePayload BuildProviderTrustRationale(ProviderMetrics metrics)
     {
@@ -2348,6 +3557,165 @@ public static class WorkstationEndpoints
                     : "Critical";
 
     // PR-03: returns typed DTO instead of anonymous object
+    private static async Task<WorkstationPortfolioPayload> BuildPortfolioPayloadAsync(HttpContext context)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var portfolio = context.RequestServices.GetService<IPortfolioState>();
+        var oms = context.RequestServices.GetService<IOrderManager>();
+        var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
+        var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
+        var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
+
+        // Resolve all runs for the run-linked equity panel
+        StrategyRunSummary[] allRuns = [];
+        StrategyRunDetail?[] runDetailsForCashFlow = [];
+        if (readService is not null)
+        {
+            allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
+                .Take(12)
+                .ToArray();
+
+            // Fetch details for the most recent runs to power the cash-flow summary.
+            // Mirrors the Governance workspace pattern; bounded to avoid amplifying load.
+            var cashFlowRuns = allRuns.Take(6).ToArray();
+            runDetailsForCashFlow = cashFlowRuns.Length == 0
+                ? []
+                : await Task.WhenAll(cashFlowRuns.Select(run =>
+                        readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
+                    .ConfigureAwait(false);
+        }
+
+        // --- Metrics ---
+        var realisedPnl = portfolio?.RealisedPnl ?? allRuns.FirstOrDefault()?.NetPnl ?? 0m;
+        var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
+        var totalPnl = realisedPnl + unrealisedPnl;
+        var pnlTone = totalPnl >= 0m ? "success" : "warning";
+
+        var metrics = new WorkstationMetricCard[]
+        {
+            new("portfolio-net-pnl", "Net P&L", FormatCurrency(totalPnl), totalPnl >= 0m ? "+session" : "-session", pnlTone),
+            new("portfolio-cash", "Cash", portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", "0%", "default"),
+            new("portfolio-value", "Portfolio Value", portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", "0%", "default"),
+            new("portfolio-runs", "Linked Runs", allRuns.Length.ToString(CultureInfo.InvariantCulture), "0%", "default")
+        };
+
+        // --- Positions (live mark drives MarkPrice / UnrealizedPnl / Exposure) ---
+        WorkstationTradingPositionRow[] positions;
+        if (portfolio is not null && portfolio.Positions.Count > 0)
+        {
+            positions = portfolio.Positions.Values.Select(pos =>
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var hasMark = mark.HasValue && mark.Value > 0m;
+                var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
+                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+
+                return new WorkstationTradingPositionRow(
+                    PositionKey: pos.Symbol,
+                    Symbol: pos.Symbol,
+                    Side: pos.Quantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                    MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                    DayPnl: "—",
+                    UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+            }).ToArray();
+        }
+        else
+        {
+            positions = [];
+        }
+
+        // --- Risk state ---
+        var grossExposure = 0m;
+        var netExposureValue = 0m;
+        var riskState = "Healthy";
+        var riskSummary = "Portfolio exposure is within configured paper thresholds.";
+        IReadOnlyList<string> activeGuardrails = [];
+
+        if (portfolio is not null)
+        {
+            foreach (var pos in portfolio.Positions.Values)
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
+                grossExposure += Math.Abs(pos.Quantity * px);
+                netExposureValue += pos.Quantity * px;
+            }
+            var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
+            if (drawdownPct < -0.05m)
+            {
+                riskState = "Constrained";
+                riskSummary = "Portfolio has breached the 5% drawdown threshold.";
+            }
+            else if (drawdownPct < -0.02m)
+            {
+                riskState = "Observe";
+                riskSummary = "Exposure nearing guardrail limits.";
+            }
+        }
+
+        var runtimeRisk = await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false);
+        if (runtimeRisk is not null)
+        {
+            riskState = runtimeRisk.State;
+            riskSummary = runtimeRisk.Summary;
+            activeGuardrails = runtimeRisk.ActiveGuardrails;
+        }
+
+        var risk = new WorkstationTradingRiskState(
+            State: riskState,
+            Summary: riskSummary,
+            NetExposure: portfolio is not null ? FormatCurrency(netExposureValue) : "—",
+            GrossExposure: portfolio is not null ? FormatCurrency(grossExposure) : "—",
+            Var95: "—",
+            MaxDrawdown: portfolio is not null && portfolio.PortfolioValue > 0m
+                ? FormatPercent(totalPnl / portfolio.PortfolioValue)
+                : "—",
+            BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
+                ? FormatPercent(grossExposure / portfolio.BuyingPower)
+                : "—",
+            ActiveGuardrails: activeGuardrails);
+
+        // --- Brokerage state ---
+        var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
+        var latestRun = allRuns.FirstOrDefault(static r => r.Mode == StrategyRunMode.Paper) ?? allRuns.FirstOrDefault();
+        var brokerage = new WorkstationTradingBrokerageState(
+            Provider: brokerageValidation.GatewayDisplayName,
+            Account: latestRun is not null && !string.IsNullOrWhiteSpace(latestRun.PortfolioId) ? latestRun.PortfolioId : "—",
+            Environment: latestRun?.Mode == StrategyRunMode.Live ? "live" : "paper",
+            Connection: portfolio is not null ? "Connected" : "Disconnected",
+            LastHeartbeat: portfolio is not null ? "live" : "—",
+            OrderIngress: oms is not null ? "healthy" : "—",
+            FillFeed: portfolio is not null ? "healthy" : "—",
+            Notes: [BuildTradingBrokerageNotes(latestRun, portfolio is not null, brokerageConfiguration)]);
+
+        // --- Run-linked equity rows ---
+        var runs = allRuns.Select(static run => new WorkstationPortfolioRunRow(
+            RunId: run.RunId,
+            StrategyName: run.StrategyName,
+            Engine: run.Engine.ToString(),
+            Mode: run.Mode.ToString().ToLowerInvariant(),
+            Status: run.Status.ToString(),
+            Pnl: run.NetPnl.HasValue ? FormatCurrency(run.NetPnl.Value) : "—",
+            Sharpe: "—",
+            Dataset: run.DatasetReference ?? "—",
+            Window: run.StartedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            LastUpdated: run.LastUpdatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+            Notes: BuildRunNotes(run),
+            PromotionState: run.Promotion?.State.ToString())).ToArray();
+
+        return new WorkstationPortfolioPayload(
+            Metrics: metrics,
+            Positions: positions,
+            Risk: risk,
+            Brokerage: brokerage,
+            Runs: runs,
+            CashFlow: BuildGovernanceWorkspaceCashFlowSummary(runDetailsForCashFlow));
+    }
+
     private static async Task<WorkstationGovernancePayload> BuildGovernancePayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -2624,6 +3992,234 @@ public static class WorkstationEndpoints
             SecurityCoverage: BuildSecurityCoverage(detail));
     }
 
+    private static WorkstationPlotToolPayload BuildResearchPlotToolPayload(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<string> selectedRunIds)
+    {
+        var activeRun = selectedRunIds.Count > 0
+            ? runs.FirstOrDefault(run => string.Equals(run.RunId, selectedRunIds[0], StringComparison.OrdinalIgnoreCase)) ?? runs.FirstOrDefault()
+            : runs.FirstOrDefault();
+        var companionRun = selectedRunIds.Count > 1
+            ? runs.FirstOrDefault(run => string.Equals(run.RunId, selectedRunIds[1], StringComparison.OrdinalIgnoreCase))
+            : runs.Skip(1).FirstOrDefault();
+        var activeStrategy = activeRun?.StrategyName ?? "Meridian PlotTool";
+        var companionStrategy = companionRun?.StrategyName;
+        var chartTitle = companionStrategy is null ? activeStrategy : $"{activeStrategy} vs {companionStrategy}";
+        var queuedCount = runs.Count(static run => run.Status == StrategyRunStatus.Pending);
+        var reviewCount = runs.Count(static run =>
+            run.Promotion?.RequiresReview == true ||
+            run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
+        var points = BuildPlotToolScatterPoints().ToArray();
+        var focusPoint = points.LastOrDefault(static point => point.Emphasis);
+
+        var workspace = new
+        {
+            eyebrow = "Strategy Lane · PlotTool",
+            title = $"{chartTitle} workstation",
+            description = "API-backed PlotTool workspace state from workstation strategy payload.",
+            statusBadgeLabel = (activeRun?.Mode.ToString() ?? "research").ToUpperInvariant(),
+            statusBadgeVariant = ResolveModeVariant(activeRun?.Mode),
+            expression = $"{SlugifyForExpression(activeStrategy)}.spread() vs {(companionStrategy is null ? SlugifyForExpression(activeStrategy) : SlugifyForExpression(companionStrategy))}.implied_volatility(3m, forward, 100)",
+            toolbarPills = new[] { "MAX", "Daily (MAX)", companionStrategy is null ? "Single study" : "Pair overlay", "0d lag" },
+            metaItems = new[]
+            {
+                activeRun?.DatasetReference ?? activeRun?.FeedReference ?? "Cross-asset sandbox",
+                $"{(2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture)} obs",
+                "β 0.48",
+                "R² 0.71",
+                "ρ 0.84"
+            },
+            xAxisLabel = "Spread (bps)",
+            yAxisLabel = "3m implied vol",
+            xTicks = new[]
+            {
+                new { value = 40, label = "20" }, new { value = 120, label = "40" }, new { value = 200, label = "60" },
+                new { value = 280, label = "80" }, new { value = 360, label = "100" }, new { value = 440, label = "140" },
+                new { value = 520, label = "180" }, new { value = 600, label = "200" }
+            },
+            yTicks = new[]
+            {
+                new { value = 44, label = "120" }, new { value = 98, label = "100" }, new { value = 152, label = "80" },
+                new { value = 206, label = "60" }, new { value = 260, label = "40" }
+            },
+            points = points.Select(static point => new { x = point.X, y = point.Y, emphasis = point.Emphasis }).ToArray(),
+            studySummary = new[]
+            {
+                new { id = "primary", label = "Primary notebook", value = activeStrategy },
+                new { id = "companion", label = "Pair target", value = companionStrategy ?? "Select a second run" },
+                new { id = "queued", label = "Queued studies", value = queuedCount.ToString(CultureInfo.InvariantCulture) },
+                new { id = "review", label = "Review queue", value = reviewCount.ToString(CultureInfo.InvariantCulture) }
+            },
+            legendItems = new[]
+            {
+                new { id = "history", label = "History", detail = $"{(2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture)} observations", tone = "history" },
+                new { id = "current", label = "Current", detail = "88.40 / 73.80", tone = "current" },
+                new { id = "trend", label = "OLS fit", detail = "y = 0.48x + 39.31", tone = "trend" },
+                new { id = "refresh", label = "Refresh", detail = FormatRelativeTime(activeRun?.LastUpdatedAt ?? DateTimeOffset.UtcNow), tone = "muted" }
+            },
+            focusPoint = new
+            {
+                label = "Current marker",
+                xValueText = "88.40",
+                yValueText = "73.80",
+                detail = $"Highlighted at x {focusPoint.X}, y {focusPoint.Y}."
+            },
+            signalCards = new[]
+            {
+                new { id = "correlation", label = "Correlation", value = "0.84", detail = "Pearson correlation", tone = "success" },
+                new { id = "regression", label = "Regression beta", value = "0.48", detail = "OLS slope", tone = "default" },
+                new { id = "queued", label = "Queued studies", value = queuedCount.ToString(CultureInfo.InvariantCulture), detail = "Run-library backlog", tone = queuedCount > 0 ? "warning" : "default" },
+                new { id = "review", label = "Review queue", value = reviewCount.ToString(CultureInfo.InvariantCulture), detail = "Promotion review queue", tone = reviewCount > 0 ? "warning" : "success" }
+            },
+            consoleTitle = "Expression editor",
+            consoleBody = companionStrategy is null
+                ? "Select a second run to activate pair-study overlays."
+                : $"Pair analysis is active for {activeStrategy} versus {companionStrategy}.",
+            overlayTitle = "Meridian overlays",
+            overlayItems = new[]
+            {
+                $"Notebook coverage: {runs.Count} retained {(runs.Count == 1 ? "study" : "studies")} in Strategy.",
+                $"Queued studies: {queuedCount}.",
+                $"Runs requiring review: {reviewCount}."
+            }
+        };
+
+        var statistics = new
+        {
+            eyebrow = "Statistics view",
+            title = $"{chartTitle} analysis",
+            description = $"{activeRun?.DatasetReference ?? activeRun?.FeedReference ?? "Cross-asset sandbox"} · refreshed {FormatRelativeTime(activeRun?.LastUpdatedAt ?? DateTimeOffset.UtcNow)}",
+            summaryTiles = new[]
+            {
+                new { id = "observations", label = "N obs", value = (2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture), detail = "99.7% complete", tone = "default" },
+                new { id = "correlation", label = "Correlation", value = "0.84", detail = "Pearson ρ", tone = "success" },
+                new { id = "r-squared", label = "R²", value = "0.71", detail = "OLS fit", tone = "success" },
+                new { id = "beta", label = "β (slope)", value = "0.48", detail = "SE 0.014", tone = "success" },
+                new { id = "sharpe", label = "Sharpe (5d)", value = activeRun is null ? "N/A" : FormatSharpeProxy(activeRun), detail = "Run-linked", tone = "success" }
+            },
+            distributionBars = new[] { 2, 6, 11, 18, 24, 31, 34, 29, 20, 11, 5, 2 },
+            distributionSummary = $"{(2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture)} samples centered on spread 66.84 and IV 71.42.",
+            distributionFootnote = $"Latest observation {DateTimeOffset.UtcNow:yyyy-MM-dd} · refreshed {FormatRelativeTime(activeRun?.LastUpdatedAt ?? DateTimeOffset.UtcNow)}.",
+            moments = new[]
+            {
+                new { id = "net-pnl", label = "Net P&L", value = FormatCurrency(activeRun?.NetPnl ?? 0m), benchmark = "Pair summary" },
+                new { id = "return", label = "Total return", value = FormatReturn(activeRun?.TotalReturn, activeRun?.NetPnl), benchmark = "Run linked" },
+                new { id = "promotion", label = "Promotion state", value = activeRun?.Promotion?.State.ToString() ?? "Unavailable", benchmark = "Strategy posture" }
+            },
+            regression = new
+            {
+                equation = "y = 0.48x + 39.31",
+                detailItems = new[]
+                {
+                    $"{chartTitle} remains linked to workstation strategy evidence.",
+                    $"Queued studies: {queuedCount}.",
+                    $"Review queue: {reviewCount}."
+                }
+            },
+            sampleRows = new[]
+            {
+                new { id = "sample-1", timestamp = DateTimeOffset.UtcNow.AddMinutes(-2).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), spreadText = "88.40", impliedVolText = "73.80", zScoreText = "1.42", signalText = "Crowded vol", tone = "warning" },
+                new { id = "sample-2", timestamp = DateTimeOffset.UtcNow.AddMinutes(-6).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), spreadText = "80.20", impliedVolText = "70.10", zScoreText = "0.82", signalText = "Neutral", tone = "default" }
+            }
+        };
+
+        var studies = runs.Select(run => (object)new
+        {
+            id = run.RunId,
+            title = run.StrategyName,
+            subtitle = $"{run.DatasetReference ?? run.FeedReference ?? "Unassigned"} · {FormatWindow(run.StartedAt, run.CompletedAt)} · {run.Engine}",
+            statusText = run.Status.ToString(),
+            statusBadgeLabel = run.Mode.ToString().ToUpperInvariant(),
+            statusBadgeVariant = ResolveModeVariant(run.Mode),
+            metricText = $"{FormatReturn(run.TotalReturn, run.NetPnl)} · Sharpe {FormatSharpeProxy(run)}",
+            noteText = BuildRunNotes(run),
+            isActive = activeRun is not null && string.Equals(run.RunId, activeRun.RunId, StringComparison.OrdinalIgnoreCase)
+        }).ToArray();
+
+        return new WorkstationPlotToolPayload(
+            Workspace: workspace,
+            Statistics: statistics,
+            Studies: studies,
+            Tabs:
+            [
+                new WorkstationPlotToolTabState("workspace", "Workstation", "plottool-workspace-tab", "plottool-workspace-panel", true, "secondary", 0, "Workstation"),
+                new WorkstationPlotToolTabState("statistics", "Statistics", "plottool-statistics-tab", "plottool-statistics-panel", false, "ghost", -1, "Statistics")
+            ],
+            ActiveView: "workspace");
+    }
+
+    private static WorkstationPlotToolPayload BuildResearchFallbackPlotToolPayload()
+    {
+        var fallbackRun = new StrategyRunSummary(
+            RunId: "run-research-001",
+            StrategyId: "mean-reversion-fx",
+            StrategyName: "Mean Reversion FX",
+            Mode: StrategyRunMode.Paper,
+            Engine: StrategyRunEngine.MeridianNative,
+            Status: StrategyRunStatus.Running,
+            StartedAt: DateTimeOffset.UtcNow.AddMinutes(-20),
+            CompletedAt: null,
+            DatasetReference: "FX Majors",
+            FeedReference: "synthetic:fx",
+            PortfolioId: null,
+            LedgerReference: null,
+            NetPnl: 4200m,
+            TotalReturn: 0.042m,
+            FinalEquity: 104200m,
+            FillCount: 12,
+            LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-2),
+            AuditReference: null,
+            Identity: null,
+            Execution: null,
+            Promotion: null,
+            Governance: null,
+            FundProfileId: null,
+            FundDisplayName: null,
+            ParentRunId: null,
+            SweepId: null,
+            SweepDefinitionHash: null,
+            SweepObjective: null,
+            LiveStatus: null,
+            PaperStatus: null);
+
+        return BuildResearchPlotToolPayload([fallbackRun], selectedRunIds: Array.Empty<string>());
+    }
+
+    private static IEnumerable<(int X, int Y, bool Emphasis)> BuildPlotToolScatterPoints()
+    {
+        const int startX = 90;
+        const int startY = 250;
+        for (var index = 0; index < 36; index++)
+        {
+            var x = startX + (index * 14);
+            var y = startY - (index * 5);
+            yield return (x, y, index == 35);
+        }
+    }
+
+    private static string SlugifyForExpression(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "plottool";
+
+        Span<char> buffer = stackalloc char[value.Length];
+        var cursor = 0;
+        foreach (var character in value.ToLowerInvariant())
+        {
+            buffer[cursor++] = char.IsLetterOrDigit(character) ? character : '_';
+        }
+
+        return new string(buffer[..cursor]).Trim('_');
+    }
+
+    private static string ResolveModeVariant(StrategyRunMode? mode)
+        => mode switch
+        {
+            StrategyRunMode.Paper => "paper",
+            StrategyRunMode.Live => "live",
+            _ => "research"
+        };
+
     private static object BuildResearchRunCard(StrategyRunSummary run, StrategyRunDetail? detail)
     {
         return new
@@ -2675,7 +4271,7 @@ public static class WorkstationEndpoints
                 Tone: GetInsightTone(run, detail),
                 Summary: BuildInsightSummary(run, detail),
                 RunId: run.RunId,
-                DrillInRoute: $"/api/workstation/runs/{run.RunId}/equity-curve"))
+                DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId)))
             .Take(3)
             .ToArray();
 
@@ -2903,12 +4499,12 @@ public static class WorkstationEndpoints
 
     private static ResearchRunDrillInLinks BuildResearchDrillInLinks(StrategyRunSummary run)
         => new(
-            EquityCurve: $"/api/workstation/runs/{run.RunId}/equity-curve",
-            Fills: $"/api/workstation/runs/{run.RunId}/fills",
-            Attribution: $"/api/workstation/runs/{run.RunId}/attribution",
-            Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
-            CashFlows: $"/api/portfolio/{run.RunId}/cash-flows",
-            Continuity: UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal));
+            EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
+            Fills: RunRoute(UiApiRoutes.RunsFills, run.RunId),
+            Attribution: RunRoute(UiApiRoutes.RunsAttribution, run.RunId),
+            Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : RunRoute(UiApiRoutes.RunsLedger, run.RunId),
+            CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, run.RunId),
+            Continuity: RunRoute(UiApiRoutes.RunsContinuity, run.RunId));
 
     // PR-03: returns typed DTO
     private static WorkstationTimelineCard BuildTimelineCard(StrategyRunSummary run) =>
@@ -2949,14 +4545,17 @@ public static class WorkstationEndpoints
 
     private static object BuildRunDrillInLinks(StrategyRunSummary run) => new
     {
-        equityCurve = $"/api/workstation/runs/{run.RunId}/equity-curve",
-        fills = $"/api/workstation/runs/{run.RunId}/fills",
-        attribution = $"/api/workstation/runs/{run.RunId}/attribution",
-        ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
-        cashFlows = $"/api/portfolio/{run.RunId}/cash-flows",
-        continuity = UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal),
-        comparison = "/api/workstation/runs/compare"
+        equityCurve = RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
+        fills = RunRoute(UiApiRoutes.RunsFills, run.RunId),
+        attribution = RunRoute(UiApiRoutes.RunsAttribution, run.RunId),
+        ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : RunRoute(UiApiRoutes.RunsLedger, run.RunId),
+        cashFlows = RunRoute(UiApiRoutes.PortfolioCashFlows, run.RunId),
+        continuity = RunRoute(UiApiRoutes.RunsContinuity, run.RunId),
+        comparison = UiApiRoutes.RunsCompare
     };
+
+    private static string RunRoute(string routeTemplate, string runId)
+        => UiApiRoutes.WithParam(routeTemplate, "runId", runId);
 
     private static IReadOnlyList<StrategyRunMode>? ParseModes(string? mode)
     {
@@ -3457,10 +5056,10 @@ public static class WorkstationEndpoints
         return ledgerCash.Value - portfolioCash.Value;
     }
 
-    private static object BuildGovernanceReportingPayload()
+    private static WorkstationGovernanceReportingPayload BuildGovernanceReportingPayload()
     {
         var profiles = ExportProfile.GetBuiltInProfiles()
-            .Select(static profile => new GovernanceReportingProfilePayload(
+            .Select(static profile => new WorkstationGovernanceReportingProfilePayload(
                 Id: profile.Id,
                 Name: profile.Name,
                 TargetTool: profile.TargetTool,
@@ -3476,14 +5075,12 @@ public static class WorkstationEndpoints
             .Select(static profile => profile.Id)
             .ToArray();
 
-        return new
-        {
-            profileCount = profiles.Length,
-            recommendedProfiles = recommended,
-            profiles,
-            reportPackTargets = new[] { "board", "investor", "compliance", "fund-ops" },
-            summary = $"{profiles.Length} export/reporting profiles are available for governance workflows."
-        };
+        return new WorkstationGovernanceReportingPayload(
+            ProfileCount: profiles.Length,
+            RecommendedProfiles: recommended,
+            Profiles: profiles,
+            ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
+            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.");
     }
 
     private static string BuildDisplayName(StrategyRunSummary? latest)
@@ -3508,10 +5105,10 @@ public static class WorkstationEndpoints
     private static string MapWorkspace(StrategyRunSummary? latest)
         => latest?.Promotion?.State switch
         {
-            StrategyRunPromotionState.LiveManaged => "governance",
-            StrategyRunPromotionState.CandidateForLive => "operations",
-            StrategyRunPromotionState.CandidateForPaper => "research",
-            _ => latest?.Mode == StrategyRunMode.Live ? "operations" : "research"
+            StrategyRunPromotionState.LiveManaged => "accounting",
+            StrategyRunPromotionState.CandidateForLive => "trading",
+            StrategyRunPromotionState.CandidateForPaper => "strategy",
+            _ => latest?.Mode == StrategyRunMode.Live ? "trading" : "strategy"
         };
 
     private static string BuildRunNotes(StrategyRunSummary run)
@@ -3625,6 +5222,47 @@ public static class WorkstationEndpoints
         }
 
         return proxy.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Resolves the freshest available mark price for a symbol so that workstation
+    /// position rows can display live unrealized P&amp;L and exposure instead of placeholders.
+    /// Priority: BBO mid (or far-touch when one side is missing) → most recent trade
+    /// price → null (caller falls back to cost basis).
+    /// </summary>
+    internal static decimal? ResolveLiveMark(string symbol, QuoteCollector? quotes, TradeDataCollector? trades)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        if (quotes is not null && quotes.TryGet(symbol, out var bbo) && bbo is not null)
+        {
+            if (bbo.MidPrice is { } mid && mid > 0m)
+            {
+                return mid;
+            }
+            if (bbo.AskPrice > 0m)
+            {
+                return bbo.AskPrice;
+            }
+            if (bbo.BidPrice > 0m)
+            {
+                return bbo.BidPrice;
+            }
+        }
+
+        if (trades is not null)
+        {
+            var recent = trades.GetRecentTrades(symbol, 1);
+            if (recent.Count > 0 && recent[0].Price > 0m)
+            {
+                return recent[0].Price;
+            }
+        }
+
+        return null;
     }
 
     private static string FormatPercent(decimal value)
@@ -3744,6 +5382,15 @@ public static class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
+    }
+
+    private static async Task SeedBreakQueueAsync(
+        IReconciliationBreakQueueRepository? repository,
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return;
@@ -3860,6 +5507,16 @@ public static class WorkstationEndpoints
     {
         var readService = services.GetService<StrategyRunReadService>();
         var reconciliationService = services.GetService<IReconciliationRunService>();
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, ct).ConfigureAwait(false);
+    }
+
+    private static async Task EnsureBreakQueueSeededAsync(
+        StrategyRunReadService? readService,
+        IReconciliationRunService? reconciliationService,
+        IReconciliationBreakQueueRepository? repository,
+        CancellationToken ct)
+    {
         if (readService is null || reconciliationService is null)
         {
             return;
@@ -3873,7 +5530,7 @@ public static class WorkstationEndpoints
 
         var reconciliations = await Task.WhenAll(
             runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-        await SeedBreakQueueAsync(services, runs, reconciliations, ct).ConfigureAwait(false);
+        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
     }
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
@@ -3883,6 +5540,15 @@ public static class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await GetBreakQueueItemsAsync(repository, status, fundAccountId, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
+        IReconciliationBreakQueueRepository? repository,
+        string? status,
+        string? fundAccountId,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return [];
@@ -4073,6 +5739,14 @@ public static class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await ReviewBreakAsync(repository, request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
+        IReconciliationBreakQueueRepository? repository,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -4090,6 +5764,14 @@ public static class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await ResolveBreakAsync(repository, request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
+        IReconciliationBreakQueueRepository? repository,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -4101,14 +5783,444 @@ public static class WorkstationEndpoints
         return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
     }
 
-    private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
+
+    private static string ResolveCurrentActor(HttpContext context)
     {
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissions)
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is string currentUser && !string.IsNullOrWhiteSpace(currentUser))
         {
-            return (permissions & requiredPermission) == requiredPermission;
+            return currentUser;
+        }
+
+        if (context.User.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(context.User.Identity.Name))
+        {
+            return context.User.Identity.Name!;
+        }
+
+        return "operator";
+    }
+
+    private static bool CanViewReconciliationBreakQueue(HttpContext context)
+    {
+        const UserPermission requiredPermission = UserPermission.ViewTrades;
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        {
+            return (permissionsFromContext & requiredPermission) == requiredPermission;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        {
+            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
         }
 
         return false;
+    }
+
+    private static bool CanMutateReconciliationBreakQueue(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
+        {
+            return false;
+        }
+
+        return role is UserRole.Admin or UserRole.Developer or UserRole.Accounting;
+    private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet("/strategy/designer/templates", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            return service is null
+                ? StrategyDesignerUnavailable(jsonOptions)
+                : Results.Json(service.GetTemplates(), jsonOptions);
+        })
+        .WithName("GetStrategyDesignerTemplates")
+        .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
+        .Produces(501);
+
+        group.MapGet("/strategy/designer/field-catalog", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            return service is null
+                ? StrategyDesignerUnavailable(jsonOptions)
+                : Results.Json(service.GetFieldCatalog(), jsonOptions);
+        })
+        .WithName("GetStrategyDesignerFieldCatalog")
+        .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
+        .Produces(501);
+
+        group.MapGet("/strategy/designer/drafts", async (HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
+            if (repository is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var drafts = await repository.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(drafts, jsonOptions);
+        })
+        .WithName("GetStrategyDesignerDrafts")
+        .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
+        .Produces(501);
+
+        group.MapGet("/strategy/designer/drafts/{documentId}", async (string documentId, HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
+            if (repository is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var document = await repository.GetAsync(documentId, context.RequestAborted).ConfigureAwait(false);
+            return document is null
+                ? Results.NotFound(new { error = "Strategy design draft was not found." })
+                : Results.Json(document, jsonOptions);
+        })
+        .WithName("GetStrategyDesignerDraft")
+        .Produces<StrategyDesignDocument>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/drafts", async (StrategyDesignDraftSaveRequest? request, HttpContext context) =>
+        {
+            if (!HasPermission(context, UserPermission.ManageStrategies))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
+            if (request?.Document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
+            if (service is null || repository is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var document = service.Normalize(request.Document);
+            var validation = service.Validate(document);
+            await repository.SaveAsync(document, context.RequestAborted).ConfigureAwait(false);
+            var response = new StrategyDesignDraftSaveResponse(
+                document,
+                StrategyDesignService.CreateDraftSummary(document),
+                validation,
+                service.BuildRunTrace(document, validation));
+            return Results.Json(response, jsonOptions);
+        })
+        .WithName("SaveStrategyDesignerDraft")
+        .Produces<StrategyDesignDraftSaveResponse>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/validate", (StrategyDesignDocument? document, HttpContext context) =>
+        {
+            if (document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            if (service is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var normalized = service.Normalize(document);
+            return Results.Json(service.Validate(normalized), jsonOptions);
+        })
+        .WithName("ValidateStrategyDesignerDocument")
+        .Produces<StrategyDesignValidationResult>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/preview", (StrategyDesignDocument? document, HttpContext context) =>
+        {
+            if (document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            if (service is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var normalized = service.Normalize(document);
+            var preview = service.Preview(normalized);
+            return preview.Validation.IsValid
+                ? Results.Json(preview, jsonOptions)
+                : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        })
+        .WithName("PreviewStrategyDesignerDocument")
+        .Produces<StrategyDesignPreviewResult>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/run-backtest", async (
+            StrategyDesignRunBacktestRequest? request,
+            HttpContext context,
+            CancellationToken ct) =>
+        {
+            if (!HasPermission(context, UserPermission.ManageStrategies))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
+            if (request?.Document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            if (service is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var document = service.Normalize(request.Document);
+            var preview = service.Preview(document);
+            if (!preview.Validation.IsValid)
+            {
+                return Results.Json(
+                    CreateBacktestResponse(document, preview, null, new Dictionary<string, string>(), "Validation failed."),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var runner = context.RequestServices.GetService<IScriptRunner>();
+            if (runner is null)
+            {
+                return Results.Json(
+                    new
+                    {
+                        error = "Quant Lab is not enabled on this host. Set QuantLab:Enabled to true to enable.",
+                        quantLabEnabled = false
+                    },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var parameters = request.Parameters is null
+                ? new Dictionary<string, object?>()
+                : request.Parameters.ToDictionary(
+                    static item => item.Key,
+                    static item => (object?)item.Value,
+                    StringComparer.OrdinalIgnoreCase);
+            var result = await runner.RunAsync(preview.Compiled.Source, parameters, ct).ConfigureAwait(false);
+            var metrics = result.Metrics.ToDictionary(
+                static item => item.Key,
+                static item => item.Value,
+                StringComparer.OrdinalIgnoreCase);
+            if (!result.Success)
+            {
+                return Results.Json(
+                    CreateBacktestResponse(document, preview, null, metrics, result.RuntimeError),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var runId = Guid.NewGuid().ToString("N");
+            var repository = context.RequestServices.GetService<IStrategyRepository>();
+            if (repository is not null)
+            {
+                var entry = StrategyRunEntry
+                    .Start(
+                        document.DocumentId,
+                        document.Name,
+                        RunType.Backtest,
+                        runId,
+                        datasetReference: document.DatasetReference,
+                        feedReference: "strategy-designer:v1",
+                        engine: "QuantScript",
+                        parameterSet: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["designerDocumentId"] = document.DocumentId,
+                            ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
+                            ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
+                        })
+                    .Complete(result.CapturedBacktests.FirstOrDefault());
+                await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
+            }
+
+            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null), jsonOptions);
+        })
+        .WithName("RunStrategyDesignerBacktest")
+        .Produces<StrategyDesignRunBacktestResponse>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(503);
+    }
+
+    private static StrategyDesignRunBacktestResponse CreateBacktestResponse(
+        StrategyDesignDocument document,
+        StrategyDesignPreviewResult preview,
+        string? runId,
+        IReadOnlyDictionary<string, string> metrics,
+        string? runtimeError)
+    {
+        var success = runId is not null && runtimeError is null;
+        var trace = preview.Trace
+            .Concat([
+                new StrategyDesignRunTraceEntry(
+                    "record-run",
+                    "Record StrategyRunEntry",
+                    success ? "complete" : "blocked",
+                    success
+                        ? $"Recorded backtest run {runId} for promotion review."
+                        : runtimeError ?? "Backtest did not produce a recorded run.",
+                    OccurredAt: DateTimeOffset.UtcNow)
+            ])
+            .ToArray();
+
+        return new StrategyDesignRunBacktestResponse(
+            success,
+            runId,
+            document.DocumentId,
+            document.Name,
+            preview.Validation,
+            preview.Compiled,
+            trace,
+            preview.Rows,
+            metrics,
+            runtimeError,
+            success ? $"/api/promotion/evaluate/{runId}" : null,
+            success ? $"/api/workstation/runs/{runId}/review-packet" : null);
+    }
+
+    private static IResult StrategyDesignerUnavailable(JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "Strategy Designer services are not registered." },
+            jsonOptions,
+            statusCode: StatusCodes.Status501NotImplemented);
+
+    private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
+        => EndpointAuthorization.HasPermission(context, requiredPermission);
+
+    private static bool HasReconciliationMutationPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster);
+
+    private static bool HasOperationsContinuityReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewDirectLending,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
+
+    private static bool HasSecurityMasterOverrideApprovalPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ModifySecurityMaster);
+
+    private static bool TryResolveCurrentUser(HttpContext context, out string currentUser)
+        => EndpointAuthorization.TryResolveActor(context, out currentUser);
+
+    private static StrategyRunStatus? ParseStrategyRunStatus(string? status)
+        => Enum.TryParse<StrategyRunStatus>(status, ignoreCase: true, out var parsed) ? parsed : null;
+
+    private static OperationsWorkflowStatusDto? ParseOperationsWorkflowStatus(string? status)
+        => Enum.TryParse<OperationsWorkflowStatusDto>(status, ignoreCase: true, out var parsed) ? parsed : null;
+
+    private static IResult MissingOperationsPayload(string field, string message)
+        => Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [field] = [message]
+        });
+
+    private static IResult OperationsTransitionResult(OperationsTransitionResultDto result, JsonSerializerOptions jsonOptions)
+    {
+        if (result.Success)
+        {
+            return Results.Json(result, jsonOptions);
+        }
+
+        return result.ErrorCode switch
+        {
+            "NOT_FOUND" => Results.NotFound(result),
+            "VERSION_MISMATCH" => Results.Conflict(result),
+            "WORKFLOW_ALREADY_EXISTS" => Results.Conflict(result),
+            "INVALID_STATE_TRANSITION" => Results.Conflict(result),
+            _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+        };
+    }
+
+    private static void MapStrategyEngineEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet("/strategy/engine/definitions", (HttpContext context) =>
+        {
+            var registry = context.RequestServices.GetService<StrategyEngineRegistry>();
+            return registry is null
+                ? StrategyEngineUnavailable(jsonOptions)
+                : Results.Json(registry.GetDefinitions(), jsonOptions);
+        })
+        .WithName("GetStrategyEngineDefinitions")
+        .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
+        .Produces(501);
+
+        group.MapPost("/strategy/engine/validate-run", (
+            StrategyEngineValidateRunRequest? request,
+            HttpContext context) =>
+        {
+            if (request?.RunRequest is null)
+            {
+                return Results.BadRequest(new { error = "A strategy run request is required." });
+            }
+
+            var validation = context.RequestServices.GetService<StrategyEngineValidationService>();
+            if (validation is null)
+            {
+                return StrategyEngineUnavailable(jsonOptions);
+            }
+
+            var result = validation.Validate(request.RunRequest, request.DataAvailability ?? []);
+            return result.IsValid
+                ? Results.Json(result, jsonOptions)
+                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        })
+        .WithName("ValidateStrategyEngineRun")
+        .Produces<StrategyEngineValidationResult>(200)
+        .Produces<StrategyEngineValidationResult>(400)
+        .Produces(501);
+    }
+
+    private static IResult StrategyEngineUnavailable(JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "Strategy Engine services are not registered." },
+            jsonOptions,
+            statusCode: StatusCodes.Status501NotImplemented);
+
+    private sealed record StrategyEngineValidateRunRequest(
+        StrategyEngineRunRequest RunRequest,
+        IReadOnlyList<StrategyEngineDataAvailability>? DataAvailability);
+
+    private static async Task<IResult> GetRunContinuityResultAsync(string runId, HttpContext context, JsonSerializerOptions jsonOptions)
+    {
+        var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
+        if (continuityService is null)
+        {
+            return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
+        return detail is null
+            ? Results.NotFound()
+            : Results.Json(new StrategyRunContinuityDto(
+                detail.Run,
+                detail.Lineage,
+                detail.CashFlow,
+                detail.Reconciliation,
+                detail.ContinuityStatus), jsonOptions);
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
@@ -4147,14 +6259,6 @@ public static class WorkstationEndpoints
         string? AccountName,
         string Reason);
 
-    private sealed record GovernanceReportingProfilePayload(
-        string Id,
-        string Name,
-        string TargetTool,
-        string Format,
-        string Description,
-        bool LoaderScript,
-        bool DataDictionary);
 
     private sealed record ProviderTrustRationalePayload(
         string Status,
@@ -4183,7 +6287,10 @@ public sealed record StrategyRunDiff(
     IReadOnlyList<PositionDiffEntry> RemovedPositions,
     IReadOnlyList<PositionDiffEntry> ModifiedPositions,
     IReadOnlyList<ParameterDiff> ParameterChanges,
-    MetricsDiff Metrics);
+    MetricsDiff Metrics,
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? BaseArtifactCompleteness = null,
+    StrategyRunArtifactCompleteness? TargetArtifactCompleteness = null);
 
 /// <summary>A single position change between two runs.</summary>
 public sealed record PositionDiffEntry(

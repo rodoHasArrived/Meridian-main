@@ -1148,7 +1148,7 @@ The gap analysis in §5 lists what Meridian lacks. This section takes the invers
 
 **How Meridian can outperform:**
 - Meridian's architecture already spans **data collection → quality monitoring → backtesting (with TCA) → paper execution → live brokerage execution → strategy lifecycle state management → fund ledger → reconciliation**. No competitor covers this entire chain.
-- As of v1.7.2, Meridian now ships a **React workstation shell** with Research, Trading, Data Operations, and Governance screens that expose these layers through a coherent web UI — no competitor has a comparable end-to-end open-source web workstation.
+- As of the current browser-first roadmap, Meridian ships a **React workstation shell** organized around `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings`, with older Research/Data Operations/Governance labels retained as compatibility aliases where needed — no competitor has a comparable end-to-end open-source web workstation.
 - The differentiating improvements are the connective tissue between stages:
   1. **Paper-to-live promotion workflow** with compliance gate: before a strategy goes live, a compliance check evaluates mandate limits and risk parameters, preventing unauthorized live deployment.
   2. **Backtest-to-paper continuity**: replay the last N bars in paper mode after a backtest to warm up state before going live — eliminating the cold-start problem.

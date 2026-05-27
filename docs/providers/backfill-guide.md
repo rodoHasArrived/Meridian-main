@@ -59,9 +59,14 @@ dotnet run -- --backfill \
 **Via Dashboard API/UI:**
 
 1. Open the dashboard **Backfill** section
-2. Select provider and symbols
-3. Optionally run preview first
-4. Start backfill and monitor progress
+2. Select provider and symbols. The browser workstation defaults new backfill requests to
+   **Yahoo Finance** because it is credential-free and works for daily plus supported intraday
+   historical bars.
+3. Optionally configure a provider from the same Data workspace. Credential-free providers such as
+   Yahoo Finance and Stooq can be registered without pasting a secret; key-backed providers show the
+   required credential fields before submit.
+4. Run preview first, review the provider, symbol, range, and bar-count evidence, then start the
+   backfill and monitor progress.
 
 ### 3. Monitor Progress
 

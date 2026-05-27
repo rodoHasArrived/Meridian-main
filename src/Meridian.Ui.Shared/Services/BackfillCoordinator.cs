@@ -203,9 +203,8 @@ public sealed class BackfillCoordinator : IDisposable
         DateOnly to,
         DataGranularity granularity)
     {
-        // Check for existing data files
-        var symbolDir = Path.Combine(dataRoot, "historical", symbol.ToUpperInvariant());
-        if (!Directory.Exists(symbolDir))
+        var symbolDirs = GetExistingSymbolDirectories(dataRoot, symbol);
+        if (symbolDirs.Length == 0)
         {
             return new ExistingDataInfo(
                 HasData: false,
@@ -217,8 +216,10 @@ public sealed class BackfillCoordinator : IDisposable
             );
         }
 
-        var files = Directory.GetFiles(symbolDir, "*.jsonl*", SearchOption.AllDirectories)
+        var files = symbolDirs
+            .SelectMany(dir => Directory.GetFiles(dir, "*.jsonl*", SearchOption.AllDirectories))
             .Where(file => FileMatchesGranularity(file, granularity))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         if (files.Length == 0)
         {
@@ -250,7 +251,12 @@ public sealed class BackfillCoordinator : IDisposable
             }
         }
 
-        var isComplete = existingFrom <= from && existingTo >= to;
+        var expectedFrom = FirstWeekdayOnOrAfter(from);
+        var expectedTo = LastWeekdayOnOrBefore(to);
+        var isComplete = expectedFrom is not null &&
+            expectedTo is not null &&
+            existingFrom <= expectedFrom.Value &&
+            existingTo >= expectedTo.Value;
 
         return new ExistingDataInfo(
             HasData: true,
@@ -260,6 +266,54 @@ public sealed class BackfillCoordinator : IDisposable
             FileCount: files.Length,
             TotalSizeBytes: totalSize
         );
+    }
+
+    private static DateOnly? FirstWeekdayOnOrAfter(DateOnly date)
+    {
+        var current = date;
+        for (var i = 0; i < 7; i++)
+        {
+            if (IsWeekday(current))
+                return current;
+
+            current = current.AddDays(1);
+        }
+
+        return null;
+    }
+
+    private static DateOnly? LastWeekdayOnOrBefore(DateOnly date)
+    {
+        var current = date;
+        for (var i = 0; i < 7; i++)
+        {
+            if (IsWeekday(current))
+                return current;
+
+            current = current.AddDays(-1);
+        }
+
+        return null;
+    }
+
+    private static bool IsWeekday(DateOnly date) =>
+        date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday;
+
+    private static string[] GetExistingSymbolDirectories(string dataRoot, string symbol)
+    {
+        var normalizedSymbol = symbol.ToUpperInvariant();
+        var candidates = new[]
+        {
+            // Current JsonlStorageSink layout: <dataRoot>/<symbol>/<event-type>/<date>.jsonl[.gz]
+            Path.Combine(dataRoot, normalizedSymbol),
+            // Legacy preview layout retained for compatibility with older local archives.
+            Path.Combine(dataRoot, "historical", normalizedSymbol)
+        };
+
+        return candidates
+            .Where(Directory.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static bool FileMatchesGranularity(string filePath, DataGranularity granularity)

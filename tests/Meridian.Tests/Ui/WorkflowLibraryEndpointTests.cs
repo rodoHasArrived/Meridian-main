@@ -36,6 +36,9 @@ public sealed class WorkflowLibraryEndpointTests
             .TargetPageTag
             .Should()
             .Be("FundReconciliation");
+        registry.ResolveTargetPageTag(WorkflowActionIds.AccountingReviewLedgerContinuity, "Fallback")
+            .Should()
+            .Be("FundTrialBalance");
         registry.ResolveOperatorWorkItem(new OperatorWorkItemDto(
                 WorkItemId: "sync-1",
                 Kind: OperatorWorkItemKindDto.BrokerageSync,
@@ -72,6 +75,9 @@ public sealed class WorkflowLibraryEndpointTests
         library.Actions.Should().Contain(action =>
             action.ActionId == WorkflowActionIds.DataOpenProviderHealth &&
             action.TargetPageTag == "ProviderHealth");
+        library.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.AccountingReviewLedgerContinuity &&
+            action.TargetPageTag == "FundTrialBalance");
     }
 
     [Fact]
@@ -160,6 +166,70 @@ public sealed class WorkflowLibraryEndpointTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRejectOversizedPayloadFields()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: new string('p', 129),
+                Name: "Valid name",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("cannot exceed 128");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRejectNewPresetWhenLimitReached()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        for (var i = 0; i < 250; i++)
+        {
+            var saveResponse = await client.PostAsJsonAsync(
+                "/api/workstation/workflows/presets",
+                new WorkflowPresetSaveRequest(
+                    PresetId: $"preset-{i}",
+                    Name: $"Preset {i}",
+                    Description: null,
+                    WorkflowId: "data-provider-recovery",
+                    ActionId: null,
+                    Tags: [],
+                    IsPinned: false),
+                ServerJsonOptions);
+            saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        var overflowResponse = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: "preset-overflow",
+                Name: "Preset overflow",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false),
+            ServerJsonOptions);
+
+        overflowResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await overflowResponse.Content.ReadAsStringAsync();
+        body.Should().Contain("limit (250)");
+    }
+
+    [Fact]
     public async Task FileWorkflowPresetStore_LoadAsync_ShouldHonorCancellation()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
@@ -168,6 +238,22 @@ public sealed class WorkflowLibraryEndpointTests
         await cts.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => store.LoadAsync(cts.Token));
+    }
+
+    [Fact]
+    public async Task FileWorkflowPresetStore_LoadAsync_ShouldRejectUnsupportedSnapshotVersion()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        var snapshotDirectory = Path.Combine(root, "workstation", "workflows");
+        Directory.CreateDirectory(snapshotDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(snapshotDirectory, "workflow-presets.json"),
+            """{"version":999,"presets":[]}""");
+
+        var store = new FileWorkflowPresetStore(root, NullLogger<FileWorkflowPresetStore>.Instance);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => store.LoadAsync());
+        ex.Message.Should().Contain("version 999");
     }
 
     private static async Task<WebApplication> CreateWorkflowPresetAppAsync(string root)

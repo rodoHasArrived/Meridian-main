@@ -42,6 +42,11 @@ public sealed class OptionsChainService
     }
 
     /// <summary>
+    /// Maximum allowed strike range for options chain queries.
+    /// </summary>
+    public const int MaxStrikeRange = 100;
+
+    /// <summary>
     /// Returns whether an options chain provider is available.
     /// </summary>
     public bool IsProviderAvailable => _providers.Count > 0;

@@ -215,7 +215,7 @@ public sealed class ReportGenerationServiceTests
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(_detailsBySymbol.Values.FirstOrDefault(detail => detail.SecurityId == securityId));
 
-        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
             => Task.FromResult(_detailsBySymbol.TryGetValue(identifierValue, out var detail) ? detail : null);
 
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)

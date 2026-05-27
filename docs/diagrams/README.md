@@ -217,16 +217,16 @@ Shows all 28 source projects as a layered dependency graph, derived directly fro
 - **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage · Infrastructure.CppTrader
 - **Layer 4 (Application & Backtesting SDK)**: Application · Backtesting.Sdk
 - **Layer 5 (Execution, Backtesting, Risk, Strategies)**: Execution · Backtesting · Risk · Strategies · QuantScript
-- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Wpf (desktop) · McpServer · Mcp
+- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Wpf (desktop) · Mcp
 - **Layer 7 (Entry Point)**: Meridian main app
-- **Tests (8 projects · 371 test files)**: Tests (251) · FSharp.Tests (10) · Backtesting.Tests (13) · DirectLending.Tests (5) · McpServer.Tests (2) · QuantScript.Tests (6) · Wpf.Tests (30) · Ui.Tests (54)
+- **Tests (7 projects · ~356 test files)**: Tests (251) · FSharp.Tests (10) · Backtesting.Tests (13) · DirectLending.Tests (5) · QuantScript.Tests (6) · Wpf.Tests (30) · Ui.Tests (54)
 - **Benchmarks**: BenchmarkDotNet — pipeline, storage, and serialization hot paths
 
 ### Runtime Hosts & Startup Modes
 
 Shows the currently runnable Meridian hosts and the shared startup path behind `src/Meridian`:
 
-- **Runnable projects**: `src/Meridian`, `src/Meridian.Wpf`, `src/Meridian.Mcp`, `src/Meridian.McpServer`
+- **Runnable projects**: `src/Meridian`, `src/Meridian.Wpf`, `src/Meridian.Mcp`
 - **Startup orchestration**: `SharedStartupBootstrapper` → `StartupOrchestrator` → `CommandModeRunner`, `DesktopModeRunner`, `CollectorModeRunner`, `BackfillModeRunner`
 - **Shared runtime**: `UiServer`, `Meridian.Ui.Shared`, `HostStartupFactory`, `EventPipeline`, `StatusWriter`
 - **Purpose**: clarifies which entry point owns which experience and where `--mode desktop`, headless streaming, and backfill actually branch

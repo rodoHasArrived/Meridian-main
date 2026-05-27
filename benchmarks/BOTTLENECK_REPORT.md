@@ -358,17 +358,19 @@ sinks with a 500 µs delay run in ~500 µs wall-clock rather than ~1000 µs.
 
 ---
 
-### MEDIUM: Dual flush timers cause periodic latency spikes
+### MEDIUM: Dual flush timers cause periodic latency spikes (resolved)
 
 `JsonlStorageSink._flushTimer` (5s) and `EventPipeline.PeriodicFlushAsync` (5s) fire
 concurrently and contend on the same semaphore hierarchy. When both trigger simultaneously,
 the pipeline consumer stalls waiting for lock acquisition.
 
 **Fix:** Coordinate flush timers or offset their intervals.
+**Status:** Applied — `JsonlStorageSink` now offsets its first periodic flush fire to avoid
+contending with `EventPipeline`'s default cadence.
 
 ---
 
-### MEDIUM: Double flush in WriteBatchAsync
+### MEDIUM: Double flush in WriteBatchAsync (resolved)
 
 **File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs:414-415`
 
@@ -379,6 +381,8 @@ await _stream.FlushAsync(ct);      // extra syscall, no durability benefit
 
 The `StreamWriter.FlushAsync()` already pushes data to the underlying stream. The second
 flush adds an unnecessary kernel syscall.
+**Status:** Applied — the current sink write path no longer performs the redundant extra stream
+flush shown in the historical snippet above.
 
 ---
 
@@ -389,7 +393,7 @@ flush adds an unnecessary kernel syscall.
 | P0 | Cache dedup key prefix; use `Span<byte>` SHA256 | Medium | -5 allocs/event | 🔴 Open |
 | P0 | WAL: `IncrementalHash` + cache file creation time | Medium | -5 allocs/event + remove syscall | ✅ Applied |
 | P0 | WAL: Replace sync `fsync` with async flush | Low | Eliminates ms-level blocks | 🔴 Open |
-| P0 | Fix `GetOrAdd` file handle leak in JsonlStorageSink | Low | Prevents resource leak | 🔴 Open |
+| P0 | Fix `GetOrAdd` file handle leak in JsonlStorageSink | Low | Prevents resource leak | ✅ Applied |
 | P1 | Combine TradeDataCollector lock acquisitions | Low | -1 lock/trade | 🔴 Open |
 | P1 | Move depth snapshot ToArray outside write lock | Low | Reduces lock hold time ~50% | 🔴 Open |
 | P1 | Cache `Enum.ToString()` for MarketEventType | Trivial | -1 alloc/event | ✅ Applied (partial) |
@@ -397,7 +401,7 @@ flush adds an unnecessary kernel syscall.
 | P2 | Use `TryGetValue` before `GetOrAdd` in hot paths | Low | -2-3 closure allocs/event | 🔴 Open |
 | P2 | Serialize JSON to pooled buffer, not string | Medium | -1 alloc/event | 🔴 Open |
 | P2 | Sample Reader.Count instead of per-publish | Trivial | Reduces per-publish overhead | ✅ Applied |
-| P2 | Remove redundant stream flush in WriteBatchAsync | Trivial | -1 syscall/batch | 🔴 Open |
-| P2 | Offset dual flush timer intervals | Trivial | Eliminates periodic stalls | 🔴 Open |
+| P2 | Remove redundant stream flush in WriteBatchAsync | Trivial | -1 syscall/batch | ✅ Applied |
+| P2 | Offset dual flush timer intervals | Trivial | Eliminates periodic stalls | ✅ Applied |
 | P3 | Move dedup EvictExpired to background timer | Low | Prevents latency spikes | 🔴 Open |
 | P3 | Batch CanonicalizingPublisher Interlocked counters | Low | Reduces cache-line bouncing | 🔴 Open |

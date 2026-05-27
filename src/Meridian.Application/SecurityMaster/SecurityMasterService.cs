@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender
+public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterSnapshotStore _snapshotStore;
@@ -18,6 +18,9 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private readonly IPolygonCorporateActionFetcher? _corporateActionFetcher;
     private readonly SecurityMasterProjectionCache? _projectionCache;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
+
+    // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
+    private readonly CancellationTokenSource _serviceCts = new();
 
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
@@ -82,20 +85,22 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         {
             var ticker = projection.PrimaryIdentifierValue;
             var securityId = projection.SecurityId;
+            var ct2 = _serviceCts.Token;
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, CancellationToken.None)
+                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, ct2)
                         .ConfigureAwait(false);
                 }
+                catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex,
                         "Background corporate action sync failed after amendment for {Ticker} ({SecurityId})",
                         ticker, securityId);
                 }
-            });
+            }, ct2);
         }
 
         // Keep the in-memory projection cache and canonical registry consistent with the DB write.
@@ -215,20 +220,22 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         {
             var ticker = projection.PrimaryIdentifierValue;
             var securityId = projection.SecurityId;
+            var ct2 = _serviceCts.Token;
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, CancellationToken.None)
+                    await _corporateActionFetcher.FetchAndPersistAsync(ticker, securityId, ct2)
                         .ConfigureAwait(false);
                 }
+                catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex,
                         "Background corporate action sync failed for new security {Ticker} ({SecurityId})",
                         ticker, securityId);
                 }
-            });
+            }, ct2);
         }
 
         // Keep the in-memory projection cache and canonical registry consistent with the DB write.
@@ -243,37 +250,40 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         if (_seedService is null)
             return;
 
+        var ct = _serviceCts.Token;
         _ = Task.Run(async () =>
         {
             try
             {
-                await _seedService.SeedAsync(CancellationToken.None).ConfigureAwait(false);
+                await _seedService.SeedAsync(ct).ConfigureAwait(false);
             }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Background canonical symbol registry re-seed failed.");
             }
-        });
+        }, ct);
     }
 
-    private Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
+    private async Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
     {
         if (_conflictService is null)
-            return Task.CompletedTask;
+            return;
 
-        _ = Task.Run(async () =>
+        try
         {
-            try
-            {
-                await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Conflict detection failed for security {SecurityId}", securityId);
-            }
-        }, CancellationToken.None);
+            await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Conflict detection failed for security {SecurityId}", securityId);
+        }
+    }
 
-        return Task.CompletedTask;
+    public void Dispose()
+    {
+        _serviceCts.Cancel();
+        _serviceCts.Dispose();
     }
 
     private static SecurityProjectionRecord CreateProjectionFromResult(

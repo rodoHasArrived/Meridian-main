@@ -26,6 +26,9 @@ consistent workstation model:
 - **Toolbar strip:** one-line filters, date scope, columns, export, refresh, and view controls.
 - **Evidence first:** KPI rows sit above chart/table evidence; they do not become standalone dashboards.
 - **Split workbench:** canonical records use list/detail or chart/detail layouts with identifiers and next actions visible.
+- **Reference workbench:** Security Master and cash-flow/factor schedule pages use a command deck,
+  searchable master table, persistent selected-security detail, schedule tables, controls, notes,
+  and audit evidence without losing selected context.
 - **Status window:** bottom or side panels show run status, audit trails, exceptions, or selected-row details.
 
 Use these as Meridian patterns. Do not copy JPMorgan, Goldman Sachs, Beta One, VPR, or other
@@ -159,6 +162,8 @@ Meridian is **dense** by consumer‑UI standards but **breathing** by Bloomberg 
 - Never collapse labels into icons. Icons accompany labels; they never replace them.
 - Filters and toolbar controls should fit in one row before wrapping.
 - Selected rows should reveal a detail pane or status window, not just a color highlight.
+- Schedule-heavy tables keep dates, factors, expected values, actual values, source, and status in
+  one dense grid so operators can compare events without modal hopping.
 - Long-running workflows should expose status, owner/action, and last-updated evidence.
 
 ## The cockpit rules
