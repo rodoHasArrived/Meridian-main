@@ -96,22 +96,23 @@ jobs:
             echo "[INFO] No changes to commit."
           else
             git commit -m "chore: refresh web workstation screenshot catalog [skip ci]"
-            pushed=0
-            for attempt in 1 2 3; do
+            max_push_attempts=3
+            pushed=false
+            for attempt in $(seq 1 "$max_push_attempts"); do
               git pull --rebase
               if git push; then
-                pushed=1
+                pushed=true
                 break
               fi
 
-              if [ "$attempt" -lt 3 ]; then
+              if [ "$attempt" -lt "$max_push_attempts" ]; then
                 echo "::warning::Push was rejected on attempt $attempt; retrying after refreshing from remote."
                 sleep 2
               fi
             done
 
-            if [ "$pushed" -ne 1 ]; then
-              echo "::error::Unable to push screenshot updates after 3 attempts."
+            if [ "$pushed" != true ]; then
+              echo "::error::Unable to push screenshot updates after $max_push_attempts attempts."
               exit 1
             fi
           fi
