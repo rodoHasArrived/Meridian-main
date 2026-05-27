@@ -148,6 +148,19 @@ def _as_list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
 
 
+def _resolve_readme_path(repo_root: Path, readme_path: str) -> tuple[Path | None, str | None]:
+    candidate = Path(readme_path)
+    if candidate.is_absolute():
+        return None, f"README path must be relative to repository root: {readme_path}"
+
+    resolved_repo_root = repo_root.resolve()
+    resolved_readme = (resolved_repo_root / candidate).resolve()
+    if resolved_readme != resolved_repo_root and resolved_repo_root not in resolved_readme.parents:
+        return None, f"README path escapes repository root: {readme_path}"
+
+    return resolved_readme, None
+
+
 def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[str]:
     errors: list[str] = []
     modules_doc = _load_yaml(modules_path)
@@ -225,14 +238,24 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     for module in coverage_modules:
         module_id = str(module.get("id", "<unknown>"))
         readme_path = module.get("readme_path")
-        if readme_path and not (repo_root / readme_path).exists():
+        if not readme_path:
+            continue
+
+        resolved_readme_path, path_error = _resolve_readme_path(repo_root, str(readme_path))
+        if path_error:
+            errors.append(path_error)
+            continue
+        if resolved_readme_path is None:
+            continue
+
+        if not resolved_readme_path.exists():
             errors.append(f"README path does not exist: {readme_path}")
         if readme_path and readme_path in moved_from_paths and readme_path not in moved_to_paths:
             errors.append(
                 f"Stale README path '{readme_path}' referenced after move/rename; update to current path."
             )
-        if readme_path and (repo_root / readme_path).exists():
-            readme_errors = validate_readme_contract(repo_root / readme_path, module_id)
+        if resolved_readme_path.exists():
+            readme_errors = validate_readme_contract(resolved_readme_path, module_id)
             for element_error in readme_errors:
                 errors.append(
                     f"README contract violation [module={module_id}] [path={readme_path}] [missing={element_error}]"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -50,6 +51,84 @@ class ValidateSourceReadmesTests(unittest.TestCase):
         self.assertIn("module=missing-markers-module", output)
         self.assertIn("missing=missing generated block begin marker", output)
         self.assertIn("missing=missing generated block end marker", output)
+
+    def test_absolute_readme_path_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            modules = temp_root / "modules.yml"
+            coverage = temp_root / "coverage.yml"
+            outside_readme = temp_root / "outside.md"
+            outside_readme.write_text("# outside", encoding="utf-8")
+            modules.write_text("modules: []\n", encoding="utf-8")
+            coverage.write_text(
+                "readme_coverage:\n"
+                "  modules:\n"
+                "    - id: attack.module\n"
+                f"      readme_path: {outside_readme}\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    "python3",
+                    str(self.script),
+                    "--modules",
+                    str(modules),
+                    "--coverage",
+                    str(coverage),
+                    "--repo-root",
+                    str(self.repo_root),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("README path must be relative to repository root", result.stdout + result.stderr)
+
+    def test_symlink_readme_path_escaping_repo_root_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            modules = temp_root / "modules.yml"
+            coverage = temp_root / "coverage.yml"
+            outside_readme = temp_root / "outside.md"
+            outside_readme.write_text("# outside", encoding="utf-8")
+            symlink_path = self.repo_root / "tools/source_docs/fixtures/readme_contract/symlink-escape.md"
+            try:
+                if symlink_path.exists() or symlink_path.is_symlink():
+                    symlink_path.unlink()
+                symlink_path.symlink_to(outside_readme)
+                modules.write_text("modules: []\n", encoding="utf-8")
+                coverage.write_text(
+                    "readme_coverage:\n"
+                    "  modules:\n"
+                    "    - id: attack.module\n"
+                    f"      readme_path: {symlink_path.relative_to(self.repo_root)}\n",
+                    encoding="utf-8",
+                )
+
+                result = subprocess.run(
+                    [
+                        "python3",
+                        str(self.script),
+                        "--modules",
+                        str(modules),
+                        "--coverage",
+                        str(coverage),
+                        "--repo-root",
+                        str(self.repo_root),
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("README path escapes repository root", result.stdout + result.stderr)
+            finally:
+                if symlink_path.exists() or symlink_path.is_symlink():
+                    symlink_path.unlink()
 
 
 if __name__ == "__main__":
