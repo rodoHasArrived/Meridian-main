@@ -296,7 +296,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (account.MarginModel is null || account.Positions.Count == 0)
                 return MarginCallStatus.NoMarginRequired(accountId);
 
-            var equity = account.Cash + account.LongMarketValue;
+            var marginBorrowed = account.Positions.Values.Sum(static p => p.MarginBorrowed);
+            var effectiveCash = account.Cash - marginBorrowed;
+            var equity = effectiveCash + account.LongMarketValue;
             var posRequirements = new List<MarginRequirement>();
 
             foreach (var (symbol, pos) in account.Positions)
@@ -315,7 +317,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                     kv => kv.Value.ToExecutionPosition(),
                     StringComparer.OrdinalIgnoreCase),
                 prices,
-                account.Cash);
+                effectiveCash);
 
             var isCall = portfolioReq.IsMarginCall;
             var deficiency = isCall ? Math.Abs(portfolioReq.ExcessLiquidity) : 0m;
