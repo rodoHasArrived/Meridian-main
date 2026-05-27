@@ -311,8 +311,11 @@ public sealed class FundOpsCloseLaneScenarioTests
             new RecordingLedgerJournalStore());
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null) =>
-        new(
+    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null)
+    {
+        var securityId = Guid.Parse("CB931872-F221-47C1-B922-1F61BFA93CF5");
+        var idempotencyKey = $"{securityId:N}:fund-close:20260531:AccrueInterestIncome:test-source-hash";
+        return new OperationsLedgerJournalCandidateDto(
             JournalEntryId: null,
             AggregateId: aggregateId ?? Guid.NewGuid(),
             PeriodId: periodId ?? Guid.NewGuid(),
@@ -333,13 +336,22 @@ public sealed class FundOpsCloseLaneScenarioTests
                     Debit: 0m,
                     Credit: 100m)
             ],
+            CommandId: Guid.NewGuid(),
+            SourceEventId: Guid.NewGuid(),
             AccountingBasis: AccountingBasisKindDto.Primary,
             AccountingPolicyId: "legacy-v1",
             AccountingPolicyVersion: "legacy-v1",
+            RuleId: "operations-continuity-scenario",
+            RuleVersion: "v1",
             PostingKind: LedgerPostingKindDto.Originating,
             Metadata: new OperationsJournalEntryMetadataDto(
                 ActivityType: "operations-continuity",
-                LedgerBook: "fund-close"));
+                Symbol: "OPS",
+                SecurityId: securityId,
+                LedgerBook: "fund-close"),
+            IdempotencyKey: idempotencyKey,
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+    }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
     {

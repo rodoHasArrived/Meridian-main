@@ -769,6 +769,38 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectJournalCandidateWithoutIdempotencyOrSecurityMasterProvenance()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate(workflow.FundAccountId) with
+        {
+            CommandId = null,
+            IdempotencyKey = null,
+            SecurityMasterProvenance = null,
+            Metadata = new OperationsJournalEntryMetadataDto(ActivityType: "operations-continuity")
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-missing-provenance",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_IDEMPOTENCY_KEY_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_PROVENANCE_MISSING");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
     public async Task PostLedgerEntriesAsync_ShouldUseTransactionalCommitStoreWhenRegistered()
     {
         var derivation = new OperationsStatusDerivationService();
@@ -1644,8 +1676,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
         return posted.Workflow!;
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null) =>
-        new(
+    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null)
+    {
+        var securityId = Guid.Parse("27F62228-5183-4C2D-95A3-8619BC93F15E");
+        var idempotencyKey = $"{securityId:N}:fund-close:20260531:AccrueInterestIncome:test-source-hash";
+        return new OperationsLedgerJournalCandidateDto(
             JournalEntryId: null,
             AggregateId: aggregateId ?? Guid.NewGuid(),
             PeriodId: periodId ?? Guid.NewGuid(),
@@ -1666,13 +1701,22 @@ public sealed class OperationsContinuityWorkflowServiceTests
                     Debit: 0m,
                     Credit: 100m)
             ],
+            CommandId: Guid.NewGuid(),
+            SourceEventId: Guid.NewGuid(),
             AccountingBasis: AccountingBasisKindDto.Primary,
             AccountingPolicyId: "legacy-v1",
             AccountingPolicyVersion: "legacy-v1",
+            RuleId: "operations-continuity-accrual",
+            RuleVersion: "v1",
             PostingKind: LedgerPostingKindDto.Originating,
             Metadata: new OperationsJournalEntryMetadataDto(
                 ActivityType: "operations-continuity",
-                LedgerBook: "fund-close"));
+                Symbol: "OPS",
+                SecurityId: securityId,
+                LedgerBook: "fund-close"),
+            IdempotencyKey: idempotencyKey,
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+    }
 
     private static OperationsWorkflowAuditDraft CreateAuditDraft(
         Guid workflowId,
