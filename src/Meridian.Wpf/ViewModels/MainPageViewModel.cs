@@ -25,6 +25,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private const string DefaultPageTag = "StrategyShell";
 
     private readonly INavigationService _navigationService;
+    private readonly NavigationService? _wpfNavigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
@@ -80,6 +81,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ShellRefreshCoordinator? shellRefreshCoordinator = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _wpfNavigationService = navigationService as NavigationService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
@@ -421,7 +423,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             if (!_suppressNavigation)
             {
-                _navigationService.NavigateTo(normalized);
+                NavigateToWithWorkspaceScope(normalized);
             }
         }
     }
@@ -551,7 +553,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (_navigationService.GetBreadcrumbs().Count == 0)
         {
             ApplyCurrentPage(CurrentPageTag);
-            _navigationService.NavigateTo(CurrentPageTag);
+            NavigateToWithWorkspaceScope(CurrentPageTag);
             SyncNavigationState();
             UpdateShellRefreshStamp();
             RequestShellRefresh();
@@ -833,8 +835,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void RefreshCurrentPage()
     {
         UpdateShellRefreshStamp();
-        _navigationService.NavigateTo(CurrentPageTag);
+        NavigateToWithWorkspaceScope(CurrentPageTag);
         RequestShellRefresh();
+    }
+
+    private bool NavigateToWithWorkspaceScope(string pageTag, object? parameter = null)
+    {
+        if (_wpfNavigationService is not null)
+        {
+            var workspaceScope = WorkspaceService.Instance.ActiveWorkspaceScope;
+            return _wpfNavigationService.NavigateTo(pageTag, parameter, workspaceScope);
+        }
+
+        return _navigationService.NavigateTo(pageTag, parameter);
     }
 
     private void ToggleSecondaryWorkflowSummaries()
