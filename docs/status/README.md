@@ -85,6 +85,8 @@ Historical snapshots stay under `archive/docs/` and are linked from this index a
 
 For dashboard purpose, required evidence inputs, `.md` + `.json` output paths, blocker triage, and stale-evidence handling guidance, see [Documentation Automation - Status Dashboard Evidence Surfaces](../development/documentation-automation.md#status-dashboard-evidence-surfaces).
 
+For orphan-doc cleanup driven by the health dashboard output, use [Orphaned Doc Triage Index](../operations/orphaned-doc-triage-index.md) as the current link-recovery intake list.
+
 The golden-path pilot dashboard is generated as validation evidence, not hand-authored status
 prose. Run `PilotAcceptanceHarnessTests`, then
 `build/scripts/docs/generate-pilot-readiness-dashboard.py` to emit
