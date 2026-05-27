@@ -1,6 +1,6 @@
 # Meridian Wave Implementation Checklists
 
-**Last Reviewed:** 2026-05-27  
+**Last Reviewed:** 2026-05-27
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **wave implementation checklists** and document explicit in-scope vs out-of-scope items.
