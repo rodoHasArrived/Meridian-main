@@ -35,6 +35,27 @@ public enum TradingAcceptanceGateStatusDto
     Unknown = 99
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioLedgerWorkflowStatusDto>))]
+public enum PortfolioLedgerWorkflowStatusDto
+{
+    Ready = 0,
+    Partial = 1,
+    Blocked = 2,
+    DriftDetected = 3,
+    AwaitingReconciliation = 4
+}
+
+public sealed record PortfolioLedgerDriftDto(
+    string DriftType,
+    string Detail,
+    string RemediationHint);
+
+public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(
+    PortfolioLedgerWorkflowStatusDto PortfolioLedgerReview,
+    PortfolioLedgerWorkflowStatusDto Reconciliation,
+    IReadOnlyList<PortfolioLedgerDriftDto> Drifts,
+    string Summary);
+
 public sealed record OperatorWorkItemDto(
     string WorkItemId,
     OperatorWorkItemKindDto Kind,
@@ -310,6 +331,8 @@ public sealed record TradingOperatorReadinessDto(
     public string SnapshotVersion { get; init; } = string.Empty;
 
     public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }
+
+    public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(
