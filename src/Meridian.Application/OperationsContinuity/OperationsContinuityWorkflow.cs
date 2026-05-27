@@ -274,6 +274,17 @@ public sealed class OperationsContinuityWorkflow
                 []);
         }
 
+        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
+        if (request.ExpiresOn.Value < todayUtc)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "SM_OVERRIDE_APPROVAL_EXPIRED",
+                "Security Master override approval expiration must be today or a future UTC date.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Error",
+                []);
+        }
+
         return null;
     }
 
@@ -479,7 +490,8 @@ public sealed class OperationsContinuityWorkflow
     public void PostLedgerEntries(
         OperationsLedgerPostRequestDto request,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        IReadOnlyList<OperationsWorkflowBlockerDto>? additionalBlockers = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(evidenceLinks);
@@ -534,6 +546,11 @@ public sealed class OperationsContinuityWorkflow
                 OperationsGateKeyDto.LedgerPosting,
                 "Critical",
                 evidenceLinks));
+        }
+
+        if (additionalBlockers is not null)
+        {
+            blockers.AddRange(additionalBlockers);
         }
 
         var status = blockers.Count == 0 ? OperationsGateStatusDto.Passed : OperationsGateStatusDto.Blocked;

@@ -25,6 +25,9 @@ and UI presentation concerns in their owning layers.
 ## Key folders and files
 
 - `Commands/` - CLI command handlers and operator workflows.
+- `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
+  timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
+  and approval close lanes.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 

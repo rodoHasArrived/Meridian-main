@@ -17,6 +17,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | [`.codex/AGENTS.md`](../../../.codex/AGENTS.md) | Codex-specific desktop workstation implementation rules |
 | [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
 | [`.codex/checklists/`](../../../.codex/checklists) | Modularity, MVVM, resource, definition-of-done, and safe-refactor checklists |
+| [`tools/codex/`](../../../tools/codex) | Codex-focused PowerShell quality scans, desktop workspace generators, resource reviews, and refactor-plan helpers |
 
 ## Current Codex Skills
 
@@ -120,6 +121,12 @@ Maintenance/reporting:
 - `make ai-docs-archive`
 - `make ai-docs-archive-execute`
 
+Local helper surfaces:
+
+- `scripts/ai/` backs the make-based AI setup, cleanup, routing, and maintenance lanes.
+- `tools/codex/` holds Codex-focused PowerShell scanners and generators used for desktop quality
+  reports and reviewable implementation planning.
+
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
@@ -166,4 +173,5 @@ python3 build/scripts/docs/validate-doc-hashes.py --summary
 
 Use `python3 build/scripts/docs/check-ai-inventory.py --summary` after adding, renaming, or
 removing Codex agent profiles, prompts, validation checklists, `.codex/AGENTS.md`, environment
-configs, skills, or OpenAI metadata so the shared AI contract and this index stay aligned.
+configs, skills, OpenAI metadata, or `tools/codex/` quality tools so the shared AI contract and
+this index stay aligned.

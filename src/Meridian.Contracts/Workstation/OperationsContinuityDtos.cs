@@ -282,6 +282,7 @@ public static class OperationsWorkflowContractMatrix
         "SM_RATE_RESET_TERMS_MISSING",
         "SM_RATE_RESET_SCHEDULE_MISSING",
         "SM_INSTRUMENT_UNRESOLVED",
+        "SM_OVERRIDE_APPROVAL_EXPIRED",
         "SM_OVERRIDE_APPROVAL_METADATA_REQUIRED",
         "SM_OVERRIDE_APPROVAL_REQUIRED",
         "SM_OVERRIDE_ID_MISMATCH",
@@ -348,6 +349,27 @@ public static class OperationsWorkflowContractMatrix
         "RECONCILIATION_CRITICAL_BREAKS_OPEN",
         "REPORT_PACK_NOT_READY",
         "APPROVAL_REQUIRED"
+    };
+
+    public static IReadOnlySet<string> AuditEventTypes { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "workflow-started",
+        "broker-imported",
+        "broker-transactions-normalized",
+        "gate-posture-refreshed",
+        "security-master-resolved",
+        "security-master-override-approved",
+        "ledger-draft-built",
+        "ledger-draft-validated",
+        "ledger-posted",
+        "ledger-posting-blocked",
+        "reconciliation-run",
+        "reconciliation-break-resolved",
+        "approval-submitted",
+        "approval-approved",
+        "approval-rejected",
+        "workflow-closed",
+        "workflow-reopened"
     };
 }
 

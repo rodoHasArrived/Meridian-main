@@ -206,9 +206,14 @@ and accounting issue rows as workflow break cases, using stable issue codes such
 `SM_RECON_SECURITY_UNRESOLVED`, `ACCRUAL_AMOUNT_MISMATCH`, and
 `FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and WPF desktop clients the same
 server-authored blocker detail behind the aggregate counts.
+Security Master override approval metadata is governed server-side as well: override approvals must
+carry rationale, policy reference, and an expiration that is not already expired; stale approvals
+return `SM_OVERRIDE_APPROVAL_EXPIRED` without appending an audit record or mutating the workflow.
 The shared `OperationsWorkflowContractMatrix` also publishes the production blocker and issue code
 vocabulary for broker intake, Security Master accounting coverage, accrual reconciliation, factor
-paydowns, ledger posting, reconciliation evidence, approval, and close blockers. Security Master
+paydowns, ledger posting, reconciliation evidence, approval, and close blockers. It also publishes
+the audit-event vocabulary, including `ledger-posting-blocked`, so browser and WPF clients can map
+timeline rows without local string catalogs. Security Master
 accounting event generation distinguishes a missing factor schedule from a stale prior-period
 factor source so the continuity gate can route factor-paydown remediation without UI-side
 classification.
@@ -234,7 +239,9 @@ save the workflow snapshot. If no ledger store or transactional commit store is 
 candidate is missing or invalid, the command returns a structured validation failure and does not
 advance the workflow. Requests that fail posting posture checks such as closed period, duplicate
 candidate, missing batch id, or missing posting kind still update the workflow to a blocked ledger
-gate with an audit event and do not append a journal candidate.
+gate with a `ledger-posting-blocked` audit event and do not append a journal candidate. If no
+durable journal store or transactional commit store is registered, the command follows the same
+blocked-audit path instead of silently failing outside the workflow timeline.
 
 The command path now covers start, broker import, broker normalization, Security Master resolution,
 governed Security Master override approval, ledger draft, ledger validation, ledger posting,
@@ -320,7 +327,7 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `POST /api/workstation/operations/continuity/{workflowId}/broker/import` | Records broker/custodian/bank import progress with expected-version enforcement |
 | `POST /api/workstation/operations/continuity/{workflowId}/broker/normalize` | Records normalized external activity before Security Master resolution |
 | `POST /api/workstation/operations/continuity/{workflowId}/security-master/resolve` | Updates Security Master resolution and accounting-term blockers |
-| `POST /api/workstation/operations/continuity/{workflowId}/security-master/overrides/{overrideId}/approve` | Requires override approver, rationale, policy, expiration, and audit metadata |
+| `POST /api/workstation/operations/continuity/{workflowId}/security-master/overrides/{overrideId}/approve` | Requires override approver, rationale, policy, non-expired expiration, and audit metadata |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/draft` | Creates a ledger journal preview without committing it |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/validate` | Validates balanced journal draft and period posture |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Appends a supplied journal candidate through the ledger journal store, then marks the validated ledger gate posted with a durable batch reference; with PostgreSQL Operations Continuity enabled, the journal append, audit append, and workflow snapshot save share one transaction |

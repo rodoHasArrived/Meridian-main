@@ -26,6 +26,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
         OperationsWorkflowContractMatrix.BlockerCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
         OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
         OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => OperationsWorkflowContractMatrix.BlockerCodes.Contains(code));
+        OperationsWorkflowContractMatrix.AuditEventTypes.Should().OnlyContain(eventType => !eventType.StartsWith("UI_", StringComparison.Ordinal));
+        OperationsWorkflowContractMatrix.AuditEventTypes.Should().Contain([
+            "workflow-started",
+            "security-master-override-approved",
+            "ledger-posted",
+            "ledger-posting-blocked",
+            "workflow-reopened"
+        ]);
         OperationsWorkflowContractMatrix.BlockerCodes.Should().Contain([
             "BROKER_STATEMENT_MISSING",
             "BROKER_TRANSACTION_TYPE_UNKNOWN",
@@ -629,7 +637,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "override-1",
             "Temporary mapping approved for month-end close",
             "policy-sm-override-v1",
-            new DateOnly(2026, 6, 30)));
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30))));
         var draft = await service.BuildLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerDraftRequestDto(
             approved.Workflow!.Version,
             "ops-user",
@@ -672,11 +680,51 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 "override-body",
                 "Temporary mapping approved for month-end close",
                 "policy-sm-override-v1",
-                new DateOnly(2026, 6, 30)));
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30))));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("VALIDATION_FAILED");
         result.Blockers.Should().ContainSingle(blocker => blocker.Code == "SM_OVERRIDE_ID_MISMATCH");
+    }
+
+    [Fact]
+    public async Task ApproveSecurityMasterOverrideAsync_ShouldRejectExpiredApprovalMetadataWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(
+            normalized.Workflow!.Version,
+            "ops-user",
+            OverrideRequestCount: 1));
+        var timelineBefore = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+
+        var result = await service.ApproveSecurityMasterOverrideAsync(
+            start.Workflow.WorkflowId,
+            "override-1",
+            new OperationsSecurityMasterOverrideApprovalRequestDto(
+                security.Workflow!.Version,
+                "ops-user",
+                "override-1",
+                "Temporary mapping approved for month-end close",
+                "policy-sm-override-v1",
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1))));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "SM_OVERRIDE_APPROVAL_EXPIRED" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+        var timelineAfter = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]
@@ -722,7 +770,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
-    public async Task PostLedgerEntriesAsync_ShouldRejectSuccessfulPostWhenJournalStoreIsMissing()
+    public async Task PostLedgerEntriesAsync_ShouldBlockAndAuditWhenJournalStoreIsMissing()
     {
         var service = CreateService(out _, out var auditStore, registerLedgerJournalStore: false);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
@@ -735,11 +783,13 @@ public sealed class OperationsContinuityWorkflowServiceTests
             PeriodOpen: true,
             JournalCandidate: CreateJournalCandidate(workflow.FundAccountId)));
 
-        result.Success.Should().BeFalse();
-        result.ErrorCode.Should().Be("LEDGER_JOURNAL_STORE_UNAVAILABLE");
-        result.Blockers.Should().ContainSingle(blocker => blocker.Code == "LEDGER_JOURNAL_STORE_UNAVAILABLE");
+        result.Success.Should().BeTrue();
+        result.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
+        result.Workflow.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Validated);
+        result.Workflow.Blockers.Should().ContainSingle(blocker => blocker.Code == "LEDGER_JOURNAL_STORE_UNAVAILABLE");
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().Contain("ledger-posting-blocked");
         timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
     }
 
@@ -901,9 +951,37 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldBlockMissingPostingMetadataWithoutAppendingJournalCandidate()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "",
+            PostingKind: "",
+            PeriodOpen: true,
+            Rationale: "Attempt posting without durable posting metadata",
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId)));
+
+        result.Success.Should().BeTrue();
+        result.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
+        result.Workflow.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_BATCH_ID_REQUIRED");
+        result.Workflow.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_POSTING_KIND_REQUIRED");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().Contain("ledger-posting-blocked");
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
     public async Task PostLedgerEntriesAsync_ShouldBlockClosedPeriodPosting()
     {
-        var service = CreateService(out _, out _);
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
 
         var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
@@ -916,6 +994,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
         result.Success.Should().BeTrue();
         result.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
         result.Workflow.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_PERIOD_CLOSED");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().Contain("ledger-posting-blocked");
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
     }
 
     [Fact]

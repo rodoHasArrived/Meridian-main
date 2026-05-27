@@ -62,9 +62,11 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
 The checker inventories root assistant entrypoints, Codex configuration, Codex agent profiles,
-Codex desktop prompts, Codex validation checklists, Codex `AGENTS.md`, Claude configuration, Agent Skills-compatible
+Codex desktop prompts, Codex validation checklists, Codex `AGENTS.md`, Codex quality tools under
+`tools/codex/`, Claude configuration, Agent Skills-compatible
 packages and shared context, Copilot instructions, agents, skills, prompts, repository prompt
-documentation under `docs/prompts/`, AI workflow files, `docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant entrypoints for
+documentation under `docs/prompts/`, local AI maintenance scripts under `scripts/ai/`, AI workflow
+files, `docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant entrypoints for
 Cursor, Windsurf, Continue, Cline, Roo, and Gemini if they are introduced, and stale canonical
 GitHub documentation links. It also flags active AI docs that still point at retired GitHub Actions
 workflow paths. Its Markdown and JSON reports are safe to share because they use a portable
@@ -101,6 +103,7 @@ Located mainly in `docs/ai/claude/`.
 | [`codex/README.md`](codex/README.md) | Codex repo-local skill workflow, execution gates, and validation tooling |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
 | [`../prompts/README.md`](../prompts/README.md) | Provider-agnostic prompt and automation guidance inventory |
+| `scripts/ai/`, `tools/codex/` | Local AI maintenance scripts and Codex quality tools |
 | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents) | Codex specialist agent-profile TOML files |
 | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skill catalog |
 
@@ -131,6 +134,7 @@ Located mainly in `docs/ai/claude/`.
 | Codex agent profiles | [`codex/README.md`](codex/README.md), [`agents/README.md`](agents/README.md), [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents) |
 | Roadmap/source registry sync | [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) |
 | Prompt and automation guidance | [`prompts/README.md`](prompts/README.md), [`../prompts/README.md`](../prompts/README.md) |
+| Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` |
 
 ### Adding a New AI Resource
 

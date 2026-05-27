@@ -512,26 +512,26 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         }
 
         var evidence = NormalizeEvidence(request.EvidenceLinks);
-        var requestBlockers = ValidateLedgerPostRequest(request, evidence);
+        var requestBlockers = ValidateLedgerPostRequest(request, evidence).ToList();
+        var serviceBlockers = new List<OperationsWorkflowBlockerDto>();
         LedgerJournalEntryWrite? journalWrite = null;
+        LedgerJournalEntryWrite builtJournalWrite = default!;
         if (requestBlockers.Count == 0)
         {
             if (_transactionalCommitStore is null && _ledgerJournalStore is null)
             {
-                return Failure(
+                var blocker = new OperationsWorkflowBlockerDto(
                     "LEDGER_JOURNAL_STORE_UNAVAILABLE",
-                    "Ledger posting requires a durable ledger journal store or transactional commit store registration.",
-                    [
-                        new OperationsWorkflowBlockerDto(
-                            "LEDGER_JOURNAL_STORE_UNAVAILABLE",
-                            "Register ILedgerJournalStore or IOperationsContinuityTransactionalCommitStore before posting Operations Continuity ledger entries.",
-                            OperationsGateKeyDto.LedgerPosting,
-                            "Critical",
-                            evidence)
-                    ]);
+                    "Register ILedgerJournalStore or IOperationsContinuityTransactionalCommitStore before posting Operations Continuity ledger entries.",
+                    OperationsGateKeyDto.LedgerPosting,
+                    "Critical",
+                    evidence);
+                requestBlockers.Add(blocker);
+                serviceBlockers.Add(blocker);
             }
 
-            if (!TryBuildJournalWrite(workflow, request, out var builtJournalWrite, out var journalBlockers))
+            if (requestBlockers.Count == 0 &&
+                !TryBuildJournalWrite(workflow, request, out builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
                     "VALIDATION_FAILED",
@@ -539,21 +539,24 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     journalBlockers);
             }
 
-            journalWrite = builtJournalWrite;
+            if (requestBlockers.Count == 0)
+            {
+                journalWrite = builtJournalWrite;
+            }
         }
 
         var fromStatus = _statusDerivation.Derive(workflow);
         var fromGateStatus = workflow.LedgerPostingGate.Status;
         var now = DateTimeOffset.UtcNow;
         var workflowForCommit = CloneWorkflow(workflow);
-        workflowForCommit.PostLedgerEntries(request, evidence, now);
+        workflowForCommit.PostLedgerEntries(request, evidence, now, serviceBlockers);
         var toStatus = _statusDerivation.Derive(workflowForCommit);
         var toGateStatus = workflowForCommit.LedgerPostingGate.Status;
         var auditDraft = new OperationsWorkflowAuditDraft(
             workflowForCommit.WorkflowId,
             workflowForCommit.FundAccountId,
             workflowForCommit.PeriodId,
-            "ledger-posted",
+            requestBlockers.Count == 0 ? "ledger-posted" : "ledger-posting-blocked",
             fromStatus,
             toStatus,
             OperationsGateKeyDto.LedgerPosting,

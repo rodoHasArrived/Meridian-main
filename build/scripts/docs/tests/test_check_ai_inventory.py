@@ -73,6 +73,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".codex" / "prompts" / "sample-codex-prompt.md")
             write(root / ".codex" / "checklists" / "sample-checklist.md")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
+            write(root / "tools" / "codex" / "resource-review.ps1")
             write(root / ".agents" / "skills" / "meridian-portable" / "SKILL.md")
             write(root / ".agents" / "skills" / "meridian-portable" / "agents" / "openai.yaml")
             write(root / ".agents" / "skills" / "_shared" / "project-context.md")
@@ -83,6 +84,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
             write(root / "docs" / "prompts" / "sample-prompt-doc.md")
+            write(root / "scripts" / "ai" / "maintenance-light.sh")
             write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
             write(root / "docs" / "ai" / "README.md")
 
@@ -98,6 +100,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("environment-config", "environment.toml"), pairs)
             self.assertIn(("prompt-template", "sample-codex-prompt.md"), pairs)
             self.assertIn(("validation-checklist", "sample-checklist.md"), pairs)
+            self.assertIn(("codex-tool", "resource-review.ps1"), pairs)
             self.assertIn(("config", "settings.json"), pairs)
             self.assertIn(("config", "settings.local.json"), pairs)
             self.assertIn(("instruction-entrypoint", "copilot-instructions.md"), pairs)
@@ -105,12 +108,17 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("agent", "meridian-test.md"), pairs)
             self.assertIn(("prompt", "sample.prompt.yml"), pairs)
             self.assertIn(("prompt-documentation", "sample-prompt-doc.md"), pairs)
+            self.assertIn(("maintenance-script", "maintenance-light.sh"), pairs)
             self.assertIn(("path-instruction", "sample.instructions.md"), pairs)
             self.assertIn(("mcp-tool", "SampleTools.cs"), pairs)
             self.assertIn(("ai-doc", "README.md"), pairs)
             self.assertIn(("agent-skills-compatible-hosts", "skill", "meridian-portable"), surface_pairs)
             self.assertIn(("agent-skills-compatible-hosts", "openai-metadata", "meridian-portable"), surface_pairs)
             self.assertIn(("agent-skills-compatible-hosts", "shared-context", "project-context.md"), surface_pairs)
+            self.assertIn(
+                ("local-ai-maintenance-tools", "maintenance-script", "maintenance-light.sh"),
+                surface_pairs,
+            )
 
     def test_collect_inventory_discovers_optional_assistant_surfaces(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -236,6 +244,33 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
+    def test_check_catalog_drift_reports_undocumented_local_ai_tooling(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / "scripts" / "ai" / "maintenance-light.sh")
+            write(root / "tools" / "codex" / "resource-review.ps1")
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "maintenance-script"
+                    and finding.path == "scripts/ai/maintenance-light.sh"
+                    and finding.expected_doc == "docs/ai/assistant-workflow-contract.md"
+                    for finding in findings
+                )
+            )
+            self.assertTrue(
+                any(
+                    finding.kind == "codex-tool"
+                    and finding.path == "tools/codex/resource-review.ps1"
+                    and finding.expected_doc == "docs/ai/codex/README.md"
+                    for finding in findings
+                )
+            )
+
     def test_check_catalog_drift_reports_missing_workflow_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -321,6 +356,8 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
             write(root / "docs" / "prompts" / "automation-prompts.md")
+            write(root / "scripts" / "ai" / "maintenance-light.sh")
+            write(root / "tools" / "codex" / "resource-review.ps1")
             write(root / ".github" / "workflows" / "prompt-generation.yml")
             write(root / ".github" / "workflows" / "copilot-setup-steps.yml")
             write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
@@ -336,6 +373,7 @@ class CheckAiInventoryTests(unittest.TestCase):
                     "AI automation workflows prompt-generation.yml skill-evals.yml .github/workflows/copilot-*",
                     "Reusable prompt templates .github/prompts/ docs/prompts/ docs/ai/prompts/README.md automation-prompts.md",
                     "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
+                    "Local AI maintenance tooling scripts/ai/ tools/codex/",
                 ]
             )
             write_required_docs(root, indexed)

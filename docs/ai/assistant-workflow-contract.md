@@ -2,7 +2,7 @@
 
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
-manual assistant sessions.
+manual assistant sessions, including local AI maintenance tooling used by automations.
 
 Use this file when updating assistant-specific instructions so the project keeps one common rule
 set instead of drifting into conflicting provider-specific guidance.
@@ -16,13 +16,14 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, and validation checklists |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, and Codex PowerShell scanners/generators |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
 | Workflow guidance | `.github/workflows/README.md`, `docs/development/github-actions-summary.md`, `docs/development/github-actions-testing.md` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, automation runs, and manual assistant sessions |
+| Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` | Provider-agnostic maintenance lanes, local AI setup/cleanup helpers, and Codex-specific quality scans |
 | Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
 
 The AI inventory checker also watches optional IDE/provider assistant entrypoints such as
@@ -128,6 +129,7 @@ When editing `src/**`, assistants must:
 | Provider-agnostic prompt docs | `docs/prompts/automation-prompts.md`, `docs/prompts/repo-maintenance-prompts.md`, `docs/prompts/roadmap-source-docs-implementation-prompt.md` | `docs/prompts/README.md`, `docs/ai/prompts/README.md`, automation prompts, repo-maintenance prompts, and source-doc update prompts |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `build/scripts/docs/generate-prompts.py`, skill `evals/` folders, `.codex/skills/*/scripts/run_evals.py` | CI-derived prompt files, local eval reports, and archived workflow notes |
+| Local AI maintenance scripts and Codex tools | `scripts/ai/*.sh`, `tools/codex/*.ps1`, `make/ai.mk` | `make ai-maintenance-*`, `make ai-audit*`, Codex desktop quality reports, and local AI setup/cleanup lanes |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
 | Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
 
@@ -159,6 +161,8 @@ Use this checklist when changing any AI-related asset:
       descriptions or default prompts change.
 - [ ] Keep `docs/prompts/*.md` listed in `docs/prompts/README.md` and `docs/ai/prompts/README.md`
       when prompt or automation guidance changes.
+- [ ] Keep `scripts/ai/` and `tools/codex/` documented when local AI maintenance scripts or
+      Codex quality tools are added, renamed, or removed.
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.
 - [ ] Regenerate `docs/ai/generated/repo-navigation.*` only when routing truth, projects, symbols,
       or authoritative docs change.
