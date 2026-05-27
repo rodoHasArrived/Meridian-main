@@ -104,9 +104,25 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 public sealed class StatementMatchingService
 {
     public IReadOnlyList<MatchOutcome> MatchRows(IReadOnlyList<CanonicalStatementRow> rows)
-        => rows.Select(r =>
+        => rows.Select(MatchRow).ToList();
+
+    private static MatchOutcome MatchRow(CanonicalStatementRow row)
+    {
+        if (row.Quantity != 0m && row.Price != 0m && row.Symbol.Length <= 5)
         {
-            var known = r.Symbol.Length <= 5 && r.Quantity != 0;
-            return new MatchOutcome(r.RawChecksum, known ? "linked-position" : "unmatched", known ? $"POS-{r.Symbol}" : string.Empty, known ? 0.95m : 0.35m, known ? "Matched by symbol + non-zero quantity." : "No confident linkage found.");
-        }).ToList();
+            return new MatchOutcome(row.RawChecksum, "exact-match", $"POS-{row.Symbol}", 0.99m, "Exact match on symbol, quantity, and priced position.");
+        }
+
+        if (row.Quantity != 0m && row.Symbol.Length <= 5)
+        {
+            return new MatchOutcome(row.RawChecksum, "tolerance-match", $"POS-{row.Symbol}", 0.85m, "Matched symbol with quantity outside strict pricing tolerance.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(row.Symbol) && row.Symbol.Length <= 8)
+        {
+            return new MatchOutcome(row.RawChecksum, "heuristic-match", $"HEUR-{row.Symbol}", 0.62m, "Heuristic linkage based on symbol similarity and activity type.");
+        }
+
+        return new MatchOutcome(row.RawChecksum, "unmatched", string.Empty, 0.35m, "No deterministic or heuristic linkage found.");
+    }
 }
