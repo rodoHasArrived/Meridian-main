@@ -174,6 +174,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             "RunRisk" => new(actionId, "RunRisk", PaneDropAction.SplitRight, null, false, false, null),
             "NotificationCenter" => new(actionId, "NotificationCenter", PaneDropAction.SplitBelow, null, false, false, null),
             "FundTrialBalance" => new(actionId, "FundTrialBalance", PaneDropAction.OpenTab, null, false, false, null),
+            "ReplayVerification" => new(actionId, "FundAuditTrail", PaneDropAction.OpenTab, null, false, false, "Replay verification launched. Record a fresh replay audit marker before accepting readiness."),
             "FundReconciliation" => new(actionId, "FundReconciliation", PaneDropAction.SplitBelow, null, false, false, null),
             "FundAuditTrail" => new(actionId, "FundAuditTrail", PaneDropAction.OpenTab, null, false, false, null),
             "TradingHours" => new(actionId, "TradingHours", PaneDropAction.Replace, null, true, false, null),
@@ -917,7 +918,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         "session" => "StrategyRuns",
         "promotion" => "StrategyRuns",
         "audit-controls" => "RunRisk",
-        "replay" => "FundAuditTrail",
+        "replay" => "ReplayVerification",
         "dk1-trust" => "FundAuditTrail",
         _ => "NotificationCenter"
     };
@@ -1087,6 +1088,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         "RunPortfolio" => "Open Portfolio",
         "RunRisk" => "Open Risk Rail",
         "FundAuditTrail" => "Audit Trail",
+        "ReplayVerification" => "Verify Replay",
         "NotificationCenter" => "Open Alerts",
         "AccountPortfolio" => "Open Portfolio",
         "SecurityMaster" => "Security Master",
@@ -1111,6 +1113,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         "FundReconciliation" => "FundReconciliation",
         "FundReportPack" => "FundReportPack",
         "FundTrialBalance" => "FundTrialBalance",
+        "ReplayVerification" => "FundAuditTrail",
         _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "TradingShell" : fallbackTargetPageTag
     };
 
