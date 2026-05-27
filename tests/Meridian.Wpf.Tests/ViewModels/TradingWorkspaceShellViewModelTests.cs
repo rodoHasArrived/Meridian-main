@@ -297,7 +297,7 @@ public sealed class TradingWorkspaceShellViewModelTests
             operatingContextDisplayName: "Clear Desk");
 
         hero.BadgeText.Should().Be("Ready");
-        hero.FocusLabel.Should().Be("Paper oversight");
+        hero.FocusLabel.Should().Be("Paper review");
         hero.Summary.Should().Contain("paper session");
     }
 
@@ -385,8 +385,8 @@ public sealed class TradingWorkspaceShellViewModelTests
             "after refresh returns a cleared readiness payload the hero must show Ready");
         clearedHero.FocusLabel.Should().NotBe("Readiness blocked",
             "stale blocked state must not persist once the shared endpoint returns no blocking items");
-        clearedHero.FocusLabel.Should().Be("Paper oversight",
-            "the cleared hero must project the paper oversight posture");
+        clearedHero.FocusLabel.Should().Be("Paper review",
+            "the cleared hero must project the existing paper review posture");
     }
 
     [Fact]
