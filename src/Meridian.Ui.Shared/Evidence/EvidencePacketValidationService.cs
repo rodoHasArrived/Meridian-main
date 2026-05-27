@@ -308,6 +308,12 @@ public sealed class EvidencePacketValidationService
         {
             foreach (var artifact in node.ArtifactRefs.Where(static artifact => artifact.Retained))
             {
+                var hasVaultRetentionLocator = !string.IsNullOrWhiteSpace(artifact.Path);
+                if (!hasVaultRetentionLocator)
+                {
+                    continue;
+                }
+
                 if (string.IsNullOrWhiteSpace(artifact.CanonicalSubjectKind) || string.IsNullOrWhiteSpace(artifact.CanonicalSubjectId))
                 {
                     issues.Add(new EvidenceValidationIssueDto(
