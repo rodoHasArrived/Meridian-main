@@ -96,6 +96,7 @@ jobs:
             echo "[INFO] No changes to commit."
           else
             git commit -m "chore: refresh web workstation screenshot catalog [skip ci]"
+            git pull --rebase
             git push
           fi
 

@@ -99,6 +99,7 @@ jobs:
           $changed = git diff --cached --name-only
           if ($changed) {
             git commit -m "chore: refresh desktop screenshot catalog [skip ci]"
+            git pull --rebase
             git push
           } else {
             Write-Host "[INFO] No changes to commit."
