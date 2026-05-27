@@ -24,8 +24,10 @@ build-web-workstation: ## Fast isolated browser workstation host build (Debug, n
 bootstrap: setup-dev ## Canonical lane: bootstrap local development prerequisites and quick validation
 
 verify-fast: pre-pr ## Canonical lane: format + fast unit checks
+	@echo "$(GREEN)verify-fast lane complete$(NC)"
 
 verify-full: pre-pr-full ## Canonical lane: full pre-PR validation with coverage
+	@echo "$(GREEN)verify-full lane complete$(NC)"
 
 verify-release: publish ## Canonical lane: release publish validation across supported platforms
 
