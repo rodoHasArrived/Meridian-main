@@ -3072,6 +3072,49 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task Dk1TrustGateReadinessService_WithValidatedContractMissingRequiredFields_ShouldBlockReview()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-malformed-contract-packet",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(
+            automationRoot,
+            """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "signed",
+              "requiredBeforeDk1Exit": true,
+              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "missingOwners": []
+            }
+            """,
+            includeContractReview: false);
+
+        var packetPath = Path.Combine(automationRoot, "unit-ready", "dk1-pilot-parity-packet.json");
+        var malformedPacket = File.ReadAllText(packetPath).Replace(
+            "\"operatorSignoff\":",
+            """
+            "trustRationaleContract": { "status": "validated" },
+            "baselineThresholdContract": { "status": "validated" },
+            "operatorSignoff":
+            """);
+        File.WriteAllText(packetPath, malformedPacket);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.ReadyForOperatorReview.Should().BeTrue();
+        readiness.OperatorSignoffStatus.Should().Be("signed");
+        readiness.Blockers.Should().Contain("DK1 explainability contract is validated but missing required contract fields.");
+        readiness.Blockers.Should().Contain("DK1 calibration contract is validated but missing required contract fields.");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WithSecurityLookup_ShouldExposeSecurityCoverageInBootstrapPayloads()
     {
         await using var app = await CreateAppAsync(services =>
