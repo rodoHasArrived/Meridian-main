@@ -351,16 +351,15 @@ public sealed class FundAccountServiceTests
     }
 
     [Theory]
-    [InlineData(AccountOperationalStatusDto.Active, false, false)]
-    [InlineData(AccountOperationalStatusDto.Suspended, false, true)]
-    [InlineData(AccountOperationalStatusDto.Closed, false, true)]
-    [InlineData(AccountOperationalStatusDto.Closed, true, false)]
-    public async Task RecordBalanceSnapshot_EnforcesOperationalStatus(AccountOperationalStatusDto status, bool isBackfill, bool shouldFail)
+    [InlineData(AccountOperationalStatusDto.Active, false)]
+    [InlineData(AccountOperationalStatusDto.Suspended, true)]
+    [InlineData(AccountOperationalStatusDto.Closed, true)]
+    public async Task RecordBalanceSnapshot_EnforcesOperationalStatus(AccountOperationalStatusDto status, bool shouldFail)
     {
         var svc = CreateService();
         var account = await svc.CreateAccountAsync(MakeBankRequest() with { OperationalStatus = status });
         var action = () => svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
-            account.AccountId, DateOnly.FromDateTime(DateTime.Today), "USD", 100m, "Manual", IsBackfill: isBackfill));
+            account.AccountId, DateOnly.FromDateTime(DateTime.Today), "USD", 100m, "Manual"));
 
         if (shouldFail) await Assert.ThrowsAsync<AccountStatusPolicyException>(action);
         else Assert.NotNull(await action());
