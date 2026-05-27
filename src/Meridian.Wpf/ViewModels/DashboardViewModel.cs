@@ -175,7 +175,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private string _currentThroughputText = "--";
     public string CurrentThroughputText { get => _currentThroughputText; private set => SetProperty(ref _currentThroughputText, value); }
 
-    private string _dataHealthText = "--";
+    private string _dataHealthText = "Awaiting live status";
     public string DataHealthText { get => _dataHealthText; private set => SetProperty(ref _dataHealthText, value); }
 
     private Brush _dataHealthForeground;
@@ -701,6 +701,11 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         else
         {
             DroppedRateText = "0.00%";
+            DataHealthText = "100.0%";
+            DataQualityText = "100.0%";
+            DataHealthForeground = _successBrush;
+            DataHealthIconGlyph = _iconSuccess;
+            DataHealthIconForeground = _successBrush;
         }
 
         IntegrityRateText = $"{status.Integrity} gaps";
@@ -752,8 +757,44 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
         LastUpdateText = $"Last update: {DateTime.Now:HH:mm:ss}";
         LastDataUpdateText = $"Last update: {DateTime.Now:HH:mm:ss}";
+
+        UpdateOperationalMetricsFromLiveStatus(status);
+        UpdatePortfolioServiceStatuses(status);
+
     }
 
+
+    private void UpdateOperationalMetricsFromLiveStatus(SimpleStatus status)
+    {
+        if (OperationsMetrics.Count < 8)
+        {
+            return;
+        }
+
+        OperationsMetrics[0].Value = PublishedCount;
+        OperationsMetrics[0].Detail = $"Provider: {SelectedDataSourceText}";
+        OperationsMetrics[1].Value = DroppedCount;
+        OperationsMetrics[1].Detail = $"Drop rate {DroppedRateText}";
+        OperationsMetrics[2].Value = IntegrityCount;
+        OperationsMetrics[2].Detail = IntegrityRateText;
+        OperationsMetrics[3].Value = DateTime.Now.ToString("HH:mm:ss");
+        OperationsMetrics[3].Detail = LastUpdateText.Replace("Last update: ", string.Empty, StringComparison.Ordinal);
+    }
+
+    private void UpdatePortfolioServiceStatuses(SimpleStatus status)
+    {
+        var connected = status.Provider?.IsConnected == true;
+        var state = connected ? "connected" : "disconnected";
+        var stateBrush = connected ? _successBrush : _errorBrush;
+        for (var i = 0; i < PortfolioDataServiceStatuses.Count; i++)
+        {
+            if (PortfolioDataServiceStatuses[i].ServiceName.Contains("Pricing", StringComparison.OrdinalIgnoreCase))
+            {
+                PortfolioDataServiceStatuses[i].State = state;
+                PortfolioDataServiceStatuses[i].StatusBrush = stateBrush;
+            }
+        }
+    }
     private void UpdateStaleIndicator(bool isStale)
     {
         if (_statusService.SecondsSinceLastUpdate is { } seconds)
