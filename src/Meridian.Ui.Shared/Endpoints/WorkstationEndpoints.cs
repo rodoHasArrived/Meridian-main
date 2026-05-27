@@ -147,7 +147,16 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            WorkflowPresetMutationResult result;
+            try
+            {
+                result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+
             return result.Success
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
@@ -168,9 +177,18 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var result = await service
-                .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
-                .ConfigureAwait(false);
+            WorkflowPresetMutationResult result;
+            try
+            {
+                result = await service
+                    .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
+                    .ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+
             return result.Success
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
