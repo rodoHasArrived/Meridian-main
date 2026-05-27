@@ -47,6 +47,10 @@ readiness, and provider setup, while keeping retry-to-live behavior available.
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the
 shared workflow registry do not collapse to the accounting root.
+Trading readiness work-item actions consume shared route metadata when it is specific enough to
+resolve locally. Execution-control and promotion-review items carrying the shared
+`/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the
+session replay panel hash target so replay verification remains directly actionable.
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, required sign-off role/status, and decision note so browser recovery posture
 matches the retained WPF Fund Ledger detail panel.
