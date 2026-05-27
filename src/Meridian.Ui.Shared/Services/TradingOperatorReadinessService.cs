@@ -85,6 +85,7 @@ public sealed class TradingOperatorReadinessService
             riskRuleStatuses,
             auditEntries);
         var overallStatus = EvaluateOverallPosture(acceptanceGates);
+        var portfolioLedgerWorkflowStatus = PortfolioLedgerWorkflowStatusService.Compute(acceptanceGates, workItems);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
         var snapshotVersion = BuildSnapshotVersion(
@@ -124,7 +125,8 @@ public sealed class TradingOperatorReadinessService
             ReportPack = reportPack,
             SnapshotMaterializedAt = asOf,
             SnapshotVersion = snapshotVersion,
-            ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf)
+            ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf),
+            PortfolioLedgerWorkflowStatus = portfolioLedgerWorkflowStatus
         };
 
         ValidateRequiredReadinessFields(readiness);

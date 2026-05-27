@@ -2599,7 +2599,7 @@ public static partial class WorkstationEndpoints
             CriticalCount: criticalCount,
             WarningCount: warningCount,
             ReviewCount: reviewCount,
-            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
+            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness.PortfolioLedgerWorkflowStatus));
     }
 
     private static void RecordOperatorInboxContinuityMetrics(IReadOnlyList<OperatorWorkItemDto> items)
@@ -2844,7 +2844,8 @@ public static partial class WorkstationEndpoints
     private static string BuildOperatorInboxSummary(
         IReadOnlyCollection<OperatorWorkItemDto> items,
         int criticalCount,
-        int warningCount)
+        int warningCount,
+        PortfolioLedgerWorkflowStatusSnapshotDto? statusSnapshot)
     {
         if (items.Count == 0)
         {
@@ -2853,15 +2854,15 @@ public static partial class WorkstationEndpoints
 
         if (criticalCount > 0)
         {
-            return $"{criticalCount} critical and {warningCount} warning work item(s) need review.";
+            return $"{criticalCount} critical and {warningCount} warning work item(s) need review. {statusSnapshot?.Summary}".Trim();
         }
 
         if (warningCount > 0)
         {
-            return $"{warningCount} warning work item(s) need review.";
+            return $"{warningCount} warning work item(s) need review. {statusSnapshot?.Summary}".Trim();
         }
 
-        return $"{items.Count} informational work item(s) are available.";
+        return $"{items.Count} informational work item(s) are available. {statusSnapshot?.Summary}".Trim();
     }
 
     private static string BuildOperatorInboxScopedId(string prefix, string scope)
