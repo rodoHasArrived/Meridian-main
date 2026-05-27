@@ -25,6 +25,7 @@ automation guidance is not scattered across the repo.
 - `fix-code-quality`
 - `fix-test-failures`
 - `optimize-performance`
+- `operations-continuity-core`
 - `project-context`
 - `provider-implementation-guide`
 - `runtime-observability-diagnostics`
