@@ -30,6 +30,7 @@ public sealed class EvidencePacketValidationService
         }
 
         ApplyLedgerIntegrityIssues(nodes, issues);
+        ApplyCanonicalSubjectLinkageIssues(nodes, issues);
 
         var completeness = BuildCompleteness(nodes, nodeLookup, requiredIds, issues);
         return new EvidencePacketValidationResult(
@@ -174,6 +175,12 @@ public sealed class EvidencePacketValidationService
             ready.Count == required.Length ? EvidenceStatusDto.Ready :
             EvidenceStatusDto.ReviewRequired;
 
+        var orphanEvidenceIds = issues
+            .Where(static issue => string.Equals(issue.Code, "orphan-evidence", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(issue.EvidenceId))
+            .Select(static issue => issue.EvidenceId!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static id => id, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         return new EvidenceCompletenessDto(
             Score: score,
             Status: status,
@@ -183,7 +190,10 @@ public sealed class EvidencePacketValidationService
             StaleIds: stale.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray(),
             BlockingWorkItemIds: blockers.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray())
         {
-            ValidationIssues = issues.Distinct().ToArray()
+            ValidationIssues = issues.Distinct().ToArray(),
+            BlockingIssueCount = issues.Count(static issue => issue.Severity == EvidenceValidationSeverityDto.Critical),
+            WarningIssueCount = issues.Count(static issue => issue.Severity == EvidenceValidationSeverityDto.Warning),
+            OrphanEvidenceIds = orphanEvidenceIds
         };
     }
 
@@ -283,5 +293,44 @@ public sealed class EvidencePacketValidationService
             EvidenceId: node.EvidenceId,
             EvidenceKind: node.Kind,
             SourceSystem: node.SourceSystem));
+    }
+
+    private static void ApplyCanonicalSubjectLinkageIssues(
+        IReadOnlyList<EvidenceNodeDto> nodes,
+        List<EvidenceValidationIssueDto> issues)
+    {
+        var canonicalKinds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "run", "account", "fund", "strategy", "instrument", "reconciliation", "report", "approval"
+        };
+
+        foreach (var node in nodes)
+        {
+            foreach (var artifact in node.ArtifactRefs.Where(static artifact => artifact.Retained))
+            {
+                if (string.IsNullOrWhiteSpace(artifact.CanonicalSubjectKind) || string.IsNullOrWhiteSpace(artifact.CanonicalSubjectId))
+                {
+                    issues.Add(new EvidenceValidationIssueDto(
+                        Code: "retained-artifact-missing-canonical-subject",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: $"Retained artifact '{artifact.ArtifactId}' is missing canonical subject linkage.",
+                        EvidenceId: node.EvidenceId,
+                        EvidenceKind: node.Kind,
+                        SourceSystem: node.SourceSystem));
+                    continue;
+                }
+
+                if (!canonicalKinds.Contains(artifact.CanonicalSubjectKind))
+                {
+                    issues.Add(new EvidenceValidationIssueDto(
+                        Code: "retained-artifact-invalid-canonical-subject-kind",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: $"Retained artifact '{artifact.ArtifactId}' links to unsupported subject kind '{artifact.CanonicalSubjectKind}'.",
+                        EvidenceId: node.EvidenceId,
+                        EvidenceKind: node.Kind,
+                        SourceSystem: node.SourceSystem));
+                }
+            }
+        }
     }
 }

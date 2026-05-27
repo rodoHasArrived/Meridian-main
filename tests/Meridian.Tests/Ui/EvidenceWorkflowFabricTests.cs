@@ -230,6 +230,54 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public void EvidencePacketValidationService_DetectsOrphansAndCanonicalSubjectLinkageWithoutFalsePositives()
+    {
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-orphan-check");
+        var linkedA = Node(subject, "linked-a", "run-ledger", EvidenceStatusDto.Ready);
+        var linkedB = Node(subject, "linked-b", "report-pack", EvidenceStatusDto.Ready);
+        var orphan = Node(subject, "orphan", "approval", EvidenceStatusDto.Ready);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [linkedA, linkedB, orphan],
+            [new EvidenceEdgeDto("linked-a", "linked-b", "supports", "linked evidence")],
+            new HashSet<string>(["linked-a", "linked-b"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: true);
+
+        result.Completeness.OrphanEvidenceIds.Should().Contain("orphan");
+        result.Completeness.OrphanEvidenceIds.Should().NotContain("linked-a");
+        result.Completeness.WarningIssueCount.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_BlocksWhenRetainedArtifactsMissCanonicalSubject()
+    {
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
+        var node = Node(
+            subject,
+            "report",
+            "report-pack",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto("a1", "report-pack", "/tmp/a1.json", null, DateTimeOffset.UtcNow, null, true)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [node],
+            [],
+            new HashSet<string>(["report"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        result.Completeness.BlockingIssueCount.Should().BeGreaterThan(0);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "retained-artifact-missing-canonical-subject" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+    }
+
+    [Fact]
     public async Task EvidenceGraphService_DuringCancelledReview_PreservesCancellation()
     {
         var service = CreateGraphService([new StubContributor("slow", static _ => true, _ => new EvidenceContribution([], [], [], [], []))]);
