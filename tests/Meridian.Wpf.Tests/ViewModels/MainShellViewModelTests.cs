@@ -778,6 +778,43 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void OperatorInboxPresentation_UsesSharedTradingReadinessRouteForPaperReplayWorkItems()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "paper-replay-stale-session-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification is stale",
+                        Detail: "Session changed after the latest replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 0,
+                ReviewCount: 1,
+                Summary: "1 critical work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("TradingShell");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("trading");
+            vm.CurrentPageTag.Should().Be("TradingShell");
+        });
+    }
+
+    [Fact]
     public void OperatorInboxPresentation_RoutesLedgerPeriodCloseToReconciliation()
     {
         WpfTestThread.Run(async () =>
