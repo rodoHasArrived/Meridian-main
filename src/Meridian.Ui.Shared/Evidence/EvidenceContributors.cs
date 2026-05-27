@@ -56,6 +56,7 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
                 Artifact(
                     $"{detailId}:review-packet",
                     "review-packet-route",
+                    subject: context.Subject,
                     route: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", run.Summary.RunId),
                     generatedAt: generatedAt)
             ]));
@@ -77,7 +78,7 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
             run.Summary.LastUpdatedAt,
             artifacts: run.Ledger is null
                 ? []
-                : BuildRunLedgerArtifacts(ledgerId, run.Summary.RunId, run.Ledger.AsOf));
+                : BuildRunLedgerArtifacts(context.Subject, ledgerId, run.Summary.RunId, run.Ledger.AsOf));
 
         AddLinkedNode(
             nodes,
@@ -176,6 +177,7 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
         => new([], [], [], [], [warning]);
 
     private static IReadOnlyList<EvidenceArtifactRefDto> BuildRunLedgerArtifacts(
+        EvidenceSubjectDto subject,
         string ledgerId,
         string runId,
         DateTimeOffset generatedAt)
@@ -185,11 +187,13 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
             Artifact(
                 $"{ledgerId}:journal",
                 "ledger-journal",
+                subject: subject,
                 route: UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", runId),
                 generatedAt: generatedAt),
             Artifact(
                 $"{ledgerId}:trial-balance",
                 "ledger-trial-balance",
+                subject: subject,
                 route: UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", runId),
                 generatedAt: generatedAt)
         ];
@@ -272,6 +276,7 @@ public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
                         Artifact(
                             $"{reportPackId}:manifest",
                             "report-pack-manifest",
+                            subject: context.Subject,
                             path: readiness.ReportPack.ManifestPath,
                             generatedAt: readiness.ReportPack.GeneratedAt ?? readiness.AsOf)
                     ]));
@@ -382,6 +387,7 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
             artifacts: snapshot.Artifacts.Select(artifact => Artifact(
                 $"{nodeId}:{artifact.ArtifactKind}:{artifact.RelativePath}",
                 artifact.ArtifactKind,
+                subject: context.Subject,
                 path: artifact.RelativePath,
                 generatedAt: snapshot.GeneratedAt,
                 hash: artifact.ChecksumSha256)).ToArray());
@@ -453,6 +459,7 @@ public sealed class ProviderTrustEvidenceContributor : IEvidenceContributor
                     Artifact(
                         $"{nodeId}:dk1-packet",
                         "dk1-pilot-parity-packet",
+                        subject: context.Subject,
                         path: readiness.PacketPath,
                         generatedAt: readiness.GeneratedAt ?? DateTimeOffset.UtcNow)
                 ],
@@ -485,6 +492,7 @@ public sealed class ExportEvidenceContributor : IEvidenceContributor
             artifacts: profiles.Select(profile => Artifact(
                 $"{nodeId}:{profile.Id}",
                 "export-profile",
+                subject: context.Subject,
                 route: $"/api/export/analysis/{Uri.EscapeDataString(profile.Id)}",
                 generatedAt: DateTimeOffset.UtcNow)).ToArray());
 
@@ -526,11 +534,14 @@ internal static class EvidenceContributionHelpers
     public static EvidenceArtifactRefDto Artifact(
         string artifactId,
         string kind,
+        EvidenceSubjectDto? subject = null,
         string? path = null,
         string? route = null,
         DateTimeOffset? generatedAt = null,
         string? hash = null,
-        bool retained = true)
+        bool retained = true,
+        string? canonicalSubjectKind = null,
+        string? canonicalSubjectId = null)
         => new(
             ArtifactId: artifactId,
             Kind: kind,
@@ -538,7 +549,9 @@ internal static class EvidenceContributionHelpers
             Route: route,
             GeneratedAt: generatedAt ?? DateTimeOffset.UtcNow,
             Hash: hash,
-            Retained: retained);
+            Retained: retained,
+            CanonicalSubjectKind: canonicalSubjectKind ?? subject?.SubjectKind,
+            CanonicalSubjectId: canonicalSubjectId ?? subject?.SubjectId);
 
     public static void AddLinkedNode(
         List<EvidenceNodeDto> nodes,
