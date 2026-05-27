@@ -519,7 +519,7 @@ describe("GovernanceScreen", () => {
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting");
+    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting/ledger");
     expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
