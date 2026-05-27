@@ -138,6 +138,7 @@ jobs:
 
       - name: Open pull request with screenshot updates
         if: ${{ always() && inputs.commit == true && steps.screenshot_changes.outputs.has_changes == 'true' }}
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v7
         with:
           add-paths: ${{ inputs.output_dir }}
