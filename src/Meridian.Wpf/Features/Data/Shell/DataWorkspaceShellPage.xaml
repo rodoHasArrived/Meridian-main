@@ -184,11 +184,15 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0"
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
+                                                 ShellContext="{Binding ShellContext}" />
+
+        <Border Grid.Row="1"
                 Style="{StaticResource SectionCardStyle}"
                 Margin="0,0,0,16">
             <Grid>
@@ -335,10 +339,10 @@
         </Border>
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
-                                          Grid.Row="1"
+                                          Grid.Row="2"
                                           CommandInvoked="OnCommandBarCommandInvoked" />
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.15*" />
                 <ColumnDefinition Width="16" />
@@ -549,7 +553,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Margin="0,12,0,0"
                 Style="{StaticResource WorkspaceDockHostStyle}">
             <StackPanel>

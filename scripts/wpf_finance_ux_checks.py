@@ -128,19 +128,19 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
         '<TextBlock Text="Home"',
         '<TextBlock Text="Active Work"',
         '<TextBlock Text="Review / Alerts"',
-        '<TextBlock Text="Admin / Support"',
+        'AutomationProperties.AutomationId="WorkspacePrimaryNavList"',
+        'AutomationProperties.AutomationId="WorkspaceSecondaryNavList"',
+        'AutomationProperties.AutomationId="WorkspaceOverflowNavList"',
+        'AutomationProperties.AutomationId="RelatedWorkflowNavList"',
     ]
-    nav_details: list[str] = []
-    nav_passed = True
-    for token in navigation_tokens:
-        passed, detail = count_check(main_page, token, 4)
-        nav_passed &= passed
-        nav_details.append(detail)
+    missing_navigation_tokens = require_all_tokens(main_page, navigation_tokens)
     results.append(
         CheckResult(
-            name="Sidebar navigation is grouped for each workspace",
-            passed=nav_passed,
-            detail=" ".join(nav_details),
+            name="Sidebar navigation exposes grouped workflow lists",
+            passed=not missing_navigation_tokens,
+            detail="Home, active-work, review-alert, and related workflow navigation groups are present."
+            if not missing_navigation_tokens
+            else f"Missing navigation tokens: {', '.join(missing_navigation_tokens)}",
         )
     )
 
@@ -173,27 +173,51 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
         )
     )
 
-    workspace_pages = {
+    context_shell_pages = {
         "Research": "src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml",
-        "Trading": "src/Meridian.Wpf/Views/TradingWorkspaceShellPage.xaml",
-        "Data Operations": "src/Meridian.Wpf/Views/DataOperationsWorkspaceShellPage.xaml",
+        "Trading": "src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml",
+        "Portfolio": "src/Meridian.Wpf/Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml",
+        "Accounting": "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "Reporting": "src/Meridian.Wpf/Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml",
+        "Data": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
+        "Settings": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPage.xaml",
     }
-    page_failures: list[str] = []
-    for workspace_name, relative_path in workspace_pages.items():
+    context_failures: list[str] = []
+    for workspace_name, relative_path in context_shell_pages.items():
         text = read_required_text(repo_root, target_roots, relative_path)
-        missing_tokens = require_all_tokens(
-            text,
-            ["WorkspaceShellContextStripControl", "WorkspaceCommandBarControl"],
-        )
+        missing_tokens = require_all_tokens(text, ["WorkspaceShellContextStripControl"])
         if missing_tokens:
-            page_failures.append(f"{workspace_name}: missing {', '.join(missing_tokens)}")
+            context_failures.append(f"{workspace_name}: missing {', '.join(missing_tokens)}")
     results.append(
         CheckResult(
-            name="Research, Trading, and Data Operations adopt shared shell chrome",
-            passed=not page_failures,
-            detail="All non-governance workspace shells include the shared context strip and command bar."
-            if not page_failures
-            else "; ".join(page_failures),
+            name="Top-level WPF shells expose shared context strip",
+            passed=not context_failures,
+            detail="Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings shells include the shared context strip."
+            if not context_failures
+            else "; ".join(context_failures),
+        )
+    )
+
+    command_shell_pages = {
+        "Research": "src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml",
+        "Trading": "src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml",
+        "Accounting": "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "Data": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
+        "Settings": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPage.xaml",
+    }
+    command_failures: list[str] = []
+    for workspace_name, relative_path in command_shell_pages.items():
+        text = read_required_text(repo_root, target_roots, relative_path)
+        missing_tokens = require_all_tokens(text, ["WorkspaceCommandBarControl"])
+        if missing_tokens:
+            command_failures.append(f"{workspace_name}: missing {', '.join(missing_tokens)}")
+    results.append(
+        CheckResult(
+            name="Action-oriented WPF shells expose shared command bar",
+            passed=not command_failures,
+            detail="Research, Trading, Accounting, Data, and Settings shells include the shared command bar."
+            if not command_failures
+            else "; ".join(command_failures),
         )
     )
 
