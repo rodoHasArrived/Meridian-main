@@ -597,6 +597,12 @@ public sealed class OperationsContinuityWorkflow
                 []);
         }
 
+        if (GetAssignedApprovalReviewer() is { } assignedReviewer &&
+            !string.Equals(assignedReviewer, request.Reviewer.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateReviewerMismatchBlocker(assignedReviewer, request.Reviewer);
+        }
+
         return null;
     }
 
@@ -857,6 +863,12 @@ public sealed class OperationsContinuityWorkflow
                 []);
         }
 
+        if (GetAssignedApprovalReviewer() is { } assignedReviewer &&
+            !string.Equals(assignedReviewer, request.Reviewer.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateReviewerMismatchBlocker(assignedReviewer, request.Reviewer);
+        }
+
         if (!IsRequestedReportPackReady(request.ReportPackId))
         {
             return CreateReportPackMismatchBlocker(request.ReportPackId);
@@ -961,6 +973,19 @@ public sealed class OperationsContinuityWorkflow
         ReportPackReadiness.IsReady &&
         !string.IsNullOrWhiteSpace(ReportPackReadiness.ReportPackId) &&
         string.Equals(ReportPackReadiness.ReportPackId, reportPackId, StringComparison.Ordinal);
+
+    private string? GetAssignedApprovalReviewer() =>
+        Approvals.LastOrDefault(static approval =>
+            approval.Status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned)
+            ?.Reviewer?.Trim();
+
+    private static OperationsWorkflowBlockerDto CreateReviewerMismatchBlocker(string assignedReviewer, string? requestedReviewer) =>
+        new(
+            "APPROVAL_REVIEWER_MISMATCH",
+            $"Approval decision reviewer '{requestedReviewer}' does not match assigned reviewer '{assignedReviewer}'.",
+            OperationsGateKeyDto.Approval,
+            "Error",
+            []);
 
     private OperationsWorkflowBlockerDto CreateReportPackMismatchBlocker(string? reportPackId) =>
         new(

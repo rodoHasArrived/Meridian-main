@@ -77,8 +77,8 @@ const detail: OperationsContinuityWorkflow = {
   brokerIntakeState: "Complete",
   securityMasterState: "Complete",
   ledgerPostingState: "Drafted",
-  reconciliationState: "Pending",
-  approvalState: "Pending",
+  reconciliationState: "InReview",
+  approvalState: "ReviewerAssigned",
   timeline: [
     {
       auditId: "cdb9449e-7402-48b7-9acf-8568b7363e16",
@@ -102,7 +102,18 @@ const detail: OperationsContinuityWorkflow = {
   ],
   breakCases: [],
   ledgerPreview: null,
-  approvals: [],
+  approvals: [
+    {
+      approvalId: "approval-close-2026-05",
+      status: "ReviewerAssigned",
+      operator: "ops-user",
+      reviewer: "fund-controller",
+      rationale: "Pending final ledger validation before close sign-off.",
+      submittedAtUtc: "2026-05-08T15:05:00Z",
+      decidedAtUtc: null,
+      evidenceLinks: []
+    }
+  ],
   reportPackReadiness: {
     isReady: false,
     reportPackId: null,
@@ -144,6 +155,16 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.workflowsTableCaption).toContain("Select a row to inspect close-lane gates");
     expect(vm.selectedDetail?.metadata).toContainEqual({ label: "Break cases", value: "0" });
+    expect(vm.selectedDetail?.metadata).toEqual(expect.arrayContaining([
+      { label: "Reconciliation", value: "In Review" },
+      { label: "Approval", value: "Reviewer Assigned" },
+      {
+        label: "Sign-off",
+        value: "Reviewer Assigned by fund-controller at May 08, 15:05 UTC: Pending final ledger validation before close sign-off."
+      },
+      { label: "Report pack", value: "Blocked: Close workflow has unresolved ledger blockers." },
+      { label: "Latest audit", value: "Ledger Draft Blocked cdb9449e / devhash-ledg" }
+    ]));
     expect(vm.gates.map((gate) => gate.label)).toEqual(["Broker intake", "Ledger posting"]);
     expect(vm.blockers[0]).toMatchObject({
       code: "LEDGER_VALIDATION_REQUIRED",

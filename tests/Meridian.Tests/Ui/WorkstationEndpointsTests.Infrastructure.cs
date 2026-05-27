@@ -137,10 +137,10 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
+    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate(Guid? aggregateId = null) =>
         new(
             JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
+            AggregateId: aggregateId ?? Guid.NewGuid(),
             PeriodId: Guid.NewGuid(),
             Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             Description: "Operations continuity endpoint posting",

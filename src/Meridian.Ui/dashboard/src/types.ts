@@ -1603,7 +1603,13 @@ export interface RunAttributionSummary {
 
 export type StrategyRunMode = "Backtest" | "Paper" | "Live";
 export type StrategyRunEngine = "Internal" | "QuantConnect" | "External";
-export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled";
+export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled" | "Stopped";
+export type StrategyRunPromotionState =
+  | "None"
+  | "RequiresCompletion"
+  | "CandidateForPaper"
+  | "CandidateForLive"
+  | "LiveManaged";
 
 export interface StrategyRunSummary {
   runId: string;
@@ -1624,6 +1630,110 @@ export interface StrategyRunSummary {
   fillCount: number;
   lastUpdatedAt: string;
   auditReference: string | null;
+}
+
+export interface StrategyRunDetail {
+  summary: StrategyRunSummary;
+  parameters: Record<string, string>;
+  portfolio: PortfolioSummary | null;
+  ledger: LedgerSummary | null;
+  execution?: unknown | null;
+  promotion?: unknown | null;
+  governance?: unknown | null;
+  governanceHooks?: unknown[] | null;
+}
+
+export interface StrategyRunContinuityLink {
+  runId: string;
+  strategyId: string;
+  strategyName: string;
+  mode: StrategyRunMode;
+  status: StrategyRunStatus;
+  startedAt: string;
+  completedAt: string | null;
+  promotionState: StrategyRunPromotionState;
+  fundProfileId?: string | null;
+  fundDisplayName?: string | null;
+}
+
+export interface StrategyRunContinuityLineage {
+  parentRunId: string | null;
+  parentRun: StrategyRunContinuityLink | null;
+  childRuns: StrategyRunContinuityLink[];
+}
+
+export interface StrategyRunCashFlowDigest {
+  asOf: string;
+  currency: string;
+  totalEntries: number;
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  projectedNetPosition: number;
+  bucketCount: number;
+  nextBucketStart: string | null;
+  nextBucketEnd: string | null;
+  nextBucketNetFlow: number | null;
+}
+
+export interface ReconciliationRunSummary {
+  reconciliationRunId: string;
+  runId: string;
+  createdAt: string;
+  portfolioAsOf: string | null;
+  ledgerAsOf: string | null;
+  matchCount: number;
+  breakCount: number;
+  openBreakCount: number;
+  hasTimingDrift: boolean;
+  amountTolerance: number;
+  maxAsOfDriftMinutes: number;
+  securityIssueCount: number;
+  hasSecurityCoverageIssues: boolean;
+  bankTransactionCount: number;
+  bankBreakCount: number;
+  expectedAccountingEventCount: number;
+  expectedJournalPreviewCount: number;
+  securityMasterAccountingIssueCount: number;
+  hasSecurityMasterAccountingIssues: boolean;
+}
+
+export type StrategyRunContinuityWarningSeverity = "Info" | "Warning" | "Critical";
+export type StrategyRunContinuitySeamHealthStatus = "Healthy" | "Missing" | "Stale";
+
+export interface StrategyRunContinuityWarning {
+  code: string;
+  severity: StrategyRunContinuityWarningSeverity;
+  message: string;
+  sourceSeam: string;
+}
+
+export interface StrategyRunContinuityStatus {
+  hasRun: boolean;
+  runHealth: StrategyRunContinuitySeamHealthStatus;
+  hasFills: boolean;
+  fillsHealth: StrategyRunContinuitySeamHealthStatus;
+  hasPortfolio: boolean;
+  portfolioHealth: StrategyRunContinuitySeamHealthStatus;
+  hasLedger: boolean;
+  ledgerHealth: StrategyRunContinuitySeamHealthStatus;
+  hasCashFlow: boolean;
+  cashFlowHealth: StrategyRunContinuitySeamHealthStatus;
+  hasReconciliation: boolean;
+  reconciliationHealth: StrategyRunContinuitySeamHealthStatus;
+  asOfDriftMinutes: number;
+  openReconciliationBreaks: number;
+  securityCoverageIssueCount: number;
+  hasWarnings: boolean;
+  warnings: StrategyRunContinuityWarning[];
+}
+
+export interface StrategyRunContinuityDto {
+  run: StrategyRunDetail;
+  lineage: StrategyRunContinuityLineage;
+  cashFlow: StrategyRunCashFlowDigest | null;
+  reconciliation: ReconciliationRunSummary | null;
+  continuityStatus: StrategyRunContinuityStatus;
 }
 
 // --- Security Master workstation types ---

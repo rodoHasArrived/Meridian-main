@@ -1183,6 +1183,29 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ApproveWorkflowAsync_ShouldRejectReviewerThatDoesNotMatchSubmission()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "other-reviewer",
+            "Approve with mismatched reviewer",
+            "report-pack-1"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "APPROVAL_REVIEWER_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task RejectWorkflowAsync_ShouldRouteLedgerMismatchBackToLedgerDraft()
     {
         var service = CreateService(out _, out var auditStore);
@@ -1203,6 +1226,29 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().Contain("approval-rejected");
+    }
+
+    [Fact]
+    public async Task RejectWorkflowAsync_ShouldRejectReviewerThatDoesNotMatchSubmission()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.RejectWorkflowAsync(workflow.WorkflowId, new OperationsRejectWorkflowRequestDto(
+            workflow.Version,
+            "ops-user",
+            Reviewer: "other-reviewer",
+            Rationale: "Reject with mismatched reviewer",
+            ReasonCode: "LedgerMismatch"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "APPROVAL_REVIEWER_MISMATCH" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
     }
 
     [Fact]

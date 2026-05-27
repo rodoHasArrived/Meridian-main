@@ -378,10 +378,61 @@ function buildDetailPanel(
       { label: "Version", value: String(detail?.version ?? summary.version) },
       { label: "Updated", value: formatDate(summary.updatedAtUtc) },
       { label: "Security Master", value: summary.securityMasterSnapshotId ?? "Snapshot pending" },
+      { label: "Reconciliation", value: detail ? splitEnumLabel(detail.reconciliationState) : "Detail pending" },
+      { label: "Approval", value: detail ? splitEnumLabel(detail.approvalState) : "Detail pending" },
+      { label: "Sign-off", value: detail ? buildSignoffSummary(detail) : "Detail pending" },
+      { label: "Report pack", value: detail ? buildReportPackSummary(detail) : "Detail pending" },
+      { label: "Latest audit", value: detail ? buildLatestAuditSummary(detail) : "Detail pending" },
       { label: "Break cases", value: detail ? String(detail.breakCases.length) : "Detail pending" },
       { label: "Blockers", value: String(blockerCount) }
     ]
   };
+}
+
+function buildSignoffSummary(detail: OperationsContinuityWorkflow): string {
+  const latestApproval = [...detail.approvals].sort(compareApprovalsByDecisionTime)[0] ?? null;
+  if (!latestApproval) {
+    return "No sign-off decision recorded";
+  }
+
+  const actor = latestApproval.reviewer?.trim() || latestApproval.operator?.trim() || "unknown reviewer";
+  const timestamp = latestApproval.decidedAtUtc ?? latestApproval.submittedAtUtc;
+  const decisionLabel = splitEnumLabel(latestApproval.status);
+  const timestampLabel = timestamp ? ` at ${formatDate(timestamp)}` : "";
+  const rationale = latestApproval.rationale?.trim();
+  return rationale
+    ? `${decisionLabel} by ${actor}${timestampLabel}: ${rationale}`
+    : `${decisionLabel} by ${actor}${timestampLabel}`;
+}
+
+function buildReportPackSummary(detail: OperationsContinuityWorkflow): string {
+  const readiness = detail.reportPackReadiness;
+  if (readiness.isReady) {
+    return `Ready${readiness.reportPackId ? `: ${readiness.reportPackId}` : ""}`;
+  }
+
+  return readiness.blockingReason?.trim()
+    ? `Blocked: ${readiness.blockingReason}`
+    : "Blocked until close evidence is complete";
+}
+
+function buildLatestAuditSummary(detail: OperationsContinuityWorkflow): string {
+  const latest = [...detail.timeline].sort((left, right) => right.occurredAtUtc.localeCompare(left.occurredAtUtc))[0] ?? null;
+  if (!latest) {
+    return "No audit event recorded";
+  }
+
+  const hashLabel = latest.currentHash ? ` / ${latest.currentHash.slice(0, 12)}` : "";
+  return `${eventLabel(latest.eventType)} ${latest.auditId.slice(0, 8)}${hashLabel}`;
+}
+
+function compareApprovalsByDecisionTime(
+  left: OperationsContinuityWorkflow["approvals"][number],
+  right: OperationsContinuityWorkflow["approvals"][number]
+): number {
+  const leftTime = left.decidedAtUtc ?? left.submittedAtUtc ?? "";
+  const rightTime = right.decidedAtUtc ?? right.submittedAtUtc ?? "";
+  return rightTime.localeCompare(leftTime);
 }
 
 function buildNextActionViewModel({
