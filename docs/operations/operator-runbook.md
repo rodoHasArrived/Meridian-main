@@ -634,3 +634,30 @@ For recurring production issues, use this quick triage path before escalating:
 **Version:** 1.6.1
 **Last Updated:** 2026-04-21
 **See Also:** [Configuration](../HELP.md#configuration) | [Troubleshooting](../HELP.md#troubleshooting) | [Architecture](../architecture/overview.md) | [Lean Integration](../integrations/lean-integration.md)
+
+---
+
+## Security remediation weekly review cadence
+
+Use this workflow every week (recommended: first business day) to keep threat-model residuals and remediation evidence current.
+
+1. Open `docs/security/security-remediation-backlog.md` and review every open backlog item (`SEC-*`).
+2. For each item, record:
+   - current status (`Not Started`, `In Progress`, `Blocked`, `Done`),
+   - owner confirmation,
+   - target-date drift (if any),
+   - links to new closure evidence (PRs, test logs, runtime captures).
+3. Verify each `Done` item has all closure artifacts:
+   - code change reference,
+   - test evidence proving mitigation,
+   - threat-model update confirming residual concern closure or risk downgrade.
+4. Escalate any overdue `High`/`Critical` item to release-readiness review immediately.
+5. Publish weekly summary in the operations channel and attach evidence links in the current readiness packet.
+
+### Closure evidence requirements
+
+An item is not considered closed unless all of the following are present:
+- merged implementation PR link,
+- passing validation command output or CI job links,
+- explicit mapping back to the originating threat-model residual line(s),
+- date-stamped reviewer sign-off from security and owning module lead.
