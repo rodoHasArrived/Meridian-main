@@ -47,6 +47,11 @@ def read_required_text(repo_root: Path, target_roots: list[Path], relative_path:
     return path.read_text(encoding="utf-8")
 
 
+def is_required_path_in_scope(repo_root: Path, target_roots: list[Path], relative_path: str) -> bool:
+    path = (repo_root / relative_path).resolve()
+    return path.exists() and any(is_relative_to(path, target_root) for target_root in target_roots)
+
+
 def require_all_tokens(text: str, tokens: list[str]) -> list[str]:
     return [token for token in tokens if token not in text]
 
@@ -221,7 +226,74 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
         )
     )
 
+    accounting_route_check = build_accounting_workflow_route_check(repo_root, target_roots)
+    if accounting_route_check is not None:
+        results.append(accounting_route_check)
+
     return results
+
+
+def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
+        "src/Meridian.Wpf/Services/NavigationService.cs",
+        "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    shared_workflows = read_required_text(repo_root, target_roots, required_paths[0])
+    wpf_navigation = read_required_text(repo_root, target_roots, required_paths[1])
+    browser_routes = read_required_text(repo_root, target_roots, required_paths[2])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"shared workflow: {token}"
+        for token in require_all_tokens(
+            shared_workflows,
+            [
+                "WorkflowActionIds.AccountingReviewReconciliation",
+                '"FundReconciliation"',
+                "UiApiRoutes.ReconciliationBreakQueue",
+                "WorkflowActionIds.AccountingReviewLedgerContinuity",
+                '"FundTrialBalance"',
+                "WorkflowActionIds.AccountingReviewAuditTrail",
+                '"FundAuditTrail"',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF navigation: {token}"
+        for token in require_all_tokens(
+            wpf_navigation,
+            [
+                '"FundReconciliation" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Reconciliation)',
+                '"FundTrialBalance" => new FundOperationsNavigationContext(Tab: FundOperationsTab.TrialBalance)',
+                '"FundAuditTrail" => new FundOperationsNavigationContext(Tab: FundOperationsTab.AuditTrail)',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser route: {token}"
+        for token in require_all_tokens(
+            browser_routes,
+            [
+                "FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation",
+                "FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accountingLedger",
+                "FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Accounting workflow routes stay shared across WPF and browser",
+        passed=not missing_tokens,
+        detail=(
+            "Shared accounting workflow actions route to WPF FundOperations tabs and browser accounting routes for reconciliation, ledger continuity, and audit trail."
+            if not missing_tokens
+            else "Missing route tokens: " + ", ".join(missing_tokens)
+        ),
+    )
 
 
 def render_report(repo_root: Path, target_roots: list[Path], results: list[CheckResult]) -> str:
