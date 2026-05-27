@@ -2675,6 +2675,11 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Owner", value: row.ownerLabel },
       { label: "Detected", value: row.detectedAtLabel },
       { label: "Updated", value: row.lastUpdatedAtLabel },
+      { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
+      { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
+      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
+      { label: "Required sign-off", value: buildReconciliationBreakSignoffText(row) },
+      { label: "Decision note", value: formatReconciliationMetadata(row.resolutionNote, "No decision captured") },
       { label: "Routing", value: row.routingTarget ?? "No routing target" },
       { label: "Fund account", value: row.fundAccountId ?? "Not scoped" }
     ],
@@ -2706,6 +2711,26 @@ function reconciliationBreakStatusBadgeVariant(
   if (status === "InReview") return "warning";
   if (status === "Dismissed") return "outline";
   return "danger";
+}
+
+function buildReconciliationBreakSignoffText(row: Pick<ReconciliationBreakQueueItem, "requiredSignoffRole" | "signoffStatus" | "status" | "resolvedAt">): string {
+  const role = formatReconciliationMetadata(row.requiredSignoffRole, "Not configured");
+  const status = formatReconciliationMetadata(row.signoffStatus, "Pending");
+
+  if (role === "Not configured") {
+    return `Sign-off: ${status}. Required role is not configured.`;
+  }
+
+  if (row.resolvedAt && !status.toLowerCase().includes("signed")) {
+    return `Decision captured; sign-off: ${status} by ${role}. Close approval remains blocked.`;
+  }
+
+  return `Sign-off: ${status} by ${role}.`;
+}
+
+function formatReconciliationMetadata(value: string | null | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
 }
 
 function buildBreakActionDisabledReason({

@@ -1194,7 +1194,12 @@ describe("GovernanceScreen", () => {
       status: "Resolved" as const,
       resolvedBy: "ops.gov",
       resolvedAt: "2026-01-01T00:10:00Z",
-      resolutionNote: "Matched ledger adjustment."
+      resolutionNote: "Matched ledger adjustment.",
+      exceptionRoute: "fund-ops-review",
+      toleranceProfileId: "cash-variance-ops",
+      toleranceBand: 250,
+      requiredSignoffRole: "Fund operations lead",
+      signoffStatus: "Pending Signoff"
     };
     const dismissedBreak = {
       ...data.breakQueue[0],
@@ -1219,6 +1224,11 @@ describe("GovernanceScreen", () => {
       .toHaveAttribute("title", "This break is already resolved.");
     expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
       .toHaveAttribute("title", "This break is already dismissed.");
+
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
+    const resolvedDetail = screen.getByRole("region", { name: "Reconciliation break detail for run-42:resolved" });
+    expect(resolvedDetail).toHaveTextContent("Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked.");
+    expect(resolvedDetail).toHaveTextContent("Matched ledger adjustment.");
 
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
 

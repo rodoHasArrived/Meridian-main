@@ -1344,6 +1344,11 @@ export interface ReconciliationBreakQueueItem {
   resolvedBy: string | null;
   resolvedAt: string | null;
   resolutionNote: string | null;
+  exceptionRoute?: string | null;
+  toleranceProfileId?: string | null;
+  toleranceBand?: number | null;
+  requiredSignoffRole?: string | null;
+  signoffStatus?: string | null;
   fundAccountId?: string | null;
   explainabilitySummary?: string | null;
   routingTarget?: string | null;

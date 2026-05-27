@@ -47,6 +47,9 @@ readiness, and provider setup, while keeping retry-to-live behavior available.
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the
 shared workflow registry do not collapse to the accounting root.
+Accounting reconciliation break detail preserves shared queue metadata such as exception route,
+tolerance profile, required sign-off role/status, and decision note so browser recovery posture
+matches the retained WPF Fund Ledger detail panel.
 
 ## Diagrams
 

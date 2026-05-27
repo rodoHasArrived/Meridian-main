@@ -484,6 +484,11 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     resolvedBy: "ops.gov",
     resolvedAt: "2026-01-02T00:10:00Z",
     resolutionNote: "Reviewed in governance panel.",
+    exceptionRoute: "fund-ops-review",
+    toleranceProfileId: "fee-variance-ops",
+    toleranceBand: 100,
+    requiredSignoffRole: "Fund operations lead",
+    signoffStatus: "Pending Signoff",
     routingTarget: "FundTrialBalance",
     routingDetail: "Open the accounting trial balance for evidence review.",
     recommendedAction: "Review matched fee entries before closing."
@@ -1757,7 +1762,15 @@ describe("governance-screen view model", () => {
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Detected", value: "Jan 2, 00:00 UTC" },
-      { label: "Updated", value: "Jan 2, 00:00 UTC" }
+      { label: "Updated", value: "Jan 2, 00:00 UTC" },
+      { label: "Exception route", value: "fund-ops-review" },
+      { label: "Tolerance profile", value: "fee-variance-ops" },
+      { label: "Tolerance band", value: "$100" },
+      {
+        label: "Required sign-off",
+        value: "Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked."
+      },
+      { label: "Decision note", value: "Reviewed in governance panel." }
     ]));
     expect(state.rows[1]).toMatchObject({
       isSelected: true,
