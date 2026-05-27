@@ -349,7 +349,7 @@ describe("command palette view model", () => {
             marketPatternTags: ["exception queue"],
             actions: [
               {
-                actionId: "workflow.accounting.review-reconciliation",
+                actionId: "workflow.accounting.review-reconciliation-breaks",
                 label: "Review Reconciliation Breaks",
                 detail: "Open the reconciliation lane and work the break queue.",
                 targetPageTag: "FundReconciliation",
@@ -358,6 +358,28 @@ describe("command palette view model", () => {
                 routePrefixes: ["/api/workstation/reconciliation/break-queue"],
                 routeContains: [],
                 aliases: []
+              },
+              {
+                actionId: "workflow.accounting.review-ledger-continuity",
+                label: "Review Ledger Continuity",
+                detail: "Open trial-balance and continuity surfaces for the selected context.",
+                targetPageTag: "FundTrialBalance",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting.review-audit-trail",
+                label: "Review Audit Trail",
+                detail: "Inspect approvals, replay evidence, and trust-gate audit history.",
+                targetPageTag: "FundAuditTrail",
+                tone: "Primary",
+                workItemKind: "PaperReplay",
+                routePrefixes: [],
+                routeContains: [],
+                aliases: ["workflow.trading.review-paper-replay"]
               }
             ]
           }
@@ -372,7 +394,7 @@ describe("command palette view model", () => {
             description: "Pinned accounting triage",
             workflowId: "accounting-reconciliation-review",
             workflowTitle: "Accounting Reconciliation Review",
-            actionId: "workflow.accounting.review-reconciliation",
+            actionId: "workflow.accounting.review-reconciliation-breaks",
             actionLabel: "Review Reconciliation Breaks",
             workspaceId: "accounting",
             workspaceTitle: "Accounting",
@@ -387,12 +409,24 @@ describe("command palette view model", () => {
       }
     });
 
-    expect(model.itemCountLabel).toBe("7 workspaces - 14 quick routes - 1 preset - 1 workflow action");
-    expect(model.commandListLabel).toBe("23 commands");
-    expect(model.backendStatusLabel).toBe("1 workflow action - 1 preset");
-    expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-reconciliation")).toMatchObject({
+    expect(model.itemCountLabel).toBe("7 workspaces - 14 quick routes - 1 preset - 3 workflow actions");
+    expect(model.commandListLabel).toBe("25 commands");
+    expect(model.backendStatusLabel).toBe("3 workflow actions - 1 preset");
+    expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-reconciliation-breaks")).toMatchObject({
       kind: "workflow",
       route: "/accounting/reconciliation",
+      statusLabel: "Workflow",
+      presetId: null
+    });
+    expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-ledger-continuity")).toMatchObject({
+      kind: "workflow",
+      route: "/accounting/ledger",
+      statusLabel: "Workflow",
+      presetId: null
+    });
+    expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-audit-trail")).toMatchObject({
+      kind: "workflow",
+      route: "/accounting",
       statusLabel: "Workflow",
       presetId: null
     });

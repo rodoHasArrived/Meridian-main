@@ -230,6 +230,10 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     if accounting_route_check is not None:
         results.append(accounting_route_check)
 
+    trading_route_check = build_trading_workflow_route_check(repo_root, target_roots)
+    if trading_route_check is not None:
+        results.append(trading_route_check)
+
     return results
 
 
@@ -290,6 +294,86 @@ def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Pa
         passed=not missing_tokens,
         detail=(
             "Shared accounting workflow actions route to WPF FundOperations tabs and browser accounting routes for reconciliation, ledger continuity, and audit trail."
+            if not missing_tokens
+            else "Missing route tokens: " + ", ".join(missing_tokens)
+        ),
+    )
+
+
+def build_trading_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
+        "src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs",
+        "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
+        "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    shared_workflows = read_required_text(repo_root, target_roots, required_paths[0])
+    wpf_trading = read_required_text(repo_root, target_roots, required_paths[1])
+    wpf_inbox = read_required_text(repo_root, target_roots, required_paths[2])
+    browser_routes = read_required_text(repo_root, target_roots, required_paths[3])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"shared workflow: {token}"
+        for token in require_all_tokens(
+            shared_workflows,
+            [
+                "WorkflowActionIds.TradingReviewPaperCandidate",
+                '"TradingShell"',
+                "UiApiRoutes.WorkstationTradingReadiness",
+                "WorkflowActionIds.TradingOpenCockpit",
+                "UiApiRoutes.ExecutionSessions",
+                "WorkflowActionIds.TradingReviewExecutionControls",
+                '"RunRisk"',
+                "OperatorWorkItemKindDto.ExecutionControl",
+                "UiApiRoutes.ExecutionControls",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF trading shell: {token}"
+        for token in require_all_tokens(
+            wpf_trading,
+            [
+                '"RunRisk" => new(actionId, "RunRisk", PaneDropAction.SplitRight',
+                'string.Equals(action.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase)',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF inbox: {token}"
+        for token in require_all_tokens(
+            wpf_inbox,
+            [
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness)",
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions)",
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls)",
+                'return "TradingShell";',
+                "OperatorWorkItemKindDto.ExecutionControl => \"RunRisk\"",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser route: {token}"
+        for token in require_all_tokens(
+            browser_routes,
+            [
+                "TradingReadiness: WORKSTATION_ROUTE_CATALOG.tradingReadiness",
+                "TradingReadinessConsole: WORKSTATION_ROUTE_CATALOG.tradingReadiness",
+                "RunRisk: WORKSTATION_ROUTE_CATALOG.tradingReadiness",
+                "TradingShell: WORKSTATION_ROUTE_CATALOG.trading",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Trading workflow routes stay shared across WPF and browser",
+        passed=not missing_tokens,
+        detail=(
+            "Shared paper-trading workflow actions and inbox API routes resolve to WPF TradingShell/RunRisk targets and browser Trading readiness routes."
             if not missing_tokens
             else "Missing route tokens: " + ", ".join(missing_tokens)
         ),
