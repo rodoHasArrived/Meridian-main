@@ -5,6 +5,7 @@ using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Services.Services.Reconciliation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -102,6 +103,32 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunReconciliationHistory")
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
+
+        group.MapGet("/api/workstation/accounting/continuity/statement-runs", async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        {
+            if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("ListStatementRuns")
+        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200);
+
+        group.MapGet("/api/workstation/accounting/continuity/statement-runs/{runId}", async (string runId, [FromServices] IReconciliationApiService? service, HttpContext context) =>
+        {
+            if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetStatementRun")
+        .Produces<StatementRunSummaryDto>(200)
+        .Produces(404);
+
+        group.MapGet("/api/workstation/accounting/continuity/statement-exceptions", async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        {
+            if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            return Results.Json(await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("ListStatementExceptions")
+        .Produces<IReadOnlyList<StatementRunExceptionDto>>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (
             string? status,
