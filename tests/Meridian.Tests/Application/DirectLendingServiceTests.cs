@@ -120,6 +120,38 @@ public sealed class DirectLendingServiceTests
         servicing.LastPaymentDate.Should().Be(new DateOnly(2026, 3, 25));
     }
 
+    [Fact]
+    public async Task CreateLoanAsync_WithEffectiveRateCapBelowFloor_ShouldFailValidation()
+    {
+        var service = new InMemoryDirectLendingService();
+        var request = BuildCreateRequest() with
+        {
+            Terms = BuildTerms(effectiveRateFloor: 0.09m, effectiveRateCap: 0.05m)
+        };
+
+        var act = () => service.CreateLoanAsync(request);
+
+        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
+        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+        ex.Error.Message.Should().Contain("Effective rate cap");
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_WithEffectiveRateCapBelowFloor_ShouldFailValidation()
+    {
+        var service = new InMemoryDirectLendingService();
+        var detail = await service.CreateLoanAsync(BuildCreateRequest());
+        var request = new AmendLoanTermsRequest(
+            BuildTerms(effectiveRateFloor: 0.09m, effectiveRateCap: 0.05m),
+            "invalid bounds");
+
+        var act = () => service.AmendTermsAsync(detail.LoanId, request);
+
+        var ex = await Assert.ThrowsAsync<DirectLendingCommandException>(act);
+        ex.Error.Code.Should().Be(DirectLendingErrorCode.Validation);
+        ex.Error.Message.Should().Contain("Effective rate cap");
+    }
+
     private static CreateLoanRequest BuildCreateRequest(RateTypeKind rateTypeKind = RateTypeKind.Fixed) =>
         new(
             LoanId: Guid.NewGuid(),
@@ -130,7 +162,9 @@ public sealed class DirectLendingServiceTests
 
     private static DirectLendingTermsDto BuildTerms(
         decimal commitmentAmount = 1_000_000m,
-        RateTypeKind rateTypeKind = RateTypeKind.Fixed) =>
+        RateTypeKind rateTypeKind = RateTypeKind.Fixed,
+        decimal? effectiveRateFloor = null,
+        decimal? effectiveRateCap = null) =>
         new(
             OriginationDate: new DateOnly(2026, 3, 22),
             MaturityDate: new DateOnly(2029, 3, 22),
@@ -148,5 +182,7 @@ public sealed class DirectLendingServiceTests
             CommitmentFeeRate: 0.03m,
             DefaultRateSpreadBps: 200m,
             PrepaymentAllowed: true,
-            CovenantsJson: "{\"leverage\": \"<= 4.5x\"}");
+            CovenantsJson: "{\"leverage\": \"<= 4.5x\"}",
+            EffectiveRateFloor: effectiveRateFloor,
+            EffectiveRateCap: effectiveRateCap);
 }
