@@ -10,6 +10,7 @@ This directory contains reusable prompt templates for AI assistants (Claude, Cop
 | [code-review.prompt.yml](code-review.prompt.yml) | Comprehensive code review guidelines | Reviewing PRs or code changes |
 | [add-data-provider.prompt.yml](add-data-provider.prompt.yml) | Guide for adding new data providers | Implementing new market data integrations |
 | [provider-implementation-guide.prompt.yml](provider-implementation-guide.prompt.yml) | Detailed IMarketDataClient patterns | Implementing streaming providers |
+| [operations-continuity-core.prompt.yml](operations-continuity-core.prompt.yml) | Operations continuity core implementation workflow | Building fund-account operational/accounting continuity workflow |
 | [write-unit-tests.prompt.yml](write-unit-tests.prompt.yml) | Unit test generation guidelines | Writing tests for components |
 | [explain-architecture.prompt.yml](explain-architecture.prompt.yml) | In-depth architecture explanation | Understanding system design |
 | [troubleshoot-issue.prompt.yml](troubleshoot-issue.prompt.yml) | Diagnose and resolve an issue | Debugging problems |
@@ -69,6 +70,7 @@ messages:
 ### Development Tasks
 
 - **New provider**: `add-data-provider.prompt.yml` + `provider-implementation-guide.prompt.yml`
+- **Operations continuity core**: `operations-continuity-core.prompt.yml`
 - **New export format**: `add-export-format.prompt.yml`
 - **Write tests**: `write-unit-tests.prompt.yml`
 - **Code review**: `code-review.prompt.yml`

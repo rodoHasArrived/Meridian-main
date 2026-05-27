@@ -40,9 +40,9 @@ Non-trigger examples:
 
 ## Current Product Direction
 
-- Treat `src/Meridian.Wpf/` as the active desktop app operator UI development path.
-- Treat `src/Meridian.Ui/dashboard/` and `src/Meridian.Ui/wwwroot/workstation/` as retained browser workstation surfaces, not the default lane for new operator UI work.
-- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the desktop shell and retained web dashboard.
+- Treat `src/Meridian.Wpf/` as an active Windows desktop operator UI development path.
+- Treat `src/Meridian.Ui/dashboard/` and `src/Meridian.Ui/wwwroot/workstation/` as active browser workstation surfaces.
+- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the desktop shell and browser workstation.
 - Keep mobile development out of scope unless the user or roadmap explicitly reopens it.
 
 ## Workflow

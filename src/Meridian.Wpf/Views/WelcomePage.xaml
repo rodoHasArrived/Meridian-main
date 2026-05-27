@@ -40,7 +40,7 @@
                             <StackPanel Margin="14,0,0,0">
                                 <TextBlock Text="Meridian Workstation"
                                            Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="Choose the right operator lane first, then move into Research, Trading, Data Operations, or Governance without leaving the desktop shell."
+                                <TextBlock Text="Choose the right operator lane first, then move into Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings without leaving the desktop shell."
                                            Style="{StaticResource CardDescriptionStyle}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
@@ -53,7 +53,7 @@
                                     CornerRadius="999"
                                     Padding="10,4"
                                     Margin="0,0,8,8">
-                                <TextBlock Text="4 operator workspaces"
+                                <TextBlock Text="7 operator workspaces"
                                            FontSize="11"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
@@ -107,7 +107,7 @@
                                        Margin="0,10,0,0"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />
-                            <TextBlock Text="Collection onboarding still lives below, but it is explicitly scoped to Data Operations instead of acting like the entire product home."
+                            <TextBlock Text="Collection onboarding still lives below, but it is explicitly scoped to Data instead of acting like the entire product home."
                                        Margin="0,10,0,0"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />
@@ -117,7 +117,7 @@
                                         Style="{StaticResource SecondaryButtonStyle}"
                                         Click="OpenDocumentation_Click"
                                         Margin="0,0,8,0" />
-                                <Button Content="Open Data Operations"
+                                <Button Content="Open Data"
                                         Style="{StaticResource GhostButtonStyle}"
                                         Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
                             </StackPanel>
@@ -146,7 +146,7 @@
                         </StackPanel>
 
                         <Button Grid.Column="1"
-                                Content="Open Research"
+                                Content="Open Strategy"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Command="{Binding NavigateToWorkspaceCommand}"
                                 CommandParameter="ResearchShell" />
@@ -271,13 +271,13 @@
                                        FontSize="18"
                                        Foreground="{StaticResource WarningColorBrush}"
                                        VerticalAlignment="Center" />
-                            <TextBlock Text="Data Operations Quick Start"
+                            <TextBlock Text="Data Quick Start"
                                        Style="{StaticResource CardHeaderStyle}"
                                        Margin="8,0,0,0" />
                         </StackPanel>
 
                         <Button Grid.Column="1"
-                                Content="Open Data Operations Workspace"
+                                Content="Open Data Workspace"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
                     </Grid>
@@ -560,7 +560,7 @@
                             </Grid>
                         </Border>
 
-                        <Button Content="Open Data Operations Workspace"
+                        <Button Content="Open Data Workspace"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 HorizontalAlignment="Left"
                                 Margin="0,16,0,0"
@@ -745,7 +745,7 @@
                                 CornerRadius="10"
                                 Padding="12"
                                 Margin="0,8,0,0">
-                            <TextBlock Text="Routing rule: keep provider, symbol, storage, and freshness blockers inside Data Operations. Move into Research, Trading, or Governance only after setup stops being the limiting factor."
+                            <TextBlock Text="Routing rule: keep provider, symbol, storage, and freshness blockers inside Data. Move into Strategy, Trading, or Accounting only after setup stops being the limiting factor."
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        TextWrapping="Wrap" />

@@ -1563,7 +1563,6 @@ Meridian/
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
-├── package-lock.json
 ├── package.json
 ├── prompt-generation-results.json
 └── README.md

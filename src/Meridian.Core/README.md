@@ -29,6 +29,9 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 ## Important workflows
 
 Use this module when a cross-project primitive or runtime helper is required by multiple higher layers.
+Runtime feature-capability options live in `Config/FeatureCapabilityOptions.cs` so desktop and host
+configuration loading can bind the same `FeatureCapabilities` section without introducing UI
+references into Core.
 
 ## Diagrams
 

@@ -27,15 +27,15 @@
 > books -> reconciliation -> governed report path rather than as a generic front-to-back suite.
 >
 > UI lane refresh (2026-05-18): the visible operator shell is now the
-> browser-first seven-workspace model. WPF shell evidence remains valuable
-> retained desktop support, but it should not define new feature acceptance
+> seven-workspace model. WPF shell evidence remains valuable
+> active desktop workstation support, but it should not define new feature acceptance
 > unless a roadmap item explicitly targets desktop compatibility.
 >
 > Browser safety refresh (2026-05-19): Data provider setup and Settings refresh now expose
 > provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
 > posture; Strategy Designer separates browser-openable GET backend actions from reference-only POST
 > validation/preview/backtest mutations; and Reporting exports abort superseded profile runs. These
-> are support evidence for the browser-first operating model, not completion of report-pack,
+> are support evidence for the shared-contract-first operating model, not completion of report-pack,
 > Backtest Studio, casework, or live-readiness gates.
 >
 > Operations continuity refresh (2026-05-19): shared account-period close workflow contracts,
@@ -113,7 +113,7 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus retained WPF compatibility shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs and provider-routing refresh posture, Strategy Designer route-action safety for GET versus POST backend actions, abort-backed Reporting export state, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains retained support with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
+| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus WPF shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs and provider-routing refresh posture, Strategy Designer route-action safety for GET versus POST backend actions, abort-backed Reporting export state, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains active operator-surface evidence with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
 | Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger/cash-flow flow exists; StrategyRuns now shows visible-versus-recorded run scope and recovers filters that hide retained runs; BatchBacktest now distinguishes idle, validation-blocked, running, failed, cancelled, and populated sweep-result states; RunCashFlow now explains selected-run, missing-run, no-event, and loaded retained cash-flow evidence states |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
@@ -149,7 +149,7 @@ Objective: turn the current workspace taxonomy into a real front-office operatin
 
 Primary outcomes:
 
-- durable browser-first `Data`, `Strategy`, `Trading`, `Portfolio`,
+- durable shared-contract-first `Data`, `Strategy`, `Trading`, `Portfolio`,
   `Accounting`, `Reporting`, and `Settings` shells, with WPF compatibility
   shells retained for support and regression evidence
 - shared run browser/detail/portfolio/ledger flows, including filter recovery for already-loaded run-browser rows
@@ -218,7 +218,7 @@ The current repository already supports parts of the target vision:
   workflow commands/presets, dedicated task panels for high-priority
   Portfolio/Reporting/Data/Accounting flows, provider-setup validation
   handoffs, Quant Lab plot-view-model support, and provider/evidence/readiness
-  handoffs; WPF still exposes a retained compatibility shell baseline with
+  handoffs; WPF still exposes a WPF shell baseline with
   run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes,
   Security Master workflows with search recovery, Fund Accounts
   account/provider-routing/balance-evidence briefing, Trading/Research/Data
@@ -245,7 +245,7 @@ The main gap is operator-readiness and workflow cohesion, not a total absence of
 
 The highest-value tracks from the current state are:
 
-1. Complete the browser-first operator shell and shared evidence model
+1. Complete the shared-contract-first operator shell and shared evidence model
 2. Productize Security Master and account/entity concepts
 3. Add trade-management and implementation workflows
 4. Add multi-ledger, trial-balance, and cash-flow capabilities

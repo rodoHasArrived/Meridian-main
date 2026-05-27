@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy and Research
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-27
 ---
 
 # src/Meridian.Strategies
@@ -33,7 +33,10 @@ Reconciliation also projects Security Master accounting inputs for Operations Co
 coupon accruals, expected journal previews, and factor-schedule principal paydowns are generated
 from resolved Security Master economic definitions before ledger/reconciliation gate posture is
 reported. Factor-based instruments distinguish missing schedules from stale prior-period factor
-evidence so accounting operations can route principal-paydown blockers precisely.
+evidence so accounting operations can route principal-paydown blockers precisely. The real
+Security Master adapter preserves mortgage-backed, asset-backed, and amortizing-loan asset classes
+when normalizing economic definitions so factor paydowns stay principal events instead of being
+collapsed into generic unsupported instruments.
 
 ## Diagrams
 

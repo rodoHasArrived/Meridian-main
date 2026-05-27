@@ -103,6 +103,7 @@ public partial class SetupWizardPage : Page
 
     private void LoadExistingConfiguration()
     {
+        var provisioningResult = _firstRunService.LastConfigurationProvisioningResult;
         try
         {
             if (!File.Exists(_firstRunService.ConfigFilePath))
@@ -127,7 +128,12 @@ public partial class SetupWizardPage : Page
             var storageBase = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json);
             StorageLocationTextBox.Text = storageBase;
 
-            ConfigStatusText.Text = "Loaded existing configuration.";
+            ConfigStatusText.Text = provisioningResult switch
+            {
+                ConfigurationProvisioningResult.CreatedDefault => "Created a new default configuration at startup.",
+                ConfigurationProvisioningResult.RepairedInvalid => "Repaired an invalid configuration at startup and restored defaults.",
+                _ => "Loaded existing valid configuration."
+            };
         }
         catch (Exception ex)
         {

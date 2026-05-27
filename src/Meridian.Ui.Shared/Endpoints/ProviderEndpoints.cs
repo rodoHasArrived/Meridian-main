@@ -344,30 +344,92 @@ public static class ProviderEndpoints
         .Produces<ProviderComparisonResponse>(200);
 
         // Provider status
-        group.MapGet(UiApiRoutes.ProviderStatus, (ConfigStore store) =>
+        group.MapGet(UiApiRoutes.ProviderStatus, (ConfigStore store, [FromServices] ProviderRegistry? registry) =>
         {
             var cfg = store.Load();
             var sources = cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>();
             var metricsStatus = store.TryLoadProviderMetrics();
+            var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
 
             var status = sources.Select(s =>
             {
                 var realMetrics = metricsStatus?.Providers.FirstOrDefault(p =>
                     string.Equals(p.ProviderId, s.Id, StringComparison.OrdinalIgnoreCase));
+                var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                    diagnosticsByProviderId,
+                    s.Id,
+                    s.Name,
+                    s.Provider.ToString());
 
                 return new ProviderStatusResponse(
                     ProviderId: s.Id,
                     Name: s.Name,
                     ProviderType: s.Provider.ToString(),
-                    IsConnected: realMetrics?.IsConnected ?? s.Enabled,
+                    IsConnected: diagnostics?.IsConnected ?? realMetrics?.IsConnected ?? s.Enabled,
                     IsEnabled: s.Enabled,
                     Priority: s.Priority,
-                    ActiveSubscriptions: (int)(realMetrics?.ActiveSubscriptions ?? 0),
-                    LastHeartbeat: realMetrics?.Timestamp ?? DateTimeOffset.UtcNow
+                    ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? (int)(realMetrics?.ActiveSubscriptions ?? 0),
+                    LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt ?? realMetrics?.Timestamp ?? DateTimeOffset.UtcNow,
+                    LifecycleState: diagnostics?.LifecycleState,
+                    WebSocketState: diagnostics?.WebSocketState,
+                    IsReconnecting: diagnostics?.IsReconnecting,
+                    LastHeartbeatReceivedAt: diagnostics?.LastHeartbeatReceivedAt,
+                    LastMessageReceivedAt: diagnostics?.LastMessageReceivedAt,
+                    LastReconnectAttemptAt: diagnostics?.LastReconnectAttemptAt,
+                    ReconnectAttempts: diagnostics?.ReconnectAttempts,
+                    LastFailureKind: diagnostics?.LastFailureKind,
+                    FailedSubscriptions: diagnostics?.FailedSubscriptions,
+                    RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
+                    LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt
                 );
-            }).ToArray();
+            }).ToList();
 
-            return Results.Json(status, jsonOptions);
+            var knownProviderKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var source in sources)
+            {
+                knownProviderKeys.Add(source.Id);
+                knownProviderKeys.Add(source.Name);
+                knownProviderKeys.Add(source.Provider.ToString());
+            }
+
+            if (registry is not null)
+            {
+                foreach (var provider in registry.GetAllProviders())
+                {
+                    if (knownProviderKeys.Contains(provider.Name) || knownProviderKeys.Contains(provider.DisplayName))
+                    {
+                        continue;
+                    }
+
+                    var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                        diagnosticsByProviderId,
+                        provider.Name,
+                        provider.DisplayName);
+
+                    status.Add(new ProviderStatusResponse(
+                        ProviderId: provider.Name,
+                        Name: provider.DisplayName,
+                        ProviderType: provider.ProviderType.ToString(),
+                        IsConnected: diagnostics?.IsConnected ?? provider.IsEnabled,
+                        IsEnabled: provider.IsEnabled,
+                        Priority: provider.Priority,
+                        ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? 0,
+                        LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt,
+                        LifecycleState: diagnostics?.LifecycleState,
+                        WebSocketState: diagnostics?.WebSocketState,
+                        IsReconnecting: diagnostics?.IsReconnecting,
+                        LastHeartbeatReceivedAt: diagnostics?.LastHeartbeatReceivedAt,
+                        LastMessageReceivedAt: diagnostics?.LastMessageReceivedAt,
+                        LastReconnectAttemptAt: diagnostics?.LastReconnectAttemptAt,
+                        ReconnectAttempts: diagnostics?.ReconnectAttempts,
+                        LastFailureKind: diagnostics?.LastFailureKind,
+                        FailedSubscriptions: diagnostics?.FailedSubscriptions,
+                        RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
+                        LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt));
+                }
+            }
+
+            return Results.Json(status.ToArray(), jsonOptions);
         })
         .WithName("GetProviderStatus")
         .WithDescription("Returns connection status for all configured providers.")

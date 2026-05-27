@@ -22,7 +22,7 @@ The Windows collector executable is written under:
 artifacts/publish/local-standalone/win-x64/collector/Meridian.exe
 ```
 
-For the retained WPF desktop executable:
+For the WPF desktop executable:
 
 ```powershell
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -OutputDir artifacts/publish/local-desktop

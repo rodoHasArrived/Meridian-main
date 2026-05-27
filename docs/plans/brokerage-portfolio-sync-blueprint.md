@@ -38,7 +38,7 @@ The key design decision is boundary discipline:
 ## Current Operator-Ready Slice
 
 The first implemented slice keeps brokerage/account continuity read-side and Meridian-owned. The
-active operator UI lane is now the browser workstation; WPF remains retained support evidence for
+browser and WPF operator UI lanes are both active; shared contracts remain the integration boundary for
 shared contracts and compatibility:
 
 - `src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs` defines account catalog, portfolio sync,
@@ -149,7 +149,7 @@ Robinhood connection configuration is environment-backed and credential-store co
 - local persistence of sync snapshots and sync cursors
 - fund-account and governance projections that consume synced brokerage state
 - shared workstation DTOs and endpoints for operator review, freshness, and reconciliation
-- Browser workstation and retained WPF read-model integration where it reinforces existing `Trading`, `Portfolio`, `Accounting`, and `Reporting` workflows
+- Browser workstation and WPF read-model integration where it reinforces existing `Trading`, `Portfolio`, `Accounting`, and `Reporting` workflows
 
 ### Out of scope
 

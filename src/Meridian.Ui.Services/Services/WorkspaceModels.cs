@@ -31,7 +31,9 @@ public sealed class WorkspaceTemplate
 }
 
 /// <summary>
-/// Workspace category.
+/// Persisted workspace category.
+/// Legacy category names are retained for saved workspace compatibility; display
+/// names map to the current operator taxonomy.
 /// </summary>
 public enum WorkspaceCategory : byte
 {
@@ -48,10 +50,10 @@ public static class WorkspaceCategoryExtensions
     {
         return category switch
         {
-            WorkspaceCategory.Research => "Research",
+            WorkspaceCategory.Research => "Strategy",
             WorkspaceCategory.Trading => "Trading",
-            WorkspaceCategory.DataOperations => "Data Operations",
-            WorkspaceCategory.Governance => "Governance",
+            WorkspaceCategory.DataOperations => "Data",
+            WorkspaceCategory.Governance => "Accounting",
             _ => "Custom"
         };
     }

@@ -13,7 +13,7 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class ServiceManagerViewModel : BindableBase
 {
-    private readonly BackendServiceManager _serviceManager;
+    private readonly IServiceManagerBackend _serviceManager;
     private readonly LoggingService _loggingService;
 
     private string _statusText = "Unknown";
@@ -21,11 +21,20 @@ public sealed class ServiceManagerViewModel : BindableBase
     private string _processIdText = "-";
     private string _executablePathText = "Not registered";
     private string _operationResultText = string.Empty;
+    private string _statusLoadStateText = "Status not loaded";
+    private string _statusLoadDetailText = "Refresh service status to verify installation, health, and runtime registration.";
     private bool _isBusy;
+    private bool _isStatusLoading;
+    private bool _isStatusLoadFailed;
     private bool _isRunning;
     private bool _isInstalled;
 
     internal ServiceManagerViewModel(BackendServiceManager serviceManager, LoggingService loggingService)
+        : this(new BackendServiceManagerAdapter(serviceManager), loggingService)
+    {
+    }
+
+    internal ServiceManagerViewModel(IServiceManagerBackend serviceManager, LoggingService loggingService)
     {
         _serviceManager = serviceManager;
         _loggingService = loggingService;
@@ -91,6 +100,18 @@ public sealed class ServiceManagerViewModel : BindableBase
         ? "No registered executable path is available yet."
         : "Registered executable path is available for lifecycle management.";
 
+    public string StatusLoadStateText
+    {
+        get => _statusLoadStateText;
+        private set => SetProperty(ref _statusLoadStateText, value);
+    }
+
+    public string StatusLoadDetailText
+    {
+        get => _statusLoadDetailText;
+        private set => SetProperty(ref _statusLoadDetailText, value);
+    }
+
     // ── State flags ────────────────────────────────────────────────────────
 
     public bool IsBusy
@@ -105,6 +126,33 @@ public sealed class ServiceManagerViewModel : BindableBase
             }
         }
     }
+
+    public bool IsStatusLoading
+    {
+        get => _isStatusLoading;
+        private set
+        {
+            if (SetProperty(ref _isStatusLoading, value))
+            {
+                NotifyCanExecuteChanged();
+                RaisePropertyChanged(nameof(IsStatusLoadInfoVisible));
+            }
+        }
+    }
+
+    public bool IsStatusLoadFailed
+    {
+        get => _isStatusLoadFailed;
+        private set
+        {
+            if (SetProperty(ref _isStatusLoadFailed, value))
+            {
+                RaisePropertyChanged(nameof(IsStatusLoadInfoVisible));
+            }
+        }
+    }
+
+    public bool IsStatusLoadInfoVisible => IsStatusLoading || IsStatusLoadFailed;
 
     private bool IsRunning
     {
@@ -134,11 +182,11 @@ public sealed class ServiceManagerViewModel : BindableBase
 
     // ── CanExecute helpers (bound by XAML IsEnabled) ───────────────────────
 
-    public bool CanInstall => !IsBusy;
-    public bool CanStart => !IsBusy && IsInstalled && !IsRunning;
-    public bool CanStop => !IsBusy && IsRunning;
-    public bool CanRestart => !IsBusy && IsInstalled;
-    public bool CanRefresh => !IsBusy;
+    public bool CanInstall => !IsBusy && !IsStatusLoading;
+    public bool CanStart => !IsBusy && !IsStatusLoading && IsInstalled && !IsRunning;
+    public bool CanStop => !IsBusy && !IsStatusLoading && IsRunning;
+    public bool CanRestart => !IsBusy && !IsStatusLoading && IsInstalled;
+    public bool CanRefresh => !IsBusy && !IsStatusLoading;
 
     // ── Commands ───────────────────────────────────────────────────────────
 
@@ -183,28 +231,65 @@ public sealed class ServiceManagerViewModel : BindableBase
         }
         finally
         {
-            await RefreshStatusAsync(ct);
-            IsBusy = false;
+            try
+            {
+                await RefreshStatusAsync(ct);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 
     private async Task RefreshStatusAsync(CancellationToken ct = default)
     {
-        var status = await _serviceManager.GetStatusAsync(ct);
+        IsStatusLoading = true;
+        IsStatusLoadFailed = false;
+        StatusLoadStateText = "Refreshing service status";
+        StatusLoadDetailText = "Checking installation, process registration, and backend health.";
 
-        StatusText = status.IsRunning ? "Running" : "Stopped";
-        HealthText = status.IsHealthy ? "Healthy" : "Not healthy";
-        ProcessIdText = status.ProcessId?.ToString() ?? "-";
-        ExecutablePathText = status.ExecutablePath ?? "Not registered";
-
-        if (string.IsNullOrWhiteSpace(OperationResultText))
+        try
         {
-            OperationResultText = status.StatusMessage;
-        }
+            var status = await _serviceManager.GetStatusAsync(ct);
 
-        IsRunning = status.IsRunning;
-        IsInstalled = status.IsInstalled;
-        RaiseDerivedStateChanged();
+            StatusText = status.IsRunning ? "Running" : "Stopped";
+            HealthText = status.IsHealthy ? "Healthy" : "Not healthy";
+            ProcessIdText = status.ProcessId?.ToString() ?? "-";
+            ExecutablePathText = status.ExecutablePath ?? "Not registered";
+
+            if (string.IsNullOrWhiteSpace(OperationResultText))
+            {
+                OperationResultText = status.StatusMessage;
+            }
+
+            IsRunning = status.IsRunning;
+            IsInstalled = status.IsInstalled;
+            StatusLoadStateText = "Status refreshed";
+            StatusLoadDetailText = string.IsNullOrWhiteSpace(status.StatusMessage)
+                ? "Service status is current."
+                : status.StatusMessage;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            StatusText = "Unknown";
+            HealthText = "Unknown";
+            ProcessIdText = "-";
+            ExecutablePathText = "Not registered";
+            OperationResultText = $"Status refresh failed: {ex.Message}";
+            IsRunning = false;
+            IsInstalled = false;
+            IsStatusLoadFailed = true;
+            StatusLoadStateText = "Service status unavailable";
+            StatusLoadDetailText = ex.Message;
+            _loggingService.LogError("Service manager status refresh failed", ex);
+        }
+        finally
+        {
+            IsStatusLoading = false;
+            NotifyCanExecuteChanged();
+            RaiseDerivedStateChanged();
+        }
     }
 
     private void NotifyCanExecuteChanged()
@@ -228,4 +313,38 @@ public sealed class ServiceManagerViewModel : BindableBase
         RaisePropertyChanged(nameof(RuntimePostureText));
         RaisePropertyChanged(nameof(RegistrationPostureText));
     }
+}
+
+internal interface IServiceManagerBackend
+{
+    Task<BackendServiceOperationResult> InstallAsync(CancellationToken ct = default);
+    Task<BackendServiceOperationResult> StartAsync(CancellationToken ct = default);
+    Task<BackendServiceOperationResult> StopAsync(CancellationToken ct = default);
+    Task<BackendServiceOperationResult> RestartAsync(CancellationToken ct = default);
+    Task<BackendServiceStatus> GetStatusAsync(CancellationToken ct = default);
+}
+
+internal sealed class BackendServiceManagerAdapter : IServiceManagerBackend
+{
+    private readonly BackendServiceManager _serviceManager;
+
+    public BackendServiceManagerAdapter(BackendServiceManager serviceManager)
+    {
+        _serviceManager = serviceManager;
+    }
+
+    public Task<BackendServiceOperationResult> InstallAsync(CancellationToken ct = default)
+        => _serviceManager.InstallAsync(ct: ct);
+
+    public Task<BackendServiceOperationResult> StartAsync(CancellationToken ct = default)
+        => _serviceManager.StartAsync(ct);
+
+    public Task<BackendServiceOperationResult> StopAsync(CancellationToken ct = default)
+        => _serviceManager.StopAsync(ct);
+
+    public Task<BackendServiceOperationResult> RestartAsync(CancellationToken ct = default)
+        => _serviceManager.RestartAsync(ct);
+
+    public Task<BackendServiceStatus> GetStatusAsync(CancellationToken ct = default)
+        => _serviceManager.GetStatusAsync(ct);
 }

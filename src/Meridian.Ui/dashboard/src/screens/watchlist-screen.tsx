@@ -14,6 +14,7 @@ import {
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import {
   useWatchlistScreenViewModel,
   type WatchlistDetailFieldTone,
@@ -436,16 +437,32 @@ function buildColumns(
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant={row.removeButtonVariant}
             size="sm"
             disabled={row.isRemoving}
             disabledReason={row.removeDisabledReason}
+            busy={row.isRemoving}
+            busyLabel={row.removeLabel}
             onClick={() => void removeSymbol(row.symbol)}
             aria-label={row.removeAriaLabel}
+            aria-describedby={row.removeStatusId ?? undefined}
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="ml-1">{row.removeLabel}</span>
           </Button>
+          {row.removeStatusLabel ? (
+            <span
+              id={row.removeStatusId ?? undefined}
+              role="status"
+              aria-live="polite"
+              className={cn(
+                "inline-flex min-h-8 items-center rounded-sm border px-2 font-mono text-[10px] uppercase tracking-[0.12em]",
+                removeStatusToneClass[row.removeStatusTone]
+              )}
+            >
+              {row.removeStatusLabel}
+            </span>
+          ) : null}
         </div>
       )
     }
@@ -456,6 +473,11 @@ const lastToneClass = {
   success: "text-success",
   danger: "text-danger",
   default: "text-foreground"
+} as const;
+
+const removeStatusToneClass = {
+  warning: "border-warning/35 bg-warning/10 text-warning",
+  danger: "border-danger/35 bg-danger/10 text-danger"
 } as const;
 
 function WatchlistDetailPanel({

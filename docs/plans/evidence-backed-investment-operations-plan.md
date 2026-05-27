@@ -32,9 +32,9 @@ The core commercial question is:
 > Can Meridian prove, book, reconcile, approve, and report this investment decision?
 
 That claim is stronger than a broad workstation claim because it connects upstream research and
-paper validation to downstream books, reconciliation, and reporting. The active browser dashboard
-is the primary operator UI lane for proving that flow; retained WPF surfaces remain compatibility,
-regression, and shared-contract support unless a workflow explicitly needs desktop coverage.
+paper validation to downstream books, reconciliation, and reporting. The browser dashboard and WPF desktop are both active operator UI lanes for proving that flow;
+shared contracts, local/web API endpoints, and shared read models should carry business behavior
+before either client composes it.
 
 ## Golden Path
 

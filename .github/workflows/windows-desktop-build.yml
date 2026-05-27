@@ -2,9 +2,25 @@ name: Windows Desktop Build
 
 on:
   pull_request:
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "src/Meridian.Contracts/**"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - "global.json"
   push:
     branches:
       - main
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "src/Meridian.Contracts/**"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - "global.json"
   workflow_dispatch:
 
 permissions:

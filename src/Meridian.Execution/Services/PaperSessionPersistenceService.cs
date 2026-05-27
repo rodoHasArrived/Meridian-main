@@ -21,6 +21,12 @@ namespace Meridian.Execution.Services;
 /// </remarks>
 public sealed class PaperSessionPersistenceService
 {
+    private const int MaxRetainedSessions = 1_000;
+    private const int MaxSymbolsPerSession = 128;
+    private const int MaxStrategyIdLength = 128;
+    private const int MaxStrategyNameLength = 256;
+    private const int MaxSymbolLength = 32;
+
     private readonly ConcurrentDictionary<string, PaperSession> _sessions = new(StringComparer.Ordinal);
     private readonly IPaperSessionStore? _store;
     private readonly ExecutionAuditTrailService? _auditTrail;
@@ -106,6 +112,12 @@ public sealed class PaperSessionPersistenceService
     public async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ValidateCreateRequest(request);
+        TrimClosedSessionsIfNeeded();
+        if (_sessions.Count >= MaxRetainedSessions)
+        {
+            throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
+        }
 
         var sessionId = $"PAPER-{DateTimeOffset.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
 
@@ -135,6 +147,67 @@ public sealed class PaperSessionPersistenceService
             sessionId, request.StrategyId, request.InitialCash);
 
         return ToSummary(session);
+    }
+
+    private void ValidateCreateRequest(CreatePaperSessionDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.StrategyId))
+        {
+            throw new ArgumentException("StrategyId is required.", nameof(request));
+        }
+
+        if (request.StrategyId.Length > MaxStrategyIdLength)
+        {
+            throw new ArgumentException($"StrategyId exceeds the maximum length of {MaxStrategyIdLength} characters.", nameof(request));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.StrategyName) &&
+            request.StrategyName.Length > MaxStrategyNameLength)
+        {
+            throw new ArgumentException($"StrategyName exceeds the maximum length of {MaxStrategyNameLength} characters.", nameof(request));
+        }
+
+        if (request.Symbols is { Count: > MaxSymbolsPerSession })
+        {
+            throw new ArgumentException($"A paper session can include at most {MaxSymbolsPerSession} symbols.", nameof(request));
+        }
+
+        if (request.Symbols is not null)
+        {
+            for (var i = 0; i < request.Symbols.Count; i++)
+            {
+                var symbol = request.Symbols[i];
+                if (string.IsNullOrWhiteSpace(symbol))
+                {
+                    throw new ArgumentException("Symbols cannot contain empty entries.", nameof(request));
+                }
+
+                if (symbol.Length > MaxSymbolLength)
+                {
+                    throw new ArgumentException($"Symbol '{symbol}' exceeds the maximum length of {MaxSymbolLength} characters.", nameof(request));
+                }
+            }
+        }
+    }
+
+    private void TrimClosedSessionsIfNeeded()
+    {
+        if (_sessions.Count < MaxRetainedSessions)
+        {
+            return;
+        }
+
+        var sessionsToTrim = _sessions.Values
+            .Where(static session => !session.IsActive)
+            .OrderBy(static session => session.ClosedAt ?? session.CreatedAt)
+            .Take(Math.Max(1, _sessions.Count - MaxRetainedSessions + 1))
+            .Select(static session => session.SessionId)
+            .ToArray();
+
+        foreach (var sessionId in sessionsToTrim)
+        {
+            _sessions.TryRemove(sessionId, out _);
+        }
     }
 
     /// <summary>Closes a paper trading session and snapshots its final state.</summary>

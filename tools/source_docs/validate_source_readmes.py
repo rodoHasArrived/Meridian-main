@@ -154,6 +154,17 @@ def _get_module_id(module: dict[str, Any]) -> str | None:
 
 def _get_module_path(module: dict[str, Any]) -> str | None:
     return module.get("path") or module.get("canonical_path") or module.get("module_path")
+def _resolve_readme_path(repo_root: Path, readme_path: str) -> tuple[Path | None, str | None]:
+    candidate = Path(readme_path)
+    if candidate.is_absolute():
+        return None, f"README path must be relative to repository root: {readme_path}"
+
+    resolved_repo_root = repo_root.resolve()
+    resolved_readme = (resolved_repo_root / candidate).resolve()
+    if resolved_readme != resolved_repo_root and resolved_repo_root not in resolved_readme.parents:
+        return None, f"README path escapes repository root: {readme_path}"
+
+    return resolved_readme, None
 
 
 def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[str]:
@@ -161,7 +172,14 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     modules_doc = _load_yaml(modules_path)
     coverage_doc = _load_yaml(coverage_path)
 
-    modules = [m for m in _as_list(modules_doc.get("modules")) if isinstance(m, dict)]
+    modules: list[dict[str, Any]] = []
+    for index, module in enumerate(_as_list(modules_doc.get("modules"))):
+        if not isinstance(module, dict):
+            errors.append(
+                f"source-modules.yml entry at modules[{index}] must be a mapping/object."
+            )
+            continue
+        modules.append(module)
 
     module_ids: list[str] = []
     for module in modules:
@@ -241,6 +259,17 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
         readme_exists = (repo_root / readme_path).exists() if readme_path else False
         declared_exists = module.get("exists")
         if readme_path and declared_exists is True and not readme_exists:
+        if not readme_path:
+            continue
+
+        resolved_readme_path, path_error = _resolve_readme_path(repo_root, str(readme_path))
+        if path_error:
+            errors.append(path_error)
+            continue
+        if resolved_readme_path is None:
+            continue
+
+        if not resolved_readme_path.exists():
             errors.append(f"README path does not exist: {readme_path}")
         if readme_path and declared_exists is False and readme_exists:
             errors.append(f"README path exists but coverage declares exists=false: {readme_path}")
@@ -250,6 +279,8 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
             )
         if readme_path and readme_exists:
             readme_errors = validate_readme_contract(repo_root / readme_path, module_id)
+        if resolved_readme_path.exists():
+            readme_errors = validate_readme_contract(resolved_readme_path, module_id)
             for element_error in readme_errors:
                 errors.append(
                     f"README contract violation [module={module_id}] [path={readme_path}] [missing={element_error}]"

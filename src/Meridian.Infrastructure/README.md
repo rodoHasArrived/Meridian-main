@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-22
 ---
 
 # src/Meridian.Infrastructure
@@ -28,6 +28,22 @@ This layer owns external integration details while depending on lower contracts 
 ## Important workflows
 
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+WebSocket streaming adapters that derive from `WebSocketProviderBase` expose
+`IProviderConnectionDiagnosticsSource` for safe provider-level health snapshots. Consumers should
+use that optional seam for connection state, heartbeat time, reconnect status, subscription health
+counts, last subscription message time, and last safe error category instead of reaching into
+provider-specific transport internals.
+
+Provider registry paths normalize configured provider identifiers before factory lookup, and the
+registry can hold multiple adapter contracts for one provider family ID. This allows identifiers
+such as `alpaca` to resolve independently for streaming, backfill, and symbol-search contracts
+without dropping one registration because another adapter uses the same family ID.
+
+Streaming failover state is updated from explicit success, failure, and latency signals in addition
+to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
+failure. Backfill orchestration stores dependency job IDs on each job so chained jobs resume only
+after all upstream dependencies complete.
 
 ## Diagrams
 

@@ -20,7 +20,7 @@ public sealed class FundProfileSelectionPageSmokeTests
                 BindingFlags.Static | BindingFlags.NonPublic);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var provider = services.BuildServiceProvider();
 
@@ -43,7 +43,7 @@ public sealed class FundProfileSelectionPageSmokeTests
                 BindingFlags.Static | BindingFlags.NonPublic);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var provider = services.BuildServiceProvider();
 

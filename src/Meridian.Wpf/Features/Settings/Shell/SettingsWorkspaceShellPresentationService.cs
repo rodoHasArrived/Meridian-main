@@ -1,4 +1,5 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
@@ -7,7 +8,7 @@ public interface ISettingsWorkspaceShellPresentationService
     SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot);
 }
 
-public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspaceShellPresentationService
+public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspaceShellPresentationService, IWorkspaceScopedService
 {
     public SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot)
     {

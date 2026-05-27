@@ -249,6 +249,10 @@ public sealed class UiServer : IAsyncDisposable
         LedgerStartup.EnsureDatabaseReady(_app.Services, _logger);
         SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
         DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
+        FundAccountsStartup.EnsureDatabaseReady(_app.Services, _logger);
+        FundStructureStartup.EnsureDatabaseReady(_app.Services, _logger);
+        BankingStartup.EnsureDatabaseReady(_app.Services, _logger);
+        MoneyMarketStartup.EnsureDatabaseReady(_app.Services, _logger);
         readinessStopwatch.Stop();
         _logger.LogInformation("UiServer readiness checks completed in {ElapsedMs} ms", readinessStopwatch.ElapsedMilliseconds);
 

@@ -293,9 +293,9 @@ def _build_ready_packet(summary_path: Path, generated_at: str) -> dict[str, obje
         "DK1-YAHOO-HISTORICAL-FALLBACK",
     ]
     docs = [
-        ("DK1 pilot parity runbook", "parity", "docs/status/dk1-pilot-parity-runbook.md"),
-        ("DK1 trust rationale mapping", "explainability", "docs/status/dk1-trust-rationale-mapping.md"),
-        ("DK1 baseline trust thresholds", "calibration", "docs/status/dk1-baseline-trust-thresholds.md"),
+        ("DK1 pilot parity runbook", "parity", "docs/status/evidence/dk1-pilot-parity-runbook.md"),
+        ("DK1 trust rationale mapping", "explainability", "docs/status/evidence/dk1-trust-rationale-mapping.md"),
+        ("DK1 baseline trust thresholds", "calibration", "docs/status/evidence/dk1-baseline-trust-thresholds.md"),
         ("Provider validation matrix", "parity", "docs/status/provider-validation-matrix.md"),
     ]
     return {

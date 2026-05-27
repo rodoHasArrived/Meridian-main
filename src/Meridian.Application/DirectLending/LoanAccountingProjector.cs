@@ -37,14 +37,20 @@ public sealed class LoanAccountingProjector
     {
         if (_journalStore is null)
         {
-            return [];
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    "Ledger journal store is required for direct-lending ledger-impacting events."));
         }
 
         var accountingDate = effectiveDate ?? contract.EffectiveDate;
         var period = await ResolvePostingPeriodAsync(accountingDate, ct).ConfigureAwait(false);
         if (period is null)
         {
-            return [];
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"No open accounting period contains posting date '{accountingDate:yyyy-MM-dd}'."));
         }
 
         var policy = await _accountingPolicyService
@@ -194,12 +200,24 @@ public sealed class LoanAccountingProjector
 
     private async Task<LedgerAccountingPeriod?> ResolvePostingPeriodAsync(DateOnly accountingDate, CancellationToken ct)
     {
-        var periods = await _journalStore!.ListPeriodsAsync(ct: ct).ConfigureAwait(false);
-        return periods
-            .Where(period => period.StartDate <= accountingDate && period.EndDate >= accountingDate)
-            .OrderByDescending(period => string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
-            .ThenBy(period => period.StartDate)
-            .FirstOrDefault();
+        var periods = (await _journalStore!.ListPeriodsAsync(ct: ct).ConfigureAwait(false))
+            .Where(period =>
+                period.StartDate <= accountingDate &&
+                period.EndDate >= accountingDate &&
+                string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(period => period.StartDate)
+            .Take(2)
+            .ToArray();
+
+        if (periods.Length > 1)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Multiple open accounting periods contain posting date '{accountingDate:yyyy-MM-dd}'."));
+        }
+
+        return periods.SingleOrDefault();
     }
 
     private static decimal GetDecimal(JsonElement root, params string[] propertyNames)

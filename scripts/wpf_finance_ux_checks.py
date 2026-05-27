@@ -47,6 +47,11 @@ def read_required_text(repo_root: Path, target_roots: list[Path], relative_path:
     return path.read_text(encoding="utf-8")
 
 
+def is_required_path_in_scope(repo_root: Path, target_roots: list[Path], relative_path: str) -> bool:
+    path = (repo_root / relative_path).resolve()
+    return path.exists() and any(is_relative_to(path, target_root) for target_root in target_roots)
+
+
 def require_all_tokens(text: str, tokens: list[str]) -> list[str]:
     return [token for token in tokens if token not in text]
 
@@ -128,19 +133,19 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
         '<TextBlock Text="Home"',
         '<TextBlock Text="Active Work"',
         '<TextBlock Text="Review / Alerts"',
-        '<TextBlock Text="Admin / Support"',
+        'AutomationProperties.AutomationId="WorkspacePrimaryNavList"',
+        'AutomationProperties.AutomationId="WorkspaceSecondaryNavList"',
+        'AutomationProperties.AutomationId="WorkspaceOverflowNavList"',
+        'AutomationProperties.AutomationId="RelatedWorkflowNavList"',
     ]
-    nav_details: list[str] = []
-    nav_passed = True
-    for token in navigation_tokens:
-        passed, detail = count_check(main_page, token, 4)
-        nav_passed &= passed
-        nav_details.append(detail)
+    missing_navigation_tokens = require_all_tokens(main_page, navigation_tokens)
     results.append(
         CheckResult(
-            name="Sidebar navigation is grouped for each workspace",
-            passed=nav_passed,
-            detail=" ".join(nav_details),
+            name="Sidebar navigation exposes grouped workflow lists",
+            passed=not missing_navigation_tokens,
+            detail="Home, active-work, review-alert, and related workflow navigation groups are present."
+            if not missing_navigation_tokens
+            else f"Missing navigation tokens: {', '.join(missing_navigation_tokens)}",
         )
     )
 
@@ -173,31 +178,206 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
         )
     )
 
-    workspace_pages = {
+    context_shell_pages = {
         "Research": "src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml",
-        "Trading": "src/Meridian.Wpf/Views/TradingWorkspaceShellPage.xaml",
-        "Data Operations": "src/Meridian.Wpf/Views/DataOperationsWorkspaceShellPage.xaml",
+        "Trading": "src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml",
+        "Portfolio": "src/Meridian.Wpf/Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml",
+        "Accounting": "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "Reporting": "src/Meridian.Wpf/Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml",
+        "Data": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
+        "Settings": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPage.xaml",
     }
-    page_failures: list[str] = []
-    for workspace_name, relative_path in workspace_pages.items():
+    context_failures: list[str] = []
+    for workspace_name, relative_path in context_shell_pages.items():
         text = read_required_text(repo_root, target_roots, relative_path)
-        missing_tokens = require_all_tokens(
-            text,
-            ["WorkspaceShellContextStripControl", "WorkspaceCommandBarControl"],
-        )
+        missing_tokens = require_all_tokens(text, ["WorkspaceShellContextStripControl"])
         if missing_tokens:
-            page_failures.append(f"{workspace_name}: missing {', '.join(missing_tokens)}")
+            context_failures.append(f"{workspace_name}: missing {', '.join(missing_tokens)}")
     results.append(
         CheckResult(
-            name="Research, Trading, and Data Operations adopt shared shell chrome",
-            passed=not page_failures,
-            detail="All non-governance workspace shells include the shared context strip and command bar."
-            if not page_failures
-            else "; ".join(page_failures),
+            name="Top-level WPF shells expose shared context strip",
+            passed=not context_failures,
+            detail="Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings shells include the shared context strip."
+            if not context_failures
+            else "; ".join(context_failures),
         )
     )
 
+    command_shell_pages = {
+        "Research": "src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml",
+        "Trading": "src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml",
+        "Accounting": "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "Data": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
+        "Settings": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPage.xaml",
+    }
+    command_failures: list[str] = []
+    for workspace_name, relative_path in command_shell_pages.items():
+        text = read_required_text(repo_root, target_roots, relative_path)
+        missing_tokens = require_all_tokens(text, ["WorkspaceCommandBarControl"])
+        if missing_tokens:
+            command_failures.append(f"{workspace_name}: missing {', '.join(missing_tokens)}")
+    results.append(
+        CheckResult(
+            name="Action-oriented WPF shells expose shared command bar",
+            passed=not command_failures,
+            detail="Research, Trading, Accounting, Data, and Settings shells include the shared command bar."
+            if not command_failures
+            else "; ".join(command_failures),
+        )
+    )
+
+    accounting_route_check = build_accounting_workflow_route_check(repo_root, target_roots)
+    if accounting_route_check is not None:
+        results.append(accounting_route_check)
+
+    trading_route_check = build_trading_workflow_route_check(repo_root, target_roots)
+    if trading_route_check is not None:
+        results.append(trading_route_check)
+
     return results
+
+
+def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
+        "src/Meridian.Wpf/Services/NavigationService.cs",
+        "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    shared_workflows = read_required_text(repo_root, target_roots, required_paths[0])
+    wpf_navigation = read_required_text(repo_root, target_roots, required_paths[1])
+    browser_routes = read_required_text(repo_root, target_roots, required_paths[2])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"shared workflow: {token}"
+        for token in require_all_tokens(
+            shared_workflows,
+            [
+                "WorkflowActionIds.AccountingReviewReconciliation",
+                '"FundReconciliation"',
+                "UiApiRoutes.ReconciliationBreakQueue",
+                "WorkflowActionIds.AccountingReviewLedgerContinuity",
+                '"FundTrialBalance"',
+                "WorkflowActionIds.AccountingReviewAuditTrail",
+                '"FundAuditTrail"',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF navigation: {token}"
+        for token in require_all_tokens(
+            wpf_navigation,
+            [
+                '"FundReconciliation" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Reconciliation)',
+                '"FundTrialBalance" => new FundOperationsNavigationContext(Tab: FundOperationsTab.TrialBalance)',
+                '"FundAuditTrail" => new FundOperationsNavigationContext(Tab: FundOperationsTab.AuditTrail)',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser route: {token}"
+        for token in require_all_tokens(
+            browser_routes,
+            [
+                "FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation",
+                "FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accountingLedger",
+                "FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Accounting workflow routes stay shared across WPF and browser",
+        passed=not missing_tokens,
+        detail=(
+            "Shared accounting workflow actions route to WPF FundOperations tabs and browser accounting routes for reconciliation, ledger continuity, and audit trail."
+            if not missing_tokens
+            else "Missing route tokens: " + ", ".join(missing_tokens)
+        ),
+    )
+
+
+def build_trading_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
+        "src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs",
+        "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
+        "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    shared_workflows = read_required_text(repo_root, target_roots, required_paths[0])
+    wpf_trading = read_required_text(repo_root, target_roots, required_paths[1])
+    wpf_inbox = read_required_text(repo_root, target_roots, required_paths[2])
+    browser_routes = read_required_text(repo_root, target_roots, required_paths[3])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"shared workflow: {token}"
+        for token in require_all_tokens(
+            shared_workflows,
+            [
+                "WorkflowActionIds.TradingReviewPaperCandidate",
+                '"TradingShell"',
+                "UiApiRoutes.WorkstationTradingReadiness",
+                "WorkflowActionIds.TradingOpenCockpit",
+                "UiApiRoutes.ExecutionSessions",
+                "WorkflowActionIds.TradingReviewExecutionControls",
+                '"RunRisk"',
+                "OperatorWorkItemKindDto.ExecutionControl",
+                "UiApiRoutes.ExecutionControls",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF trading shell: {token}"
+        for token in require_all_tokens(
+            wpf_trading,
+            [
+                '"RunRisk" => new(actionId, "RunRisk", PaneDropAction.SplitRight',
+                'string.Equals(action.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase)',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF inbox: {token}"
+        for token in require_all_tokens(
+            wpf_inbox,
+            [
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness)",
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions)",
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls)",
+                'return "TradingShell";',
+                "OperatorWorkItemKindDto.ExecutionControl => \"RunRisk\"",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser route: {token}"
+        for token in require_all_tokens(
+            browser_routes,
+            [
+                "TradingReadiness: WORKSTATION_ROUTE_CATALOG.tradingReadiness",
+                "TradingReadinessConsole: WORKSTATION_ROUTE_CATALOG.tradingReadiness",
+                "RunRisk: WORKSTATION_ROUTE_CATALOG.tradingReadiness",
+                "TradingShell: WORKSTATION_ROUTE_CATALOG.trading",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Trading workflow routes stay shared across WPF and browser",
+        passed=not missing_tokens,
+        detail=(
+            "Shared paper-trading workflow actions and inbox API routes resolve to WPF TradingShell/RunRisk targets and browser Trading readiness routes."
+            if not missing_tokens
+            else "Missing route tokens: " + ", ".join(missing_tokens)
+        ),
+    )
 
 
 def render_report(repo_root: Path, target_roots: list[Path], results: list[CheckResult]) -> str:

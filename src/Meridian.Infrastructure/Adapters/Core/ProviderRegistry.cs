@@ -45,7 +45,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <summary>
     /// Single unified registry of all providers. Type-specific queries filter by ProviderCapabilities.
     /// </summary>
-    private readonly ConcurrentDictionary<string, RegisteredProvider> _allProviders = new();
+    private readonly ConcurrentDictionary<string, RegisteredProvider> _allProviders
+        = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Dictionary of streaming client factory functions keyed by provider ID string (e.g. "alpaca", "ib").
@@ -79,12 +80,13 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(provider);
 
-        var id = provider.ProviderId;
+        var id = ProviderIdentity.NormalizeId(provider.ProviderId);
         var priority = priorityOverride ?? provider.ProviderPriority;
         ValidateName(id);
 
+        var registrationKey = CreateRegistrationKey(provider, id);
         var registered = new RegisteredProvider(id, provider, priority, true);
-        if (_allProviders.TryAdd(id, registered))
+        if (_allProviders.TryAdd(registrationKey, registered))
         {
             MigrationDiagnostics.IncProviderRegistered();
             _log.Information("Registered provider: {Name} (type: {Type}, priority: {Priority})",
@@ -92,7 +94,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         }
         else
         {
-            _log.Warning("Provider already registered: {Name}", id);
+            _log.Warning("Provider already registered: {Name} (type: {Type})",
+                id, provider.ProviderCapabilities.PrimaryType);
         }
     }
 
@@ -108,7 +111,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
         ArgumentNullException.ThrowIfNull(factory);
 
-        var key = providerId.ToLowerInvariant();
+        var key = ProviderIdentity.NormalizeId(providerId);
         if (_streamingFactories.TryAdd(key, factory))
         {
             MigrationDiagnostics.IncStreamingFactoryRegistered();
@@ -140,7 +143,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the ID and no IB fallback is available.</exception>
     public IMarketDataClient CreateStreamingClient(string providerId)
     {
-        var key = providerId.ToLowerInvariant();
+        var key = ProviderIdentity.NormalizeId(providerId);
         if (_streamingFactories.TryGetValue(key, out var factory))
         {
             MigrationDiagnostics.IncStreamingFactoryHit(key);
@@ -186,6 +189,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
             .Where(r => r.IsEnabled)
              .OrderBy(r => r.Priority)
             .ThenBy(r => r.Name, StringComparer.Ordinal)
+            .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
             .Select(r => r.Provider)
             .ToList();
     }
@@ -195,9 +199,13 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// </summary>
     public IProviderMetadata? GetProvider(string id)
     {
-        return _allProviders.TryGetValue(id, out var registered) && registered.IsEnabled
-            ? registered.Provider
-            : null;
+        var key = ProviderIdentity.NormalizeId(id);
+        return _allProviders.Values
+            .Where(r => r.IsEnabled && string.Equals(r.Name, key, StringComparison.Ordinal))
+            .OrderBy(r => r.Priority)
+            .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
+            .Select(r => r.Provider)
+            .FirstOrDefault();
     }
 
     /// <summary>
@@ -210,6 +218,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
             .Where(r => r.IsEnabled && predicate(r.Provider.ProviderCapabilities))
              .OrderBy(r => r.Priority)
             .ThenBy(r => r.Name, StringComparer.Ordinal)
+            .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
             .Select(r => r.Provider)
             .ToList();
     }
@@ -228,6 +237,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
             .Where(r => r.IsEnabled && r.Provider is T)
              .OrderBy(r => r.Priority)
             .ThenBy(r => r.Name, StringComparer.Ordinal)
+            .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
             .Select(r => (T)r.Provider)
             .ToList();
     }
@@ -240,11 +250,13 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <returns>The provider if found and of the correct type, null otherwise.</returns>
     public T? GetProvider<T>(string id) where T : class, IProviderMetadata
     {
-        return _allProviders.TryGetValue(id, out var registered) &&
-               registered.IsEnabled &&
-               registered.Provider is T provider
-            ? provider
-            : null;
+        var key = ProviderIdentity.NormalizeId(id);
+        return _allProviders.Values
+            .Where(r => r.IsEnabled && string.Equals(r.Name, key, StringComparison.Ordinal) && r.Provider is T)
+            .OrderBy(r => r.Priority)
+            .ThenBy(r => r.Provider.ProviderCapabilities.PrimaryType)
+            .Select(r => (T)r.Provider)
+            .FirstOrDefault();
     }
 
     /// <summary>
@@ -425,15 +437,23 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// </summary>
     public void Enable(string name)
     {
-        if (_allProviders.TryGetValue(name, out var registered))
+        var key = ProviderIdentity.NormalizeId(name);
+        var matches = _allProviders
+            .Where(kvp => string.Equals(kvp.Value.Name, key, StringComparison.Ordinal))
+            .ToList();
+
+        if (matches.Count > 0)
         {
-            _allProviders[name] = registered with { IsEnabled = true };
-            _log.Information("Enabled provider: {Name} (type: {Type})",
-                name, registered.Provider.ProviderCapabilities.PrimaryType);
+            foreach (var match in matches)
+            {
+                _allProviders[match.Key] = match.Value with { IsEnabled = true };
+            }
+
+            _log.Information("Enabled provider: {Name} ({Count} registered adapters)", key, matches.Count);
         }
         else
         {
-            _log.Warning("Provider not found: {Name}", name);
+            _log.Warning("Provider not found: {Name}", key);
         }
     }
 
@@ -442,24 +462,33 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// </summary>
     public void Disable(string name)
     {
-        if (_allProviders.TryGetValue(name, out var registered))
-        {
-            _allProviders[name] = registered with { IsEnabled = false };
-            _log.Information("Disabled provider: {Name} (type: {Type})",
-                name, registered.Provider.ProviderCapabilities.PrimaryType);
+        var key = ProviderIdentity.NormalizeId(name);
+        var matches = _allProviders
+            .Where(kvp => string.Equals(kvp.Value.Name, key, StringComparison.Ordinal))
+            .ToList();
 
-            if (registered.Provider is IMarketDataClient)
+        if (matches.Count > 0)
+        {
+            foreach (var match in matches)
             {
-                _alertDispatcher?.Publish(MonitoringAlert.Warning(
-                    "ProviderRegistry",
-                    AlertCategory.Provider,
-                    $"Provider Disabled: {name}",
-                    $"Streaming provider {name} has been disabled"));
+                var registered = match.Value;
+                _allProviders[match.Key] = registered with { IsEnabled = false };
+
+                if (registered.Provider is IMarketDataClient)
+                {
+                    _alertDispatcher?.Publish(MonitoringAlert.Warning(
+                        "ProviderRegistry",
+                        AlertCategory.Provider,
+                        $"Provider Disabled: {key}",
+                        $"Streaming provider {key} has been disabled"));
+                }
             }
+
+            _log.Information("Disabled provider: {Name} ({Count} registered adapters)", key, matches.Count);
         }
         else
         {
-            _log.Warning("Provider not found: {Name}", name);
+            _log.Warning("Provider not found: {Name}", key);
         }
     }
 
@@ -512,9 +541,13 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <returns>The catalog entry, or null if not found.</returns>
     public ProviderCatalogEntry? GetProviderCatalogEntry(string providerId)
     {
-        return _allProviders.TryGetValue(providerId, out var registered)
-            ? ProviderTemplateFactory.ToCatalogEntry(registered.Provider)
-            : null;
+        var key = ProviderIdentity.NormalizeId(providerId);
+        return _allProviders.Values
+            .Where(p => string.Equals(p.Name, key, StringComparison.Ordinal))
+            .OrderBy(p => p.Priority)
+            .ThenBy(p => p.Provider.ProviderCapabilities.PrimaryType)
+            .Select(p => ProviderTemplateFactory.ToCatalogEntry(p.Provider))
+            .FirstOrDefault();
     }
 
     /// <summary>
@@ -536,6 +569,9 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Provider name is required", nameof(name));
     }
+
+    private static string CreateRegistrationKey(IProviderMetadata provider, string normalizedProviderId)
+        => $"{normalizedProviderId}::{provider.ProviderCapabilities.PrimaryType}::{provider.GetType().FullName}";
 
     public void Dispose()
         => DisposeAsync().AsTask().GetAwaiter().GetResult();

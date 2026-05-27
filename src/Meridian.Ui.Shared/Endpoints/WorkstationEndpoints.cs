@@ -81,6 +81,7 @@ public static partial class WorkstationEndpoints
 
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
+        MapFeatureCapabilityEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -308,6 +309,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationPortfolio")
         .Produces<WorkstationPortfolioPayload>(200);
 
+        MapOperationsContinuityEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             Guid? fundAccountId,
@@ -315,6 +317,11 @@ public static partial class WorkstationEndpoints
             string? status,
             HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -373,6 +380,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityById), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -386,6 +398,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -917,6 +934,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityBreaks), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -930,6 +952,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
             if (service is null)
             {
@@ -1017,6 +1044,11 @@ public static partial class WorkstationEndpoints
 
         group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {
+            if (!CanViewReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
@@ -1087,10 +1119,17 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
-            var trustedRequest = request with { ReviewedBy = currentUser };
+            if (!CanMutateReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ReviewBreakAsync(context.RequestServices, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ReviewBreakAsync(context.RequestServices, request with
+            {
+                AssignedTo = ResolveCurrentActor(context),
+                ReviewedBy = ResolveCurrentActor(context)
+            }, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -1126,15 +1165,16 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
-            if (!TryResolveCurrentUser(context, out var currentUser))
+            if (!CanMutateReconciliationBreakQueue(context))
             {
-                return Results.Unauthorized();
+                return Results.Forbid();
             }
 
-            var trustedRequest = request with { ResolvedBy = currentUser };
-
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ResolveBreakAsync(context.RequestServices, request with
+            {
+                ResolvedBy = ResolveCurrentActor(context)
+            }, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -1428,6 +1468,11 @@ public static partial class WorkstationEndpoints
             string? fundProfileId,
             HttpContext context) =>
         {
+            if (!HasPermission(context, UserPermission.ViewSecurityMaster))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
             var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
             if (workbenchService is null)
             {
@@ -1444,6 +1489,7 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetSecurityMasterWorkstationTrustSnapshot")
         .Produces<SecurityMasterTrustSnapshotDto>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(501);
 
@@ -1478,10 +1524,14 @@ public static partial class WorkstationEndpoints
 
         group.MapPost("/runs/compare", async (RunComparisonRequest request, HttpContext context) =>
         {
-            var readService = context.RequestServices.GetService<StrategyRunReadService>();
-            if (readService is null)
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
+            if (comparisonService is null)
             {
-                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                var readService = context.RequestServices.GetService<StrategyRunReadService>();
+                if (readService is null)
+                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+                comparisonService = new StrategyRunComparisonService(readService);
             }
 
             if (request.RunIds is not { Count: >= 2 })
@@ -1494,7 +1544,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
+            var comparison = await comparisonService.CompareRunsAsync(request, context.RequestAborted).ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
                 var parsedModes = ParseModes(request.Modes);
@@ -1514,21 +1564,22 @@ public static partial class WorkstationEndpoints
 
         group.MapPost("/runs/diff", async (RunDiffRequest request, HttpContext context) =>
         {
-            var readService = context.RequestServices.GetService<StrategyRunReadService>();
-            if (readService is null)
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
+            if (comparisonService is null)
             {
-                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+                var readService = context.RequestServices.GetService<StrategyRunReadService>();
+                if (readService is null)
+                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+                comparisonService = new StrategyRunComparisonService(readService);
             }
 
-            var baseDetail = await readService.GetRunDetailAsync(request.BaseRunId, context.RequestAborted).ConfigureAwait(false);
-            var targetDetail = await readService.GetRunDetailAsync(request.TargetRunId, context.RequestAborted).ConfigureAwait(false);
-
-            if (baseDetail is null || targetDetail is null)
+            var diff = await comparisonService.BuildDiffAsync(request, context.RequestAborted).ConfigureAwait(false);
+            if (diff is null)
             {
                 return Results.NotFound(new { error = "One or both run IDs not found." });
             }
 
-            var diff = BuildRunDiff(baseDetail, targetDetail);
             return Results.Json(diff, jsonOptions);
         })
         .WithName("DiffRuns")
@@ -1634,7 +1685,9 @@ public static partial class WorkstationEndpoints
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
             var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(timeline, jsonOptions);
+            return Results.Json(
+                timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
+                jsonOptions);
         })
         .WithName("GetWorkstationRunLineageTimeline")
         .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
@@ -1803,92 +1856,12 @@ public static partial class WorkstationEndpoints
         }).ExcludeFromDescription();
     }
 
-    private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
-    {
-        var basePositions = baseRun.Portfolio?.Positions ?? [];
-        var targetPositions = targetRun.Portfolio?.Positions ?? [];
-
-        var baseSymbols = new HashSet<string>(basePositions.Select(static p => p.Symbol), StringComparer.OrdinalIgnoreCase);
-        var targetSymbols = new HashSet<string>(targetPositions.Select(static p => p.Symbol), StringComparer.OrdinalIgnoreCase);
-
-        var added = targetPositions
-            .Where(p => !baseSymbols.Contains(p.Symbol))
-            .Select(static p => new PositionDiffEntry(p.Symbol, 0, p.Quantity, 0m, p.RealizedPnl + p.UnrealizedPnl, "Added"))
-            .ToList();
-
-        var removed = basePositions
-            .Where(p => !targetSymbols.Contains(p.Symbol))
-            .Select(static p => new PositionDiffEntry(p.Symbol, p.Quantity, 0, p.RealizedPnl + p.UnrealizedPnl, 0m, "Removed"))
-            .ToList();
-
-        var modified = new List<PositionDiffEntry>();
-        foreach (var basePos in basePositions.Where(p => targetSymbols.Contains(p.Symbol)))
-        {
-            var targetPos = targetPositions.First(p =>
-                string.Equals(p.Symbol, basePos.Symbol, StringComparison.OrdinalIgnoreCase));
-            if (basePos.Quantity != targetPos.Quantity ||
-                basePos.AverageCostBasis != targetPos.AverageCostBasis)
-            {
-                modified.Add(new PositionDiffEntry(
-                    basePos.Symbol,
-                    basePos.Quantity,
-                    targetPos.Quantity,
-                    basePos.RealizedPnl + basePos.UnrealizedPnl,
-                    targetPos.RealizedPnl + targetPos.UnrealizedPnl,
-                    "Modified"));
-            }
-        }
-
-        var paramDiffs = BuildParameterDiff(baseRun.Parameters, targetRun.Parameters);
-
-        var metricsDiff = new MetricsDiff(
-            NetPnlDelta: (targetRun.Summary.NetPnl ?? 0m) - (baseRun.Summary.NetPnl ?? 0m),
-            TotalReturnDelta: (targetRun.Summary.TotalReturn ?? 0m) - (baseRun.Summary.TotalReturn ?? 0m),
-            FillCountDelta: targetRun.Summary.FillCount - baseRun.Summary.FillCount,
-            BaseNetPnl: baseRun.Summary.NetPnl,
-            TargetNetPnl: targetRun.Summary.NetPnl,
-            BaseTotalReturn: baseRun.Summary.TotalReturn,
-            TargetTotalReturn: targetRun.Summary.TotalReturn);
-
-        return new StrategyRunDiff(
-            BaseRunId: baseRun.Summary.RunId,
-            TargetRunId: targetRun.Summary.RunId,
-            BaseStrategyName: baseRun.Summary.StrategyName,
-            TargetStrategyName: targetRun.Summary.StrategyName,
-            AddedPositions: added,
-            RemovedPositions: removed,
-            ModifiedPositions: modified,
-            ParameterChanges: paramDiffs,
-            Metrics: metricsDiff);
-    }
-
     private static string WorkstationSubroute(string route)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(route);
         return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
             ? route[WorkstationApiRoutePrefix.Length..]
             : route;
-    }
-
-    private static IReadOnlyList<ParameterDiff> BuildParameterDiff(
-        IReadOnlyDictionary<string, string> baseParams,
-        IReadOnlyDictionary<string, string> targetParams)
-    {
-        var diffs = new List<ParameterDiff>();
-        var allKeys = new HashSet<string>(baseParams.Keys.Concat(targetParams.Keys), StringComparer.Ordinal);
-
-        foreach (var key in allKeys.Order())
-        {
-            baseParams.TryGetValue(key, out var baseVal);
-            targetParams.TryGetValue(key, out var targetVal);
-
-            if (!string.Equals(baseVal, targetVal, StringComparison.Ordinal))
-            {
-                diffs.Add(new ParameterDiff(key, baseVal, targetVal));
-            }
-        }
-
-        return diffs;
     }
 
     // PR-03: returns typed DTO instead of anonymous object
@@ -2569,15 +2542,13 @@ public static partial class WorkstationEndpoints
                 }
 
                 var isLatestReviewRun = string.Equals(run.RunId, latestReviewRunId, StringComparison.OrdinalIgnoreCase);
-                var hasNonPromotionAttention = packet.WorkItems.Any(static item =>
-                    item.Kind != OperatorWorkItemKindDto.PromotionReview &&
-                    item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
+                var hasStalePromotionAttention = HasStalePromotionAttention(packet);
                 workItems.AddRange(packet.WorkItems
                     .Where(item =>
                         item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical &&
                         (isLatestReviewRun ||
                          item.Kind != OperatorWorkItemKindDto.PromotionReview ||
-                         !hasNonPromotionAttention))
+                         !hasStalePromotionAttention))
                     .Select(AttachOperatorNavigation));
             }
         }
@@ -2590,6 +2561,13 @@ public static partial class WorkstationEndpoints
             workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
         }
     }
+
+    private static bool HasStalePromotionAttention(StrategyRunReviewPacketDto packet)
+        => packet.Continuity?.ContinuityStatus.HasCashFlow == true &&
+           packet.WorkItems.Any(static item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.WorkItemId.StartsWith("continuity-promotion-target-run-missing-", StringComparison.OrdinalIgnoreCase) &&
+            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
 
     private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
         => run.Promotion?.RequiresReview == true ||
@@ -3106,9 +3084,8 @@ public static partial class WorkstationEndpoints
                 var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
                 var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
                 var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
-
                 return new WorkstationDataProviderRecord(
-                    ProviderId: connection?.ProviderId ?? routingConnection?.ProviderFamilyId ?? metrics?.ProviderId ?? providerId,
+                    ProviderId: connection?.ProviderId ?? providerId,
                     DisplayName: displayName,
                     Status: connection is not null ? connection.Health.ToString() : rationale.Status,
                     Capability: capability,
@@ -5385,6 +5362,15 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
+    }
+
+    private static async Task SeedBreakQueueAsync(
+        IReconciliationBreakQueueRepository? repository,
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return;
@@ -5501,6 +5487,16 @@ public static partial class WorkstationEndpoints
     {
         var readService = services.GetService<StrategyRunReadService>();
         var reconciliationService = services.GetService<IReconciliationRunService>();
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, ct).ConfigureAwait(false);
+    }
+
+    private static async Task EnsureBreakQueueSeededAsync(
+        StrategyRunReadService? readService,
+        IReconciliationRunService? reconciliationService,
+        IReconciliationBreakQueueRepository? repository,
+        CancellationToken ct)
+    {
         if (readService is null || reconciliationService is null)
         {
             return;
@@ -5514,7 +5510,7 @@ public static partial class WorkstationEndpoints
 
         var reconciliations = await Task.WhenAll(
             runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-        await SeedBreakQueueAsync(services, runs, reconciliations, ct).ConfigureAwait(false);
+        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
     }
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
@@ -5524,6 +5520,15 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await GetBreakQueueItemsAsync(repository, status, fundAccountId, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
+        IReconciliationBreakQueueRepository? repository,
+        string? status,
+        string? fundAccountId,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return [];
@@ -5714,6 +5719,14 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await ReviewBreakAsync(repository, request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
+        IReconciliationBreakQueueRepository? repository,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -5731,6 +5744,14 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        return await ResolveBreakAsync(repository, request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
+        IReconciliationBreakQueueRepository? repository,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
         if (repository is null)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -5742,6 +5763,47 @@ public static partial class WorkstationEndpoints
         return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
     }
 
+
+    private static string ResolveCurrentActor(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is string currentUser && !string.IsNullOrWhiteSpace(currentUser))
+        {
+            return currentUser;
+        }
+
+        if (context.User.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(context.User.Identity.Name))
+        {
+            return context.User.Identity.Name!;
+        }
+
+        return "operator";
+    }
+
+    private static bool CanViewReconciliationBreakQueue(HttpContext context)
+    {
+        const UserPermission requiredPermission = UserPermission.ViewTrades;
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        {
+            return (permissionsFromContext & requiredPermission) == requiredPermission;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        {
+            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
+        }
+
+        return false;
+    }
+
+    private static bool CanMutateReconciliationBreakQueue(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
+        {
+            return false;
+        }
+
+        return role is UserRole.Admin or UserRole.Developer or UserRole.Accounting;
     private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
         group.MapGet("/strategy/designer/templates", (HttpContext context) =>
@@ -6026,14 +6088,20 @@ public static partial class WorkstationEndpoints
             UserPermission.ManageDirectLending,
             UserPermission.ModifySecurityMaster);
 
+    private static bool HasOperationsContinuityReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewDirectLending,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
+
     private static bool HasSecurityMasterOverrideApprovalPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ModifySecurityMaster);
-
-    private static bool HasGovernedWorkflowReopenPermission(HttpContext context)
-        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
     private static bool TryResolveCurrentUser(HttpContext context, out string currentUser)
         => EndpointAuthorization.TryResolveActor(context, out currentUser);
@@ -6199,7 +6267,10 @@ public sealed record StrategyRunDiff(
     IReadOnlyList<PositionDiffEntry> RemovedPositions,
     IReadOnlyList<PositionDiffEntry> ModifiedPositions,
     IReadOnlyList<ParameterDiff> ParameterChanges,
-    MetricsDiff Metrics);
+    MetricsDiff Metrics,
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? BaseArtifactCompleteness = null,
+    StrategyRunArtifactCompleteness? TargetArtifactCompleteness = null);
 
 /// <summary>A single position change between two runs.</summary>
 public sealed record PositionDiffEntry(

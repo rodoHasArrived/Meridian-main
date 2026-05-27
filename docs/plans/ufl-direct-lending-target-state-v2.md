@@ -62,7 +62,7 @@ The current repo anchors are:
 - contracts in `src/Meridian.Contracts/`
 - storage, migrations, and PostgreSQL integration in `src/Meridian.Storage/`
 - HTTP and workstation endpoints in `src/Meridian.Ui.Shared/`
-- browser workstation UX in `src/Meridian.Ui/dashboard/`, with retained WPF compatibility in `src/Meridian.Wpf/`
+- browser workstation UX in `src/Meridian.Ui/dashboard/`, with WPF compatibility in `src/Meridian.Wpf/`
 
 ## Current Implementation Snapshot (2026-05-21)
 

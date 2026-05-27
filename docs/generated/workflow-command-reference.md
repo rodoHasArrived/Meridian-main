@@ -5,7 +5,11 @@
 ## docs-automation-core
 
 - Owners: @platform-docs, @developer-experience
-- Expected artifacts: docs/status/docs-automation-summary.md, docs/status/docs-automation-summary.json, docs/status/workflow-validation-summary.json, docs/status/workflow-drift-report.md
+- Expected artifacts: docs/status/docs-automation-summary.md, docs/status/docs-automation-summary.json, docs/status/workflow-validation-summary.json, docs/status/workflow-drift-report.md, docs/generated/workflow-command-reference.md, docs/HELP.md, docs/development/documentation-automation.md
+- Owner lane: Documentation Automation
+- Refresh trigger: docs automation profile run (core/full)
+- Canonical output roots: docs/status, docs/generated, docs
+- Retention: replace-in-place (maxAgeDays=30, retainLatest=1)
 - Commands:
   - `python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json`
   - `python3 build/scripts/docs/generate-workflow-manifest.py`
@@ -14,6 +18,10 @@
 
 - Owners: @desktop-shell, @operator-experience
 - Expected artifacts: docs/screenshots/desktop, artifacts/desktop-workflows
+- Owner lane: Workstation Shell and UX
+- Refresh trigger: desktop screenshot capture workflow or manual screenshot refresh
+- Canonical output roots: docs/screenshots/desktop, artifacts/desktop-workflows
+- Retention: timestamped-run-retention (maxAgeDays=14, retainLatest=10)
 - Commands:
   - `pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop`
   - `pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net10.0-windows10.0.19041.0`
@@ -22,6 +30,10 @@
 
 - Owners: @provider-infra, @ops-readiness
 - Expected artifacts: artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json, artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json
+- Owner lane: Provider Infrastructure
+- Refresh trigger: wave1 provider validation execution
+- Canonical output roots: artifacts/provider-validation/_automation
+- Retention: dated-evidence-packets (maxAgeDays=30, retainLatest=30)
 - Commands:
   - `pwsh ./scripts/dev/run-wave1-provider-validation.ps1`
   - `pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
@@ -30,6 +42,10 @@
 
 - Owners: @desktop-shell, @api-workstation
 - Expected artifacts: artifacts/wpf-validation/operator-inbox-route
+- Owner lane: Workstation API and Desktop Validation
+- Refresh trigger: route validation workflow or targeted validation script run
+- Canonical output roots: artifacts/wpf-validation/operator-inbox-route
+- Retention: validation-bundle-retention (maxAgeDays=30, retainLatest=20)
 - Commands:
   - `make desktop-test-operator-inbox-route`
   - `pwsh -File ./scripts/dev/validate-operator-inbox-route.ps1`
@@ -38,6 +54,10 @@
 
 - Owners: @provider-infra, @ops-readiness
 - Expected artifacts: artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json, artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json, artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
+- Owner lane: Provider Infrastructure
+- Refresh trigger: provider validation evidence bundle execution
+- Canonical output roots: artifacts/provider-validation/_automation
+- Retention: dated-evidence-packets (maxAgeDays=30, retainLatest=30)
 - Commands:
   - `pwsh ./scripts/dev/run-provider-validation-evidence-bundle.ps1`
 
@@ -45,6 +65,10 @@
 
 - Owners: @provider-infra, @desktop-shell
 - Expected artifacts: artifacts/bin/ibapi-smoke
+- Owner lane: Provider Infrastructure and Desktop Validation
+- Refresh trigger: ibapi smoke build workflow run
+- Canonical output roots: artifacts/bin/ibapi-smoke
+- Retention: smoke-build-retention (maxAgeDays=14, retainLatest=20)
 - Commands:
   - `pwsh ./scripts/dev/build-ibapi-smoke.ps1 -Configuration Release`
 
@@ -52,6 +76,10 @@
 
 - Owners: @desktop-shell, @api-workstation
 - Expected artifacts: artifacts/wpf-validation/position-blotter-route
+- Owner lane: Workstation API and Desktop Validation
+- Refresh trigger: position blotter route validation execution
+- Canonical output roots: artifacts/wpf-validation/position-blotter-route
+- Retention: validation-bundle-retention (maxAgeDays=30, retainLatest=20)
 - Commands:
   - `pwsh -File ./scripts/dev/validate-position-blotter-route.ps1`
 
@@ -59,6 +87,10 @@
 
 - Owners: @desktop-shell, @developer-experience
 - Expected artifacts: artifacts/wpf-validation/dev-loop
+- Owner lane: Workstation Shell and UX
+- Refresh trigger: wpf dev-loop validation execution
+- Canonical output roots: artifacts/wpf-validation/dev-loop
+- Retention: validation-bundle-retention (maxAgeDays=30, retainLatest=20)
 - Commands:
   - `pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore`
 
@@ -66,6 +98,10 @@
 
 - Owners: @desktop-shell, @provider-infra
 - Expected artifacts: artifacts/desktop-workflows/robinhood-options-smoke
+- Owner lane: Workstation Shell and Provider Infrastructure
+- Refresh trigger: robinhood options smoke workflow run
+- Canonical output roots: artifacts/desktop-workflows/robinhood-options-smoke
+- Retention: timestamped-run-retention (maxAgeDays=14, retainLatest=20)
 - Commands:
   - `pwsh ./scripts/dev/robinhood-options-smoke.ps1 -Configuration Release`
 
@@ -73,5 +109,9 @@
 
 - Owners: @operator-experience, @developer-experience
 - Expected artifacts: docs/screenshots/web
+- Owner lane: Operator Experience
+- Refresh trigger: web screenshot capture workflow or manual route capture
+- Canonical output roots: docs/screenshots/web
+- Retention: replace-in-place (maxAgeDays=30, retainLatest=1)
 - Commands:
   - `node scripts/dev/capture-web-screenshots.mjs --output-dir docs/screenshots/web --config scripts/dev/web-screenshot-routes.json`

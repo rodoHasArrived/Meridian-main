@@ -114,11 +114,6 @@ modules:
     readme: src/Meridian.Mcp/README.md
     status: covered
     last_reviewed: 2026-05-20
-  - module_id: SRC-MCP-SERVER
-    path: src/Meridian.McpServer
-    readme: src/Meridian.McpServer/README.md
-    status: covered
-    last_reviewed: 2026-05-20
   - module_id: SRC-IBAPI-SMOKESTUB
     path: src/Meridian.IbApi.SmokeStub
     readme: src/Meridian.IbApi.SmokeStub/README.md

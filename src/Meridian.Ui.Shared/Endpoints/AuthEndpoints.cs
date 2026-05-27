@@ -111,7 +111,7 @@ public static class AuthEndpoints
                 });
             }
 
-            var redirect = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl;
+            var redirect = string.IsNullOrWhiteSpace(returnUrl) ? "/workstation/" : returnUrl;
             return Results.Redirect(redirect);
         }).ExcludeFromDescription();
 

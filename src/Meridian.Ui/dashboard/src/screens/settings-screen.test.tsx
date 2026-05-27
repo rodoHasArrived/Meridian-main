@@ -17,13 +17,21 @@ import type {
 
 const apiMocks = vi.hoisted(() => ({
   connectAlpacaConnection: vi.fn(),
-  revokeAlpacaConnection: vi.fn()
+  revokeAlpacaConnection: vi.fn(),
+  testProviderConnection: vi.fn(),
+  putProviderCredentials: vi.fn(),
+  verifyProviderConnection: vi.fn(),
+  deleteProviderCredentials: vi.fn()
 }));
 
 vi.mock("@/lib/api", async (importActual) => ({
   ...(await importActual<typeof import("@/lib/api")>()),
   connectAlpacaConnection: apiMocks.connectAlpacaConnection,
-  revokeAlpacaConnection: apiMocks.revokeAlpacaConnection
+  revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
+  testProviderConnection: apiMocks.testProviderConnection,
+  putProviderCredentials: apiMocks.putProviderCredentials,
+  verifyProviderConnection: apiMocks.verifyProviderConnection,
+  deleteProviderCredentials: apiMocks.deleteProviderCredentials
 }));
 
 const session: SessionInfo = {
@@ -193,6 +201,10 @@ describe("SettingsScreen", () => {
   beforeEach(() => {
     apiMocks.connectAlpacaConnection.mockReset();
     apiMocks.revokeAlpacaConnection.mockReset();
+    apiMocks.testProviderConnection.mockReset();
+    apiMocks.putProviderCredentials.mockReset();
+    apiMocks.verifyProviderConnection.mockReset();
+    apiMocks.deleteProviderCredentials.mockReset();
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -278,6 +290,70 @@ describe("SettingsScreen", () => {
     );
     expect(center).not.toHaveTextContent("endpoint-secret");
     expect(center).not.toHaveTextContent("vault:polygon/default");
+  });
+
+  it("supports inline provider edit, test, save, verify, and clear actions", async () => {
+    const user = userEvent.setup();
+    const onRefresh = vi.fn();
+    const onProviderRoutingRefresh = vi.fn();
+    apiMocks.testProviderConnection.mockResolvedValue({ success: true, latency: "82ms", message: "Provider reachable." });
+    apiMocks.putProviderCredentials.mockResolvedValue({ credentialState: "Configured", warnings: [] });
+    apiMocks.verifyProviderConnection.mockResolvedValue({ success: true, lastError: null, warnings: [] });
+    apiMocks.deleteProviderCredentials.mockResolvedValue({ verificationState: "NotVerified", warnings: [] });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        onRefresh={onRefresh}
+        onProviderRoutingRefresh={onProviderRoutingRefresh}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit Alpaca credentials" }));
+    await user.type(screen.getByLabelText("Alpaca API key"), "alpaca-key");
+    await user.type(screen.getByLabelText("Alpaca API secret"), "alpaca-secret");
+    await user.click(screen.getByRole("button", { name: "Test Alpaca connection" }));
+    await user.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
+    await user.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
+    await user.click(screen.getByRole("button", { name: "Clear Alpaca credentials" }));
+
+    expect(apiMocks.testProviderConnection).toHaveBeenCalledWith("alpaca");
+    expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
+      "alpaca",
+      expect.objectContaining({
+        credentials: expect.objectContaining({
+          apiKey: "alpaca-key",
+          apiSecret: "alpaca-secret"
+        })
+      })
+    );
+    expect(apiMocks.verifyProviderConnection).toHaveBeenCalledWith("alpaca");
+    expect(apiMocks.deleteProviderCredentials).toHaveBeenCalledWith("alpaca");
+    expect(onRefresh).toHaveBeenCalled();
+    expect(onProviderRoutingRefresh).toHaveBeenCalled();
+    expect(screen.getAllByText(/Impact summary:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Readiness checks/).length).toBeGreaterThan(0);
+  });
+
+  it("filters provider rows by search and risk filters", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Search providers in connection center"), "polygon");
+    expect(screen.getByText("Polygon.io")).toBeInTheDocument();
+    expect(screen.queryByText("Alpaca")).toBeNull();
+
+    await user.selectOptions(screen.getByLabelText("Health"), "warning");
+    expect(screen.getByText("Polygon.io")).toBeInTheDocument();
   });
 
   it("updates recent-event detail with keyboard row selection", async () => {
@@ -588,6 +664,54 @@ describe("SettingsScreen", () => {
     })).toHaveTextContent(
       "Reference"
     );
+  });
+
+  it("renders runtime capability toggles and sends toggle requests", async () => {
+    const onFeatureCapabilityToggle = vi.fn();
+    const user = userEvent.setup();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        featureCapabilities={{
+          capabilities: [
+            {
+              capabilityKey: "desktop.data.security-master",
+              displayName: "Security master",
+              description: "Reference-data review.",
+              isEnabled: false,
+              defaultEnabled: true,
+              isPermanent: false,
+              isOverridden: true,
+              canToggle: true,
+              disabledReason: null
+            },
+            {
+              capabilityKey: "desktop.settings.workspace",
+              displayName: "Settings workspace",
+              description: "Preferences and diagnostics.",
+              isEnabled: true,
+              defaultEnabled: true,
+              isPermanent: true,
+              isOverridden: false,
+              canToggle: false,
+              disabledReason: "Required for workstation navigation."
+            }
+          ]
+        }}
+        onFeatureCapabilityToggle={onFeatureCapabilityToggle}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Runtime feature capabilities" })).toBeInTheDocument();
+    const securityMasterToggle = screen.getByRole("checkbox", { name: "Enable Security master" });
+    expect(securityMasterToggle).not.toBeChecked();
+
+    await user.click(securityMasterToggle);
+
+    expect(onFeatureCapabilityToggle).toHaveBeenCalledWith("desktop.data.security-master", true);
+    expect(screen.getByRole("checkbox", { name: "Disable Settings workspace" })).toBeDisabled();
   });
 
   it("renders diagnostic endpoint failures as accessible endpoint cards", () => {

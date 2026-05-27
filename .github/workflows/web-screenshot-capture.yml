@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: web-screenshot-capture-${{ github.ref }}
@@ -26,6 +27,7 @@ concurrency:
 
 env:
   CI: true
+  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 720
 
 jobs:
   capture-web-screenshots:
@@ -48,32 +50,106 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
-        run: npm ci --prefix src/Meridian.Ui/dashboard
+        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Install Playwright browser
-        run: npx --prefix src/Meridian.Ui/dashboard playwright install --with-deps chromium
-
-      - name: Capture web screenshots
-        run: >
-          node scripts/dev/capture-web-screenshots.mjs
-          --output-dir "${{ inputs.output_dir }}"
-          --config "${{ inputs.config }}"
-
-      - name: Commit and push results
-        if: ${{ inputs.commit == true }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- "${{ inputs.output_dir }}"
-          if git diff --cached --quiet; then
-            echo "[INFO] No changes to commit."
+          set -euo pipefail
+          install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
+          run_playwright_install() {
+            set +e
+            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install "$@"
+            install_exit_code=$?
+            set -e
+            return "$install_exit_code"
+          }
+
+          if run_playwright_install --with-deps chromium; then
+            echo "[INFO] Playwright browser and dependency install completed."
           else
-            git commit -m "chore: refresh web workstation screenshot catalog [skip ci]"
-            git push
+            playwright_install_exit_code=$?
+            if [ "$playwright_install_exit_code" -eq 124 ]; then
+              echo "::warning::Playwright dependency install timed out after ${install_timeout_seconds}s; retrying browser-only install."
+            else
+              echo "::warning::Playwright dependency install failed with exit code ${playwright_install_exit_code}; retrying browser-only install."
+            fi
+
+            if run_playwright_install chromium; then
+              echo "[INFO] Playwright browser-only install completed."
+            else
+              browser_only_install_exit_code=$?
+              if [ "$browser_only_install_exit_code" -eq 124 ]; then
+                echo "::error::Playwright browser-only install timed out after ${install_timeout_seconds}s."
+              else
+                echo "::error::Playwright browser-only install failed with exit code ${browser_only_install_exit_code}."
+              fi
+              exit "$browser_only_install_exit_code"
+            fi
           fi
 
+      - name: Capture web screenshots
+        continue-on-error: true
+        env:
+          OUTPUT_DIR: ${{ inputs.output_dir }}
+          ROUTES_CONFIG: ${{ inputs.config }}
+        run: |
+          if [ -d "$OUTPUT_DIR" ]; then
+            find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' -delete
+          fi
+          node scripts/dev/capture-web-screenshots.mjs \
+            --output-dir "$OUTPUT_DIR" \
+            --config "$ROUTES_CONFIG"
+
+      - name: Log web screenshot capture status
+        if: ${{ always() }}
+        env:
+          OUTPUT_DIR: ${{ inputs.output_dir }}
+        run: |
+          if [ ! -d "$OUTPUT_DIR" ]; then
+            echo "::warning::Web screenshot output directory '$OUTPUT_DIR' was not created."
+            exit 0
+          fi
+
+          COUNT=$(find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l | tr -d ' ')
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No web screenshots were captured under '$OUTPUT_DIR'."
+          else
+            echo "[INFO] Captured $COUNT web screenshot(s) in '$OUTPUT_DIR'."
+          fi
+
+      - name: Detect screenshot updates
+        if: ${{ always() && inputs.commit == true }}
+        id: screenshot_changes
+        env:
+          OUTPUT_DIR: ${{ inputs.output_dir }}
+        run: |
+          if [ ! -d "$OUTPUT_DIR" ]; then
+            echo "::warning::Output path '$OUTPUT_DIR' does not exist; skipping pull request creation."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git status --porcelain -- "$OUTPUT_DIR" | grep -q .; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "[INFO] No screenshot changes detected under '$OUTPUT_DIR'."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open pull request with screenshot updates
+        if: ${{ always() && inputs.commit == true && steps.screenshot_changes.outputs.has_changes == 'true' }}
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v7
+        with:
+          add-paths: ${{ inputs.output_dir }}
+          branch: automation/web-screenshot-capture
+          base: ${{ github.event.repository.default_branch }}
+          commit-message: "chore: refresh web workstation screenshot catalog [skip ci]"
+          title: "chore: refresh web workstation screenshot catalog"
+          body: "Automated screenshot refresh generated by workflow run ${{ github.run_id }}."
+
       - name: Upload screenshot artifacts
-        if: ${{ inputs.commit != true }}
+        if: ${{ always() && inputs.commit != true }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}

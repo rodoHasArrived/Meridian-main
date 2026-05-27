@@ -68,19 +68,24 @@ jobs:
 
       - name: Run provider validation evidence bundle
         shell: pwsh
+        env:
+          DATE_STAMP: ${{ inputs.date_stamp }}
+          SKIP_WAVE1: ${{ inputs.skip_wave1 }}
+          CANDIDATE_KERNEL_VERSION: ${{ inputs.candidate_kernel_version }}
+          BASELINE_KERNEL_VERSION: ${{ inputs.baseline_kernel_version }}
         run: |
           $bundleArgs = @()
-          if ('${{ inputs.date_stamp }}' -ne '') {
-            $bundleArgs += '-DateStamp', '${{ inputs.date_stamp }}'
+          if ($env:DATE_STAMP -ne '') {
+            $bundleArgs += '-DateStamp', $env:DATE_STAMP
           }
-          if ('${{ inputs.skip_wave1 }}' -eq 'true') {
+          if ($env:SKIP_WAVE1 -eq 'true') {
             $bundleArgs += '-SkipWave1'
           }
-          if ('${{ inputs.candidate_kernel_version }}' -ne '') {
-            $bundleArgs += '-CandidateKernelVersion', '${{ inputs.candidate_kernel_version }}'
+          if ($env:CANDIDATE_KERNEL_VERSION -ne '') {
+            $bundleArgs += '-CandidateKernelVersion', $env:CANDIDATE_KERNEL_VERSION
           }
-          if ('${{ inputs.baseline_kernel_version }}' -ne '' -and '${{ inputs.baseline_kernel_version }}' -ne 'default') {
-            $bundleArgs += '-BaselineKernelVersion', '${{ inputs.baseline_kernel_version }}'
+          if ($env:BASELINE_KERNEL_VERSION -ne '' -and $env:BASELINE_KERNEL_VERSION -ne 'default') {
+            $bundleArgs += '-BaselineKernelVersion', $env:BASELINE_KERNEL_VERSION
           }
           & scripts/dev/run-provider-validation-evidence-bundle.ps1 @bundleArgs
 

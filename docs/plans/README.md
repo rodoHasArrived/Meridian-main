@@ -8,6 +8,7 @@
 - [ ] Convert the Strategy Engine pre-run foundation into accepted strategy-to-ledger lineage evidence before claiming W3 continuity progress.
 - [ ] Attach every non-`complete` provider capability-matrix row to an owner, target sprint, and adapter-readiness evidence packet.
 - [ ] Keep the active W2-W4 blocker list in [`wave-implementation-checklists.md`](wave-implementation-checklists.md) aligned with the latest pilot-readiness stage gates.
+- [ ] Use [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) before accepting WPF work as Wave 2, Wave 3, or Wave 4 workflow progress.
 - [ ] Prove the operations-continuity close lane through browser/operator acceptance with external statement or custodian inputs before describing close readiness as delivered.
 - [ ] Run stale-doc/hash validation after roadmap, source registry, or generated documentation changes and record failures as TODOs instead of prose caveats.
 
@@ -16,8 +17,9 @@ This directory contains current Meridian execution plans, blueprints, and target
 Active planning direction:
 
 - Meridian is being productized as an evidence-backed investment operations platform.
-- New operator UI work belongs in the browser workstation under `src/Meridian.Ui/dashboard/`.
-- Retained WPF work is limited to shared contracts, regression fixes, compatibility evidence, and retained desktop support.
+- Browser and desktop operator workflows are both active: `src/Meridian.Ui/dashboard/` and
+  `src/Meridian.Wpf/` should consume shared contracts, local/web API endpoints, and shared read
+  models rather than diverging into separate business logic.
 - Top-level operator navigation remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; legacy `Research`, `Data Operations`, and `Governance` names are compatibility or planning shorthand.
 - No mobile-specific product lane is active; responsive browser validation is allowed only for the browser workstation.
 - Completed, superseded, or historical plans belong under `archive/docs/`, not this active folder.
@@ -64,12 +66,13 @@ These are the active documents for Waves 2-4 and the current short-horizon execu
 | [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for Waves 2-4 and trust-gate maintenance |
 | [wave-implementation-checklists.md](wave-implementation-checklists.md) | Concrete W1 maintenance and W2-W4 readiness TODO checklist tied to stage-gate blockers |
+| [desktop-ui-workflow-acceptance-matrix.md](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF acceptance matrix that maps W2 cockpit, W3 continuity, and W4 governance scenarios to shared checks, focused WPF tests, browser parity checks, and release blockers |
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for Waves 2-4 |
-| [web-ui-development-pivot.md](web-ui-development-pivot.md) | Browser-first operator UI direction and retained desktop policy |
+| [web-ui-development-pivot.md](web-ui-development-pivot.md) | Browser workstation foundation and desktop/browser coexistence history |
 | [meridian-pilot-workflow.md](meridian-pilot-workflow.md) | Golden-path pilot workflow and productization filter |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 paper-session, replay, risk, promotion, and cockpit reliability plan |
-| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation/shared-model migration context interpreted through the browser-first pivot |
-| [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) | Desktop workstation screen blueprint with a programmatically validated checklist for retained WPF support work |
+| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation/shared-model migration context for both active operator surfaces |
+| [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) | Desktop workstation screen blueprint with a programmatically validated checklist for WPF operator work |
 | [brokerage-portfolio-sync-blueprint.md](brokerage-portfolio-sync-blueprint.md) | Brokerage and custodian account-sync design for Wave 3-4 continuity |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Wave 4 governance, reconciliation, and report-pack blueprint |
 | [ledger.md](ledger.md) | Ledger execution roadmap for period management, persistence, multi-ledger depth, accruals, and reporting |
@@ -114,6 +117,7 @@ These are active or consciously deferred engineering tracks. They should not com
 | [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | Optional L3 inference and queue-aware execution simulation plan |
 | [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Optional QuantScript, L3, and multi-instance follow-on roadmap |
 | [assembly-performance-roadmap.md](assembly-performance-roadmap.md) | Optional advanced-performance track after operator-readiness needs justify it |
+| [desktop-shell-modularity-roadmap.md](desktop-shell-modularity-roadmap.md) | Active desktop-shell modularity and extensibility roadmap for phased WPF shell architecture improvements |
 
 ## Archived Or Superseded Planning Context
 
@@ -128,8 +132,10 @@ The following files were removed from the active plans tree because they are com
 | [../../archive/docs/plans/backtesting-quantscript-improvement-plan-2026-04.md](../../archive/docs/plans/backtesting-quantscript-improvement-plan-2026-04.md) | Superseded by the Research trust/velocity and Backtest Studio plans plus delivered QuantScript baseline |
 | [../../archive/docs/plans/meridian-analytics-productization-blueprint.md](../../archive/docs/plans/meridian-analytics-productization-blueprint.md) | Superseded by the evidence-backed investment-operations plan and browser-first productization path |
 | [../../archive/docs/plans/approach-b-plus-v2-implementation-plan.md](../../archive/docs/plans/approach-b-plus-v2-implementation-plan.md) | Superseded by the active structured roadmap/source registries, docs automation, and stale-doc/hash validation path |
+| [../../archive/docs/plans/approach-b-plus-v2-governance.md](../../archive/docs/plans/approach-b-plus-v2-governance.md) | Historical phase-sequencing governance contract retained as implementation context after the docs-mesh rollout completed |
 | [../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md](../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md) | Superseded by delivered Covered Call support evidence plus active Strategy Engine, options, and Backtest Studio planning |
 | [../../archive/docs/plans/readability-refactor-baseline.md](../../archive/docs/plans/readability-refactor-baseline.md), [../../archive/docs/plans/readability-refactor-roadmap.md](../../archive/docs/plans/readability-refactor-roadmap.md), [../../archive/docs/plans/readability-refactor-technical-design-pack.md](../../archive/docs/plans/readability-refactor-technical-design-pack.md) | Historical readability baseline and draft design pack; active cleanup guidance now lives in the codebase cleanup roadmap |
+| [../../archive/docs/summaries/performance-todo-2026-05-21.md](../../archive/docs/summaries/performance-todo-2026-05-21.md) | Dated performance TODO snapshot with environment-specific benchmark blockage notes moved out of active planning |
 | [../../archive/docs/assessments/meridian-main-differentiation-report-2026-04-29.md](../../archive/docs/assessments/meridian-main-differentiation-report-2026-04-29.md) | Dated differentiation report superseded by the active evidence-backed investment-operations plan |
 | [../../archive/docs/plans/workstation-release-readiness-blueprint.md](../../archive/docs/plans/workstation-release-readiness-blueprint.md), [../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md](../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md) | Historical browser-workstation release checklist and sprint backlog |
 

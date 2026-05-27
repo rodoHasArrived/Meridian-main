@@ -31,15 +31,16 @@ current source instead.
 | [`../../../.github/instructions/`](../../../.github/instructions/) | Auto-applied path-specific rules for C#, tests, docs, and WPF |
 | [`../../../.github/agents/`](../../../.github/agents/) | Copilot coding-agent role definitions |
 | [`../../../.github/prompts/`](../../../.github/prompts/) | Reusable Copilot Chat prompt templates |
-| [`../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md`](../../../docs/archive/workflows/legacy-github-actions-2026-05-18.md) | Archive note for retired Copilot workflow files |
+| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive note for retired Copilot workflow files |
 
 ## Current Product Framing
 
-Meridian is a .NET 10 fund-management and trading platform. The active operator UI lane is
-[`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/), with built assets in
+Meridian is a .NET 10 fund-management and trading platform. Active operator UI work spans
+[`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
+[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
 [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
-[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/) is retained for shared contracts,
-regression fixes, and desktop support rather than broad new UI feature work.
+Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
+read models before either client composes it.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or

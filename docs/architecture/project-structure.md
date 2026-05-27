@@ -4,9 +4,8 @@
 **Owner:** Core Team
 **Reviewed:** 2026-05-19
 
-Meridian lives at `D:\Meridian-main`. The repository is organized around
-source projects, tests, automation, docs, design-system assets, and generated
-artifacts.
+Meridian uses a standard repository layout organized around source projects,
+tests, automation, docs, design-system assets, and generated artifacts.
 
 ## Active Source
 
@@ -29,7 +28,7 @@ artifacts.
 | `src/Meridian.Mcp*/` | Active source code | MCP hosts and tool surfaces |
 | `src/Meridian.Ui/dashboard/` | Active source code | Browser-first operator workstation |
 | `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` | Active source code | Shared UI services, endpoints, and read models |
-| `src/Meridian.Wpf/` | Retained active source code | Compatibility and regression support for WPF |
+| `src/Meridian.Wpf/` | Active source code | Active desktop shell for operator workflows |
 
 ## Tests And Validation
 
@@ -55,9 +54,9 @@ artifacts.
 | --- | --- | --- |
 | `docs/` | Active documentation | Maintained architecture, development, operations, status, plans, and references |
 | `docs/prompts/` | Active documentation | Maintained prompt, agent, and automation guidance indexes |
-| `docs/archive/` | Historical reference only | Superseded docs-tree material retained for traceability |
+| `archive/docs/` | Historical reference only | Superseded docs-tree material retained for traceability |
 | `Meridian Design System/` | Active design-system assets | Local source of truth for visual foundations, previews, governance tests, and icons |
-| `archive/` | Historical reference only | Legacy superseded docs/code kept for traceability |
+| `archive/` | Historical reference only | Legacy superseded docs/code kept for traceability; `archive/code/src/` is enforced as comment-only tombstones by `tests/scripts/test_archive_code_tombstones.py` |
 | `docs/generated/` | Generated documentation | Regenerate by script; do not hand edit generated sections |
 | `docs/docfx/api/` | Generated documentation | DocFX API metadata output; regenerate before publishing docs |
 | `wwwroot/workstation/` | Generated/build output currently tracked | Host-served web workstation bundle; review before replacing or deleting |

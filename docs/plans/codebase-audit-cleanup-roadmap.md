@@ -18,7 +18,7 @@ Use this document with:
 
 - `docs/status/ROADMAP.md` for delivery-wave sequencing
 - `docs/status/IMPROVEMENTS.md` for completed improvement history
-- `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for the broader non-assembly implementation backlog
+- `docs/status/FULL_IMPLEMENTATION_TODO.md` for the broader non-assembly implementation backlog
 - `archive/docs/plans/readability-refactor-roadmap.md` for historical host/UI refactor sequencing; keep current cleanup guidance in this document
 
 ---
@@ -61,11 +61,11 @@ Primary anchors:
 
 ### 2. WPF workflow cleanup
 
-The app now has shared run surfaces, a browser-first seven-workspace operator lane, and a retained WPF compatibility shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
+The app now has shared run surfaces, a shared-contract-first seven-workspace operator lane, and a WPF shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
 
 Open work:
 
-- validate the browser-first workspace shells and retained WPF compatibility shells against real Data, Strategy, Trading, Portfolio, Accounting, Reporting, and Settings journeys
+- validate the shared-contract-first workspace shells and WPF shells against real Data, Strategy, Trading, Portfolio, Accounting, Reporting, and Settings journeys
 - identify placeholder or low-value pages and either strengthen them or label/re-scope them
 - keep business logic moving out of page code-behind and into shared services/view models
 - make run, portfolio, ledger, Position Blotter, and reconciliation flows feel like one workstation family rather than separate page islands
@@ -177,7 +177,7 @@ This roadmap is complete when:
 This roadmap does not duplicate:
 
 - product-delivery sequencing from `docs/status/ROADMAP.md`
-- full non-assembly implementation scope from `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md`
+- full non-assembly implementation scope from `docs/status/FULL_IMPLEMENTATION_TODO.md`
 - blueprint-level delivery details from the workstation, governance, QuantScript, or L3 simulation plans
 
 It exists to keep cleanup work actionable and current instead of letting it drift back into historical audit prose.

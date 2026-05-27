@@ -43,6 +43,28 @@
                 </Grid>
             </Border>
 
+            <!-- Shared continuity posture -->
+            <Border Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,20"
+                    AutomationProperties.AutomationId="RunCashFlowContinuityPosture">
+                <StackPanel>
+                    <TextBlock Text="{Binding ContinuityPostureText}"
+                               Style="{StaticResource CardHeaderStyle}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="RunCashFlowContinuityPostureTitle" />
+                    <TextBlock Text="{Binding ContinuityDetailText}"
+                               Style="{StaticResource CardDescriptionStyle}"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="RunCashFlowContinuityPostureDetail" />
+                    <TextBlock Text="{Binding ContinuityWarningText}"
+                               Style="{StaticResource CardDescriptionStyle}"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="RunCashFlowContinuityPostureWarning" />
+                </StackPanel>
+            </Border>
+
             <!-- Summary metric cards -->
             <UniformGrid Columns="5" Margin="0,0,0,20">
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">

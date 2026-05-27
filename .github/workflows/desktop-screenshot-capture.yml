@@ -67,23 +67,62 @@ jobs:
           scripts/dev/capture-desktop-screenshots.ps1
           -OutputDir "${{ inputs.output_dir }}"
 
+      - name: Log desktop screenshot capture status
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          $outputDir = "${{ inputs.output_dir }}"
+          if (-not (Test-Path -LiteralPath $outputDir)) {
+            Write-Warning "Desktop screenshot output directory '$outputDir' was not created."
+            return
+          }
+
+          $captures = @(Get-ChildItem -LiteralPath $outputDir -Filter '*.png' -File -ErrorAction SilentlyContinue)
+          if ($captures.Count -eq 0) {
+            Write-Warning "No desktop screenshots were captured under '$outputDir'."
+          } else {
+            Write-Host "[INFO] Captured $($captures.Count) desktop screenshot(s) in '$outputDir'."
+          }
+
       - name: Commit and push results
-        if: ${{ inputs.commit == true }}
+        if: ${{ success() && inputs.commit == true }}
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- "${{ inputs.output_dir }}"
+          if (Test-Path -LiteralPath "${{ inputs.output_dir }}") {
+            git add -- "${{ inputs.output_dir }}"
+          } else {
+            Write-Warning "Output path '${{ inputs.output_dir }}' does not exist; nothing to stage."
+          }
           $changed = git diff --cached --name-only
           if ($changed) {
             git commit -m "chore: refresh desktop screenshot catalog [skip ci]"
-            git push
+            $maxPushAttempts = 3
+            $pushed = $false
+            for ($attempt = 1; $attempt -le $maxPushAttempts; $attempt++) {
+              git pull --rebase
+              git push
+              if ($LASTEXITCODE -eq 0) {
+                $pushed = $true
+                break
+              }
+              if ($attempt -lt $maxPushAttempts) {
+                $delay = [math]::Pow(2, $attempt)
+                Write-Host "::warning::Push was rejected on attempt $attempt of $maxPushAttempts; retrying after ${delay}s delay and refreshing from remote."
+                Start-Sleep -Seconds $delay
+              }
+            }
+            if (-not $pushed) {
+              Write-Host "::error::Unable to push screenshot updates after $maxPushAttempts attempts."
+              exit 1
+            }
           } else {
             Write-Host "[INFO] No changes to commit."
           }
 
       - name: Upload screenshot artifacts
-        if: ${{ inputs.commit != true }}
+        if: ${{ always() && inputs.commit != true }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: desktop-screenshots-${{ github.run_number }}

@@ -74,52 +74,143 @@ public sealed class DataExportViewModel : BindableBase
     private bool _isActionInfoError;
     private bool _isActionInfoVisible;
 
-    // ── Internal state set by code-behind (non-bindable controls) ─────────
+    // ── Bindable selector state ───────────────────────────────────────────
     private string _selectedExportFormat = "csv";
     private string _selectedCompression = "gzip";
+    private string _selectedDatabaseType = "postgresql";
+    private string _selectedWebhookFormat = "json";
+    private string _selectedWebhookBatch = "microbatch";
+    private string _selectedLeanResolution = "minute";
 
-    internal string SelectedExportFormat
+    public DataExportOption[] ExportFormatOptions { get; } =
+    [
+        new("CSV (Comma-Separated)", "csv"),
+        new("Parquet (Columnar)", "parquet"),
+        new("JSON Lines", "jsonl"),
+        new("HDF5 (Hierarchical)", "hdf5"),
+        new("Feather (Arrow IPC)", "feather")
+    ];
+
+    public DataExportOption[] CompressionOptions { get; } =
+    [
+        new("None", "none"),
+        new("Gzip", "gzip"),
+        new("LZ4 (Fast)", "lz4"),
+        new("Zstd (Best)", "zstd")
+    ];
+
+    public DataExportOption[] DatabaseTypeOptions { get; } =
+    [
+        new("PostgreSQL", "postgresql"),
+        new("TimescaleDB", "timescaledb"),
+        new("ClickHouse", "clickhouse"),
+        new("QuestDB", "questdb"),
+        new("InfluxDB", "influxdb"),
+        new("SQLite", "sqlite")
+    ];
+
+    public DataExportOption[] ScheduleFrequencyOptions { get; } =
+    [
+        new("Hourly", "hourly"),
+        new("Daily", "daily"),
+        new("Weekly", "weekly"),
+        new("Monthly", "monthly")
+    ];
+
+    public DataExportOption[] WebhookFormatOptions { get; } =
+    [
+        new("JSON", "json"),
+        new("MessagePack", "msgpack"),
+        new("Protobuf", "protobuf")
+    ];
+
+    public DataExportOption[] WebhookBatchOptions { get; } =
+    [
+        new("Real-time (each event)", "realtime"),
+        new("Micro-batch (100ms)", "microbatch"),
+        new("Batch (1 second)", "batch"),
+        new("Bulk (1 minute)", "bulk")
+    ];
+
+    public DataExportOption[] LeanResolutionOptions { get; } =
+    [
+        new("Tick", "tick"),
+        new("Second", "second"),
+        new("Minute", "minute"),
+        new("Hour", "hour"),
+        new("Daily", "daily")
+    ];
+
+    public string SelectedExportFormat
     {
         get => _selectedExportFormat;
         set
         {
-            if (!string.Equals(_selectedExportFormat, value, StringComparison.OrdinalIgnoreCase))
+            var normalized = NormalizeOptionKey(value, ExportFormatOptions, "csv");
+            if (SetProperty(ref _selectedExportFormat, normalized))
             {
-                _selectedExportFormat = value;
                 RefreshExportReadiness();
             }
         }
     }
 
-    internal string SelectedCompression
+    public string SelectedCompression
     {
         get => _selectedCompression;
         set
         {
-            if (!string.Equals(_selectedCompression, value, StringComparison.OrdinalIgnoreCase))
+            var normalized = NormalizeOptionKey(value, CompressionOptions, "gzip");
+            if (SetProperty(ref _selectedCompression, normalized))
             {
-                _selectedCompression = value;
                 RefreshExportReadiness();
             }
         }
     }
 
-    internal string SelectedDatabaseType { get; set; } = "postgresql";
-    internal string SelectedScheduleFrequency
+    public string SelectedDatabaseType
+    {
+        get => _selectedDatabaseType;
+        set
+        {
+            var normalized = NormalizeOptionKey(value, DatabaseTypeOptions, "postgresql");
+            if (SetProperty(ref _selectedDatabaseType, normalized))
+            {
+                DatabasePort = ResolveDatabasePort(normalized);
+            }
+        }
+    }
+
+    public string SelectedScheduleFrequency
     {
         get => _selectedScheduleFrequency;
         set
         {
-            if (!string.Equals(_selectedScheduleFrequency, value, StringComparison.OrdinalIgnoreCase))
+            var normalized = NormalizeOptionKey(value, ScheduleFrequencyOptions, "daily");
+            if (SetProperty(ref _selectedScheduleFrequency, normalized))
             {
-                _selectedScheduleFrequency = value;
                 RefreshScheduleReadiness();
             }
         }
     }
-    internal string SelectedWebhookFormat { get; set; } = "json";
-    internal string SelectedWebhookBatch { get; set; } = "trade";
-    internal string SelectedLeanResolution { get; set; } = "minute";
+
+    public string SelectedWebhookFormat
+    {
+        get => _selectedWebhookFormat;
+        set => SetProperty(ref _selectedWebhookFormat, NormalizeOptionKey(value, WebhookFormatOptions, "json"));
+    }
+
+    public string SelectedWebhookBatch
+    {
+        get => _selectedWebhookBatch;
+        set => SetProperty(ref _selectedWebhookBatch, NormalizeOptionKey(value, WebhookBatchOptions, "microbatch"));
+    }
+
+    public string SelectedLeanResolution
+    {
+        get => _selectedLeanResolution;
+        set => SetProperty(ref _selectedLeanResolution, NormalizeOptionKey(value, LeanResolutionOptions, "minute"));
+    }
+
     internal string DatabasePassword { get; set; } = string.Empty;
 
     public DataExportViewModel()
@@ -760,6 +851,21 @@ public sealed class DataExportViewModel : BindableBase
             _ => $"{compression} compression"
         };
 
+    private static string NormalizeOptionKey(string? key, IEnumerable<DataExportOption> options, string fallback)
+        => options.FirstOrDefault(option => string.Equals(option.Key, key, StringComparison.OrdinalIgnoreCase))?.Key
+            ?? fallback;
+
+    private static string ResolveDatabasePort(string databaseType)
+        => databaseType.ToLowerInvariant() switch
+        {
+            "postgresql" or "timescaledb" => "5432",
+            "clickhouse" => "8123",
+            "questdb" => "8812",
+            "influxdb" => "8086",
+            "sqlite" => "0",
+            _ => "5432"
+        };
+
     private void ValidateScheduleTime()
     {
         IsScheduleTimeErrorVisible = false;
@@ -900,3 +1006,5 @@ public sealed class ExportHistoryItem
     public string Size { get; set; } = string.Empty;
     public string Destination { get; set; } = string.Empty;
 }
+
+public sealed record DataExportOption(string Label, string Key);

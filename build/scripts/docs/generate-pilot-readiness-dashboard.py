@@ -28,7 +28,7 @@ from dashboard_rendering import (
 
 DATA_SOURCES = [
     "docs/status/provider-validation-matrix.md",
-    "docs/status/dk1-pilot-parity-runbook.md",
+    "docs/status/evidence/dk1-pilot-parity-runbook.md",
     "docs/status/kernel-readiness-dashboard.md",
     "artifacts/pilot-acceptance/latest/pilot-readiness.json",
     "scripts/dev/*dk1*",
@@ -96,7 +96,7 @@ CHECKS = [
         "id": "parity-runbook",
         "category": "Provider Evidence",
         "label": "DK1 parity runbook names generated packet and run-date artifact requirements",
-        "paths": ["docs/status/dk1-pilot-parity-runbook.md"],
+        "paths": ["docs/status/evidence/dk1-pilot-parity-runbook.md"],
         "terms": [
             "dk1-pilot-parity-packet",
             "operator sign-off",

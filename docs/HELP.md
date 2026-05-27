@@ -100,7 +100,7 @@ Use the narrowest probe that matches the failure.
 dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
-python build/scripts/docs/run-docs-automation.py --profile quick --dry-run
+python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
 ```
 
 For browser-workstation issues, first verify the local host and route:

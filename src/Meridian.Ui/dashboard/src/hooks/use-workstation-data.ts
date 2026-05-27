@@ -17,7 +17,9 @@ import {
   getSystemStatus,
   getTradingWorkspace,
   getWorkflowLibrary,
-  getWorkflowPresets
+  getWorkflowPresets,
+  getFeatureCapabilities,
+  setFeatureCapability
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import type {
@@ -37,7 +39,8 @@ import type {
   WorkflowPreset,
   WorkflowLibrary,
   WorkflowPresetLibrary,
-  WorkspaceKey
+  WorkspaceKey,
+  FeatureCapabilitySettingsResponse
 } from "@/types";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
@@ -60,6 +63,7 @@ interface WorkstationDataState {
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
+  featureCapabilities: FeatureCapabilitySettingsResponse | null;
   workflowError: string | null;
   usingDevelopmentFixtures: boolean;
   loading: boolean;
@@ -85,6 +89,7 @@ const initialState: WorkstationDataState = {
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
+  featureCapabilities: null,
   workflowError: null,
   usingDevelopmentFixtures: false,
   loading: true,
@@ -98,9 +103,12 @@ export function useWorkstationData() {
   const refreshRevisionRef = useRef(0);
   const tradingRefreshRevisionRef = useRef(0);
   const providerRoutingRefreshRevisionRef = useRef(0);
+  const portfolioRefreshRevisionRef = useRef(0);
   const refreshAbortRef = useRef<AbortController | null>(null);
   const tradingRefreshAbortRef = useRef<AbortController | null>(null);
   const providerRoutingRefreshAbortRef = useRef<AbortController | null>(null);
+  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
+  const refreshingPortfolio = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -110,9 +118,11 @@ export function useWorkstationData() {
       refreshRevisionRef.current += 1;
       tradingRefreshRevisionRef.current += 1;
       providerRoutingRefreshRevisionRef.current += 1;
+      portfolioRefreshRevisionRef.current += 1;
       refreshAbortRef.current?.abort();
       tradingRefreshAbortRef.current?.abort();
       providerRoutingRefreshAbortRef.current?.abort();
+      portfolioRefreshAbortRef.current?.abort();
     };
   }, []);
 
@@ -152,7 +162,8 @@ export function useWorkstationData() {
       providerRoutingTrustSnapshots,
       brokeragePortfolio,
       workflowLibrary,
-      workflowPresets
+      workflowPresets,
+      featureCapabilities
     ] = await Promise.allSettled([
       getSession(requestOptions),
       getSystemStatus(requestOptions),
@@ -169,7 +180,8 @@ export function useWorkstationData() {
       getProviderRoutingTrustSnapshots(requestOptions),
       getBrokerageHouseholdPortfolio("alpaca", requestOptions),
       getWorkflowLibrary(requestOptions),
-      getWorkflowPresets(requestOptions)
+      getWorkflowPresets(requestOptions),
+      getFeatureCapabilities(requestOptions)
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
@@ -223,6 +235,7 @@ export function useWorkstationData() {
       brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),
+      featureCapabilities: readWorkspace(["settings"], featureCapabilities),
       workflowError: workflowErrors[0] ?? null,
       usingDevelopmentFixtures: hasDevelopmentFixtureUsage(),
       loading: false,
@@ -294,6 +307,22 @@ export function useWorkstationData() {
       }
       refreshingTrading.current = false;
     }
+  }, []);
+
+  const updateFeatureCapability = useCallback(async (capabilityKey: string, isEnabled: boolean) => {
+    const result = await setFeatureCapability(capabilityKey, isEnabled);
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setState((current) => ({
+      ...current,
+      featureCapabilities: result,
+      workspaceErrors: withoutWorkspaceError(current.workspaceErrors, "settings"),
+      error: current.workspaceErrors.settings === current.error
+        ? firstWorkspaceError(withoutWorkspaceError(current.workspaceErrors, "settings")) ?? null
+        : current.error
+    }));
   }, []);
 
   // Keep provider-routing evidence current without reloading the full workstation.
@@ -381,9 +410,6 @@ export function useWorkstationData() {
   }, []);
 
   // Keep portfolio positions in sync with strategy execution.
-  const portfolioRefreshRevisionRef = useRef(0);
-  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
-  const refreshingPortfolio = useRef(false);
   const refreshPortfolio = useCallback(async () => {
     if (refreshingPortfolio.current || !mountedRef.current) return;
     const revision = portfolioRefreshRevisionRef.current + 1;
@@ -481,7 +507,7 @@ export function useWorkstationData() {
     return () => clearInterval(id);
   }, [refreshPortfolio]);
 
-  return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, upsertWorkflowPreset };
+  return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, updateFeatureCapability, upsertWorkflowPreset };
 }
 
 function formatRequestError(reason: unknown, fallback: string): string {

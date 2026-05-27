@@ -88,6 +88,10 @@ describe("watchlist-screen view model", () => {
       inspectAriaLabel: "Inspect AAPL watchlist detail",
       rowSelectAriaLabel: "Select AAPL watchlist row. AAPL. Status Active.",
       removeLabel: "Removing…",
+      removeButtonVariant: "outline",
+      removeStatusId: "watchlist-remove-aapl-status",
+      removeStatusLabel: "Removing",
+      removeStatusTone: "danger",
       removeDisabledReason: "AAPL removal is already running."
     });
     expect(rows[1]).toMatchObject({
@@ -105,6 +109,10 @@ describe("watchlist-screen view model", () => {
       symbol: "MSFT",
       removeLabel: "Confirm remove",
       removeAriaLabel: "Confirm remove MSFT from watchlist. This stops watchlist tracking for this row.",
+      removeButtonVariant: "destructive",
+      removeStatusId: "watchlist-remove-msft-status",
+      removeStatusLabel: "Pending confirmation",
+      removeStatusTone: "warning",
       removeDisabledReason: null
     });
     expect(rows[1].ariaLabel).toContain("Remove confirmation pending.");

@@ -26,14 +26,14 @@ describe("dashboard design-system contract", () => {
   it("keeps the cockpit color tokens aligned with the design-system source", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("--background: 215 42% 6%");
-    expect(styles).toContain("--foreground: 210 30% 92%");
+    expect(styles).toContain("--background: 220 10% 6%");
+    expect(styles).toContain("--foreground: 210 18% 94%");
     expect(styles).toContain("--primary: 198 72% 50%");
-    expect(styles).toContain("--border-hi: #2a4566");
+    expect(styles).toContain("--border-hi: #477089");
     expect(styles).toContain("--cyan-primary: #2ab2d4");
   });
 
-  it("keeps workstation radii tight and shadows shallow", () => {
+  it("keeps workstation radii tight and shadows hard-offset", () => {
     const styles = readDashboardStyles();
 
     expect(styles).toContain("--radius: 0.5rem");
@@ -41,7 +41,7 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--radius-lg: 0.5rem");
     expect(styles).toContain("--radius-md: 0.375rem");
     expect(styles).toContain("--shadow-workstation:");
-    expect(styles).toContain("0 1px 2px rgba(0, 0, 0, 0.30)");
+    expect(styles).toContain("3px 3px 0 rgba(0, 0, 0, 0.72)");
   });
 
   it("keeps positive state utilities wired to the success trust token", () => {
@@ -59,11 +59,13 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
   });
 
-  it("uses the restrained ambient cockpit background from the design-system documentation", () => {
+  it("uses the ledger-grid cockpit background from the design-system documentation", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.08) 0%, transparent 40%)");
-    expect(styles).toContain("radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.05) 0%, transparent 38%)");
+    expect(styles).toContain("linear-gradient(rgba(49, 83, 109, 0.18) 1px, transparent 1px)");
+    expect(styles).toContain("linear-gradient(90deg, rgba(49, 83, 109, 0.14) 1px, transparent 1px)");
+    expect(styles).toContain("background-size: 48px 48px, 48px 48px, auto");
+    expect(styles).not.toContain("radial-gradient(ellipse at 6% 0%");
     expect(styles).not.toContain("rgba(214, 158, 56, 0.12)");
     expect(styles).not.toContain("rgba(52, 211, 153");
   });
@@ -75,10 +77,10 @@ describe("dashboard design-system contract", () => {
     const tailwindConfig = readTailwindConfig();
 
     // CSS variables present in dark-mode :root
-    expect(styles).toContain("--sidebar: 215 50% 5%");
-    expect(styles).toContain("--sidebar-foreground: 210 30% 92%");
+    expect(styles).toContain("--sidebar: 220 12% 5%");
+    expect(styles).toContain("--sidebar-foreground: 210 18% 94%");
     expect(styles).toContain("--sidebar-primary: 198 72% 50%");
-    expect(styles).toContain("--sidebar-border: 208 38% 22%");
+    expect(styles).toContain("--sidebar-border: 205 34% 29%");
     expect(styles).toContain("--sidebar-ring: 198 72% 50%");
 
     // Light-mode sidebar tokens exist

@@ -19,7 +19,7 @@ Metrics computed:
   - Overall health score (0-100)
 
 Usage:
-    python3 generate-health-dashboard.py --output docs/generated/health-dashboard.md
+    python3 generate-health-dashboard.py --output docs/generated/doc-health-dashboard.md
     python3 generate-health-dashboard.py --json-output health.json --summary
     python3 generate-health-dashboard.py --root /path/to/repo --output report.md --json-output report.json
 """
@@ -586,7 +586,7 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  %(prog)s --output docs/generated/health-dashboard.md\n"
+            "  %(prog)s --output docs/generated/doc-health-dashboard.md\n"
             "  %(prog)s --json-output health.json --summary\n"
             "  %(prog)s --root /path/to/repo --output report.md --json-output report.json\n"
         ),

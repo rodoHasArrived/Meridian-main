@@ -15,6 +15,8 @@ namespace Meridian.Execution;
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
 public sealed class OrderManagementSystem : IOrderManager, IDisposable
 {
+    private const int MaxRetainedOrders = 5_000;
+
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
     private readonly IRiskValidator? _riskValidator;
@@ -91,6 +93,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         {
             var rejectedState = CreateRejectedState(orderId, safeRequest, placementGate.RejectReason);
             _orders[orderId] = rejectedState;
+            TrimRetainedOrdersIfNeeded();
             await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
             await RecordOrderRejectionAsync(
                 orderId,
@@ -139,6 +142,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
                 var rejectedState = CreateRejectedState(orderId, safeRequest, controlDecision.RejectReason);
                 _orders[orderId] = rejectedState;
+                TrimRetainedOrdersIfNeeded();
                 await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
 
                 return new OrderResult
@@ -179,6 +183,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
                 var rejectedState = CreateRejectedState(orderId, safeRequest, gateResult.Reason);
                 _orders[orderId] = rejectedState;
+                TrimRetainedOrdersIfNeeded();
                 await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
 
                 return new OrderResult
@@ -219,6 +224,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
                 var rejectedState = CreateRejectedState(orderId, safeRequest, riskResult.RejectReason);
                 _orders[orderId] = rejectedState;
+                TrimRetainedOrdersIfNeeded();
                 await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
 
                 return new OrderResult
@@ -246,6 +252,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         };
 
         _orders[orderId] = orderState;
+        TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
             _orderSessionIds[orderId] = sessionId;
@@ -312,6 +319,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 LastUpdatedAt = DateTimeOffset.UtcNow
             };
             _orders[orderId] = rejectedState;
+            TrimRetainedOrdersIfNeeded();
             await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
 
             if (_auditTrail is not null)
@@ -548,6 +556,31 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             Symbol: request.Symbol,
             CorrelationId: correlationId,
             Message: message), ct).ConfigureAwait(false);
+    }
+
+    private void TrimRetainedOrdersIfNeeded()
+    {
+        if (_orders.Count <= MaxRetainedOrders)
+        {
+            return;
+        }
+
+        var removableOrderIds = _orders.Values
+            .Where(static order => order.Status is
+                OrderStatus.Filled or
+                OrderStatus.Cancelled or
+                OrderStatus.Rejected or
+                OrderStatus.Expired)
+            .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
+            .Take(_orders.Count - MaxRetainedOrders)
+            .Select(static order => order.OrderId)
+            .ToArray();
+
+        foreach (var removableOrderId in removableOrderIds)
+        {
+            _orders.TryRemove(removableOrderId, out _);
+            _orderSessionIds.TryRemove(removableOrderId, out _);
+        }
     }
 }
 

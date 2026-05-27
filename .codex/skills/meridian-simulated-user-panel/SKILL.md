@@ -20,7 +20,7 @@ claims about current Meridian capabilities.
 Read `references/review-contract.md` before choosing the output shape. Read
 `references/personas.md` before choosing a panel. Read `references/review-modes.md` when the best
 mode or focus area is unclear. Read `references/artifact-bundles.md` when the review depends on
-screenshots, workflow manifests, smoke-test notes, browser workstation evidence, or retained WPF
+screenshots, workflow manifests, smoke-test notes, browser workstation evidence, or WPF desktop
 evidence.
 
 Use these bundle templates when you need a ready manifest:

@@ -218,6 +218,8 @@ public sealed class StrategyRunReadService
         foreach (var run in runs)
         {
             var metrics = run.Metrics?.Metrics;
+            var artifactCompleteness = BuildArtifactCompleteness(run);
+            var compatibilityWarnings = BuildCompatibilityWarnings(run, artifactCompleteness);
             results.Add(new StrategyRunComparison(
                 RunId: run.RunId,
                 StrategyName: run.StrategyName,
@@ -233,7 +235,9 @@ public sealed class StrategyRunReadService
                 LastUpdatedAt: GetLastUpdatedAt(run),
                 PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
-                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference)));
+                HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
+                CompatibilityWarnings: compatibilityWarnings,
+                ArtifactCompleteness: artifactCompleteness));
         }
 
         return results
@@ -266,6 +270,8 @@ public sealed class StrategyRunReadService
         {
             var metrics = run.Metrics?.Metrics;
             var continuity = BuildComparisonContinuity(run);
+            var artifactCompleteness = BuildArtifactCompleteness(run);
+            var compatibilityWarnings = BuildCompatibilityWarnings(run, artifactCompleteness);
             results.Add(new RunComparisonDto(
                 RunId: run.RunId,
                 ParentRunId: run.ParentRunId,
@@ -305,7 +311,9 @@ public sealed class StrategyRunReadService
                 ReconciliationHighestSeverity: continuity.HighestSeverity,
                 HasLedgerEntryCoverage: continuity.HasLedgerEntryCoverage,
                 LedgerCoverageStatus: continuity.LedgerCoverageStatus,
-                CashFlowHealth: continuity.CashFlowHealth));
+                CashFlowHealth: continuity.CashFlowHealth,
+                CompatibilityWarnings: compatibilityWarnings,
+                ArtifactCompleteness: artifactCompleteness));
         }
 
         var ordered = governanceFirst
@@ -354,6 +362,44 @@ public sealed class StrategyRunReadService
         bool HasLedgerEntryCoverage,
         string LedgerCoverageStatus,
         string CashFlowHealth);
+
+    private static StrategyRunArtifactCompleteness BuildArtifactCompleteness(StrategyRunEntry run)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+
+        return new StrategyRunArtifactCompleteness(
+            HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
+            HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
+            HasCashFlow: run.Metrics?.CashFlows.Count > 0,
+            HasFills: run.Metrics?.Fills.Count > 0,
+            HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference));
+    }
+
+    private static IReadOnlyList<string> BuildCompatibilityWarnings(
+        StrategyRunEntry run,
+        StrategyRunArtifactCompleteness completeness)
+    {
+        var warnings = new List<string>(capacity: 5);
+        if (!completeness.HasPortfolio)
+            warnings.Add("Portfolio artifacts are missing for this run.");
+
+        if (!completeness.HasLedger)
+            warnings.Add("Ledger artifacts are missing for this run.");
+
+        if (!completeness.HasCashFlow)
+            warnings.Add("Cash-flow artifacts are missing for this run.");
+
+        if (!completeness.HasFills)
+            warnings.Add("Fill-level artifacts are missing for this run.");
+
+        if (string.Equals(run.Engine, StrategyRunEngine.Lean.ToString(), StringComparison.OrdinalIgnoreCase) &&
+            !completeness.HasFills)
+        {
+            warnings.Add("Lean run has summary-only coverage; fill and attribution comparisons may be limited.");
+        }
+
+        return warnings;
+    }
 
     public async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default)
     {

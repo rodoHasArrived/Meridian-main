@@ -114,6 +114,18 @@ public static class SecurityMasterEndpoints
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
+            if (string.IsNullOrWhiteSpace(request.Query))
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["query"] = ["Query is required."]
+                });
+
+            if (request.Skip < 0)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["skip"] = ["Skip must be non-negative."]
+                });
+
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
@@ -452,14 +464,27 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
+            HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ViewSecurityMaster) != UserPermission.ViewSecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
             return Results.Json(conflicts, jsonOptions);
         })
         .WithName("GetSecurityMasterConflicts")
-        .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/security-master/conflicts/{conflictId}/resolve
         group.MapPost(UiApiRoutes.SecurityMasterConflictResolve, async (
@@ -469,17 +494,32 @@ public static class SecurityMasterEndpoints
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             if (request.ConflictId != conflictId)
                 return Results.BadRequest(ErrorResponse.Validation(
                     "ConflictId in body must match the route parameter."));
 
-            var updated = await conflictService.ResolveAsync(request, ct).ConfigureAwait(false);
+            var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
+            var serverRequest = request with { ResolvedBy = resolvedBy };
+
+            var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
             return updated is null
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
         })
         .WithName("ResolveSecurityMasterConflict")
         .Produces<SecurityMasterConflict>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -494,6 +534,16 @@ public static class SecurityMasterEndpoints
             [FromServices] AppSecurityMaster.ISecurityMasterImportService importService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
