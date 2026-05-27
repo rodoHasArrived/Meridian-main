@@ -25,6 +25,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
         self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
         self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package.json", self.web_workflow)
+        self.assertIn("find \"$OUTPUT_DIR\" -maxdepth 1 -type f -name '*.png' -delete", self.web_workflow)
         self.assertNotIn("npm ci", self.web_workflow)
         self.assertNotIn("package-lock.json", self.web_workflow)
         self.assertNotIn("<<<<<<<", self.web_workflow)
