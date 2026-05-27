@@ -32,6 +32,11 @@ import type {
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
+  PortfolioOverviewResponse,
+  LedgerDrillDownResponse,
+  FinancingAnalysisResponse,
+  EquityChangeExplanationResponse,
+  PnlReconciliationResponse,
   LedgerJournalLine,
   LedgerSummary,
   LedgerTrialBalanceLine,
@@ -202,6 +207,11 @@ import {
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
   workstationTradingReadinessEndpoint,
+  workstationPortfolioOverviewEndpoint,
+  workstationAccountingLedgerDrillDownEndpoint,
+  workstationAccountingFinancingAnalysisEndpoint,
+  workstationAccountingEquityChangeEndpoint,
+  workstationAccountingPnlReconciliationEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
@@ -569,6 +579,84 @@ export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
 
 export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
+}
+
+export function getPortfolioOverview(
+  fundProfileId: string,
+  options: ApiRequestOptions & { asOf?: string; currency?: string } = {}
+) {
+  return getJson<PortfolioOverviewResponse>(
+    workstationPortfolioOverviewEndpoint({
+      fundProfileId,
+      asOf: options.asOf,
+      currency: options.currency
+    }),
+    options
+  );
+}
+
+export function getLedgerDrillDown(
+  fundProfileId: string,
+  options: ApiRequestOptions & { asOf?: string; scopeKind?: string; scopeId?: string; selectedLedgerIds?: string } = {}
+) {
+  return getJson<LedgerDrillDownResponse>(
+    workstationAccountingLedgerDrillDownEndpoint({
+      fundProfileId,
+      asOf: options.asOf,
+      scopeKind: options.scopeKind,
+      scopeId: options.scopeId,
+      selectedLedgerIds: options.selectedLedgerIds
+    }),
+    options
+  );
+}
+
+export function getFinancingAnalysis(
+  fundProfileId: string,
+  options: ApiRequestOptions & { asOf?: string; currency?: string } = {}
+) {
+  return getJson<FinancingAnalysisResponse>(
+    workstationAccountingFinancingAnalysisEndpoint({
+      fundProfileId,
+      asOf: options.asOf,
+      currency: options.currency
+    }),
+    options
+  );
+}
+
+export function getEquityChangeExplainability(
+  fundProfileId: string,
+  from: string,
+  to: string,
+  options: ApiRequestOptions & { currency?: string } = {}
+) {
+  return getJson<EquityChangeExplanationResponse>(
+    workstationAccountingEquityChangeEndpoint({
+      fundProfileId,
+      from,
+      to,
+      currency: options.currency
+    }),
+    options
+  );
+}
+
+export function getPnlReconciliation(
+  fundProfileId: string,
+  from: string,
+  to: string,
+  options: ApiRequestOptions & { currency?: string } = {}
+) {
+  return getJson<PnlReconciliationResponse>(
+    workstationAccountingPnlReconciliationEndpoint({
+      fundProfileId,
+      from,
+      to,
+      currency: options.currency
+    }),
+    options
+  );
 }
 
 export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {

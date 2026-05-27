@@ -536,6 +536,11 @@ public static class UiApiRoutes
     public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
     public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
     public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
+    public const string WorkstationPortfolioOverview = "/api/workstation/portfolio/overview";
+    public const string WorkstationAccountingLedgerDrillDown = "/api/workstation/accounting/ledger-drilldown";
+    public const string WorkstationAccountingFinancingAnalysis = "/api/workstation/accounting/financing-analysis";
+    public const string WorkstationAccountingEquityChange = "/api/workstation/accounting/equity-change";
+    public const string WorkstationAccountingPnlReconciliation = "/api/workstation/accounting/pnl-reconciliation";
     public const string OperationsContinuity = "/api/workstation/operations/continuity";
     public const string OperationsContinuityById = "/api/workstation/operations/continuity/{workflowId:guid}";
     public const string OperationsContinuityTimeline = "/api/workstation/operations/continuity/{workflowId:guid}/timeline";

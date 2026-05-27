@@ -19,7 +19,12 @@ export const WORKSTATION_API_ENDPOINTS = {
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
   evidenceSubjects: "/api/workstation/evidence/subjects",
-  evidenceTemplates: "/api/workstation/evidence/templates"
+  evidenceTemplates: "/api/workstation/evidence/templates",
+  portfolioOverview: "/api/workstation/portfolio/overview",
+  accountingLedgerDrillDown: "/api/workstation/accounting/ledger-drilldown",
+  accountingFinancingAnalysis: "/api/workstation/accounting/financing-analysis",
+  accountingEquityChange: "/api/workstation/accounting/equity-change",
+  accountingPnlReconciliation: "/api/workstation/accounting/pnl-reconciliation"
 } as const;
 
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
@@ -192,6 +197,50 @@ export function workstationTradingReadinessEndpoint(fundAccountId?: string): str
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.tradingReadiness}${queryString({ fundAccountId })}`
     : WORKSTATION_API_ENDPOINTS.tradingReadiness;
+}
+
+export function workstationPortfolioOverviewEndpoint(options: {
+  fundProfileId: string;
+  asOf?: string;
+  currency?: string;
+}): string {
+  return `${WORKSTATION_API_ENDPOINTS.portfolioOverview}${queryString(options)}`;
+}
+
+export function workstationAccountingLedgerDrillDownEndpoint(options: {
+  fundProfileId: string;
+  asOf?: string;
+  scopeKind?: string;
+  scopeId?: string;
+  selectedLedgerIds?: string;
+}): string {
+  return `${WORKSTATION_API_ENDPOINTS.accountingLedgerDrillDown}${queryString(options)}`;
+}
+
+export function workstationAccountingFinancingAnalysisEndpoint(options: {
+  fundProfileId: string;
+  asOf?: string;
+  currency?: string;
+}): string {
+  return `${WORKSTATION_API_ENDPOINTS.accountingFinancingAnalysis}${queryString(options)}`;
+}
+
+export function workstationAccountingEquityChangeEndpoint(options: {
+  fundProfileId: string;
+  from?: string;
+  to?: string;
+  currency?: string;
+}): string {
+  return `${WORKSTATION_API_ENDPOINTS.accountingEquityChange}${queryString(options)}`;
+}
+
+export function workstationAccountingPnlReconciliationEndpoint(options: {
+  fundProfileId: string;
+  from?: string;
+  to?: string;
+  currency?: string;
+}): string {
+  return `${WORKSTATION_API_ENDPOINTS.accountingPnlReconciliation}${queryString(options)}`;
 }
 
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {

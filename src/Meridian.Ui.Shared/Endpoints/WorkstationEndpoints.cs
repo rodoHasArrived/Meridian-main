@@ -313,6 +313,8 @@ public static partial class WorkstationEndpoints
 
         MapReconciliationEndpoints(group, jsonOptions);
 
+        MapAccountingExplainabilityEndpoints(group, jsonOptions);
+
         group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();

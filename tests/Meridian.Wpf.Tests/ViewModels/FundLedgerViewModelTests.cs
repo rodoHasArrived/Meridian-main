@@ -142,6 +142,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    new StubAccountingExplainabilityService(),
                     fundOperationsWorkspaceReadService,
                     workspaceService);
 
@@ -282,6 +283,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    new StubAccountingExplainabilityService(),
                     fundOperationsWorkspaceReadService,
                     workspaceService);
 
@@ -441,6 +443,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    new StubAccountingExplainabilityService(),
                     fundOperationsWorkspaceReadService,
                     workspaceService);
 
@@ -556,6 +559,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    new StubAccountingExplainabilityService(),
                     fundOperationsWorkspaceReadService,
                     workspaceService);
 
@@ -705,6 +709,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    new StubAccountingExplainabilityService(),
                     fundOperationsWorkspaceReadService,
                     workspaceService);
 
@@ -833,6 +838,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    new StubAccountingExplainabilityService(),
                     fundOperationsWorkspaceReadService,
                     workspaceService);
 
@@ -1141,6 +1147,62 @@ public sealed class FundLedgerViewModelTests
         {
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
+        }
+    }
+
+    private sealed class StubAccountingExplainabilityService : IAccountingExplainabilityService
+    {
+        public ValueTask<EquityChangeExplanationDto?> ExplainEquityChangeAsync(EquityChangeQuery query, CancellationToken ct = default)
+        {
+            var components = new[]
+            {
+                new EquityChangeComponentDto("Realized P&L", 50m, true, "success"),
+                new EquityChangeComponentDto("Financing Cost", -10m, true, "danger")
+            };
+
+            return ValueTask.FromResult<EquityChangeExplanationDto?>(new EquityChangeExplanationDto(
+                FundProfileId: query.FundProfileId,
+                FundDisplayName: "Alpha Fund",
+                Currency: query.Currency ?? "USD",
+                From: query.From,
+                To: query.To,
+                OpeningEquity: 1_000m,
+                ClosingEquity: 1_040m,
+                NetChange: 40m,
+                ExplainedChange: 40m,
+                ResidualDelta: 0m,
+                IsResidualMaterial: false,
+                Status: "Matched",
+                Components: components,
+                Warnings: [],
+                HasSufficientEvidence: true));
+        }
+
+        public ValueTask<PnlReconciliationDto?> ReconcilePnlAsync(PnlReconciliationQuery query, CancellationToken ct = default)
+        {
+            var lines = new[]
+            {
+                new PnlReconciliationLineDto("Ledger P&L", 35m, 35m, "success"),
+                new PnlReconciliationLineDto("Adjustment", 5m, 40m, "success"),
+                new PnlReconciliationLineDto("Gap vs Portfolio P&L", 0m, 40m, "success")
+            };
+
+            return ValueTask.FromResult<PnlReconciliationDto?>(new PnlReconciliationDto(
+                FundProfileId: query.FundProfileId,
+                FundDisplayName: "Alpha Fund",
+                Currency: query.Currency ?? "USD",
+                From: query.From,
+                To: query.To,
+                PortfolioPnl: 40m,
+                LedgerPnl: 35m,
+                ExplainedPnl: 40m,
+                Gap: 0m,
+                Tolerance: 0.01m,
+                IsWithinTolerance: true,
+                Status: "Matched",
+                Lines: lines,
+                Warnings: [],
+                HasSufficientEvidence: true));
         }
     }
 

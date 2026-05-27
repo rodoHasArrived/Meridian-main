@@ -1301,6 +1301,90 @@ export interface GovernanceWorkspaceResponse {
   reporting: GovernanceReportingSummary;
 }
 
+export interface PortfolioOverviewResponse {
+  fundProfileId: string;
+  fundDisplayName: string;
+  baseCurrency: string;
+  asOf: string;
+  totalAccounts: number;
+  totalCash: number;
+  grossExposure: number;
+  netExposure: number;
+  totalEquity: number;
+  openReconciliationBreaks: number;
+  reconciliationRuns: number;
+  securityResolvedCount: number;
+  securityMissingCount: number;
+}
+
+export interface LedgerDrillDownResponse {
+  fundProfileId: string;
+  fundDisplayName: string;
+  asOf: string;
+  ledger: Record<string, unknown>;
+  accounts: Record<string, unknown>[];
+}
+
+export interface FinancingAnalysisResponse {
+  fundProfileId: string;
+  fundDisplayName: string;
+  asOf: string;
+  cashFinancing: Record<string, unknown>;
+  summary: string;
+}
+
+export interface EquityChangeComponent {
+  label: string;
+  amount: number;
+  isMaterial: boolean;
+  tone: string;
+  note: string | null;
+}
+
+export interface EquityChangeExplanationResponse {
+  fundProfileId: string;
+  fundDisplayName: string;
+  currency: string;
+  from: string;
+  to: string;
+  openingEquity: number;
+  closingEquity: number;
+  netChange: number;
+  explainedChange: number;
+  residualDelta: number;
+  isResidualMaterial: boolean;
+  status: string;
+  components: EquityChangeComponent[];
+  warnings: string[];
+  hasSufficientEvidence: boolean;
+}
+
+export interface PnlReconciliationLine {
+  label: string;
+  amount: number;
+  runningTotal: number;
+  tone: string;
+  note: string | null;
+}
+
+export interface PnlReconciliationResponse {
+  fundProfileId: string;
+  fundDisplayName: string;
+  currency: string;
+  from: string;
+  to: string;
+  portfolioPnl: number;
+  ledgerPnl: number;
+  explainedPnl: number;
+  gap: number;
+  tolerance: number;
+  isWithinTolerance: boolean;
+  status: string;
+  lines: PnlReconciliationLine[];
+  warnings: string[];
+  hasSufficientEvidence: boolean;
+}
+
 export interface ExportAnalysisResult {
   jobId: string | null;
   success: boolean;

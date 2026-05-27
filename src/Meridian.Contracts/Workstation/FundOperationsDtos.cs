@@ -16,7 +16,9 @@ public enum FundOperationsTab : byte
     TrialBalance = 6,
     Reconciliation = 7,
     AuditTrail = 8,
-    ReportPack = 9
+    ReportPack = 9,
+    EquityChange = 10,
+    PnlReconciliation = 11
 }
 
 /// <summary>

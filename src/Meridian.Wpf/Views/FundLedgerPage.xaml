@@ -1507,6 +1507,129 @@
                         </StackPanel>
                     </Grid>
                 </TabItem>
+
+                <TabItem Header="Equity Change">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Equity Change Explainability" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding EquityChangeStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                <UniformGrid Columns="4" Margin="0,16,0,0">
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Opening Equity" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding EquityChangeOpeningText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Closing Equity" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding EquityChangeClosingText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Net Change" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding EquityChangeNetText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Residual" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding EquityChangeResidualText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <TextBlock Text="Waterfall components below explain how equity moved over the selected period."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+
+                        <DataGrid Grid.Row="2"
+                                  ItemsSource="{Binding EquityChangeComponents}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Component" Binding="{Binding Label}" Width="*" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:C2}}" Width="170" />
+                                <DataGridTextColumn Header="Material" Binding="{Binding IsMaterial}" Width="90" />
+                                <DataGridTextColumn Header="Tone" Binding="{Binding Tone}" Width="110" />
+                                <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="260" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="P&amp;L Reconciliation">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="P&amp;L Reconciliation" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding PnlReconciliationStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                <UniformGrid Columns="4" Margin="0,16,0,0">
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Portfolio P&amp;L" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding PnlPortfolioText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Ledger P&amp;L" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding PnlLedgerText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Explained" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding PnlExplainedText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Gap" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding PnlGapText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding PnlReconciliationLines}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Line" Binding="{Binding Label}" Width="*" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:C2}}" Width="170" />
+                                <DataGridTextColumn Header="Running Total" Binding="{Binding RunningTotal, StringFormat={}{0:C2}}" Width="170" />
+                                <DataGridTextColumn Header="Tone" Binding="{Binding Tone}" Width="110" />
+                                <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="260" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
             </TabControl>
         </StackPanel>
     </ScrollViewer>

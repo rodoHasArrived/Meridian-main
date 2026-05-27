@@ -37,6 +37,9 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+Accounting explainability and portfolio-accounting read models now route through
+`WorkstationEndpoints.AccountingExplainers.cs` and shared services
+`IPortfolioAccountingReadService` / `IAccountingExplainabilityService`.
 
 ## Diagrams
 

@@ -15,6 +15,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly FundAccountReadService _fundAccountReadService;
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly IFundReconciliationWorkbenchService _fundReconciliationWorkbenchService;
+    private readonly IAccountingExplainabilityService _accountingExplainabilityService;
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
@@ -62,6 +63,16 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _reportPackTrialBalanceLinesText = "0";
     private string _reportPackAssetSectionsText = "0";
     private string _reportPackGeneratedAtText = "-";
+    private string _equityChangeStatusText = "Equity-change explainability is waiting for a fund context.";
+    private string _equityChangeOpeningText = "-";
+    private string _equityChangeClosingText = "-";
+    private string _equityChangeNetText = "-";
+    private string _equityChangeResidualText = "-";
+    private string _pnlReconciliationStatusText = "P&L reconciliation is waiting for a fund context.";
+    private string _pnlPortfolioText = "-";
+    private string _pnlLedgerText = "-";
+    private string _pnlExplainedText = "-";
+    private string _pnlGapText = "-";
     private string _currentWorkbenchModeText = "Overview Mode";
     private string _currentWorkbenchTitleText = "Overview Workbench";
     private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and exception pressure.";
@@ -97,6 +108,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FundAccountReadService fundAccountReadService,
         CashFinancingReadService cashFinancingReadService,
         IFundReconciliationWorkbenchService fundReconciliationWorkbenchService,
+        IAccountingExplainabilityService accountingExplainabilityService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         StrategyRunWorkspaceService runWorkspaceService)
     {
@@ -106,6 +118,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _fundAccountReadService = fundAccountReadService ?? throw new ArgumentNullException(nameof(fundAccountReadService));
         _cashFinancingReadService = cashFinancingReadService ?? throw new ArgumentNullException(nameof(cashFinancingReadService));
         _fundReconciliationWorkbenchService = fundReconciliationWorkbenchService ?? throw new ArgumentNullException(nameof(fundReconciliationWorkbenchService));
+        _accountingExplainabilityService = accountingExplainabilityService ?? throw new ArgumentNullException(nameof(accountingExplainabilityService));
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService ?? throw new ArgumentNullException(nameof(fundOperationsWorkspaceReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
 
@@ -172,6 +185,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public ObservableCollection<FundAuditEntry> AuditTrail => _collectionsSection.AuditTrail;
 
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
+
+    public ObservableCollection<EquityChangeComponentDto> EquityChangeComponents => _collectionsSection.EquityChangeComponents;
+
+    public ObservableCollection<PnlReconciliationLineDto> PnlReconciliationLines => _collectionsSection.PnlReconciliationLines;
 
     internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
@@ -471,6 +488,66 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         }
     }
 
+    public string EquityChangeStatusText
+    {
+        get => _equityChangeStatusText;
+        private set => SetProperty(ref _equityChangeStatusText, value);
+    }
+
+    public string EquityChangeOpeningText
+    {
+        get => _equityChangeOpeningText;
+        private set => SetProperty(ref _equityChangeOpeningText, value);
+    }
+
+    public string EquityChangeClosingText
+    {
+        get => _equityChangeClosingText;
+        private set => SetProperty(ref _equityChangeClosingText, value);
+    }
+
+    public string EquityChangeNetText
+    {
+        get => _equityChangeNetText;
+        private set => SetProperty(ref _equityChangeNetText, value);
+    }
+
+    public string EquityChangeResidualText
+    {
+        get => _equityChangeResidualText;
+        private set => SetProperty(ref _equityChangeResidualText, value);
+    }
+
+    public string PnlReconciliationStatusText
+    {
+        get => _pnlReconciliationStatusText;
+        private set => SetProperty(ref _pnlReconciliationStatusText, value);
+    }
+
+    public string PnlPortfolioText
+    {
+        get => _pnlPortfolioText;
+        private set => SetProperty(ref _pnlPortfolioText, value);
+    }
+
+    public string PnlLedgerText
+    {
+        get => _pnlLedgerText;
+        private set => SetProperty(ref _pnlLedgerText, value);
+    }
+
+    public string PnlExplainedText
+    {
+        get => _pnlExplainedText;
+        private set => SetProperty(ref _pnlExplainedText, value);
+    }
+
+    public string PnlGapText
+    {
+        get => _pnlGapText;
+        private set => SetProperty(ref _pnlGapText, value);
+    }
+
     public string CurrentWorkbenchModeText
     {
         get => _currentWorkbenchModeText;
@@ -686,8 +763,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var cashTask = _cashFinancingReadService.GetAsync(activeFund.FundProfileId, activeFund.BaseCurrency, ct);
         var reconciliationTask = _fundReconciliationWorkbenchService.GetSnapshotAsync(activeFund.FundProfileId, ct);
         var portfolioTask = BuildFundPortfolioAsync(activeFund.FundProfileId, ct);
+        var now = DateTimeOffset.UtcNow;
+        var equityChangeTask = _accountingExplainabilityService.ExplainEquityChangeAsync(
+            new EquityChangeQuery(activeFund.FundProfileId, now.AddDays(-1), now, activeFund.BaseCurrency),
+            ct).AsTask();
+        var pnlReconciliationTask = _accountingExplainabilityService.ReconcilePnlAsync(
+            new PnlReconciliationQuery(activeFund.FundProfileId, now.AddDays(-1), now, activeFund.BaseCurrency),
+            ct).AsTask();
 
-        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask);
+        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, equityChangeTask, pnlReconciliationTask);
 
         var ledger = await ledgerTask;
         var accounts = await accountsTask;
@@ -695,6 +779,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var cashSummary = await cashTask;
         var reconciliationSnapshot = await reconciliationTask;
         var portfolioPositions = await portfolioTask;
+        var equityChange = await equityChangeTask;
+        var pnlReconciliation = await pnlReconciliationTask;
 
         Title = $"Fund Operations · {activeFund.DisplayName}";
         StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
@@ -710,6 +796,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
         BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
         BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
+        ApplyEquityChange(equityChange);
+        ApplyPnlReconciliation(pnlReconciliation);
         await RefreshReportPackPreviewAsync(ct);
         UpdateReconciliationWorkbenchPresentation();
         UpdateReportPackWorkbenchPresentation();
@@ -796,6 +884,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFinancingHighlights.Clear();
         AuditTrail.Clear();
         ReportPackAssetSections.Clear();
+        EquityChangeComponents.Clear();
+        PnlReconciliationLines.Clear();
         _reportPackPreview = null;
         ReportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
         ReportPackKindText = GovernanceReportKindDto.TrialBalance.ToString();
@@ -804,6 +894,16 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReportPackTrialBalanceLinesText = "0";
         ReportPackAssetSectionsText = "0";
         ReportPackGeneratedAtText = "-";
+        EquityChangeStatusText = "Equity-change explainability is waiting for a fund context.";
+        EquityChangeOpeningText = "-";
+        EquityChangeClosingText = "-";
+        EquityChangeNetText = "-";
+        EquityChangeResidualText = "-";
+        PnlReconciliationStatusText = "P&L reconciliation is waiting for a fund context.";
+        PnlPortfolioText = "-";
+        PnlLedgerText = "-";
+        PnlExplainedText = "-";
+        PnlGapText = "-";
         ResetReconciliationWorkbenchState();
         UpdateWorkbenchIdentity();
         UpdateRouteBannerPresentation();
@@ -1158,6 +1258,58 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReconciliationStatusText = summary.RunCount == 0
             ? "No account reconciliation runs have been recorded yet."
             : $"{summary.RunCount} reconciliation run(s) loaded with {summary.OpenBreakCount} open break(s).";
+    }
+
+    private void ApplyEquityChange(EquityChangeExplanationDto? equityChange)
+    {
+        EquityChangeComponents.Clear();
+
+        if (equityChange is null)
+        {
+            EquityChangeStatusText = "Equity-change explainability is unavailable.";
+            EquityChangeOpeningText = "-";
+            EquityChangeClosingText = "-";
+            EquityChangeNetText = "-";
+            EquityChangeResidualText = "-";
+            return;
+        }
+
+        foreach (var component in equityChange.Components)
+        {
+            EquityChangeComponents.Add(component);
+        }
+
+        EquityChangeStatusText = equityChange.Status;
+        EquityChangeOpeningText = equityChange.OpeningEquity.ToString("C2");
+        EquityChangeClosingText = equityChange.ClosingEquity.ToString("C2");
+        EquityChangeNetText = equityChange.NetChange.ToString("C2");
+        EquityChangeResidualText = equityChange.ResidualDelta.ToString("C2");
+    }
+
+    private void ApplyPnlReconciliation(PnlReconciliationDto? pnlReconciliation)
+    {
+        PnlReconciliationLines.Clear();
+
+        if (pnlReconciliation is null)
+        {
+            PnlReconciliationStatusText = "P&L reconciliation is unavailable.";
+            PnlPortfolioText = "-";
+            PnlLedgerText = "-";
+            PnlExplainedText = "-";
+            PnlGapText = "-";
+            return;
+        }
+
+        foreach (var line in pnlReconciliation.Lines)
+        {
+            PnlReconciliationLines.Add(line);
+        }
+
+        PnlReconciliationStatusText = pnlReconciliation.Status;
+        PnlPortfolioText = pnlReconciliation.PortfolioPnl.ToString("C2");
+        PnlLedgerText = pnlReconciliation.LedgerPnl.ToString("C2");
+        PnlExplainedText = pnlReconciliation.ExplainedPnl.ToString("C2");
+        PnlGapText = pnlReconciliation.Gap.ToString("C2");
     }
 
     private void BuildWorkspaceSummary(
@@ -1534,6 +1686,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FundOperationsTab.CashFinancing => ("Accounting Mode", "Cash & Financing Workbench", "Funding ladder, financing cost, and pending-settlement review."),
         FundOperationsTab.Journal => ("Accounting Mode", "Journal Workbench", "Booked journal history and ledger-linked review for accounting operators."),
         FundOperationsTab.TrialBalance => ("Accounting Mode", "Trial Balance Workbench", "Scoped ledger balances, material lines, and accounting posture."),
+        FundOperationsTab.EquityChange => ("Accounting Mode", "Equity Change Workbench", "Waterfall explainability for opening-to-closing equity movement."),
+        FundOperationsTab.PnlReconciliation => ("Accounting Mode", "P&L Reconciliation Workbench", "Portfolio-versus-ledger P&L reconciliation with tolerance status."),
         FundOperationsTab.Accounts => ("Accounting Mode", "Accounts Workbench", "Account-centered review across banking, brokerage, custody, and linked workflows."),
         _ => ("Accounting Mode", "Fund Operations Workbench", "Fund operations workbench for accounting, reconciliation, and reporting review.")
     };

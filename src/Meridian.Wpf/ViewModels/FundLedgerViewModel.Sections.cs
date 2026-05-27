@@ -21,4 +21,6 @@ internal sealed class FundLedgerCollectionsSectionViewModel
     public ObservableCollection<string> CashFinancingHighlights { get; } = [];
     public ObservableCollection<FundAuditEntry> AuditTrail { get; } = [];
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; } = [];
+    public ObservableCollection<EquityChangeComponentDto> EquityChangeComponents { get; } = [];
+    public ObservableCollection<PnlReconciliationLineDto> PnlReconciliationLines { get; } = [];
 }

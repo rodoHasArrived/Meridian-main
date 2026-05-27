@@ -545,7 +545,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PromotionService>();
         services.AddSingleton<NavAttributionService>();
         services.AddSingleton<ReportGenerationService>();
+        services.AddOptions<AccountingExplainabilityOptions>()
+            .BindConfiguration(AccountingExplainabilityOptions.SectionName);
         services.AddSingleton<FundOperationsWorkspaceReadService>();
+        services.AddSingleton<IPortfolioAccountingReadService, PortfolioAccountingReadService>();
+        services.AddSingleton<IAccountingExplainabilityService, AccountingExplainabilityService>();
         services.AddSingleton<ISecurityMasterOperatorWorkflowClient, SecurityMasterOperatorWorkflowClient>();
         services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {

@@ -111,6 +111,10 @@ public static class WorkstationServiceCollectionExtensions
             return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.AddOptions<AccountingExplainabilityOptions>()
+            .BindConfiguration(AccountingExplainabilityOptions.SectionName);
+        services.TryAddSingleton<IPortfolioAccountingReadService, PortfolioAccountingReadService>();
+        services.TryAddSingleton<IAccountingExplainabilityService, AccountingExplainabilityService>();
         services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
         {

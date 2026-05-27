@@ -279,6 +279,42 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_AccountingEquityChangeEndpoint_ShouldReturnExplainabilityPayload()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IAccountingExplainabilityService>(new StubAccountingExplainabilityService());
+        });
+        var client = app.GetTestClient();
+
+        using var response = await ReadJsonAsync(
+            client,
+            "/api/workstation/accounting/equity-change?fundProfileId=alpha-fund&from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z");
+
+        response.RootElement.GetProperty("fundProfileId").GetString().Should().Be("alpha-fund");
+        response.RootElement.GetProperty("components").GetArrayLength().Should().BeGreaterThan(0);
+        response.RootElement.GetProperty("status").GetString().Should().Be("Matched");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_AccountingPnlReconciliationEndpoint_ShouldReturnGapAndStatus()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IAccountingExplainabilityService>(new StubAccountingExplainabilityService());
+        });
+        var client = app.GetTestClient();
+
+        using var response = await ReadJsonAsync(
+            client,
+            "/api/workstation/accounting/pnl-reconciliation?fundProfileId=alpha-fund&from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z");
+
+        response.RootElement.GetProperty("fundProfileId").GetString().Should().Be("alpha-fund");
+        response.RootElement.GetProperty("lines").GetArrayLength().Should().BeGreaterThan(0);
+        response.RootElement.GetProperty("status").GetString().Should().Be("Matched");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityDetail_ShouldExposeExplicitContinuityContractFields()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
@@ -5750,6 +5786,60 @@ public sealed partial class WorkstationEndpointsTests
                 string.Equals(runId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase)
                     ? [detail.Summary]
                     : []);
+    }
+
+    private sealed class StubAccountingExplainabilityService : IAccountingExplainabilityService
+    {
+        public ValueTask<EquityChangeExplanationDto?> ExplainEquityChangeAsync(EquityChangeQuery query, CancellationToken ct = default)
+        {
+            var components = new[]
+            {
+                new EquityChangeComponentDto("Realized P&L", 35m, true, "success")
+            };
+
+            return ValueTask.FromResult<EquityChangeExplanationDto?>(new EquityChangeExplanationDto(
+                FundProfileId: query.FundProfileId,
+                FundDisplayName: "Alpha Fund",
+                Currency: query.Currency ?? "USD",
+                From: query.From,
+                To: query.To,
+                OpeningEquity: 1_000m,
+                ClosingEquity: 1_035m,
+                NetChange: 35m,
+                ExplainedChange: 35m,
+                ResidualDelta: 0m,
+                IsResidualMaterial: false,
+                Status: "Matched",
+                Components: components,
+                Warnings: [],
+                HasSufficientEvidence: true));
+        }
+
+        public ValueTask<PnlReconciliationDto?> ReconcilePnlAsync(PnlReconciliationQuery query, CancellationToken ct = default)
+        {
+            var lines = new[]
+            {
+                new PnlReconciliationLineDto("Ledger P&L", 30m, 30m, "success"),
+                new PnlReconciliationLineDto("Adjustment", 5m, 35m, "success")
+            };
+
+            return ValueTask.FromResult<PnlReconciliationDto?>(new PnlReconciliationDto(
+                FundProfileId: query.FundProfileId,
+                FundDisplayName: "Alpha Fund",
+                Currency: query.Currency ?? "USD",
+                From: query.From,
+                To: query.To,
+                PortfolioPnl: 35m,
+                LedgerPnl: 30m,
+                ExplainedPnl: 35m,
+                Gap: 0m,
+                Tolerance: 0.01m,
+                IsWithinTolerance: true,
+                Status: "Matched",
+                Lines: lines,
+                Warnings: [],
+                HasSufficientEvidence: true));
+        }
     }
 
     private static KernelObservabilityService CreateRecoveredKernelObservability()
