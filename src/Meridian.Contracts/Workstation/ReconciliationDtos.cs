@@ -337,15 +337,6 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    int PriorityScore = 0,
-    string? PriorityBand = null,
-    decimal MaterialityScore = 0m,
-    decimal AgeScore = 0m,
-    decimal CounterpartyCriticalityScore = 0m,
-    decimal RecurringPatternScore = 0m,
-    DateTimeOffset? SlaDueAt = null,
-    DateTimeOffset? LastEscalatedAt = null,
-    bool IsSlaBreached = false,
     ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.New,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
@@ -353,7 +344,12 @@ public sealed record ReconciliationBreakQueueItem(
     string? UpstreamSyncCursor = null,
     DateTimeOffset? LastUpstreamSyncAt = null,
     IReadOnlyList<ReconciliationCaseSignoffRecord>? SignoffHistory = null,
-    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null);
+    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null,
+    string? Team = null,
+    string? Counterparty = null,
+    ReconciliationBreakScore? Score = null,
+    DateTimeOffset? SlaDueAt = null,
+    bool SlaBreached = false);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,
@@ -363,6 +359,19 @@ public sealed record ReconciliationCaseSignoffRecord(
     DateTimeOffset SignedAt,
     string? InvalidatedBySyncCursor = null,
     DateTimeOffset? InvalidatedAt = null);
+
+
+
+public sealed record ReconciliationBreakScore(
+    int SeverityScore,
+    int PriorityScore,
+    decimal MaterialityComponent,
+    double AgeHours,
+    int CounterpartyCriticalityComponent,
+    int RecurringPatternComponent,
+    bool IsHighPriority,
+    DateTimeOffset? SlaDueAt = null,
+    DateTimeOffset? SlaBreachAt = null);
 
 public sealed record ReconciliationCaseStateTransition(
     string TransitionId,
