@@ -39,11 +39,11 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var review = await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "triage"));
         review.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
-        review.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        review.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.InReview);
 
         var closed = await repo.ResolveAsync(new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "bob", "resolved", "evidence packet #42"));
         closed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
-        closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+        closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.AwaitingApproval);
         closed.Item.SignoffHistory.Should().NotBeNullOrEmpty();
         closed.Item.StateTransitions.Should().HaveCountGreaterThanOrEqualTo(2);
 

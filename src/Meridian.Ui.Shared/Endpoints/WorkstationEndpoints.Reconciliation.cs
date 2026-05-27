@@ -331,7 +331,7 @@ public static partial class WorkstationEndpoints
                 var next = item;
                 if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
                 {
-                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.Assigned, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
+                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.InReview, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
                 }
                 else if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
                 {

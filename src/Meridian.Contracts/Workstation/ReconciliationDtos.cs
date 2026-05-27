@@ -287,13 +287,13 @@ public enum ReconciliationBreakQueueStatus : byte
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
-    New = 0,
-    Classified = 1,
-    Assigned = 2,
-    Investigating = 3,
-    PendingExternal = 4,
-    Resolved = 5,
-    Closed = 6
+    Open = 0,
+    InReview = 1,
+    AwaitingApproval = 2,
+    Approved = 3,
+    Posted = 4,
+    Reopened = 5,
+    Superseded = 6
 }
 
 /// <summary>
@@ -337,7 +337,7 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.New,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Open,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
@@ -379,7 +379,29 @@ public sealed record ReconciliationCaseStateTransition(
     ReconciliationCaseLifecycleState To,
     string Actor,
     string? Rationale,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? PreviousHash = null,
+    string? EntryHash = null);
+
+public enum ReconciliationCaseTransitionAction : byte
+{
+    StartReview = 0,
+    RequestApproval = 1,
+    Approve = 2,
+    Post = 3,
+    Reopen = 4,
+    Supersede = 5
+}
+
+public sealed record ReconciliationCaseTransitionCommand(
+    string BreakId,
+    ReconciliationCaseTransitionAction Action,
+    string Actor,
+    string Reason,
+    IReadOnlyList<string> EvidenceReferences,
+    string? Role = null,
+    string? SupersedingBreakId = null);
 
 /// <summary>
 /// Per-profile rollup for reconciliation tolerance calibration and exception routing.
