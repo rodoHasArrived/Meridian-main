@@ -18,7 +18,7 @@ automation outside the current build/test/publish scope.
 | `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
 | `verify-docs` | `CI` source-doc determinism job plus local docs checks. |
 | `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
-| `verify-release` | `Publish Smoke` (`publish-smoke.yml`). |
+| `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Release` (`desktop-installer-release.yml`). |
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
@@ -26,6 +26,7 @@ automation outside the current build/test/publish scope.
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract changes, manual | Runs `PilotAcceptanceHarnessTests`, writes `pilot-readiness.json` plus `pilot-readiness.md`, validates the pilot readiness dashboard renderer, generates `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploads the acceptance evidence bundle. | `pilot-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. | WPF TRX results on failure |
 | Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
+| Desktop Installer Release | `desktop-installer-release.yml` | Tag pushes (`v*`), manual | Builds signed (or temporary-cert) MSIX installer packages for `win-x64` and `win-arm64`, uploads them as workflow artifacts, and attaches package assets to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks and validates workflow syntax with `actionlint`. | None |
 
 ## Local Equivalents
@@ -65,6 +66,13 @@ pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -Ver
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
 ```
 
+Desktop installer release packaging:
+
+```powershell
+pwsh ./build/scripts/install/install.ps1 -Mode Desktop -Architecture x64 -SkipInstall -EnableReadyToRun -NoTrustCert -NoNotify
+pwsh ./build/scripts/install/install.ps1 -Mode Desktop -Architecture ARM64 -SkipInstall -EnableReadyToRun -NoTrustCert -NoNotify
+```
+
 Workflow hygiene:
 
 ```powershell
@@ -78,4 +86,4 @@ python build/scripts/ci/check-workflow-hygiene.py
 - PR and branch workflows cancel superseded runs.
 - Build/test workflows use explicit restore, build, and test phases.
 - Generated outputs stay under ignored `artifacts/`, `bin/`, `obj/`, `publish/`, `dist/`, or `TestResults/` paths.
-- Publish smoke artifacts are uploaded for inspection only; no workflow creates a public release or deploys externally.
+- Publish smoke artifacts are uploaded for inspection, and desktop installer tag runs publish packaged installer assets to GitHub Releases.

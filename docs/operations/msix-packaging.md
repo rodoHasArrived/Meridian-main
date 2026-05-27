@@ -3,6 +3,21 @@
 This guide covers producing MSIX packages for the Windows Desktop app and signing them
 for development or release distribution.
 
+## CI Release Packaging
+
+Tag pushes matching `v*` trigger `.github/workflows/desktop-installer-release.yml`, which:
+
+- builds `win-x64` and `win-arm64` MSIX installers,
+- uploads installer artifacts to the workflow run, and
+- attaches installer packages to the corresponding GitHub Release.
+
+For trusted release signing in CI, configure repository secrets:
+
+- `MDC_SIGNING_CERT_PFX_BASE64` (base64-encoded PFX contents)
+- `MDC_SIGNING_CERT_PASSWORD` (PFX password)
+
+If those secrets are not configured, CI falls back to a temporary development certificate.
+
 ## Quick Start
 
 The easiest way to build and install the Desktop App:
