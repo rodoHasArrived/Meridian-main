@@ -2172,6 +2172,25 @@ export interface BackfillTriggerResult {
   error: string | null;
 }
 
+export interface BackfillPreviewSymbol {
+  symbol: string;
+  estimatedBars: number;
+  hasMarketHoursData: boolean;
+  notes: string[];
+}
+
+export interface BackfillPreviewResult {
+  provider: string;
+  providerDisplayName: string;
+  from: string;
+  to: string;
+  totalDays: number;
+  estimatedTradingDays: number;
+  symbols: BackfillPreviewSymbol[];
+  estimatedDurationSeconds: number;
+  notes: string[];
+}
+
 export interface BackfillProgressEntry {
   symbol: string;
   barsWritten: number;
@@ -2179,10 +2198,13 @@ export interface BackfillProgressEntry {
 }
 
 export interface BackfillProgressResponse {
-  active: boolean;
-  provider: string | null;
-  symbols: BackfillProgressEntry[];
-  message: string | null;
+  active?: boolean;
+  provider?: string | null;
+  symbols?: BackfillProgressEntry[];
+  message?: string | null;
+  lastRun?: BackfillTriggerResult | null;
+  isActive?: boolean;
+  timestamp?: string;
 }
 
 // --- System Overview types ---

@@ -1,4 +1,5 @@
 import type {
+  BackfillPreviewResult,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
