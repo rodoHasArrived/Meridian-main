@@ -275,6 +275,7 @@ public sealed record WorkstationGovernancePayload(
     WorkstationGovernanceWorkspaceSummary Workspace,
     object CashFlow,
     WorkstationGovernanceReportingPayload Reporting,
+    object ControlCenter,
     object KernelObservability);
 
 // ---------------------------------------------------------------------------
