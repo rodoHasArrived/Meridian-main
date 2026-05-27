@@ -26,8 +26,9 @@ $allCommands = @(
 if ($Checks -and $Checks.Count -gt 0) {
     $checkSet = @{}
     foreach ($check in $Checks) {
-        if ($check) {
-            $checkSet[$check.Trim().ToLowerInvariant()] = $true
+        $normalizedCheck = $check.Trim().ToLowerInvariant()
+        if ($normalizedCheck) {
+            $checkSet[$normalizedCheck] = $true
         }
     }
     $commands = @(
@@ -46,7 +47,9 @@ else {
 }
 
 if (-not $commands -or $commands.Count -eq 0) {
-    throw 'No Codex quality checks selected. Use -Fast or pass valid -Checks values.'
+    $availableChecks = ($allCommands | ForEach-Object Key) -join ', '
+    $requestedChecks = if ($Checks -and $Checks.Count -gt 0) { $Checks -join ', ' } else { '(none)' }
+    throw "No matching Codex quality checks found for requested keys: $requestedChecks. Available keys: $availableChecks."
 }
 
 $results = New-Object System.Collections.Generic.List[object]
@@ -67,20 +70,22 @@ foreach ($command in $commands) {
     }
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    if ($FailOnWarning -and $command.SupportsFailOnWarning) {
-        & $scriptPath -MarkdownPath $reportPath -FailOnWarning
-    } else {
-        & $scriptPath -MarkdownPath $reportPath
+    $exitCode = 0
+    try {
+        if ($FailOnWarning -and $command.SupportsFailOnWarning) {
+            & $scriptPath -MarkdownPath $reportPath -FailOnWarning
+        }
+        else {
+            & $scriptPath -MarkdownPath $reportPath
+        }
+
+        $exitCode = $LASTEXITCODE
+    }
+    catch {
+        Write-Host "Check failed with terminating error: $($_.Exception.Message)"
+        $exitCode = 1
     }
     $stopwatch.Stop()
-
-    $exitCode = 0
-    if ($LASTEXITCODE -ne $null) {
-        $exitCode = [int]$LASTEXITCODE
-    }
-    if (-not $?) {
-        $exitCode = if ($exitCode -eq 0) { 1 } else { $exitCode }
-    }
 
     $relativeReport = if (Test-Path -LiteralPath $reportPath) {
         Get-CodexRelativePath $root $reportPath
@@ -115,10 +120,19 @@ $lines.Add('# Codex Quality Suite')
 $lines.Add('')
 $lines.Add("Mode: $mode")
 $lines.Add('')
-$lines.Add('| Check | Script | Report | Exit code |')
-$lines.Add('| --- | --- | --- | ---: |')
+$lines.Add('| Check | Script | Report | Exit code | Duration (s) |')
+$lines.Add('| --- | --- | --- | ---: | ---: |')
 foreach ($result in $results) {
-    $lines.Add(('| {0} | `{1}` | `{2}` | {3} |' -f $result.Name, $result.Script, $result.Report, $result.ExitCode))
+    $scriptCode = '`' + $result.Script + '`'
+    $reportCode = '`' + $result.Report + '`'
+    $row = @(
+        "| $($result.Name)"
+        $scriptCode
+        $reportCode
+        "$($result.ExitCode)"
+        "$($result.DurationSeconds) |"
+    ) -join ' | '
+    $lines.Add($row)
 }
 Set-Content -LiteralPath $resolved -Value $lines -Encoding UTF8
 Write-Host "Wrote combined report: $resolved"
