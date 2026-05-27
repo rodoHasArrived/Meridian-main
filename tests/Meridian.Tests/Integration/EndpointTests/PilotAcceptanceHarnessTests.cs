@@ -17,6 +17,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Contracts.Auth;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
@@ -314,6 +315,12 @@ public sealed class PilotAcceptanceHarnessTests
             auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "pilot.operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
+            await next();
+        });
         app.MapWorkstationEndpoints(ServerJsonOptions);
         app.MapEvidenceEndpoints(ServerJsonOptions);
         app.MapExecutionEndpoints(ServerJsonOptions);
