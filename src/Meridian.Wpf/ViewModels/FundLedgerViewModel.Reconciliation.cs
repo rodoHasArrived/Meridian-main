@@ -51,6 +51,8 @@ public sealed partial class FundLedgerViewModel
     private string _reconciliationDetailSubtitle = "Choose a break queue item or reconciliation run to load exception detail.";
     private string _reconciliationDetailStatusText = "Awaiting selection";
     private string _reconciliationDetailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
+    private string _reconciliationDetailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";
+    private string _reconciliationDetailSignoffText = "Sign-off posture appears here when a reconciliation break is selected.";
     private string _reconciliationDetailLastUpdatedText = "-";
     private string _reconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
     private string _reconciliationDetailTotalChecksText = "0";
@@ -317,6 +319,18 @@ public sealed partial class FundLedgerViewModel
     {
         get => _reconciliationDetailCoverageText;
         private set => SetProperty(ref _reconciliationDetailCoverageText, value);
+    }
+
+    public string ReconciliationDetailLifecycleText
+    {
+        get => _reconciliationDetailLifecycleText;
+        private set => SetProperty(ref _reconciliationDetailLifecycleText, value);
+    }
+
+    public string ReconciliationDetailSignoffText
+    {
+        get => _reconciliationDetailSignoffText;
+        private set => SetProperty(ref _reconciliationDetailSignoffText, value);
     }
 
     public string ReconciliationDetailLastUpdatedText
@@ -766,6 +780,8 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailSubtitle = detail.Subtitle;
         ReconciliationDetailStatusText = detail.StatusLabel;
         ReconciliationDetailCoverageText = detail.CoverageSummary;
+        ReconciliationDetailLifecycleText = BuildReconciliationDetailLifecycleText(detail, SelectedBreakQueueItem);
+        ReconciliationDetailSignoffText = BuildReconciliationDetailSignoffText(detail, SelectedBreakQueueItem);
         ReconciliationDetailLastUpdatedText = detail.LastUpdatedText;
         ReconciliationDetailGuidanceText = detail.SourceType == FundReconciliationSourceType.AccountRun
             ? "Account-level reconciliation is read-only in Governance. Open the account workflow to rerun or resolve it."
@@ -793,6 +809,8 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailSubtitle = "Choose a break queue item or reconciliation run to inspect exceptions, coverage, and audit history.";
         ReconciliationDetailStatusText = "Awaiting selection";
         ReconciliationDetailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
+        ReconciliationDetailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";
+        ReconciliationDetailSignoffText = "Sign-off posture appears here when a reconciliation break is selected.";
         ReconciliationDetailLastUpdatedText = "-";
         ReconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
         ReconciliationDetailTotalChecksText = "0";
@@ -1060,6 +1078,65 @@ public sealed partial class FundLedgerViewModel
     private static bool ContainsIgnoreCase(string? value, string query)
         => !string.IsNullOrWhiteSpace(value) &&
            value.Contains(query, StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildReconciliationDetailLifecycleText(
+        FundReconciliationDetailModel detail,
+        FundReconciliationBreakQueueRow? selectedBreak)
+    {
+        if (detail.SourceType == FundReconciliationSourceType.AccountRun)
+        {
+            return "Account reconciliation is read-only here; open the account workflow to rerun source checks before close sign-off.";
+        }
+
+        if (selectedBreak is null || !string.Equals(detail.FocusBreakId, selectedBreak.BreakId, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Select a break queue item to see detection, review, decision, and audit posture.";
+        }
+
+        if (selectedBreak.ResolvedAt is not null)
+        {
+            return $"Detected {selectedBreak.DetectedAtText}; reviewed by {FormatOperatorLabel(selectedBreak.ReviewedBy, selectedBreak.AssignedToLabel)}; closed by {FormatOperatorLabel(selectedBreak.ResolvedBy, selectedBreak.AssignedToLabel)}. Review the audit tab for the decision note.";
+        }
+
+        if (selectedBreak.ReviewedAt is not null)
+        {
+            return $"Detected {selectedBreak.DetectedAtText}; active review is assigned to {selectedBreak.AssignedToLabel}. Capture the operator decision note before resolving or dismissing.";
+        }
+
+        return $"Detected {selectedBreak.DetectedAtText}; not yet in review. Start Review records ownership before a resolve or dismiss decision.";
+    }
+
+    private static string BuildReconciliationDetailSignoffText(
+        FundReconciliationDetailModel detail,
+        FundReconciliationBreakQueueRow? selectedBreak)
+    {
+        if (detail.SourceType == FundReconciliationSourceType.AccountRun)
+        {
+            return "Account workflow sign-off is owned by the account reconciliation route, not the strategy break queue.";
+        }
+
+        if (selectedBreak is null || !string.Equals(detail.FocusBreakId, selectedBreak.BreakId, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Select a break queue item to inspect required sign-off before close approval.";
+        }
+
+        var role = selectedBreak.RequiredSignoffRoleLabel;
+        var status = selectedBreak.SignoffStatusLabel;
+        if (string.Equals(role, "Not configured", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Sign-off: {status}. Required role is not configured; keep the break out of close approval until governance ownership is assigned.";
+        }
+
+        if (status.Contains("signed", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Sign-off: {status} for {role}. Confirm close-pack evidence before final reporting.";
+        }
+
+        return $"Sign-off: {status} by {role}. Keep the break in the governance queue until review, decision, and audit evidence align.";
+    }
+
+    private static string FormatOperatorLabel(string? actor, string fallback)
+        => string.IsNullOrWhiteSpace(actor) ? fallback : actor;
 
     private static string FormatCalibrationStatus(ReconciliationCalibrationStatusDto status)
         => status switch

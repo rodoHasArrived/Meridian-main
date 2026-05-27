@@ -467,6 +467,7 @@ public sealed class MainPageUiWorkflowTests
 
             using var facade = new MainPageUiAutomationFacade(operatorInboxApiClient: operatorInboxClient);
             await WaitForConditionAsync(() => operatorInboxClient.RequestCount > 0).ConfigureAwait(true);
+            await WaitForConditionAsync(() => facade.ViewModel.OperatorInboxReviewCount == 1).ConfigureAwait(true);
 
             facade.ViewModel.SelectedOperatingContext = new WorkstationOperatingContext
             {
@@ -496,6 +497,7 @@ public sealed class MainPageUiWorkflowTests
             facade.Click(facade.OperatorInboxButton);
 
             facade.ViewModel.CurrentPageTag.Should().Be("AccountPortfolio");
+            facade.ViewModel.CurrentWorkspace.Should().Be("portfolio");
             facade.ShellAutomationStateText.Text.Should().Be("AccountPortfolio");
         });
     }

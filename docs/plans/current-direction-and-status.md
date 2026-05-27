@@ -7,6 +7,7 @@
 - [ ] Map the latest Strategy Engine pre-run validation and evidence hashes to accepted strategy-to-ledger lineage before upgrading any W3 continuity language.
 - [ ] Turn provider capability-matrix gaps into owned adapter-readiness tasks with target sprint, validation command, and evidence packet.
 - [ ] Keep W2/W3/W4 blockers synchronized between `pilot-readiness.*`, [`wave-implementation-checklists.md`](wave-implementation-checklists.md), and status docs.
+- [ ] Route desktop/WPF workflow claims through [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) before treating them as W2/W3/W4 progress.
 - [ ] Prove the operations-continuity close lane with browser/operator acceptance and external statement or custodian inputs before calling close readiness delivered.
 - [ ] Re-run structured roadmap/source stale-doc and hash checks after docs or source ownership changes.
 
@@ -108,6 +109,13 @@ that stage gate's `blockers` list. The current stage mapping is:
 | W3 shared run / portfolio / ledger continuity | `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, `Reconciliation` | Run continuity, portfolio, ledger, brokerage/account, reconciliation, or evidence-packet gaps belong on the affected stage. |
 | W4 governance and fund operations | `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, `GovernedReportPack` | Casework, approval/sign-off, provenance, report-pack lifecycle, or governed-output gaps belong on the affected stage. |
 
+Desktop/WPF workflow claims also must map to
+[`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md). That matrix
+is the desktop acceptance filter for Lane A W2 cockpit reliability, Lane B W3 run -> portfolio ->
+ledger continuity, and Lane C W4 reconciliation/governance close flow. It requires a shared
+contract/read-model check, focused WPF evidence, browser parity or an explicit mismatch blocker, and
+the matching pilot-readiness stage posture before any desktop slice is described as accepted.
+
 ## Active Planning Set
 
 These documents define current direction and should be read in this order:
@@ -122,6 +130,7 @@ These documents define current direction and should be read in this order:
 | [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the evidence-backed investment-operations direction. |
 | [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md) | Short-horizon execution slice for W2-W4 plus trust-gate maintenance. |
 | [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance and W2-W4 blocker closure. |
+| [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF workflow acceptance matrix for W2 cockpit, W3 continuity, and W4 governance lanes, including shared checks, focused WPF tests, browser parity, and release blockers. |
 | [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for the active W2-W4 path. |
 | [`web-ui-development-pivot.md`](web-ui-development-pivot.md) | Browser workstation foundation, shared-surface rules, and desktop/browser coexistence history. |
 | [`meridian-pilot-workflow.md`](meridian-pilot-workflow.md) | Golden-path productization filter: trusted data to governed report pack. |

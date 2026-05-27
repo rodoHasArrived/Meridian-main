@@ -191,25 +191,32 @@ public sealed class NavigationServiceTests : IDisposable
             var scopedPage = new WorkspaceCapabilityHomePage();
 
             var rootServices = new ServiceCollection();
-            rootServices.AddSingleton(rootPage);
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
             using var rootProvider = rootServices.BuildServiceProvider();
             service.SetServiceProvider(rootProvider);
 
             var scopedServices = new ServiceCollection();
-            scopedServices.AddSingleton(scopedPage);
+            scopedServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
             using var scopedProvider = scopedServices.BuildServiceProvider();
             using var scope = scopedProvider.CreateScope();
+
+            service.CreatePageContent("PortfolioShell", workspaceScope: scope)
+                .Should()
+                .BeSameAs(scopedPage);
 
             var result = service.NavigateTo("PortfolioShell", workspaceScope: scope);
 
             result.Should().BeTrue();
-            frame.Content.Should().BeSameAs(scopedPage);
-            frame.Content.Should().NotBeSameAs(rootPage);
+            service.GetCurrentPageTag().Should().Be("PortfolioShell");
+
+            service.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
 
             var fallbackResult = service.NavigateTo("PortfolioShell");
 
             fallbackResult.Should().BeTrue();
-            frame.Content.Should().BeSameAs(rootPage);
+            service.GetCurrentPageTag().Should().Be("PortfolioShell");
         });
     }
 

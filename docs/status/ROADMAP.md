@@ -54,6 +54,7 @@ Use this document with:
 - [`../plans/brokerage-portfolio-sync-blueprint.md`](../plans/brokerage-portfolio-sync-blueprint.md) - external brokerage and custodian account-sync design
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) - current short-horizon execution plan
 - [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - concrete owner-based workstreams, dependencies, and exit criteria for the active Waves 2-4 path
+- [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) - desktop/WPF acceptance filter for W2 cockpit, W3 continuity, and W4 governance workflow claims
 - [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md) - browser workstation foundation and desktop/browser coexistence history
 
 ---
@@ -149,6 +150,17 @@ Every W2/W3/W4 readiness claim must now be stage-gated: either it turns one of t
 to `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and
 `Reconciliation`; W4 claims map to `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and
 `GovernedReportPack`.
+
+2026-05-27 desktop workflow follow-up: desktop/WPF claims now have a dedicated acceptance filter in
+[`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md).
+Use it before treating retained-WPF changes as Wave 2, Wave 3, or Wave 4 progress. The matrix maps
+Lane A W2 cockpit reliability, Lane B W3 run -> portfolio -> ledger continuity, and Lane C W4
+reconciliation/governance close flow to required operator scenarios, shared endpoint/read-model
+checks, focused WPF tests, browser parity checks, release blockers, and milestone evidence.
+The same 2026-05-27 desktop pass added W4 support evidence in Fund Ledger: selected reconciliation
+breaks now show lifecycle and required sign-off posture from shared queue metadata in the retained
+WPF detail panel. Treat this as blocker-path support evidence, not durable close/casework
+acceptance, until operations-continuity and browser-parity gates are green.
 
 ---
 

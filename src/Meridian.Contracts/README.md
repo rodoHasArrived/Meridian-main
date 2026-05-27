@@ -37,6 +37,11 @@ returned workflow blocker codes in `OperationsWorkflowContractMatrix.BlockerCode
 ledger journal context-validation failures, so clients can handle command failures without parsing
 messages.
 
+Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
+Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
+`FundAccountBrokerageSyncActivityDto` for durable account-level evidence, positions, orders, fills,
+and cash-transaction details.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

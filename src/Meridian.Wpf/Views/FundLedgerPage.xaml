@@ -1162,6 +1162,8 @@
                                             <TextBlock Text="{Binding ReconciliationDetailSubtitle}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding ReconciliationDetailStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
                                             <TextBlock Text="{Binding ReconciliationDetailCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ReconciliationDetailLifecycleText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ReconciliationDetailSignoffText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                             <TextBlock Text="Last Updated" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />

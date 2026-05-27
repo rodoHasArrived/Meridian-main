@@ -12,6 +12,7 @@ using Meridian.Wpf.Shell.Refresh;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Wpf.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -853,11 +854,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         if (_wpfNavigationService is not null)
         {
-            var workspaceScope = WorkspaceService.Instance.ActiveWorkspaceScope;
+            var workspaceScope = ResolveWorkspaceScopeForPage(pageTag);
             return _wpfNavigationService.NavigateTo(pageTag, parameter, workspaceScope);
         }
 
         return _navigationService.NavigateTo(pageTag, parameter);
+    }
+
+    private static IServiceScope? ResolveWorkspaceScopeForPage(string pageTag)
+    {
+        var workspaceId = InferWorkspaceFromPage(pageTag);
+        return string.IsNullOrWhiteSpace(workspaceId)
+            ? WorkspaceService.Instance.ActiveWorkspaceScope
+            : WorkspaceService.Instance.GetOrCreateWorkspaceScope(workspaceId);
     }
 
     private void ToggleSecondaryWorkflowSummaries()
@@ -1109,6 +1118,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         });
 
         var (operatorInbox, operatorInboxError) = await BuildOperatorInboxAsync(ct).ConfigureAwait(false);
+        await ApplyOperatorInboxIfCurrentAsync(refreshRevision, operatorInbox, operatorInboxError).ConfigureAwait(false);
+
         var shellContext = fallbackShellContext;
         try
         {
@@ -1136,7 +1147,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 _workflowSummaryStrip.Apply(workflowSummaries, CurrentWorkspace);
                 RaiseWorkflowSummaryPropertiesChanged();
-                ApplyOperatorInbox(operatorInbox, operatorInboxError);
             }
 
             return;
@@ -1153,7 +1163,28 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 _workflowSummaryStrip.Apply(workflowSummaries, CurrentWorkspace);
                 RaiseWorkflowSummaryPropertiesChanged();
-                ApplyOperatorInbox(operatorInbox, operatorInboxError);
+            }
+        });
+    }
+
+    private async Task ApplyOperatorInboxIfCurrentAsync(int refreshRevision, OperatorInboxDto? inbox, string? error)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ApplyOperatorInbox(inbox, error);
+            }
+
+            return;
+        }
+
+        await dispatcher.InvokeAsync(() =>
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ApplyOperatorInbox(inbox, error);
             }
         });
     }

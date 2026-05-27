@@ -171,6 +171,13 @@ public sealed class WorkspaceService
             return GetWorkspaceScopeCore(normalizedWorkspaceId);
         });
 
+    public IServiceScope? GetOrCreateWorkspaceScope(string workspaceId)
+        => WithStateLock(() =>
+        {
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            return EnsureWorkspaceScopeCore(normalizedWorkspaceId);
+        });
+
     /// <summary>
     /// Persisted workspace data container.
     /// </summary>

@@ -4,6 +4,7 @@ using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
@@ -115,7 +116,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
                 pageTag,
                 parameter,
                 WorkspaceChromePresentationMode.Docked,
-                _workspaceService.ActiveWorkspaceScope);
+                ResolveWorkspaceScopeForDockedPage(pageTag));
             dockManager.LoadPage(BuildPageKey(pageTag, parameter), ShellNavigationCatalog.GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
         }
         catch (Exception ex)
@@ -172,6 +173,14 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
     protected static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layoutState)
         => layoutState.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layoutState.DockLayoutXml);
+
+    private IServiceScope? ResolveWorkspaceScopeForDockedPage(string pageTag)
+    {
+        var workspaceId = _lastState?.WorkspaceId ?? WorkspaceService.InferWorkspaceIdForPageTag(pageTag);
+        return string.IsNullOrWhiteSpace(workspaceId)
+            ? _workspaceService.ActiveWorkspaceScope
+            : _workspaceService.GetOrCreateWorkspaceScope(workspaceId);
+    }
 
     private void LoadDefaultDocking(MeridianDockingManager dockManager, WorkspaceShellState state)
     {

@@ -9,6 +9,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Sdk;
 
@@ -221,7 +222,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void NavigateToPageCommand_UsesActiveWorkspaceScopeForFrameNavigation()
+    public void NavigateToPageCommand_UsesTargetWorkspaceScopeForFrameNavigation()
     {
         WpfTestThread.Run(async () =>
         {
@@ -232,13 +233,16 @@ public sealed class MainShellViewModelTests
 
             var rootPage = new WorkspaceCapabilityHomePage();
             var rootServices = new ServiceCollection();
-            rootServices.AddSingleton(rootPage);
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
             using var rootProvider = rootServices.BuildServiceProvider();
             navigationService.SetServiceProvider(rootProvider);
+            navigationService.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
 
             var scopedPage = new WorkspaceCapabilityHomePage();
             var workspaceScopeServices = new ServiceCollection();
-            workspaceScopeServices.AddSingleton(scopedPage);
+            workspaceScopeServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
             using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
 
             WorkspaceService.SetSettingsFilePathOverrideForTests(null);
@@ -247,6 +251,7 @@ public sealed class MainShellViewModelTests
             workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
             await workspaceService.ActivateWorkspaceAsync("strategy");
             workspaceService.ActiveWorkspaceScope.Should().NotBeNull();
+            var strategyScope = workspaceService.ActiveWorkspaceScope;
 
             var fixtureModeDetector = FixtureModeDetector.Instance;
             fixtureModeDetector.SetFixtureMode(false);
@@ -256,8 +261,9 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("PortfolioShell");
 
-            frame.Content.Should().BeSameAs(scopedPage);
-            frame.Content.Should().NotBeSameAs(rootPage);
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
+            navigationService.GetCurrentPageTag().Should().Be("PortfolioShell");
         });
     }
 

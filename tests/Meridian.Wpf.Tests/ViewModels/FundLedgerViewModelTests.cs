@@ -183,6 +183,10 @@ public sealed class FundLedgerViewModelTests
                     profile.ExceptionRoute == "fund-ops-review" &&
                     profile.PendingSignoffCount == 1);
                 viewModel.ReconciliationDetailTitle.Should().Be("Reconciliation Strategy");
+                viewModel.ReconciliationDetailLifecycleText.Should().Contain("Start Review");
+                viewModel.ReconciliationDetailLifecycleText.Should().Contain("records ownership");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Pending Signoff");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Fund operations lead");
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
                 viewModel.CanResolveSelectedBreak.Should().BeFalse();
@@ -482,6 +486,8 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("ReconciliationResetFiltersButton");
         xaml.Should().Contain("Command=\"{Binding ResetReconciliationFiltersCommand}\"");
         xaml.Should().Contain("ReconciliationRefreshQueueButton");
+        xaml.Should().Contain("ReconciliationDetailLifecycleText");
+        xaml.Should().Contain("ReconciliationDetailSignoffText");
     }
 
     [Fact]
