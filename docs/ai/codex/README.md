@@ -25,6 +25,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | `meridian-archive-organizer` | Archive stale code/docs and keep the repository structure tidy |
 | `meridian-blueprint` | Create implementation-ready Meridian technical blueprints |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup` | Clean up code and docs without behavior changes |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |

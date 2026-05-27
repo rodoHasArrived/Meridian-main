@@ -37,9 +37,10 @@ pwsh ./tools/codex/shared-pattern-suggest.ps1
 3. Make the smallest modular change that satisfies the workflow.
 4. Add or update focused tests.
 5. Run the narrowest WPF test filter.
-6. Run the Codex quality suite:
+6. Run the fast Codex quality suite during iteration, then full before handoff:
 
 ```powershell
+pwsh ./tools/codex/run-codex-quality-suite.ps1 -Fast -MarkdownPath artifacts/codex/codex-quality-suite.fast.md
 pwsh ./tools/codex/run-codex-quality-suite.ps1 -MarkdownPath artifacts/codex/codex-quality-suite.md
 ```
 
