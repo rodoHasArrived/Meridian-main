@@ -111,16 +111,40 @@ const detail: OperationsContinuityWorkflow = {
       rationale: "Pending final ledger validation before close sign-off.",
       submittedAtUtc: "2026-05-08T15:05:00Z",
       decidedAtUtc: null,
-      evidenceLinks: []
+      evidenceLinks: [
+        {
+          evidenceId: "approval-evidence-1",
+          label: "Approval assignment",
+          route: "/workstation/accounting/approvals",
+          source: "ops-continuity",
+          capturedAtUtc: "2026-05-08T15:05:00Z"
+        }
+      ]
     }
   ],
   reportPackReadiness: {
     isReady: false,
     reportPackId: null,
     blockingReason: "Close workflow has unresolved ledger blockers.",
-    evidenceLinks: []
+    evidenceLinks: [
+      {
+        evidenceId: "report-pack-blocker-1",
+        label: "Report pack blocker",
+        route: "/workstation/reporting",
+        source: "ops-continuity",
+        capturedAtUtc: "2026-05-08T15:10:00Z"
+      }
+    ]
   },
-  evidenceLinks: [],
+  evidenceLinks: [
+    {
+      evidenceId: "close-workflow-1",
+      label: "Close workflow snapshot",
+      route: "/workstation/accounting/operations-continuity",
+      source: "ops-continuity",
+      capturedAtUtc: "2026-05-08T15:10:00Z"
+    }
+  ],
   blockers: gates[1]!.blockers
 };
 
@@ -163,6 +187,7 @@ describe("Operations Continuity view model", () => {
         value: "Reviewer Assigned by fund-controller at May 08, 15:05 UTC: Pending final ledger validation before close sign-off."
       },
       { label: "Report pack", value: "Blocked: Close workflow has unresolved ledger blockers." },
+      { label: "Close evidence", value: "3 close evidence links" },
       { label: "Latest audit", value: "Ledger Draft Blocked cdb9449e / devhash-ledg" }
     ]));
     expect(vm.gates.map((gate) => gate.label)).toEqual(["Broker intake", "Ledger posting"]);

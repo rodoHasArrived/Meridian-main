@@ -382,6 +382,7 @@ function buildDetailPanel(
       { label: "Approval", value: detail ? splitEnumLabel(detail.approvalState) : "Detail pending" },
       { label: "Sign-off", value: detail ? buildSignoffSummary(detail) : "Detail pending" },
       { label: "Report pack", value: detail ? buildReportPackSummary(detail) : "Detail pending" },
+      { label: "Close evidence", value: detail ? buildCloseEvidenceSummary(detail) : "Detail pending" },
       { label: "Latest audit", value: detail ? buildLatestAuditSummary(detail) : "Detail pending" },
       { label: "Break cases", value: detail ? String(detail.breakCases.length) : "Detail pending" },
       { label: "Blockers", value: String(blockerCount) }
@@ -414,6 +415,17 @@ function buildReportPackSummary(detail: OperationsContinuityWorkflow): string {
   return readiness.blockingReason?.trim()
     ? `Blocked: ${readiness.blockingReason}`
     : "Blocked until close evidence is complete";
+}
+
+function buildCloseEvidenceSummary(detail: OperationsContinuityWorkflow): string {
+  const evidenceCount = detail.evidenceLinks.length
+    + detail.reportPackReadiness.evidenceLinks.length
+    + detail.approvals.reduce((total, approval) => total + approval.evidenceLinks.length, 0)
+    + detail.breakCases.reduce((total, breakCase) => total + breakCase.evidenceLinks.length, 0);
+
+  return evidenceCount === 0
+    ? "No close evidence links"
+    : `${evidenceCount} close evidence link${evidenceCount === 1 ? "" : "s"}`;
 }
 
 function buildLatestAuditSummary(detail: OperationsContinuityWorkflow): string {

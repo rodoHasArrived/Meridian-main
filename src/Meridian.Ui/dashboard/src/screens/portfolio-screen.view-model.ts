@@ -1452,7 +1452,7 @@ function buildPortfolioReadinessTaskPanel({
   const selectedSummary = !hasPosture
     ? "Portfolio posture is unavailable. Repair provider setup or refresh workstation data before accepting holdings."
     : continuityBlockers.length > 0
-      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCount(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio-to-ledger handoff.`
+      ? `${providerLabel} account ${accountLabel} is the current portfolio source. Resolve ${formatCountLabel(continuityBlockers.length, "selected-run continuity blocker")} before accepting the portfolio-to-ledger handoff.`
     : `${providerLabel} account ${accountLabel} is the current portfolio source. Review brokerage sync, trading readiness, cash variance, and linked run evidence before accepting holdings.`;
 
   return {
@@ -1723,7 +1723,7 @@ function buildSelectedRunDetail(run: PortfolioRunRow, continuity: StrategyRunCon
     },
     statusTitle: continuityBlockers.length > 0 ? `${run.strategyName} continuity review` : `${run.strategyName} selected`,
     statusDetail: continuityBlockers.length > 0
-      ? `${run.status} ${run.mode} run has ${formatCount(continuityBlockers.length, "continuity blocker")}. ${continuityDetail}`
+      ? `${run.status} ${run.mode} run has ${formatCountLabel(continuityBlockers.length, "continuity blocker")}. ${continuityDetail}`
       : `${run.status} ${run.mode} run with ${run.pnl} P&L and ${run.sharpe} Sharpe. ${run.notes || "No operator notes attached."}`,
     statusTone,
     statusBadgeLabel: continuityBlockers.length > 0 ? continuityLabel : run.status,
@@ -1821,8 +1821,8 @@ function buildRunContinuityBlockers(continuity: StrategyRunContinuityDto | null)
   addMissingContinuityBlocker(blockers, !status.hasLedger, "missing-ledger", "Ledger coverage", "Ledger read model is missing for the selected run.", "danger");
   addMissingContinuityBlocker(blockers, !status.hasCashFlow, "missing-cash-flow", "Cash-flow coverage", "Cash-flow digest is missing for the selected run.", "warning");
   addMissingContinuityBlocker(blockers, !status.hasReconciliation, "missing-reconciliation", "Reconciliation coverage", "Reconciliation summary is missing for the selected run.", "warning");
-  addMissingContinuityBlocker(blockers, status.openReconciliationBreaks > 0, "open-reconciliation-breaks", "Open reconciliation breaks", `${formatCount(status.openReconciliationBreaks, "reconciliation break")} remain open for the selected run.`, "warning");
-  addMissingContinuityBlocker(blockers, status.securityCoverageIssueCount > 0, "security-coverage", "Security coverage", `${formatCount(status.securityCoverageIssueCount, "security coverage issue")} remain for the selected run.`, "warning");
+  addMissingContinuityBlocker(blockers, status.openReconciliationBreaks > 0, "open-reconciliation-breaks", "Open reconciliation breaks", `${formatCountLabel(status.openReconciliationBreaks, "reconciliation break")} remain open for the selected run.`, "warning");
+  addMissingContinuityBlocker(blockers, status.securityCoverageIssueCount > 0, "security-coverage", "Security coverage", `${formatCountLabel(status.securityCoverageIssueCount, "security coverage issue")} remain for the selected run.`, "warning");
 
   for (const warning of status.warnings) {
     if (blockers.some((blocker) => blocker.code === warning.code)) {
