@@ -801,7 +801,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void tickOptionComputation(int tickerId, int field, int tickAttrib, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
     {
         RecordMessageReceived();
-        _router.OnTickOptionComputation(tickerId, field, impliedVolatility, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+        try
+        {
+            _router.OnTickOptionComputation(tickerId, field, impliedVolatility, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Dropping malformed option computation tick for tickerId {TickerId}.", tickerId);
+        }
     }
 
     public void marketDataType(int reqId, int marketDataType) { }
