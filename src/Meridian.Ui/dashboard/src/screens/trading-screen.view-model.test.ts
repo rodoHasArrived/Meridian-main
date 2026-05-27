@@ -2653,3 +2653,38 @@ describe("green cockpit: ReadyForPaperOperation proof", () => {
     expect(state.hasOperatorAttention).toBe(true);
   });
 });
+
+describe("trading readiness blocker taxonomy parity", () => {
+  it("keeps blocker severity and repair routes aligned for core Wave 2 blockers", () => {
+    const readiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      overallStatus: "Blocked",
+      acceptanceGates: [
+        { gateId: "replay", label: "Replay", status: "ReviewRequired", detail: "Replay evidence is stale.", sessionId: "sess-1", runId: null, auditReference: "audit-replay" },
+        { gateId: "trust-gate", label: "Provider trust", status: "Blocked", detail: "Operator sign-off evidence is missing.", sessionId: null, runId: null, auditReference: "audit-trust" },
+        { gateId: "brokerage-sync", label: "Brokerage sync", status: "Blocked", detail: "Brokerage sync is incomplete.", sessionId: null, runId: null, auditReference: "audit-sync" }
+      ],
+      workItems: [
+        { workItemId: "replay-stale", kind: "PaperReplay", label: "Replay stale", detail: "Replay verification is stale.", tone: "Warning", createdAt: "2026-05-01T00:00:00Z", runId: "run-1", fundAccountId: null, auditReference: "audit-replay" },
+        { workItemId: "signoff-missing", kind: "ProviderTrustGate", label: "Sign-off missing", detail: "Missing operator sign-off evidence.", tone: "Critical", createdAt: "2026-05-01T00:00:01Z", runId: null, fundAccountId: null, auditReference: "audit-trust" },
+        { workItemId: "provider-trust-degraded", kind: "ProviderTrustGate", label: "Provider trust degraded", detail: "Provider trust gate is degraded.", tone: "Critical", createdAt: "2026-05-01T00:00:02Z", runId: null, fundAccountId: null, auditReference: "audit-trust-2" },
+        { workItemId: "brokerage-sync-incomplete", kind: "BrokerageSync", label: "Brokerage sync incomplete", detail: "Brokerage sync is incomplete.", tone: "Critical", createdAt: "2026-05-01T00:00:03Z", runId: null, fundAccountId: "fund-1", auditReference: "audit-sync", targetRoute: "/api/fund-accounts/fund-1/brokerage-sync", targetPageTag: "AccountPortfolio" }
+      ]
+    };
+
+    const state = buildTradingReadinessState({ readiness, refreshing: false, errorText: null });
+    const byId = new Map(state.visibleWorkItems.map((item) => [item.workItemId, item]));
+
+    expect(byId.get("replay-stale")?.tone).toBe("warning");
+    expect(byId.get("replay-stale")?.action?.href).toBe("/trading#session-replay-panel");
+
+    expect(byId.get("signoff-missing")?.tone).toBe("danger");
+    expect(byId.get("signoff-missing")?.action?.href).toBe("/data/providers");
+
+    expect(byId.get("provider-trust-degraded")?.tone).toBe("danger");
+    expect(byId.get("provider-trust-degraded")?.action?.href).toBe("/data/providers");
+
+    expect(byId.get("brokerage-sync-incomplete")?.tone).toBe("danger");
+    expect(byId.get("brokerage-sync-incomplete")?.action?.href).toBe("/portfolio/accounts/fund-1");
+  });
+});

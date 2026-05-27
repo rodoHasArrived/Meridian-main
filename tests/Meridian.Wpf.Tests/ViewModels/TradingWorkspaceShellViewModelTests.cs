@@ -227,6 +227,21 @@ public sealed class TradingWorkspaceShellViewModelTests
         actionId.Should().Be("AccountPortfolio");
     }
 
+
+    [Fact]
+    public void ResolveOperatorWorkItemActionId_MapsTopBlockerTaxonomyToConsistentRepairRoutes()
+    {
+        var replay = new OperatorWorkItemDto("replay-stale", OperatorWorkItemKindDto.PaperReplay, "Replay stale", "Replay evidence is stale.", OperatorWorkItemToneDto.Warning, new DateTimeOffset(2026,5,1,0,0,0,TimeSpan.Zero));
+        var signoff = new OperatorWorkItemDto("signoff-missing", OperatorWorkItemKindDto.ProviderTrustGate, "Missing sign-off", "Missing operator sign-off evidence.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026,5,1,0,0,1,TimeSpan.Zero));
+        var provider = new OperatorWorkItemDto("provider-trust-degraded", OperatorWorkItemKindDto.ProviderTrustGate, "Provider trust degraded", "Provider trust degraded.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026,5,1,0,0,2,TimeSpan.Zero));
+        var brokerage = new OperatorWorkItemDto("brokerage-sync-incomplete", OperatorWorkItemKindDto.BrokerageSync, "Brokerage sync incomplete", "Brokerage sync incomplete.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026,5,1,0,0,3,TimeSpan.Zero), TargetRoute: $"{UiApiRoutes.FundAccountBrokerageSyncAccounts}?fundAccountId=9c37d51f-2eba-40f5-9c86-6c9eb3863b8b", TargetPageTag: "TradingShell");
+
+        TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(replay).Should().Be("ReplayVerification");
+        TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(signoff).Should().Be("ProviderHealth");
+        TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(provider).Should().Be("ProviderHealth");
+        TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(brokerage).Should().Be("AccountPortfolio");
+    }
+
     [Fact]
     public void ResolveOperatorWorkItemActionId_WithLedgerPeriodClose_OpensReconciliation()
     {
