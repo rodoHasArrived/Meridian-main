@@ -32,6 +32,28 @@ export interface MetricSnapshot {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+
+
+export interface StrategyRunSummaryApiRecord {
+  runId: string;
+  strategyId: string;
+  strategyName: string;
+  mode: number;
+  engine: number;
+  status: number;
+  startedAt: string;
+  completedAt: string | null;
+  datasetReference: string | null;
+  feedReference: string | null;
+  portfolioId: string | null;
+  ledgerReference: string | null;
+  netPnl: number | null;
+  totalReturn: number | null;
+  finalEquity: number | null;
+  fillCount: number;
+  lastUpdatedAt: string;
+  auditReference?: string | null;
+}
 export interface ResearchRunRecord {
   id: string;
   strategyName: string;
