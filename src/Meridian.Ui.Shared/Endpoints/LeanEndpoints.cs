@@ -5,6 +5,7 @@ using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Storage;
 using Meridian.Ui.Shared;
 using Microsoft.AspNetCore.Builder;
@@ -454,8 +455,14 @@ public static class LeanEndpoints
         // Reads a Lean backtest result JSON file and stores it as a completed backtest record.
         group.MapPost(UiApiRoutes.LeanResultsIngest, async (
             [FromBody] LeanResultsIngestRequest? req,
+            HttpContext context,
             [FromServices] IStrategyRepository? repository) =>
         {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ManageStrategies))
+            {
+                return Results.Forbid();
+            }
+
             if (req == null || string.IsNullOrEmpty(req.ResultsFilePath))
             {
                 return Results.BadRequest(new { error = "resultsFilePath is required." });
