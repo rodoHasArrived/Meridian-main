@@ -107,7 +107,7 @@ jobs:
 
               if [ "$attempt" -lt "$max_push_attempts" ]; then
                 echo "::warning::Push was rejected on attempt $attempt; retrying after refreshing from remote."
-                sleep $((2 * attempt))
+                sleep $((2 ** attempt))
               fi
             done
 
