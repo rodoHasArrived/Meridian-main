@@ -334,7 +334,6 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankTransactionCount.Should().BeGreaterThan(0);
-        detail.BankTransactions.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -359,7 +358,6 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankTransactionCount.Should().Be(3);
-        detail.BankTransactions.Should().HaveCount(3);
     }
 
     [Fact]
@@ -377,7 +375,6 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankTransactionCount.Should().Be(0);
-        detail.BankTransactions.Should().BeNull();
         detail.Matches.Should().Contain(m => m.CheckId == "cash-balance");
     }
 
