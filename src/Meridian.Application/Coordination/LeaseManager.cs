@@ -202,6 +202,7 @@ public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
                 }
                 catch (Exception ex)
                 {
+                    _heldLeases.TryRemove(resourceId, out _);
                     Interlocked.Increment(ref _renewalFailureCount);
                     _log.Warning(ex, "Unexpected renewal failure for {ResourceId}", resourceId);
                 }
