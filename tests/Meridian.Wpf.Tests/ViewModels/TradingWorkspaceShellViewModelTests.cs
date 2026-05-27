@@ -298,7 +298,7 @@ public sealed class TradingWorkspaceShellViewModelTests
 
         hero.BadgeText.Should().Be("Ready");
         hero.FocusLabel.Should().Be("Paper review");
-        hero.Summary.Should().Contain("paper session");
+        hero.Summary.Should().Contain("active paper handoff");
     }
 
     [Fact]
