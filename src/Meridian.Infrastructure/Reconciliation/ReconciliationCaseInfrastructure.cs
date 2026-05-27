@@ -163,8 +163,10 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
                 [new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from matcher outcome")])
             {
                 DueAtUtc = now.AddDays(2),
+                Priority = "High",
                 LastUpdatedAtUtc = now,
-                LastUpdatedBy = "system"
+                LastUpdatedBy = "system",
+                AuditEvents = [new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "CaseOpened", now, "system", "Case created from matcher outcome.")]
             })
             .ToList();
         foreach (var c in cases)
@@ -183,11 +185,13 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
             ?? throw new InvalidOperationException($"Case not found: {caseId}");
         ValidateTransition(c.Status, normalizedStatus);
         var now = _timeProvider.GetUtcNow();
+        var breachedAt = c.SlaBreachedAtUtc ?? ((c.DueAtUtc.HasValue && now > c.DueAtUtc.Value) ? now : null);
         var updated = c with
         {
             Status = normalizedStatus,
             LastUpdatedAtUtc = now,
             LastUpdatedBy = "system",
+            SlaBreachedAtUtc = breachedAt,
             History = c.History.Concat(
             [
                 new ReconciliationCaseHistoryEntry(
@@ -195,7 +199,53 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
                     c.Status,
                     normalizedStatus,
                     string.IsNullOrWhiteSpace(note) ? "Status updated." : note.Trim())
-            ]).ToList()
+            ]).ToList(),
+            AuditEvents = c.AuditEvents.Concat([new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "StatusChanged", now, "system", $"Status changed from {c.Status} to {normalizedStatus}.")]).ToList(),
+            Resolution = normalizedStatus == "Resolved" || normalizedStatus == "SignedOff" ? new ReconciliationResolutionMetadata("resolved", string.IsNullOrWhiteSpace(note) ? "Resolved." : note.Trim(), "system", now, normalizedStatus == "SignedOff" ? "system" : null, normalizedStatus == "SignedOff" ? now : null) : c.Resolution
+        };
+        await _store.SaveAsync(updated, ct).ConfigureAwait(false);
+        return updated;
+    }
+
+
+
+    public async Task<ReconciliationCase> AssignAsync(string caseId, string assignee, string note, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(assignee)) throw new ArgumentException("Assignee is required.", nameof(assignee));
+        var c = await _store.GetAsync(caseId, ct).ConfigureAwait(false) ?? throw new InvalidOperationException($"Case not found: {caseId}");
+        var now = _timeProvider.GetUtcNow();
+        var actor = "system";
+        var updated = c with
+        {
+            Owner = assignee.Trim(),
+            LastUpdatedAtUtc = now,
+            LastUpdatedBy = actor,
+            AuditEvents = c.AuditEvents.Concat([new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "OwnerChanged", now, actor, string.IsNullOrWhiteSpace(note) ? $"Assigned to {assignee.Trim()}." : note.Trim())]).ToList()
+        };
+        await _store.SaveAsync(updated, ct).ConfigureAwait(false);
+        return updated;
+    }
+
+    public async Task<ReconciliationCase> AddCommentAsync(string caseId, string subject, string body, string actor, string? parentCommentId = null, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(body)) throw new ArgumentException("Comment body is required.", nameof(body));
+        if (string.IsNullOrWhiteSpace(actor)) throw new ArgumentException("Comment actor is required.", nameof(actor));
+        var c = await _store.GetAsync(caseId, ct).ConfigureAwait(false) ?? throw new InvalidOperationException($"Case not found: {caseId}");
+        var now = _timeProvider.GetUtcNow();
+        var threads = c.CommentThreads.ToList();
+        var threadId = string.IsNullOrWhiteSpace(subject) ? "general" : subject.Trim();
+        var idx = threads.FindIndex(t => string.Equals(t.ThreadId, threadId, StringComparison.OrdinalIgnoreCase));
+        var comment = new ReconciliationCaseComment(Guid.NewGuid().ToString("N"), body.Trim(), actor.Trim(), now, parentCommentId);
+        if (idx < 0) threads.Add(new ReconciliationCaseCommentThread(threadId, string.IsNullOrWhiteSpace(subject) ? "General" : subject.Trim(), [comment]));
+        else threads[idx] = threads[idx] with { Comments = threads[idx].Comments.Concat([comment]).ToList() };
+        var updated = c with
+        {
+            CommentThreads = threads,
+            LastUpdatedAtUtc = now,
+            LastUpdatedBy = actor.Trim(),
+            AuditEvents = c.AuditEvents.Concat([new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "CommentAdded", now, actor.Trim(), $"Comment added to thread '{threadId}'.")]).ToList()
         };
         await _store.SaveAsync(updated, ct).ConfigureAwait(false);
         return updated;
@@ -210,10 +260,10 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
         => status?.Trim() switch
         {
             "Open" => "Open",
-            "InReview" => "InReview",
-            "Approved" => "Approved",
-            "Rejected" => "Rejected",
+            "Investigating" => "Investigating",
+            "AwaitingEvidence" => "AwaitingEvidence",
             "Resolved" => "Resolved",
+            "SignedOff" => "SignedOff",
             _ => throw new ArgumentException($"Unsupported reconciliation case status '{status}'.", nameof(status))
         };
 
@@ -226,8 +276,10 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
 
         var allowed = fromStatus switch
         {
-            "Open" => toStatus is "InReview" or "Approved" or "Rejected" or "Resolved",
-            "InReview" => toStatus is "Open" or "Approved" or "Rejected" or "Resolved",
+            "Open" => toStatus is "Investigating",
+            "Investigating" => toStatus is "AwaitingEvidence" or "Resolved",
+            "AwaitingEvidence" => toStatus is "Investigating" or "Resolved",
+            "Resolved" => toStatus is "SignedOff",
             _ => false
         };
         if (!allowed)
