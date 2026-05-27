@@ -89,7 +89,7 @@ public sealed class RobinhoodSymbolSearchProviderTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithCancellation_ReturnsEmpty()
+    public async Task SearchAsync_WithCancellation_ThrowsOperationCanceledException()
     {
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
@@ -99,10 +99,9 @@ public sealed class RobinhoodSymbolSearchProviderTests
         using var httpClient = new HttpClient(handler);
         using var provider = new RobinhoodSymbolSearchProvider(httpClient: httpClient);
 
-        // BaseSymbolSearchProvider catches all exceptions (including cancellation) and returns empty
-        var results = await provider.SearchAsync("AAPL", 10, cts.Token);
+        Func<Task> act = () => provider.SearchAsync("AAPL", 10, cts.Token);
 
-        results.Should().BeEmpty();
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Fact]
