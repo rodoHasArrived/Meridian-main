@@ -456,7 +456,8 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
                 .ConfigureAwait(false);
 
             return summary.Workspaces.FirstOrDefault(static workspace =>
-                string.Equals(workspace.WorkspaceId, "research", StringComparison.OrdinalIgnoreCase));
+                string.Equals(workspace.WorkspaceId, "strategy", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(workspace.WorkspaceId, "research", StringComparison.OrdinalIgnoreCase));
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
