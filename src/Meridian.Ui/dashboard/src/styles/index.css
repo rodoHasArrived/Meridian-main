@@ -66,22 +66,22 @@
        Tailwind palette. Token architecture aligned with cash-flow-factor-sch.
        Changes here do NOT automatically update Track B.
     ──────────────────────────────────────────────────────────────────────────*/
-    --background: 215 42% 6%;
-    --foreground: 210 30% 92%;
-    --card: 215 34% 9%;
-    --card-foreground: 210 30% 92%;
-    --popover: 215 36% 8%;
-    --popover-foreground: 210 30% 92%;
+    --background: 220 10% 6%;
+    --foreground: 210 18% 94%;
+    --card: 220 9% 9%;
+    --card-foreground: 210 18% 94%;
+    --popover: 220 10% 8%;
+    --popover-foreground: 210 18% 94%;
     --primary: 198 72% 50%;
     --primary-foreground: 213 54% 7%;
-    --secondary: 213 32% 16%;
+    --secondary: 220 9% 15%;
     --secondary-foreground: 207 44% 90%;
-    --muted: 213 28% 15%;
+    --muted: 220 8% 14%;
     --muted-foreground: 210 22% 62%;
     --accent: 36 80% 58%;
     --accent-foreground: 213 52% 8%;
-    --border: 208 38% 22%;
-    --input: 208 38% 22%;
+    --border: 205 34% 29%;
+    --input: 205 34% 29%;
     --ring: 198 72% 50%;
     --paper: 214 82% 68%;
     --live: 198 72% 50%;
@@ -89,20 +89,20 @@
     --warning: 36 80% 58%;
     --success: 158 66% 44%;
     --danger: 354 68% 62%;
-    --panel-strong: 213 48% 12%;
-    --panel-soft: 213 36% 15%;
-    --surface-raise: 213 40% 18%;
+    --panel-strong: 220 10% 12%;
+    --panel-soft: 220 9% 15%;
+    --surface-raise: 215 14% 18%;
     /* ─── Sidebar tokens — aligned with cash-flow-factor-sch ─────────────────
        Maps the operator rail surface to the same sidebar token contract used
        in the reference app. Consumed by sidebar.tsx and rail components.
     ──────────────────────────────────────────────────────────────────────────*/
-    --sidebar: 215 50% 5%;
-    --sidebar-foreground: 210 30% 92%;
+    --sidebar: 220 12% 5%;
+    --sidebar-foreground: 210 18% 94%;
     --sidebar-primary: 198 72% 50%;
     --sidebar-primary-foreground: 213 54% 7%;
-    --sidebar-accent: 213 32% 16%;
+    --sidebar-accent: 220 9% 15%;
     --sidebar-accent-foreground: 207 44% 90%;
-    --sidebar-border: 208 38% 22%;
+    --sidebar-border: 205 34% 29%;
     --sidebar-ring: 198 72% 50%;
     /* ─── Chart tokens — aligned with cash-flow-factor-sch naming ────────────
        Named --chart-1…5 to match the reference app's token contract.
@@ -140,17 +140,17 @@
        Must be kept in sync with Track A manually when the palette changes.
        Add new surfaces here (not as Tailwind utilities) to stay on this track.
     ──────────────────────────────────────────────────────────────────────────*/
-    --bg: #08101a;              /* mirrors hsl(--background) */
-    --fg: #dee6ef;              /* mirrors hsl(--foreground) */
+    --bg: #0d0e10;              /* mirrors hsl(--background) */
+    --fg: #e8edf2;              /* mirrors hsl(--foreground) */
     --fg-muted: #7c8a9b;        /* mirrors hsl(--muted-foreground) */
-    --card-bg: #0d1722;         /* mirrors hsl(--card) */
-    --panel-strong-bg: #101c2b;
-    --panel-soft-bg: #162334;
-    --surface-raise-bg: #1b2a3c;
-    --border-color: #1f344c;    /* mirrors hsl(--border) */
-    --border-hi: #2a4566;
-    --surface-topbar: #05101b;  /* masthead chrome and top-bar gradient */
-    --surface-input: #0b1520;   /* workstation search / command input surface */
+    --card-bg: #141619;         /* mirrors hsl(--card) */
+    --panel-strong-bg: #1a1d21;
+    --panel-soft-bg: #20242a;
+    --surface-raise-bg: #26303a;
+    --border-color: #31536d;    /* mirrors hsl(--border) */
+    --border-hi: #477089;
+    --surface-topbar: #0a0c0f;  /* masthead chrome and top-bar gradient */
+    --surface-input: #11151a;   /* workstation search / command input surface */
     --cyan-primary: #2ab2d4;
     --cyan-focus: #20d3f7;
     --cyan-pressed: #2d9cdb;
@@ -189,14 +189,12 @@
     --chart-crosshair: #2ab2d4;
     --chart-dd: rgba(222, 88, 120, 0.35);
     --shadow-workstation:
-      0 1px 0 rgba(255, 255, 255, 0.02) inset,
-      0 1px 2px rgba(0, 0, 0, 0.30);
+      3px 3px 0 rgba(0, 0, 0, 0.72);
     --shadow-panel:
-      0 1px 0 rgba(255, 255, 255, 0.02) inset,
-      0 1px 1px rgba(0, 0, 0, 0.25);
+      2px 2px 0 rgba(0, 0, 0, 0.58);
     --shadow-float:
-      0 2px 8px rgba(0, 0, 0, 0.40),
-      0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+      5px 5px 0 rgba(0, 0, 0, 0.72),
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset;
   }
 
   * {
@@ -208,9 +206,10 @@
     font-size: 13px;
     line-height: 1.5;
     background-image:
-      radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.08) 0%, transparent 40%),
-      radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.05) 0%, transparent 38%),
-      linear-gradient(180deg, rgba(8, 16, 26, 1) 0%, rgba(8, 16, 26, 1) 100%);
+      linear-gradient(rgba(49, 83, 109, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(49, 83, 109, 0.14) 1px, transparent 1px),
+      linear-gradient(180deg, #0d0e10 0%, #11151a 100%);
+    background-size: 48px 48px, 48px 48px, auto;
   }
 
   #root {
@@ -2685,6 +2684,145 @@
 
   .workstation-nav-sheet .operator-nav-status {
     display: inline-flex;
+  }
+}
+
+@layer components {
+  .workstation-masthead,
+  .workspace-header-shell {
+    background: var(--surface-topbar);
+    border-color: var(--border-hi);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.78);
+  }
+
+  .workstation-search,
+  .workstation-session-card,
+  .workstation-trust-strip .trust-strip-item,
+  .operator-nav-scope {
+    border-color: var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--surface-input);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .operator-rail {
+    background: #0a0c0f;
+    border-right-color: var(--border-hi);
+    box-shadow: 3px 0 0 rgba(0, 0, 0, 0.72);
+  }
+
+  .operator-nav-item {
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+  }
+
+  .operator-nav-item:hover {
+    border-color: var(--border-color);
+    background: var(--panel-soft-bg);
+    color: #f6fbff;
+  }
+
+  .operator-nav-item.active {
+    border-color: var(--cyan-primary);
+    background: #142232;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.62);
+  }
+
+  .panel-surface,
+  .panel-surface-strong,
+  .glass-card,
+  .data-grid-surface,
+  .workspace-header-card,
+  .metric-tile,
+  .meridian-toolbar-strip,
+  .row-detail-panel {
+    border-color: var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .panel-surface:hover,
+  .panel-surface-strong:hover,
+  .glass-card:hover,
+  .workspace-header-card:hover,
+  .metric-tile:hover {
+    border-color: var(--border-hi);
+    background: var(--surface-raise-bg);
+    box-shadow: var(--shadow-workstation);
+  }
+
+  .meridian-toolbar-chip,
+  .toolbar-chip,
+  .workflow-continuity-meta span,
+  .workflow-continuity-scope-chip,
+  .workflow-continuity-focus-route,
+  .workflow-continuity-linked-route,
+  .workflow-continuity-evidence-route {
+    border-color: var(--border-color);
+    border-radius: var(--radius-xs);
+    background: #11151a;
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.54);
+  }
+
+  .meridian-toolbar-chip.active,
+  .workflow-continuity-step-active,
+  .workflow-continuity-step-next {
+    border-color: rgba(42, 178, 212, 0.62);
+    background: rgba(42, 178, 212, 0.14);
+  }
+
+  .workflow-continuity-dock {
+    border-bottom-color: var(--border-hi);
+    background: #0d0e10;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.62);
+  }
+
+  .workflow-continuity-disclosure,
+  .workflow-continuity-decision,
+  .workflow-continuity-linked-item,
+  .workflow-continuity-focus-item,
+  .workflow-continuity-evidence-item {
+    border-color: var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #11151a;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.52);
+  }
+
+  .dense-data-table-wrap {
+    border-color: var(--border-hi);
+    border-radius: var(--radius-md);
+    background: #0d0e10;
+    box-shadow: var(--shadow-panel);
+  }
+
+  .dense-data-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .dense-data-table thead {
+    background: #20242a;
+  }
+
+  .dense-data-table th {
+    border-bottom: 1px solid var(--border-hi);
+    color: #aeb9c4;
+    font-weight: 700;
+  }
+
+  .dense-data-table td {
+    border-top: 1px solid rgba(71, 112, 137, 0.42);
+  }
+
+  .dense-data-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.018);
+  }
+
+  .dense-data-table tbody tr:hover,
+  .dense-data-table tbody tr.selected {
+    background: rgba(42, 178, 212, 0.12);
+    box-shadow: inset 3px 0 0 var(--cyan-primary);
   }
 }
 

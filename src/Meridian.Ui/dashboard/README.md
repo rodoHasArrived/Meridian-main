@@ -21,6 +21,12 @@ This module owns the browser UI source for operator workflows. Keep shared contr
 logic in `src/Meridian.Ui.Shared` or `src/Meridian.Ui.Services` when the same behavior is consumed
 by desktop or host surfaces.
 
+The browser workstation visual system is dark-first with a compact ledger-grid treatment inspired
+by the internal `cash-flow-factor-sch` reference: hard-offset shadows, sharp bordered surfaces,
+dense data tables, sticky workstation chrome, and bright but semantic state accents. Keep visual
+changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
+instead of introducing one-off screen styling.
+
 ## Key folders and files
 
 - `src/` - React/TypeScript workstation source.
