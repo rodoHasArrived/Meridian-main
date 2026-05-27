@@ -2393,12 +2393,9 @@ describe("trading readiness blocker recovery", () => {
       errorText: null
     });
 
-    expect(clearedState.hasOperatorAttention).toBe(false,
-      "cleared readiness must not surface any operator attention state");
-    expect(clearedState.visibleWorkItems).toHaveLength(0,
-      "stale blocked work items must not persist after refresh returns an empty list");
-    expect(clearedState.workItemSummaryText).toBe("0 readiness items and 0 warnings.",
-      "the work item summary must reflect the cleared state");
+    expect(clearedState.hasOperatorAttention).toBe(false);
+    expect(clearedState.visibleWorkItems).toHaveLength(0);
+    expect(clearedState.workItemSummaryText).toBe("0 readiness items and 0 warnings.");
   });
 
   it("transitions status announcement from blocked to ready when blockers clear", () => {
@@ -2417,8 +2414,7 @@ describe("trading readiness blocker recovery", () => {
       errorText: null
     });
 
-    expect(state.statusAnnouncement).toContain("ready",
-      "the status announcement must reflect Ready after blockers clear — not repeat the previous Blocked copy");
+    expect(state.statusAnnouncement).toContain("ready");
     expect(state.statusAnnouncement).not.toContain("blocked");
   });
 
@@ -2449,12 +2445,9 @@ describe("trading readiness blocker recovery", () => {
       await result.current.refresh();
     });
 
-    expect(result.current.readiness?.workItems).toHaveLength(0,
-      "the hook must replace the stale blocked payload with the cleared refresh result");
-    expect(result.current.readiness?.overallStatus).toBe("Ready",
-      "overall readiness status must update to Ready after the cleared payload is applied");
-    expect(result.current.readiness?.readyForPaperOperation).toBe(true,
-      "readyForPaperOperation must become true once all blockers are cleared");
+    expect(result.current.readiness?.workItems).toHaveLength(0);
+    expect(result.current.readiness?.overallStatus).toBe("Ready");
+    expect(result.current.readiness?.readyForPaperOperation).toBe(true);
   });
 });
 
