@@ -729,6 +729,24 @@ public sealed class SettingsViewModel : BindableBase
         return true;
     }
 
+    private void ApplyDefaultsFromConfig(Meridian.Contracts.Configuration.AppConfigDto defaultConfig)
+    {
+        ThemeIndex = string.Equals(defaultConfig.Settings?.Theme, "Dark", StringComparison.OrdinalIgnoreCase)
+            ? 2
+            : string.Equals(defaultConfig.Settings?.Theme, "Light", StringComparison.OrdinalIgnoreCase)
+                ? 1
+                : 0;
+        AccentColorIndex = 0;
+        SelectedShellDensityMode = defaultConfig.Settings?.CompactMode == true ? ShellDensityMode.Compact : ShellDensityMode.Standard;
+        IsNotificationsEnabled = defaultConfig.Settings?.NotificationsEnabled ?? true;
+        MaxConcurrentDownloads = "4";
+        WriteBufferSize = "64";
+        IsMetricsEnabled = true;
+        IsDebugLoggingEnabled = false;
+        ApiBaseUrl = "http://localhost:8080";
+        StatusRefreshInterval = (defaultConfig.Settings?.StatusRefreshIntervalSeconds ?? 2).ToString();
+    }
+
     // ── Test / support ────────────────────────────────────────────────────────
 
     private void SendTestNotification()
