@@ -59,7 +59,8 @@ public sealed record OperationsWorkflowAuditDraft(
     string Actor,
     string? Rationale,
     string? CorrelationId,
-    IReadOnlyList<OperationsEvidenceLinkDto> References);
+    IReadOnlyList<OperationsEvidenceLinkDto> References,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
 
 public sealed class InMemoryOperationsContinuityRepository : IOperationsContinuityRepository
 {

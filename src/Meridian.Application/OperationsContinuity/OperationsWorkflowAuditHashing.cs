@@ -36,6 +36,7 @@ internal static class OperationsWorkflowAuditHashing
             draft.Actor,
             draft.Rationale,
             draft.CorrelationId,
+            draft.CorrelationKeys,
             draft.References,
             previousHash);
 
@@ -54,6 +55,7 @@ internal static class OperationsWorkflowAuditHashing
             draft.Actor,
             draft.Rationale,
             draft.CorrelationId,
+            draft.CorrelationKeys,
             draft.References,
             previousHash,
             currentHash);
@@ -115,6 +117,7 @@ internal static class OperationsWorkflowAuditHashing
                 entry.Actor,
                 entry.Rationale,
                 entry.CorrelationId,
+                entry.CorrelationKeys,
                 entry.References,
                 entry.PreviousHash);
 
@@ -149,6 +152,7 @@ internal static class OperationsWorkflowAuditHashing
         string actor,
         string? rationale,
         string? correlationId,
+        OperationsContinuityCorrelationKeysDto? correlationKeys,
         IReadOnlyList<OperationsEvidenceLinkDto> references,
         string? previousHash)
     {
@@ -167,6 +171,7 @@ internal static class OperationsWorkflowAuditHashing
             actor,
             rationale,
             correlationId,
+            correlationKeys,
             references,
             previousHash);
         var canonicalJson = JsonSerializer.Serialize(hashInput, HashJsonOptions);
@@ -188,6 +193,7 @@ internal static class OperationsWorkflowAuditHashing
         string Actor,
         string? Rationale,
         string? CorrelationId,
+        OperationsContinuityCorrelationKeysDto? CorrelationKeys,
         IReadOnlyList<OperationsEvidenceLinkDto> References,
         string? PreviousHash);
 }

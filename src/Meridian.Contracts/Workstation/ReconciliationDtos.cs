@@ -129,7 +129,8 @@ public sealed record ReconciliationBreakDto(
     ReconciliationBreakSeverity Severity,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
