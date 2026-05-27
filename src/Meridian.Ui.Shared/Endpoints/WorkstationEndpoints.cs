@@ -1000,9 +1000,11 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithName("CreateReconciliationRun")
         .Produces<ReconciliationRunDetail>(200)
-        .Produces(404);
+        .Produces(404)
+        .Produces(429);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationRunById), async (string reconciliationRunId, HttpContext context) =>
         {
