@@ -1,6 +1,6 @@
 # Kernel Readiness Dashboard (DK Program)
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-27
 **Program Scope:** Delivery Kernel waves DK1-DK2 mapped to Waves 2-4 in [`ROADMAP.md`](ROADMAP.md)  
 **Purpose:** single hand-authored status dashboard for subsystem kernel readiness, gate progression, implementation commitments, and rollback posture.
 
@@ -22,6 +22,7 @@
 - **Cadence:** weekly subsystem review (Mon), cross-subsystem interop review (Wed), operator-readiness review (Fri)
 - **Current operating window:** 2026-04-20 through 2026-06-26
 - **Status publication rule:** update this dashboard at least once per week; release-governance decisions reference this file plus `provider-validation-matrix.md`, and must pass `python3 scripts/check_program_state_consistency.py` before publication.
+- **Mandatory pre-release acceptance gate:** the canonical buyer workflow in [`docs/operations/canonical-buyer-workflow.md`](../operations/canonical-buyer-workflow.md) is required for every release candidate. Release governance must attach all four evidence packets (readiness, reconciliation case, approvals, governed report pack) and record pass/fail against that workflow before sign-off.
 - **Current sync note (2026-05-20):** Wave 1 provider evidence posture was refreshed in [`provider-validation-matrix.md`](./provider-validation-matrix.md) (focused Robinhood polling hardening and capability-claim parity/data-shape audit); the signed DK1 exit evidence baseline remains the packet-bound 2026-04-27 artifact set until a newly generated packet and matching sign-off replace it.
 
 ---
@@ -85,6 +86,7 @@
 - [ ] **Explainability pass:** end-to-end trace from trusted input to governed output is operator-visible.
 - [ ] **Calibration pass:** reconciliation exceptions are tuned with no unresolved critical mismatches.
 - [ ] **Operator sign-off:** Trading + Governance owners sign DK2 readiness.
+- [ ] **Canonical buyer workflow gate:** full trusted-data → strategy/paper → ledger/reconciliation → approvals → governed-reporting path is executed and signed per [`docs/operations/canonical-buyer-workflow.md`](../operations/canonical-buyer-workflow.md).
 
 
 #### Governance/fund-ops scenario gate text (mirrors Wave 4 objective pass/fail)
