@@ -170,6 +170,15 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidenceTemplates")
         .Produces<IReadOnlyList<EvidenceTemplateDto>>(200);
 
+        group.MapPost("/vault/search", async (EvidenceVaultLookupRequestDto request, HttpContext context) =>
+        {
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var result = await store.FindByLinkageAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("SearchWorkstationEvidenceVault")
+        .Produces<IReadOnlyList<EvidenceVaultIdentityDto>>(200);
+
         return app;
     }
 

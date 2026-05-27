@@ -103,7 +103,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 SignoffStatus: item.SignoffStatus,
                 ExternalAccountId: item.ExternalAccountId,
                 CustodianId: item.CustodianId,
-                UpstreamSyncCursor: item.UpstreamSyncCursor), ct).ConfigureAwait(false);
+                UpstreamSyncCursor: item.UpstreamSyncCursor,
+                Actor: item.AssignedTo ?? item.ReviewedBy ?? item.ResolvedBy,
+                BeforePayload: null,
+                AfterPayload: JsonSerializer.Serialize(item, _jsonOptions)), ct).ConfigureAwait(false);
 
             return true;
         }
@@ -215,7 +218,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 SignoffStatus: updated.SignoffStatus,
                 ExternalAccountId: updated.ExternalAccountId,
                 CustodianId: updated.CustodianId,
-                UpstreamSyncCursor: updated.UpstreamSyncCursor), ct).ConfigureAwait(false);
+                UpstreamSyncCursor: updated.UpstreamSyncCursor,
+                Actor: request.ReviewedBy,
+                BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
+                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }
@@ -309,7 +315,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 SignoffStatus: updated.SignoffStatus,
                 ExternalAccountId: updated.ExternalAccountId,
                 CustodianId: updated.CustodianId,
-                UpstreamSyncCursor: updated.UpstreamSyncCursor), ct).ConfigureAwait(false);
+                UpstreamSyncCursor: updated.UpstreamSyncCursor,
+                Actor: request.ReviewedBy,
+                BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
+                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }

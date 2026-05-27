@@ -1321,6 +1321,18 @@ export interface GovernanceWorkspaceResponse {
   breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
+  controlCenter?: {
+    closeReadiness: string;
+    portfolioFilterOptions: string[];
+    accountFilterOptions: string[];
+    blockerSeverityDistribution: { severity: string; count: number }[];
+    agingCurves: { bucket: string; count: number }[];
+    ownerWorkload: { owner: string; openCount: number }[];
+    slaBreachCount: number;
+    trendSnapshots: { metric: string; value: number; trend: string }[];
+    drillLinks: { label: string; href: string }[];
+    alerts: { tone: "danger" | "warning" | "info"; message: string }[];
+  };
 }
 
 export interface ExportAnalysisResult {

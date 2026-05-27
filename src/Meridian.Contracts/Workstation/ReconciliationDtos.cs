@@ -424,7 +424,8 @@ public sealed record ReviewReconciliationBreakRequest(
     string BreakId,
     string AssignedTo,
     string ReviewedBy,
-    string? ReviewNote = null);
+    string? ReviewNote = null,
+    string? Team = null);
 
 /// <summary>
 /// Request to resolve or dismiss a break with audit metadata.

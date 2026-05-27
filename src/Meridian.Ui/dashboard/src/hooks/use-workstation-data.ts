@@ -503,7 +503,7 @@ export function useWorkstationData() {
   }, [refreshProviderRouting]);
 
   useEffect(() => {
-    const id = setInterval(() => { void refreshPortfolio(); }, 60_000);
+    const id = setInterval(() => { void refreshPortfolio(); }, 5_000);
     return () => clearInterval(id);
   }, [refreshPortfolio]);
 

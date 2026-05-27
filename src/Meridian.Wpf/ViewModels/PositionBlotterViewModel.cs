@@ -318,7 +318,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         _refreshTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromSeconds(30)
+            Interval = TimeSpan.FromSeconds(5)
         };
         _refreshTimer.Tick += (_, _) =>
         {
