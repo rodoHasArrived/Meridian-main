@@ -11,14 +11,38 @@ public static partial class ShellNavigationCatalog
     public static IReadOnlyList<WorkspaceShellDescriptor> Workspaces
         => WorkspaceCapabilities.Select(static capability => capability.Workspace).ToArray();
 
-    internal static IReadOnlyList<WorkspaceCapabilityDescriptor> BuildFallbackWorkspaceCapabilities()
-        =>
-        [
-            BuildCapability(WorkspaceCopyCatalog.Portfolio.Descriptor, "PortfolioShell", PortfolioWorkspaceShellDefinition, PortfolioPages),
-            BuildCapability(WorkspaceCopyCatalog.Accounting.Descriptor, "AccountingShell", AccountingWorkspaceShellDefinition, AccountingPages),
-            BuildCapability(WorkspaceCopyCatalog.Reporting.Descriptor, "ReportingShell", ReportingWorkspaceShellDefinition, ReportingPages),
-            BuildCapability(WorkspaceCopyCatalog.Strategy.Descriptor, "StrategyShell", StrategyWorkspaceShellDefinition, StrategyPages)
-        ];
+    internal static WorkspaceCapabilityDescriptor BuildPortfolioCapability()
+        => BuildCapability(WorkspaceCopyCatalog.Portfolio.Descriptor, "PortfolioShell", PortfolioWorkspaceShellDefinition, PortfolioPages);
+
+    internal static WorkspaceCapabilityDescriptor BuildAccountingCapability()
+        => BuildCapability(WorkspaceCopyCatalog.Accounting.Descriptor, "AccountingShell", AccountingWorkspaceShellDefinition, AccountingPages);
+
+    internal static WorkspaceCapabilityDescriptor BuildReportingCapability()
+        => BuildCapability(WorkspaceCopyCatalog.Reporting.Descriptor, "ReportingShell", ReportingWorkspaceShellDefinition, ReportingPages);
+
+    internal static WorkspaceCapabilityDescriptor BuildStrategyCapability()
+        => BuildCapability(WorkspaceCopyCatalog.Strategy.Descriptor, "StrategyShell", StrategyWorkspaceShellDefinition, StrategyPages);
+
+    internal static IReadOnlyList<WorkspaceCapabilityDescriptor> BuildFallbackWorkspaceCapabilities(
+        IReadOnlyCollection<string>? featureOwnedWorkspaceIds = null)
+    {
+        var capabilities = new[]
+        {
+            BuildPortfolioCapability(),
+            BuildAccountingCapability(),
+            BuildReportingCapability(),
+            BuildStrategyCapability()
+        };
+
+        if (featureOwnedWorkspaceIds is null || featureOwnedWorkspaceIds.Count == 0)
+        {
+            return capabilities;
+        }
+
+        return capabilities
+            .Where(capability => !featureOwnedWorkspaceIds.Contains(capability.Workspace.Id, StringComparer.OrdinalIgnoreCase))
+            .ToArray();
+    }
 
     internal static WorkspaceCapabilityDescriptor BuildCapability(
         WorkspaceDescriptorCopy copy,

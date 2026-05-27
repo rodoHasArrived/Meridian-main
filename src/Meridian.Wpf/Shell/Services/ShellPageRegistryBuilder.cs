@@ -84,6 +84,12 @@ public sealed class ShellPageRegistryBuilder
     public static IShellPageRegistry BuildDefault()
     {
         var builder = new ShellPageRegistryBuilder();
+        var featureOwnedWorkspaceIds = DesktopFeatureModuleRegistry.GetModules()
+            .Select(static module => module.DescribeWorkspace()?.Workspace.Id)
+            .Where(static workspaceId => !string.IsNullOrWhiteSpace(workspaceId))
+            .Select(static workspaceId => workspaceId!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         foreach (var module in DesktopFeatureModuleRegistry.GetModules())
         {
@@ -95,7 +101,7 @@ public sealed class ShellPageRegistryBuilder
             }
         }
 
-        foreach (var capability in ShellNavigationCatalog.BuildFallbackWorkspaceCapabilities())
+        foreach (var capability in ShellNavigationCatalog.BuildFallbackWorkspaceCapabilities(featureOwnedWorkspaceIds))
         {
             builder.ContributeCapability(capability);
         }

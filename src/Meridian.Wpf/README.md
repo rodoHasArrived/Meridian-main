@@ -20,10 +20,14 @@ with the browser workstation.
 
 This module owns the desktop shell, WPF pages, route hosting, and desktop workstation view models.
 Keep shared contracts and read-model logic in shared UI services when browser and desktop both need
-the behavior.
+the behavior. The seven operator workspaces now register through feature modules under
+`src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
+matching module before it expands through the older flat page folders.
 
 ## Key folders and files
 
+- `Features/` - workspace-owned module registration for Trading, Portfolio, Accounting, Reporting,
+  Strategy, Data, and Settings.
 - `ViewModels/` - desktop operator workflow view models.
 - `Views/` - WPF pages and controls.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
