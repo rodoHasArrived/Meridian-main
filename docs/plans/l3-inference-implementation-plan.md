@@ -475,7 +475,7 @@ dotnet run --project src/Meridian -- <flags>
 
 | Flag | Type | Required | Description |
 |------|------|----------|-------------|
-| `--simulate-execution` | bool | Yes | Enable simulation mode |
+| `--simulate-execution` | bool | Yes | Enable simulation mode (implemented CLI dispatcher path) |
 | `--symbols` | list | Yes | Comma-separated symbol list, e.g. `AAPL,MSFT` |
 | `--sim-from` | date | Yes | Start date (inclusive), `YYYY-MM-DD` |
 | `--sim-to` | date | Yes | End date (inclusive), `YYYY-MM-DD` |
