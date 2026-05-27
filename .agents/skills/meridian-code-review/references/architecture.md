@@ -25,7 +25,7 @@
 
 ## 1. Project Overview
 
-Meridian is a .NET 10 fund-management and trading-platform application with F# domain models, provider-backed market data, historical backfill, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`. **UWP was fully removed.**
+Meridian is a .NET 10 fund-management and trading-platform application with F# domain models, provider-backed market data, historical backfill, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is the active desktop shell for operator workflows alongside the browser workstation. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`. **UWP was fully removed.**
 
 **Performance contract**: millisecond-accurate timestamping of market events. UI work must never starve the data pipeline.
 
@@ -90,7 +90,7 @@ Meridian.sln
 │   │                                    # CollectorService, status, backfill logic
 │   │                                    # Must be platform-neutral
 │   │
-│   ├── Meridian.Wpf/         # Retained WPF desktop shell
+│   ├── Meridian.Wpf/         # Active WPF desktop shell
 │   │   ├── App.xaml / App.xaml.cs
 │   │   ├── Views/                       # XAML pages and windows
 │   │   │   ├── DashboardPage.xaml(.cs)

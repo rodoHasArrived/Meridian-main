@@ -23,12 +23,13 @@ public static class RuntimeDiagnosticRedactor
         {
             (@"Bearer\s+[A-Za-z0-9\-_]+", "Bearer [REDACTED]"),
             (@"Basic\s+[A-Za-z0-9+/=]+", "Basic [REDACTED]"),
+            (@"(?<scheme>https?://)[^@\s/]+@", "${scheme}[REDACTED]@"),
             (@"(?<key>authorization)\s*[:=]\s*(?<value>Bearer\s+[^\s,;}\]]+|Basic\s+[^\s,;}\]]+|[^\s,;}\]]+)", "${key}=[REDACTED]"),
             (@"(?<key>password|secret|secretKey|key|apiKey|api_key|api-key|token|accessToken|refreshToken|clientSecret|connectionString|credential)\s*[:=]\s*(?<value>[^\s,;}\]]+)", "${key}=[REDACTED]"),
             (@"""(?<key>password|secret|secretKey|key|apiKey|api_key|api-key|token|accessToken|refreshToken|clientSecret|connectionString|authorization|credential)""\s*:\s*""(?<value>[^""]*)""", "\"${key}\":\"[REDACTED]\""),
             (@"(?<key>accountNumber|account_number|accountNo|account_no|acctNumber|acct_number|accountId|account_id|externalAccountId|external_account_id|custodianAccountId|custodian_account_id)\s*[:=]\s*(?<value>[A-Za-z0-9\-]{4,})", "${key}=[REDACTED]"),
             (@"""(?<key>accountNumber|account_number|accountNo|account_no|acctNumber|acct_number|accountId|account_id|externalAccountId|external_account_id|custodianAccountId|custodian_account_id)""\s*:\s*""(?<value>[^""]*)""", "\"${key}\":\"[REDACTED]\""),
-            (@"(?<separator>[?&])(?<key>api_key|apikey|access_token|token|secret|accountNumber|account_number|accountId|account_id|externalAccountId|external_account_id)=[^&\s]+", "${separator}${key}=[REDACTED]")
+            (@"(?<separator>[?&])(?<key>api_key|apikey|access_token|refresh_token|token|secret|client_secret|password|credential|authorization|accountNumber|account_number|accountId|account_id|externalAccountId|external_account_id)=[^&\s]+", "${separator}${key}=[REDACTED]")
         };
 
         var result = content;

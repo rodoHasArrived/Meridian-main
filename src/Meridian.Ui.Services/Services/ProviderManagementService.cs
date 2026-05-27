@@ -453,6 +453,14 @@ public sealed class ProviderStatusInfo
     public bool IsConnected { get; set; }
     public bool IsActive { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string? LifecycleState { get; set; }
+    public string? WebSocketState { get; set; }
+    public bool? IsReconnecting { get; set; }
+    public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }
+    public DateTimeOffset? LastMessageReceivedAt { get; set; }
+    public DateTimeOffset? LastReconnectAttemptAt { get; set; }
+    public int? ReconnectAttempts { get; set; }
+    public string? LastFailureKind { get; set; }
     public DateTime? LastConnectedAt { get; set; }
     public DateTime? LastErrorAt { get; set; }
     public string? LastError { get; set; }

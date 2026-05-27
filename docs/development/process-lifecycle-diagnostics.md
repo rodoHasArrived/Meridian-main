@@ -1,6 +1,6 @@
 # Process Lifecycle Diagnostics
 
-Meridian hosts should shut down through cooperative cancellation before any owned process is terminated. This applies to the CLI host, retained WPF shell, and installed Web Workstation host.
+Meridian hosts should shut down through cooperative cancellation before any owned process is terminated. This applies to the CLI host, WPF desktop shell, and installed Web Workstation host.
 
 ## Web Workstation Sessions
 

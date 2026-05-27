@@ -323,7 +323,7 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
 - ✅ Prometheus metrics endpoint and monitoring services
 - ✅ Polly-based WebSocket resilience policies
 - ✅ FluentValidation-based configuration validation
-- ✅ Browser workstation, retained WPF desktop app (Windows), and Security Master master/detail reference-workbench pattern
+- ✅ Browser workstation, WPF desktop app (Windows), and Security Master master/detail reference-workbench pattern
 - ✅ Configuration hot-reload without restart
 - ✅ Provider fallback chains and health monitoring
 

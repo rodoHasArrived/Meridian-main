@@ -206,6 +206,8 @@ public sealed class OperationsContinuityPostgresRoundTripTests
     {
         var journalEntryId = Guid.NewGuid();
         var timestamp = DateTimeOffset.Parse("2026-05-15T16:00:00Z");
+        var securityId = Guid.Parse("D3B32FA8-A6FD-4571-ACDA-56D5D6F6C92C");
+        var idempotencyKey = $"{securityId:N}:postgres:20260515:AccrueInterestIncome:test-source-hash";
 
         return new OperationsLedgerJournalCandidateDto(
             journalEntryId,
@@ -244,11 +246,14 @@ public sealed class OperationsContinuityPostgresRoundTripTests
             Metadata: new OperationsJournalEntryMetadataDto(
                 ActivityType: "interest",
                 Symbol: "POSTGRES",
+                SecurityId: securityId,
                 LedgerBook: "legacy",
                 Tags: new Dictionary<string, string>
                 {
                     ["fixture"] = "operations-continuity-postgres"
-                }));
+                }),
+            IdempotencyKey: idempotencyKey,
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
     }
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks() =>

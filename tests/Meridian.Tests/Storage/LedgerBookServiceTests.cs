@@ -527,12 +527,12 @@ public sealed class LedgerBookServiceTests
                 sp.GetRequiredService<IOperatorInboxService>()));
 
         var app = builder.Build();
-        app.Use(async (context, next) =>
+        app.Use((context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
-            await next();
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
+            return next();
         });
         app.UseRateLimiter();
         app.MapLedgerEndpoints(ServerJsonOptions);

@@ -39,7 +39,7 @@ Warrants are modeled as their own `SecurityKind.Warrant` package, not as an equi
 - Common equity remains valid when `EquityTerms.Classification` is omitted.
 - Preferred and convertible-preferred shapes are covered by F# domain tests.
 - Shared reference endpoints currently expose equity reference reads through `/api/reference-data/equities/*`.
-- The browser workstation remains the active UI lane; retained WPF is compatibility support, not the place to introduce new equity UI surfaces first.
+- The browser workstation remains the active UI lane; WPF is compatibility support, not the place to introduce new equity UI surfaces first.
 
 ### Target-state additions
 

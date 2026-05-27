@@ -19,15 +19,24 @@ public sealed class DiagnosticBundleService
     private readonly string _dataRoot;
     private readonly Func<MetricsSnapshot>? _metricsProvider;
     private readonly Func<AppConfig>? _configProvider;
+    private readonly Func<ErrorQueryResult>? _recentErrorsProvider;
+    private readonly Func<ShutdownSequenceDiagnosticSnapshot>? _shutdownDiagnosticsProvider;
+    private readonly Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? _providerConnectionDiagnosticsProvider;
 
     public DiagnosticBundleService(
         string dataRoot,
         Func<MetricsSnapshot>? metricsProvider = null,
-        Func<AppConfig>? configProvider = null)
+        Func<AppConfig>? configProvider = null,
+        Func<ErrorQueryResult>? recentErrorsProvider = null,
+        Func<ShutdownSequenceDiagnosticSnapshot>? shutdownDiagnosticsProvider = null,
+        Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? providerConnectionDiagnosticsProvider = null)
     {
         _dataRoot = dataRoot;
         _metricsProvider = metricsProvider;
         _configProvider = configProvider;
+        _recentErrorsProvider = recentErrorsProvider;
+        _shutdownDiagnosticsProvider = shutdownDiagnosticsProvider;
+        _providerConnectionDiagnosticsProvider = providerConnectionDiagnosticsProvider;
     }
 
     /// <summary>
@@ -83,6 +92,11 @@ public sealed class DiagnosticBundleService
             if (options.IncludeMetrics)
             {
                 await CollectMetricsAsync(tempDir, manifest, ct);
+            }
+
+            if (options.IncludeTrackedErrors)
+            {
+                await CollectTrackedErrorsAsync(tempDir, manifest, ct);
             }
 
             if (options.IncludeLogs)
@@ -186,7 +200,7 @@ public sealed class DiagnosticBundleService
         info.AppendLine($"Processors: {Environment.ProcessorCount}");
         info.AppendLine($"Working Set: {Environment.WorkingSet / 1024 / 1024} MB");
         info.AppendLine($"System Page Size: {Environment.SystemPageSize}");
-        info.AppendLine($"Current Directory: {Environment.CurrentDirectory}");
+        info.AppendLine($"Current Directory: {RuntimeDiagnosticRedactor.SanitizeText(Environment.CurrentDirectory)}");
         info.AppendLine();
 
         // GC Info
@@ -220,26 +234,80 @@ public sealed class DiagnosticBundleService
             : 0;
 
         var metrics = TryCollectMetricsSnapshot();
+        var recentErrors = TryCollectRecentErrors();
+        var shutdownDiagnostics = TryCollectShutdownDiagnostics();
+        var providerConnectionDiagnostics = TryCollectProviderConnectionDiagnostics();
         var metricsSummary = metrics is { } snapshot
             ? new
             {
                 available = true,
                 published = snapshot.Published,
                 dropped = snapshot.Dropped,
+                rejected = snapshot.Integrity,
+                trades = snapshot.Trades,
+                quotes = snapshot.Quotes,
+                depthUpdates = snapshot.DepthUpdates,
+                historicalBars = snapshot.HistoricalBars,
                 dropRate = snapshot.DropRate,
                 eventsPerSecond = snapshot.EventsPerSecond,
+                tradesPerSecond = snapshot.TradesPerSecond,
+                depthUpdatesPerSecond = snapshot.DepthUpdatesPerSecond,
+                historicalBarsPerSecond = snapshot.HistoricalBarsPerSecond,
                 averageLatencyUs = snapshot.AverageLatencyUs,
-                maxLatencyUs = snapshot.MaxLatencyUs
+                minLatencyUs = snapshot.MinLatencyUs,
+                maxLatencyUs = snapshot.MaxLatencyUs,
+                latencySampleCount = snapshot.LatencySampleCount,
+                gc0Collections = snapshot.Gc0Collections,
+                gc1Collections = snapshot.Gc1Collections,
+                gc2Collections = snapshot.Gc2Collections,
+                memoryUsageMb = snapshot.MemoryUsageMb,
+                heapSizeMb = snapshot.HeapSizeMb,
+                timestamp = (DateTimeOffset?)snapshot.Timestamp
             }
             : new
             {
                 available = false,
                 published = 0L,
                 dropped = 0L,
+                rejected = 0L,
+                trades = 0L,
+                quotes = 0L,
+                depthUpdates = 0L,
+                historicalBars = 0L,
                 dropRate = 0.0,
                 eventsPerSecond = 0.0,
+                tradesPerSecond = 0.0,
+                depthUpdatesPerSecond = 0.0,
+                historicalBarsPerSecond = 0.0,
                 averageLatencyUs = 0.0,
-                maxLatencyUs = 0.0
+                minLatencyUs = 0.0,
+                maxLatencyUs = 0.0,
+                latencySampleCount = 0L,
+                gc0Collections = 0L,
+                gc1Collections = 0L,
+                gc2Collections = 0L,
+                memoryUsageMb = 0.0,
+                heapSizeMb = 0.0,
+                timestamp = (DateTimeOffset?)null
+            };
+        var errorsSummary = recentErrors is { } errorResult
+            ? new
+            {
+                available = true,
+                totalErrors = errorResult.TotalErrors,
+                queuedErrors = errorResult.QueuedErrors,
+                queryTime = (DateTimeOffset?)errorResult.QueryTime,
+                recentCount = errorResult.Errors.Count,
+                mostRecent = SanitizeTrackedError(errorResult.Errors.OrderByDescending(static error => error.Timestamp).FirstOrDefault())
+            }
+            : new
+            {
+                available = false,
+                totalErrors = 0,
+                queuedErrors = 0,
+                queryTime = (DateTimeOffset?)null,
+                recentCount = 0,
+                mostRecent = (object?)null
             };
 
         var summary = new
@@ -269,7 +337,10 @@ public sealed class DiagnosticBundleService
                 gen1Collections = GC.CollectionCount(1),
                 gen2Collections = GC.CollectionCount(2)
             },
-            metrics = metricsSummary
+            metrics = metricsSummary,
+            errors = errorsSummary,
+            providerConnections = SanitizeProviderConnectionDiagnostics(providerConnectionDiagnostics),
+            shutdown = SanitizeShutdownDiagnostics(shutdownDiagnostics)
         };
 
         var json = JsonSerializer.Serialize(summary, new JsonSerializerOptions
@@ -351,6 +422,44 @@ public sealed class DiagnosticBundleService
 
         await File.WriteAllTextAsync(Path.Combine(tempDir, "metrics.json"), json, ct);
         manifest.FilesCollected.Add("metrics.json");
+    }
+
+    private async Task CollectTrackedErrorsAsync(string tempDir, DiagnosticManifest manifest, CancellationToken ct)
+    {
+        var recentErrors = TryCollectRecentErrors();
+        if (recentErrors is null)
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "recent-errors.txt"),
+                "Tracked error provider not available",
+                ct);
+            return;
+        }
+
+        var payload = new
+        {
+            schemaVersion = "1.0",
+            operationName = "diagnostic-bundle.generate",
+            componentName = nameof(DiagnosticBundleService),
+            totalErrors = recentErrors.TotalErrors,
+            queuedErrors = recentErrors.QueuedErrors,
+            queryTime = recentErrors.QueryTime,
+            message = RuntimeDiagnosticRedactor.SanitizeText(recentErrors.Message),
+            errors = recentErrors.Errors
+                .OrderByDescending(static error => error.Timestamp)
+                .Take(10)
+                .Select(SanitizeTrackedError)
+                .ToArray()
+        };
+
+        var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        await File.WriteAllTextAsync(Path.Combine(tempDir, "recent-errors.json"), json, ct);
+        manifest.FilesCollected.Add("recent-errors.json");
     }
 
     private async Task CollectLogsAsync(string tempDir, int days, DiagnosticManifest manifest, CancellationToken ct)
@@ -640,6 +749,159 @@ public sealed class DiagnosticBundleService
         }
     }
 
+    private ErrorQueryResult? TryCollectRecentErrors()
+    {
+        if (_recentErrorsProvider is null)
+            return null;
+
+        try
+        {
+            return _recentErrorsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect tracked errors for {OperationName}; continuing diagnostic bundle generation without recent errors",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
+    private ShutdownSequenceDiagnosticSnapshot? TryCollectShutdownDiagnostics()
+    {
+        if (_shutdownDiagnosticsProvider is null)
+            return null;
+
+        try
+        {
+            return _shutdownDiagnosticsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect shutdown diagnostics for {OperationName}; continuing diagnostic bundle generation without shutdown status",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
+    private IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>? TryCollectProviderConnectionDiagnostics()
+    {
+        if (_providerConnectionDiagnosticsProvider is null)
+            return null;
+
+        try
+        {
+            return _providerConnectionDiagnosticsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect provider connection diagnostics for {OperationName}; continuing diagnostic bundle generation without provider connection status",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
+    private static object? SanitizeTrackedError(TrackedError? error)
+    {
+        if (error is null)
+            return null;
+
+        return new
+        {
+            id = RuntimeDiagnosticRedactor.SanitizeText(error.Id),
+            timestamp = error.Timestamp,
+            level = RuntimeDiagnosticRedactor.SanitizeText(error.Level),
+            message = RuntimeDiagnosticRedactor.SanitizeText(error.Message),
+            exceptionType = RuntimeDiagnosticRedactor.SanitizeText(error.ExceptionType),
+            stackTrace = RuntimeDiagnosticRedactor.SanitizeText(error.StackTrace),
+            context = RuntimeDiagnosticRedactor.SanitizeText(error.Context),
+            innerException = RuntimeDiagnosticRedactor.SanitizeText(error.InnerException)
+        };
+    }
+
+    private static object SanitizeShutdownDiagnostics(ShutdownSequenceDiagnosticSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return new
+            {
+                available = false,
+                operationName = "runtime.shutdown.sequence",
+                status = "Unavailable"
+            };
+        }
+
+        return new
+        {
+            available = snapshot.Available,
+            operationName = RuntimeDiagnosticRedactor.SanitizeText(snapshot.OperationName),
+            status = RuntimeDiagnosticRedactor.SanitizeText(snapshot.Status),
+            correlationId = RuntimeDiagnosticRedactor.SanitizeText(snapshot.CorrelationId),
+            reason = RuntimeDiagnosticRedactor.SanitizeText(snapshot.Reason),
+            startedAtUtc = snapshot.StartedAtUtc,
+            completedAtUtc = snapshot.CompletedAtUtc,
+            durationMs = snapshot.DurationMs,
+            flushTimeoutOccurred = snapshot.FlushTimeoutOccurred,
+            incompleteFlushCount = snapshot.IncompleteFlushCount,
+            warningCount = snapshot.WarningCount,
+            warningSummary = snapshot.WarningSummary.Select(RuntimeDiagnosticRedactor.SanitizeText).ToArray(),
+            flushableComponentCount = snapshot.FlushableComponentCount,
+            disposableComponentCount = snapshot.DisposableComponentCount,
+            callbackCount = snapshot.CallbackCount,
+            duplicateRequestCount = snapshot.DuplicateRequestCount,
+            lastDuplicateRequestAtUtc = snapshot.LastDuplicateRequestAtUtc,
+            lastUpdatedAtUtc = snapshot.LastUpdatedAtUtc
+        };
+    }
+
+    private static object SanitizeProviderConnectionDiagnostics(IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>? snapshots)
+    {
+        if (snapshots is null)
+        {
+            return new
+            {
+                available = false,
+                count = 0,
+                providers = Array.Empty<object>()
+            };
+        }
+
+        return new
+        {
+            available = true,
+            count = snapshots.Count,
+            providers = snapshots
+                .OrderBy(static snapshot => snapshot.ProviderName, StringComparer.OrdinalIgnoreCase)
+                .Select(static snapshot => new
+                {
+                    providerName = RuntimeDiagnosticRedactor.SanitizeText(snapshot.ProviderName),
+                    lifecycleState = RuntimeDiagnosticRedactor.SanitizeText(snapshot.LifecycleState),
+                    webSocketState = RuntimeDiagnosticRedactor.SanitizeText(snapshot.WebSocketState),
+                    isConnected = snapshot.IsConnected,
+                    isReconnecting = snapshot.IsReconnecting,
+                    reconnectAttempts = snapshot.ReconnectAttempts,
+                    lastConnectedAt = snapshot.LastConnectedAt,
+                    lastDisconnectedAt = snapshot.LastDisconnectedAt,
+                    lastHeartbeatReceivedAt = snapshot.LastHeartbeatReceivedAt,
+                    lastMessageReceivedAt = snapshot.LastMessageReceivedAt,
+                    lastReconnectAttemptAt = snapshot.LastReconnectAttemptAt,
+                    lastFailureKind = RuntimeDiagnosticRedactor.SanitizeText(snapshot.LastFailureKind),
+                    connectionAge = snapshot.ConnectionAge,
+                    idleDuration = snapshot.IdleDuration,
+                    activeSubscriptions = snapshot.ActiveSubscriptions,
+                    failedSubscriptions = snapshot.FailedSubscriptions,
+                    recoveringSubscriptions = snapshot.RecoveringSubscriptions,
+                    lastSubscriptionMessageAt = snapshot.LastSubscriptionMessageAt
+                })
+                .ToArray()
+        };
+    }
+
     private static DateTimeOffset? TryGetProcessStartTimeUtc(Process process)
     {
         try
@@ -662,6 +924,7 @@ public sealed record DiagnosticBundleOptions(
     bool IncludeSystemInfo = true,
     bool IncludeConfiguration = true,
     bool IncludeMetrics = true,
+    bool IncludeTrackedErrors = true,
     bool IncludeLogs = true,
     bool IncludeStorageInfo = true,
     bool IncludeEnvironmentVariables = true,
@@ -680,6 +943,26 @@ public sealed class DiagnosticBundleResult
     public List<string> FilesIncluded { get; set; } = [];
     public string? Message { get; set; }
 }
+
+public sealed record ProviderConnectionDiagnosticSnapshot(
+    string ProviderName,
+    string LifecycleState,
+    string WebSocketState,
+    bool IsConnected,
+    bool IsReconnecting,
+    int ReconnectAttempts,
+    DateTimeOffset? LastConnectedAt,
+    DateTimeOffset? LastDisconnectedAt,
+    DateTimeOffset? LastHeartbeatReceivedAt,
+    DateTimeOffset? LastMessageReceivedAt,
+    DateTimeOffset? LastReconnectAttemptAt,
+    string? LastFailureKind,
+    TimeSpan? ConnectionAge,
+    TimeSpan? IdleDuration,
+    int ActiveSubscriptions = 0,
+    int FailedSubscriptions = 0,
+    int RecoveringSubscriptions = 0,
+    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>
 /// Manifest included in diagnostic bundle.

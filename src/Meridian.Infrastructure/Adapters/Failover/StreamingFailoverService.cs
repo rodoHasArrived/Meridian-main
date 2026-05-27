@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
 
@@ -87,9 +88,10 @@ public sealed class StreamingFailoverService : IDisposable
     /// </summary>
     public void RegisterProvider(string providerId)
     {
-        _providerHealth.GetOrAdd(providerId, _ => new ProviderHealthState(providerId));
-        _healthMonitor.RegisterConnection(providerId, providerId);
-        _log.Debug("Registered provider {ProviderId} for failover monitoring", providerId);
+        var key = ProviderIdentity.NormalizeId(providerId);
+        _providerHealth.GetOrAdd(key, _ => new ProviderHealthState(key));
+        _healthMonitor.RegisterConnection(key, key);
+        _log.Debug("Registered provider {ProviderId} for failover monitoring", key);
     }
 
     /// <summary>
@@ -97,11 +99,12 @@ public sealed class StreamingFailoverService : IDisposable
     /// </summary>
     public void RecordSuccess(string providerId)
     {
-        if (_providerHealth.TryGetValue(providerId, out var state))
+        var key = ProviderIdentity.NormalizeId(providerId);
+        if (_providerHealth.TryGetValue(key, out var state))
         {
             state.RecordSuccess();
         }
-        _healthMonitor.RecordDataReceived(providerId);
+        _healthMonitor.RecordDataReceived(key);
     }
 
     /// <summary>
@@ -109,12 +112,15 @@ public sealed class StreamingFailoverService : IDisposable
     /// </summary>
     public void RecordFailure(string providerId, string reason)
     {
-        if (_providerHealth.TryGetValue(providerId, out var state))
+        var key = ProviderIdentity.NormalizeId(providerId);
+        if (_providerHealth.TryGetValue(key, out var state))
         {
             state.RecordFailure(reason);
             _log.Warning("Provider {ProviderId} failure recorded: {Reason} (consecutive: {Count})",
-                providerId, reason, state.ConsecutiveFailures);
+                key, reason, state.ConsecutiveFailures);
         }
+
+        EvaluateHealth(null);
     }
 
     /// <summary>
@@ -123,10 +129,13 @@ public sealed class StreamingFailoverService : IDisposable
     /// </summary>
     public void RecordLatency(string providerId, double latencyMs)
     {
-        if (_providerHealth.TryGetValue(providerId, out var state))
+        var key = ProviderIdentity.NormalizeId(providerId);
+        if (_providerHealth.TryGetValue(key, out var state))
         {
             state.RecordLatency(latencyMs);
         }
+
+        EvaluateHealth(null);
     }
 
     /// <summary>
@@ -146,20 +155,21 @@ public sealed class StreamingFailoverService : IDisposable
             var allProviderIds = new[] { ruleState.Rule.PrimaryProviderId }
                 .Concat(ruleState.Rule.BackupProviderIds);
 
-            if (!allProviderIds.Contains(targetProviderId, StringComparer.OrdinalIgnoreCase))
+            var targetKey = ProviderIdentity.NormalizeId(targetProviderId);
+            if (!allProviderIds.Any(id => ProviderIdentity.EqualsId(id, targetKey)))
             {
                 _log.Warning("Target provider {TargetProviderId} is not in rule {RuleId} provider list",
-                    targetProviderId, ruleId);
+                    targetKey, ruleId);
                 return false;
             }
 
             var previousProviderId = ruleState.CurrentActiveProviderId;
-            ruleState.SwitchTo(targetProviderId);
+            ruleState.SwitchTo(targetKey);
 
             _log.Information("Forced failover for rule {RuleId}: {From} -> {To}",
-                ruleId, previousProviderId, targetProviderId);
+                ruleId, previousProviderId, targetKey);
 
-            RaiseFailoverTriggered(ruleId, previousProviderId, targetProviderId, "Manual force failover");
+            RaiseFailoverTriggered(ruleId, previousProviderId, targetKey, "Manual force failover");
             return true;
         }
     }
@@ -253,7 +263,7 @@ public sealed class StreamingFailoverService : IDisposable
         // Check for recovery: if primary is not active and has recovered, switch back
         if (ruleState.IsInFailoverState && rule is { } r)
         {
-            var primaryId = r.PrimaryProviderId;
+            var primaryId = ProviderIdentity.NormalizeId(r.PrimaryProviderId);
             if (_providerHealth.TryGetValue(primaryId, out var primaryHealth))
             {
                 if (primaryHealth.ConsecutiveSuccesses >= r.RecoveryThreshold)
@@ -273,10 +283,13 @@ public sealed class StreamingFailoverService : IDisposable
 
     private string? FindNextHealthyProvider(FailoverRuleConfig rule, string currentActiveId)
     {
+        var currentActiveKey = ProviderIdentity.NormalizeId(currentActiveId);
+
         // Build the ordered list: primary first, then backups in order
         var allProviders = new[] { rule.PrimaryProviderId }
             .Concat(rule.BackupProviderIds)
-            .Where(id => !string.Equals(id, currentActiveId, StringComparison.OrdinalIgnoreCase));
+            .Select(ProviderIdentity.NormalizeId)
+            .Where(id => !string.Equals(id, currentActiveKey, StringComparison.Ordinal));
 
         foreach (var providerId in allProviders)
         {
@@ -440,7 +453,7 @@ internal sealed class FailoverRuleState
     public FailoverRuleState(FailoverRuleConfig rule)
     {
         Rule = rule;
-        CurrentActiveProviderId = rule.PrimaryProviderId;
+        CurrentActiveProviderId = ProviderIdentity.NormalizeId(rule.PrimaryProviderId);
     }
 
     public void SwitchTo(string providerId)

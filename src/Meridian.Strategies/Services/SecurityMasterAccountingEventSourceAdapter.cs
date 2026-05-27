@@ -81,12 +81,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }
 
         var (periodStart, periodEnd) = ResolvePeriod(detail);
+        var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         return new SecurityMasterAccountingEventRequest(
             request.RunId,
             periodStart,
             periodEnd,
             securities,
             resolvedPositions,
+            FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
             AmountTolerance: request.AmountTolerance);
     }
 
@@ -189,6 +191,70 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         return new SecurityAccountingRule(classification.Trim(), "GAAP");
     }
 
+    private static IReadOnlyList<SecurityFactorScheduleEntry> BuildFactorSchedule(
+        IEnumerable<SecurityEconomicDefinitionRecord> definitions,
+        DateOnly periodStart,
+        DateOnly periodEnd)
+    {
+        var entries = new List<SecurityFactorScheduleEntry>();
+        foreach (var definition in definitions)
+        {
+            foreach (var schedule in EnumerateFactorScheduleArrays(definition))
+            {
+                foreach (var item in schedule.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    var asOfDate = ReadDate(item, "asOfDate") ??
+                        ReadDate(item, "factorDate") ??
+                        ReadDate(item, "date");
+                    var priorFactor = ReadDecimal(item, "priorFactor") ??
+                        ReadDecimal(item, "previousFactor");
+                    var currentFactor = ReadDecimal(item, "currentFactor") ??
+                        ReadDecimal(item, "factor");
+                    if (asOfDate is null ||
+                        asOfDate < periodStart ||
+                        asOfDate > periodEnd ||
+                        priorFactor is null ||
+                        currentFactor is null)
+                    {
+                        continue;
+                    }
+
+                    entries.Add(new SecurityFactorScheduleEntry(
+                        definition.SecurityId,
+                        asOfDate.Value,
+                        priorFactor.Value,
+                        currentFactor.Value,
+                        ReadString(item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
+                        ReadString(item, "evidenceLink") ?? ReadString(item, "evidenceId") ?? ReadString(item, "evidenceRoute")));
+                }
+            }
+        }
+
+        return entries
+            .OrderBy(static entry => entry.SecurityId)
+            .ThenBy(static entry => entry.AsOfDate)
+            .ToArray();
+    }
+
+    private static IEnumerable<JsonElement> EnumerateFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
+    {
+        if (TryGetArray(definition.EconomicTerms, "factorSchedule", out var rootSchedule))
+        {
+            yield return rootSchedule;
+        }
+
+        var structuredProduct = GetObject(definition.EconomicTerms, "structuredProduct");
+        if (TryGetArray(structuredProduct, "factorSchedule", out var structuredSchedule))
+        {
+            yield return structuredSchedule;
+        }
+    }
+
     private static (DateOnly PeriodStart, DateOnly PeriodEnd) ResolvePeriod(StrategyRunDetail detail)
     {
         var asOf = detail.Portfolio?.AsOf ?? detail.Ledger?.AsOf ?? detail.Summary.CompletedAt ?? detail.Summary.StartedAt;
@@ -209,6 +275,30 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
     {
+        if (IsMortgageBacked(definition.AssetClass) ||
+            IsMortgageBacked(definition.AssetFamily) ||
+            IsMortgageBacked(definition.SubType) ||
+            IsMortgageBacked(definition.TypeName))
+        {
+            return "MortgageBackedSecurity";
+        }
+
+        if (IsAssetBacked(definition.AssetClass) ||
+            IsAssetBacked(definition.AssetFamily) ||
+            IsAssetBacked(definition.SubType) ||
+            IsAssetBacked(definition.TypeName))
+        {
+            return "AssetBackedSecurity";
+        }
+
+        if (IsAmortizingLoan(definition.AssetClass) ||
+            IsAmortizingLoan(definition.AssetFamily) ||
+            IsAmortizingLoan(definition.SubType) ||
+            IsAmortizingLoan(definition.TypeName))
+        {
+            return "AmortizingLoan";
+        }
+
         if (IsFixedIncome(definition.AssetClass) ||
             IsFixedIncome(definition.AssetFamily) ||
             ContainsToken(definition.SubType, "Bond") ||
@@ -225,7 +315,30 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         string.Equals(value, "Bond", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(value, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(value, "CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "TreasuryBill", StringComparison.OrdinalIgnoreCase);
+        string.Equals(value, "TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
+        IsMortgageBacked(value) ||
+        IsAssetBacked(value) ||
+        IsAmortizingLoan(value);
+
+    private static bool IsMortgageBacked(string? value) =>
+        string.Equals(value, "MortgageBacked", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "Mbs", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "MortgageBacked") ||
+        ContainsToken(value, "Mortgage Backed");
+
+    private static bool IsAssetBacked(string? value) =>
+        string.Equals(value, "AssetBacked", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "Abs", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "AssetBacked") ||
+        ContainsToken(value, "Asset Backed");
+
+    private static bool IsAmortizingLoan(string? value) =>
+        string.Equals(value, "Loan", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "AmortizingLoan", StringComparison.OrdinalIgnoreCase) ||
+        ContainsToken(value, "AmortizingLoan") ||
+        ContainsToken(value, "Amortizing Loan");
 
     private static bool ContainsToken(string? value, string token) =>
         !string.IsNullOrWhiteSpace(value) &&
@@ -292,6 +405,19 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }
 
         return value;
+    }
+
+    private static bool TryGetArray(JsonElement? element, string propertyName, out JsonElement value)
+    {
+        if (element is { ValueKind: JsonValueKind.Object } objectElement &&
+            objectElement.TryGetProperty(propertyName, out value) &&
+            value.ValueKind == JsonValueKind.Array)
+        {
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     private static string? ReadString(JsonElement? element, string propertyName)

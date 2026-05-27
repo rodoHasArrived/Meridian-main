@@ -181,16 +181,44 @@ and it refuses submission until broker intake, Security Master, and ledger posti
 passed and reconciliation has reached a completed or reviewable posture. Rejected approval
 submissions return structured blockers and do not append audit records or mutate the workflow
 snapshot.
+Once a report pack is marked ready through gate posture, submit, approve, and close commands must
+reference that same report-pack id; mismatches return `REPORT_PACK_ID_MISMATCH` without appending
+an audit event or mutating the workflow snapshot.
+Approval decisions must also come from the reviewer assigned during `approval/submit`.
+The shared workstation approve/reject endpoints replace body-supplied reviewer values with the
+authenticated operator before calling the application service; mismatched decision reviewers return
+`APPROVAL_REVIEWER_MISMATCH` without appending an audit event or mutating the workflow snapshot.
+The close command also verifies the existing audit timeline before it appends `workflow-closed`.
+If the timeline is missing or any previous/current hash link fails canonical verification, close
+returns `AUDIT_CHAIN_MISSING` or `AUDIT_CHAIN_INVALID` on the Approval gate without appending a new
+audit event or mutating the workflow snapshot.
+When gate posture reports that a report pack exists but is not ready, the aggregate projects a
+`REPORT_PACK_NOT_READY` blocker onto the Approval gate with the linked evidence. That keeps
+approval and close guidance server-derived for both browser and WPF desktop clients.
 
 The reconciliation command can carry Security Master coverage issue counts, Security Master
 accounting issue counts, expected-event counts, and journal-preview counts directly from
 reconciliation output. `OperationsContinuityWorkflow` applies those counts to the Security Master
 gate during the reconciliation transition, so unresolved Security Master coverage or
 accounting-term problems block the close lane without requiring UI-side status derivation.
+`OperationsContinuityReconciliationBridge` also preserves the underlying Security Master coverage
+and accounting issue rows as workflow break cases, using stable issue codes such as
+`SM_RECON_SECURITY_UNRESOLVED`, `ACCRUAL_AMOUNT_MISMATCH`, and
+`FACTOR_PAYDOWN_AMOUNT_MISMATCH`. That gives browser and WPF desktop clients the same
+server-authored blocker detail behind the aggregate counts.
+The shared `OperationsWorkflowContractMatrix` also publishes the production blocker and issue code
+vocabulary for broker intake, Security Master accounting coverage, accrual reconciliation, factor
+paydowns, ledger posting, reconciliation evidence, approval, and close blockers. Security Master
+accounting event generation distinguishes a missing factor schedule from a stale prior-period
+factor source so the continuity gate can route factor-paydown remediation without UI-side
+classification.
 
 For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
-`LedgerJournalEntryWrite`. When an `IOperationsContinuityTransactionalCommitStore` is registered,
+`LedgerJournalEntryWrite`. The candidate must carry a durable command id, an idempotency key, and
+Security Master provenance (`SecurityId` plus a provenance string) before the service will append it
+to the ledger journal; missing values return structured ledger-gate blockers without appending an
+audit event or mutating the workflow snapshot. When an `IOperationsContinuityTransactionalCommitStore` is registered,
 the service commits the journal append, workflow audit append, and workflow snapshot save through
 that single commit seam. Production hosts enable the PostgreSQL path with
 `MERIDIAN_LEDGER_CONNECTION_STRING`; `LedgerStartup` runs ledger migrations and registers

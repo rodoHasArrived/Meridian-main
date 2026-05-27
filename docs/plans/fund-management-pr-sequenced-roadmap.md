@@ -16,7 +16,7 @@
 > **UI lane refresh (2026-05-18):** Browser workstation references in this
 > roadmap are active again. New operator-facing governance, accounting,
 > reporting, and portfolio workflows should be shared-contract-first and
-> visible through `src/Meridian.Ui/dashboard/`; WPF remains retained support,
+> visible through `src/Meridian.Ui/dashboard/`; WPF remains an active operator surface,
 > compatibility, and regression evidence unless a slice explicitly names
 > desktop support as its goal.
 
@@ -45,7 +45,7 @@ The goal is to let multiple contributors work concurrently without repeatedly co
 | Lane A | Workstation and front-office UX | `src/Meridian.Ui/dashboard`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, retained `src/Meridian.Wpf` support where needed |
 | Lane B | Shared contracts and orchestration | `src/Meridian.Contracts`, `src/Meridian.Strategies`, `src/Meridian.Application` |
 | Lane C | Governance and accounting kernel | `src/Meridian.FSharp`, `src/Meridian.FSharp.Ledger`, `src/Meridian.Ledger`, parts of `src/Meridian.Storage` |
-| Lane D | Reporting, evidence, and data-ops support | `src/Meridian.Storage`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard`, retained WPF pages where needed |
+| Lane D | Reporting, evidence, and data-ops support | `src/Meridian.Storage`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard`, WPF pages where needed |
 
 ## Dependency Rules
 

@@ -6743,7 +6743,7 @@
     {
       "category": "broken-doc-link",
       "severity": "warning",
-      "file": "docs/archive/desktop-end-user-improvements.md",
+      "file": "archive/docs/assessments/desktop-end-user-improvements.md",
       "line": 3017,
       "message": "Broken internal link: desktop-improvements-executive-summary.md",
       "fix_hint": "Update the link target or remove the dead link."
@@ -6751,7 +6751,7 @@
     {
       "category": "broken-doc-link",
       "severity": "warning",
-      "file": "docs/archive/desktop-end-user-improvements.md",
+      "file": "archive/docs/assessments/desktop-end-user-improvements.md",
       "line": 3018,
       "message": "Broken internal link: desktop-platform-improvements-implementation-guide.md",
       "fix_hint": "Update the link target or remove the dead link."

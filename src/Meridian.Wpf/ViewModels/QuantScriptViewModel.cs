@@ -48,6 +48,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private readonly QuantScriptOptions _options;
     private readonly ILogger<QuantScriptViewModel> _logger;
     private readonly NotebookExecutionSession _session = new();
+    private readonly QuantScriptCollectionsSectionViewModel _collectionsSection = new();
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
@@ -74,6 +75,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private string _elapsedText = "--";
     private string _memoryText = "--";
     private int _activeResultsTab;
+
+    internal QuantScriptCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -154,7 +157,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public bool HasChart => Charts.Count > 0;
     public bool HasNoChart => Charts.Count == 0;
     public bool HasLegend => LegendEntries.Count > 0;
-    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
+    public ObservableCollection<ChartLegendEntry> LegendEntries => _collectionsSection.LegendEntries;
 
     public string ScriptSource
     {
@@ -171,16 +174,16 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
     }
 
-    public ObservableCollection<ScriptDocumentEntry> Documents { get; } = [];
-    public ObservableCollection<QuantScriptTemplateDefinition> Templates { get; } = [];
-    public ObservableCollection<NotebookCellViewModel> NotebookCells { get; } = [];
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
-    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } = new(10_000);
-    public ObservableCollection<PlotViewModel> Charts { get; } = [];
-    public ObservableCollection<MetricEntry> Metrics { get; } = [];
-    public ObservableCollection<TradeEntry> Trades { get; } = [];
-    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
-    public ObservableCollection<QuantScriptExecutionRecord> RunHistory { get; } = [];
+    public ObservableCollection<ScriptDocumentEntry> Documents => _collectionsSection.Documents;
+    public ObservableCollection<QuantScriptTemplateDefinition> Templates => _collectionsSection.Templates;
+    public ObservableCollection<NotebookCellViewModel> NotebookCells => _collectionsSection.NotebookCells;
+    public ObservableCollection<ParameterViewModel> Parameters => _collectionsSection.Parameters;
+    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput => _collectionsSection.ConsoleOutput;
+    public ObservableCollection<PlotViewModel> Charts => _collectionsSection.Charts;
+    public ObservableCollection<MetricEntry> Metrics => _collectionsSection.Metrics;
+    public ObservableCollection<TradeEntry> Trades => _collectionsSection.Trades;
+    public ObservableCollection<DiagnosticEntry> Diagnostics => _collectionsSection.Diagnostics;
+    public ObservableCollection<QuantScriptExecutionRecord> RunHistory => _collectionsSection.RunHistory;
 
     public ScriptDocumentEntry? SelectedDocument
     {

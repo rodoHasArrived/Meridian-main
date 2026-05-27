@@ -9,12 +9,13 @@ public sealed record WorkspacePageEntry(
     string? Icon = null);
 
 /// <summary>
-/// Represents a top-level workspace (Research, Trading, Data Ops, Governance)
+/// Represents a top-level workspace in compatibility template storage.
+/// Legacy ids may still map to current visible workspaces.
 /// with its associated pages and metadata.
 /// </summary>
 public sealed record WorkspaceDefinition(
     string Id,                                        // unique identifier (e.g., "research")
-    string Label,                                     // display name (e.g., "Research")
+    string Label,                                     // display name (e.g., "Strategy")
     string Icon,                                      // emoji or symbol (e.g., "🔬")
     IReadOnlyList<WorkspacePageEntry> Pages,          // pages in this workspace
     string? LayoutXml = null);                        // serialised AvalonDock layout (null → default)

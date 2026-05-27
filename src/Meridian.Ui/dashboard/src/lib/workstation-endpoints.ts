@@ -10,9 +10,11 @@ export const WORKSTATION_API_ENDPOINTS = {
   accounting: "/api/workstation/accounting",
   reporting: "/api/workstation/reporting",
   workflowSummary: "/api/workstation/workflow-summary",
+  featureCapabilities: "/api/workstation/settings/feature-capabilities",
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
   operationsContinuity: "/api/workstation/operations/continuity",
+  chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
@@ -186,6 +188,12 @@ export function providerVerifyEndpoint(providerId: string): string {
   return `/api/providers/${pathSegment(providerId, "providerId")}/verify`;
 }
 
+export function workstationTradingReadinessEndpoint(fundAccountId?: string): string {
+  return fundAccountId
+    ? `${WORKSTATION_API_ENDPOINTS.tradingReadiness}${queryString({ fundAccountId })}`
+    : WORKSTATION_API_ENDPOINTS.tradingReadiness;
+}
+
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
@@ -249,6 +257,32 @@ export function workstationOperationsContinuityBreaksEndpoint(workflowId: string
 
 export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
   return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
+}
+
+export function workstationChiefOfStaffSessionsEndpoint(options: {
+  workspace?: string;
+  fundProfileId?: string;
+  fundAccountId?: string;
+  status?: string;
+  limit?: number;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions${queryString(options)}`;
+}
+
+export function workstationChiefOfStaffSessionEndpoint(sessionId: string): string {
+  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions/${pathSegment(sessionId, "sessionId")}`;
+}
+
+export function workstationChiefOfStaffDecisionEndpoint(sessionId: string): string {
+  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/decisions`;
+}
+
+export function workstationChiefOfStaffTraceExportEndpoint(sessionId: string): string {
+  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/export-trace`;
+}
+
+export function workstationChiefOfStaffHealthEndpoint(): string {
+  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/health`;
 }
 
 export function workstationRunLedgerEndpoint(runId: string): string {

@@ -20,7 +20,7 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 
@@ -39,6 +39,7 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellViewModel.cs"));
         var snapshotService = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellSnapshotService.cs"));
 
+        xaml.Should().NotContain("WorkspaceShellContextStripControl");
         xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
         xaml.Should().Contain("OperationsHeroSummaryText");
@@ -52,6 +53,7 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroTargetText");
         xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
 
+        code.Should().NotContain("ContextStrip.ShellContext");
         code.Should().Contain("OperationsHeroScopeText.Text = viewModel.HeroScopeText;");
         code.Should().Contain("OperationsHeroSummaryText.Text = viewModel.HeroSummaryText;");
         code.Should().Contain("OperationsHeroFocusText.Text = heroState.FocusText;");

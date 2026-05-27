@@ -82,6 +82,13 @@ def validate_file(path: Path) -> int:
     print(f"{path} passed enum validation")
     return 0
 
+
+def _extract_front_matter(text: str) -> tuple[dict[str, Any], str]:
+    if yaml is None:
+        raise ReadmeContractError("PyYAML is required for README front matter validation")
+    if not text.startswith("---\n"):
+        raise ReadmeContractError("front matter opening marker '---' is missing")
+
     closing = text.find("\n---\n", 4)
     if closing == -1:
         raise ReadmeContractError("front matter closing marker '---' is missing")
@@ -141,24 +148,52 @@ def _as_list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
 
 
+def _get_module_id(module: dict[str, Any]) -> str | None:
+    return module.get("id") or module.get("module_id")
+
+
+def _get_module_path(module: dict[str, Any]) -> str | None:
+    return module.get("path") or module.get("canonical_path") or module.get("module_path")
+def _resolve_readme_path(repo_root: Path, readme_path: str) -> tuple[Path | None, str | None]:
+    candidate = Path(readme_path)
+    if candidate.is_absolute():
+        return None, f"README path must be relative to repository root: {readme_path}"
+
+    resolved_repo_root = repo_root.resolve()
+    resolved_readme = (resolved_repo_root / candidate).resolve()
+    if resolved_readme != resolved_repo_root and resolved_repo_root not in resolved_readme.parents:
+        return None, f"README path escapes repository root: {readme_path}"
+
+    return resolved_readme, None
+
+
 def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[str]:
     errors: list[str] = []
     modules_doc = _load_yaml(modules_path)
     coverage_doc = _load_yaml(coverage_path)
 
-    modules = [m for m in _as_list(modules_doc.get("modules")) if isinstance(m, dict)]
+    modules: list[dict[str, Any]] = []
+    for index, module in enumerate(_as_list(modules_doc.get("modules"))):
+        if not isinstance(module, dict):
+            errors.append(
+                f"source-modules.yml entry at modules[{index}] must be a mapping/object."
+            )
+            continue
+        modules.append(module)
 
     module_ids: list[str] = []
     for module in modules:
-        module_id = module.get("id")
+        module_id = _get_module_id(module)
         if not module_id:
-            errors.append("source-modules.yml entry missing required 'id'.")
+            errors.append("source-modules.yml entry missing required 'id' (or alias 'module_id').")
             continue
 
         module_ids.append(module_id)
-        module_path = module.get("path")
+        module_path = _get_module_path(module)
         if not module_path:
-            errors.append(f"source-modules.yml module '{module_id}' missing required 'path'.")
+            errors.append(
+                f"source-modules.yml module '{module_id}' missing required 'path' (or aliases 'canonical_path'/'module_path')."
+            )
         else:
             resolved = repo_root / module_path
             if not resolved.exists():
@@ -185,7 +220,10 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     moved_from_paths: set[str] = set()
 
     for module in coverage_modules:
-        transitions = [t for t in _as_list(module.get("transitions")) if isinstance(t, dict)]
+        transitions_raw = module.get("transitions")
+        if transitions_raw is None and isinstance(module.get("transition"), dict):
+            transitions_raw = [module.get("transition")]
+        transitions = [t for t in _as_list(transitions_raw) if isinstance(t, dict)]
         for transition in transitions:
             transition_type = transition.get("type")
             if transition_type not in ALLOWED_TRANSITIONS:
@@ -194,7 +232,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
                 )
 
             roadmap = transition.get("roadmap") or {}
-            module_id = module.get("id", "<unknown>")
+            module_id = _get_module_id(module) or "<unknown>"
             for field in ("id", "url", "status"):
                 if not roadmap.get(field):
                     errors.append(
@@ -216,16 +254,33 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
                     errors.append("Moved transition missing to_path.")
 
     for module in coverage_modules:
-        module_id = str(module.get("id", "<unknown>"))
+        module_id = str(_get_module_id(module) or "<unknown>")
         readme_path = module.get("readme_path")
-        if readme_path and not (repo_root / readme_path).exists():
+        readme_exists = (repo_root / readme_path).exists() if readme_path else False
+        declared_exists = module.get("exists")
+        if readme_path and declared_exists is True and not readme_exists:
+        if not readme_path:
+            continue
+
+        resolved_readme_path, path_error = _resolve_readme_path(repo_root, str(readme_path))
+        if path_error:
+            errors.append(path_error)
+            continue
+        if resolved_readme_path is None:
+            continue
+
+        if not resolved_readme_path.exists():
             errors.append(f"README path does not exist: {readme_path}")
+        if readme_path and declared_exists is False and readme_exists:
+            errors.append(f"README path exists but coverage declares exists=false: {readme_path}")
         if readme_path and readme_path in moved_from_paths and readme_path not in moved_to_paths:
             errors.append(
                 f"Stale README path '{readme_path}' referenced after move/rename; update to current path."
             )
-        if readme_path and (repo_root / readme_path).exists():
+        if readme_path and readme_exists:
             readme_errors = validate_readme_contract(repo_root / readme_path, module_id)
+        if resolved_readme_path.exists():
+            readme_errors = validate_readme_contract(resolved_readme_path, module_id)
             for element_error in readme_errors:
                 errors.append(
                     f"README contract violation [module={module_id}] [path={readme_path}] [missing={element_error}]"

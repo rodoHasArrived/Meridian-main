@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Features.Data.Shell;
+using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
 
@@ -12,6 +13,7 @@ public sealed class WorkspaceShellPageSmokeTests
     [InlineData(typeof(ResearchWorkspaceShellPage))]
     [InlineData(typeof(TradingWorkspaceShellPage))]
     [InlineData(typeof(DataWorkspaceShellPage))]
+    [InlineData(typeof(SettingsWorkspaceShellPage))]
     [InlineData(typeof(GovernanceWorkspaceShellPage))]
     public void WorkspaceShellPages_ShouldConstructFromDi(Type pageType)
     {
@@ -24,7 +26,7 @@ public sealed class WorkspaceShellPageSmokeTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 

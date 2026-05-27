@@ -1,0 +1,148 @@
+name: Desktop Installer Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-installer-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  build-msix:
+    name: package-desktop-msix (${{ matrix.runtime }})
+    runs-on: windows-latest
+    timeout-minutes: 75
+    environment:
+      name: desktop-release-signing
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [win-x64, win-arm64]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-installer-
+            ${{ runner.os }}-nuget-
+
+      - name: Prepare optional signing certificate (tag releases only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: signing
+        shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PFX_BASE64: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
+        run: |
+          if (-not [string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
+            $certPath = Join-Path $env:RUNNER_TEMP "meridian-release-signing.pfx"
+            [System.IO.File]::WriteAllBytes(
+              $certPath,
+              [System.Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64)
+            )
+            "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Host "Release signing certificate configured."
+          } else {
+            throw "Tag release builds require MDC_SIGNING_CERT_PFX_BASE64 in the protected desktop-release-signing environment."
+          }
+
+      - name: Build desktop installer package
+        shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PFX: ${{ steps.signing.outputs.cert_path }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
+        run: |
+          $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
+          pwsh ./build/scripts/install/install.ps1 `
+            -Mode Desktop `
+            -Architecture $architecture `
+            -SkipInstall `
+            -NoNotify `
+            -NoTrustCert `
+            -EnableReadyToRun
+
+      - name: Collect packaged installer artifacts
+        shell: pwsh
+        run: |
+          $runtime = '${{ matrix.runtime }}'
+          $sourceRoot = "dist/$runtime/msix"
+          if (-not (Test-Path $sourceRoot)) {
+            throw "Expected package output root not found: $sourceRoot"
+          }
+
+          $releaseRoot = "artifacts/release/$runtime"
+          New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
+
+          $packageFiles = Get-ChildItem -Path $sourceRoot -File | Where-Object {
+            $_.Extension.ToLowerInvariant() -in @('.msix', '.msixbundle', '.appinstaller')
+          }
+          if (-not $packageFiles) {
+            throw "No packaged installer files found under $sourceRoot"
+          }
+
+          try {
+            Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force -ErrorAction Stop
+          } catch {
+            throw "Failed to copy packaged installer files from $sourceRoot to $releaseRoot: $($_.Exception.Message)"
+          }
+
+      - name: Upload packaged installer artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-desktop-installer-${{ matrix.runtime }}-${{ github.run_id }}
+          path: artifacts/release/${{ matrix.runtime }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: publish-desktop-installer-release
+    needs: build-msix
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download packaged installer artifacts
+        uses: actions/download-artifact@v5.0.0
+        with:
+          pattern: meridian-desktop-installer-*-${{ github.run_id }}
+          merge-multiple: true
+          path: artifacts/release
+
+      - name: Publish GitHub release assets
+        uses: softprops/action-gh-release@a74c6b72af54cfa997e81df42d94703d6313a2d0 # v2
+        with:
+          files: |
+            artifacts/release/**/*.msix
+            artifacts/release/**/*.msixbundle
+            artifacts/release/**/*.appinstaller
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

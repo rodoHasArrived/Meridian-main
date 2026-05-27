@@ -21,7 +21,7 @@ public sealed class ResearchWorkspaceShellViewModelTests
             workflow: CreateWorkflow("Ready for a new research cycle", "Backtest"));
 
         hero.FocusLabel.Should().Be("New cycle");
-        hero.Summary.Should().Be("Research queue is empty.");
+        hero.Summary.Should().Be("Strategy queue is empty.");
         hero.BadgeText.Should().Be("Setup");
         hero.PrimaryActionId.Should().Be("Backtest");
         hero.PrimaryActionLabel.Should().Be("Start Backtest");
@@ -106,9 +106,9 @@ public sealed class ResearchWorkspaceShellViewModelTests
                 PendingReviewCount = 0
             },
             activeRun: null,
-            workflow: CreateWorkflow("Research cycle healthy", "RunMat", tone: "Success"));
+            workflow: CreateWorkflow("Strategy cycle healthy", "RunMat", tone: "Success"));
 
-        hero.FocusLabel.Should().Be("Research cycle");
+        hero.FocusLabel.Should().Be("Strategy cycle");
         hero.BadgeText.Should().Be("Ready");
         hero.PrimaryActionId.Should().Be("RunMat");
         hero.PrimaryActionLabel.Should().Be("Open RunMat");

@@ -79,7 +79,7 @@ internal static class SecurityMasterMapping
             projection.Currency,
             projection.CommonTerms,
             projection.AssetSpecificTerms,
-            projection.Identifiers,
+            NormalizeIdentifiers(projection.Identifiers),
             projection.Aliases,
             projection.Version,
             projection.EffectiveFrom,
@@ -154,6 +154,15 @@ internal static class SecurityMasterMapping
             ? SecurityStatusDto.Inactive
             : SecurityStatusDto.Active;
 
+    private static IReadOnlyList<SecurityIdentifierDto> NormalizeIdentifiers(IReadOnlyList<SecurityIdentifierDto> identifiers)
+        => identifiers
+            .Select(static identifier => identifier with
+            {
+                NormalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier),
+                NormalizedProvider = SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)
+            })
+            .ToArray();
+
     private static Identifier ToIdentifier(SecurityIdentifierDto identifier)
         => new(
             ToIdentifierKind(identifier.Kind, identifier.Provider),
@@ -170,6 +179,7 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.Cusip => IdentifierKind.Cusip,
             SecurityIdentifierKind.Sedol => IdentifierKind.Sedol,
             SecurityIdentifierKind.Figi => IdentifierKind.Figi,
+            SecurityIdentifierKind.OccOptionSymbol => IdentifierKind.OccOptionSymbol,
             SecurityIdentifierKind.ProviderSymbol => IdentifierKind.NewProviderSymbol(provider ?? string.Empty),
             SecurityIdentifierKind.InternalCode => IdentifierKind.InternalCode,
             SecurityIdentifierKind.Lei => IdentifierKind.Lei,

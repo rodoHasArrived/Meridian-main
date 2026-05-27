@@ -386,7 +386,7 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
-    public async Task SubmitOrder_WithFixedIncomeRoutingMetadata_PreservesSubmitPath()
+    public async Task SubmitOrder_WithFixedIncomeRoutingMetadata_IsRejected()
     {
         var tempRoot = CreateTempRoot();
         await using var app = await CreateAppAsync(services =>
@@ -417,12 +417,12 @@ public sealed class ExecutionGovernanceEndpointsTests
             }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var result = JsonSerializer.Deserialize<OrderResult>(
             await response.Content.ReadAsStringAsync(),
             JsonOptions());
         result.Should().NotBeNull();
-        result!.Success.Should().BeTrue();
+        result!.Success.Should().BeFalse();
     }
 
     private static async Task<WebApplication> CreateAppAsync(

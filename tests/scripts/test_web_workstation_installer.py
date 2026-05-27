@@ -163,9 +163,98 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn("web-workstation-runtime.json", launcher)
             self.assertIn("web-workstation-install-manifest.json", result.stdout)
             self.assertIn("X-Meridian-Shutdown-Token", launcher)
-            self.assertIn("-PassThru", launcher)
+            self.assertIn("[System.Diagnostics.ProcessStartInfo]::new()", launcher)
+            self.assertIn("ArgumentList.Add($argument)", launcher)
             self.assertIn("[switch]$Stop", launcher)
-            self.assertIn('--config `"$configPath`"', launcher)
+            self.assertIn('"--config", $configPath', launcher)
+
+    def test_skip_build_install_quotes_special_config_path_in_launcher_arguments(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            script_copy = repo_root / "build" / "scripts" / "install" / "install-web-workstation.ps1"
+            script_copy.parent.mkdir(parents=True)
+            shutil.copy2(SCRIPT_PATH, script_copy)
+
+            self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
+            self._write_file(
+                repo_root / "src" / "Meridian.Ui" / "wwwroot" / "workstation" / "index.html",
+                "<!doctype html><title>Meridian</title>",
+            )
+            self._write_file(
+                repo_root
+                / "artifacts"
+                / "publish"
+                / "web-workstation"
+                / "win-x64"
+                / "Meridian.exe",
+                "fake executable",
+            )
+
+            install_root = repo_root / "installed app & shell"
+            app_data_root = repo_root / "app data's $weird & [case]"
+            command = [powershell, "-NoProfile"]
+            if Path(powershell).name.lower().startswith("powershell"):
+                command.extend(["-ExecutionPolicy", "Bypass"])
+            command.extend(
+                [
+                    "-File",
+                    str(script_copy),
+                    "-SkipNpmInstall",
+                    "-SkipDashboardBuild",
+                    "-SkipHostPublish",
+                    "-NoDesktopShortcut",
+                    "-NoStartMenuShortcut",
+                    "-InstallRoot",
+                    str(install_root),
+                    "-AppDataRoot",
+                    str(app_data_root),
+                    "-Port",
+                    "8097",
+                ]
+            )
+
+            result = subprocess.run(command, cwd=repo_root, capture_output=True, text=True)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            launcher_path = install_root / "Launch-MeridianWebWorkstation.ps1"
+            launcher = launcher_path.read_text(encoding="utf-8")
+            config_path = app_data_root / "appsettings.json"
+            expected_literal = "'" + str(config_path).replace("'", "''") + "'"
+            self.assertIn(f"$configPath = {expected_literal}", launcher)
+            self.assertIn(
+                'foreach ($argument in @("--mode", "workstation", "--http-port", [string]$Port, "--config", $configPath))',
+                launcher,
+            )
+            self.assertIn("[void]$startInfo.ArgumentList.Add($argument)", launcher)
+            self.assertNotIn('$arguments = "--mode workstation', launcher)
+            self.assertNotIn('--config `"$configPath`"', launcher)
+
+            install_manifest = json.loads(
+                (app_data_root / "service" / "web-workstation-install-manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(install_manifest["configPath"], str(config_path))
+
+            parse_launcher = subprocess.run(
+                [
+                    powershell,
+                    "-NoProfile",
+                    "-Command",
+                    (
+                        "$tokens=$null; $errors=$null; "
+                        "[System.Management.Automation.Language.Parser]::ParseFile("
+                        f"'{self._ps_literal(str(launcher_path))}', [ref]$tokens, [ref]$errors) | Out-Null; "
+                        "if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }"
+                    ),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(parse_launcher.returncode, 0, parse_launcher.stderr)
 
     def test_skip_build_install_archives_legacy_install_and_matching_app_data(self) -> None:
         powershell = shutil.which("pwsh") or shutil.which("powershell")
@@ -349,7 +438,8 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("runtimeStateCleanup", script)
         self.assertIn("SkipLegacyInstallCleanup", script)
         self.assertIn("X-Meridian-Shutdown-Token", script)
-        self.assertIn("-PassThru", script)
+        self.assertIn("ProcessStartInfo", script)
+        self.assertIn("ArgumentList.Add", script)
         self.assertNotIn("MDC_CONFIG_PATH", script)
 
     def test_root_install_script_exposes_web_workstation_mode(self) -> None:
@@ -464,9 +554,6 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         if stop:
             arguments += " -Stop"
 
-        def _ps_literal(value: str) -> str:
-            return value.replace("'", "''")
-
         command = [powershell, "-NoProfile"]
         if Path(powershell).name.lower().startswith("powershell"):
             command.extend(["-ExecutionPolicy", "Bypass"])
@@ -475,10 +562,10 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
                 "-Command",
                 (
                     "$shell=New-Object -ComObject WScript.Shell; "
-                    f"$shortcut=$shell.CreateShortcut('{_ps_literal(str(shortcut_path))}'); "
-                    f"$shortcut.TargetPath='{_ps_literal(powershell)}'; "
-                    f"$shortcut.Arguments='{_ps_literal(arguments)}'; "
-                    f"$shortcut.WorkingDirectory='{_ps_literal(str(working_directory))}'; "
+                    f"$shortcut=$shell.CreateShortcut('{WebWorkstationInstallerScriptTests._ps_literal(str(shortcut_path))}'); "
+                    f"$shortcut.TargetPath='{WebWorkstationInstallerScriptTests._ps_literal(powershell)}'; "
+                    f"$shortcut.Arguments='{WebWorkstationInstallerScriptTests._ps_literal(arguments)}'; "
+                    f"$shortcut.WorkingDirectory='{WebWorkstationInstallerScriptTests._ps_literal(str(working_directory))}'; "
                     "$shortcut.Save()"
                 ),
             ]
@@ -497,6 +584,10 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             time.sleep(0.1)
 
         return path.exists() == exists
+
+    @staticmethod
+    def _ps_literal(value: str) -> str:
+        return value.replace("'", "''")
 
 
 if __name__ == "__main__":

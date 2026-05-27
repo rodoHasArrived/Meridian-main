@@ -24,6 +24,7 @@ public static class SecurityIdentifierNormalizer
             or SecurityIdentifierKind.Cusip
             or SecurityIdentifierKind.Sedol
             or SecurityIdentifierKind.Figi
+            or SecurityIdentifierKind.OccOptionSymbol
             or SecurityIdentifierKind.Lei
             or SecurityIdentifierKind.Wkn
             or SecurityIdentifierKind.Cik
@@ -35,6 +36,11 @@ public static class SecurityIdentifierNormalizer
 
     public static string NormalizeProvider(string? provider)
         => NormalizeBasic(provider);
+
+    public static string NormalizeAliasValue(string? aliasKind, string? aliasValue)
+        => Enum.TryParse<SecurityIdentifierKind>(aliasKind, ignoreCase: true, out var identifierKind)
+            ? NormalizeValue(identifierKind, aliasValue)
+            : NormalizeBasic(aliasValue);
 
     public static string GetOrComputeNormalizedValue(SecurityIdentifierDto identifier)
     {
@@ -66,6 +72,7 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Isin => ValidateIsin(normalized),
             SecurityIdentifierKind.Cusip => ValidateCusip(normalized),
             SecurityIdentifierKind.Sedol => ValidateSedol(normalized),
+            SecurityIdentifierKind.OccOptionSymbol => ValidateOccOptionSymbol(normalized),
             SecurityIdentifierKind.Lei => normalized.Length == 20 && IsAlphaNumeric(normalized),
             SecurityIdentifierKind.Wkn => normalized.Length == 6 && IsAlphaNumeric(normalized),
             SecurityIdentifierKind.Valoren => normalized.Length is >= 6 and <= 9 && IsDigitsOnly(normalized),
@@ -78,6 +85,7 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Isin => "ISIN must be a 12-character alphanumeric code with a valid check digit.",
             SecurityIdentifierKind.Cusip => "CUSIP must be a 9-character code with a valid check digit.",
             SecurityIdentifierKind.Sedol => "SEDOL must be a 7-character alphanumeric code with a valid check digit.",
+            SecurityIdentifierKind.OccOptionSymbol => "OCC option symbols must match the compact OSI format: root(1-6) + yymmdd + C/P + 8-digit strike.",
             SecurityIdentifierKind.Lei => "LEI must be a 20-character alphanumeric code.",
             SecurityIdentifierKind.Wkn => "WKN must be a 6-character alphanumeric code.",
             SecurityIdentifierKind.Valoren => "Valoren must be a 6- to 9-digit Swiss security number.",
@@ -261,5 +269,40 @@ public static class SecurityIdentifierNormalizer
         }
 
         return sum % 10 == 0;
+    }
+
+    private static bool ValidateOccOptionSymbol(string normalized)
+    {
+        if (normalized.Length is < 16 or > 21)
+        {
+            return false;
+        }
+
+        var rootLength = normalized.Length - 15;
+        if (rootLength is < 1 or > 6)
+        {
+            return false;
+        }
+
+        var root = normalized[..rootLength];
+        if (!root.All(static character => character is >= 'A' and <= 'Z'))
+        {
+            return false;
+        }
+
+        var expiry = normalized.Substring(rootLength, 6);
+        if (!expiry.All(static character => character is >= '0' and <= '9'))
+        {
+            return false;
+        }
+
+        var putCall = normalized[rootLength + 6];
+        if (putCall is not ('C' or 'P'))
+        {
+            return false;
+        }
+
+        var strike = normalized[(rootLength + 7)..];
+        return strike.Length == 8 && strike.All(static character => character is >= '0' and <= '9');
     }
 }

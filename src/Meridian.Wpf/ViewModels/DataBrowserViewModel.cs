@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 
@@ -25,12 +27,20 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     private string _sortField = "TimestampDesc";
     private string _filteredCountText = "0 records";
     private string _selectedTimePeriodKey = DataBrowserTimePeriodOption.AllTimeKey;
+    private DataBrowserRecord? _selectedRecord;
     private bool _allRowsSelected;
     private bool _suppressFilterRefresh;
     private bool _isApplyingTimePeriod;
+    private readonly Action<string> _copyToClipboard;
 
     public DataBrowserViewModel()
+        : this(Clipboard.SetText)
     {
+    }
+
+    internal DataBrowserViewModel(Action<string> copyToClipboard)
+    {
+        _copyToClipboard = copyToClipboard ?? throw new ArgumentNullException(nameof(copyToClipboard));
         _allRecords = BuildSampleData();
         DataTypes = new ObservableCollection<string> { "All", "Trades", "Quotes", "Depth" };
         Venues = new ObservableCollection<string> { "All", "NYSE", "NASDAQ", "ARCA", "SMART" };
@@ -46,6 +56,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             new(DataBrowserTimePeriodOption.CustomKey, "Custom Range", null)
         };
         ResetFiltersCommand = new RelayCommand(ResetFilters, () => HasActiveFilters);
+        CopySelectedRecordJsonCommand = new RelayCommand(CopySelectedRecordJson, () => CanCopySelectedRecord);
     }
 
     public ObservableCollection<string> DataTypes { get; }
@@ -125,6 +136,40 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     };
 
     public IRelayCommand ResetFiltersCommand { get; }
+
+    public IRelayCommand CopySelectedRecordJsonCommand { get; }
+
+    public DataBrowserRecord? SelectedRecord
+    {
+        get => _selectedRecord;
+        set
+        {
+            if (SetProperty(ref _selectedRecord, value))
+            {
+                RaiseSelectedRecordStateChanged();
+            }
+        }
+    }
+
+    public bool HasSelectedRecord => SelectedRecord is not null;
+
+    public bool CanCopySelectedRecord => SelectedRecord is not null;
+
+    public string SelectedRecordSymbol => SelectedRecord?.Symbol ?? "--";
+
+    public string SelectedRecordVenue => SelectedRecord?.Venue ?? "--";
+
+    public string SelectedRecordDataType => SelectedRecord?.DataType ?? "--";
+
+    public string SelectedRecordTimestampText => SelectedRecord?.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff") ?? "--";
+
+    public string SelectedRecordPriceText => SelectedRecord?.Price.ToString("N2") ?? "--";
+
+    public string SelectedRecordSizeText => SelectedRecord?.Size.ToString("N0") ?? "--";
+
+    public string SelectedRecordAutomationName => SelectedRecord is null
+        ? "No data browser row selected"
+        : $"{SelectedRecord.Symbol} {SelectedRecord.DataType} row from {SelectedRecord.Venue} at {SelectedRecordTimestampText}";
 
     /// <summary>Select/deselect all visible rows.</summary>
     public bool AllRowsSelected
@@ -300,6 +345,11 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             _pagedRecords.Add(record);
         }
 
+        if (SelectedRecord is not null && !_pagedRecords.Contains(SelectedRecord))
+        {
+            SelectedRecord = null;
+        }
+
         RaisePropertyChanged(nameof(PageSummary));
         RaisePropertyChanged(nameof(CanGoPrevious));
         RaisePropertyChanged(nameof(CanGoNext));
@@ -371,6 +421,33 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         File.WriteAllText(dialog.FileName, sb.ToString());
     }
 
+    public string BuildSelectedRecordJson()
+    {
+        if (SelectedRecord is not { } record)
+        {
+            return string.Empty;
+        }
+
+        return JsonSerializer.Serialize(new
+        {
+            record.Symbol,
+            record.DataType,
+            record.Venue,
+            Timestamp = record.Timestamp.ToString("O"),
+            record.Price,
+            record.Size
+        }, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    private void CopySelectedRecordJson()
+    {
+        var json = BuildSelectedRecordJson();
+        if (!string.IsNullOrWhiteSpace(json))
+        {
+            _copyToClipboard(json);
+        }
+    }
+
     private void UpdateValidationSummary()
     {
         ValidationSummary = this[nameof(FromDate)];
@@ -399,6 +476,20 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         RaisePropertyChanged(nameof(EmptyStateDetail));
         RaisePropertyChanged(nameof(TimePeriodScopeText));
         ResetFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RaiseSelectedRecordStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasSelectedRecord));
+        RaisePropertyChanged(nameof(CanCopySelectedRecord));
+        RaisePropertyChanged(nameof(SelectedRecordSymbol));
+        RaisePropertyChanged(nameof(SelectedRecordVenue));
+        RaisePropertyChanged(nameof(SelectedRecordDataType));
+        RaisePropertyChanged(nameof(SelectedRecordTimestampText));
+        RaisePropertyChanged(nameof(SelectedRecordPriceText));
+        RaisePropertyChanged(nameof(SelectedRecordSizeText));
+        RaisePropertyChanged(nameof(SelectedRecordAutomationName));
+        CopySelectedRecordJsonCommand.NotifyCanExecuteChanged();
     }
 
     private void ApplySelectedTimePeriod()

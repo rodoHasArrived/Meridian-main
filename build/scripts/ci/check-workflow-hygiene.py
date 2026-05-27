@@ -31,6 +31,7 @@ ACTIVE_DOC_ROOTS = [
     REPO_ROOT / "docs" / "developer",
     REPO_ROOT / "docs" / "development",
 ]
+WORKFLOW_MANIFEST_PATH = REPO_ROOT / "docs" / "status" / "workflow-manifest.json"
 
 OLD_WORKFLOW_FILENAMES = {
     "benchmark.yml",
@@ -158,6 +159,49 @@ def check_no_committed_generated_artifacts(failures: list[str]) -> None:
             fail(f"Generated diagnostic artifact is tracked: {tracked}", failures)
 
 
+def check_no_manual_workflow_counts_in_docs(failures: list[str]) -> None:
+    scoped_roots = [
+        REPO_ROOT / "README.md",
+        REPO_ROOT / "docs" / "developer",
+        REPO_ROOT / "docs" / "development",
+    ]
+
+    banned_patterns = [
+        re.compile(r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+workflows?\b", re.IGNORECASE),
+        re.compile(r"\bactive\s+lanes?\b", re.IGNORECASE),
+    ]
+    allowlist_substrings = {
+        "docs/status/workflow-manifest.json",
+        "docs/generated/workflow-command-reference.md",
+        "docs/status/workflow-validation-summary.json",
+    }
+
+    for path in iter_text_files(scoped_roots):
+        if path.suffix.lower() != ".md":
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for pattern in banned_patterns:
+            for match in pattern.finditer(text):
+                line_start = text.rfind("\n", 0, match.start()) + 1
+                line_end = text.find("\n", match.end())
+                if line_end == -1:
+                    line_end = len(text)
+                line = text[line_start:line_end]
+                if any(token in line for token in allowlist_substrings):
+                    continue
+                fail(
+                    f"{path.relative_to(REPO_ROOT)} contains manual workflow inventory wording ('{match.group(0)}'). "
+                    "Reference docs/status/workflow-manifest.json and generated workflow artifacts instead.",
+                    failures,
+                )
+                break
+
+
+def check_workflow_manifest_exists(failures: list[str]) -> None:
+    if not WORKFLOW_MANIFEST_PATH.exists():
+        fail("Missing canonical workflow manifest at docs/status/workflow-manifest.json.", failures)
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -167,6 +211,8 @@ def main() -> int:
     check_active_docs_do_not_reference_removed_workflows(failures)
     check_no_stale_absolute_paths(failures)
     check_no_committed_generated_artifacts(failures)
+    check_workflow_manifest_exists(failures)
+    check_no_manual_workflow_counts_in_docs(failures)
 
     if failures:
         print("Workflow hygiene checks failed:", file=sys.stderr)

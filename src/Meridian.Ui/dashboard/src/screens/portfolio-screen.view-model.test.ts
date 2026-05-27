@@ -11,6 +11,7 @@ import type {
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
+  StrategyRunContinuityDto,
   TradingWorkspaceResponse
 } from "@/types";
 
@@ -92,6 +93,85 @@ const governance: GovernanceWorkspaceResponse = {
     profiles: [],
     reportPackTargets: [],
     summary: ""
+  }
+};
+
+const selectedRunContinuity: StrategyRunContinuityDto = {
+  run: {
+    summary: {
+      runId: "run-1",
+      strategyId: "strategy-1",
+      strategyName: "Mean Reversion",
+      mode: "Paper",
+      engine: "Internal",
+      status: "Running",
+      startedAt: "2026-05-07T11:00:00Z",
+      completedAt: null,
+      datasetReference: "US Equities",
+      feedReference: "alpaca-paper",
+      portfolioId: null,
+      ledgerReference: null,
+      netPnl: 4200,
+      totalReturn: 0.042,
+      finalEquity: 104200,
+      fillCount: 12,
+      lastUpdatedAt: "2026-05-07T12:00:00Z",
+      auditReference: "audit-run-1"
+    },
+    parameters: {},
+    portfolio: null,
+    ledger: null
+  },
+  lineage: {
+    parentRunId: null,
+    parentRun: null,
+    childRuns: []
+  },
+  cashFlow: {
+    asOf: "2026-05-07T12:00:00Z",
+    currency: "USD",
+    totalEntries: 3,
+    totalInflows: 1000,
+    totalOutflows: 500,
+    netCashFlow: 500,
+    projectedNetPosition: 120500,
+    bucketCount: 1,
+    nextBucketStart: null,
+    nextBucketEnd: null,
+    nextBucketNetFlow: null
+  },
+  reconciliation: null,
+  continuityStatus: {
+    hasRun: true,
+    runHealth: "Healthy",
+    hasFills: true,
+    fillsHealth: "Healthy",
+    hasPortfolio: false,
+    portfolioHealth: "Missing",
+    hasLedger: false,
+    ledgerHealth: "Missing",
+    hasCashFlow: true,
+    cashFlowHealth: "Healthy",
+    hasReconciliation: true,
+    reconciliationHealth: "Healthy",
+    asOfDriftMinutes: 0,
+    openReconciliationBreaks: 0,
+    securityCoverageIssueCount: 0,
+    hasWarnings: true,
+    warnings: [
+      {
+        code: "missing-portfolio",
+        severity: "Critical",
+        message: "Portfolio read model is missing for the selected run.",
+        sourceSeam: "portfolio"
+      },
+      {
+        code: "missing-ledger",
+        severity: "Critical",
+        message: "Ledger read model is missing for the selected run.",
+        sourceSeam: "ledger"
+      }
+    ]
   }
 };
 
@@ -276,6 +356,45 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
     expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "1 linked run" });
     expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "Mean Reversion" });
+  });
+
+  it("surfaces selected-run portfolio and ledger continuity blockers", () => {
+    const balancedGovernance: GovernanceWorkspaceResponse = {
+      ...governance,
+      cashFlow: {
+        ...governance.cashFlow,
+        netVariance: 0,
+        tone: "success",
+        summary: "Cash flow is balanced."
+      }
+    };
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance: balancedGovernance,
+      selectedRunContinuity
+    });
+
+    expect(vm.selectedRun?.statusTitle).toBe("Mean Reversion continuity review");
+    expect(vm.selectedRun?.statusTone).toBe("danger");
+    expect(vm.selectedRun?.statusBadgeLabel).toBe("2 blockers");
+    expect(vm.selectedRun?.statusDetail).toContain("Portfolio read model is missing for the selected run.");
+    expect(vm.selectedRun?.statusDetail).toContain("Ledger read model is missing for the selected run.");
+    expect(vm.selectedRun?.fields.find((field) => field.label === "Continuity")).toEqual({
+      label: "Continuity",
+      value: "2 blockers",
+      tone: "danger"
+    });
+    expect(vm.workflowTaskPanel).toMatchObject({
+      statusLabel: "Continuity blocked",
+      statusTone: "danger",
+      selectedSummary: expect.stringContaining("Resolve 2 selected-run continuity blockers before accepting the portfolio-to-ledger handoff.")
+    });
+    expect(vm.workflowTaskPanel?.statusRows.find((row) => row.label === "Run continuity")).toEqual({
+      label: "Run continuity",
+      value: "2 blockers",
+      tone: "danger"
+    });
   });
 
   it("keeps run-evidence chip pluralization in the view model", () => {

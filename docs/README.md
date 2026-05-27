@@ -1,11 +1,11 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-05-20
+**Last Reviewed:** 2026-05-21
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
 
-Current local project path: `D:\Meridian-main`.
+Current local project path: `C:\Dev\Meridian-main`.
 
 ## Platform At A Glance
 
@@ -25,8 +25,11 @@ Meridian's current solution includes:
 - **Operational procedures:** [Operator Runbook](operations/operator-runbook.md)
 - **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md), [Developer Quick Guides](developer/README.md), [Design Documentation](design/README.md)
 - **Repository hygiene:** [Cleanup and Maintenance](operations/cleanup-and-maintenance.md), [Disk Space Hygiene](operations/disk-space-hygiene.md)
+- **Documentation cleanup intake:** [Orphaned Doc Triage Index](operations/orphaned-doc-triage-index.md)
 - **Prompt and agent guidance:** [Automation Prompts](prompts/automation-prompts.md), [Repo Maintenance Prompts](prompts/repo-maintenance-prompts.md)
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
+- **Structured roadmap registry:** [Roadmap Registry](roadmap/README.md)
+- **Source documentation mesh:** [Source Documentation Mesh](source/README.md)
 - **Consolidated planning entry point:** [Current Direction and Status](plans/current-direction-and-status.md)
 - **Current delivery plan:** [Project Roadmap](status/ROADMAP.md)
 - **Target product narrative:** [Target End Product](status/TARGET_END_PRODUCT.md)
@@ -43,7 +46,9 @@ Meridian's current solution includes:
 | Engineering | `architecture/`, `adr/`, `developer/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `design/`, `prompts/`, `ai/` | Developers and tool authors |
 | Governance | `status/`, `plans/`, `evaluations/`, `audits/`, `security/` | Core team and stakeholders |
 
-`generated/` and any file marked as auto-generated should be refreshed by script rather than edited by hand. `docs/_site/` is the built documentation site output.
+`generated/`, `roadmap/generated/`, `source/generated/`, and any file marked as auto-generated
+should be refreshed by script rather than edited by hand. `docs/_site/` is the built documentation
+site output.
 
 ## By Audience
 
@@ -67,6 +72,10 @@ Meridian's current solution includes:
 - [Disk Space Hygiene](operations/disk-space-hygiene.md)
 - [Provider Implementation Guide](development/provider-implementation.md)
 - [Desktop Testing Guide](development/desktop-testing-guide.md)
+- [Codex Desktop Workstation Workflow](development/codex-workflow.md)
+- [Modular Desktop Architecture](development/modular-desktop-architecture.md)
+- [Desktop Resource Management](development/desktop-resource-management.md)
+- [Shared Workstation Components](development/shared-workstation-components.md)
 - [Documentation Contribution Guide](development/documentation-contribution-guide.md)
 - [Architecture Overview](architecture/overview.md)
 - [AI Assistant Resources](ai/README.md)
@@ -128,9 +137,15 @@ Use the documents below to manage that path:
 17. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 The 2026-05-18 documentation refresh consolidates the active planning entry point and preserves the
-current interpretation: browser workstation first for new operator UI, WPF retained as support,
+current interpretation: browser workstation is the parallel new-operator-UI surface, WPF is the active desktop shell,
 Waves 2-4 as the core operator-ready path, Wave 5-6 as later work, and mobile-specific product
 lanes out of scope.
+
+The 2026-05-21 documentation-control refresh adds structured roadmap/source registry guidance to
+the active docs mesh. Roadmap truth now lives in `docs/roadmap/data/*.yml` with generated summaries
+under `docs/roadmap/generated/`, while source module ownership, README coverage, TODOs, diagrams,
+and hash freshness live under `docs/source/`. Use the registry validators and renderers before
+editing generated outputs by hand.
 
 ## Verified Build And Run References
 
@@ -148,7 +163,7 @@ These commands are currently reflected in the repo's code and build scripts:
 
 See [developer/build-test-run.md](developer/build-test-run.md) and
 [developer/publish-standalone-exe.md](developer/publish-standalone-exe.md) for
-short current command paths from `D:\Meridian-main`.
+short current command paths from `C:\Dev\Meridian-main`.
 
 ## Reference
 
@@ -160,9 +175,7 @@ short current command paths from `D:\Meridian-main`.
 
 ## Archive
 
-Historical and superseded material consolidated during docs cleanup now lives under `docs/archive/`.
-Older root-level archive links under `archive/docs/` remain valid historical references until those
-records are migrated intentionally.
+Historical and superseded material consolidated during docs cleanup now lives under `archive/docs/`.
 
 - [Docs archive overview](archive/README.md)
 

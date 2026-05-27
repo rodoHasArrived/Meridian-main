@@ -66,16 +66,18 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.CommandText =
             $"""
             insert into {Qualified("security_aliases")} (
-                alias_id, security_id, alias_kind, alias_value, provider, scope, reason,
+                alias_id, security_id, alias_kind, alias_value, normalized_alias_value, provider, normalized_provider, scope, reason,
                 created_by, created_at, valid_from, valid_to, is_enabled)
             values (
-                @alias_id, @security_id, @alias_kind, @alias_value, @provider, @scope, @reason,
+                @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value, @provider, @normalized_provider, @scope, @reason,
                 @created_by, @created_at, @valid_from, @valid_to, @is_enabled)
             on conflict (alias_id) do update set
                 security_id = excluded.security_id,
                 alias_kind = excluded.alias_kind,
                 alias_value = excluded.alias_value,
+                normalized_alias_value = excluded.normalized_alias_value,
                 provider = excluded.provider,
+                normalized_provider = excluded.normalized_provider,
                 scope = excluded.scope,
                 reason = excluded.reason,
                 created_by = excluded.created_by,
@@ -89,7 +91,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("security_id", alias.SecurityId);
         command.Parameters.AddWithValue("alias_kind", alias.AliasKind);
         command.Parameters.AddWithValue("alias_value", alias.AliasValue);
+        command.Parameters.AddWithValue("normalized_alias_value", SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue));
         command.Parameters.AddWithValue("provider", (object?)alias.Provider ?? DBNull.Value);
+        command.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider)));
         command.Parameters.AddWithValue("scope", alias.Scope.ToString());
         command.Parameters.AddWithValue("reason", (object?)alias.Reason ?? DBNull.Value);
         command.Parameters.AddWithValue("created_by", alias.CreatedBy);
@@ -259,10 +263,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 insert into {Qualified("securities")} (
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
                     exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
+                    normalized_primary_identifier_value,
                     common_terms, asset_specific_terms, provenance, version, effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
                     @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
+                    @normalized_primary_identifier_value,
                     @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version,
                     @effective_from, @effective_to)
                 on conflict (security_id) do update set
@@ -277,6 +283,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                     tick_size = excluded.tick_size,
                     primary_identifier_kind = excluded.primary_identifier_kind,
                     primary_identifier_value = excluded.primary_identifier_value,
+                    normalized_primary_identifier_value = excluded.normalized_primary_identifier_value,
                     common_terms = excluded.common_terms,
                     asset_specific_terms = excluded.asset_specific_terms,
                     provenance = excluded.provenance,
@@ -297,6 +304,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("tick_size", (object?)GetOptionalDecimal(record.CommonTerms, "tickSize") ?? DBNull.Value);
             command.Parameters.AddWithValue("primary_identifier_kind", record.PrimaryIdentifierKind);
             command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+            command.Parameters.AddWithValue("normalized_primary_identifier_value", NormalizePrimaryIdentifierValue(record));
             command.Parameters.AddWithValue("common_terms", record.CommonTerms.GetRawText());
             command.Parameters.AddWithValue("asset_specific_terms", record.AssetSpecificTerms.GetRawText());
             command.Parameters.AddWithValue("provenance", record.Provenance.GetRawText());
@@ -381,16 +389,20 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             insert.CommandText =
                 $"""
                 insert into {Qualified("security_identifiers")} (
-                    security_id, identifier_kind, identifier_value, provider, is_primary,
+                    security_id, identifier_kind, identifier_value, normalized_identifier_value,
+                    provider, normalized_provider, is_primary,
                     valid_from, valid_to, source, confidence, manual_override)
                 values (
-                    @security_id, @identifier_kind, @identifier_value, @provider, @is_primary,
+                    @security_id, @identifier_kind, @identifier_value, @normalized_identifier_value,
+                    @provider, @normalized_provider, @is_primary,
                     @valid_from, @valid_to, @source, @confidence, @manual_override);
                 """;
             insert.Parameters.AddWithValue("security_id", securityId);
             insert.Parameters.AddWithValue("identifier_kind", identifier.Kind.ToString());
             insert.Parameters.AddWithValue("identifier_value", identifier.Value);
+            insert.Parameters.AddWithValue("normalized_identifier_value", SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier));
             insert.Parameters.AddWithValue("provider", (object?)identifier.Provider ?? DBNull.Value);
+            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)));
             insert.Parameters.AddWithValue("is_primary", identifier.IsPrimary);
             insert.Parameters.AddWithValue("valid_from", identifier.ValidFrom.UtcDateTime);
             insert.Parameters.AddWithValue("valid_to", (object?)identifier.ValidTo?.UtcDateTime ?? DBNull.Value);
@@ -423,17 +435,21 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             insert.CommandText =
                 $"""
                 insert into {Qualified("security_aliases")} (
-                    alias_id, security_id, alias_kind, alias_value, provider, scope, reason,
+                    alias_id, security_id, alias_kind, alias_value, normalized_alias_value,
+                    provider, normalized_provider, scope, reason,
                     created_by, created_at, valid_from, valid_to, is_enabled)
                 values (
-                    @alias_id, @security_id, @alias_kind, @alias_value, @provider, @scope, @reason,
+                    @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value,
+                    @provider, @normalized_provider, @scope, @reason,
                     @created_by, @created_at, @valid_from, @valid_to, @is_enabled);
                 """;
             insert.Parameters.AddWithValue("alias_id", alias.AliasId);
             insert.Parameters.AddWithValue("security_id", securityId);
             insert.Parameters.AddWithValue("alias_kind", alias.AliasKind);
             insert.Parameters.AddWithValue("alias_value", alias.AliasValue);
+            insert.Parameters.AddWithValue("normalized_alias_value", SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue));
             insert.Parameters.AddWithValue("provider", (object?)alias.Provider ?? DBNull.Value);
+            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider)));
             insert.Parameters.AddWithValue("scope", alias.Scope.ToString());
             insert.Parameters.AddWithValue("reason", (object?)alias.Reason ?? DBNull.Value);
             insert.Parameters.AddWithValue("created_by", alias.CreatedBy);
@@ -563,7 +579,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select identifier_kind, identifier_value, is_primary, valid_from, valid_to, provider
+            select identifier_kind, identifier_value, is_primary, valid_from, valid_to, provider,
+                   normalized_identifier_value, normalized_provider
             from {Qualified("security_identifiers")}
             where security_id = @security_id
             order by is_primary desc, identifier_kind, identifier_value;
@@ -577,6 +594,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             var kind = Enum.Parse<SecurityIdentifierKind>(reader.GetString(0), ignoreCase: true);
             var value = reader.GetString(1);
             var provider = reader.IsDBNull(5) ? null : reader.GetString(5);
+            var normalizedValue = reader.IsDBNull(6)
+                ? SecurityIdentifierNormalizer.NormalizeValue(kind, value)
+                : reader.GetString(6);
+            var normalizedProvider = reader.IsDBNull(7)
+                ? SecurityIdentifierNormalizer.NormalizeProvider(provider)
+                : reader.GetString(7);
             results.Add(new SecurityIdentifierDto(
                 kind,
                 value,
@@ -584,8 +607,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
                 reader.IsDBNull(4) ? null : new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
                 provider,
-                SecurityIdentifierNormalizer.NormalizeValue(kind, value),
-                SecurityIdentifierNormalizer.NormalizeProvider(provider)));
+                normalizedValue,
+                normalizedProvider));
         }
 
         return results;
@@ -636,6 +659,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         CancellationToken ct)
     {
         var identifierKind = kind.ToString();
+        var normalizedIdentifierValue = SecurityIdentifierNormalizer.NormalizeValue(kind, value);
+        var normalizedProvider = ToNullableString(SecurityIdentifierNormalizer.NormalizeProvider(provider));
+        if (normalizedIdentifierValue.Length == 0)
+        {
+            return null;
+        }
 
         foreach (var sql in new[]
         {
@@ -644,8 +673,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             from {Qualified("security_identifiers")} i
             join {Qualified("securities")} s on s.security_id = i.security_id
             where i.identifier_kind = @identifier_kind
-              and i.identifier_value = @identifier_value
-              and ((@provider is null and i.provider is null) or i.provider = @provider)
+              and i.normalized_identifier_value = @normalized_identifier_value
+              and ((@normalized_provider is null and i.normalized_provider is null) or i.normalized_provider = @normalized_provider)
               and i.valid_from <= @as_of
               and (i.valid_to is null or i.valid_to > @as_of)
               and (@include_inactive = true or s.status = 'Active')
@@ -657,8 +686,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             from {Qualified("security_aliases")} a
             join {Qualified("securities")} s on s.security_id = a.security_id
             where a.alias_kind = @identifier_kind
-              and a.alias_value = @identifier_value
-              and ((@provider is null and a.provider is null) or a.provider = @provider)
+              and a.normalized_alias_value = @normalized_identifier_value
+              and ((@normalized_provider is null and a.normalized_provider is null) or a.normalized_provider = @normalized_provider)
               and a.valid_from <= @as_of
               and (a.valid_to is null or a.valid_to > @as_of)
               and a.is_enabled = true
@@ -669,7 +698,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             select security_id
             from {Qualified("securities")}
             where primary_identifier_kind = @identifier_kind
-              and primary_identifier_value = @identifier_value
+              and normalized_primary_identifier_value = @normalized_identifier_value
               and (@include_inactive = true or status = 'Active')
             limit 1;
             """
@@ -678,8 +707,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             await using var command = connection.CreateCommand();
             command.CommandText = sql;
             command.Parameters.AddWithValue("identifier_kind", identifierKind);
-            command.Parameters.AddWithValue("identifier_value", value);
-            command.Parameters.Add(new NpgsqlParameter("provider", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)provider ?? DBNull.Value });
+            command.Parameters.AddWithValue("normalized_identifier_value", normalizedIdentifierValue);
+            command.Parameters.Add(new NpgsqlParameter("normalized_provider", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)normalizedProvider ?? DBNull.Value });
             command.Parameters.AddWithValue("as_of", asOfUtc.UtcDateTime);
             command.Parameters.AddWithValue("include_inactive", includeInactive);
 
@@ -1665,6 +1694,17 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+
+    private static string NormalizePrimaryIdentifierValue(SecurityProjectionRecord record)
+        => Enum.TryParse<SecurityIdentifierKind>(record.PrimaryIdentifierKind, ignoreCase: true, out var kind)
+            ? SecurityIdentifierNormalizer.NormalizeValue(kind, record.PrimaryIdentifierValue)
+            : SecurityIdentifierNormalizer.NormalizeAliasValue(record.PrimaryIdentifierKind, record.PrimaryIdentifierValue);
+
+    private static object ToDbNullable(string? value)
+        => string.IsNullOrWhiteSpace(value) ? DBNull.Value : value;
+
+    private static string? ToNullableString(string value)
+        => string.IsNullOrWhiteSpace(value) ? null : value;
 
     private static decimal? GetOptionalDecimal(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)

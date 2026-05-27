@@ -60,7 +60,7 @@ public static class BrokerageServiceRegistration
             // Resolve the named brokerage gateway via keyed registration
             var gateway = ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
             var adapterLogger = sp.GetRequiredService<ILogger<BrokerageGatewayAdapter>>();
-            return new BrokerageGatewayAdapter(gateway, adapterLogger);
+            return new BrokerageGatewayAdapter(gateway, adapterLogger, brokerageConfig);
         });
 
         // Register the OMS with the resolved gateway

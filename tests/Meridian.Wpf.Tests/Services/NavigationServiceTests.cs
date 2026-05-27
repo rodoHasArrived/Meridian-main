@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -155,6 +157,67 @@ public sealed class NavigationServiceTests : IDisposable
         var catalogPages = ShellNavigationCatalog.GetRegisteredPageTags().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         registeredPages.Should().BeEquivalentTo(catalogPages);
+    }
+
+    [Fact]
+    public void CreatePageContent_WithWorkspaceScope_ShouldResolvePageFromScope()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var scopedPage = new WorkspaceCapabilityHomePage();
+            var services = new ServiceCollection();
+            services.AddSingleton(scopedPage);
+
+            using var provider = services.BuildServiceProvider();
+            using var scope = provider.CreateScope();
+
+            var content = service.CreatePageContent("PortfolioShell", workspaceScope: scope);
+
+            content.Should().BeSameAs(scopedPage);
+        });
+    }
+
+    [Fact]
+    public void NavigateTo_WithWorkspaceScope_ShouldResolvePageFromScope()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var frame = new Frame();
+            service.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var scopedPage = new WorkspaceCapabilityHomePage();
+
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            service.SetServiceProvider(rootProvider);
+
+            var scopedServices = new ServiceCollection();
+            scopedServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
+            using var scopedProvider = scopedServices.BuildServiceProvider();
+            using var scope = scopedProvider.CreateScope();
+
+            service.CreatePageContent("PortfolioShell", workspaceScope: scope)
+                .Should()
+                .BeSameAs(scopedPage);
+
+            var result = service.NavigateTo("PortfolioShell", workspaceScope: scope);
+
+            result.Should().BeTrue();
+            service.GetCurrentPageTag().Should().Be("PortfolioShell");
+
+            service.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
+
+            var fallbackResult = service.NavigateTo("PortfolioShell");
+
+            fallbackResult.Should().BeTrue();
+            service.GetCurrentPageTag().Should().Be("PortfolioShell");
+        });
     }
 
     [Fact]

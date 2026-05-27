@@ -1,5 +1,6 @@
 using System.IO;
 using Meridian.Application.Pipeline;
+using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
@@ -31,6 +32,14 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
 {
     private readonly string _tempDir;
     private PersistentDedupLedger? _ledger;
+    private static readonly MarketEventType[] SupportedEventTypes =
+    [
+        MarketEventType.Trade,
+        MarketEventType.BboQuote,
+        MarketEventType.L2Snapshot,
+        MarketEventType.OrderFlow,
+        MarketEventType.OptionTrade
+    ];
 
     // -----------------------------------------------------------------------
     // Budget constants — must stay in sync with PerformanceBudgetRegistry.cs
@@ -42,6 +51,8 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     private const long WalChecksumSmallMaxBytes = 0;
     private const long WalChecksumMediumMaxBytes = 0;
     private const long WalChecksumLargeMaxBytes = 1024;
+    private const long AlpacaParseTradeSourceGeneratedMaxBytes = 512;
+    private const long AlpacaParseQuoteSourceGeneratedMaxBytes = 640;
 
     public AllocationBudgetIntegrationTests()
     {
@@ -63,6 +74,39 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     // -----------------------------------------------------------------------
     // DedupLedger — cache-hit path
     // -----------------------------------------------------------------------
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void DedupLedger_CacheHit_Matrix_AllocatesWithinBudget()
+    {
+        // Arrange
+        const int symbolCardinality = 16;
+        const int eventTypeCardinality = 4;
+        _ledger = new PersistentDedupLedger(_tempDir);
+        var events = BuildEventMatrix(symbolCardinality, eventTypeCardinality);
+        foreach (var evt in events)
+        {
+            _ledger.SeedCacheEntry(evt);
+        }
+
+        ForceGc();
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        foreach (var evt in events)
+        {
+            _ = _ledger.IsDuplicateCacheCheck(evt);
+        }
+
+        var after = GC.GetAllocatedBytesForCurrentThread();
+        var allocatedPerEvent = (after - before) / (double)events.Length;
+
+        // Assert
+        Assert.True(
+            allocatedPerEvent <= DedupCacheHitMaxBytes,
+            $"DedupLedger matrix cache-hit allocated {allocatedPerEvent:N0} avg bytes/event over {events.Length} events; budget is {DedupCacheHitMaxBytes} bytes/event. " +
+            $"The IsDuplicateCacheCheck() path must not allocate any managed objects.");
+    }
 
     [Fact]
     [Trait("Category", "Performance")]
@@ -90,6 +134,34 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     // -----------------------------------------------------------------------
     // DedupLedger — cache-miss key computation
     // -----------------------------------------------------------------------
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void DedupLedger_CacheMiss_Matrix_AllocatesWithinBudget()
+    {
+        // Arrange
+        const int symbolCardinality = 16;
+        const int eventTypeCardinality = 4;
+        _ledger = new PersistentDedupLedger(_tempDir);
+        var events = BuildEventMatrix(symbolCardinality, eventTypeCardinality);
+        ForceGc();
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        foreach (var evt in events)
+        {
+            _ = _ledger.ComputeKeyForBenchmark(evt);
+        }
+
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert
+        var allocated = after - before;
+        var allocatedPerEvent = allocated / (double)events.Length;
+        Assert.True(
+            allocatedPerEvent <= DedupCacheMissMaxBytes,
+            $"DedupLedger matrix cache-miss allocated {allocatedPerEvent:N0} avg bytes/event over {events.Length} events; budget is {DedupCacheMissMaxBytes} bytes/event.");
+    }
 
     [Fact]
     [Trait("Category", "Performance")]
@@ -201,6 +273,58 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     }
 
     // -----------------------------------------------------------------------
+    // Alpaca wire-message parse — source-generated System.Text.Json context
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void AlpacaParse_Trade_SourceGenerated_AllocatesWithinBudget()
+    {
+        // Arrange — matches JsonParsingBenchmarks.ParseTrade_SourceGenerated.
+        var json = """
+            {"T":"t","S":"SPY","p":450.25,"s":100,"t":"2024-01-15T14:30:00Z","x":"NYSE","i":12345}
+            """u8.ToArray();
+        _ = HighPerformanceJson.ParseAlpacaTrade(json);
+        ForceGc();
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        _ = HighPerformanceJson.ParseAlpacaTrade(json);
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert
+        var allocated = after - before;
+        Assert.True(
+            allocated <= AlpacaParseTradeSourceGeneratedMaxBytes,
+            $"AlpacaParse_Trade_SourceGenerated allocated {allocated} bytes; budget is {AlpacaParseTradeSourceGeneratedMaxBytes} bytes. " +
+            $"The source-generated Alpaca trade parser should stay near the 20260521 benchmark result of 384 B/op.");
+    }
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void AlpacaParse_Quote_SourceGenerated_AllocatesWithinBudget()
+    {
+        // Arrange — matches JsonParsingBenchmarks.ParseQuote_SourceGenerated.
+        var json = """
+            {"T":"q","S":"SPY","bp":450.24,"bs":200,"ap":450.26,"as":150,"t":"2024-01-15T14:30:00Z","bx":"NYSE","ax":"ARCA"}
+            """u8.ToArray();
+        _ = HighPerformanceJson.ParseAlpacaQuote(json);
+        ForceGc();
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        _ = HighPerformanceJson.ParseAlpacaQuote(json);
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert
+        var allocated = after - before;
+        Assert.True(
+            allocated <= AlpacaParseQuoteSourceGeneratedMaxBytes,
+            $"AlpacaParse_Quote_SourceGenerated allocated {allocated} bytes; budget is {AlpacaParseQuoteSourceGeneratedMaxBytes} bytes. " +
+            $"The source-generated Alpaca quote parser should stay near the 20260521 benchmark result of 472 B/op.");
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
@@ -224,4 +348,179 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                 SequenceNumber: 1234567,
                 StreamId: "ALPACA",
                 Venue: "XNAS"));
+
+    private static MarketEvent[] BuildEventMatrix(int symbolCount, int typeCardinality)
+    {
+        var safeSymbolCount = Math.Max(1, symbolCount);
+        var safeTypeCount = Math.Clamp(typeCardinality, 1, SupportedEventTypes.Length);
+
+        var events = new MarketEvent[safeSymbolCount * safeTypeCount];
+        var start = new DateTimeOffset(2026, 1, 1, 9, 30, 0, TimeSpan.Zero);
+        var eventIndex = 0;
+        var sequence = 1L;
+
+        for (var typeIndex = 0; typeIndex < safeTypeCount; typeIndex++)
+        {
+            var eventType = SupportedEventTypes[typeIndex];
+            for (var symbolIndex = 0; symbolIndex < safeSymbolCount; symbolIndex++)
+            {
+                var symbol = SymbolForIndex(symbolIndex);
+                var source = SourceForIndex(typeIndex + symbolIndex);
+                events[eventIndex++] = BuildEvent(
+                    eventType,
+                    symbol,
+                    start.AddTicks(sequence),
+                    sequence,
+                    source);
+
+                sequence++;
+            }
+        }
+
+        return events;
+    }
+
+    private static string SymbolForIndex(int index)
+        => index switch
+        {
+            0 => "AAPL",
+            1 => "MSFT",
+            2 => "SPY",
+            3 => "QQQ",
+            4 => "NVDA",
+            5 => "META",
+            6 => "AMD",
+            7 => "TSLA",
+            8 => "AMZN",
+            9 => "GOOG",
+            10 => "NFLX",
+            11 => "INTC",
+            12 => "CRM",
+            13 => "ADBE",
+            14 => "AVGO",
+            15 => "ORCL",
+            _ => $"SYM{index:D4}"
+        };
+
+    private static string SourceForIndex(int index)
+        => (index % 3) switch
+        {
+            0 => "ALPACA",
+            1 => "IBKR",
+            _ => "ROBINHOOD"
+        };
+
+    private static MarketEvent BuildEvent(
+        MarketEventType type,
+        string symbol,
+        DateTimeOffset timestamp,
+        long sequence,
+        string source)
+    {
+        return type switch
+        {
+            MarketEventType.BboQuote => MarketEvent.BboQuote(
+                timestamp,
+                symbol,
+                new BboQuotePayload(
+                    Timestamp: timestamp,
+                    Symbol: symbol,
+                    BidPrice: 100m,
+                    BidSize: 100,
+                    AskPrice: 100.05m,
+                    AskSize: 150,
+                    MidPrice: 100.025m,
+                    Spread: 0.05m,
+                    SequenceNumber: sequence,
+                    StreamId: source,
+                    Venue: "XNAS")),
+            MarketEventType.L2Snapshot => MarketEvent.L2Snapshot(
+                timestamp,
+                symbol,
+                BuildSnapshot(timestamp, symbol, sequence, source),
+                sequence,
+                source),
+            MarketEventType.OrderFlow => MarketEvent.OrderFlow(
+                timestamp,
+                symbol,
+                new OrderFlowStatistics(
+                    Timestamp: timestamp,
+                    Symbol: symbol,
+                    BuyVolume: sequence * 2,
+                    SellVolume: sequence,
+                    UnknownVolume: 0,
+                    VWAP: 100.01m,
+                    Imbalance: 0m,
+                    TradeCount: 1,
+                    SequenceNumber: sequence,
+                    StreamId: source,
+                    Venue: "XNAS"),
+                sequence,
+                source),
+            MarketEventType.OptionTrade => MarketEvent.OptionTrade(
+                timestamp,
+                symbol,
+                new OptionTrade(
+                    Timestamp: timestamp,
+                    Symbol: symbol,
+                    Contract: new OptionContractSpec(
+                        UnderlyingSymbol: symbol,
+                        Strike: 100m,
+                        Expiration: new DateOnly(2026, 12, 31),
+                        Right: OptionRight.Call),
+                    Price: 1.23m,
+                    Size: 10,
+                    Aggressor: AggressorSide.Buy,
+                    UnderlyingPrice: 150m,
+                    SequenceNumber: sequence,
+                    Source: source),
+                sequence,
+                source),
+            _ => MarketEvent.Trade(
+                timestamp,
+                symbol,
+                new Trade(
+                    Timestamp: timestamp,
+                    Symbol: symbol,
+                    Price: 100.10m,
+                    Size: 100,
+                    Aggressor: AggressorSide.Buy,
+                    SequenceNumber: sequence,
+                    StreamId: source,
+                    Venue: "XNAS"),
+                sequence,
+                source)
+        };
+    }
+
+    private static LOBSnapshot BuildSnapshot(
+        DateTimeOffset timestamp,
+        string symbol,
+        long sequence,
+        string source)
+    {
+        var bids = new OrderBookLevel[]
+        {
+            new(OrderBookSide.Bid, 0, 99.95m, 100m, "MM"),
+            new(OrderBookSide.Bid, 1, 99.90m, 200m, "MM")
+        };
+
+        var asks = new OrderBookLevel[]
+        {
+            new(OrderBookSide.Ask, 0, 100.05m, 90m, "MM"),
+            new(OrderBookSide.Ask, 1, 100.10m, 180m, "MM")
+        };
+
+        return new LOBSnapshot(
+            Timestamp: timestamp,
+            Symbol: symbol,
+            Bids: bids,
+            Asks: asks,
+            MidPrice: 100.00m,
+            MicroPrice: 100.00m,
+            Imbalance: 0m,
+            SequenceNumber: sequence,
+            StreamId: source,
+            Venue: "XNAS");
+    }
 }

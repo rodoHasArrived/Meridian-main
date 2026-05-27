@@ -92,7 +92,7 @@ A unified code review skill that catches architecture violations, performance an
 
 ## Context: What This Project Is
 
-Meridian is a .NET 10 fund-management and trading-platform system with F# domain models, provider-backed market data, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
+Meridian is a .NET 10 fund-management and trading-platform system with F# domain models, provider-backed market data, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. WPF is the active desktop shell for operator workflows; the browser workstation under `src/Meridian.Ui/dashboard/` is the parallel surface for new operator-facing UI development. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 
 **Key facts for reviewers (authoritative counts in `../_shared/project-context.md`):**
 - **779 source files**: 769 C#, 14 F#, 266 test files, ~4,135 test methods across 4 test projects

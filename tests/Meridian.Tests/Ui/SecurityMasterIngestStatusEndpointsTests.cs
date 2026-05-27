@@ -20,6 +20,56 @@ namespace Meridian.Tests.Ui;
 public sealed class SecurityMasterIngestStatusEndpointsTests
 {
     [Fact]
+    public async Task MapSecurityMasterEndpoints_SearchRoute_ReturnsBadRequest_WhenQueryMissing()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(UiApiRoutes.SecurityMasterSearch, new { query = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await queryService.DidNotReceive().SearchAsync(Arg.Any<SecuritySearchRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_SearchRoute_ReturnsBadRequest_WhenSkipNegative()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(UiApiRoutes.SecurityMasterSearch, new { query = "AAPL", skip = -1 });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await queryService.DidNotReceive().SearchAsync(Arg.Any<SecuritySearchRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task MapSecurityMasterEndpoints_IngestStatusRoute_ReturnsTypedPayload()
     {
         var queryService = Substitute.For<ContractsSecurityMasterQueryService>();

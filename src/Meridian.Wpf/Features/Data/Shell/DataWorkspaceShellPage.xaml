@@ -189,11 +189,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <views:WorkspaceShellContextStripControl x:Name="ContextStrip" />
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
+                                                 ShellContext="{Binding ShellContext}" />
 
         <Border Grid.Row="1"
                 Style="{StaticResource SectionCardStyle}"
-                Margin="0,16,0,16">
+                Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.6*" />
@@ -216,7 +217,7 @@
                                        HorizontalAlignment="Center" />
                         </Border>
                         <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Data Operations"
+                            <TextBlock Text="Data"
                                        Style="{StaticResource PageTitleStyle}" />
                             <TextBlock Text="Provider readiness, queue pressure, storage posture, and export delivery from one operator shell."
                                        Style="{StaticResource CardDescriptionStyle}"
@@ -310,7 +311,7 @@
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    TextWrapping="Wrap"
-                                   Text="The Data Operations shell is collecting current readiness signals."
+                                   Text="The Data shell is collecting current readiness signals."
                                    AutomationProperties.AutomationId="OperationsHeroHandoffDetailText" />
                         <WrapPanel Margin="0,12,0,0">
                             <Button x:Name="OperationsHeroPrimaryActionButton"
@@ -434,7 +435,7 @@
                                        FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Data Operations" />
+                                       Text="Data" />
                             <TextBlock x:Name="OperationsSummaryDetailText"
                                        Margin="0,6,0,0"
                                        FontSize="12"
@@ -562,7 +563,7 @@
                 <views:MeridianDockingManager x:Name="DataOperationsDockManager"
                                               Height="320"
                                               PaneDropRequested="OnPaneDropRequested"
-                                              AutomationProperties.Name="Data Operations Dock Manager" />
+                                              AutomationProperties.Name="Data Dock Manager" />
             </StackPanel>
         </Border>
     </Grid>

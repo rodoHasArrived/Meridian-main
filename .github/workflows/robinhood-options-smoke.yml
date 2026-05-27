@@ -1,0 +1,85 @@
+name: Robinhood Options Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Build configuration.
+        required: false
+        type: choice
+        default: Release
+        options:
+          - Release
+          - Debug
+      skip_build:
+        description: Skip the WPF build step (use only when the binary is already built).
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: robinhood-options-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  robinhood-smoke:
+    name: Robinhood Options Smoke Test
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-wpf-
+            ${{ runner.os }}-nuget-
+
+      - name: Restore WPF project
+        if: ${{ inputs.skip_build != true }}
+        shell: pwsh
+        run: >
+          dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+      - name: Run Robinhood options smoke
+        shell: pwsh
+        run: |
+          $smokeArgs = @('-Configuration', '${{ inputs.configuration }}')
+          if ('${{ inputs.skip_build }}' -eq 'true') {
+            $smokeArgs += '-SkipBuild'
+          }
+          & scripts/dev/robinhood-options-smoke.ps1 @smokeArgs
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: robinhood-options-smoke-${{ github.run_number }}
+          path: artifacts/desktop-workflows/robinhood-options-smoke/
+          if-no-files-found: ignore
+          retention-days: 14

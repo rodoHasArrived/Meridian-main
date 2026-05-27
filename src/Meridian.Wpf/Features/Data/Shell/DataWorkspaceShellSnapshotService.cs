@@ -17,7 +17,7 @@ public interface IDataWorkspaceShellSnapshotService
     Task<DataOperationsWorkspaceData> LoadAsync(CancellationToken cancellationToken = default);
 }
 
-public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnapshotService
+public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnapshotService, IWorkspaceScopedService
 {
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly WpfNotificationService _notificationService;

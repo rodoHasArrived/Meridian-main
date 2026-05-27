@@ -139,6 +139,7 @@ public sealed class PriorityBackfillQueue : IDisposable
             ToDate = request.EndDate,
             Granularity = request.Granularity,
             PreferredProviders = request.PreferredProviders?.ToList() ?? new List<string>(),
+            DependsOnJobIds = request.DependsOnJobIds?.Where(id => !string.IsNullOrWhiteSpace(id)).ToList() ?? new List<string>(),
             Options = new BackfillJobOptions
             {
                 Priority = (int)request.Priority,
@@ -153,7 +154,7 @@ public sealed class PriorityBackfillQueue : IDisposable
             _cancellationTokens[job.JobId] = new CancellationTokenSource();
 
             // Check dependencies
-            if (HasUnmetDependencies(job, request.DependsOnJobIds))
+            if (HasUnmetDependencies(job))
             {
                 job.Status = BackfillJobStatus.Paused;
                 job.StatusReason = "Waiting for dependencies";
@@ -232,28 +233,49 @@ public sealed class PriorityBackfillQueue : IDisposable
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            while (_priorityQueue.TryDequeue(out var job, out _))
+            var deferredJobs = new List<(BackfillJob Job, int Priority)>();
+            var jobsToInspect = _priorityQueue.Count;
+            while (jobsToInspect-- > 0 && _priorityQueue.TryDequeue(out var job, out _))
             {
-                // Skip if cancelled or already running
-                if (job.Status is BackfillJobStatus.Cancelled or BackfillJobStatus.Running)
-                    continue;
-
-                // Check dependencies again (they might have completed)
-                if (job.Status == BackfillJobStatus.Paused && job.StatusReason?.Contains("dependencies") == true)
+                // Skip terminal jobs or jobs already running.
+                if (job.IsComplete || job.Status is BackfillJobStatus.Running)
                 {
-                    // Dependencies not yet met, re-queue
-                    _priorityQueue.Enqueue(job, GetPriorityScore(job, (BackfillPriority)job.Options.Priority) + 1000);
                     continue;
                 }
 
+                // Check dependencies again (they might have completed)
+                if (job.Status == BackfillJobStatus.Paused && IsDependencyPause(job))
+                {
+                    if (HasUnmetDependencies(job))
+                    {
+                        deferredJobs.Add((job, GetPriorityScore(job, (BackfillPriority)job.Options.Priority) + 1000));
+                        continue;
+                    }
+
+                    job.Status = BackfillJobStatus.Pending;
+                    job.StatusReason = null;
+                    RequeueDeferredJobs(deferredJobs);
+                    return job;
+                }
+
+                RequeueDeferredJobs(deferredJobs);
                 return job;
             }
 
+            RequeueDeferredJobs(deferredJobs);
             return null;
         }
         finally
         {
             _queueLock.Release();
+        }
+
+        void RequeueDeferredJobs(List<(BackfillJob Job, int Priority)> deferred)
+        {
+            foreach (var (deferredJob, priority) in deferred)
+            {
+                _priorityQueue.Enqueue(deferredJob, priority);
+            }
         }
     }
 
@@ -445,13 +467,13 @@ public sealed class PriorityBackfillQueue : IDisposable
         );
     }
 
-    private bool HasUnmetDependencies(BackfillJob job, string[]? dependsOnJobIds)
+    private bool HasUnmetDependencies(BackfillJob job)
     {
-        if (dependsOnJobIds == null || dependsOnJobIds.Length == 0)
+        if (job.DependsOnJobIds.Count == 0)
             return false;
 
-        return dependsOnJobIds.Any(depId =>
-            _allJobs.TryGetValue(depId, out var depJob) &&
+        return job.DependsOnJobIds.Any(depId =>
+            !_allJobs.TryGetValue(depId, out var depJob) ||
             depJob.Status is not BackfillJobStatus.Completed);
     }
 
@@ -460,13 +482,17 @@ public sealed class PriorityBackfillQueue : IDisposable
         foreach (var job in _allJobs.Values)
         {
             if (job.Status == BackfillJobStatus.Paused &&
-                job.StatusReason?.Contains("dependencies") == true)
+                IsDependencyPause(job) &&
+                !HasUnmetDependencies(job))
             {
-                // Re-evaluate this job
                 await ResumeJobAsync(job.JobId, ct).ConfigureAwait(false);
             }
         }
     }
+
+    private static bool IsDependencyPause(BackfillJob job)
+        => job.DependsOnJobIds.Count > 0 &&
+           job.StatusReason?.Contains("dependencies", StringComparison.OrdinalIgnoreCase) == true;
 
     private int GetPriorityScore(BackfillJob job, BackfillPriority priority)
     {

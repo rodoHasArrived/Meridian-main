@@ -1,4 +1,5 @@
 using Meridian.Contracts.Banking;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.Banking;
 
@@ -7,7 +8,7 @@ namespace Meridian.Application.Banking;
 /// Holds pending payments and bank transactions in process memory; suitable for
 /// testing and non-persistent deployments.
 /// </summary>
-public sealed class InMemoryBankingService : IBankingService
+public sealed class InMemoryBankingService : INonProductionOnlyService, IBankingService
 {
     private readonly object _gate = new object();
     private readonly Dictionary<Guid, PendingPaymentDto> _pendingPayments = new();

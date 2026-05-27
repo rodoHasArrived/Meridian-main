@@ -1,13 +1,15 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-20
+**Last Reviewed:** 2026-05-27
 
-## TODO Checklist (Concrete Implementation Items)
-- [ ] Define scope boundaries for **current direction and status** and document explicit in-scope vs out-of-scope items.
-- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
-- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
-- [ ] Add/update operator runbook steps and rollback procedure for the current direction and status workflow.
-- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+## Current Planning TODOs
+
+- [ ] Keep desktop acceptance matrix rows as the delivery unit for W2/W3/W4 desktop slices: lane, scenario, shared-contract check, and focused test evidence.
+- [ ] Prioritize high-traffic page-body workflow outcomes (run -> portfolio -> ledger -> reconciliation and casework/sign-off/reporting) over additional shell framing work.
+- [ ] Keep support evidence and exit claims separate in roadmap/status updates; do not mark exits from support-only proofs.
+- [ ] Keep browser and desktop parity checks coupled to shared endpoint/read-model payloads for every desktop workflow change.
+- [ ] Keep Wave 2 cockpit reliability as the active release gate; do not widen live-readiness language until Lane A criteria stay continuously green.
+- [ ] Re-run structured roadmap/source stale-doc and hash checks after docs or source ownership changes.
 
 **Role:** Single planning entry point for current direction, project status, and document roles.
 
@@ -17,11 +19,11 @@ Use this file before reading individual roadmap or plan documents. It consolidat
 
 Meridian is being productized as an evidence-backed investment operations platform: a local-first system for proving what happened across trusted data, research, paper validation, portfolio review, ledger/accounting, reconciliation, approvals, and governed reports.
 
-The current product path is browser-first for operator workflows:
+The current product path keeps browser and desktop operator workflows active in parallel:
 
-- Active operator UI lane: `src/Meridian.Ui/dashboard/` and built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`.
-- Retained desktop lane: `src/Meridian.Wpf/` remains support for compatibility, shared-contract regression coverage, and retained desktop workflows.
-- Shared UI/API support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` should continue to carry read models and workstation endpoints used by both browser and retained desktop surfaces.
+- Active browser UI lane: `src/Meridian.Ui/dashboard/` and built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`.
+- Active desktop UI lane: `src/Meridian.Wpf/` is again a first-class operator surface for Windows desktop workflows.
+- Shared UI/API support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` should continue to carry read models and workstation endpoints used by both browser and desktop surfaces.
 - Visible operator navigation: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - No mobile product lane is active. Do not add native mobile clients, mobile-first workflows, MAUI, React Native, Flutter, iOS, or Android product surfaces. Responsive browser validation is allowed for the web workstation only.
 
@@ -42,9 +44,9 @@ Wave status labels and target dates are canonical in [`../status/PROGRAM_STATE.m
 | Wave | Status | Current meaning |
 | --- | --- | --- |
 | W1 Provider confidence and checkpoint evidence | Done | Repo-closed trust gate. Keep DK1 packet, provider matrix, checkpoint, and evidence docs synchronized when provider evidence changes. |
-| W2 Paper-trading cockpit | In Progress | Critical path. The readiness contract, replay evidence, operator inbox, and browser Trading surfaces are support evidence; operator-accepted cockpit reliability remains open. |
-| W3 Shared run / portfolio / ledger continuity | In Progress | Critical path. Shared run, portfolio, ledger, brokerage-sync, evidence, and reconciliation seams exist; cross-workspace continuity still needs acceptance evidence. |
-| W4 Governance and fund operations | In Progress | Critical path. Security Master baseline and reconciliation/report-pack support exist; durable casework, close/report workflows, approvals, and provenance remain open. |
+| W2 Paper-trading cockpit | In Progress | Critical path and first release gate. Readiness contracts, replay evidence, operator inbox, and desktop/browser workflow slices are support evidence; daily-use cockpit confidence remains open until Lane A acceptance is continuously green. |
+| W3 Shared run / portfolio / ledger continuity | In Progress | Critical path. Shared continuity seams exist, but the full run -> portfolio -> ledger -> reconciliation workflow still needs acceptance evidence on high-traffic workflow pages and parity across both clients. |
+| W4 Governance and fund operations | In Progress | Critical path. Security Master baseline and reconciliation/report-pack support exist; durable casework, sign-off, close/report lifecycle, and provenance still need end-to-end acceptance evidence. |
 | W5 Backtest Studio unification | Planned | Later wave. Do not pull forward ahead of W2-W4 unless the roadmap explicitly changes. |
 | W6 Live integration readiness | Planned | Later wave. Keep read-only/paper-first defaults until trust, paper, reconciliation, and promotion gates are materially closed. |
 | Optional advanced tracks | Optional | L3, performance, scale-out, advanced research, and similar work should not compete with the core operator-ready path. |
@@ -56,7 +58,7 @@ for the golden path from trusted data through governed report pack. A passing ru
 IDs, ledger references, and validation text. `.github/workflows/golden-path-validation.yml` now
 turns that harness into a repeatable acceptance lane and uploads the generated readiness dashboard
 as `pilot-acceptance-evidence`. This advances support evidence for W2-W4; it does not by itself
-close operator acceptance, live readiness, broad WPF scope, mobile, W5, or W6.
+close operator acceptance, live readiness, desktop/browser parity, mobile, W5, or W6.
 
 Release/distribution hygiene evidence as of 2026-05-19 is narrower than roadmap completion: publish
 output now belongs under ignored `artifacts/publish/` paths, the publish script has a
@@ -88,6 +90,15 @@ configs while archiving legacy installs, and browser workstation forms now expos
 forbidden-role, and disabled-field states in accessible recovery text. These strengthen the active
 path but do not change canonical wave status.
 
+May 21 strategy, contract, and documentation-control evidence is also support evidence. The shared
+Strategy Engine foundation now defines strategy metadata, parameter schemas, data dependencies,
+pre-run validation, evidence hashes, and workstation definitions/validate-run endpoints for the
+Covered Call and visual designer paths. Additive workstation continuity payload guards now protect
+ledger/reconciliation/strategy read models, provider adapter follow-up is anchored by a capability
+matrix, and roadmap/source documentation truth now flows through structured registries plus
+stale-doc and hash validation. These improve execution control, shared-contract discipline, and
+documentation freshness, but they do not change W2-W4 status labels.
+
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in
 that stage gate's `blockers` list. The current stage mapping is:
@@ -98,6 +109,14 @@ that stage gate's `blockers` list. The current stage mapping is:
 | W3 shared run / portfolio / ledger continuity | `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, `Reconciliation` | Run continuity, portfolio, ledger, brokerage/account, reconciliation, or evidence-packet gaps belong on the affected stage. |
 | W4 governance and fund operations | `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, `GovernedReportPack` | Casework, approval/sign-off, provenance, report-pack lifecycle, or governed-output gaps belong on the affected stage. |
 
+Desktop/WPF workflow claims also must map to
+[`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md). That matrix
+is the desktop acceptance filter for Lane A W2 cockpit reliability, Lane B W3 run -> portfolio ->
+ledger continuity, and Lane C W4 reconciliation/governance close flow. It requires a shared
+contract/read-model check, focused WPF evidence, browser parity or an explicit mismatch blocker, and
+the matching pilot-readiness stage posture before any desktop slice is described as accepted.
+Treat support evidence separately from exit claims and keep claims scoped to the exact matrix scenario.
+
 ## Active Planning Set
 
 These documents define current direction and should be read in this order:
@@ -107,11 +126,14 @@ These documents define current direction and should be read in this order:
 | [`../status/ROADMAP.md`](../status/ROADMAP.md) | Authoritative roadmap narrative, wave order, and conservative completion claims. |
 | [`../status/PROGRAM_STATE.md`](../status/PROGRAM_STATE.md) | Canonical wave status table and target dates. |
 | [`../status/provider-capability-matrix.md`](../status/provider-capability-matrix.md) | Provider capability/state ownership matrix used in recurring status review; non-`complete` rows require both an owner and a target sprint. |
+| [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) | Structured roadmap and source-documentation registries; edit data/renderers rather than generated outputs. |
 | [`README.md`](README.md) | Active plan index and role classification for every plan file in `docs/plans/`. |
 | [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the evidence-backed investment-operations direction. |
 | [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md) | Short-horizon execution slice for W2-W4 plus trust-gate maintenance. |
+| [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance and W2-W4 blocker closure. |
+| [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF workflow acceptance matrix for W2 cockpit, W3 continuity, and W4 governance lanes, including shared checks, focused WPF tests, browser parity, and release blockers. |
 | [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for the active W2-W4 path. |
-| [`web-ui-development-pivot.md`](web-ui-development-pivot.md) | Browser-first operator UI policy and retained WPF support boundary. |
+| [`web-ui-development-pivot.md`](web-ui-development-pivot.md) | Browser workstation foundation, shared-surface rules, and desktop/browser coexistence history. |
 | [`meridian-pilot-workflow.md`](meridian-pilot-workflow.md) | Golden-path productization filter: trusted data to governed report pack. |
 | [`paper-trading-cockpit-reliability-sprint.md`](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability contract for readiness, replay, controls, and promotion. |
 | [`brokerage-portfolio-sync-blueprint.md`](brokerage-portfolio-sync-blueprint.md) | Brokerage and custodian account-sync design for Wave 3-4 continuity. |
@@ -132,8 +154,8 @@ These plans remain useful, but they are not current readiness drivers unless the
 
 - Start from this file, then use [`README.md`](README.md) to locate the detailed plan for the slice being changed.
 - Do not treat support evidence as a wave exit. A route, DTO, fixture, WPF page, or endpoint proves support only when the corresponding acceptance evidence is present.
-- Keep WPF work narrow unless it protects shared contracts, fixes regressions, or maintains retained desktop support.
-- Prefer browser-workstation implementation for new operator-visible workflows.
+- Treat browser workstation and desktop/WPF as active operator surfaces; choose the surface that best fits the workflow while keeping shared behavior out of surface-specific business logic.
+- Land new business logic, read models, and workstation API seams in shared contracts or services before composing them into browser or desktop workflows.
 - Archive completed, superseded, or historical plans under `archive/docs/` and link to them only as historical context.
 - Keep active docs aligned to the seven visible workspaces. Legacy `Research`, `Data Operations`, and `Governance` names may appear as compatibility groupings, not as visible root navigation.
 
@@ -142,7 +164,7 @@ These plans remain useful, but they are not current readiness drivers unless the
 Before a planning doc marks a slice as complete, verify that it has the evidence expected for its lane:
 
 - W1/DK1: fresh provider packet, matrix alignment, packet-bound sign-off when evidence changes, and provider-validation docs updated.
-- W2: readiness endpoint behavior, replay freshness, operator-inbox routing, promotion/checkpoint gates, and browser cockpit acceptance evidence.
+- W2: readiness endpoint behavior, replay freshness, operator-inbox routing, promotion/checkpoint gates, Lane A desktop acceptance evidence, and browser parity evidence from shared payloads.
 - W3: shared run, portfolio, ledger, brokerage/account, reconciliation, and evidence-packet continuity across the seven-workspace path.
 - W4: reconciliation casework, approval/sign-off, report-pack lifecycle, provenance, and governed output evidence.
 - W5/W6: only after W2-W4 gates stop being speculative blockers.

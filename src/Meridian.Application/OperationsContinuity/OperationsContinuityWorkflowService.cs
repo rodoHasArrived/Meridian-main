@@ -525,7 +525,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     ]);
             }
 
-            if (!TryBuildJournalWrite(request, out var builtJournalWrite, out var journalBlockers))
+            if (!TryBuildJournalWrite(workflow, request, out var builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
                     "VALIDATION_FAILED",
@@ -806,6 +806,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 workflow.MarkClosed(now);
                 return null;
             },
+            requireIntactAuditChain: true,
             ct: ct).ConfigureAwait(false);
     }
 
@@ -821,6 +822,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         Func<OperationsContinuityWorkflow, OperationsWorkflowBlockerDto?>? precondition = null,
         Func<OperationsContinuityWorkflow, IReadOnlyList<OperationsEvidenceLinkDto>, DateTimeOffset, OperationsWorkflowBlockerDto?>? command = null,
         bool allowClosedWorkflow = false,
+        bool requireIntactAuditChain = false,
         CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
@@ -869,6 +871,21 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         if (precondition?.Invoke(workflow) is { } preconditionBlocker)
         {
             return Failure("INVALID_STATE_TRANSITION", preconditionBlocker.Message, [preconditionBlocker]);
+        }
+
+        if (requireIntactAuditChain)
+        {
+            var auditTimeline = await _auditStore.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
+            if (!OperationsWorkflowAuditHashing.TryValidateChain(auditTimeline, out var auditBlockerCode, out var auditMessage))
+            {
+                var blocker = new OperationsWorkflowBlockerDto(
+                    auditBlockerCode,
+                    auditMessage,
+                    gate,
+                    "Critical",
+                    []);
+                return Failure("INVALID_STATE_TRANSITION", blocker.Message, [blocker]);
+            }
         }
 
         var fromStatus = _statusDerivation.Derive(workflow);
@@ -1145,6 +1162,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     }
 
     private static bool TryBuildJournalWrite(
+        OperationsContinuityWorkflow workflow,
         OperationsLedgerPostRequestDto request,
         out LedgerJournalEntryWrite journalWrite,
         out IReadOnlyList<OperationsWorkflowBlockerDto> blockers)
@@ -1165,7 +1183,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             return false;
         }
 
-        var validationBlockers = ValidateJournalCandidate(candidate, request.EvidenceLinks);
+        var validationBlockers = ValidateJournalCandidate(workflow, request, candidate, request.EvidenceLinks);
         if (validationBlockers.Count > 0)
         {
             blockers = validationBlockers;
@@ -1205,7 +1223,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 candidate.Timestamp,
                 description,
                 lines,
-                ToJournalEntryMetadata(candidate.Metadata));
+                ToJournalEntryMetadata(candidate));
 
             journalWrite = new LedgerJournalEntryWrite(
                 entry,
@@ -1241,6 +1259,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     }
 
     private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateJournalCandidate(
+        OperationsContinuityWorkflow workflow,
+        OperationsLedgerPostRequestDto request,
         OperationsLedgerJournalCandidateDto candidate,
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
     {
@@ -1254,6 +1274,33 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         if (candidate.PeriodId == Guid.Empty)
         {
             blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_REQUIRED", "Ledger journal candidate period id is required.", evidence));
+        }
+        else if (TryResolveWorkflowPeriodGuid(workflow.PeriodId, out var workflowPeriodId) && candidate.PeriodId != workflowPeriodId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_MISMATCH", "Ledger journal candidate period id must match the workflow period.", evidence));
+        }
+
+        if (candidate.AggregateId != Guid.Empty && candidate.AggregateId != workflow.FundAccountId)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH", "Ledger journal candidate aggregate id must match the workflow fund account.", evidence));
+        }
+
+        if (candidate.CommandId.GetValueOrDefault() == Guid.Empty ||
+            string.IsNullOrWhiteSpace(candidate.IdempotencyKey))
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_IDEMPOTENCY_KEY_MISSING",
+                "Ledger journal candidate requires a durable command id and idempotency key before posting.",
+                evidence));
+        }
+
+        if (candidate.Metadata?.SecurityId is null ||
+            string.IsNullOrWhiteSpace(candidate.SecurityMasterProvenance))
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_JOURNAL_PROVENANCE_MISSING",
+                "Ledger journal candidate requires Security Master security id and provenance before posting.",
+                evidence));
         }
 
         if (candidate.Timestamp == default)
@@ -1287,8 +1334,21 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             }
         }
 
+        var totalDebits = candidate.Lines?.Sum(static line => line.Debit) ?? 0m;
+        var totalCredits = candidate.Lines?.Sum(static line => line.Credit) ?? 0m;
+        if (Math.Abs(totalDebits - totalCredits) > 0.000001m)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_DRAFT_IMBALANCED",
+                "Ledger journal candidate debit and credit totals must balance before posting.",
+                evidence));
+        }
+
         return blockers;
     }
+
+    private static bool TryResolveWorkflowPeriodGuid(string workflowPeriodId, out Guid resolvedPeriodId) =>
+        Guid.TryParse(workflowPeriodId, out resolvedPeriodId);
 
     private static OperationsWorkflowBlockerDto CreateJournalCandidateBlocker(
         string code,
@@ -1296,24 +1356,49 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks) =>
         new(code, message, OperationsGateKeyDto.LedgerPosting, "Critical", evidenceLinks);
 
-    private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsJournalEntryMetadataDto? metadata) =>
-        metadata is null
-            ? null
-            : new JournalEntryMetadata(
-                ActivityType: NormalizeOptional(metadata.ActivityType),
-                Symbol: NormalizeOptional(metadata.Symbol),
-                SecurityId: metadata.SecurityId,
-                OrderId: metadata.OrderId,
-                FillId: metadata.FillId,
-                ProjectId: NormalizeOptional(metadata.ProjectId),
-                LedgerBook: NormalizeOptional(metadata.LedgerBook),
-                LedgerView: null,
-                ScenarioId: NormalizeOptional(metadata.ScenarioId),
-                StrategyId: NormalizeOptional(metadata.StrategyId),
-                FinancialAccountId: NormalizeOptional(metadata.FinancialAccountId),
-                CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
-                Institution: NormalizeOptional(metadata.Institution),
-                Tags: metadata.Tags);
+    private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsLedgerJournalCandidateDto candidate)
+    {
+        var metadata = candidate.Metadata;
+        if (metadata is null)
+        {
+            return null;
+        }
+
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (metadata.Tags is not null)
+        {
+            foreach (var pair in metadata.Tags)
+            {
+                tags[pair.Key] = pair.Value;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(candidate.IdempotencyKey))
+        {
+            tags["operationsContinuityIdempotencyKey"] = candidate.IdempotencyKey.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(candidate.SecurityMasterProvenance))
+        {
+            tags["securityMasterProvenance"] = candidate.SecurityMasterProvenance.Trim();
+        }
+
+        return new JournalEntryMetadata(
+            ActivityType: NormalizeOptional(metadata.ActivityType),
+            Symbol: NormalizeOptional(metadata.Symbol),
+            SecurityId: metadata.SecurityId,
+            OrderId: metadata.OrderId,
+            FillId: metadata.FillId,
+            ProjectId: NormalizeOptional(metadata.ProjectId),
+            LedgerBook: NormalizeOptional(metadata.LedgerBook),
+            LedgerView: null,
+            ScenarioId: NormalizeOptional(metadata.ScenarioId),
+            StrategyId: NormalizeOptional(metadata.StrategyId),
+            FinancialAccountId: NormalizeOptional(metadata.FinancialAccountId),
+            CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
+            Institution: NormalizeOptional(metadata.Institution),
+            Tags: tags.Count == 0 ? null : tags);
+    }
 
     private static string NormalizePolicy(string value) =>
         string.IsNullOrWhiteSpace(value) ? "legacy-v1" : value.Trim();

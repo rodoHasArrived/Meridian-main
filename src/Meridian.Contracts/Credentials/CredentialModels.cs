@@ -99,7 +99,7 @@ public sealed class CredentialInfo
     [JsonPropertyName("canAutoRefresh")]
     public bool CanAutoRefresh { get; set; }
 
-    [JsonPropertyName("refreshToken")]
+    [JsonIgnore]
     public string? RefreshToken { get; set; }
 
     /// <summary>
@@ -230,7 +230,7 @@ public sealed class CredentialMetadata
     [JsonPropertyName("testStatus")]
     public CredentialTestStatus TestStatus { get; set; } = CredentialTestStatus.Unknown;
 
-    [JsonPropertyName("refreshToken")]
+    [JsonIgnore]
     public string? RefreshToken { get; set; }
 
     [JsonPropertyName("tokenEndpoint")]

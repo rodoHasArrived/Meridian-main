@@ -1,187 +1,233 @@
-version: 1
 schema:
-  roadmap_item: docs/roadmap/schemas/roadmap-item.v1.schema.json
-  evidence_record: docs/roadmap/schemas/evidence-record.v1.schema.json
+  id: meridian.roadmap-items
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
 
-contract:
-  statuses:
-    - planned
-    - in_progress
-    - ready_for_acceptance
-    - accepted
-    - done
-
-  transition_evidence_requirements:
-    ready_for_acceptance:
-      minimum_evidence_records: 1
-      require_reviewer_metadata: true
-      allowed_review_statuses:
-        - in_review
-        - approved
-    accepted:
-      minimum_evidence_records: 2
-      require_reviewer_metadata: true
-      allowed_review_statuses:
-        - approved
-      required_evidence_types:
-        - validation
-    done:
-      minimum_evidence_records: 2
-      require_reviewer_metadata: true
-      allowed_review_statuses:
-        - approved
-      required_evidence_types:
-        - validation
-        - release_note
+registry:
+  id: roadmap-items
+  title: Meridian Roadmap Items
+  owner: Core Team
+  snapshot_date: 2026-05-20
 
 items:
-  - id: W1-provider-trust-gate
-    title: "W1 - Provider trust gate closure and maintenance"
+  - id: W1-DATA-001
+    title: Provider trust gate and data confidence baseline
+    wave: W1
+    stage_gates:
+      - DataConfidence
+    workspace:
+      - Data
+    owner_lane: Data Confidence and Validation
     status: done
-    health: on_track
-    priority: high
-    evidence_posture: complete
-    completion_term: near_term
-    owner: trading-workstation-owner
-    plan_reference: docs/plans/evidence-backed-investment-operations-plan.md
-    status_reference: docs/status/provider-validation-matrix.md
-    exit_criteria:
-      criteria_version: 1
-      checks:
-        - id: w1-parity-packet
-          description: "Latest DK1 parity packet is generated and valid for exit claim."
-          required: true
-        - id: w1-operator-signoff
-          description: "Packet-bound operator sign-off is signed by required owners."
-          required: true
-    evidence:
-      - type: validation
-        path: artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json
-        produced_by: scripts/dev/generate-dk1-pilot-parity-packet.ps1
-        produced_on: 2026-04-27
-        commit_sha: a1b2c3d4
-        reviewed_by: provider-readiness-board
-        review_status: approved
-      - type: release_note
-        path: docs/status/provider-validation-matrix.md
-        produced_by: docs/status/provider-validation-matrix.md
-        produced_on: 2026-04-27
-        commit_sha: b2c3d4e5
-        reviewed_by: trading-workstation-owner
-        review_status: approved
-
-  - id: W2-paper-trading-cockpit
-    title: "W2 - Paper trading cockpit reliability"
-    status: in_progress
-    health: at_risk
+    health: green
     priority: critical
-    evidence_posture: partial
-    completion_term: near_term
-    owner: trading-workstation-owner
-    plan_reference: docs/plans/paper-trading-cockpit-reliability-sprint.md
-    status_reference: docs/status/kernel-readiness-dashboard.md
+    evidence_posture: complete
+    current_summary: Provider validation packets and DK1 operator sign-off are the baseline evidence for trusted data operations.
     exit_criteria:
-      criteria_version: 1
-      checks:
-        - id: w2-readiness-endpoint
-          description: "Trading readiness endpoint is stable for account and global scopes."
-          required: true
-        - id: w2-operator-inbox-routing
-          description: "Operator inbox exposes actionable readiness and reconciliation routing."
-          required: true
-        - id: w2-replay-audit
-          description: "Replay verification remains durable across restart and audit reconstruction."
-          required: true
+      - Provider parity packet exists and is linked from status documentation.
+      - Operator sign-off evidence is available for DK1 readiness.
+      - Provider validation matrix remains the readable front door.
+    source_modules:
+      - SRC-HOST
+      - SRC-APP
+      - SRC-CONTRACTS
+    diagrams:
+      - DIA-ASSURANCE-LOOP
     evidence:
-      - type: validation
+      - type: status
+        path: docs/status/provider-validation-matrix.md
+    last_reviewed: 2026-05-20
+
+  - id: W2-TRD-001
+    title: Paper trading cockpit reliability
+    wave: W2
+    stage_gates:
+      - PaperSession
+    workspace:
+      - Trading
+    owner_lane: Execution and Fund Accounts
+    status: in_progress
+    health: yellow
+    priority: critical
+    evidence_posture: support_evidence
+    current_summary: Trading readiness, operator inbox routing, and replay durability are the active cockpit-readiness concerns.
+    exit_criteria:
+      - Trading readiness endpoint works for global and account-scoped checks.
+      - Operator inbox exposes actionable readiness and reconciliation routing.
+      - Paper session replay verification remains durable across restart.
+      - Browser and WPF workstation surfaces show readiness posture through shared contracts where each surface participates.
+    source_modules:
+      - SRC-HOST
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-PAPER-SESSION-REPLAY
+      - DIA-BROWSER-WORKSTATION
+    evidence:
+      - type: test-plan
         path: docs/testing/WAVE2_ACCEPTANCE_TESTS.md
-        produced_by: tests/Meridian.Tests/Meridian.Tests.csproj
-        produced_on: 2026-05-19
-        commit_sha: c3d4e5f6
-        reviewed_by: qa-automation
-        review_status: in_review
-        notes: "Acceptance slices updated and tied to W2 readiness checks."
+    blockers:
+      - Operator acceptance evidence still needs the final cockpit-readiness pass.
+    last_reviewed: 2026-05-20
 
-  - id: W3-research-to-paper-continuity
-    title: "W3 - Research to paper continuity"
+  - id: W2-PROMO-001
+    title: Paper promotion evidence and operator acceptance
+    wave: W2
+    stage_gates:
+      - PromotionReview
+    workspace:
+      - Strategy
+      - Trading
+    owner_lane: Execution and Fund Accounts
     status: planned
-    health: on_track
+    health: yellow
     priority: high
-    evidence_posture: not_started
-    completion_term: mid_term
-    owner: strategy-and-research-owner
-    plan_reference: docs/plans/waves-2-4-operator-readiness-addendum.md
+    evidence_posture: support_evidence
+    current_summary: Promotion review must connect research lineage, paper-session evidence, and operator approval in one auditable path.
     exit_criteria:
-      criteria_version: 1
-      checks:
-        - id: w3-lineage-continuity
-          description: "Research lineage is preserved through paper-session promotion trail."
-          required: true
-        - id: w3-operator-workflow
-          description: "Operator workflow supports explainable run-to-promotion handoff."
-          required: true
+      - Promotion candidates show evidence lineage before acceptance.
+      - Operator approval records link to the paper-session context.
+      - Follow-up TODOs are registry-backed and assigned.
+    source_modules:
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    last_reviewed: 2026-05-20
 
-  - id: W4-governance-productization
-    title: "W4 - Governance productization"
+  - id: W3-CONT-001
+    title: Research to paper continuity
+    wave: W3
+    stage_gates:
+      - ResearchContinuity
+    workspace:
+      - Strategy
+      - Trading
+    owner_lane: Strategy and Research
     status: planned
-    health: watch
+    health: green
     priority: high
-    evidence_posture: not_started
-    completion_term: long_term
-    owner: governance-and-accounting-owner
-    plan_reference: docs/plans/waves-2-4-operator-readiness-addendum.md
+    evidence_posture: planned_evidence
+    current_summary: Strategy research outputs need traceable handoff into paper-session validation and promotion review.
     exit_criteria:
-      criteria_version: 1
-      checks:
-        - id: w4-governed-report-pack
-          description: "Governed report-pack lifecycle has approval and export audit evidence."
-          required: true
-        - id: w4-dk2-signoff
-          description: "DK2 readiness sign-off packet is approved by all required owners."
-          required: true
+      - Research lineage persists through paper-session handoff.
+      - Strategy run evidence links to promotion candidates.
+      - Validation commands are documented in source READMEs.
+    source_modules:
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-BROWSER-WORKSTATION
+    last_reviewed: 2026-05-20
 
-  - id: W5-source-doc-mesh
-    title: "W5 - Source documentation mesh"
-    status: ready_for_acceptance
-    health: on_track
-    priority: medium
-    evidence_posture: sufficient_for_acceptance
-    completion_term: near_term
-    owner: docs-and-automation-owner
-    plan_reference: docs/plans/approach-b-plus-v2-implementation-plan.md
-    exit_criteria:
-      criteria_version: 1
-      checks:
-        - id: w5-priority-modules
-          description: "Priority modules are registered with canonical paths and stable IDs."
-          required: true
-        - id: w5-readme-mapping
-          description: "README coverage mapping exists for priority modules with transition metadata."
-          required: true
-    evidence:
-      - type: validation
-        path: docs/source/source-documentation-standard.md
-        produced_by: tools/source_docs/validate_source_readmes.py
-        produced_on: 2026-05-20
-        commit_sha: d4e5f6a7
-        reviewed_by: docs-architecture-review
-        review_status: approved
-
-  - id: W6-ci-drift-and-determinism
-    title: "W6 - CI drift and deterministic generation gates"
+  - id: W4-RECON-001
+    title: Portfolio ledger reconciliation readiness
+    wave: W4
+    stage_gates:
+      - PortfolioLedgerReview
+    workspace:
+      - Portfolio
+      - Accounting
+    owner_lane: Governance and Ledger
     status: planned
-    health: on_track
-    priority: medium
-    evidence_posture: not_started
-    completion_term: mid_term
-    owner: platform-automation-owner
-    plan_reference: docs/plans/approach-b-plus-v2-implementation-plan.md
+    health: yellow
+    priority: high
+    evidence_posture: planned_evidence
+    current_summary: Ledger and reconciliation workflows need evidence-linked acceptance before governed reporting can claim readiness.
     exit_criteria:
-      criteria_version: 1
-      checks:
-        - id: w6-drift-gate
-          description: "CI fails on generator drift and post-render diff mismatch."
-          required: true
-        - id: w6-determinism-gate
-          description: "Render-twice determinism checks are enforced in CI."
-          required: true
+      - Reconciliation queue actions link to ledger evidence.
+      - Break resolution and sign-off states are operator-visible.
+      - Shared contracts remain compatible across browser and WPF workstation surfaces.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-WPF
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    last_reviewed: 2026-05-20
+
+  - id: W4-RPT-001
+    title: Governed report pack readiness
+    wave: W4
+    stage_gates:
+      - GovernedReportPack
+    workspace:
+      - Reporting
+      - Accounting
+    owner_lane: Governance and Ledger
+    status: planned
+    health: yellow
+    priority: high
+    evidence_posture: planned_evidence
+    current_summary: Report-pack generation needs approval, export evidence, and clear ownership before being treated as governed output.
+    exit_criteria:
+      - Report-pack lifecycle includes approval evidence.
+      - Export output records are linked to source data and acceptance status.
+      - Documentation states the operator value and validation commands.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-WPF
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    last_reviewed: 2026-05-20
+
+  - id: W5-BTSTUDIO-001
+    title: Backtesting studio evidence loop
+    wave: W5
+    stage_gates:
+      - BacktestingEvidence
+    workspace:
+      - Strategy
+    owner_lane: Strategy and Research
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: Backtesting studio work remains downstream of paper-session and research continuity readiness.
+    exit_criteria:
+      - Backtest result evidence links to strategy lineage.
+      - Operator-facing acceptance criteria are checklist-backed.
+      - Source READMEs explain module ownership and test lanes.
+    source_modules:
+      - SRC-APP
+      - SRC-CONTRACTS
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    last_reviewed: 2026-05-20
+
+  - id: W6-LIVE-001
+    title: Live-readiness governance
+    wave: W6
+    stage_gates:
+      - LiveReadiness
+    workspace:
+      - Trading
+      - Settings
+    owner_lane: Governance and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: Live-readiness remains gated by trusted data, paper validation, reconciliation, and governed reporting evidence.
+    exit_criteria:
+      - Live action surfaces remain paper-first until acceptance gates are green.
+      - Credential and provider checks stay secret-safe and read-only by default.
+      - Governance sign-off is linked before any live-readiness claim.
+    source_modules:
+      - SRC-HOST
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    last_reviewed: 2026-05-20

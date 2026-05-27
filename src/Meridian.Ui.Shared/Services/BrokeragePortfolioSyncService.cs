@@ -12,8 +12,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
-#pragma warning disable CS0618 // Retained compatibility service persists legacy brokerage projection DTOs.
-
 /// <summary>
 /// Configures the durable brokerage read-side sync used by workstation fund ops.
 /// </summary>
@@ -191,7 +189,7 @@ public sealed class BrokeragePortfolioSyncService
                 fundAccountId,
                 link,
                 attemptedAt,
-                $"No brokerage sync adapter is registered for provider '{link.ProviderId}'.");
+                $"Provider credentials are missing or no brokerage sync adapter is registered for provider '{link.ProviderId}'.");
             await PersistFailureProjectionAsync(fundAccountId, link, status, attemptedAt, ct).ConfigureAwait(false);
             await RecordSharedSyncHistoryAsync(
                 fundAccountId,
@@ -287,7 +285,7 @@ public sealed class BrokeragePortfolioSyncService
         return projection.Status;
     }
 
-    public async Task<IReadOnlyList<WorkstationBrokeragePositionDto>> GetPositionsAsync(
+    public async Task<IReadOnlyList<FundAccountBrokeragePositionDto>> GetPositionsAsync(
         Guid fundAccountId,
         CancellationToken ct = default)
     {
@@ -295,10 +293,10 @@ public sealed class BrokeragePortfolioSyncService
         return projection?.Positions ?? [];
     }
 
-    public async Task<WorkstationBrokerageSyncViewDto?> GetActivityAsync(Guid fundAccountId, CancellationToken ct = default)
+    public async Task<FundAccountBrokerageSyncActivityDto?> GetActivityAsync(Guid fundAccountId, CancellationToken ct = default)
         => await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
 
-    public async Task<WorkstationBrokerageSyncViewDto?> GetViewAsync(Guid fundAccountId, CancellationToken ct = default)
+    public async Task<FundAccountBrokerageSyncActivityDto?> GetViewAsync(Guid fundAccountId, CancellationToken ct = default)
         => await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
 
     public async Task<WorkstationBrokerageAccountLinkDto?> LinkAccountAsync(
@@ -446,7 +444,7 @@ public sealed class BrokeragePortfolioSyncService
 
         var providerFilter = NormalizeProviderId(providerId);
         var projectionRoot = Path.Combine(_options.RootDirectory, "projections");
-        var projections = new List<WorkstationBrokerageSyncViewDto>();
+        var projections = new List<FundAccountBrokerageSyncActivityDto>();
         if (Directory.Exists(projectionRoot))
         {
             foreach (var path in Directory.EnumerateFiles(projectionRoot, "current.json", SearchOption.AllDirectories))
@@ -513,7 +511,7 @@ public sealed class BrokeragePortfolioSyncService
             Warnings: projections.Count == 0 ? ["No brokerage sync projections match the requested provider."] : []);
     }
 
-    private async Task<WorkstationBrokerageSyncViewDto> BuildProjectionAsync(
+    private async Task<FundAccountBrokerageSyncActivityDto> BuildProjectionAsync(
         Guid fundAccountId,
         WorkstationBrokerageAccountLinkDto link,
         DateTimeOffset attemptedAt,
@@ -524,7 +522,7 @@ public sealed class BrokeragePortfolioSyncService
         CancellationToken ct)
     {
         var missingSecurityCount = 0;
-        var positions = new List<WorkstationBrokeragePositionDto>();
+        var positions = new List<FundAccountBrokeragePositionDto>();
         foreach (var position in portfolio?.Positions ?? [])
         {
             ct.ThrowIfCancellationRequested();
@@ -535,7 +533,7 @@ public sealed class BrokeragePortfolioSyncService
                 missingSecurityCount++;
             }
 
-            positions.Add(new WorkstationBrokeragePositionDto(
+            positions.Add(new FundAccountBrokeragePositionDto(
                 Symbol: position.Symbol,
                 Quantity: position.Quantity,
                 AverageEntryPrice: position.AverageEntryPrice,
@@ -585,13 +583,13 @@ public sealed class BrokeragePortfolioSyncService
             AccountKind: link.AccountKind);
 
         var projectionPath = BuildProjectionPath(fundAccountId);
-        return new WorkstationBrokerageSyncViewDto(
+        return new FundAccountBrokerageSyncActivityDto(
             FundAccountId: fundAccountId,
             Link: link,
             Status: status,
             Balance: portfolio?.Balance is null
                 ? null
-                : new WorkstationBrokerageBalanceSnapshotDto(
+                : new FundAccountBrokerageBalanceSnapshotDto(
                     Cash: portfolio.Balance.Cash,
                     Equity: portfolio.Balance.Equity,
                     BuyingPower: portfolio.Balance.BuyingPower,
@@ -599,7 +597,7 @@ public sealed class BrokeragePortfolioSyncService
                     MarginBalance: portfolio.Balance.MarginBalance),
             Positions: positions,
             Orders: activity?.Orders
-                .Select(static order => new WorkstationBrokerageOrderDto(
+                .Select(static order => new FundAccountBrokerageOrderDto(
                     OrderId: order.OrderId,
                     ClientOrderId: order.ClientOrderId,
                     Symbol: order.Symbol,
@@ -614,7 +612,7 @@ public sealed class BrokeragePortfolioSyncService
                     UpdatedAt: order.UpdatedAt))
                 .ToArray() ?? [],
             Fills: activity?.Fills
-                .Select(static fill => new WorkstationBrokerageFillDto(
+                .Select(static fill => new FundAccountBrokerageFillDto(
                     FillId: fill.FillId,
                     OrderId: fill.OrderId,
                     Symbol: fill.Symbol,
@@ -626,7 +624,7 @@ public sealed class BrokeragePortfolioSyncService
                     Commission: fill.Commission))
                 .ToArray() ?? [],
             CashTransactions: activity?.CashTransactions
-                .Select(static cash => new WorkstationBrokerageCashTransactionDto(
+                .Select(static cash => new FundAccountBrokerageCashTransactionDto(
                     TransactionId: cash.TransactionId,
                     TransactionType: cash.TransactionType,
                     Amount: cash.Amount,
@@ -648,7 +646,7 @@ public sealed class BrokeragePortfolioSyncService
         CancellationToken ct)
     {
         var projectionPath = BuildProjectionPath(fundAccountId);
-        var projection = new WorkstationBrokerageSyncViewDto(
+        var projection = new FundAccountBrokerageSyncActivityDto(
             FundAccountId: fundAccountId,
             Link: link,
             Status: status,
@@ -664,7 +662,7 @@ public sealed class BrokeragePortfolioSyncService
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
     }
 
-    private async Task PersistProjectionAsync(WorkstationBrokerageSyncViewDto projection, CancellationToken ct)
+    private async Task PersistProjectionAsync(FundAccountBrokerageSyncActivityDto projection, CancellationToken ct)
     {
         await WriteJsonAsync(projection.ProjectionPath, projection, ct).ConfigureAwait(false);
         await WriteJsonAsync(
@@ -845,7 +843,7 @@ public sealed class BrokeragePortfolioSyncService
     private async Task EnrichSharedReadServicesAsync(
         Guid fundAccountId,
         DateTimeOffset attemptedAt,
-        WorkstationBrokerageSyncViewDto projection,
+        FundAccountBrokerageSyncActivityDto projection,
         CancellationToken ct)
     {
         if (projection.Balance is null)
@@ -897,7 +895,7 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
     }
 
-    private async Task<WorkstationBrokerageSyncViewDto?> LoadProjectionAsync(Guid fundAccountId, CancellationToken ct)
+    private async Task<FundAccountBrokerageSyncActivityDto?> LoadProjectionAsync(Guid fundAccountId, CancellationToken ct)
     {
         var path = BuildProjectionPath(fundAccountId);
         if (!File.Exists(path))
@@ -906,15 +904,15 @@ public sealed class BrokeragePortfolioSyncService
         }
 
         await using var stream = File.OpenRead(path);
-        return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncViewDto>(stream, JsonOptions, ct).ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync<FundAccountBrokerageSyncActivityDto>(stream, JsonOptions, ct).ConfigureAwait(false);
     }
 
-    private async Task<WorkstationBrokerageSyncViewDto?> ReadProjectionFileAsync(string path, CancellationToken ct)
+    private async Task<FundAccountBrokerageSyncActivityDto?> ReadProjectionFileAsync(string path, CancellationToken ct)
     {
         try
         {
             await using var stream = File.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncViewDto>(stream, JsonOptions, ct).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<FundAccountBrokerageSyncActivityDto>(stream, JsonOptions, ct).ConfigureAwait(false);
         }
         catch (JsonException ex)
         {
@@ -940,8 +938,8 @@ public sealed class BrokeragePortfolioSyncService
         return await JsonSerializer.DeserializeAsync<WorkstationBrokerageAccountLinkDto>(stream, JsonOptions, ct).ConfigureAwait(false);
     }
 
-    private static IEnumerable<WorkstationBrokerageCashTransactionDto> FilterCashTransactions(
-        WorkstationBrokerageSyncViewDto? projection,
+    private static IEnumerable<FundAccountBrokerageCashTransactionDto> FilterCashTransactions(
+        FundAccountBrokerageSyncActivityDto? projection,
         DateOnly? from,
         DateOnly? to)
     {
@@ -958,7 +956,7 @@ public sealed class BrokeragePortfolioSyncService
         });
     }
 
-    private static BrokerageCashFlowEntryDto ToCashFlowEntry(WorkstationBrokerageCashTransactionDto transaction)
+    private static BrokerageCashFlowEntryDto ToCashFlowEntry(FundAccountBrokerageCashTransactionDto transaction)
         => new(
             TransactionId: transaction.TransactionId,
             TransactionType: transaction.TransactionType,
@@ -1331,5 +1329,3 @@ public sealed class BrokeragePortfolioSyncService
         string LastRawSnapshotPath,
         string LastProjectionPath);
 }
-
-#pragma warning restore CS0618

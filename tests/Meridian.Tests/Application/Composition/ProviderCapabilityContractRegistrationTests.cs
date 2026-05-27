@@ -3,16 +3,25 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
+using Meridian.Contracts.Api;
 using Meridian.Domain.Events;
+using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
 
-public sealed class ProviderCapabilityContractRegistrationTests
+public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
 {
+    public void Dispose()
+    {
+        ProviderCatalog.RuntimeCatalogProvider = null;
+        ProviderCatalog.RuntimeCatalogEntryProvider = null;
+    }
+
     [Fact]
     public async Task DataSourceDeclarations_ShouldMatchImplementedContracts_AndRegistrationPaths()
     {

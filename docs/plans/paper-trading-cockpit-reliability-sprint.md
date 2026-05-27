@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-05-20
+**Last Reviewed:** 2026-05-21
 
 
 ## TODO Checklist (Concrete Implementation Items)
@@ -11,7 +11,7 @@
 - [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 Planning review note 2026-05-18: this remains the Wave 2 cockpit reliability contract. The active
-operator UI proof path is the browser workstation, with retained WPF/API surfaces consuming the
+operator UI proof path runs through shared workstation contracts, with browser, WPF, and API surfaces consuming the
 same readiness, session, replay, control, audit, and promotion seams. Start from
 [`current-direction-and-status.md`](current-direction-and-status.md) for the consolidated current
 planning interpretation before using this sprint as the Wave 2 detail contract.
@@ -45,17 +45,17 @@ This sprint closes that gap with four explicit acceptance gates:
 3. risk auditability
 4. promotion traceability
 
-## Sprint Completion Scoreboard (2026-05-18)
+## Sprint Completion Scoreboard (2026-05-21)
 
 This section turns the reliability sprint into an execution checklist so Wave 2 can be closed with
 evidence instead of feature-count claims.
 
 | Gate | Current Status | Evidence In Repo | Remaining Work To Mark Done |
 | --- | --- | --- | --- |
-| Replay confidence | **Completed (implementation); awaiting fresh dated packet per release** | Shared readiness models stale replay evidence and work-item IDs (`paper-replay-stale-{normalizedSessionId}`; lower-cased with non-alphanumerics collapsed to `-`), replay audits persist compared counts and mismatch reason, and the Wave 2 evidence runbook now defines `verify -> stale -> re-verify` capture steps. | Generate and archive the current-release date-stamped evidence packet from the runbook sequence. |
-| Session persistence | **Completed** | Session metadata, fills, order history, and ledger continuity persistence are in service seams; readiness reads those seams; automated continuity flow now covers `create -> restart/restore -> verify -> close` in one test. | Keep this coverage green in Wave 2 acceptance runs. |
-| Risk auditability | **Completed (implementation); awaiting fresh dated packet per release** | Readiness keeps `audit-controls` in review when actor/scope/rationale are missing, projects an execution-control work item, and focused readiness tests fail when explainability fields are missing. | Capture one dated operator evidence snapshot in the same packet used for release gating. |
-| Promotion traceability | **Completed (implementation); awaiting fresh dated packet per release** | Durable promotion history is persisted and replayed after restart; readiness gates require operator/rationale/lineage/audit-reference completeness; API-level readiness tests enforce review-required posture when trace is incomplete. | Include approve/reject trace evidence in the dated release packet and verify audit-reference continuity. |
+| Replay confidence | **Done** | Cockpit-level stale-replay recovery test (`trading-screen.test.tsx > clears stale replay work item after re-verify returns consistent state`); named replay-mismatch state test; service-level Wave2 acceptance tests. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/evidence/wave2-cockpit-evidence-packet.md). | Operator acceptance sign-off. |
+| Session persistence | **Done** | Cockpit-level `create→verify→close` flow test (`trading-screen.test.tsx > create→verify→close session flow`); named context-required state test; service-level `Wave2PaperTradingCockpitAcceptanceTests.SessionPersistenceGate_*`. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/evidence/wave2-cockpit-evidence-packet.md). | Keep this coverage green in Wave 2 acceptance runs. |
+| Risk auditability | **Done** | Named controls-blocked state test (circuit-breaker reason surfaced, routes to `/trading/risk`); ExecutionControl routing unit test; service-level readiness endpoint tests. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/evidence/wave2-cockpit-evidence-packet.md). | Operator acceptance sign-off. |
+| Promotion traceability | **Done** | Approval checklist field validated in view model (blocks empty checklist, auto-populated from evaluation, clears on runId change); `approvalChecklist` in serialized request; end-to-end happy path test. Evidence packet: [wave2-cockpit-evidence-packet.md](../status/evidence/wave2-cockpit-evidence-packet.md). | Operator acceptance sign-off. |
 
 ### Definition of Done for This Sprint
 
@@ -75,7 +75,7 @@ date-stamped evidence slice:
 
 ### In Scope
 
-- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with the web dashboard as the active operator lane and retained WPF/API surfaces as supporting consumers
+- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with browser, WPF, and API consumers aligned around the same readiness contracts
 - make replay verification an operator-facing readiness signal instead of a hidden service capability
 - tighten order, control, and risk audit correlation so decisions can be explained from the cockpit
 - make `Backtest -> Paper` traceability durable and make `Paper -> Live` readiness explicit without widening live-readiness claims
@@ -92,7 +92,7 @@ date-stamped evidence slice:
 ### Assumptions
 
 - Wave 1 remains the trust boundary for provider confidence and is not reopened here.
-- Wave 2 is a shared workstation cockpit hardening effort: the web dashboard is now the active operator shell, and retained WPF/API surfaces should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
+- Wave 2 is a shared workstation cockpit hardening effort: the browser and WPF operator shells should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
 - Later `Paper -> Live` work should only inherit controls from this sprint; it should not claim live readiness by default.
 
 ## Acceptance Gates
@@ -433,7 +433,7 @@ npm --prefix src/Meridian.Ui/dashboard test -- trading-screen api.trading
 
 ## Cross-Surface Run Continuity Acceptance Matrix (Wave 2 hard gate)
 
-The sprint is not complete until API, web Research, retained WPF, and operator work-item routing stay aligned for canonical run identity and continuity.
+The sprint is not complete until API, web Research, WPF, and operator work-item routing stay aligned for canonical run identity and continuity.
 
 ### Cross-surface acceptance criteria
 

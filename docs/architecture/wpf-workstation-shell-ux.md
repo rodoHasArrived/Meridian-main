@@ -15,8 +15,8 @@ Each workspace shell follows the same structure:
 
 Only queues, inspectors, and docked surfaces scroll. The page chrome itself remains stable.
 
-This document describes the retained WPF shell pattern. New operator-facing UI work now lands in the
-browser workstation first, using the visible seven-workspace model:
+This document describes the WPF workstation shell pattern. New operator-facing UI work also lands in the
+browser workstation, using the visible seven-workspace model:
 
 - `Data`
 - `Strategy`
@@ -26,8 +26,7 @@ browser workstation first, using the visible seven-workspace model:
 - `Reporting`
 - `Settings`
 
-The retained WPF shell keeps compatibility workspace groupings for desktop support and regression
-coverage, but open workflow work should avoid treating the older `Research`, `Data Operations`, and
+The WPF shell uses workspace groupings for desktop support while open workflow work should avoid treating the older `Research`, `Data Operations`, and
 `Governance` labels as the product's visible root taxonomy.
 
 ## Operating Contexts

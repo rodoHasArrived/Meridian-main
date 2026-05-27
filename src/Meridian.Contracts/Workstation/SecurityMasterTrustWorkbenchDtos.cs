@@ -63,6 +63,11 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityValidationReportDto? ValidationReport { get; init; }
     public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }
     public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }
+    public IReadOnlyList<SecurityMasterChangeHistoryItemDto>? ChangeHistory { get; init; }
+    public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }
+    public SecurityMasterLotModelDto? LotModel { get; init; }
+    public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }
+    public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }
 }
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
@@ -155,6 +160,157 @@ public sealed record SecurityMasterSchemaCompatibilityDto(
     bool HasLegacyAssetSpecificTerms,
     bool HasEconomicTerms,
     bool HasClassificationPayload,
+    string Summary);
+
+public sealed record SecurityMasterChangeHistoryItemDto(
+    string ChangeId,
+    long StreamVersion,
+    string EventType,
+    DateTimeOffset ChangedAtUtc,
+    DateTimeOffset? EffectiveAtUtc,
+    string Actor,
+    string Origin,
+    string SourceSystem,
+    string? SourceRecordId,
+    string? Reason,
+    string Summary,
+    IReadOnlyList<string> ChangedFields,
+    string ChangedFieldsSummary);
+
+public sealed record SecurityMasterScheduleSummaryDto(
+    bool SupportsCashflowSchedule,
+    bool SupportsFactorHistory,
+    bool HasEconomicScheduleTerms,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateOnly? NextLifecycleDate,
+    string SourceSummary,
+    string Summary);
+
+public sealed record SecurityMasterScheduleBookDto(
+    bool SupportsCashflowSchedule,
+    bool SupportsFactorHistory,
+    bool HasEconomicScheduleTerms,
+    string Currency,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateOnly? NextLifecycleDate,
+    string SourceSummary,
+    string Summary,
+    IReadOnlyList<SecurityMasterScheduleEventDto> Events,
+    IReadOnlyList<SecurityMasterFactorPointDto> FactorHistory,
+    IReadOnlyList<SecurityMasterScheduleProvenanceDto> ProvenanceHistory);
+
+public sealed record SecurityMasterScheduleEventDto(
+    string EventId,
+    string EventType,
+    DateOnly EffectiveDate,
+    DateOnly? PayDate,
+    DateOnly? AccrualStartDate,
+    DateOnly? AccrualEndDate,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? VarianceAmount,
+    decimal? FactorStart,
+    decimal? FactorEnd,
+    string Currency,
+    string PostingStatus,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset? SourceAsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    bool IsDerivedFromEconomicTerms,
+    bool IsCurrentProjection);
+
+public sealed record SecurityMasterFactorPointDto(
+    string PointId,
+    DateOnly EffectiveDate,
+    decimal Factor,
+    decimal? PreviousFactor,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset? SourceAsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    bool IsCurrentFactor);
+
+public sealed record SecurityMasterScheduleProvenanceDto(
+    string ProvenanceId,
+    string Category,
+    string Summary,
+    DateOnly? EffectiveDate,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset? SourceAsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    long? StreamVersion,
+    string? EventType);
+
+public sealed record SecurityMasterLotModelDto(
+    string QuantityModel,
+    decimal? LotSize,
+    decimal? ContractMultiplier,
+    bool UsesFaceValue,
+    bool SupportsFactorAdjustedExposure,
+    bool RequiresResolvedSecurityId,
+    string Summary);
+
+public sealed record SecurityMasterOpenLotReadModelDto(
+    string QuantityModel,
+    decimal? LotSize,
+    decimal? ContractMultiplier,
+    bool UsesFaceValue,
+    bool SupportsFactorAdjustedExposure,
+    bool RequiresResolvedSecurityId,
+    decimal? CurrentFactor,
+    DateOnly? CurrentFactorDate,
+    DateTimeOffset AsOfUtc,
+    string Summary,
+    IReadOnlyList<SecurityMasterOpenLotDto> Lots,
+    IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
+
+public sealed record SecurityMasterOpenLotDto(
+    Guid SecurityId,
+    string PortfolioId,
+    string RunId,
+    string? AccountScopeId,
+    string? AccountScopeDisplayName,
+    string? VehicleScopeId,
+    string? VehicleScopeDisplayName,
+    string LotId,
+    string Symbol,
+    DateTimeOffset TradeDate,
+    DateTimeOffset? SettleDate,
+    decimal OriginalQuantity,
+    decimal CurrentQuantity,
+    decimal? OriginalFace,
+    decimal? CurrentFace,
+    decimal? FactorAdjustedQuantity,
+    decimal? FactorAdjustedFace,
+    decimal CostBasis,
+    decimal EntryPrice,
+    decimal? UnrealizedPnl,
+    string Currency,
+    string LotStatus,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset AsOfUtc,
+    string? SourceUpdatedBy,
+    string? SourceReason,
+    bool IsLongTerm,
+    string? Notes);
+
+public sealed record SecurityMasterOpenLotProvenanceDto(
+    string ProvenanceId,
+    string RunId,
+    string PortfolioId,
+    string? AccountScopeId,
+    string? AccountScopeDisplayName,
+    string SourceSystem,
+    string? SourceRecordId,
+    DateTimeOffset AsOfUtc,
     string Summary);
 
 public sealed record SecurityMasterDownstreamImpactDto(

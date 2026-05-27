@@ -218,7 +218,8 @@ public sealed class TradingOperatorReadinessService
                 $"Run replay verification for paper session {activeSession.SessionId}.",
                 OperatorWorkItemToneDto.Warning,
                 activeSession.SessionId,
-                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId),
+                scope: activeSession.SessionId);
         }
         else if (!replay.IsConsistent)
         {
@@ -231,7 +232,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Critical,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId),
+                scope: replay.SessionId);
         }
         else if (IsReplayCoverageStale(activeSession, replay))
         {
@@ -244,7 +246,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Warning,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),
+                scope: replay.SessionId);
         }
 
         return new PaperSessionReadiness(sessions, activeSession, replay);
@@ -389,7 +392,7 @@ public sealed class TradingOperatorReadinessService
             fundAccountId: brokerageStatus.FundAccountId,
             workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")),
             workspaceOverride: "Settings",
-            targetRouteOverride: BuildProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
+            targetRouteOverride: ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
             targetPageTagOverride: "ProviderConnectionCenter");
     }
 
@@ -894,7 +897,7 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: record.Decision,
                 ManualOverrideId: record.ManualOverrideId,
                 ApprovedBy: record.ApprovedBy,
-                ApprovalChecklist: record.ApprovalChecklist);
+                ApprovalChecklist: record.ApprovalChecklist ?? []);
         }
 
         var promotion = latestRun?.Promotion ?? latestRun?.Summary.Promotion;
@@ -911,7 +914,7 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: promotion.ApprovalStatus,
                 ManualOverrideId: promotion.ManualOverrideId,
                 ApprovedBy: promotion.ApprovedBy,
-                ApprovalChecklist: promotion.ApprovalChecklist);
+                ApprovalChecklist: promotion.ApprovalChecklist ?? []);
     }
 
     private static bool IsPromotionRecordLinkedToRun(StrategyPromotionRecord record, string runId) =>
@@ -1550,7 +1553,8 @@ public sealed class TradingOperatorReadinessService
     /// <c>Ready</c> is returned only when every gate reports ready.
     /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
     /// </summary>
-    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(IReadOnlyList<TradingAcceptanceGateDto> gates)
+    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(
+        IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
         var canonicalGateOrder = new[]
         {
@@ -1798,19 +1802,6 @@ public sealed class TradingOperatorReadinessService
                 UiApiRoutes.WorkstationTradingReadiness,
                 "TradingShell")
         };
-
-    private static string BuildProviderConnectionSettingsRoute(string? providerId)
-    {
-        if (string.IsNullOrWhiteSpace(providerId))
-        {
-            return "/settings#provider-connection-center";
-        }
-
-        var normalized = providerId.Trim().ToLowerInvariant();
-        return normalized == "alpaca"
-            ? "/settings#alpaca-provider-setup"
-            : $"/settings#provider-{normalized}-connection";
-    }
 
     private static string BuildWorkItemId(string prefix, string? scope = null)
     {

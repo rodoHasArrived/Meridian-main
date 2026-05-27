@@ -395,6 +395,16 @@ public sealed class LeanEndpointTests
             doc.RootElement.TryGetProperty("backtestId", out var btId).Should().BeTrue();
             btId.GetString().Should().NotBeNullOrEmpty();
             doc.RootElement.GetProperty("algorithmName").GetString().Should().Be("TestAlgorithm");
+
+            var history = await _client.GetAsync("/api/lean/backtest/history?limit=50");
+            history.StatusCode.Should().Be(HttpStatusCode.OK);
+            var historyDoc = JsonDocument.Parse(await history.Content.ReadAsStringAsync());
+            historyDoc.RootElement
+                .GetProperty("backtests")
+                .EnumerateArray()
+                .Any(entry => string.Equals(entry.GetProperty("backtestId").GetString(), btId.GetString(), StringComparison.Ordinal))
+                .Should()
+                .BeTrue();
         }
         finally
         {

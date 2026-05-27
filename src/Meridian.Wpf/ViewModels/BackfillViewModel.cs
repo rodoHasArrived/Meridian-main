@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -18,6 +19,12 @@ using UiBackfillService = Meridian.Ui.Services.BackfillService;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
+
+public readonly record struct BackfillStatsPresentation(
+    string TotalBarsText,
+    string SymbolsProcessedText,
+    string RunWindowText,
+    string LastSuccessfulRunText);
 
 /// <summary>
 /// ViewModel for the Backfill page.
@@ -258,6 +265,34 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     {
         get => _lastRunCompletedText;
         private set => SetProperty(ref _lastRunCompletedText, value);
+    }
+
+    private string _backfillStatsTotalBarsText = "--";
+    public string BackfillStatsTotalBarsText
+    {
+        get => _backfillStatsTotalBarsText;
+        private set => SetProperty(ref _backfillStatsTotalBarsText, value);
+    }
+
+    private string _backfillStatsSymbolsProcessedText = "--";
+    public string BackfillStatsSymbolsProcessedText
+    {
+        get => _backfillStatsSymbolsProcessedText;
+        private set => SetProperty(ref _backfillStatsSymbolsProcessedText, value);
+    }
+
+    private string _backfillStatsRunWindowText = "No run loaded";
+    public string BackfillStatsRunWindowText
+    {
+        get => _backfillStatsRunWindowText;
+        private set => SetProperty(ref _backfillStatsRunWindowText, value);
+    }
+
+    private string _backfillStatsLastSuccessfulRunText = "No successful run loaded";
+    public string BackfillStatsLastSuccessfulRunText
+    {
+        get => _backfillStatsLastSuccessfulRunText;
+        private set => SetProperty(ref _backfillStatsLastSuccessfulRunText, value);
     }
 
     private string _startReadinessTitle = "Backfill setup incomplete";
@@ -559,7 +594,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     // ── Backfill control ────────────────────────────────────────────────────
-    private void UpdateLastApiStatus(Meridian.Contracts.Api.BackfillResultDto status)
+    private void UpdateLastApiStatus(BackfillResultDto status)
     {
         LastApiStatus = status;
         HasApiStatus = true;
@@ -576,6 +611,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
         LastRunStartedText = status.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
         LastRunCompletedText = status.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
+        ApplyBackfillStats(BuildBackfillStats(status));
     }
 
     private void ClearLastApiStatus()
@@ -591,6 +627,61 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         LastRunBarsWrittenText = "0";
         LastRunStartedText = "Unknown";
         LastRunCompletedText = "N/A";
+        ApplyBackfillStats(BuildBackfillStats(null));
+    }
+
+    public static BackfillStatsPresentation BuildBackfillStats(BackfillResultDto? status)
+    {
+        if (status is null)
+        {
+            return new BackfillStatsPresentation(
+                "--",
+                "--",
+                "No run loaded",
+                "No successful run loaded");
+        }
+
+        var symbolCount = CountDistinctSymbols(status);
+        var symbolsText = symbolCount == 0
+            ? "No symbols reported"
+            : $"{symbolCount:N0} symbol{(symbolCount == 1 ? string.Empty : "s")}";
+
+        var runWindowText = (status.StartedUtc, status.CompletedUtc) switch
+        {
+            ({ } started, { } completed) => $"{started.LocalDateTime:g} to {completed.LocalDateTime:g}",
+            ({ } started, null) => $"Started {started.LocalDateTime:g}",
+            _ => "Window unavailable"
+        };
+
+        var lastSuccessfulRunText = status.Success
+            ? status.CompletedUtc?.LocalDateTime.ToString("g") ?? "Completed; timestamp unavailable"
+            : "Latest run failed";
+
+        return new BackfillStatsPresentation(
+            status.BarsWritten.ToString("N0"),
+            symbolsText,
+            runWindowText,
+            lastSuccessfulRunText);
+    }
+
+    private void ApplyBackfillStats(BackfillStatsPresentation stats)
+    {
+        BackfillStatsTotalBarsText = stats.TotalBarsText;
+        BackfillStatsSymbolsProcessedText = stats.SymbolsProcessedText;
+        BackfillStatsRunWindowText = stats.RunWindowText;
+        BackfillStatsLastSuccessfulRunText = stats.LastSuccessfulRunText;
+    }
+
+    private static int CountDistinctSymbols(BackfillResultDto status)
+    {
+        var symbols = status.Symbols is { Length: > 0 }
+            ? status.Symbols
+            : status.SymbolResults?.Select(result => result.Symbol).ToArray();
+
+        return symbols?
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count() ?? 0;
     }
 
     public async Task StartBackfillAsync(
@@ -1210,6 +1301,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void ClearNasdaqApiKey()
     {
+        Environment.SetEnvironmentVariable("NASDAQDATALINK__APIKEY", null, EnvironmentVariableTarget.User);
         NasdaqKeyStatusText = "No API key stored";
         IsNasdaqKeyClearVisible = false;
     }
@@ -1224,6 +1316,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void ClearOpenFigiApiKey()
     {
+        Environment.SetEnvironmentVariable("OPENFIGI__APIKEY", null, EnvironmentVariableTarget.User);
         OpenFigiKeyStatusText = "No API key stored (optional)";
         IsOpenFigiKeyClearVisible = false;
     }

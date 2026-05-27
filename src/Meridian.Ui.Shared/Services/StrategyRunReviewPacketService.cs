@@ -253,7 +253,7 @@ public sealed class StrategyRunReviewPacketService
                 "FundReconciliation"),
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Settings",
-                BuildProviderConnectionSettingsRoute(providerId),
+                ProviderNavigationRouteMapper.ResolveProviderConnectionSettingsRoute(providerId),
                 "ProviderConnectionCenter"),
             _ => (
                 "Trading",
@@ -262,19 +262,6 @@ public sealed class StrategyRunReviewPacketService
                     : UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", runId),
                 "TradingShell")
         };
-    }
-
-    private static string BuildProviderConnectionSettingsRoute(string? providerId)
-    {
-        if (string.IsNullOrWhiteSpace(providerId))
-        {
-            return "/settings#provider-connection-center";
-        }
-
-        var normalized = providerId.Trim().ToLowerInvariant();
-        return normalized == "alpaca"
-            ? "/settings#alpaca-provider-setup"
-            : $"/settings#provider-{normalized}-connection";
     }
 
     private static string BuildScopedId(string prefix, string scope)

@@ -30,10 +30,11 @@ maintenance prompt belongs and how to avoid duplicate guidance.
   point prompts there.
 - Put design guidance in `docs/design/design-system-usage.md`; point prompts
   there instead of creating screen-specific design notes.
-- Archive obsolete maintenance notes under `docs/archive/` with a short reason
+- Archive obsolete maintenance notes under `archive/docs/` with a short reason
   and replacement link.
 
 ## Current Path Rule
 
-Use `C:\Dev\Meridian-main` for local examples. Do not add active guidance that
-points to OneDrive, Desktop, Documents, Downloads, or an older Meridian checkout.
+Use repository-relative paths in committed prompt guidance. When an automation
+run needs a concrete machine path, keep it in local run notes or automation
+memory instead of active prompt docs.

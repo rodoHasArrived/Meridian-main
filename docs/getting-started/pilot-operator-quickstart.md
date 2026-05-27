@@ -61,10 +61,10 @@ If any provider fails, resolve credentials/entitlements first, then re-run check
 
 ## 4) First backtest
 
-1. Start Meridian in web mode:
+1. Start Meridian in desktop mode (serves the browser workstation at `http://localhost:8080/workstation/`):
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --mode web
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 ```
 
 2. Backfill a narrow historical window (`SPY`, `AAPL`, ~1 month).

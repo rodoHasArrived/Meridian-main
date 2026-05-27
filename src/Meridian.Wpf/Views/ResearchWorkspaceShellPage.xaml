@@ -177,7 +177,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel>
-                                    <TextBlock Text="Research Desk Briefing" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Strategy Desk Briefing" Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock x:Name="ResearchHeroFocusText"
                                                Margin="0,8,0,0"
                                                FontSize="12"
@@ -933,7 +933,7 @@
                         <views:MeridianDockingManager x:Name="ResearchDockManager"
                                                       Height="360"
                                                       PaneDropRequested="OnPaneDropRequested"
-                                                      AutomationProperties.Name="Research Dock Manager" />
+                                                      AutomationProperties.Name="Strategy Dock Manager" />
                     </StackPanel>
                 </Border>
             </StackPanel>

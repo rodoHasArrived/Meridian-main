@@ -58,7 +58,7 @@ public sealed class AlpacaHistoricalDataProviderTests
         var bars = await sut.GetAdjustedDailyBarsAsync("AAPL", new DateOnly(2024, 1, 3), new DateOnly(2024, 1, 3));
 
         bars.Should().HaveCount(1);
-        sut.GetRateLimitInfo().RequestCount.Should().Be(1);
+        sut.GetRateLimitInfo().RequestsMade.Should().Be(1);
         handler.RequestCount.Should().Be(1);
     }
 
@@ -75,7 +75,7 @@ public sealed class AlpacaHistoricalDataProviderTests
         var available = await sut.IsAvailableAsync();
 
         available.Should().BeFalse();
-        sut.GetRateLimitInfo().RequestCount.Should().Be(1);
+        sut.GetRateLimitInfo().RequestsMade.Should().Be(1);
     }
 
     [Theory]

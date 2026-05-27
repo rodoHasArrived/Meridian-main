@@ -53,8 +53,8 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
-        "args": ["--output", "docs/status/health-dashboard.md", "--json-output", "docs/status/health-dashboard.json"],
-        "output": "docs/status/health-dashboard.md",
+        "args": ["--output", "docs/status/doc-health-dashboard.md", "--json-output", "docs/status/doc-health-dashboard.json"],
+        "output": "docs/status/doc-health-dashboard.md",
     },
     "repair-links": {
         "script": "repair-links.py",

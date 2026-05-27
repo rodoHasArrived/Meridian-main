@@ -1,4 +1,4 @@
-import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
+import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -31,6 +31,8 @@ import type {
   GovernanceTrialBalanceRowViewModel,
   SecuritySchedulesViewState,
   SecurityScheduleRowViewModel,
+  SecurityOpenLotReadModelViewState,
+  SecurityOpenLotRowViewModel,
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
@@ -252,6 +254,36 @@ const securityScheduleColumns: DenseDataTableColumn<SecurityScheduleRowViewModel
   },
   { id: "factor", label: "Factor", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.postingStatusTone}>{row.postingStatusLabel}</Badge> }
+];
+
+const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[] = [
+  {
+    id: "lot",
+    label: "Lot",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.lotId}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.runId}</span>
+      </span>
+    )
+  },
+  { id: "scope", label: "Scope", render: (row) => <span className="text-muted-foreground">{row.scopeLabel}</span> },
+  { id: "tradeDate", label: "Trade", render: (row) => <span className="font-mono text-muted-foreground">{row.tradeDateLabel}</span> },
+  { id: "quantity", label: "Quantity", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.quantityLabel}</span> },
+  { id: "face", label: "Face", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.faceLabel}</span> },
+  { id: "factor", label: "Factor adj.", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorAdjustedLabel}</span> },
+  { id: "cost", label: "Cost", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.costBasisLabel}</span> },
+  {
+    id: "pnl",
+    label: "Unrealized",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.unrealizedPnl !== null && row.unrealizedPnl < 0 ? "text-danger" : "text-muted-foreground")}>
+        {row.unrealizedPnlLabel}
+      </span>
+    )
+  },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.statusLabel}</Badge> }
 ];
 
 const focusCopy: Record<string, { title: string; description: string }> = {
@@ -1242,6 +1274,10 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 view={securityMaster.schedulesView}
                 onSelect={securityMaster.selectScheduleEvent}
               />
+              <SecurityOpenLotReadModelPanel
+                view={securityMaster.openLotReadModelView}
+                onSelect={securityMaster.selectOpenLot}
+              />
               <div className="grid gap-4 xl:grid-cols-2">
                 <CorporateActionsPanel
                   view={securityMaster.corporateActionsView}
@@ -1638,7 +1674,21 @@ function SecuritySchedulesPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && (
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
           <DenseDataTable
             columns={securityScheduleColumns}
             rows={view.rows}
@@ -1672,7 +1722,94 @@ function SecuritySchedulesPanel({
               </div>
             )}
           </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SecurityOpenLotReadModelPanel({
+  view,
+  onSelect
+}: {
+  view: SecurityOpenLotReadModelViewState;
+  onSelect: (rowId: string) => void;
+}) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Briefcase className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.title}
+            </CardTitle>
+            <CardDescription className="mt-2">
+              {view.description}
+              {view.asOfLabel !== "—" ? <> As of {view.asOfLabel}.</> : null}
+            </CardDescription>
+          </div>
+          <div className="min-w-0 lg:max-w-[28rem]">
+            <ToolbarStrip ariaLabel={view.toolbarAriaLabel} items={view.toolbarItems} />
+          </div>
         </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && (
+          <>
+            <p className="text-sm leading-6 text-muted-foreground">{view.summary}</p>
+            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
+              <DenseDataTable
+                columns={securityOpenLotColumns}
+                rows={view.rows}
+                getRowId={(row) => row.rowId}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.isExpanded}
+                onRowSelect={(row) => onSelect(row.rowId)}
+                selectedRowId={view.selectedRowId}
+                emptyText={view.emptyText}
+                ariaLabel={view.tableLabel}
+                caption={view.tableCaption}
+              />
+              <div id={view.detailPanelId} className="row-detail-panel h-fit min-w-0">
+                {view.selectedDetail ? (
+                  <EntitySummary
+                    eyebrow={view.selectedDetail.eyebrow}
+                    title={view.selectedDetail.title}
+                    subtitle={view.selectedDetail.subtitle}
+                    description={view.selectedDetail.description}
+                    ariaLabel={view.selectedDetail.ariaLabel}
+                    status={<Badge variant={view.selectedDetail.statusTone}>{view.selectedDetail.statusLabel}</Badge>}
+                    fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
+                  />
+                ) : (
+                  <div role="region" aria-label={view.detailEmptyAriaLabel}>
+                    <div className="eyebrow-label">Open lot detail</div>
+                    <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

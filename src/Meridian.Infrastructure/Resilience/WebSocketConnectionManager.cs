@@ -1,4 +1,6 @@
 using System.Net.WebSockets;
+using System.Net;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using Meridian.Application.Logging;
@@ -45,8 +47,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private DateTimeOffset _lastDisconnectTime;
     private DateTimeOffset _lastConnectTime;
     private DateTimeOffset? _lastMessageReceivedAt;
+    private DateTimeOffset? _lastHeartbeatReceivedAt;
     private DateTimeOffset? _lastReconnectAttemptAt;
     private string? _lastError;
+    private ProviderFailureKind? _lastFailureKind;
     private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
     private volatile bool _isDisconnecting;
 
@@ -117,9 +121,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             ReconnectAttempts: _reconnectAttempts,
             LastConnectedAt: _lastConnectTime == default ? null : _lastConnectTime,
             LastDisconnectedAt: _lastDisconnectTime == default ? null : _lastDisconnectTime,
+            LastHeartbeatReceivedAt: _lastHeartbeatReceivedAt,
             LastMessageReceivedAt: _lastMessageReceivedAt,
             LastReconnectAttemptAt: _lastReconnectAttemptAt,
             LastError: _lastError,
+            LastFailureKind: _lastFailureKind,
             ConnectionAge: IsConnected && _lastConnectTime != default ? now - _lastConnectTime : null,
             IdleDuration: lastActivity == default ? null : now - lastActivity);
     }
@@ -143,6 +149,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _resiliencePipeline = WebSocketResiliencePolicy.CreateComprehensivePipeline(
             maxRetries: _config.MaxRetries,
             retryBaseDelay: _config.RetryBaseDelay,
+            maxRetryDelay: _config.MaxRetryDelay,
             circuitBreakerFailureThreshold: _config.CircuitBreakerFailureThreshold,
             circuitBreakerDuration: _config.CircuitBreakerDuration,
             operationTimeout: _config.OperationTimeout);
@@ -195,12 +202,18 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     _reconnectAttempts = 0;
                     _lastConnectTime = DateTimeOffset.UtcNow;
                     _lastError = null;
+                    _lastFailureKind = null;
                     SetLifecycleState(ProviderConnectionLifecycleState.Connected);
                     StateChanged?.Invoke(WebSocketState.Open);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
                     _lastError = ex.Message;
+                    _lastFailureKind = ProviderFailureClassifier.Classify(ex);
                     SetLifecycleState(ProviderConnectionLifecycleState.Failed);
                     _log.Warning(ex, "Connection attempt to {Provider} WebSocket failed. Will retry per policy.", _providerName);
                     CleanupFailedConnection();
@@ -215,6 +228,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     _webSocket,
                     _config.HeartbeatInterval,
                     _config.HeartbeatTimeout);
+                _lastHeartbeatReceivedAt = _heartbeat.LastPongReceived;
                 _heartbeat.ConnectionLost += OnConnectionLostAsync;
             }
         }
@@ -327,6 +341,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             {
                 try
                 { _connectionCts.Cancel(); }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
@@ -343,6 +361,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                         await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
                             .ConfigureAwait(false);
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -466,6 +488,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                         {
                             GapDetected?.Invoke(gap);
                         }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
                         catch (Exception gapEx)
                         {
                             _log.Error(gapEx, "{Provider} error in gap detection handler", _providerName);
@@ -474,10 +500,27 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
 
                     return true;
                 }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _lastError = ex.Message;
-                    _log.Warning(ex, "{Provider} reconnection attempt {Attempt} failed", _providerName, _reconnectAttempts);
+                    _lastFailureKind = ProviderFailureClassifier.Classify(ex);
+                    if (!ProviderFailureClassifier.IsRetryable(_lastFailureKind.Value))
+                    {
+                        _log.Error(
+                            ex,
+                            "{Provider} reconnection stopped after non-retryable {FailureKind} failure on attempt {Attempt}",
+                            _providerName,
+                            _lastFailureKind,
+                            _reconnectAttempts);
+                        SetLifecycleState(ProviderConnectionLifecycleState.Failed);
+                        return false;
+                    }
+
+                    _log.Warning(ex, "{Provider} reconnection attempt {Attempt} failed with {FailureKind}", _providerName, _reconnectAttempts, _lastFailureKind);
                 }
             }
 
@@ -500,6 +543,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     public void RecordPongReceived()
     {
         _heartbeat?.RecordPongReceived();
+        _lastHeartbeatReceivedAt = DateTimeOffset.UtcNow;
     }
 
     /// <inheritdoc />
@@ -566,16 +610,21 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 if (!string.IsNullOrWhiteSpace(message))
                 {
                     // Record activity for heartbeat monitoring
-                    _heartbeat?.RecordPongReceived();
+                    RecordPongReceived();
                     _lastMessageReceivedAt = DateTimeOffset.UtcNow;
 
                     try
                     {
                         await messageHandler(message).ConfigureAwait(false);
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         _lastError = ex.Message;
+                        _lastFailureKind = ProviderFailureClassifier.Classify(ex);
                         _log.Warning(ex, "{Provider} error processing message", _providerName);
                     }
                 }
@@ -588,6 +637,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         catch (WebSocketException ex)
         {
             _lastError = ex.Message;
+            _lastFailureKind = ProviderFailureClassifier.Classify(ex);
             _log.Error(ex, "{Provider} WebSocket error in receive loop", _providerName);
             StateChanged?.Invoke(WebSocketState.Aborted);
             await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
@@ -595,6 +645,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         catch (Exception ex)
         {
             _lastError = ex.Message;
+            _lastFailureKind = ProviderFailureClassifier.Classify(ex);
             _log.Error(ex, "{Provider} unexpected error in receive loop", _providerName);
             await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
         }
@@ -659,15 +710,26 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { cts.Cancel(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} CTS cancel failed during cleanup", _providerName); }
         }
 
-        // 3. Wait for the receive task to complete before disposing resources it uses
+        // 3. Wait for the receive task to complete before disposing resources it uses.
+        // Avoid self-await if cleanup is executing on the receive loop task itself.
         if (receiveTask != null)
         {
-            try
-            { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
-            catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
+            var currentTaskId = Task.CurrentId;
+            if (currentTaskId.HasValue && receiveTask.Id == currentTaskId.Value)
+            {
+                _log.Debug("{Provider} skipping receive task self-await during cleanup", _providerName);
+            }
+            else
+            {
+                try
+                { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
+            }
         }
 
         // 4. Now safe to dispose CTS and WebSocket — receive loop has exited
@@ -675,6 +737,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { receiveLoopCts.Dispose(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} receive loop CTS dispose failed during cleanup", _providerName); }
         }
 
@@ -682,6 +745,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { cts.Dispose(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} CTS dispose failed during cleanup", _providerName); }
         }
 
@@ -689,6 +753,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             try
             { ws.Dispose(); }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} WebSocket dispose failed during cleanup", _providerName); }
         }
     }
@@ -697,11 +762,13 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     {
         try
         { _webSocket?.Dispose(); }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex) { _log.Debug(ex, "{Provider} WebSocket dispose failed during connection cleanup", _providerName); }
         _webSocket = null;
 
         try
         { _connectionCts?.Dispose(); }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex) { _log.Debug(ex, "{Provider} CTS dispose failed during connection cleanup", _providerName); }
         _connectionCts = null;
     }
@@ -738,6 +805,71 @@ public enum ProviderConnectionLifecycleState
 }
 
 /// <summary>
+/// Normalized provider failure categories used by retry policy, diagnostics, and health surfaces.
+/// </summary>
+public enum ProviderFailureKind
+{
+    Unknown = 0,
+    TransientNetworkFailure = 1,
+    ProviderRateLimit = 2,
+    AuthenticationOrAuthorizationFailure = 3,
+    InvalidSubscription = 4,
+    ProviderOutage = 5,
+    MalformedProviderResponse = 6,
+    LocalConfigurationError = 7,
+    Cancelled = 8
+}
+
+/// <summary>
+/// Classifies provider failures so reconnection loops can distinguish transient errors
+/// from credential/configuration failures that need operator action.
+/// </summary>
+public static class ProviderFailureClassifier
+{
+    public static ProviderFailureKind Classify(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        return exception switch
+        {
+            OperationCanceledException => ProviderFailureKind.Cancelled,
+            UnauthorizedAccessException => ProviderFailureKind.AuthenticationOrAuthorizationFailure,
+            AuthenticationException => ProviderFailureKind.AuthenticationOrAuthorizationFailure,
+            HttpRequestException { StatusCode: HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden } => ProviderFailureKind.AuthenticationOrAuthorizationFailure,
+            HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests } => ProviderFailureKind.ProviderRateLimit,
+            HttpRequestException { StatusCode: { } statusCode } when (int)statusCode >= 500 => ProviderFailureKind.ProviderOutage,
+            HttpRequestException => ProviderFailureKind.TransientNetworkFailure,
+            WebSocketException => ProviderFailureKind.TransientNetworkFailure,
+            TimeoutException => ProviderFailureKind.TransientNetworkFailure,
+            InvalidOperationException invalidOperation when LooksLikeCredentialOrConfigFailure(invalidOperation.Message) => ProviderFailureKind.LocalConfigurationError,
+            FormatException => ProviderFailureKind.MalformedProviderResponse,
+            System.Text.Json.JsonException => ProviderFailureKind.MalformedProviderResponse,
+            _ => ProviderFailureKind.Unknown
+        };
+    }
+
+    public static bool IsRetryable(ProviderFailureKind failureKind)
+        => failureKind is
+            ProviderFailureKind.TransientNetworkFailure or
+            ProviderFailureKind.ProviderRateLimit or
+            ProviderFailureKind.ProviderOutage or
+            ProviderFailureKind.Unknown;
+
+    private static bool LooksLikeCredentialOrConfigFailure(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return false;
+
+        return message.Contains("credential", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("api key", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("token", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("not configured", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("configuration", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+/// <summary>
 /// Safe provider WebSocket diagnostics snapshot. It intentionally excludes URIs,
 /// credentials, headers, account IDs, and payload data.
 /// </summary>
@@ -750,11 +882,17 @@ public sealed record WebSocketConnectionDiagnostics(
     int ReconnectAttempts,
     DateTimeOffset? LastConnectedAt,
     DateTimeOffset? LastDisconnectedAt,
+    DateTimeOffset? LastHeartbeatReceivedAt,
     DateTimeOffset? LastMessageReceivedAt,
     DateTimeOffset? LastReconnectAttemptAt,
     string? LastError,
+    ProviderFailureKind? LastFailureKind,
     TimeSpan? ConnectionAge,
-    TimeSpan? IdleDuration);
+    TimeSpan? IdleDuration,
+    int ActiveSubscriptions = 0,
+    int FailedSubscriptions = 0,
+    int RecoveringSubscriptions = 0,
+    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>
 /// Represents a gap in data caused by a WebSocket disconnection and reconnection.

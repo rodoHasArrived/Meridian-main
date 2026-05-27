@@ -11,6 +11,7 @@ type IdentifierKind =
     | Cusip
     | Sedol
     | Figi
+    | OccOptionSymbol
     | ProviderSymbol of provider:string
     | InternalCode
     /// Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting.
@@ -55,6 +56,7 @@ module SecurityIdentifier =
         | IdentifierKind.Cusip -> "Cusip"
         | IdentifierKind.Sedol -> "Sedol"
         | IdentifierKind.Figi -> "Figi"
+        | IdentifierKind.OccOptionSymbol -> "OccOptionSymbol"
         | IdentifierKind.ProviderSymbol _ -> "ProviderSymbol"
         | IdentifierKind.InternalCode -> "InternalCode"
         | IdentifierKind.Lei -> "Lei"

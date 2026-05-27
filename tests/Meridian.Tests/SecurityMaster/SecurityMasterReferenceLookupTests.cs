@@ -289,6 +289,33 @@ public sealed class SecurityMasterReferenceLookupTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task GetByCanonicalAsync_NormalizesMatchedProvider_ForOperatorProjection()
+    {
+        var detail = BuildDetail(
+            Guid.NewGuid(),
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow, null, "xnas")]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "aapl", "xnas", Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetByCanonicalAsync(
+            new SecurityReferenceLookupRequest(
+                IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                IdentifierValue: "aapl",
+                Symbol: "aapl",
+                Venue: "xnas",
+                Source: "test"));
+
+        result.Should().NotBeNull();
+        result!.MatchedIdentifierValue.Should().Be("AAPL");
+        result.MatchedProvider.Should().Be("XNAS");
+    }
+
     [Theory]
     [InlineData("Bond", "Bond")]
     [InlineData("TreasuryBill", "TreasuryBill")]

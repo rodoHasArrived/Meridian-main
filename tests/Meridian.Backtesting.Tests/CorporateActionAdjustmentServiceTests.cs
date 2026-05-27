@@ -185,6 +185,24 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
 
+
+    [Fact]
+    public async Task AdjustAsync_MultipleWindows_ResolvesCorporateActionsOncePerTicker()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        _mockQueryService.SetCorporateActions([]);
+
+        var bars = new[] { CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m) };
+
+        _ = await _service.AdjustAsync(bars, "SPY");
+        _ = await _service.AdjustAsync(bars, "SPY");
+        _ = await _service.AdjustAsync(bars, "SPY");
+
+        _mockResolver.ResolveCallCount.Should().Be(1);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+    }
+
     [Fact]
     public async Task AdjustAsync_StreamedLargeHistory_IsEquivalentToBatch()
     {
@@ -273,20 +291,30 @@ public sealed class CorporateActionAdjustmentServiceTests
     {
         private Guid? _result;
 
+        public int ResolveCallCount { get; private set; }
+
         public void SetResolveResult(Guid? result) => _result = result;
 
         public Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default)
-            => Task.FromResult(_result);
+        {
+            ResolveCallCount++;
+            return Task.FromResult(_result);
+        }
     }
 
     private sealed class MockSecurityMasterQueryService : ISecurityMasterQueryService
     {
         private IReadOnlyList<CorporateActionDto> _actions = [];
 
+        public int GetCorporateActionsCallCount { get; private set; }
+
         public void SetCorporateActions(IReadOnlyList<CorporateActionDto> actions) => _actions = actions;
 
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
-            => Task.FromResult(_actions);
+        {
+            GetCorporateActionsCallCount++;
+            return Task.FromResult(_actions);
+        }
 
         public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<PreferredEquityTermsDto?>(null);

@@ -19,3 +19,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Meridian.Tests")]
 [assembly: InternalsVisibleTo("Meridian")]
 [assembly: InternalsVisibleTo("Meridian.Benchmarks")]
+[assembly: InternalsVisibleTo("Meridian.Ui.Shared")]

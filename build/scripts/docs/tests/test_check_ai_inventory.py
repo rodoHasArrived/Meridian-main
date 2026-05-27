@@ -43,6 +43,8 @@ def write_required_docs(root: Path, body: str) -> None:
         "docs/ai/skills/README.md",
         "docs/ai/prompts/README.md",
         "docs/ai/instructions/README.md",
+        "docs/ai/codex/README.md",
+        "docs/prompts/README.md",
         ".codex/skills/README.md",
         ".github/prompts/README.md",
     ):
@@ -65,7 +67,11 @@ class CheckAiInventoryTests(unittest.TestCase):
             root = Path(tmp)
             write_ui_platform_policy_docs(root)
             write(root / ".codex" / "config.toml")
+            write(root / ".codex" / "agents" / "meridian-docs.toml")
+            write(root / ".codex" / "AGENTS.md")
             write(root / ".codex" / "environments" / "environment.toml")
+            write(root / ".codex" / "prompts" / "sample-codex-prompt.md")
+            write(root / ".codex" / "checklists" / "sample-checklist.md")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
             write(root / ".agents" / "skills" / "meridian-portable" / "SKILL.md")
             write(root / ".agents" / "skills" / "meridian-portable" / "agents" / "openai.yaml")
@@ -76,7 +82,8 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "copilot-instructions.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
-            write(root / "src" / "Meridian.McpServer" / "Tools" / "SampleTools.cs")
+            write(root / "docs" / "prompts" / "sample-prompt-doc.md")
+            write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
             write(root / "docs" / "ai" / "README.md")
 
             inventory = check_ai_inventory.collect_inventory(root)
@@ -86,13 +93,18 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("entrypoint", "CLAUDE.md"), pairs)
             self.assertIn(("config", "config.toml"), pairs)
+            self.assertIn(("agent-profile", "meridian-docs.toml"), pairs)
+            self.assertIn(("instruction-entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("environment-config", "environment.toml"), pairs)
+            self.assertIn(("prompt-template", "sample-codex-prompt.md"), pairs)
+            self.assertIn(("validation-checklist", "sample-checklist.md"), pairs)
             self.assertIn(("config", "settings.json"), pairs)
             self.assertIn(("config", "settings.local.json"), pairs)
             self.assertIn(("instruction-entrypoint", "copilot-instructions.md"), pairs)
             self.assertIn(("skill", "meridian-test"), pairs)
             self.assertIn(("agent", "meridian-test.md"), pairs)
             self.assertIn(("prompt", "sample.prompt.yml"), pairs)
+            self.assertIn(("prompt-documentation", "sample-prompt-doc.md"), pairs)
             self.assertIn(("path-instruction", "sample.instructions.md"), pairs)
             self.assertIn(("mcp-tool", "SampleTools.cs"), pairs)
             self.assertIn(("ai-doc", "README.md"), pairs)
@@ -154,7 +166,8 @@ class CheckAiInventoryTests(unittest.TestCase):
                 "\n".join(
                     [
                         "Root assistant compatibility AGENTS.md CLAUDE.md",
-                        "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex",
+                        "Codex .codex/config.toml .codex/AGENTS.md .codex/environments/ .codex/skills "
+                        ".codex/prompts/ .codex/checklists/ OpenAI/Codex",
                         "Agent Skills-compatible hosts .agents/skills open-agent-skills-v1",
                         "GitHub Copilot .github/agents .github/prompts .github/instructions",
                         "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
@@ -183,6 +196,42 @@ class CheckAiInventoryTests(unittest.TestCase):
                     finding.kind == "optional-assistant-surface"
                     and finding.path == ".cursor/rules/meridian.mdc"
                     and finding.expected_doc == "docs/ai/assistant-workflow-contract.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_reports_undocumented_codex_prompt_surface(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / ".codex" / "prompts" / "desktop-task.md")
+            write_required_docs(root, "Codex .codex/config.toml .codex/skills OpenAI/Codex")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "prompt-template"
+                    and finding.path == ".codex/prompts/desktop-task.md"
+                    and finding.expected_doc == "docs/ai/codex/README.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_reports_undocumented_prompt_documentation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / "docs" / "prompts" / "automation-prompts.md")
+            write_required_docs(root, "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "prompt-documentation"
+                    and finding.path == "docs/prompts/automation-prompts.md"
+                    and finding.expected_doc == "docs/ai/prompts/README.md"
                     for finding in findings
                 )
             )
@@ -230,10 +279,11 @@ class CheckAiInventoryTests(unittest.TestCase):
             indexed = "\n".join(
                 [
                     "Root assistant compatibility AGENTS.md CLAUDE.md",
-                    "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex",
+                    "Codex .codex/config.toml .codex/agents/ .codex/AGENTS.md .codex/environments/ .codex/skills "
+                    ".codex/prompts/ .codex/checklists/ OpenAI/Codex",
                     "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills",
                     "GitHub Copilot .github/agents .github/prompts .github/instructions",
-                    "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
+                    "Reusable prompt templates .github/prompts/ docs/prompts/ docs/ai/prompts/README.md",
                     "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
                     ".cursor/rules/meridian.mdc",
                 ]
@@ -256,6 +306,10 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / "AGENTS.md", policy)
             write(root / "CLAUDE.md", policy)
             write(root / ".codex" / "config.toml")
+            write(root / ".codex" / "agents" / "meridian-docs.toml")
+            write(root / ".codex" / "AGENTS.md")
+            write(root / ".codex" / "prompts" / "sample-codex-prompt.md")
+            write(root / ".codex" / "checklists" / "sample-checklist.md")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
             write(root / ".claude" / "settings.json")
             write(root / ".claude" / "skills" / "meridian-test" / "SKILL.md")
@@ -266,19 +320,21 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".github" / "agents" / "new-agent.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
+            write(root / "docs" / "prompts" / "automation-prompts.md")
             write(root / ".github" / "workflows" / "prompt-generation.yml")
             write(root / ".github" / "workflows" / "copilot-setup-steps.yml")
-            write(root / "src" / "Meridian.McpServer" / "Tools" / "SampleTools.cs")
+            write(root / "src" / "Meridian.Mcp" / "Tools" / "SampleTools.cs")
 
             indexed = "\n".join(
                 [
                     "Root assistant compatibility AGENTS.md CLAUDE.md",
-                    "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex meridian-test",
+                    "Codex .codex/config.toml .codex/agents/ .codex/AGENTS.md .codex/environments/ .codex/skills "
+                    ".codex/prompts/ .codex/checklists/ OpenAI/Codex meridian-test",
                     "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills meridian-test",
                     "GitHub Copilot .github/copilot-instructions.md .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",
-                    "MCP-compatible clients src/Meridian.Mcp src/Meridian.McpServer",
+                    "MCP-compatible clients src/Meridian.Mcp",
                     "AI automation workflows prompt-generation.yml skill-evals.yml .github/workflows/copilot-*",
-                    "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
+                    "Reusable prompt templates .github/prompts/ docs/prompts/ docs/ai/prompts/README.md automation-prompts.md",
                     "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
                 ]
             )
@@ -407,6 +463,27 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
+    def test_check_catalog_drift_reports_missing_agent_skills_shared_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(
+                root / ".agents" / "skills" / "_shared" / "project-context.md",
+                "Portable skills context.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "ui-platform-policy"
+                    and finding.path == ".agents/skills/_shared/project-context.md"
+                    for finding in findings
+                )
+            )
+
     def test_check_catalog_drift_passes_when_ui_platform_policy_is_mirrored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -417,6 +494,42 @@ class CheckAiInventoryTests(unittest.TestCase):
             findings = check_ai_inventory.check_catalog_drift(root, inventory)
 
             self.assertFalse(any(finding.kind == "ui-platform-policy" for finding in findings))
+
+    def test_check_catalog_drift_reports_stale_operator_surface_language(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(
+                root / ".github" / "prompts" / "sample.prompt.yml",
+                "Meridian includes browser workstation and retained WPF support.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "stale-operator-surface-language"
+                    and finding.path == ".github/prompts/sample.prompt.yml"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_allows_active_operator_surface_language(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(
+                root / ".github" / "prompts" / "sample.prompt.yml",
+                "Meridian includes active browser workstation and WPF desktop operator surfaces.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "stale-operator-surface-language" for finding in findings))
 
     def test_build_payload_uses_portable_repository_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

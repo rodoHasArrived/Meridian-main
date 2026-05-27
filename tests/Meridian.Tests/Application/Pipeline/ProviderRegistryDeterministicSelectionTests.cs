@@ -48,7 +48,7 @@ public sealed class ProviderRegistryDeterministicSelectionTests
         mock.SetupGet(x => x.ProviderDisplayName).Returns($"{id} provider");
         mock.SetupGet(x => x.ProviderDescription).Returns("test");
         mock.SetupGet(x => x.ProviderPriority).Returns(priority);
-        mock.SetupGet(x => x.ProviderCapabilities).Returns(ProviderCapabilities.Backfill());
+        mock.SetupGet(x => x.ProviderCapabilities).Returns(ProviderCapabilities.BackfillBarsOnly);
         mock.SetupGet(x => x.Name).Returns(id);
         mock.SetupGet(x => x.Description).Returns("test");
         mock.SetupGet(x => x.Capabilities).Returns(new HistoricalDataCapabilities());

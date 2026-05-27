@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Channels;
 using FluentAssertions;
+using Meridian.Application.Canonicalization;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
@@ -11,6 +12,7 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Storage;
+using Meridian.Storage.Sinks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
@@ -69,6 +71,29 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
+    public async Task Register_EnablesBoundedJsonlBatchingForMarketDataPersistence()
+    {
+        var root = CreateTempDirectory();
+        var dataRoot = Path.Combine(root, "persistent-data");
+        var configPath = WriteConfig(root, new AppConfig(DataRoot: "persistent-data"));
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new StorageOptions { RootPath = dataRoot });
+
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new PipelineFeatureRegistration().Register(services, options);
+
+        await using var provider = services.BuildServiceProvider();
+        var sink = provider.GetRequiredService<JsonlStorageSink>();
+
+        sink.IsBatchingEnabled.Should().BeTrue();
+        sink.BatchSize.Should().Be(JsonlBatchOptions.Default.BatchSize);
+        sink.FlushInterval.Should().Be(JsonlBatchOptions.Default.FlushInterval);
+    }
+
+    [Fact]
     public async Task Register_ResolvesDualPathPublisherForTradeIngress()
     {
         var root = CreateTempDirectory();
@@ -82,6 +107,35 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         new ConfigurationFeatureRegistration().Register(services, options);
         new PipelineFeatureRegistration().Register(services, options);
+
+        await using var provider = services.BuildServiceProvider();
+        var publisher = provider.GetRequiredService<IMarketEventPublisher>();
+        var dualPath = provider.GetRequiredService<DualPathEventPipeline>();
+
+        publisher.TryPublish(CreateTradeEvent("SPY", 1)).Should().BeTrue();
+        dualPath.HotTradePublished.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Register_WithCanonicalizationEnabled_KeepsDualPathTradeIngress()
+    {
+        var root = CreateTempDirectory();
+        var dataRoot = Path.Combine(root, "persistent-data");
+        var configPath = WriteConfig(root, new AppConfig(
+            DataRoot: "persistent-data",
+            Canonicalization: new CanonicalizationConfig(
+                Enabled: true,
+                EnableDualWrite: false)));
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new StorageOptions { RootPath = dataRoot });
+
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new PipelineFeatureRegistration().Register(services, options);
+        new CanonicalizationFeatureRegistration().Register(services, options);
+        services.AddSingleton<IEventCanonicalizer, PassthroughCanonicalizer>();
 
         await using var provider = services.BuildServiceProvider();
         var publisher = provider.GetRequiredService<IMarketEventPublisher>();
@@ -146,5 +200,10 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
                 Directory.Delete(directory, recursive: true);
             }
         }
+    }
+
+    private sealed class PassthroughCanonicalizer : IEventCanonicalizer
+    {
+        public MarketEvent Canonicalize(MarketEvent evt, CancellationToken ct = default) => evt;
     }
 }

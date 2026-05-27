@@ -9,6 +9,8 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Sdk;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -216,6 +218,52 @@ public sealed class MainShellViewModelTests
 
             vm.CurrentPageTag.Should().Be("Backfill");
             vm.CurrentPageTitle.Should().Be("Backfill");
+        });
+    }
+
+    [Fact]
+    public void NavigateToPageCommand_UsesTargetWorkspaceScopeForFrameNavigation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            var frame = new Frame();
+            navigationService.Initialize(frame);
+
+            var rootPage = new WorkspaceCapabilityHomePage();
+            var rootServices = new ServiceCollection();
+            rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
+            using var rootProvider = rootServices.BuildServiceProvider();
+            navigationService.SetServiceProvider(rootProvider);
+            navigationService.CreatePageContent("PortfolioShell")
+                .Should()
+                .BeSameAs(rootPage);
+
+            var scopedPage = new WorkspaceCapabilityHomePage();
+            var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
+            using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
+
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+            var workspaceService = WorkspaceService.Instance;
+            workspaceService.ResetForTests();
+            workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
+            await workspaceService.ActivateWorkspaceAsync("strategy");
+            workspaceService.ActiveWorkspaceScope.Should().NotBeNull();
+            var strategyScope = workspaceService.ActiveWorkspaceScope;
+
+            var fixtureModeDetector = FixtureModeDetector.Instance;
+            fixtureModeDetector.SetFixtureMode(false);
+            fixtureModeDetector.UpdateBackendReachability(true);
+
+            using var vm = new MainPageViewModel(navigationService, fixtureModeDetector);
+
+            vm.NavigateToPageCommand.Execute("PortfolioShell");
+
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
+            navigationService.GetCurrentPageTag().Should().Be("PortfolioShell");
         });
     }
 
@@ -730,6 +778,43 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void OperatorInboxPresentation_UsesSharedTradingReadinessRouteForPaperReplayWorkItems()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "paper-replay-stale-session-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification is stale",
+                        Detail: "Session changed after the latest replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.WorkstationTradingReadiness,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 0,
+                ReviewCount: 1,
+                Summary: "1 critical work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("TradingShell");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("trading");
+            vm.CurrentPageTag.Should().Be("TradingShell");
+        });
+    }
+
+    [Fact]
     public void OperatorInboxPresentation_RoutesLedgerPeriodCloseToReconciliation()
     {
         WpfTestThread.Run(async () =>
@@ -827,6 +912,69 @@ public sealed class MainShellViewModelTests
                 Glyph = "\uE7F4",
                 Tone = WorkspaceTone.Warning
             });
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_AllClearScenario_RemainsActionableWithoutRunHistoryDuplication()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [],
+                CriticalCount: 0,
+                WarningCount: 0,
+                ReviewCount: 0,
+                Summary: "No operator work items are open.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxSummary.Contains("No operator work items", StringComparison.Ordinal));
+
+            vm.OperatorInboxButtonText.Should().Be("Queue");
+            vm.OperatorInboxSummary.Contains("run history", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_MixedSeverityScenario_PrioritizesCriticalQueueItem()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "promotion-warning-1",
+                        Kind: OperatorWorkItemKindDto.PromotionReview,
+                        Label: "Promotion checklist review",
+                        Detail: "Review promotion checklist evidence.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell"),
+                    new OperatorWorkItemDto(
+                        WorkItemId: "replay-critical-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification stale",
+                        Detail: "Session changed after replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow.AddSeconds(1),
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 1,
+                ReviewCount: 2,
+                Summary: "2 work items need review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 2);
+
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Danger);
+            vm.OperatorInboxPrimaryLabel.Should().Contain("Replay verification stale");
         });
     }
 

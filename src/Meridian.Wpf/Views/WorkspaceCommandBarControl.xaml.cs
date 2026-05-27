@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
@@ -30,6 +31,12 @@ public partial class WorkspaceCommandBarControl : UserControl
             typeof(WorkspaceCommandBarControl),
             new PropertyMetadata(false));
 
+    public static readonly DependencyProperty CommandInvokedCommandProperty =
+        DependencyProperty.Register(
+            nameof(CommandInvokedCommand),
+            typeof(ICommand),
+            typeof(WorkspaceCommandBarControl));
+
     public WorkspaceCommandBarControl()
     {
         InitializeComponent();
@@ -50,10 +57,17 @@ public partial class WorkspaceCommandBarControl : UserControl
         set => SetValue(IsCompactSurfaceProperty, value);
     }
 
+    public ICommand? CommandInvokedCommand
+    {
+        get => (ICommand?)GetValue(CommandInvokedCommandProperty);
+        set => SetValue(CommandInvokedCommandProperty, value);
+    }
+
     private void OnPrimaryCommandClick(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
         {
+            TryInvokeCommandRouting(command);
             CommandInvoked?.Invoke(this, new WorkspaceCommandInvokedEventArgs(command));
         }
     }
@@ -92,8 +106,23 @@ public partial class WorkspaceCommandBarControl : UserControl
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
         {
+            TryInvokeCommandRouting(command);
             CommandInvoked?.Invoke(this, new WorkspaceCommandInvokedEventArgs(command));
         }
+    }
+
+    internal bool TryInvokeCommandRouting(WorkspaceCommandItem command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var routedCommand = CommandInvokedCommand;
+        if (routedCommand?.CanExecute(command) != true)
+        {
+            return false;
+        }
+
+        routedCommand.Execute(command);
+        return true;
     }
 
     private static void OnCommandGroupChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
