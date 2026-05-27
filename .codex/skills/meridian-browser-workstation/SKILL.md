@@ -19,11 +19,23 @@ Read in order:
 - Browser workstation test/build failures.
 - Browser workstation UX fixes that stay within existing product behavior.
 
+Trigger examples:
+
+- "Fix failing dashboard tests after a React state change."
+- "Update a workstation route and confirm browser build output."
+- "Improve a dashboard panel workflow without touching WPF."
+
 ## Do Not Use When
 
 - The request is WPF-only (`src/Meridian.Wpf/`).
 - The request is provider/storage/backend-only with no browser workstation touchpoint.
 - The request is broad repo orientation only (use `meridian-repo-navigation` first).
+
+Non-trigger examples:
+
+- "Add a new WPF workspace tab."
+- "Implement a provider adapter in Meridian.Infrastructure."
+- "Only refresh AI inventory docs."
 
 ## Workflow
 
