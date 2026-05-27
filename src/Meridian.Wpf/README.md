@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-27
 ---
 
 # src/Meridian.Wpf
@@ -38,6 +38,9 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+Run Cash Flow consumes `StrategyRunContinuityService` when the desktop shell provides it, so the
+cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconciliation, and warning
+posture used by shared workstation continuity endpoints.
 
 ## Diagrams
 
