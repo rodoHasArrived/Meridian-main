@@ -119,7 +119,7 @@ const PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
   FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting,
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
   FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
-  FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accounting,
+  FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accountingLedger,
   PortfolioShell: WORKSTATION_ROUTE_CATALOG.portfolio,
   ProviderHealth: WORKSTATION_ROUTE_CATALOG.dataProviders,
   ProviderTrust: WORKSTATION_ROUTE_CATALOG.dataProviders,

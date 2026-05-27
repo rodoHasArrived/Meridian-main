@@ -516,6 +516,7 @@ describe("governance-screen view model", () => {
     expect(resolveGovernanceWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveGovernanceWorkstream("/accounting/reconciliation")).toBe("reconciliation");
     expect(resolveGovernanceWorkstream("/accounting")).toBe("ledger");
+    expect(resolveGovernanceWorkstream("/accounting/ledger")).toBe("ledger");
     expect(resolveGovernanceWorkstream("/reporting")).toBe("reporting");
     expect(resolveGovernanceWorkstream("/governance/security-master")).toBe("security-master");
     expect(resolveGovernanceWorkstream("/governance/reconciliation")).toBe("reconciliation");
@@ -1751,7 +1752,7 @@ describe("governance-screen view model", () => {
       statusBadgeVariant: "success",
       recommendedActionText: "Review matched fee entries before closing.",
       routingActionLabel: "Open routing target",
-      routingActionHref: "/accounting",
+      routingActionHref: "/accounting/ledger",
       routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([

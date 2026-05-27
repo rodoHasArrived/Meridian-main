@@ -51,12 +51,12 @@ describe("workspace nav view model", () => {
   });
 
   it("surfaces the accounting ledger lane as a first-class subroute", () => {
-    const model = buildWorkspaceNavViewModel("/accounting");
+    const model = buildWorkspaceNavViewModel("/accounting/ledger");
     const accounting = model.items.find((item) => item.key === "accounting");
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting/operations-continuity",
-      "/accounting",
+      "/accounting/ledger",
       "/accounting/reconciliation",
       "/accounting/security-master",
       "/accounting/approvals"

@@ -96,6 +96,7 @@ describe("workspace metadata", () => {
     expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
     expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
     expect(workflowTargetPath("OperationsContinuity", "accounting")).toBe("/accounting/operations-continuity");
+    expect(workflowTargetPath("FundTrialBalance", "accounting")).toBe("/accounting/ledger");
     expect(workflowTargetPath("FundReportPack", "reporting")).toBe("/reporting/report-packs");
     expect(workflowTargetPath("ProviderTrust", "data")).toBe("/data/providers");
     expect(workflowTargetPath("SecurityMaster", "data")).toBe("/accounting/security-master");
