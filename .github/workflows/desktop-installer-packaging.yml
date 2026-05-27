@@ -52,10 +52,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Prepare optional signing certificate
+        id: signing
         shell: pwsh
         env:
           MDC_SIGNING_CERT_PFX_BASE64: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
-          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
         run: |
           if (-not [string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
             $certPath = Join-Path $env:RUNNER_TEMP "meridian-release-signing.pfx"
@@ -63,8 +63,7 @@ jobs:
               $certPath,
               [System.Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64)
             )
-            "MDC_SIGNING_CERT_PFX=$certPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "MDC_SIGNING_CERT_PASSWORD=$($env:MDC_SIGNING_CERT_PASSWORD)" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             Write-Host "Release signing certificate configured."
           } else {
             Write-Host "No signing certificate secret found; installer will use a temporary development certificate."
@@ -72,6 +71,9 @@ jobs:
 
       - name: Build desktop installer package
         shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PFX: ${{ steps.signing.outputs.cert_path }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
         run: |
           $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
           pwsh ./build/scripts/install/install.ps1 `
@@ -101,7 +103,11 @@ jobs:
             throw "No packaged installer files found under $sourceRoot"
           }
 
-          Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force
+          try {
+            Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force -ErrorAction Stop
+          } catch {
+            throw "Failed to copy packaged installer files from $sourceRoot to $releaseRoot: $($_.Exception.Message)"
+          }
 
       - name: Upload packaged installer artifact
         uses: actions/upload-artifact@v7.0.1
@@ -122,7 +128,7 @@ jobs:
       - name: Download packaged installer artifacts
         uses: actions/download-artifact@v5.0.0
         with:
-          pattern: meridian-desktop-installer-*
+          pattern: meridian-desktop-installer-*-${{ github.run_number }}
           merge-multiple: true
           path: artifacts/release
 
