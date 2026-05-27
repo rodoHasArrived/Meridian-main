@@ -2785,7 +2785,8 @@ public sealed partial class WorkstationEndpointsTests
         inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
         inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
         inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
-        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().OnlyContain(item => item.PriorityScore > 0 && !string.IsNullOrWhiteSpace(item.PriorityExplanation));
+        inbox.Items.Should().BeInDescendingOrder(item => item.PriorityScore);
     }
 
     [Fact]
@@ -2818,7 +2819,8 @@ public sealed partial class WorkstationEndpointsTests
         inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
         inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
         inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
-        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().BeInDescendingOrder(item => item.PriorityScore);
+        inbox.Items.Should().OnlyContain(item => item.PriorityScore > 0 && !string.IsNullOrWhiteSpace(item.PriorityExplanation));
     }
 
     [Fact]
@@ -2842,7 +2844,8 @@ public sealed partial class WorkstationEndpointsTests
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
         inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
-        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().BeInDescendingOrder(item => item.PriorityScore);
+        inbox.Items.Should().OnlyContain(item => item.PriorityScore > 0 && !string.IsNullOrWhiteSpace(item.PriorityExplanation));
         inbox.Items.Should().OnlyContain(item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
             !string.IsNullOrWhiteSpace(item.Detail) &&

@@ -41,7 +41,11 @@ public sealed class ShellPresentationViewModelTests
             Detail: "Cash mismatch needs review.",
             Tone: OperatorWorkItemToneDto.Warning,
             CreatedAt: DateTimeOffset.UtcNow.AddMinutes(-10),
-            TargetPageTag: "FundReconciliation");
+            TargetPageTag: "FundReconciliation")
+        {
+            PriorityScore = 520,
+            PriorityExplanation = "warning lane"
+        };
         var critical = new OperatorWorkItemDto(
             WorkItemId: "critical-1",
             Kind: OperatorWorkItemKindDto.PaperReplay,
@@ -49,7 +53,11 @@ public sealed class ShellPresentationViewModelTests
             Detail: "Session changed after audit.",
             Tone: OperatorWorkItemToneDto.Critical,
             CreatedAt: DateTimeOffset.UtcNow,
-            TargetPageTag: "TradingShell");
+            TargetPageTag: "TradingShell")
+        {
+            PriorityScore = 860,
+            PriorityExplanation = "critical lane"
+        };
         var inbox = new OperatorInboxDto(
             DateTimeOffset.UtcNow,
             [warning, critical],
@@ -65,6 +73,8 @@ public sealed class ShellPresentationViewModelTests
         viewModel.Summary.Should().Be("2 work items need review.");
         viewModel.Tone.Should().Be(WorkspaceTone.Danger);
         viewModel.TargetText.Should().Be("TradingShell");
+        viewModel.LaneGroups.Should().HaveCount(2);
+        viewModel.LaneGroups.First().Items.First().WorkItemId.Should().Be("critical-1");
     }
 
     [Fact]

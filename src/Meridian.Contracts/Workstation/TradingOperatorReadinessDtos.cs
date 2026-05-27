@@ -58,6 +58,16 @@ public sealed record OperatorWorkItemDto(
 
     /// <summary>Alias for <see cref="Detail"/> to satisfy operator-triage surface naming.</summary>
     public string Description => Detail;
+
+    /// <summary>
+    /// Deterministic priority score used by workstation clients to sort actionable queue items.
+    /// </summary>
+    public int PriorityScore { get; init; }
+
+    /// <summary>
+    /// Human-readable breakdown of the priority score factors for triage explainability.
+    /// </summary>
+    public string? PriorityExplanation { get; init; }
 }
 
 public sealed record OperatorInboxDto(

@@ -2485,8 +2485,10 @@ public static partial class WorkstationEndpoints
                 .OrderByDescending(static item => item.Tone)
                 .ThenByDescending(static item => item.CreatedAt)
                 .First())
-            .OrderByDescending(static item => item.Tone)
-            .ThenByDescending(static item => item.CreatedAt)
+            .Select(item => OperatorInboxPriorityScoringService.ApplyScore(item, asOf))
+            .OrderByDescending(static item => item.PriorityScore)
+            .ThenByDescending(static item => item.Tone)
+            .ThenBy(static item => item.CreatedAt)
             .ThenBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
