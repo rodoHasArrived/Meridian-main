@@ -1566,9 +1566,10 @@ try {
             throw 'Capture stage failed: no screenshots were captured successfully.'
         }
         elseif ($captureFailed -gt 0) {
-            $captureStage.status = 'partial'
+            $captureStage.status = 'failed'
             $captureStage.errors = @("Failed steps: $captureFailed")
-            $stageStatuses['capture'] = 'partial'
+            $stageStatuses['capture'] = 'failed'
+            throw "Capture stage failed: $captureFailed step(s) failed."
         }
         else {
             $captureStage.status = 'succeeded'
