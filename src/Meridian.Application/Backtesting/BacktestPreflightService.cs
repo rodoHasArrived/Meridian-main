@@ -10,6 +10,17 @@ namespace Meridian.Application.Backtesting;
 public sealed class BacktestPreflightService : IBacktestPreflightService
 {
     private static readonly string[] KnownReplayDataTypes = ["bars", "quotes", "book", "trades"];
+    private static readonly Dictionary<string, string> ReplayDataTypeAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["bars"] = "bars",
+        ["historicalbar"] = "bars",
+        ["quotes"] = "quotes",
+        ["bboquote"] = "quotes",
+        ["book"] = "book",
+        ["l2snapshot"] = "book",
+        ["trades"] = "trades",
+        ["trade"] = "trades"
+    };
 
     public Task<BacktestPreflightReportV2Dto> RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default)
     {
@@ -138,20 +149,7 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
 
         foreach (var file in Directory.EnumerateFiles(dataRoot, "*.jsonl*", SearchOption.AllDirectories))
         {
-            var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
-            var tokens = name.Split(['_', '.'], StringSplitOptions.RemoveEmptyEntries);
-            if (tokens.Length < 3)
-                continue;
-
-            var symbol = tokens[0].Trim().ToUpperInvariant();
-            if (!symbolSet.Contains(symbol))
-                continue;
-
-            var type = tokens[1].Trim().ToLowerInvariant();
-            if (!KnownReplayDataTypes.Contains(type))
-                continue;
-
-            if (!DateOnly.TryParse(tokens[2], out var date))
+            if (!TryParseReplayFile(file, dataRoot, symbolSet, out var symbol, out var type, out var date))
                 continue;
 
             if (date < from || date > to)
@@ -169,6 +167,64 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
         }
 
         return dict;
+    }
+
+    private static bool TryParseReplayFile(string file, string dataRoot, HashSet<string> symbolSet, out string symbol, out string type, out DateOnly date)
+    {
+        symbol = string.Empty;
+        type = string.Empty;
+        date = default;
+
+        var relativePath = Path.GetRelativePath(dataRoot, file);
+        var pathTokens = relativePath.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+        if (pathTokens.Length >= 3)
+        {
+            var bySymbolCandidate = pathTokens[0].Trim().ToUpperInvariant();
+            var bySymbolTypeToken = pathTokens[1].Trim();
+            var bySymbolDateToken = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(pathTokens[^1]));
+            if (symbolSet.Contains(bySymbolCandidate) &&
+                TryNormalizeReplayType(bySymbolTypeToken, out var bySymbolType) &&
+                DateOnly.TryParse(bySymbolDateToken, out var bySymbolDate))
+            {
+                symbol = bySymbolCandidate;
+                type = bySymbolType;
+                date = bySymbolDate;
+                return true;
+            }
+        }
+
+        var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
+        var tokens = name.Split(['_', '.'], StringSplitOptions.RemoveEmptyEntries);
+        if (tokens.Length < 3)
+            return false;
+
+        var flatSymbol = tokens[0].Trim().ToUpperInvariant();
+        if (!symbolSet.Contains(flatSymbol))
+            return false;
+
+        if (!TryNormalizeReplayType(tokens[1], out var flatType))
+            return false;
+
+        if (!DateOnly.TryParse(tokens[2], out var flatDate))
+            return false;
+
+        symbol = flatSymbol;
+        type = flatType;
+        date = flatDate;
+        return true;
+    }
+
+    private static bool TryNormalizeReplayType(string rawType, out string normalizedType)
+    {
+        normalizedType = string.Empty;
+        if (string.IsNullOrWhiteSpace(rawType))
+            return false;
+
+        var compactType = rawType.Trim().Replace("_", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
+        if (!ReplayDataTypeAliases.TryGetValue(compactType, out normalizedType))
+            return false;
+
+        return true;
     }
 
     private static string[] ResolveRequiredTypes(IReadOnlyList<string>? requestedTypes, string? executionModel)

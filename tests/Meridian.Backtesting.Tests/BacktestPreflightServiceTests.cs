@@ -104,6 +104,31 @@ public sealed class BacktestPreflightServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RunAsync_OrderBookExecution_WithBySymbolStorageLayout_IsCompatible()
+    {
+        Directory.CreateDirectory(Path.Combine(_dataRoot, "AAPL", "HistoricalBar"));
+        Directory.CreateDirectory(Path.Combine(_dataRoot, "AAPL", "BboQuote"));
+        Directory.CreateDirectory(Path.Combine(_dataRoot, "AAPL", "Trade"));
+        Directory.CreateDirectory(Path.Combine(_dataRoot, "AAPL", "L2Snapshot"));
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL", "HistoricalBar", "2024-01-03.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL", "BboQuote", "2024-01-03.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL", "Trade", "2024-01-03.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL", "L2Snapshot", "2024-01-03.jsonl"), "{}\n");
+
+        var sut = new BacktestPreflightService();
+        var report = await sut.RunAsync(new BacktestPreflightRequestDto(
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 1, 31),
+            DataRoot: _dataRoot,
+            Symbols: ["AAPL"],
+            RequiredExecutionModel: "OrderBook"));
+
+        report.IsReadyToRun.Should().BeTrue();
+        report.Checks.Should().Contain(c => c.Name == "Execution Model Compatibility" && c.Status == BacktestPreflightCheckStatusDto.Passed);
+        report.Checks.Should().Contain(c => c.Name == "Replay Coverage" && c.Status == BacktestPreflightCheckStatusDto.Passed);
+    }
+
+    [Fact]
     public async Task RunAsync_Cancelled_ThrowsOperationCanceledException()
     {
         var sut = new BacktestPreflightService();
