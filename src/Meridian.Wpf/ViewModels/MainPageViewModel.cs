@@ -1549,12 +1549,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         var kindTarget = workItem.Kind switch
         {
-            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
+            OperatorWorkItemKindDto.PaperReplay => "ReplayVerification",
             OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
-            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ProviderTrustGate => "ProviderHealth",
             OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
             _ => null
         };

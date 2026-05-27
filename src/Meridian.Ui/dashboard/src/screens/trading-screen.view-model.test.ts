@@ -1390,7 +1390,7 @@ describe("buildOrderPreview", () => {
     });
     expect(flip.effect).toBe("flip-to-short");
     expect(flip.resultingPositionLabel).toBe("Short 50 AAPL");
-    expect(flip.warnings.find((w) => w.id === "position-flip")?.level).toBe("danger");
+    expect(flip.warnings.find((w) => w.id === "position-flip")?.level).toBe("Critical");
   });
 
   it("surfaces a warning when a market order has no reference price", () => {
@@ -1417,7 +1417,7 @@ describe("buildOrderPreview", () => {
     });
 
     const warning = preview.warnings.find((w) => w.id === "risk-constrained");
-    expect(warning?.level).toBe("danger");
+    expect(warning?.level).toBe("Critical");
     expect(warning?.message).toMatch(/Drawdown breach/);
   });
 });
@@ -2675,16 +2675,16 @@ describe("trading readiness blocker taxonomy parity", () => {
     const state = buildTradingReadinessState({ readiness, refreshing: false, errorText: null });
     const byId = new Map(state.visibleWorkItems.map((item) => [item.workItemId, item]));
 
-    expect(byId.get("replay-stale")?.tone).toBe("warning");
+    expect(byId.get("replay-stale")?.tone).toBe("Warning");
     expect(byId.get("replay-stale")?.action?.href).toBe("/trading#session-replay-panel");
 
-    expect(byId.get("signoff-missing")?.tone).toBe("danger");
+    expect(byId.get("signoff-missing")?.tone).toBe("Critical");
     expect(byId.get("signoff-missing")?.action?.href).toBe("/data/providers");
 
-    expect(byId.get("provider-trust-degraded")?.tone).toBe("danger");
+    expect(byId.get("provider-trust-degraded")?.tone).toBe("Critical");
     expect(byId.get("provider-trust-degraded")?.action?.href).toBe("/data/providers");
 
-    expect(byId.get("brokerage-sync-incomplete")?.tone).toBe("danger");
+    expect(byId.get("brokerage-sync-incomplete")?.tone).toBe("Critical");
     expect(byId.get("brokerage-sync-incomplete")?.action?.href).toBe("/portfolio/accounts/fund-1");
   });
 });

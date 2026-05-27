@@ -515,13 +515,13 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
 
         return workItem.Kind switch
         {
-            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
+            OperatorWorkItemKindDto.PaperReplay => "ReplayVerification",
             OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.ReportPackApproval => "FundReportPack",
-            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ProviderTrustGate => "ProviderHealth",
             OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
             _ => "NotificationCenter"
         };

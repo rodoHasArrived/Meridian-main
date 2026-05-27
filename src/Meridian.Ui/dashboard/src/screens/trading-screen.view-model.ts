@@ -735,7 +735,7 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
     case "BrokerageSync":
       return {
         label: "Fix provider setup",
-        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        href: sharedTargetHref ?? WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         ariaLabel: `Open provider setup for ${item.label}`,
         detail: "Review provider credentials and connection status in Settings."
       };
@@ -780,6 +780,14 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
         href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         ariaLabel: `Open reconciliation break queue for ${item.label}`,
         detail: "Review open reconciliation breaks in Accounting."
+      };
+
+    case "ProviderTrustGate":
+      return {
+        label: "Review provider trust",
+        href: sharedTargetHref ?? WORKSTATION_ROUTE_CATALOG.dataProviders,
+        ariaLabel: `Open provider trust details for ${item.label}`,
+        detail: "Review provider trust posture, sign-off evidence, and degradation signals in Data."
       };
 
     default:
