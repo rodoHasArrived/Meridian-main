@@ -613,6 +613,14 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
+                            <Button Content="Apply"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding ApplyConfigCommand}"
+                                    Margin="0,0,8,0" />
+                            <Button Content="Save"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding SaveConfigCommand}"
+                                    Margin="0,0,8,0" />
                             <Button Content="Open in Explorer"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding OpenConfigFolderCommand}"
@@ -625,6 +633,10 @@
                                     Style="{StaticResource GhostButtonStyle}"
                                     Command="{Binding ResetToDefaultsCommand}" />
                         </StackPanel>
+                        <TextBlock Text="{Binding ConfigValidationErrors}"
+                                   Foreground="{StaticResource DangerColorBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0" />
                     </StackPanel>
                 </Border>
 
