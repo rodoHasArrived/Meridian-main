@@ -104,9 +104,16 @@ if ($parent -and -not (Test-Path -LiteralPath $parent)) {
 }
 
 $lines = New-Object System.Collections.Generic.List[string]
+$mode = 'full'
+if ($Checks -and $Checks.Count -gt 0) {
+    $mode = "custom ($($Checks -join ', '))"
+}
+elseif ($Fast) {
+    $mode = 'fast'
+}
 $lines.Add('# Codex Quality Suite')
 $lines.Add('')
-$lines.Add(("Mode: {0}" -f (if ($Checks -and $Checks.Count -gt 0) { "custom ($($Checks -join ', '))" } elseif ($Fast) { 'fast' } else { 'full' })))
+$lines.Add("Mode: $mode")
 $lines.Add('')
 $lines.Add('| Check | Script | Report | Exit code |')
 $lines.Add('| --- | --- | --- | ---: |')
