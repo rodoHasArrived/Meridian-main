@@ -287,13 +287,13 @@ public enum ReconciliationBreakQueueStatus : byte
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
-    Opened = 0,
-    Triaged = 1,
-    Calibrated = 2,
-    Approved = 3,
-    Escalated = 4,
-    Closed = 5,
-    Superseded = 6
+    New = 0,
+    Classified = 1,
+    Assigned = 2,
+    Investigating = 3,
+    PendingExternal = 4,
+    Resolved = 5,
+    Closed = 6
 }
 
 /// <summary>
@@ -337,7 +337,16 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Opened,
+    int PriorityScore = 0,
+    string? PriorityBand = null,
+    decimal MaterialityScore = 0m,
+    decimal AgeScore = 0m,
+    decimal CounterpartyCriticalityScore = 0m,
+    decimal RecurringPatternScore = 0m,
+    DateTimeOffset? SlaDueAt = null,
+    DateTimeOffset? LastEscalatedAt = null,
+    bool IsSlaBreached = false,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.New,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
@@ -406,7 +415,8 @@ public sealed record ReviewReconciliationBreakRequest(
     string BreakId,
     string AssignedTo,
     string ReviewedBy,
-    string? ReviewNote = null);
+    string? ReviewNote = null,
+    string? Team = null);
 
 /// <summary>
 /// Request to resolve or dismiss a break with audit metadata.
@@ -417,3 +427,73 @@ public sealed record ResolveReconciliationBreakRequest(
     string ResolvedBy,
     string ResolutionNote,
     string OperatorRationale);
+
+/// <summary>
+/// Canonical schema version metadata for reconciliation ingress/egress payloads.
+/// </summary>
+public sealed record ReconciliationSchemaVersion(
+    string ContractName,
+    int Major,
+    int Minor,
+    int Patch,
+    string ContentType = "application/vnd.meridian.reconciliation+json");
+
+/// <summary>
+/// Cross-workflow correlation metadata stamped on every reconciliation payload.
+/// </summary>
+public sealed record ReconciliationCorrelationContext(
+    string TraceId,
+    string SpanId,
+    string? ParentSpanId,
+    string WorkflowId,
+    string? JobId = null);
+
+/// <summary>
+/// Canonical envelope for inbound/outbound reconciliation payloads.
+/// </summary>
+public sealed record ReconciliationPayloadEnvelope<TPayload>(
+    string PayloadId,
+    ReconciliationSchemaVersion Schema,
+    ReconciliationCorrelationContext Correlation,
+    DateTimeOffset CreatedAt,
+    string Producer,
+    string Direction,
+    string? IdempotencyKey,
+    TPayload Payload);
+
+/// <summary>
+/// Queue orchestration controls and replay metadata for resilient reconciliation jobs.
+/// </summary>
+public sealed record ReconciliationJobControl(
+    string JobId,
+    string IdempotencyKey,
+    int Attempt,
+    int MaxAttempts,
+    bool DeadLettered,
+    string? DeadLetterReason,
+    DateTimeOffset EnqueuedAt,
+    DateTimeOffset? LastAttemptAt,
+    DateTimeOffset? NextAttemptAt,
+    string BackpressureBucket);
+
+/// <summary>
+/// Processing telemetry summary for SLA and throughput observability.
+/// </summary>
+public sealed record ReconciliationProcessingTelemetry(
+    double MatchRate,
+    double BreakRate,
+    int SlaMissCount,
+    double P50LatencyMs,
+    double P95LatencyMs,
+    double P99LatencyMs);
+
+/// <summary>
+/// Scoped rollout flags for phased reconciliation releases.
+/// </summary>
+public sealed record ReconciliationRolloutFlags(
+    bool Enabled,
+    IReadOnlyList<string> ClientIds,
+    IReadOnlyList<string> TeamIds,
+    IReadOnlyList<string> CounterpartyIds,
+    bool AllowReplay,
+    bool AllowBackfill);

@@ -124,6 +124,37 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationWorkflowLibrary")
         .Produces<WorkflowLibraryDto>(200);
 
+        group.MapPost("/collateral/ingest", (
+            IReadOnlyList<CollateralInputRow> rows,
+            CollateralIngestionBuffer buffer) =>
+        {
+            foreach (var row in rows)
+            {
+                buffer.Ingest(row);
+            }
+
+            return Results.Accepted(value: new { ingested = rows.Count });
+        })
+        .WithName("IngestCollateralRows")
+        .Produces(202);
+
+        group.MapGet("/collateral/exposure", (
+            CollateralIngestionBuffer buffer,
+            CollateralExposureService service) =>
+        {
+            var batch = buffer.DrainBatch(5_000);
+            var snapshots = service.BuildSnapshots(batch);
+            var breaches = service.EvaluateBreaches(snapshots);
+            return Results.Json(new
+            {
+                generatedAt = DateTimeOffset.UtcNow,
+                counterparties = snapshots,
+                breaches
+            }, jsonOptions);
+        })
+        .WithName("GetCollateralExposure")
+        .Produces(200);
+
         group.MapGet("/workflows/presets", async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowPresetService>();
@@ -281,6 +312,14 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationTradingReadiness")
         .Produces<TradingOperatorReadinessDto>(200);
 
+        group.MapGet("/collateral/exposure", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
+            return Results.Json(service.BuildSnapshot(), jsonOptions);
+        })
+        .WithName("GetWorkstationCollateralExposure")
+        .Produces<ExposureSnapshotDto>(200);
+
         group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
         {
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
@@ -326,6 +365,14 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationPortfolio")
         .Produces<WorkstationPortfolioPayload>(200);
+
+        group.MapGet("/portfolio/summary", async (string? fundAccountId, string? strategyId, string? entity, HttpContext context) =>
+        {
+            var payload = await BuildPortfolioSummaryPayloadAsync(context, fundAccountId, strategyId, entity).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetWorkstationPortfolioSummary")
+        .Produces<WorkstationPortfolioSummaryPayload>(200);
 
         MapOperationsContinuityEndpoints(group, jsonOptions);
 
@@ -3718,6 +3765,39 @@ public static partial class WorkstationEndpoints
             CashFlow: BuildGovernanceWorkspaceCashFlowSummary(runDetailsForCashFlow));
     }
 
+    private static async Task<WorkstationPortfolioSummaryPayload> BuildPortfolioSummaryPayloadAsync(HttpContext context, string? fundAccountId, string? strategyId, string? entity)
+    {
+        var started = DateTimeOffset.UtcNow;
+        var basePayload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
+        var cards = new List<WorkstationMetricCard>(basePayload.Metrics)
+        {
+            new("portfolio-exposure", "Gross Exposure", basePayload.Risk.GrossExposure, "live", "default"),
+            new("portfolio-net-exposure", "Net Exposure", basePayload.Risk.NetExposure, "live", "default")
+        };
+
+        var serialized = JsonSerializer.Serialize(basePayload);
+        var stale = string.Equals(basePayload.Brokerage.Connection, "Disconnected", StringComparison.OrdinalIgnoreCase);
+
+        return new WorkstationPortfolioSummaryPayload(
+            FundAccountId: string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!,
+            StrategyId: string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!,
+            Entity: string.IsNullOrWhiteSpace(entity) ? "portfolio" : entity!,
+            ConsolidatedCards: cards,
+            Positions: basePayload.Positions,
+            Risk: basePayload.Risk,
+            Telemetry: new WorkstationPortfolioSummaryTelemetry(
+                RefreshLatencyMs: (long)Math.Max(0, (DateTimeOffset.UtcNow - started).TotalMilliseconds),
+                PayloadSizeBytes: System.Text.Encoding.UTF8.GetByteCount(serialized),
+                IsStale: stale,
+                StaleReason: stale ? "brokerage-disconnected" : null,
+                AsOfUtc: DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture)),
+            DrillThroughRoutes: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["positions"] = $"/portfolio/positions?fundAccountId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!)}&strategyId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!)}&entity={Uri.EscapeDataString(string.IsNullOrWhiteSpace(entity) ? "portfolio" : entity!)}",
+                ["trades"] = $"/trading?fundAccountId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!)}&strategyId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!)}"
+            });
+    }
+
     private static async Task<WorkstationGovernancePayload> BuildGovernancePayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -3746,6 +3826,7 @@ public static partial class WorkstationEndpoints
                 Workspace: new WorkstationGovernanceWorkspaceSummary(0, 0, 0, 0, 0),
                 CashFlow: BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
                 Reporting: BuildGovernanceReportingPayload(),
+                ControlCenter: BuildGovernanceControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), BuildGovernanceReportingPayload()),
                 KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
         }
 
@@ -3792,6 +3873,7 @@ public static partial class WorkstationEndpoints
                 SecurityIssues: runsWithSecurityIssues),
             CashFlow: BuildGovernanceWorkspaceCashFlowSummary(details),
             Reporting: BuildGovernanceReportingPayload(),
+            ControlCenter: BuildGovernanceControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), BuildGovernanceReportingPayload()),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -3977,6 +4059,7 @@ public static partial class WorkstationEndpoints
                 summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
             },
             Reporting: BuildGovernanceReportingPayload(),
+            ControlCenter: BuildGovernanceControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), BuildGovernanceReportingPayload()),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -5083,6 +5166,57 @@ public static partial class WorkstationEndpoints
             Profiles: profiles,
             ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
             Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.");
+    }
+
+    private static object BuildGovernanceControlCenterPayload(
+        IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,
+        WorkstationGovernanceReportingPayload reporting)
+    {
+        var criticalOpen = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical && item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed);
+        var inReview = breakQueue.Count(item => item.Status == ReconciliationBreakQueueStatus.InReview);
+        var unowned = breakQueue.Count(item => string.IsNullOrWhiteSpace(item.AssignedTo));
+        var overdue = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-2));
+        var breachCount = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3));
+
+        return new
+        {
+            closeReadiness = criticalOpen == 0 && overdue == 0 ? "ReadyWithAttention" : "Blocked",
+            portfolioFilterOptions = new[] { "all-portfolios", "macro", "equity", "fixed-income" },
+            accountFilterOptions = breakQueue.Select(item => item.FundAccountId).Where(static id => !string.IsNullOrWhiteSpace(id)).Distinct().Cast<string>().ToArray(),
+            blockerSeverityDistribution = new[] {
+                new { severity = "Critical", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical) },
+                new { severity = "High", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.High) },
+                new { severity = "Medium", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Medium) },
+                new { severity = "Low", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Low) }
+            },
+            agingCurves = new[] {
+                new { bucket = "0-1d", count = breakQueue.Count(item => item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-1)) },
+                new { bucket = "2-3d", count = breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-1) && item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-3)) },
+                new { bucket = "4d+", count = breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3)) }
+            },
+            ownerWorkload = breakQueue.GroupBy(item => string.IsNullOrWhiteSpace(item.AssignedTo) ? "Unassigned" : item.AssignedTo!)
+                .Select(group => new { owner = group.Key, openCount = group.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed) })
+                .OrderByDescending(item => item.openCount)
+                .ToArray(),
+            slaBreachCount = breachCount,
+            trendSnapshots = new[] {
+                new { metric = "Open critical breaks", value = criticalOpen, trend = criticalOpen > 0 ? "worsening" : "stable" },
+                new { metric = "Breaks in review", value = inReview, trend = inReview > 0 ? "improving" : "stable" },
+                new { metric = "Unassigned breaks", value = unowned, trend = unowned > 0 ? "worsening" : "stable" },
+                new { metric = "Report approvals pending", value = Math.Max(0, reporting.ReportPackTargets.Count - 1), trend = "stable" }
+            },
+            drillLinks = new[] {
+                new { label = "Open close readiness", href = "/trading/readiness" },
+                new { label = "Open reconciliation queue", href = "/accounting/reconciliation" },
+                new { label = "Open report approvals", href = "/reporting/report-packs" },
+                new { label = "Open evidence completeness", href = "/reporting/evidence" }
+            },
+            alerts = new[] {
+                criticalOpen > 0 ? new { tone = "danger", message = $"{criticalOpen} critical reconciliation breaks remain unresolved." } : null,
+                overdue > 0 ? new { tone = "danger", message = $"{overdue} reconciliation breaks are overdue for resolution." } : null,
+                reporting.ReportPackTargets.Count > 0 ? new { tone = "warning", message = "Publish-ready report targets detected; confirm approvals before distribution." } : null
+            }.Where(item => item is not null).ToArray()
+        };
     }
 
     private static string BuildDisplayName(StrategyRunSummary? latest)

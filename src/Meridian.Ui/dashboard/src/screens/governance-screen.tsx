@@ -462,6 +462,64 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         ))}
       </section>
 
+      {data.controlCenter ? (
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card className="panel-surface" role="region" aria-label="Operations control center">
+            <CardHeader>
+              <CardTitle className="text-base">Operations control center</CardTitle>
+              <CardDescription>Aggregate close readiness, reconciliation backlog, approvals, and evidence completeness.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <GovernanceValue label="Close readiness" value={data.controlCenter.closeReadiness} />
+                <GovernanceValue label="SLA breach count" value={String(data.controlCenter.slaBreachCount)} />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="space-y-1">
+                  <span className="text-xs text-muted-foreground">Portfolio filter</span>
+                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
+                    {data.controlCenter.portfolioFilterOptions.map((option) => <option key={option}>{option}</option>)}
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs text-muted-foreground">Account filter</span>
+                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
+                    <option>all-accounts</option>
+                    {data.controlCenter.accountFilterOptions.map((option) => <option key={option}>{option}</option>)}
+                  </select>
+                </label>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {data.controlCenter.trendSnapshots.map((snapshot) => (
+                  <div key={snapshot.metric} className="rounded border border-border/70 px-2 py-1">
+                    <div className="text-xs text-muted-foreground">{snapshot.metric}</div>
+                    <div className="font-mono">{snapshot.value} · {snapshot.trend}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="panel-surface">
+            <CardHeader>
+              <CardTitle className="text-base">High-risk alerts</CardTitle>
+              <CardDescription>Overdue critical breaks and report approvals requiring immediate action.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {data.controlCenter.alerts.map((alert, index) => (
+                <div key={`${alert.message}-${index}`} className={cn("rounded border px-2 py-1 text-sm", alert.tone === "danger" ? "border-danger/40 bg-danger/10 text-danger" : "border-warning/40 bg-warning/10 text-warning-foreground")}>
+                  {alert.message}
+                </div>
+              ))}
+              <div className="pt-2 text-sm">
+                {data.controlCenter.drillLinks.map((link) => (
+                  <div key={link.href}><Link className="text-primary underline" to={link.href}>{link.label}</Link></div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
