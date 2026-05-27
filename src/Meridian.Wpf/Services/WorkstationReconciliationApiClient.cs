@@ -42,21 +42,25 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         => _apiClient.GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct);
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<ReconciliationBreakQueueItem>>("/api/workstation/reconciliation/break-queue", ct).ConfigureAwait(false)
+        => await _apiClient.UiApi.GetReconciliationBreakQueueAsync(ct).ConfigureAwait(false)
         ?? [];
 
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationRunDetail>($"/api/workstation/runs/{Uri.EscapeDataString(runId)}/reconciliation", ct);
+        => _apiClient.GetAsync<ReconciliationRunDetail>(
+            UiApiRoutes.WithParam(UiApiRoutes.RunsReconciliation, "runId", runId),
+            ct);
 
     public Task<ReconciliationRunDetail?> GetRunDetailAsync(string reconciliationRunId, CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationRunDetail>($"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", ct);
+        => _apiClient.GetAsync<ReconciliationRunDetail>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationRunById, "reconciliationRunId", reconciliationRunId),
+            ct);
 
     public Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
         string breakId,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
         => PostActionAsync(
-            $"/api/workstation/reconciliation/break-queue/{Uri.EscapeDataString(breakId)}/review",
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", breakId),
             request,
             ct);
 
@@ -65,7 +69,7 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
         => PostActionAsync(
-            $"/api/workstation/reconciliation/break-queue/{Uri.EscapeDataString(breakId)}/resolve",
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
             request,
             ct);
 

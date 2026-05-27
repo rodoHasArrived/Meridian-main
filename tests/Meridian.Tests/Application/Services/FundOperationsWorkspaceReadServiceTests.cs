@@ -139,6 +139,10 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.Nav.ComponentCount.Should().BeGreaterThan(0);
         workspace.Reporting.ProfileCount.Should().BeGreaterThan(0);
         workspace.Workspace.TotalAccounts.Should().Be(2);
+        workspace.Governance.Should().NotBeNull();
+        workspace.Governance!.DecisionPosture.Should().NotBeNullOrWhiteSpace();
+        workspace.Governance.SignoffPosture.Should().NotBeNullOrWhiteSpace();
+        workspace.Governance.CloseReadiness.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]

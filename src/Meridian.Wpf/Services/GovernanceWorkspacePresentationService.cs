@@ -125,31 +125,42 @@ internal static class GovernanceWorkspacePresentationService
         var ledger = workspace.Ledger;
         var reconciliation = workspace.Reconciliation;
         var reporting = workspace.Reporting;
+        var governance = workspace.Governance;
         var accountingSummary = ledger is null || ledger.TrialBalance.Count == 0
             ? "Awaiting ledger snapshot"
             : $"{ledger.TrialBalance.Count} trial-balance lines ready";
         var accountingDetail = ledger is null
             ? "Accounting review will become specific once the shared ledger snapshot is available."
             : $"{ledger.JournalEntryCount} journal(s) are available for continuity, accrual, and sign-off review.";
-        var reconciliationSummary = reconciliation.OpenBreakCount > 0
-            ? $"{reconciliation.OpenBreakCount} break(s) open"
-            : workflow?.PrimaryBlocker.Code == "as-of-drift" || workflow?.PrimaryBlocker.Code == "missing-ledger" || workflow?.PrimaryBlocker.Code == "missing-reconciliation"
-                ? workflow.StatusLabel
-                : "Matched and review-ready";
-        var reconciliationDetail = reconciliation.OpenBreakCount > 0
-            ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+        var reconciliationSummary = !string.IsNullOrWhiteSpace(governance?.DecisionPosture)
+            ? governance.DecisionPosture
+            : reconciliation.OpenBreakCount > 0
+                ? $"{reconciliation.OpenBreakCount} break(s) open"
+                : workflow?.PrimaryBlocker.Code == "as-of-drift" || workflow?.PrimaryBlocker.Code == "missing-ledger" || workflow?.PrimaryBlocker.Code == "missing-reconciliation"
+                    ? workflow.StatusLabel
+                    : "Matched and review-ready";
+        var reconciliationDetail = !string.IsNullOrWhiteSpace(governance?.SignoffPosture)
+            ? $"{governance.SignoffPosture} {governance.CloseReadiness}".Trim()
             : workflow?.PrimaryBlocker.Code == "as-of-drift" || workflow?.PrimaryBlocker.Code == "missing-ledger" || workflow?.PrimaryBlocker.Code == "missing-reconciliation"
                 ? workflow.PrimaryBlocker.Detail
-                : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current context.";
+                : reconciliation.OpenBreakCount > 0
+                    ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+                    : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current context.";
         var reportingSummary = reporting.ProfileCount > 0
             ? $"{reporting.ProfileCount} report profile(s) ready"
             : "Reporting shell ready";
-        var reportingDetail = $"Cash {workspace.CashFinancing.TotalCash:C0}, financing {workspace.CashFinancing.FinancingCost:C0}, and report-pack exports stay in the same governance lane.";
+        var reportingDetail = !string.IsNullOrWhiteSpace(governance?.CloseReadiness)
+            ? governance.CloseReadiness
+            : $"Cash {workspace.CashFinancing.TotalCash:C0}, financing {workspace.CashFinancing.FinancingCost:C0}, and report-pack exports stay in the same governance lane.";
         var latestNotification = notifications.FirstOrDefault();
         var auditSummary = unreadAlerts > 0
             ? $"{unreadAlerts} unread alert(s)"
-            : workflow?.Evidence.FirstOrDefault(static evidence => string.Equals(evidence.Label, "Audit", StringComparison.OrdinalIgnoreCase))?.Value ?? "Audit trail ready";
-        var auditDetail = latestNotification is null
+            : governance?.AuditTraceability
+                ?? workflow?.Evidence.FirstOrDefault(static evidence => string.Equals(evidence.Label, "Audit", StringComparison.OrdinalIgnoreCase))?.Value
+                ?? "Audit trail ready";
+        var auditDetail = !string.IsNullOrWhiteSpace(governance?.AuditTraceability) && latestNotification is null
+            ? governance.AuditTraceability
+            : latestNotification is null
             ? "Audit evidence and sign-off history remain available from the shared governance shell."
             : $"Latest governance signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.";
 
@@ -190,6 +201,7 @@ internal static class GovernanceWorkspacePresentationService
         var reconciliation = workspace.Reconciliation;
         var cash = workspace.CashFinancing;
         var reporting = workspace.Reporting;
+        var governance = workspace.Governance;
         var latestNotification = notifications.FirstOrDefault();
         var workflowBlockerCode = workflow?.PrimaryBlocker.Code;
         var workflowCarriesReconciliationBlocker =
@@ -233,16 +245,20 @@ internal static class GovernanceWorkspacePresentationService
                 TargetLabel: "Target page: FundTrialBalance"),
             GovernanceSubarea.Reconciliation => new GovernanceLaneHeroState(
                 LaneLabel: laneLabel,
-                Summary: reconciliation.OpenBreakCount > 0
-                    ? $"{reconciliation.OpenBreakCount} break(s) open"
-                    : workflowCarriesReconciliationBlocker
-                        ? workflow?.StatusLabel ?? "Reconciliation review pending"
-                        : "Matched and review-ready",
-                Detail: reconciliation.OpenBreakCount > 0
-                    ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+                Summary: !string.IsNullOrWhiteSpace(governance?.DecisionPosture)
+                    ? governance.DecisionPosture
+                    : reconciliation.OpenBreakCount > 0
+                        ? $"{reconciliation.OpenBreakCount} break(s) open"
+                        : workflowCarriesReconciliationBlocker
+                            ? workflow?.StatusLabel ?? "Reconciliation review pending"
+                            : "Matched and review-ready",
+                Detail: !string.IsNullOrWhiteSpace(governance?.SignoffPosture)
+                    ? $"{governance.SignoffPosture} {governance.CloseReadiness}".Trim()
                     : workflowCarriesReconciliationBlocker
                         ? workflow?.PrimaryBlocker.Detail ?? "Reconciliation review is waiting on the current governance blocker."
-                        : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current scope with {reconciliation.SecurityCoverageIssueCount} coverage issue(s).",
+                        : reconciliation.OpenBreakCount > 0
+                            ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+                            : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current scope with {reconciliation.SecurityCoverageIssueCount} coverage issue(s).",
                 HandoffTitle: reconciliation.OpenBreakCount > 0
                     ? "Review breaks before approval release"
                     : workflowCarriesReconciliationBlocker
@@ -277,8 +293,12 @@ internal static class GovernanceWorkspacePresentationService
                 LaneLabel: laneLabel,
                 Summary: unreadAlerts > 0
                     ? $"{unreadAlerts} unread alert(s)"
-                    : workflow?.Evidence.FirstOrDefault(static evidence => string.Equals(evidence.Label, "Audit", StringComparison.OrdinalIgnoreCase))?.Value ?? "Audit trail ready",
-                Detail: latestNotification is null
+                    : governance?.AuditTraceability
+                        ?? workflow?.Evidence.FirstOrDefault(static evidence => string.Equals(evidence.Label, "Audit", StringComparison.OrdinalIgnoreCase))?.Value
+                        ?? "Audit trail ready",
+                Detail: !string.IsNullOrWhiteSpace(governance?.AuditTraceability) && latestNotification is null
+                    ? governance.AuditTraceability
+                    : latestNotification is null
                     ? "Audit evidence, alerts, and operator sign-off history remain attached to the current governance scope."
                     : $"Latest governance signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.",
                 HandoffTitle: unreadAlerts > 0 ? "Review unread alerts" : "Open audit trail",
