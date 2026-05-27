@@ -3746,6 +3746,7 @@ public static partial class WorkstationEndpoints
                 Workspace: new WorkstationGovernanceWorkspaceSummary(0, 0, 0, 0, 0),
                 CashFlow: BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
                 Reporting: BuildGovernanceReportingPayload(),
+                ControlCenter: BuildGovernanceControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), BuildGovernanceReportingPayload()),
                 KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
         }
 
@@ -3792,6 +3793,7 @@ public static partial class WorkstationEndpoints
                 SecurityIssues: runsWithSecurityIssues),
             CashFlow: BuildGovernanceWorkspaceCashFlowSummary(details),
             Reporting: BuildGovernanceReportingPayload(),
+            ControlCenter: BuildGovernanceControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), BuildGovernanceReportingPayload()),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -3977,6 +3979,7 @@ public static partial class WorkstationEndpoints
                 summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
             },
             Reporting: BuildGovernanceReportingPayload(),
+            ControlCenter: BuildGovernanceControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), BuildGovernanceReportingPayload()),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -5083,6 +5086,57 @@ public static partial class WorkstationEndpoints
             Profiles: profiles,
             ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
             Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.");
+    }
+
+    private static object BuildGovernanceControlCenterPayload(
+        IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,
+        WorkstationGovernanceReportingPayload reporting)
+    {
+        var criticalOpen = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical && item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed);
+        var inReview = breakQueue.Count(item => item.Status == ReconciliationBreakQueueStatus.InReview);
+        var unowned = breakQueue.Count(item => string.IsNullOrWhiteSpace(item.AssignedTo));
+        var overdue = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-2));
+        var breachCount = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3));
+
+        return new
+        {
+            closeReadiness = criticalOpen == 0 && overdue == 0 ? "ReadyWithAttention" : "Blocked",
+            portfolioFilterOptions = new[] { "all-portfolios", "macro", "equity", "fixed-income" },
+            accountFilterOptions = breakQueue.Select(item => item.FundAccountId).Where(static id => !string.IsNullOrWhiteSpace(id)).Distinct().Cast<string>().ToArray(),
+            blockerSeverityDistribution = new[] {
+                new { severity = "Critical", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical) },
+                new { severity = "High", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.High) },
+                new { severity = "Medium", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Medium) },
+                new { severity = "Low", count = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Low) }
+            },
+            agingCurves = new[] {
+                new { bucket = "0-1d", count = breakQueue.Count(item => item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-1)) },
+                new { bucket = "2-3d", count = breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-1) && item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-3)) },
+                new { bucket = "4d+", count = breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3)) }
+            },
+            ownerWorkload = breakQueue.GroupBy(item => string.IsNullOrWhiteSpace(item.AssignedTo) ? "Unassigned" : item.AssignedTo!)
+                .Select(group => new { owner = group.Key, openCount = group.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed) })
+                .OrderByDescending(item => item.openCount)
+                .ToArray(),
+            slaBreachCount = breachCount,
+            trendSnapshots = new[] {
+                new { metric = "Open critical breaks", value = criticalOpen, trend = criticalOpen > 0 ? "worsening" : "stable" },
+                new { metric = "Breaks in review", value = inReview, trend = inReview > 0 ? "improving" : "stable" },
+                new { metric = "Unassigned breaks", value = unowned, trend = unowned > 0 ? "worsening" : "stable" },
+                new { metric = "Report approvals pending", value = Math.Max(0, reporting.ReportPackTargets.Count - 1), trend = "stable" }
+            },
+            drillLinks = new[] {
+                new { label = "Open close readiness", href = "/trading/readiness" },
+                new { label = "Open reconciliation queue", href = "/accounting/reconciliation" },
+                new { label = "Open report approvals", href = "/reporting/report-packs" },
+                new { label = "Open evidence completeness", href = "/reporting/evidence" }
+            },
+            alerts = new[] {
+                criticalOpen > 0 ? new { tone = "danger", message = $"{criticalOpen} critical reconciliation breaks remain unresolved." } : null,
+                overdue > 0 ? new { tone = "danger", message = $"{overdue} reconciliation breaks are overdue for resolution." } : null,
+                reporting.ReportPackTargets.Count > 0 ? new { tone = "warning", message = "Publish-ready report targets detected; confirm approvals before distribution." } : null
+            }.Where(item => item is not null).ToArray()
+        };
     }
 
     private static string BuildDisplayName(StrategyRunSummary? latest)
