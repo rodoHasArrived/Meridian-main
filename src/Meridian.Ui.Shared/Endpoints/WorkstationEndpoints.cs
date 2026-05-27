@@ -282,9 +282,11 @@ public static class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithName("CreateReconciliationRun")
         .Produces<ReconciliationRunDetail>(200)
-        .Produces(404);
+        .Produces(404)
+        .Produces(429);
 
         group.MapGet("/reconciliation/runs/{reconciliationRunId}", async (string reconciliationRunId, HttpContext context) =>
         {
