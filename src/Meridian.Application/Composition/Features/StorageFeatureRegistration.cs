@@ -379,15 +379,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             return new FundOperationsPersistenceOptions { DomainModes = domainModes };
         });
         services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure)));
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
         services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts)));
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
         services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending)));
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
         services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking)));
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
         services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket)));
+            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
         return services;
     }
