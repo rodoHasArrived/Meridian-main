@@ -1092,6 +1092,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 gate.GateKey,
                 $"{DisplayName(gate.GateKey)} close gate",
                 gate.CompletedBy ?? "accounting-operator",
+                RequiredEvidence: "Evidence link and gate completion audit",
+                RequiredApprovalCount: gate.GateKey == OperationsGateKeyDto.Approval ? 2 : 1,
+                ExpiresOn: dueBase.AddDays(index + 5),
                 dueBase.AddDays(index),
                 status,
                 gate.Blockers.FirstOrDefault()?.Message,
@@ -1291,7 +1294,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         {
             blockers.Add(new OperationsWorkflowBlockerDto(
                 "LEDGER_PERIOD_CLOSED",
-                "Ledger posting into a closed or hard-closed period requires a governed adjustment path.",
+                "Ledger posting into a closed or hard-closed period requires a governed reopen path before adjustment posting.",
                 OperationsGateKeyDto.LedgerPosting,
                 "Critical",
                 evidenceLinks));

@@ -568,6 +568,7 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string Actor,
     string Rationale,
     string ReportPackId,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
@@ -577,8 +578,16 @@ public sealed record OperationsReopenWorkflowRequestDto(
     string Rationale,
     string IncidentId,
     bool IsGovernedAdmin,
+    string? Justification = null,
+    string? ApprovalReference = null,
+    string? ImpactSummary = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+
+public sealed record OperationsChecklistControlApprovalDto(
+    string TaskId,
+    string ApprovedBy,
+    DateTimeOffset ApprovedAtUtc);
 
 public sealed record OperationsTransitionResultDto(
     bool Success,
@@ -635,6 +644,9 @@ public sealed record OperationsCloseChecklistTaskDto(
     OperationsGateKeyDto Gate,
     string Label,
     string Owner,
+    string RequiredEvidence,
+    int RequiredApprovalCount,
+    DateOnly? ExpiresOn,
     DateOnly? DueDate,
     string Status,
     string? BlockingReason,

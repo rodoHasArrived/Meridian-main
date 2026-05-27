@@ -520,7 +520,7 @@ public sealed class OperationsContinuityWorkflow
         {
             blockers.Add(new OperationsWorkflowBlockerDto(
                 "LEDGER_PERIOD_CLOSED",
-                "Ledger posting into a closed or hard-closed period requires a governed adjustment path.",
+                "Ledger posting into a closed or hard-closed period requires a governed reopen path before adjustment posting.",
                 OperationsGateKeyDto.LedgerPosting,
                 "Critical",
                 evidenceLinks));
@@ -802,6 +802,16 @@ public sealed class OperationsContinuityWorkflow
             return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
+        if (request.ChecklistControlApprovals is null || request.ChecklistControlApprovals.Count == 0)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED",
+                "Close orchestration requires control approvals for close checklist items.",
+                OperationsGateKeyDto.Approval,
+                "Critical",
+                []);
+        }
+
         return null;
     }
 
@@ -872,6 +882,16 @@ public sealed class OperationsContinuityWorkflow
         if (!IsRequestedReportPackReady(request.ReportPackId))
         {
             return CreateReportPackMismatchBlocker(request.ReportPackId);
+        }
+
+        if (request.ChecklistControlApprovals is null || request.ChecklistControlApprovals.Count == 0)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED",
+                "Close orchestration requires control approvals for close checklist items.",
+                OperationsGateKeyDto.Approval,
+                "Critical",
+                []);
         }
 
         return null;
@@ -1010,11 +1030,14 @@ public sealed class OperationsContinuityWorkflow
 
         if (!request.IsGovernedAdmin ||
             string.IsNullOrWhiteSpace(request.Rationale) ||
-            string.IsNullOrWhiteSpace(request.IncidentId))
+            string.IsNullOrWhiteSpace(request.IncidentId) ||
+            string.IsNullOrWhiteSpace(request.Justification) ||
+            string.IsNullOrWhiteSpace(request.ApprovalReference) ||
+            string.IsNullOrWhiteSpace(request.ImpactSummary))
         {
             return new OperationsWorkflowBlockerDto(
                 "REOPEN_GOVERNANCE_METADATA_REQUIRED",
-                "Reopening requires governed administrator authority, rationale, and linked incident metadata.",
+                "Reopening requires governed administrator authority, rationale, incident metadata, justification, approval reference, and impact summary.",
                 OperationsGateKeyDto.Approval,
                 "Critical",
                 []);
