@@ -670,6 +670,22 @@ $jsonPath = Join-Path $summaryDir "dk1-pilot-parity-packet.json"
 $mdPath = Join-Path $summaryDir "dk1-pilot-parity-packet.md"
 $packetGeneratedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
 
+$governanceEvidencePath = Join-Path $summaryDir "latest-governance-decision.json"
+$calibrationSnapshotPath = Join-Path $summaryDir "latest-calibration-snapshot.json"
+$kernelPromotionEvidence = [ordered]@{
+    governanceDecisionPath = ConvertTo-RelativePath -Path $governanceEvidencePath
+    calibrationSnapshotPath = ConvertTo-RelativePath -Path $calibrationSnapshotPath
+    status = "missing"
+    approved = $false
+    blockingReasons = @("Kernel promotion evidence files were not found.")
+}
+if ((Test-Path -LiteralPath $governanceEvidencePath) -and (Test-Path -LiteralPath $calibrationSnapshotPath)) {
+    $governance = Get-Content -Raw -LiteralPath $governanceEvidencePath | ConvertFrom-Json
+    $kernelPromotionEvidence.status = "validated"
+    $kernelPromotionEvidence.approved = [bool]$governance.approved
+    $kernelPromotionEvidence.blockingReasons = @($governance.blockingReasons)
+}
+
 $packet = [ordered]@{
     generatedAtUtc = $packetGeneratedAtUtc
     dateStamp = if ($summary.PSObject.Properties.Name -contains "dateStamp") { [string]$summary.dateStamp } else { $DateStamp }
@@ -714,6 +730,7 @@ $packet = [ordered]@{
         missingRequirements = $thresholdContractMissingRequirements
     }
     evidenceDocuments = @($docReviews)
+    kernelPromotionEvidence = $kernelPromotionEvidence
     operatorSignoff = $null
     blockers = @($blockers)
 }

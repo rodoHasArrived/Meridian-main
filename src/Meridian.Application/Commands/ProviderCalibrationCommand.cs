@@ -50,6 +50,10 @@ internal sealed class ProviderCalibrationCommand : ICliCommand
         var snapshotStore = new ProviderKernelCalibrationSnapshotStore(_dataRoot);
         var snapshotPath = await snapshotStore.SaveAsync(snapshot, ct).ConfigureAwait(false);
 
+        var latestSnapshotAliasPath = Path.Combine(_dataRoot, "calibration", "provider-degradation", "latest-calibration-snapshot.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(latestSnapshotAliasPath) ?? ".");
+        await File.WriteAllTextAsync(latestSnapshotAliasPath, JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true }), ct).ConfigureAwait(false);
+
         var markdown = ProviderCalibrationReportWriter.BuildMarkdown(snapshot);
         var reportOutputPath = CliArguments.GetValue(args, "--calibration-report")
             ?? Path.Combine(_dataRoot, "calibration", "provider-degradation", "latest-report.md");
