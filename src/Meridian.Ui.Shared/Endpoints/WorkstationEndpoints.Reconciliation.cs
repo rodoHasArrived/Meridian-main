@@ -133,6 +133,9 @@ public static partial class WorkstationEndpoints
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (
             string? status,
             string? fundAccountId,
+            string? team,
+            string? assignee,
+            string? counterparty,
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
@@ -140,6 +143,11 @@ public static partial class WorkstationEndpoints
         {
             await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(repository, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            items = items
+                .Where(item => string.IsNullOrWhiteSpace(team) || string.Equals(item.Team, team, StringComparison.OrdinalIgnoreCase))
+                .Where(item => string.IsNullOrWhiteSpace(assignee) || string.Equals(item.AssignedTo, assignee, StringComparison.OrdinalIgnoreCase))
+                .Where(item => string.IsNullOrWhiteSpace(counterparty) || string.Equals(item.Counterparty, counterparty, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
@@ -293,5 +301,57 @@ public static partial class WorkstationEndpoints
         .Produces(401)
         .Produces(403)
         .Produces(404);
+
+
+        group.MapPost("/reconciliation/break-queue/bulk", async (
+            ReconciliationBreakBulkActionRequest request,
+            HttpContext context,
+            [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var actor = string.IsNullOrWhiteSpace(request.Actor) && TryResolveCurrentUser(context, out var currentUser) ? currentUser : request.Actor ?? "system";
+            var updated = new List<ReconciliationBreakQueueItem>();
+            foreach (var breakId in request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+                if (item is null)
+                {
+                    continue;
+                }
+
+                var next = item;
+                if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
+                {
+                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.Assigned, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
+                }
+                else if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
+                {
+                    next = item with { Status = request.Status.Value, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk status update" };
+                }
+                else if (string.Equals(request.Action, "comment", StringComparison.OrdinalIgnoreCase))
+                {
+                    next = item with { ResolutionNote = request.CommentTemplate, LastUpdatedAt = DateTimeOffset.UtcNow };
+                }
+
+                await repository.SaveAsync(next, context.RequestAborted).ConfigureAwait(false);
+                updated.Add(next);
+            }
+
+            return Results.Json(updated, jsonOptions);
+        })
+        .WithName("BulkUpdateReconciliationBreaks")
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
+        .Produces(403)
+        .Produces(501);
+
     }
 }

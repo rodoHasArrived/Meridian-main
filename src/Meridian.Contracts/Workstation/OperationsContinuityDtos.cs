@@ -587,7 +587,8 @@ public sealed record OperationsTransitionResultDto(
     OperationsContinuityWorkflowDto? Workflow,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
     IReadOnlyList<OperationsNextActionDto> NextActions,
-    long? NewVersion = null);
+    long? NewVersion = null,
+    OperationsCloseReadinessDto? CloseReadiness = null);
 
 public sealed record OperationsContinuityWorkflowSummaryDto(
     Guid WorkflowId,
@@ -623,9 +624,31 @@ public sealed record OperationsContinuityWorkflowDto(
     OperationsLedgerPreviewDto? LedgerPreview,
     IReadOnlyList<OperationsApprovalDto> Approvals,
     OperationsReportPackReadinessDto ReportPackReadiness,
+    IReadOnlyList<OperationsCloseChecklistTaskDto> CloseChecklist,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    OperationsCloseReadinessDto? CloseReadiness = null);
+
+public sealed record OperationsCloseChecklistTaskDto(
+    string TaskId,
+    OperationsGateKeyDto Gate,
+    string Label,
+    string Owner,
+    DateOnly? DueDate,
+    string Status,
+    string? BlockingReason,
+    string? EvidencePointer,
+    string? RemediationRoute,
+    bool CanAcknowledge,
+    DateTimeOffset? AcknowledgedAtUtc,
+    string? AcknowledgedBy);
+
+public sealed record OperationsChecklistAcknowledgeRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string Rationale,
+    string? CorrelationId = null);
 
 public sealed record OperationsGateDto(
     OperationsGateKeyDto GateKey,
@@ -716,6 +739,21 @@ public sealed record OperationsReportPackReadinessDto(
     string? ReportPackId,
     string? BlockingReason,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+
+
+public sealed record OperationsCloseReadinessDto(
+    bool IsReadyToClose,
+    string Severity,
+    IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers,
+    IReadOnlyList<OperationsNextActionDto> NextActions);
+
+public sealed record OperationsCloseReadinessBlockerDto(
+    string Code,
+    string Category,
+    string Severity,
+    string Message,
+    OperationsGateKeyDto? Gate,
+    string? RouteHint);
 
 public sealed record OperationsWorkflowBlockerDto(
     string Code,

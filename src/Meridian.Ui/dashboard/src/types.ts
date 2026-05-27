@@ -531,8 +531,24 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   ledgerPreview: OperationsLedgerPreview | null;
   approvals: OperationsApproval[];
   reportPackReadiness: OperationsReportPackReadiness;
+  closeChecklist: OperationsCloseChecklistTask[];
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
+}
+
+export interface OperationsCloseChecklistTask {
+  taskId: string;
+  gate: OperationsGateKey;
+  label: string;
+  owner: string;
+  dueDate: string | null;
+  status: string;
+  blockingReason: string | null;
+  evidencePointer: string | null;
+  remediationRoute: string | null;
+  canAcknowledge: boolean;
+  acknowledgedAtUtc: string | null;
+  acknowledgedBy: string | null;
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
@@ -1321,6 +1337,18 @@ export interface GovernanceWorkspaceResponse {
   breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
+  controlCenter?: {
+    closeReadiness: string;
+    portfolioFilterOptions: string[];
+    accountFilterOptions: string[];
+    blockerSeverityDistribution: { severity: string; count: number }[];
+    agingCurves: { bucket: string; count: number }[];
+    ownerWorkload: { owner: string; openCount: number }[];
+    slaBreachCount: number;
+    trendSnapshots: { metric: string; value: number; trend: string }[];
+    drillLinks: { label: string; href: string }[];
+    alerts: { tone: "danger" | "warning" | "info"; message: string }[];
+  };
 }
 
 export interface ExportAnalysisResult {

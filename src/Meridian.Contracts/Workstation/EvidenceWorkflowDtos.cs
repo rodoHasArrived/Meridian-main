@@ -80,6 +80,26 @@ public sealed record EvidenceVaultIdentityDto(
     int SchemaVersion,
     string StorageKind);
 
+public sealed record EvidenceLifecycleMetadataDto(
+    DateTimeOffset? RetainUntil,
+    bool LegalHold,
+    DateTimeOffset? ExpiresAt,
+    IReadOnlyList<string> AccessPolicyTags);
+
+public sealed record EvidenceSubjectLinkageDto(
+    string? EvidenceSubject,
+    string? RunId,
+    string? PeriodId,
+    string? ReportPackId,
+    string? ReconciliationCaseId);
+
+public sealed record EvidenceVaultLookupRequestDto(
+    string? EvidenceSubject,
+    string? RunId,
+    string? PeriodId,
+    string? ReportPackId,
+    string? ReconciliationCaseId);
+
 public sealed record EvidenceEndpointErrorDto(
     string Code,
     string Message,
@@ -131,7 +151,11 @@ public sealed record EvidenceTemplateDto(
 public sealed record EvidencePacketExportRequest(
     string? RequestedBy,
     string? Reason,
-    bool IncludeWarnings = true);
+    bool IncludeWarnings = true)
+{
+    public EvidenceLifecycleMetadataDto? Lifecycle { get; init; }
+    public EvidenceSubjectLinkageDto? Linkage { get; init; }
+}
 
 public sealed record EvidencePacketExportResponse(
     string SubjectKind,

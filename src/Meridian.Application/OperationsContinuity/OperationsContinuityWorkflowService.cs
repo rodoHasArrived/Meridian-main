@@ -98,6 +98,12 @@ public interface IOperationsContinuityWorkflowService
     Task<OperationsContinuityWorkflowDto?> GetAsync(Guid workflowId, CancellationToken ct = default);
 
     Task<IReadOnlyList<OperationsTimelineEntryDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default);
+    Task<IReadOnlyList<OperationsCloseChecklistTaskDto>> GetChecklistAsync(Guid workflowId, CancellationToken ct = default);
+    Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(
+        Guid workflowId,
+        string taskId,
+        OperationsChecklistAcknowledgeRequestDto request,
+        CancellationToken ct = default);
 }
 
 public sealed class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
@@ -791,7 +797,35 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return await ApplyCommandAsync(
+        var existing = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
+        if (existing is not null)
+        {
+            var readiness = EvaluateCloseReadiness(existing);
+            if (!readiness.IsReadyToClose)
+            {
+                await _auditStore.AppendAsync(new OperationsWorkflowAuditDraft(
+                    existing.WorkflowId,
+                    existing.FundAccountId,
+                    existing.PeriodId,
+                    "workflow-close-rejected",
+                    _statusDerivation.Derive(existing),
+                    _statusDerivation.Derive(existing),
+                    OperationsGateKeyDto.Approval,
+                    existing.ApprovalGate.Status,
+                    existing.ApprovalGate.Status,
+                    request.Actor?.Trim() ?? string.Empty,
+                    RedactSensitiveText($"{request.Rationale} | close rejected: {string.Join("; ", readiness.Blockers.Select(static b => b.Code))}"),
+                    RedactSensitiveText(request.CorrelationId),
+                    EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks)), ct).ConfigureAwait(false);
+
+                return new OperationsTransitionResultDto(false, "CLOSE_READINESS_FAILED", "Close was rejected by fail-closed readiness gating.", null,
+                    readiness.Blockers.Select(static b => new OperationsWorkflowBlockerDto(b.Code, b.Message, b.Gate, b.Severity, [])).ToArray(),
+                    readiness.NextActions,
+                    CloseReadiness: readiness);
+            }
+        }
+
+        var result = await ApplyCommandAsync(
             workflowId,
             request.ExpectedVersion,
             request.Actor,
@@ -808,6 +842,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             },
             requireIntactAuditChain: true,
             ct: ct).ConfigureAwait(false);
+
+        return result with { CloseReadiness = result.Workflow?.CloseReadiness };
     }
 
     private async Task<OperationsTransitionResultDto> ApplyCommandAsync(
@@ -945,6 +981,56 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         return timeline.Select(ToTimelineEntry).ToArray();
     }
 
+    public async Task<IReadOnlyList<OperationsCloseChecklistTaskDto>> GetChecklistAsync(Guid workflowId, CancellationToken ct = default)
+    {
+        var workflow = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
+        if (workflow is null)
+        {
+            return [];
+        }
+
+        var timeline = await GetTimelineAsync(workflowId, ct).ConfigureAwait(false);
+        return BuildChecklist(workflow, timeline);
+    }
+
+    public async Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(Guid workflowId, string taskId, OperationsChecklistAcknowledgeRequestDto request, CancellationToken ct = default)
+    {
+        var checklist = await GetChecklistAsync(workflowId, ct).ConfigureAwait(false);
+        var task = checklist.FirstOrDefault(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase));
+        if (task is null)
+        {
+            return Failure("NOT_FOUND", "Checklist task was not found.", []);
+        }
+
+        if (!task.CanAcknowledge)
+        {
+            return Failure("EVIDENCE_REQUIRED", "Checklist task evidence is required before acknowledgment.", [
+                new OperationsWorkflowBlockerDto("CHECKLIST_EVIDENCE_REQUIRED", "Checklist task cannot be acknowledged before gate evidence exists.", task.Gate, "Error", [])
+            ]);
+        }
+
+        return await ExecuteTransitionAsync(
+            workflowId,
+            request,
+            request.CorrelationId,
+            null,
+            "checklist-task-acknowledged",
+            task.Gate,
+            command: (workflow, _, now) =>
+            {
+                var gate = GetGate(workflow, task.Gate);
+                if (gate.Status != OperationsGateStatusDto.Completed)
+                {
+                    return new OperationsWorkflowBlockerDto("CHECKLIST_GATE_NOT_COMPLETE", "Checklist tasks can only be acknowledged when the gate is complete.", task.Gate, "Error", []);
+                }
+
+                gate.CompletedBy = request.Actor.Trim();
+                gate.CompletedAtUtc ??= now;
+                return null;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
     private async Task<OperationsContinuityWorkflowDto> ToDtoAsync(OperationsContinuityWorkflow workflow, CancellationToken ct)
     {
         var timeline = await GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
@@ -976,9 +1062,45 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflow.LedgerPreview,
             workflow.Approvals,
             workflow.ReportPackReadiness,
+            BuildChecklist(workflow, timeline),
             evidenceLinks,
             blockers,
-            nextActions);
+            nextActions,
+            EvaluateCloseReadiness(workflow));
+    }
+
+    private static IReadOnlyList<OperationsCloseChecklistTaskDto> BuildChecklist(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline)
+    {
+        var dueBase = DateOnly.FromDateTime(workflow.CreatedAtUtc.UtcDateTime).AddDays(2);
+        return workflow.Gates.Select((gate, index) =>
+        {
+            var evidence = timeline.SelectMany(static entry => entry.References).FirstOrDefault(link =>
+                string.Equals(link.Source, "operations-continuity", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(link.Source, gate.GateKey.ToString(), StringComparison.OrdinalIgnoreCase));
+            var status = gate.Status switch
+            {
+                OperationsGateStatusDto.Completed => "Done",
+                OperationsGateStatusDto.Blocked => "Blocked",
+                OperationsGateStatusDto.InProgress => "InProgress",
+                _ => "Pending"
+            };
+
+            return new OperationsCloseChecklistTaskDto(
+                $"close-gate-{gate.GateKey}".ToLowerInvariant(),
+                gate.GateKey,
+                $"{DisplayName(gate.GateKey)} close gate",
+                gate.CompletedBy ?? "accounting-operator",
+                dueBase.AddDays(index),
+                status,
+                gate.Blockers.FirstOrDefault()?.Message,
+                evidence?.EvidenceId,
+                gate.NextActions.FirstOrDefault()?.Route,
+                CanAcknowledge: gate.Status == OperationsGateStatusDto.Completed && evidence is not null,
+                gate.CompletedAtUtc,
+                gate.CompletedBy);
+        }).ToArray();
     }
 
     private static OperationsContinuityWorkflow CloneWorkflow(OperationsContinuityWorkflow workflow)
@@ -1005,6 +1127,33 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflow.UpdatedAtUtc,
             gates,
             gates.SelectMany(static gate => gate.NextActions).ToArray());
+    }
+
+    private static OperationsCloseReadinessDto EvaluateCloseReadiness(OperationsContinuityWorkflow workflow)
+    {
+        var blockers = new List<OperationsCloseReadinessBlockerDto>();
+        if (workflow.BreakCases.Any(static item => !string.Equals(item.Status, "closed", StringComparison.OrdinalIgnoreCase) && !string.Equals(item.Status, "resolved", StringComparison.OrdinalIgnoreCase)))
+        {
+            blockers.Add(new("RECONCILIATION_BREAKS_OPEN", "Breaks", "Critical", "Unresolved reconciliation breaks still require disposition.", OperationsGateKeyDto.Reconciliation, "/workstation/accounting"));
+        }
+
+        if (workflow.ApprovalState != OperationsApprovalStateDto.Approved)
+        {
+            blockers.Add(new("APPROVAL_MISSING", "Approvals", "Critical", "Close requires final approval before execution.", OperationsGateKeyDto.Approval, "/workstation/accounting"));
+        }
+
+        if (workflow.LedgerPostingState != OperationsLedgerPostingStateDto.Posted && workflow.LedgerPostingState != OperationsLedgerPostingStateDto.Complete)
+        {
+            blockers.Add(new("POSTING_INCOMPLETE", "Posting", "Critical", "Ledger posting state is not complete for close.", OperationsGateKeyDto.LedgerPosting, "/workstation/accounting"));
+        }
+
+        if (!workflow.ReportPackReadiness.IsReady || string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId))
+        {
+            blockers.Add(new("EVIDENCE_INCOMPLETE", "Evidence", "Critical", "Close evidence is incomplete or report pack is missing.", OperationsGateKeyDto.Approval, "/workstation/reporting"));
+        }
+
+        var actions = blockers.Select(static b => new OperationsNextActionDto(b.Code, b.Message, b.RouteHint, b.Gate)).ToArray();
+        return new OperationsCloseReadinessDto(blockers.Count == 0, blockers.Count == 0 ? "Info" : "Critical", blockers, actions);
     }
 
     private static OperationsGateDto ToGateDto(OperationsGateState gate) =>

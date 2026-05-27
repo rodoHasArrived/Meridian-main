@@ -13,16 +13,20 @@ public sealed class ReconciliationCaseServiceTests
         var store = new JsonReconciliationCaseStore(root);
         var service = new ReconciliationCaseService(store);
         var created = await service.CreateOpenCasesAsync("imp1", [new MatchOutcome("x", "unmatched", "", 0.2m, "none")]);
-        var updated = await service.UpdateStatusAsync(created[0].CaseId, "InReview", "triaged");
-        Assert.Equal("InReview", updated.Status);
+        var assigned = await service.AssignAsync(created[0].CaseId, "alice", "primary owner");
+        var updated = await service.UpdateStatusAsync(created[0].CaseId, "Investigating", "triaged");
+        var commented = await service.AddCommentAsync(created[0].CaseId, "Evidence", "Need broker confirms", "alice");
+        Assert.Equal("alice", assigned.Owner);
+        Assert.Equal("Investigating", updated.Status);
+        Assert.Single(commented.CommentThreads);
         Assert.True(updated.History.Count >= 2);
-        Assert.Equal("unassigned", updated.Owner);
+        Assert.Equal("alice", commented.Owner);
         Assert.Equal("system", updated.LastUpdatedBy);
         Assert.NotNull(updated.DueAtUtc);
 
         var reloaded = await store.GetAsync(created[0].CaseId);
         Assert.NotNull(reloaded);
-        Assert.Equal("InReview", reloaded!.Status);
+        Assert.Equal("Investigating", reloaded!.Status);
         Assert.Equal(updated.History.Count, reloaded.History.Count);
 
         var caseFileName = $"{Uri.EscapeDataString(created[0].CaseId)}.json";
@@ -31,7 +35,7 @@ public sealed class ReconciliationCaseServiceTests
         Assert.True(File.Exists(auditPath));
         var auditLines = await File.ReadAllLinesAsync(auditPath);
         Assert.True(auditLines.Length >= 2);
-        Assert.Contains(auditLines, line => line.Contains("\"status\":\"InReview\"", StringComparison.Ordinal));
+        Assert.Contains(auditLines, line => line.Contains("\"status\":\"Investigating\"", StringComparison.Ordinal));
         Assert.All(auditLines, line =>
         {
             using var audit = JsonDocument.Parse(line);
@@ -51,10 +55,13 @@ public sealed class ReconciliationCaseServiceTests
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.UpdateStatusAsync(created[0].CaseId, "Triaged", "unsupported status"));
 
-        var approved = await service.UpdateStatusAsync(created[0].CaseId, "Approved", "approved by controller");
-        Assert.Equal("Approved", approved.Status);
+        var investigating = await service.UpdateStatusAsync(created[0].CaseId, "Investigating", "investigate");
+        var resolved = await service.UpdateStatusAsync(created[0].CaseId, "Resolved", "fixed");
+        Assert.Equal("Resolved", resolved.Status);
+        var signedOff = await service.UpdateStatusAsync(created[0].CaseId, "SignedOff", "signed");
+        Assert.Equal("SignedOff", signedOff.Status);
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => service.UpdateStatusAsync(created[0].CaseId, "Resolved", "terminal transition"));
+            () => service.UpdateStatusAsync(created[0].CaseId, "Open", "terminal transition"));
     }
 
     [Fact]
