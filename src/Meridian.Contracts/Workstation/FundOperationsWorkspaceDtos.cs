@@ -134,7 +134,8 @@ public sealed record FundOperationsWorkspaceDto(
     CashFinancingSummary CashFinancing,
     ReconciliationSummary Reconciliation,
     FundNavAttributionSummaryDto Nav,
-    FundReportingSummaryDto Reporting);
+    FundReportingSummaryDto Reporting,
+    GovernanceLifecycleProjectionDto? Governance = null);
 
 /// <summary>
 /// Request to build a preview of a governance report pack for one fund profile.
