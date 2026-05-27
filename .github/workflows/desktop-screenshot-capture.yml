@@ -62,7 +62,6 @@ jobs:
           /p:EnableFullWpfBuild=true
 
       - name: Capture desktop screenshots
-        continue-on-error: true
         shell: pwsh
         run: >
           scripts/dev/capture-desktop-screenshots.ps1
@@ -86,7 +85,7 @@ jobs:
           }
 
       - name: Commit and push results
-        if: ${{ always() && inputs.commit == true }}
+        if: ${{ success() && inputs.commit == true }}
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"

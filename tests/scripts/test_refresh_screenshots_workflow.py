@@ -40,7 +40,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_desktop_screenshot_job_runs_capture_script_and_keeps_artifacts(self) -> None:
         self.assertIn("scripts/dev/capture-desktop-screenshots.ps1", self.desktop_screenshot_workflow)
-        self.assertIn("continue-on-error: true", self.desktop_screenshot_workflow)
+        self.assertNotIn("continue-on-error: true", self.desktop_screenshot_workflow)
+        self.assertIn("if: ${{ success() && inputs.commit == true }}", self.desktop_screenshot_workflow)
         self.assertIn("name: desktop-screenshots-${{ github.run_number }}", self.desktop_screenshot_workflow)
 
     def test_desktop_workflow_runner_exposes_manual_capture_workflows(self) -> None:
