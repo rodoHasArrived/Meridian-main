@@ -492,6 +492,64 @@ public static class FundStructureEndpoints
         .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
+
+        group.MapPost("/reporting/templates", (ReportTemplateDefinitionDto request, HttpContext context) =>
+        {
+            var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
+            return registry is null ? WorkspaceServiceUnavailable() : Results.Json(registry.Register(request), jsonOptions, statusCode: StatusCodes.Status201Created);
+        });
+
+        group.MapPost("/reporting/templates/render", (RenderReportTemplateRequestDto request, HttpContext context) =>
+        {
+            var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
+            if (registry is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(registry.Render(request), jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        });
+
+        group.MapPost("/reporting/packs/create", (string fundProfileId, string fundAccountId, string period, VersionedReportTemplateIdDto templateId, string actor, HttpContext context) =>
+        {
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.Create(fundProfileId, fundAccountId, period, templateId, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
+        });
+
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.InReview, actor, role));
+        group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved, actor, role));
+        group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Published, actor, role));
+
+        group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
+        {
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.Restate(reportId, actor, role, reasonCode, approver, priorVersionReportId, changedLines), jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        });
+
+        group.MapGet("/reporting/packs/history", (string period, string fundAccountId, HttpContext context) =>
+        {
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.GetHistory(period, fundAccountId), jsonOptions);
+        });
         group.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
         {
             var service = ResolveWorkspaceService(context);
@@ -508,6 +566,24 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status404NotFound);
     }
 
+
+    private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target, string actor, string role)
+    {
+        var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+        if (svc is null)
+        {
+            return WorkspaceServiceUnavailable();
+        }
+
+        try
+        {
+            return Results.Json(svc.Transition(reportId, target, actor, role), statusCode: StatusCodes.Status200OK);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
     private static IFundStructureService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundStructureService>();
 
