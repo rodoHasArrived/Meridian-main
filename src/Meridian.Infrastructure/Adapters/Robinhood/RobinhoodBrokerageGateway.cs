@@ -152,6 +152,26 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                 return rejectReport;
             }
 
+            using var client = CreateHttpClient();
+            var optionInstrument = await ResolveOptionInstrumentAsync(optionInstrumentUrl, client, ct).ConfigureAwait(false);
+            if (optionInstrument is null)
+            {
+                var rejectReport = BuildRejectedReport(
+                    request,
+                    "Robinhood option orders require a trusted option_instrument_url that can be resolved.");
+                await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+                return rejectReport;
+            }
+
+            if (!string.Equals(optionInstrument.ChainSymbol, request.Symbol, StringComparison.OrdinalIgnoreCase))
+            {
+                var rejectReport = BuildRejectedReport(
+                    request,
+                    $"Robinhood option instrument chain symbol '{optionInstrument.ChainSymbol}' does not match order symbol '{request.Symbol}'.");
+                await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+                return rejectReport;
+            }
+
             return await SubmitOptionOrderAsync(
                 request,
                 accountUrl,
@@ -705,9 +725,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     {
         if (string.IsNullOrWhiteSpace(instrumentUrl))
             return null;
+
+        if (!TryBuildTrustedRobinhoodUri(instrumentUrl, out var requestUri))
+            return null;
+
         try
         {
-            var resp = await client.GetAsync(instrumentUrl, ct).ConfigureAwait(false);
+            var resp = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
                 return null;
             var instrument = await resp.Content.ReadFromJsonAsync(
@@ -728,9 +752,12 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         if (string.IsNullOrWhiteSpace(optionInstrumentUrl))
             return null;
 
+        if (!TryBuildTrustedRobinhoodUri(optionInstrumentUrl, out var requestUri))
+            return null;
+
         try
         {
-            var response = await client.GetAsync(optionInstrumentUrl, ct).ConfigureAwait(false);
+            var response = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -742,6 +769,22 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         {
             return null;
         }
+    }
+
+    private static bool TryBuildTrustedRobinhoodUri(string url, out Uri uri)
+    {
+        uri = null!;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed))
+            return false;
+
+        if (!string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (!string.Equals(parsed.Host, "api.robinhood.com", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        uri = parsed;
+        return true;
     }
 
     private static Dictionary<string, string> BuildOptionPositionMetadata(

@@ -1,10 +1,23 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-20
+
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **brokerage portfolio sync blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the brokerage portfolio sync blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 ## Summary
 
-Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, and `Governance` workflows without turning market-data providers into portfolio-domain services.
+Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, `Accounting`, and `Reporting` workflows without turning market-data providers into portfolio-domain services.
+
+Planning review note 2026-05-18: this blueprint remains a Wave 3-4 continuity reference under the
+consolidated planning entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md). It does not promote live
+integration readiness ahead of the paper-first and read-only trust gates.
 
 This should extend the existing execution and brokerage seams already present in:
 
@@ -24,8 +37,9 @@ The key design decision is boundary discipline:
 
 ## Current Operator-Ready Slice
 
-The first implemented slice keeps WPF as the operator acceptance lane and treats Alpaca plugin
-checks as market-data evidence only. Brokerage/account continuity is read-side and Meridian-owned:
+The first implemented slice keeps brokerage/account continuity read-side and Meridian-owned. The
+browser and WPF operator UI lanes are both active; shared contracts remain the integration boundary for
+shared contracts and compatibility:
 
 - `src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs` defines account catalog, portfolio sync,
   activity sync, balances, positions, orders, fills, and cash activity.
@@ -45,6 +59,11 @@ checks as market-data evidence only. Brokerage/account continuity is read-side a
 - `src/Meridian.Wpf/ViewModels/FundAccountsViewModel.cs` and `FundAccountsPage.xaml` project
   fund-context, account-queue, provider-routing, shared-data-access, and ready-for-reconciliation
   posture from loaded account/provider evidence as the current WPF account handoff surface.
+- `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.*` projects brokerage connection state,
+  household accounts, account-kind filters, brokerage positions, selected-run evidence, and backend
+  links into the active browser Portfolio workspace.
+- `src/Meridian.Ui/dashboard/src/screens/settings-screen.*` exposes Alpaca paper API-key
+  verification/revocation and backend capability coverage in the active browser Settings workspace.
 
 Implemented routes:
 
@@ -58,6 +77,7 @@ Implemented routes:
 
 Durable local storage now uses `%LocalAppData%/Meridian/workstation/brokerage-sync` by default:
 
+- account links: `links/{fundAccountId}.json`
 - raw provider snapshots: `raw/{provider}/{externalAccount}/{timestamp}.json`
 - normalized projections: `projections/{fundAccountId}/current.json`
 - sync cursors: `cursors/{fundAccountId}.json`
@@ -65,6 +85,60 @@ Durable local storage now uses `%LocalAppData%/Meridian/workstation/brokerage-sy
 This slice is intentionally not a live-trading readiness expansion. Sync failures, stale cursors,
 and Security Master gaps surface as operator warnings and work items; they do not authorize order
 routing.
+
+### Robinhood Read-Only Portfolio Lane
+
+The Robinhood portfolio-viewing slice keeps live brokerage truth separate from paper trading and
+execution evidence. It uses an authorized OAuth-style brokerage aggregation flow and normalized
+read-only account-state endpoints; it does not store Robinhood usernames or passwords, and it does
+not reuse the existing Robinhood execution gateway for portfolio sync.
+
+Implemented Robinhood connection and portfolio routes:
+
+- `POST /api/brokerage-connections/robinhood/connect`
+- `GET /api/brokerage-connections/robinhood/status`
+- `GET /api/brokerage-connections/robinhood/callback`
+- `DELETE /api/brokerage-connections/robinhood`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/link`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/run`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/positions`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/activity`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/link`
+- `GET /api/fund-accounts/{accountId}/performance?from=&to=`
+- `GET /api/fund-accounts/{accountId}/cash-flow?from=&to=`
+- `GET /api/portfolio/household?provider=alpaca`
+- `GET /api/brokerage-connections/alpaca/status`
+- `POST /api/brokerage-connections/alpaca/connect`
+- `DELETE /api/brokerage-connections/alpaca`
+- `GET /api/fund-accounts/{accountId}/performance?from=&to=`
+- `GET /api/fund-accounts/{accountId}/cash-flow?from=&to=`
+- `GET /api/portfolio/household?provider=robinhood`
+
+Robinhood account classification is explicit in workstation contracts through
+`BrokerageAccountKindDto` values for `RothIra`, `TraditionalIra`, and `TaxableBrokerage`.
+Each external Robinhood account links to one Meridian `FundAccount`; the household portfolio route
+is a derived rollup and is not the source of truth.
+
+Additional durable local storage:
+
+- account links: `links/{fundAccountId}.json`
+- raw provider snapshots: `raw/robinhood/{externalAccount}/{timestamp}.json`
+- normalized projections: `projections/{fundAccountId}/current.json`
+- sync cursors: `cursors/{fundAccountId}.json`
+
+Robinhood connection configuration is environment-backed and credential-store compatible:
+
+- OAuth connection: `ROBINHOOD_BROKERAGE_AUTHORIZATION_ENDPOINT`,
+  `ROBINHOOD_BROKERAGE_TOKEN_ENDPOINT`, `ROBINHOOD_BROKERAGE_REVOKE_ENDPOINT`,
+  `ROBINHOOD_BROKERAGE_CLIENT_ID`, `ROBINHOOD_BROKERAGE_CLIENT_SECRET`,
+  `ROBINHOOD_BROKERAGE_REDIRECT_URI`, and `ROBINHOOD_BROKERAGE_SCOPE`.
+- Token references/status: `ROBINHOOD_BROKERAGE_ACCESS_TOKEN`,
+  `ROBINHOOD_BROKERAGE_REFRESH_TOKEN`, `ROBINHOOD_BROKERAGE_TOKEN_EXPIRES_AT`,
+  `ROBINHOOD_BROKERAGE_CONNECTED_AT`, and `ROBINHOOD_BROKERAGE_OAUTH_STATE`.
+- Normalized read-only aggregation endpoints: `ROBINHOOD_BROKERAGE_ACCOUNTS_ENDPOINT`,
+  `ROBINHOOD_BROKERAGE_PORTFOLIO_ENDPOINT_TEMPLATE`,
+  `ROBINHOOD_BROKERAGE_ACTIVITY_ENDPOINT_TEMPLATE`, and
+  `ROBINHOOD_BROKERAGE_DISPLAY_NAME`.
 
 ## Scope
 
@@ -75,7 +149,7 @@ routing.
 - local persistence of sync snapshots and sync cursors
 - fund-account and governance projections that consume synced brokerage state
 - shared workstation DTOs and endpoints for operator review, freshness, and reconciliation
-- WPF and workstation read-model integration where it reinforces existing `Trading` and `Governance` workflows
+- Browser workstation and WPF read-model integration where it reinforces existing `Trading`, `Portfolio`, `Accounting`, and `Reporting` workflows
 
 ### Out of scope
 
@@ -237,7 +311,7 @@ Use the synced data to deepen existing workflows instead of creating a new root 
 Recommended integration points:
 
 - `Trading`: show broker-account freshness, synced positions, and open-order divergence against local strategy/paper state
-- `Governance`: show linked brokerage accounts, latest sync age, open breaks, and imported cash activity as part of fund-operations review
+- `Accounting` / `Reporting`: show linked brokerage accounts, latest sync age, open breaks, and imported cash activity as part of fund-operations review
 - `FundLedgerViewModel`: consume sync posture alongside current account, bank snapshot, reconciliation, and report-pack data
 
 The UI should answer:

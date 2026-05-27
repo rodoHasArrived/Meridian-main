@@ -53,6 +53,9 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.SelectedModeFilter.Should().Be("All");
         vm.Runs.Should().BeEmpty();
         vm.CanOpenSelectedRun.Should().BeFalse();
+        vm.SelectionText.Should().Be("No strategy run selected");
+        vm.SelectionDetail.Should().Contain("Select a run to stage compare");
+        vm.ComparisonPanelDetail.Should().Be("Record at least two strategy runs before comparing results.");
     }
 
     // ── Filter / search tests ─────────────────────────────────────────────
@@ -410,6 +413,10 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.CanChooseComparisonRun.Should().BeTrue();
         vm.ComparisonGuidanceText.Should().Be(
             $"Ready to compare {vm.SelectedRun!.StrategyName} against {vm.ComparisonRun!.StrategyName}.");
+        vm.SelectionText.Should().Be("Beta Strategy vs Alpha Strategy");
+        vm.ComparisonHeaderAText.Should().Be("Beta Strategy (Paper)");
+        vm.ComparisonHeaderBText.Should().Be("Alpha Strategy (Backtest)");
+        vm.ComparisonPanelDetail.Should().Contain("Beta Strategy (Paper)");
     }
 
     [Fact]
@@ -448,6 +455,7 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.ComparisonRun.Should().BeNull();
         vm.IsComparisonVisible.Should().BeFalse();
         vm.ComparisonRows.Should().BeEmpty();
+        vm.ComparisonPlaceholderText.Should().Be($"Choose a second run to compare with {vm.SelectedRun!.StrategyName}.");
     }
 
     [Fact]
@@ -468,6 +476,18 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsComparisonPickerPanel");
         xaml.Should().Contain("StrategyRunsComparisonPicker");
         xaml.Should().Contain("StrategyRunsComparisonGuidanceText");
+        xaml.Should().Contain("StrategyRunsSelectionPanel");
+        xaml.Should().Contain("StrategyRunsSelectionContextText");
+        xaml.Should().Contain("StrategyRunsSelectionPerformanceText");
+        xaml.Should().Contain("StrategyRunsSelectionEvidenceText");
+        xaml.Should().Contain("StrategyRunsComparisonPanelDetail");
+        xaml.Should().Contain("StrategyRunsComparisonPlaceholderText");
+        xaml.Should().Contain("{Binding SelectionText}");
+        xaml.Should().Contain("{Binding SelectionDetail}");
+        xaml.Should().Contain("{Binding SelectedRunPerformanceText}");
+        xaml.Should().Contain("{Binding SelectedRunEvidenceText}");
+        xaml.Should().Contain("{Binding ComparisonHeaderAText}");
+        xaml.Should().Contain("{Binding ComparisonHeaderBText}");
         xaml.Should().Contain("{Binding CanChooseComparisonRun}");
         xaml.Should().Contain("{Binding ComparisonGuidanceText}");
         xaml.Should().Contain("{DynamicResource EmbeddedShellHeroCardStyle}");

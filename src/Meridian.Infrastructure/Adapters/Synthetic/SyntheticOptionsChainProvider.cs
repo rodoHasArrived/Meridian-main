@@ -27,6 +27,8 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
     private const int WeeklyCount = 4;
     private const int MonthlyCount = 3;
     private const int QuarterlyCount = 2;
+    public const int DefaultStrikeRange = 10;
+    public const int MaxStrikeRange = 100;
 
     private readonly SyntheticMarketDataConfig _config;
 
@@ -100,7 +102,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
         if (expiration <= asOf)
             return Task.FromResult<OptionChainSnapshot?>(null);
 
-        var strikes = GenerateStrikes(profile.BasePrice, strikeRange ?? 10);
+        var strikes = GenerateStrikes(profile.BasePrice, strikeRange ?? DefaultStrikeRange);
         var now = DateTimeOffset.UtcNow;
 
         var calls = strikes
@@ -228,6 +230,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
     /// </summary>
     internal static IReadOnlyList<decimal> GenerateStrikes(decimal underlyingPrice, int strikeRange)
     {
+        strikeRange = NormalizeStrikeRange(strikeRange);
         var increment = underlyingPrice switch
         {
             >= 200m => 5m,
@@ -239,7 +242,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
         // Round underlying to nearest increment to get ATM strike
         decimal atm = Math.Round(underlyingPrice / increment, MidpointRounding.AwayFromZero) * increment;
 
-        var strikes = new List<decimal>(strikeRange * 2 + 1);
+        var strikes = new List<decimal>(checked(strikeRange * 2 + 1));
         for (int i = -strikeRange; i <= strikeRange; i++)
         {
             var strike = atm + i * increment;
@@ -247,6 +250,15 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
                 strikes.Add(strike);
         }
         return strikes;
+    }
+
+
+    internal static int NormalizeStrikeRange(int strikeRange)
+    {
+        if (strikeRange < 0)
+            return 0;
+
+        return Math.Min(strikeRange, MaxStrikeRange);
     }
 
     /// <summary>
@@ -295,10 +307,11 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
         // Bid/ask spread: wider for deep OTM/ITM and near-expiry
         double moneyness = s / k;
         double spreadMultiplier = 1.0 + 2.0 * Math.Abs(moneyness - 1.0) + (dte <= 7 ? 0.5 : 0.0);
-        double rawHalfSpread = Math.Max(0.01, mid * SpreadFactor * spreadMultiplier);
-        double halfSpread = Math.Min(rawHalfSpread, mid * 0.5); // keep bid > 0 and mid-price well-behaved
-        var bid = Math.Max(0.0001m, (decimal)(mid - halfSpread));
-        var ask = (decimal)(mid + halfSpread);
+        double safeMid = Math.Max(0.0001, mid);
+        double rawHalfSpread = Math.Max(0.01, safeMid * SpreadFactor * spreadMultiplier);
+        double halfSpread = Math.Min(rawHalfSpread, safeMid * 0.5); // keep bid > 0 and mid-price well-behaved
+        var bid = Math.Max(0.0001m, (decimal)(safeMid - halfSpread));
+        var ask = Math.Max(bid, (decimal)(safeMid + halfSpread));
 
         // Synthetic open interest: peaks near ATM, decays exponentially
         double otmRatio = Math.Abs(moneyness - 1.0);

@@ -5,18 +5,42 @@ namespace Meridian.Application.Reconciliation;
 public sealed class StatementReconciliationService
 {
     public Task<string> ValidateAsync(string sourceKind, string sourcePath, CancellationToken ct)
-        => Task.FromResult($"Statement source '{sourceKind}:{sourcePath}' passed schema/balance validation.");
+    {
+        var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
+        return Task.FromResult($"Statement source '{normalizedSourceKind}:{sourcePath}' passed local file accessibility checks.");
+    }
 
     public Task<(string ImportId, int RowCount)> ImportAsync(string sourceKind, string sourcePath, CancellationToken ct)
     {
-        var id = DeterministicFingerprint.Compute($"{sourceKind}|{sourcePath}");
-        return Task.FromResult<(string, int)>((id, 0));
+        var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
+        var id = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}");
+        var rowCount = File.ReadLines(sourcePath).Count();
+        return Task.FromResult<(string, int)>((id, rowCount));
     }
 
     public Task<(string ImportId, int MatchCount, int UnresolvedCount)> ReconcileAsync(string sourceKind, string sourcePath, CancellationToken ct)
     {
-        var id = DeterministicFingerprint.Compute($"{sourceKind}|{sourcePath}");
+        var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
+        var id = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}");
         return Task.FromResult((id, 0, 0));
+    }
+
+    private static string ValidateSourceAccess(string sourceKind, string sourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(sourceKind))
+            throw new ArgumentException("Statement source kind is required.", nameof(sourceKind));
+
+        if (string.IsNullOrWhiteSpace(sourcePath))
+            throw new ArgumentException("Statement source path is required.", nameof(sourcePath));
+
+        var normalizedSourceKind = sourceKind.Trim().ToLowerInvariant();
+        if (!string.Equals(normalizedSourceKind, "local", StringComparison.Ordinal))
+            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local'.");
+
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException($"Statement source file '{sourcePath}' was not found.", sourcePath);
+
+        return normalizedSourceKind;
     }
 
     public (IReadOnlyList<ReconciliationMatchLink> Matches, IReadOnlyList<ReconciliationCase> Cases) MatchRows(

@@ -1,0 +1,22 @@
+schema:
+  id: meridian.risk-register
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+
+risks:
+  - id: RISK-DOC-DRIFT-001
+    title: Generated docs drift from registry truth
+    status: open
+    severity: medium
+    owner_lane: Docs and Automation
+    mitigation: Renderers write deterministic outputs and CI checks git diff after generation.
+    related_roadmap_items:
+      - W6-LIVE-001
+  - id: RISK-AI-DOC-SKIP-001
+    title: AI agents change source without updating local README context
+    status: open
+    severity: high
+    owner_lane: Docs and Automation
+    mitigation: AI guidance requires nearest source README and registry sync for meaningful source changes.
+    related_roadmap_items:
+      - W2-TRD-001

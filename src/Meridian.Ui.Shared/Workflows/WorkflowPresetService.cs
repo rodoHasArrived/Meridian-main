@@ -7,6 +7,12 @@ namespace Meridian.Ui.Shared.Workflows;
 /// </summary>
 public sealed class WorkflowPresetService
 {
+    private const int MaxPresets = 250;
+    private const int MaxPresetIdLength = 128;
+    private const int MaxNameLength = 120;
+    private const int MaxDescriptionLength = 1024;
+    private const int MaxTagLength = 64;
+
     private readonly IWorkflowActionCatalog _catalog;
     private readonly IWorkflowPresetStore _store;
 
@@ -43,6 +49,11 @@ public sealed class WorkflowPresetService
             var presetId = NormalizePresetId(request.PresetId, request.Name);
             var list = current.ToList();
             var index = list.FindIndex(preset => string.Equals(preset.PresetId, presetId, StringComparison.OrdinalIgnoreCase));
+            if (index < 0 && list.Count >= MaxPresets)
+            {
+                throw new InvalidOperationException($"Workflow preset limit ({MaxPresets}) has been reached.");
+            }
+
             var existing = index >= 0 ? list[index] : null;
             saved = BuildPreset(request, presetId, existing, now);
 
@@ -159,6 +170,26 @@ public sealed class WorkflowPresetService
             return "Workflow id is required.";
         }
 
+        if (request.Name.Trim().Length > MaxNameLength)
+        {
+            return $"Preset name cannot exceed {MaxNameLength} characters.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.PresetId) && request.PresetId.Trim().Length > MaxPresetIdLength)
+        {
+            return $"Preset id cannot exceed {MaxPresetIdLength} characters.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Description) && request.Description.Trim().Length > MaxDescriptionLength)
+        {
+            return $"Preset description cannot exceed {MaxDescriptionLength} characters.";
+        }
+
+        if ((request.Tags ?? []).Any(static tag => !string.IsNullOrWhiteSpace(tag) && tag.Trim().Length > MaxTagLength))
+        {
+            return $"Preset tags cannot exceed {MaxTagLength} characters.";
+        }
+
         var workflow = FindWorkflow(request.WorkflowId);
         if (workflow is null)
         {
@@ -235,7 +266,7 @@ public sealed class WorkflowPresetService
             .Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
         return string.IsNullOrWhiteSpace(normalized)
             ? $"workflow-preset-{Guid.NewGuid():N}"
-            : normalized;
+            : normalized[..Math.Min(normalized.Length, MaxPresetIdLength)];
     }
 
     private static string? NormalizeOptional(string? value)
@@ -248,6 +279,7 @@ public sealed class WorkflowPresetService
         => (tags ?? [])
             .Select(static tag => tag.Trim())
             .Where(static tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag.Length <= MaxTagLength ? tag : tag[..MaxTagLength])
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static tag => tag, StringComparer.OrdinalIgnoreCase)
             .Take(16)

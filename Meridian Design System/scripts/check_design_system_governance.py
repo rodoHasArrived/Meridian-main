@@ -23,6 +23,16 @@ TAG_ATTR_PATTERN = re.compile(r"(?:href|src)=\"([^\"]+)\"", re.IGNORECASE)
 TD_PATTERN = re.compile(r"<td(?P<attrs>[^>]*)>(?P<body>.*?)</td>", re.IGNORECASE | re.DOTALL)
 NUMERIC_TEXT_PATTERN = re.compile(r"(?:[$−-]?\d[\d,.]*%?|[A-Z]{1,6}\d{2,})")
 LOCAL_UPLOAD_PREFIX = "uploads/"
+VIEWPORT_PATTERN = re.compile(
+    r'<meta\s+name="viewport"\s+content="width=device-width,\s*initial-scale=1"\s*/?>',
+    re.IGNORECASE,
+)
+MAIN_PATTERN = re.compile(r"<main\b", re.IGNORECASE)
+H1_PATTERN = re.compile(r"<h1\b", re.IGNORECASE)
+PREVIEW_COMMON_STYLESHEET_PATTERN = re.compile(
+    r'<link\s+rel="stylesheet"\s+href="preview-common\.css"\s*/?>',
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -197,6 +207,41 @@ def check_numeric_table_cells(root: Path, path: Path, text: str, baseline: dict[
     return violations
 
 
+def check_preview_document_metadata(root: Path, path: Path, text: str) -> list[Violation]:
+    rel = rel_path(root, path)
+    if path.suffix.lower() != ".html" or not rel.startswith("preview/"):
+        return []
+
+    violations: list[Violation] = []
+    if not VIEWPORT_PATTERN.search(text):
+        violations.append(
+            Violation(
+                "preview-viewport",
+                rel,
+                1,
+                'Preview HTML must include `<meta name="viewport" content="width=device-width, initial-scale=1">`',
+            )
+        )
+    if not MAIN_PATTERN.search(text):
+        violations.append(
+            Violation("preview-main-landmark", rel, 1, "Preview HTML must expose a `<main>` landmark")
+        )
+    if not H1_PATTERN.search(text):
+        violations.append(
+            Violation("preview-heading", rel, 1, "Preview HTML must expose an `<h1>` heading")
+        )
+    if not PREVIEW_COMMON_STYLESHEET_PATTERN.search(text):
+        violations.append(
+            Violation(
+                "preview-common-stylesheet",
+                rel,
+                1,
+                'Preview HTML must link `preview-common.css` after `../colors_and_type.css`',
+            )
+        )
+    return violations
+
+
 def run_checks(root: Path, baseline: dict[str, list[str]] | None = None) -> list[Violation]:
     baseline = baseline or load_baseline(root)
     violations: list[Violation] = []
@@ -204,6 +249,7 @@ def run_checks(root: Path, baseline: dict[str, list[str]] | None = None) -> list
         text = path.read_text(encoding="utf-8")
         if path.suffix.lower() == ".html":
             violations.extend(check_local_links(root, path, text))
+            violations.extend(check_preview_document_metadata(root, path, text))
         violations.extend(check_raw_hex(root, path, text, baseline))
         violations.extend(check_large_radius(root, path, text, baseline))
         violations.extend(check_gradients(root, path, text, baseline))

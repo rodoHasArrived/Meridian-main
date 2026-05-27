@@ -2,12 +2,20 @@
 
 **Owner:** Core Team
 **Audience:** Platform, storage, workstation, strategy, governance, and API contributors
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **meridian database blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the meridian database blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Proposed blueprint grounded in current repository architecture
 
 ## Scope
 
-**In Scope:** A database blueprint that supports Meridian's intended end-state across `Research`, `Trading`, `Data Operations`, and `Governance`, while fitting the current archival-first storage architecture and existing workstation/security-master code.
+**In Scope:** A database blueprint that supports Meridian's intended end-state across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`, while fitting the current archival-first storage architecture and existing workstation/security-master code.
 
 **Out of Scope:** Replacing the existing WAL + JSONL + Parquet event archive, introducing cloud-only data services, or designing a pure timeseries database as the sole storage model for market events.
 

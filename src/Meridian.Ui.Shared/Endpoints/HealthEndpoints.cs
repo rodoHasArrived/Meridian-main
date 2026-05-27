@@ -55,14 +55,32 @@ public static class HealthEndpoints
             if (registry is null)
                 return Results.Json(new { providers = Array.Empty<object>() }, jsonOptions);
 
-            var providers = registry.GetAllProviders().Select(p => new
+            var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
+            var providers = registry.GetAllProviders().Select(p =>
             {
-                name = p.Name,
-                displayName = p.DisplayName,
-                type = p.ProviderType.ToString(),
-                priority = p.Priority,
-                isEnabled = p.IsEnabled,
-                capabilities = p.Capabilities
+                var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                    diagnosticsByProviderId,
+                    p.Name,
+                    p.DisplayName);
+
+                return new
+                {
+                    name = p.Name,
+                    displayName = p.DisplayName,
+                    type = p.ProviderType.ToString(),
+                    priority = p.Priority,
+                    isEnabled = p.IsEnabled,
+                    isConnected = diagnostics?.IsConnected ?? p.IsEnabled,
+                    lifecycleState = diagnostics?.LifecycleState,
+                    webSocketState = diagnostics?.WebSocketState,
+                    isReconnecting = diagnostics?.IsReconnecting,
+                    lastHeartbeatReceivedAt = diagnostics?.LastHeartbeatReceivedAt,
+                    lastMessageReceivedAt = diagnostics?.LastMessageReceivedAt,
+                    lastReconnectAttemptAt = diagnostics?.LastReconnectAttemptAt,
+                    reconnectAttempts = diagnostics?.ReconnectAttempts,
+                    lastFailureKind = diagnostics?.LastFailureKind,
+                    capabilities = p.Capabilities
+                };
             });
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
@@ -83,6 +101,11 @@ public static class HealthEndpoints
             if (info is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found" });
 
+            var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry),
+                info.Name,
+                info.DisplayName);
+
             return Results.Json(new
             {
                 provider = info.Name,
@@ -90,6 +113,15 @@ public static class HealthEndpoints
                 type = info.ProviderType.ToString(),
                 priority = info.Priority,
                 isEnabled = info.IsEnabled,
+                isConnected = diagnostics?.IsConnected ?? info.IsEnabled,
+                lifecycleState = diagnostics?.LifecycleState,
+                webSocketState = diagnostics?.WebSocketState,
+                isReconnecting = diagnostics?.IsReconnecting,
+                lastHeartbeatReceivedAt = diagnostics?.LastHeartbeatReceivedAt,
+                lastMessageReceivedAt = diagnostics?.LastMessageReceivedAt,
+                lastReconnectAttemptAt = diagnostics?.LastReconnectAttemptAt,
+                reconnectAttempts = diagnostics?.ReconnectAttempts,
+                lastFailureKind = diagnostics?.LastFailureKind,
                 capabilities = info.Capabilities,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);

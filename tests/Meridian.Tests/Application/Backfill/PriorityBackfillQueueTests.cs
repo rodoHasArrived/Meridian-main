@@ -83,6 +83,24 @@ public sealed class PriorityBackfillQueueTests : IDisposable
     }
 
     [Fact]
+    public async Task DequeueNextAsync_SkipsDependencyPausedJob_WhenReadyJobExists()
+    {
+        var blocked = await _queue.EnqueueAsync(CreateRequest("BLOCKED", BackfillPriority.Critical) with
+        {
+            DependsOnJobIds = ["missing-job"]
+        });
+        var ready = await _queue.EnqueueAsync(CreateRequest("READY", BackfillPriority.Low));
+
+        blocked.Status.Should().Be(BackfillJobStatus.Paused);
+
+        var next = await _queue.DequeueNextAsync();
+
+        next.Should().NotBeNull();
+        next!.JobId.Should().Be(ready.JobId);
+        blocked.Status.Should().Be(BackfillJobStatus.Paused);
+    }
+
+    [Fact]
     public async Task GetJob_ReturnsJobById()
     {
         var enqueued = await _queue.EnqueueAsync(CreateRequest("SPY"));
@@ -316,6 +334,31 @@ public sealed class PriorityBackfillQueueTests : IDisposable
         result.TotalEnqueued.Should().Be(2);
         // The second job should be paused waiting for the first
         // (depends on the internal dependency logic)
+    }
+
+    [Fact]
+    public async Task MarkCompletedAsync_DependencyChain_ResumesOnlyAfterAllDependenciesComplete()
+    {
+        var dependency1 = await _queue.EnqueueAsync(CreateRequest("SPY"));
+        var dependency2 = await _queue.EnqueueAsync(CreateRequest("QQQ"));
+        var dependent = await _queue.EnqueueAsync(CreateRequest("IWM") with
+        {
+            DependsOnJobIds = new[] { dependency1.JobId, dependency2.JobId }
+        });
+
+        dependent.Status.Should().Be(BackfillJobStatus.Paused);
+        dependent.DependsOnJobIds.Should().BeEquivalentTo(new[] { dependency1.JobId, dependency2.JobId });
+
+        await _queue.MarkCompletedAsync(dependency1.JobId, success: true);
+
+        dependent.Status.Should().Be(BackfillJobStatus.Paused);
+
+        await _queue.MarkCompletedAsync(dependency2.JobId, success: true);
+
+        dependent.Status.Should().Be(BackfillJobStatus.Pending);
+        var next = await _queue.DequeueNextAsync();
+        next.Should().NotBeNull();
+        next!.JobId.Should().Be(dependent.JobId);
     }
 
     [Fact]

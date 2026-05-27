@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         Directory.CreateDirectory(dataDirectory);
         _snapshotPath = Path.Combine(dataDirectory, "reconciliation-break-queue.json");
         _auditPath = Path.Combine(dataDirectory, "reconciliation-break-queue-audit.jsonl");
+        _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default)
@@ -270,7 +272,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 LastUpdatedAt = now,
                 ResolutionNote = request.ResolutionNote,
                 SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
-                    ? "signed-off"
+                    ? "pending-signoff"
                     : "dismissed",
                 LifecycleState = request.Status == ReconciliationBreakQueueStatus.Resolved
                     ? ReconciliationCaseLifecycleState.Closed

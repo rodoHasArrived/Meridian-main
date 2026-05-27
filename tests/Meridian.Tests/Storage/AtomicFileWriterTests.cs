@@ -54,6 +54,24 @@ public sealed class AtomicFileWriterTests : IDisposable
     }
 
     [Fact]
+    public async Task WriteAsync_String_PreservesExistingUnixFileMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(_testRoot, "permissions.txt");
+        await File.WriteAllTextAsync(path, "original");
+        File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        await AtomicFileWriter.WriteAsync(path, "updated");
+
+        var mode = File.GetUnixFileMode(path);
+        mode.Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
     public async Task WriteAsync_String_CreatesDirectoryIfNeeded()
     {
         var path = Path.Combine(_testRoot, "sub", "dir", "test.txt");

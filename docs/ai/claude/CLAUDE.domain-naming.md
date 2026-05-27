@@ -9,7 +9,7 @@
 > rename only when the inconsistency causes real confusion and the change is isolated to the domain
 > layer.
 >
-> **Last Updated:** 2026-03-26
+> **Last Updated:** 2026-05-15
 
 ---
 
@@ -94,6 +94,7 @@ excessively long (> ~20 characters):
 | `Conv` | Convertible/Conversion | `ConvTr`, `ConvRatio`, `ConvPrefDef` |
 | `Div` | Dividend | `DivRate`, `DivDt` |
 | `Red` | Redemption | `RedTr`, `RedPx`, `RedTerms` |
+| `Call` | Callable/Callability | `CallTr`, `FirstCallDt`, `CallPx` |
 | `Sen` | Seniority | `SenTr`, `SenCat` |
 | `Own` | Ownership | `OwnTr` |
 | `Inc` | Income | `IncTr` |
@@ -184,10 +185,32 @@ unless there is a distinct conceptual reason (e.g. `MaturityTerms` is a value-ob
 | `MaturityTerms` | Sub-record within `BondDef` (keep) |
 | `EconomicCallTerms` | Sub-record within `BondDef` (keep) |
 | `SecurityTermModules` | Container record (keep) |
+| `PreferredTerms` | `PrefShrDef` (preferred-share term sheet) |
+| `ConvertibleTerms` | Embedded in `ConvPrefDef` (convertible-preferred) |
 | New bond instrument type | `BondDef` |
-| New equity instrument type | `EquityDef` / `ComShrDef` / `PrefShrDef` |
+| New equity instrument type | `EquityDef` / `ComShrDef` / `PrefShrDef` / `ConvPrefDef` |
 | New option instrument type | `OptDef` |
 | New future instrument type | `FutDef` |
+
+**Preferred and convertible-preferred definitions** — use `PrefShrDef` for a standalone preferred
+share term sheet and `ConvPrefDef` when the instrument is also convertible. Both carry `CallTr`,
+`RedTr`, and `ConvTr` sub-records rather than duplicating callable/redemption/conversion fields:
+
+```fsharp
+type PrefShrDef = {
+    DivRate    : decimal option      // DivRate — see section 6 field rules
+    DivType    : DividendType        // Fixed | Floating | Cumulative
+    CallTr     : CallTr option       // callable-share terms
+    RedTr      : RedTr option        // redemption terms
+    LiqPref    : LiquidationPreference
+    ParticipTr : ParticipationTerms option
+}
+
+type ConvPrefDef = {
+    PrefShr : PrefShrDef             // preferred-share base
+    ConvTr  : ConvTr                 // conversion trait
+}
+```
 
 ### 5.5 Category / Taxonomy Unions — marker suffix
 
@@ -231,6 +254,7 @@ type OwnTr  = { HasVoting: bool; IsRestricted: bool; OwnershipCap: decimal optio
 type IncTr  = { IsIncomeProducing: bool; DivRate: decimal option; PayFreq: string option }
 type ConvTr = { IsConvertible: bool; ConvRatio: decimal option; ConvPx: decimal option }
 type RedTr  = { IsRedeemable: bool; FirstRedDt: DateOnly option; RedPx: decimal option }
+type CallTr = { IsCallable: bool; FirstCallDt: DateOnly option; CallPx: decimal option }
 type SenTr  = { SeniorityLevel: int; IsSeniorSecured: bool }
 type ListTr = { IsListed: bool; PrimaryExchId: ExchId option; ListedExp: DateOnly option }
 ```

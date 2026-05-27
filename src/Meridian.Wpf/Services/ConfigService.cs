@@ -194,6 +194,21 @@ public sealed class ConfigService : ConfigServiceBase
     }
 
     /// <summary>
+    /// Loads the full configuration DTO from disk.
+    /// </summary>
+    public async Task<AppConfigDto> LoadConfigFromDiskAsync(CancellationToken ct = default)
+        => await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
+
+    /// <summary>
+    /// Writes the full configuration DTO to disk.
+    /// </summary>
+    public Task WriteConfigAsync(AppConfigDto config, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        return SaveConfigCoreAsync(config, ct);
+    }
+
+    /// <summary>
     /// Validates a single provider's options inline (for real-time field validation).
     /// Returns a list of validation messages (empty if valid).
     /// </summary>

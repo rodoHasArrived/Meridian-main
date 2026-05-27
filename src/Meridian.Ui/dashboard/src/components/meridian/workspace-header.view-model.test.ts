@@ -21,26 +21,24 @@ describe("workspace header view model", () => {
     });
 
     expect(model.title).toBe("Trading Workstation");
-    expect(model.eyebrow).toBe("Meridian workspace");
-    expect(model.badges).toContainEqual({
-      id: "environment",
-      label: "PAPER",
-      variant: "paper",
-      ariaLabel: "paper environment"
-    });
+    expect(model.eyebrow).toBe("Workspace");
+    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-status"]);
     expect(model.badges).toContainEqual({
       id: "workspace-status",
       label: "Review",
       variant: "warning",
       ariaLabel: "Trading workspace status Review"
     });
+    expect(model.metaItems).toEqual([]);
     expect(model.sessionLabel).toBe("Ops Desk");
     expect(model.sessionRoleLabel).toBe("Operator");
     expect(model.refreshAction).toEqual({
       label: "Refreshing",
       ariaLabel: "Refreshing Trading workspace data",
       title: "Trading workspace data is refreshing",
-      disabled: true
+      disabled: true,
+      disabledReason: "Trading workspace data is refreshing.",
+      busy: true
     });
     expect(model.liveAnnouncement).toBe("Refreshing Trading workspace data.");
     expect(model.ariaBusy).toBe(true);
@@ -53,7 +51,8 @@ describe("workspace header view model", () => {
       canRefresh: false
     });
 
-    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace", "workspace-status"]);
+    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-status"]);
+    expect(model.metaItems).toEqual([]);
     expect(model.badges).toContainEqual({
       id: "workspace-status",
       label: "Setup",
@@ -82,5 +81,23 @@ describe("workspace header view model", () => {
         canRefresh: true
       }).badges.find((badge) => badge.id === "workspace-status")?.variant
     ).toBe("paper");
+  });
+
+  it("keeps refresh enabled without a disabled reason when data is idle", () => {
+    const model = buildWorkspaceHeaderViewModel({
+      workspace: workspaceForKey("portfolio"),
+      session,
+      canRefresh: true,
+      refreshing: false
+    });
+
+    expect(model.refreshAction).toMatchObject({
+      label: "Refresh",
+      ariaLabel: "Refresh Portfolio workspace data",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(model.ariaBusy).toBe(false);
   });
 });

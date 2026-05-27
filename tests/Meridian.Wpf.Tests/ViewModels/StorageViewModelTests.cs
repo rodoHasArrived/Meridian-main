@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
@@ -95,6 +97,116 @@ public sealed class StorageViewModelTests
     }
 
     [Fact]
+    public void BuildMetricsStatusText_WhenArchiveIsEmpty_ProjectsLoadedEmptyGuidance()
+    {
+        var status = StorageViewModel.BuildMetricsStatusText(new StorageAnalytics());
+
+        status.Should().Be("Metrics loaded: no retained archive files found under the configured DataRoot.");
+    }
+
+    [Fact]
+    public void BuildMetricsStatusText_WhenArchiveHasFiles_ProjectsLoadedScope()
+    {
+        var status = StorageViewModel.BuildMetricsStatusText(new StorageAnalytics
+        {
+            TotalFileCount = 42,
+            SymbolBreakdown = new[]
+            {
+                new SymbolAnalyticsInfo { Symbol = "SPY" },
+                new SymbolAnalyticsInfo { Symbol = "AAPL" },
+            },
+        });
+
+        status.Should().Be("Metrics loaded: 42 files across 2 symbols.");
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenMetricsLoadSucceeds_ProjectsReadinessStatus()
+    {
+        var forceRefreshRequested = false;
+        var viewModel = CreateViewModel(
+            loadAnalytics: (forceRefresh, _) =>
+            {
+                forceRefreshRequested = forceRefresh;
+                return Task.FromResult(new StorageAnalytics
+                {
+                    TotalSizeBytes = 1_048_576,
+                    TotalFileCount = 1,
+                    TradeSizeBytes = 512,
+                    DepthSizeBytes = 256,
+                    HistoricalSizeBytes = 128,
+                    SymbolBreakdown = new[]
+                    {
+                        new SymbolAnalyticsInfo { Symbol = "SPY" },
+                    },
+                });
+            });
+
+        await viewModel.LoadAsync();
+
+        forceRefreshRequested.Should().BeFalse();
+        viewModel.IsMetricsLoading.Should().BeFalse();
+        viewModel.CanRefreshMetrics.Should().BeTrue();
+        viewModel.TotalSizeText.Should().Be("1.0 MB");
+        viewModel.TotalFilesText.Should().Be("1");
+        viewModel.SymbolCountText.Should().Be("1");
+        viewModel.MetricsStatusText.Should().Be("Metrics loaded: 1 file across 1 symbol.");
+    }
+
+    [Fact]
+    public async Task RefreshMetricsCommand_WhenRunning_ProjectsBusyStateAndUsesForceRefresh()
+    {
+        var forceRefreshRequested = false;
+        var analyticsGate = new TaskCompletionSource<StorageAnalytics>();
+        var viewModel = CreateViewModel(
+            loadAnalytics: (forceRefresh, _) =>
+            {
+                forceRefreshRequested = forceRefresh;
+                return analyticsGate.Task;
+            });
+
+        var refreshTask = viewModel.RefreshMetricsCommand.ExecuteAsync(null);
+
+        viewModel.IsMetricsLoading.Should().BeTrue();
+        viewModel.CanRefreshMetrics.Should().BeFalse();
+        viewModel.RefreshMetricsCommand.CanExecute(null).Should().BeFalse();
+        viewModel.MetricsStatusText.Should().Be("Refreshing storage metrics...");
+
+        analyticsGate.SetResult(new StorageAnalytics
+        {
+            TotalFileCount = 2,
+            SymbolBreakdown = new[]
+            {
+                new SymbolAnalyticsInfo { Symbol = "SPY" },
+            },
+        });
+        await refreshTask;
+
+        forceRefreshRequested.Should().BeTrue();
+        viewModel.IsMetricsLoading.Should().BeFalse();
+        viewModel.CanRefreshMetrics.Should().BeTrue();
+        viewModel.RefreshMetricsCommand.CanExecute(null).Should().BeTrue();
+        viewModel.MetricsStatusText.Should().Be("Metrics loaded: 2 files across 1 symbol.");
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenMetricsScanFails_ProjectsRecoveryStatus()
+    {
+        var viewModel = CreateViewModel(
+            loadAnalytics: (_, _) => Task.FromException<StorageAnalytics>(new IOException("denied")));
+
+        await viewModel.LoadAsync();
+
+        viewModel.IsMetricsLoading.Should().BeFalse();
+        viewModel.CanRefreshMetrics.Should().BeTrue();
+        viewModel.TotalSizeText.Should().Be("--");
+        viewModel.MetricsStatusText.Should().Be(
+            "Storage metrics scan failed. Verify the configured DataRoot and permissions, then refresh.");
+        viewModel.StoragePostureTitle.Should().Be("Storage metrics unavailable");
+        viewModel.StorageLastScanText.Should().Be("Last scan: failed");
+    }
+
+    [Fact]
     public void RefreshPreview_WhenLayoutChanges_ProjectsScopeAndPreviewGuidance()
     {
         var viewModel = CreateViewModel();
@@ -109,6 +221,59 @@ public sealed class StorageViewModelTests
         viewModel.StorageEstimateText.Should().Be("Estimated daily size: ~21.0 MB for 3 symbols (trades + quotes sample)");
     }
 
+    [Fact]
+    public void Constructor_InitializesBoundPreviewDefaults()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.DataDirectoryText.Should().Be("./data");
+        viewModel.NamingConvention.Should().Be("BySymbol");
+        viewModel.CompressionFormat.Should().Be("gzip");
+        viewModel.PreviewScopeText.Should().Be("By symbol layout - Gzip - data/");
+        viewModel.FileTreePreviewText.Should().StartWith("data/");
+        viewModel.PreviewActionText.Should().Contain("verify the archive path");
+    }
+
+    [Fact]
+    public void BoundPreviewInputs_WhenChanged_RegeneratePreview()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.DataDirectoryText = ".\\archive";
+        viewModel.NamingConvention = "Flat";
+        viewModel.CompressionFormat = "lz4";
+
+        viewModel.PreviewScopeText.Should().Be("Flat layout - LZ4 - archive/");
+        viewModel.FileTreePreviewText.Should().StartWith("archive/");
+        viewModel.FileTreePreviewText.Should().Contain(".jsonl.lz4");
+    }
+
+    [Fact]
+    public void BrowseStorageRootCommand_WhenFolderSelected_UpdatesRootAndPreview()
+    {
+        var picker = new FakeStorageFolderPicker(@"D:\Meridian Archive");
+        var viewModel = CreateViewModel(picker);
+
+        viewModel.BrowseStorageRootCommand.Execute(null);
+
+        picker.CapturedCurrentPath.Should().Be("./data");
+        viewModel.DataDirectoryText.Should().Be(@"D:\Meridian Archive");
+        viewModel.PreviewScopeText.Should().Be("By symbol layout - Gzip - D:/Meridian Archive/");
+        viewModel.FileTreePreviewText.Should().StartWith("D:/Meridian Archive/");
+    }
+
+    [Fact]
+    public void BrowseStorageRootCommand_WhenSelectionCanceled_KeepsCurrentRoot()
+    {
+        var picker = new FakeStorageFolderPicker(null);
+        var viewModel = CreateViewModel(picker);
+
+        viewModel.BrowseStorageRootCommand.Execute(null);
+
+        viewModel.DataDirectoryText.Should().Be("./data");
+        viewModel.PreviewScopeText.Should().Be("By symbol layout - Gzip - data/");
+    }
+
     [Theory]
     [InlineData(null, "data")]
     [InlineData("", "data")]
@@ -116,6 +281,7 @@ public sealed class StorageViewModelTests
     [InlineData("./data", "data")]
     [InlineData(".\\archive", "archive")]
     [InlineData("/mnt/archive", "mnt/archive")]
+    [InlineData(@"D:\Meridian Archive", "D:/Meridian Archive")]
     public void NormalizePreviewRoot_WhenPathIsBlankOrRelative_ReturnsStablePreviewRoot(
         string? dataDirectory,
         string expected)
@@ -133,11 +299,25 @@ public sealed class StorageViewModelTests
         xaml.Should().Contain("StoragePreviewActionText");
         xaml.Should().Contain("StorageFileTreePreviewText");
         xaml.Should().Contain("StorageEstimateText");
+        xaml.Should().Contain("StorageDataDirectoryBox");
+        xaml.Should().Contain("StorageBrowseDirectoryButton");
         xaml.Should().Contain("{Binding PreviewScopeText}");
         xaml.Should().Contain("{Binding PreviewActionText}");
+        xaml.Should().Contain("{Binding DataDirectoryText, Mode=OneWay}");
+        xaml.Should().Contain("{Binding BrowseStorageRootCommand}");
+        xaml.Should().Contain("{Binding NamingConvention, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}");
+        xaml.Should().Contain("{Binding CompressionFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}");
         xaml.Should().Contain("StorageNamingConventionCombo");
         xaml.Should().Contain("StorageCompressionCombo");
         xaml.Should().Contain("StorageArchivePostureCard");
+        xaml.Should().Contain("StorageMetricsReadinessStrip");
+        xaml.Should().Contain("StorageMetricsStatusText");
+        xaml.Should().Contain("StorageRefreshMetricsButton");
+        xaml.Should().Contain("StorageMetricsProgress");
+        xaml.Should().Contain("{Binding MetricsStatusText}");
+        xaml.Should().Contain("{Binding RefreshMetricsCommand}");
+        xaml.Should().Contain("{Binding CanRefreshMetrics}");
+        xaml.Should().Contain("{Binding IsMetricsLoading, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("StoragePostureTitle");
         xaml.Should().Contain("StoragePostureDetail");
         xaml.Should().Contain("StorageGrowthText");
@@ -145,10 +325,30 @@ public sealed class StorageViewModelTests
         xaml.Should().Contain("StorageLastScanText");
         xaml.Should().Contain("{Binding StoragePostureTitle}");
         xaml.Should().Contain("{Binding StorageCapacityHorizonText}");
+        xaml.Should().NotContain("SelectionChanged=\"StorageConfig_Changed\"");
     }
 
-    private static StorageViewModel CreateViewModel() =>
-        new(StorageAnalyticsService.Instance, SettingsConfigurationService.Instance);
+    private static StorageViewModel CreateViewModel(
+        IStorageFolderPicker? picker = null,
+        Func<bool, CancellationToken, Task<StorageAnalytics>>? loadAnalytics = null)
+    {
+        picker ??= new FakeStorageFolderPicker(null);
+
+        return loadAnalytics is null
+            ? new StorageViewModel(StorageAnalyticsService.Instance, SettingsConfigurationService.Instance, picker)
+            : new StorageViewModel(loadAnalytics, SettingsConfigurationService.Instance, picker);
+    }
+
+    private sealed class FakeStorageFolderPicker(string? selectedPath) : IStorageFolderPicker
+    {
+        public string? CapturedCurrentPath { get; private set; }
+
+        public string? SelectFolder(string currentPath)
+        {
+            CapturedCurrentPath = currentPath;
+            return selectedPath;
+        }
+    }
 
     private static string GetRepositoryFilePath(string relativePath)
     {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "CoS Runtime Development (ADK)"
+  short_description: "Build and extend the Chief of Staff ADK node pipeline scaffold"
+  default_prompt: "Use $cos-runtime-development to implement or extend the Chief of Staff runtime ADK scaffold at tools/chief-of-staff-runtime/, following the existing node boundaries and Meridian integration contracts."

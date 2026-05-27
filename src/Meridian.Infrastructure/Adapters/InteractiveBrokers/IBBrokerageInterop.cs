@@ -47,6 +47,7 @@ public sealed record IBOrderStatusUpdate(
     long PermId,
     int ClientId,
     string? WhyHeld,
+    string? RejectReason,
     DateTimeOffset ReceivedAt);
 
 public sealed record IBOpenOrderUpdate(
@@ -79,6 +80,7 @@ public sealed record IBExecutionUpdate(
     string? Account,
     string? Exchange,
     long PermId,
+    IReadOnlyDictionary<string, string>? Metadata,
     DateTimeOffset ExecutedAt);
 
 public sealed record IBPositionUpdate(

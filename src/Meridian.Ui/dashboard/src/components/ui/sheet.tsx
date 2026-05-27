@@ -1,33 +1,115 @@
-import { type HTMLAttributes, type ReactNode, useEffect, useRef } from "react";
+import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { resolveDialogTabTarget, resolveInitialDialogFocus } from "@/components/ui/dialog.view-model";
 import { cn } from "@/lib/utils";
 
+/**
+ * Slide-in side panel (drawer) for contextual controls and detail views.
+ * Renders over the main content with a semi-transparent backdrop.
+ *
+ * **Side:** defaults to `"right"` (panel slides in from the right edge). Pass `side="left"`
+ * for panels anchored to a left-side context area. The `SheetContent` `side` prop must match.
+ *
+ * **Sub-components:**
+ * - `SheetContent` — the panel surface; handles `role="dialog"`, `aria-modal`, and border side.
+ * - `SheetHeader` — sticky header strip with bottom border.
+ * - `SheetTitle` — `<h2>` inside the header.
+ * - `SheetDescription` — muted subtitle below the title.
+ * - `SheetBody` — scrollable body with `flex-1` and consistent padding.
+ * - `SheetCloseButton` — absolute-positioned ✕ button in the top-right corner.
+ *
+ * Pressing Escape or clicking the backdrop calls `onOpenChange(false)`.
+ *
+ * @example
+ * <Sheet open={open} onOpenChange={setOpen}>
+ *   <SheetContent>
+ *     <SheetHeader>
+ *       <SheetTitle>Strategy controls</SheetTitle>
+ *       <SheetDescription>Pause or stop the active strategy run.</SheetDescription>
+ *       <SheetCloseButton onClick={() => setOpen(false)} />
+ *     </SheetHeader>
+ *     <SheetBody>…controls…</SheetBody>
+ *   </SheetContent>
+ * </Sheet>
+ */
 interface SheetProps {
   open: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Which edge the panel anchors from. Defaults to `"right"`. */
+  side?: "left" | "right";
   children: ReactNode;
 }
 
-export function Sheet({ open, onOpenChange, children }: SheetProps) {
+export function Sheet({ open, onOpenChange, side = "right", children }: SheetProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  const requestClose = useCallback(() => {
+    onOpenChange?.(false);
+  }, [onOpenChange]);
+
+  const handleDocumentKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!open) {
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      requestClose();
+      return;
+    }
+
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const nextFocus = resolveDialogTabTarget(overlayRef.current, getActiveElement(), event.shiftKey);
+    if (!nextFocus) {
+      return;
+    }
+
+    event.preventDefault();
+    nextFocus.focus();
+  }, [open, requestClose]);
 
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange?.(false);
+    if (!open || typeof window === "undefined") return undefined;
+
+    window.addEventListener("keydown", handleDocumentKeyDown, true);
+    return () => window.removeEventListener("keydown", handleDocumentKeyDown, true);
+  }, [handleDocumentKeyDown, open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    restoreFocusRef.current = getActiveElement();
+    const cancelFocus = scheduleFocus(() => {
+      resolveInitialDialogFocus(overlayRef.current, getActiveElement())?.focus();
+    });
+
+    return () => {
+      cancelFocus();
+
+      const restoreFocus = restoreFocusRef.current;
+      restoreFocusRef.current = null;
+
+      if (restoreFocus?.isConnected) {
+        restoreFocus.focus();
+      }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onOpenChange]);
+  }, [open]);
 
   if (!open) return null;
 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex justify-end bg-background/70"
+      className={cn(
+        "fixed inset-0 z-50 flex bg-background/70",
+        side === "left" ? "justify-start" : "justify-end"
+      )}
       onMouseDown={(e) => {
-        if (e.target === overlayRef.current) onOpenChange?.(false);
+        if (e.target === overlayRef.current) requestClose();
       }}
     >
       {children}
@@ -35,14 +117,42 @@ export function Sheet({ open, onOpenChange, children }: SheetProps) {
   );
 }
 
-export function SheetContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+function getActiveElement(): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return document.activeElement instanceof HTMLElement ? document.activeElement : null;
+}
+
+function scheduleFocus(callback: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  if (typeof window.requestAnimationFrame === "function") {
+    const frame = window.requestAnimationFrame(callback);
+    return () => window.cancelAnimationFrame(frame);
+  }
+
+  const timeout = window.setTimeout(callback, 0);
+  return () => window.clearTimeout(timeout);
+}
+
+interface SheetContentProps extends HTMLAttributes<HTMLDivElement> {
+  /** Which edge the panel border appears on. Must match the parent `Sheet` side. Defaults to `"right"` (left border). */
+  side?: "left" | "right";
+}
+
+export function SheetContent({ className, side = "right", ...props }: SheetContentProps) {
   return (
     <div
       role="dialog"
       aria-modal="true"
       tabIndex={-1}
       className={cn(
-        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-l border-border bg-card shadow-float focus:outline-none",
+        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-float focus:outline-none",
+        side === "left" ? "border-r sheet-slide-left" : "border-l sheet-slide-right",
         className
       )}
       {...props}

@@ -173,11 +173,13 @@ public static class WebSocketResiliencePolicy
     public static ResiliencePipeline CreateComprehensivePipeline(
         int maxRetries = 5,
         TimeSpan? retryBaseDelay = null,
+        TimeSpan? maxRetryDelay = null,
         int circuitBreakerFailureThreshold = 5,
         TimeSpan? circuitBreakerDuration = null,
         TimeSpan? operationTimeout = null)
     {
         retryBaseDelay ??= TimeSpan.FromSeconds(2);
+        maxRetryDelay ??= TimeSpan.FromSeconds(30);
         circuitBreakerDuration ??= TimeSpan.FromSeconds(30);
         operationTimeout ??= TimeSpan.FromSeconds(30);
 
@@ -212,7 +214,7 @@ public static class WebSocketResiliencePolicy
                 Delay = retryBaseDelay.Value,
                 BackoffType = DelayBackoffType.Exponential,
                 UseJitter = true,
-                MaxDelay = TimeSpan.FromSeconds(30),
+                MaxDelay = maxRetryDelay.Value,
                 ShouldHandle = new PredicateBuilder()
                     .Handle<WebSocketException>()
                     .Handle<HttpRequestException>()
@@ -244,6 +246,11 @@ public sealed class WebSocketHeartbeat : IAsyncDisposable
     /// Gets the total number of heartbeat pings sent during this connection's lifetime.
     /// </summary>
     public long PingsSent => Interlocked.Read(ref _pingsSent);
+
+    /// <summary>
+    /// Gets the last time a heartbeat or data message confirmed the connection was alive.
+    /// </summary>
+    public DateTimeOffset LastPongReceived => _lastPongReceived;
 
     public WebSocketHeartbeat(
         ClientWebSocket ws,

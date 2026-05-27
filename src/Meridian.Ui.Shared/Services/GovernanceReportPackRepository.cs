@@ -156,7 +156,12 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
                     ArtifactCount: snapshot.Artifacts.Count,
                     WarningCount: snapshot.Warnings.Count,
                     RelativeManifestPath: ToRelativePath(manifestPath),
-                    SchemaVersion: snapshot.SchemaVersion));
+                    SchemaVersion: snapshot.SchemaVersion)
+                {
+                    Status = snapshot.Status,
+                    ValidationIssueCount = snapshot.ValidationIssues.Count,
+                    LifecycleEventCount = snapshot.LifecycleEvents.Count
+                });
             }
 
             return history
@@ -280,6 +285,16 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             throw new ArgumentException("Governance report-pack artifact metadata is required.", nameof(snapshot));
         }
 
+        if (snapshot.ValidationIssues is null)
+        {
+            throw new ArgumentException("Governance report-pack validation issues are required.", nameof(snapshot));
+        }
+
+        if (snapshot.LifecycleEvents is null)
+        {
+            throw new ArgumentException("Governance report-pack lifecycle events are required.", nameof(snapshot));
+        }
+
         if (!string.Equals(snapshot.ContractName, GovernanceReportPackContract.ContractName, StringComparison.Ordinal))
         {
             throw new ArgumentException(
@@ -307,6 +322,16 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
                 $"Governance report-pack artifact schema versions must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
                 nameof(snapshot));
         }
+
+        if (snapshot.Status == GovernanceReportPackStatusDto.Unknown)
+        {
+            throw new ArgumentException("Governance report-pack status is required.", nameof(snapshot));
+        }
+
+        if (snapshot.LifecycleEvents.Count == 0)
+        {
+            throw new ArgumentException("Governance report-pack lifecycle events are required.", nameof(snapshot));
+        }
     }
 
     private static bool IsReadableSnapshot(FundReportPackSnapshotDto snapshot) =>
@@ -315,6 +340,8 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
         && snapshot.Provenance is not null
         && GovernanceReportPackContract.IsReadableSchemaVersion(snapshot.Provenance.SchemaVersion)
         && snapshot.Artifacts is not null
+        && snapshot.ValidationIssues is not null
+        && snapshot.LifecycleEvents is not null
         && snapshot.Artifacts.All(static artifact => GovernanceReportPackContract.IsReadableSchemaVersion(artifact.SchemaVersion));
 
     private string ToRelativePath(string path) =>

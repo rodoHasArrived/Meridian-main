@@ -1,6 +1,7 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
+using DomainLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -20,7 +21,7 @@ public interface ISecurityMasterLedgerBridge
     Task PostCorporateActionsAsync(
         Guid securityId,
         string ticker,
-        Ledger.Ledger ledger,
+        DomainLedger ledger,
         CancellationToken ct = default);
 }
 
@@ -44,7 +45,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     public async Task PostCorporateActionsAsync(
         Guid securityId,
         string ticker,
-        Ledger.Ledger ledger,
+        DomainLedger ledger,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(ledger);
@@ -108,7 +109,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private static void PostDividendDeclaration(
-        Ledger.Ledger ledger,
+        DomainLedger ledger,
         CorporateActionDto action,
         string ticker,
         DateTimeOffset ts,
@@ -133,7 +134,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     }
 
     private static void PostSplitMemo(
-        Ledger.Ledger ledger,
+        DomainLedger ledger,
         CorporateActionDto action,
         string ticker,
         DateTimeOffset ts,
@@ -160,7 +161,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     }
 
     private static void PostCorpActionDistribution(
-        Ledger.Ledger ledger,
+        DomainLedger ledger,
         CorporateActionDto action,
         string ticker,
         DateTimeOffset ts,

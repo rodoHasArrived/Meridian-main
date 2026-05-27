@@ -1,0 +1,85 @@
+name: WPF Route Validation
+
+on:
+  pull_request:
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - ".github/workflows/wpf-route-validation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/Meridian.Wpf/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Wpf.Tests/**"
+      - ".github/workflows/wpf-route-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wpf-route-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  route-validation:
+    name: ${{ matrix.route.name }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        route:
+          - name: Position Blotter Route Validation
+            script: scripts/dev/validate-position-blotter-route.ps1
+            artifact_path: artifacts/wpf-validation/position-blotter-route/
+            artifact_name: position-blotter-route-results
+          - name: Operator Inbox Route Validation
+            script: scripts/dev/validate-operator-inbox-route.ps1
+            artifact_path: artifacts/wpf-validation/operator-inbox-route/
+            artifact_name: operator-inbox-route-results
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-wpf-
+            ${{ runner.os }}-nuget-
+
+      - name: Run route validation
+        shell: pwsh
+        run: ${{ matrix.route.script }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ${{ matrix.route.artifact_name }}-${{ github.run_number }}
+          path: ${{ matrix.route.artifact_path }}
+          if-no-files-found: ignore
+          retention-days: 14

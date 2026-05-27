@@ -341,6 +341,22 @@ public sealed class ScriptRunnerTests
     }
 
     [Fact]
+    public async Task ContinueWithAsync_CompileTime_RemainsZeroWhenRuntimeWorkExists()
+    {
+        var runner = BuildRunner();
+
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+        var second = await runner.ContinueWithAsync(
+            "System.Threading.Thread.Sleep(25); x += 1; Print(x);",
+            first.Checkpoint!,
+            NoParams);
+
+        second.Success.Should().BeTrue();
+        second.CompileTime.Should().Be(TimeSpan.Zero);
+        second.Elapsed.Should().BeGreaterThan(second.CompileTime);
+    }
+
+    [Fact]
     public async Task ContinueWithAsync_CompilationFailure_PreservesPreviousCheckpoint()
     {
         var runner = BuildRunner();

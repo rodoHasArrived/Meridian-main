@@ -29,7 +29,16 @@ public sealed record PilotReadinessStageGateDto(
     PilotReadinessStageStatusDto Status,
     IReadOnlyList<string> EvidenceIds,
     IReadOnlyList<string> Blockers,
-    string Validation);
+    string Validation)
+{
+    private IReadOnlyList<string> _waveClaims = [];
+
+    public IReadOnlyList<string> WaveClaims
+    {
+        get => _waveClaims;
+        init => _waveClaims = value ?? [];
+    }
+}
 
 public sealed record PilotEvidenceGraphEdgeDto(
     string FromEvidenceId,
@@ -54,6 +63,14 @@ public sealed record PilotReadinessArtifactDto(
     IReadOnlyList<PilotReadinessStageGateDto> StageGates,
     IReadOnlyList<PilotEvidenceGraphEdgeDto> EvidenceGraph)
 {
+    private IReadOnlyList<EvidenceArtifactRefDto> _ledgerArtifactRefs = [];
+
+    public IReadOnlyList<EvidenceArtifactRefDto> LedgerArtifactRefs
+    {
+        get => _ledgerArtifactRefs;
+        init => _ledgerArtifactRefs = value ?? [];
+    }
+
     public int ReadyStageCount => StageGates.Count(static gate =>
         gate.Status == PilotReadinessStageStatusDto.Ready);
 

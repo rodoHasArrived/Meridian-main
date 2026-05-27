@@ -116,8 +116,6 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
         ValidateSymbol(symbol);
         ValidateApiKey();
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = $"{ApiBaseUrl}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={normalizedSymbol}&outputsize=full&apikey={_apiKey}";
 
@@ -125,16 +123,12 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-            var httpResult = await ResponseHandler.HandleResponseAsync(response, symbol, "daily bars", ct: ct).ConfigureAwait(false);
-            if (httpResult.IsNotFound)
+            var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
+            if (json is null)
             {
                 Log.Warning("Alpha Vantage: Symbol {Symbol} not found", symbol);
                 return Array.Empty<AdjustedHistoricalBar>();
             }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
             // Alpha Vantage returns 200 OK with error/rate limit messages in body
             if (IsRateLimitResponse(json))
@@ -191,8 +185,6 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
         if (!SupportedIntervals.Contains(normalizedInterval))
             throw new ArgumentException($"Unsupported interval: {interval}. Supported: {string.Join(", ", SupportedIntervals)}", nameof(interval));
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = $"{ApiBaseUrl}?function=TIME_SERIES_INTRADAY&symbol={normalizedSymbol}&interval={normalizedInterval}&outputsize=full&adjusted=true&extended_hours=true&apikey={_apiKey}";
 
@@ -200,15 +192,9 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-            var httpResult = await ResponseHandler.HandleResponseAsync(response, symbol, "intraday bars", ct: ct).ConfigureAwait(false);
-            if (httpResult.IsNotFound)
-            {
+            var json = await ExecuteGetAndReadAsync(url, symbol, "intraday bars", ct).ConfigureAwait(false);
+            if (json is null)
                 return Array.Empty<IntradayBar>();
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
             // Alpha Vantage returns 200 OK with error/rate limit messages in body
             if (IsRateLimitResponse(json))

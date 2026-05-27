@@ -26,6 +26,9 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
         new Dictionary<string, string?>(StringComparer.Ordinal);
     public string? ResolvePathReturn { get; set; }
     public bool StartProcessShouldFail { get; set; }
+    public bool GracefulStopShouldSucceed { get; set; }
+    public int GracefulStopCallCount { get; private set; }
+    public int KillCallCount { get; private set; }
     public IReadOnlyList<string> ProcessArgumentsToReturn { get; set; } = Array.Empty<string>();
     public IReadOnlyDictionary<string, string?> ProcessEnvironmentVariablesToReturn { get; set; } =
         new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -68,9 +71,22 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
 
     protected override Task<bool> KillProcessAsync(int processId, CancellationToken ct)
     {
+        KillCallCount++;
         if (processId == _lastPid)
             _processRunning = false;
         return Task.FromResult(true);
+    }
+
+    protected override Task<bool> RequestGracefulStopAsync(BackendRuntimeInfo runtime, CancellationToken ct)
+    {
+        GracefulStopCallCount++;
+        if (GracefulStopShouldSucceed && runtime.ProcessId == _lastPid)
+        {
+            _processRunning = false;
+            return Task.FromResult(true);
+        }
+
+        return Task.FromResult(false);
     }
 
     protected override bool IsProcessRunning(int processId) => _processRunning && processId == _lastPid;
@@ -205,6 +221,28 @@ public sealed class BackendServiceManagerBaseTests : IDisposable
 
         result.Success.Should().BeTrue();
         result.Message.Should().Contain("stopped");
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenGracefulStopSucceeds_DoesNotKillTrackedProcess()
+    {
+        var exePath = Path.Combine(_tempDir, "backend.exe");
+        await File.WriteAllTextAsync(exePath, "fake");
+        _sut.ResolvePathReturn = exePath;
+        _sut.ProcessEnvironmentVariablesToReturn = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["MDC_SHUTDOWN_TOKEN"] = "local-stop-token"
+        };
+        _sut.GracefulStopShouldSucceed = true;
+
+        await _sut.InstallAsync();
+        await _sut.StartAsync();
+
+        var result = await _sut.StopAsync();
+
+        result.Success.Should().BeTrue();
+        _sut.GracefulStopCallCount.Should().Be(1);
+        _sut.KillCallCount.Should().Be(0);
     }
 
     [Fact]

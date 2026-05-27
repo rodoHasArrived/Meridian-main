@@ -4,10 +4,33 @@ import { Button } from "@/components/ui/button";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
 
+/**
+ * Top-of-workspace header strip rendered inside each workspace layout.
+ *
+ * Displays the workspace title, posture, description, and an optional refresh action. When the
+ * active session environment is `"live"`,
+ * a high-contrast alarm banner is prepended to warn operators they are in a
+ * real-money environment.
+ *
+ * **Live banner:** built from `WorkspaceSummary.environment` — shown automatically
+ * when `session.environment === "live"`. Uses `--state-live-*` CSS tokens and
+ * `aria-live="assertive"` so screen readers announce it immediately on mount.
+ *
+ * **Refresh:** provide `onRefresh` to enable the refresh button. Pass `refreshing`
+ * while the data fetch is in flight — the button exposes a view-model disabled reason,
+ * shows a spinner, and sets `aria-busy` on the `<header>` element.
+ *
+ * @example
+ * <WorkspaceHeader
+ *   workspace={workspaceSummary}
+ *   session={session}
+ *   onRefresh={() => void refresh()}
+ *   refreshing={isRefreshing}
+ * />
+ */
 interface WorkspaceHeaderProps {
   workspace: WorkspaceSummary;
   session: SessionInfo | null;
-  onOpenCommandPalette: () => void;
   onRefresh?: () => void;
   refreshing?: boolean;
 }
@@ -15,7 +38,6 @@ interface WorkspaceHeaderProps {
 export function WorkspaceHeader({
   workspace,
   session,
-  onOpenCommandPalette,
   onRefresh,
   refreshing = false
 }: WorkspaceHeaderProps) {
@@ -27,7 +49,7 @@ export function WorkspaceHeader({
   });
 
   return (
-    <header className="border-b border-border bg-[#0B1520]" aria-busy={viewModel.ariaBusy}>
+    <header className="border-b border-border bg-card" aria-busy={viewModel.ariaBusy}>
       {viewModel.liveBanner ? (
         <div
           className="flex items-center gap-3 border-b px-4 py-2 lg:px-6"
@@ -47,56 +69,43 @@ export function WorkspaceHeader({
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
         </div>
       ) : null}
-      <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between lg:px-6">
+      <div className="workspace-header-shell px-4 py-3 lg:px-6">
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            {viewModel.badges.map((badge) => (
-              <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
-                {badge.label}
-              </Badge>
-            ))}
-          </div>
-          <div className="space-y-2">
-            <div className="eyebrow-label">{viewModel.eyebrow}</div>
-            <h1 className="font-display text-[2rem] font-semibold leading-tight text-foreground">{viewModel.title}</h1>
-            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
-          </div>
-        </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="eyebrow-label">{viewModel.eyebrow}</div>
+                {viewModel.badges.map((badge) => (
+                  <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
+                    {badge.label}
+                  </Badge>
+                ))}
+              </div>
+              <h1 className="font-display text-xl font-semibold leading-snug text-foreground">{viewModel.title}</h1>
+              <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
+            </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div
-            className="toolbar-chip"
-            aria-label={viewModel.sessionPillAriaLabel}
-          >
-            <span className="font-mono">
-              {viewModel.sessionLabel}
-              {viewModel.sessionRoleLabel ? (
-                <span className="ml-2 text-muted-foreground">{viewModel.sessionRoleLabel}</span>
+            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+              {viewModel.refreshAction && onRefresh ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRefresh}
+                  title={viewModel.refreshAction.title}
+                  aria-label={viewModel.refreshAction.ariaLabel}
+                  disabled={viewModel.refreshAction.disabled}
+                  disabledReason={viewModel.refreshAction.disabledReason}
+                >
+                  <RefreshCcw
+                    className={`size-4 ${viewModel.refreshAction.busy ? "animate-spin" : ""}`}
+                    aria-hidden="true"
+                  />
+                </Button>
               ) : null}
-            </span>
+            </div>
           </div>
-          {viewModel.refreshAction && onRefresh ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRefresh}
-              title={viewModel.refreshAction.title}
-              aria-label={viewModel.refreshAction.ariaLabel}
-              disabled={viewModel.refreshAction.disabled}
-            >
-              <RefreshCcw className={`size-4 ${viewModel.refreshAction.disabled ? "animate-spin" : ""}`} />
-              {viewModel.refreshAction.label}
-            </Button>
-          ) : null}
-          <Button
-            variant="secondary"
-            onClick={onOpenCommandPalette}
-            title={viewModel.commandAction.title}
-            aria-label={viewModel.commandAction.ariaLabel}
-            disabled={viewModel.commandAction.disabled}
-          >
-            {viewModel.commandAction.label}
-          </Button>
+
+          <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
         </div>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>

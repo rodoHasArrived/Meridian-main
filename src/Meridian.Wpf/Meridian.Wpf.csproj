@@ -31,8 +31,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <!-- ApplicationIcon temporarily commented out until Assets/app.ico is created -->
-    <!-- <ApplicationIcon>Assets\app.ico</ApplicationIcon> -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
 
     <!-- Assembly Information -->
     <AssemblyName>Meridian.Desktop</AssemblyName>
@@ -43,6 +42,7 @@
     <Copyright>Copyright 2024-2026 Meridian Team</Copyright>
 
     <!-- Windows Desktop Deployment Settings -->
+    <EnableMsixTooling>true</EnableMsixTooling>
     <!-- ReadyToRun is expensive in disk usage during publish, so keep it opt-in for local packaging. -->
     <PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">false</PublishReadyToRun>
     <SelfContained>false</SelfContained>
@@ -52,6 +52,8 @@
 
     <!-- Globalization settings -->
     <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Avoid duplicate Json source-generator compilation in temporary WPF markup projects -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\System.Text.Json.SourceGeneration\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- Windows-only package references -->
@@ -74,9 +76,6 @@
     <!-- Modern WPF Controls -->
     <PackageReference Include="MaterialDesignThemes" />
 
-    <!-- JSON Serialization -->
-    <PackageReference Include="System.Text.Json" />
-
     <!-- HttpClientFactory for proper HttpClient lifecycle management -->
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
@@ -88,12 +87,6 @@
     <!-- Logging -->
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-
-    <!-- Credential encryption (DPAPI) -->
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
-
-    <!-- Compression -->
-    <PackageReference Include="System.IO.Compression" />
 
     <!-- QuantScript editor and chart rendering -->
     <PackageReference Include="ZstdSharp.Port" />
@@ -123,6 +116,18 @@
 
   <ItemGroup Condition="'$(IsWindows)' == 'true' AND Exists('Assets')">
     <Resource Include="Assets\**\*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsWindows)' == 'true'">
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+    <Content Include="Assets\app.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Brand\meridian-tile-256.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Copy sample configuration to output -->

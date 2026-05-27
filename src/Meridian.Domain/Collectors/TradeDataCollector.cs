@@ -16,6 +16,7 @@ public sealed class TradeDataCollector
 {
     private readonly IMarketEventPublisher _publisher;
     private readonly IQuoteStateStore? _quotes;
+    private readonly SessionStatsCollector? _sessionStats;
 
     /// <summary>
     /// Typed key that combines symbol, stream, and venue for per-stream continuity tracking.
@@ -59,10 +60,14 @@ public sealed class TradeDataCollector
         TimeSpan.FromSeconds(60)
     ];
 
-    public TradeDataCollector(IMarketEventPublisher publisher, IQuoteStateStore? quotes = null)
+    public TradeDataCollector(
+        IMarketEventPublisher publisher,
+        IQuoteStateStore? quotes = null,
+        SessionStatsCollector? sessionStats = null)
     {
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _quotes = quotes;
+        _sessionStats = sessionStats;
     }
 
     /// <summary>
@@ -222,6 +227,10 @@ public sealed class TradeDataCollector
         // Buffer for API access
         var ring = _recentTrades.GetOrAdd(symbolId, _ => new RecentTradeRing(MaxRecentTrades));
         ring.Add(trade);
+
+        // Update intraday session statistics so the watchlist and quote screens can render
+        // day open/high/low/last/volume/change without an extra round trip.
+        _sessionStats?.OnTrade(symbol, trade.Price, trade.Size, trade.Timestamp);
 
         // Stamp the exchange timestamp so latency metrics are available after canonicalization.
         // update.Timestamp is the exchange-reported execution time.

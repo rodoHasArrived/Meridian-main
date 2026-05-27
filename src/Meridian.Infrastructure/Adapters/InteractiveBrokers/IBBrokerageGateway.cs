@@ -511,7 +511,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             MarketPrice = averageCost,
             MarketValue = marketValue,
             UnrealizedPnl = 0m,
-            AssetClass = MapAssetClass(update.SecurityType),
+            AssetClass = IBCanonicalPayloadMapper.MapAssetClass(update.SecurityType, update.Metadata),
             Metadata = update.Metadata,
             AccruedInterest = accruedInterest
         };
@@ -535,13 +535,13 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             OrderId = gatewayOrderId.ToString(),
             ClientOrderId = context?.ClientOrderId ?? update.ClientOrderId,
             Symbol = context?.Symbol ?? update.Symbol,
-            Side = context?.Side ?? ParseSide(update.Action),
-            Type = context?.Type ?? ParseOrderType(update.OrderType),
+            Side = context?.Side ?? IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata),
+            Type = context?.Type ?? IBCanonicalPayloadMapper.ParseOrderType(update.OrderType, update.Metadata),
             Quantity = context?.Quantity ?? update.Quantity,
             FilledQuantity = update.FilledQuantity,
             LimitPrice = update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : context?.LimitPrice,
             StopPrice = update.StopPrice is > 0 ? (decimal)update.StopPrice.Value : context?.StopPrice,
-            Status = MapOrderStatus(update.Status, update.FilledQuantity, Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason),
+            Status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity, Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata),
             CreatedAt = context?.CreatedAt ?? update.ReceivedAt
         };
 
@@ -569,6 +569,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
                 brokerOrder.Quantity,
                 brokerOrder.FilledQuantity,
                 update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : null,
+                update.Status,
                 update.RejectReason,
                 update.Commission is > 0 ? (decimal)update.Commission.Value : null,
                 update.ReceivedAt);
@@ -592,7 +593,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     {
         var gatewayOrderId = update.OrderId;
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
-        var orderStatus = MapOrderStatus(update.Status, update.Filled, update.Remaining, null);
+        var orderStatus = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.Filled, update.Remaining, null);
 
         if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
         {
@@ -641,6 +642,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             context?.Quantity ?? openOrder?.Quantity ?? update.Filled + update.Remaining,
             update.Filled,
             update.LastFillPrice > 0 ? (decimal)update.LastFillPrice : update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null,
+            update.Status,
             null,
             null,
             update.ReceivedAt);
@@ -672,10 +674,11 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             orderStatus,
             context,
             context?.Symbol ?? update.Symbol,
-            context?.Side ?? ParseExecutionSide(update.Side),
+            context?.Side ?? IBCanonicalPayloadMapper.ParseSide(update.Side),
             orderQuantity,
             update.CumulativeQuantity,
             (decimal)update.Price,
+            null,
             null,
             null,
             update.ExecutedAt);
@@ -720,6 +723,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             context.Quantity,
             0m,
             null,
+            null,
             error.ErrorMessage,
             null,
             DateTimeOffset.UtcNow);
@@ -754,10 +758,13 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         decimal quantity,
         decimal filledQuantity,
         decimal? fillPrice,
+        string? brokerStatus,
         string? rejectReason,
         decimal? commission,
         DateTimeOffset timestamp)
     {
+        var optionContract = context?.OptionContract ?? TryParseOptionContract(context?.Metadata);
+        var diagnostics = BuildDiagnostics(brokerStatus, rejectReason);
         return new ExecutionReport
         {
             OrderId = context?.MeridianOrderId ?? gatewayOrderId.ToString(),
@@ -773,74 +780,11 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             RejectReason = rejectReason,
             GatewayOrderId = gatewayOrderId.ToString(),
             Timestamp = timestamp,
+            Legs = context?.Legs,
+            OptionContract = optionContract,
+            Diagnostics = diagnostics
         };
     }
-
-    private static OrderStatus MapOrderStatus(string? status, decimal filled, decimal remaining, string? rejectReason)
-    {
-        var normalized = status?.Trim();
-
-        if (!string.IsNullOrWhiteSpace(rejectReason))
-            return OrderStatus.Rejected;
-
-        if (string.Equals(normalized, "Filled", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Filled;
-
-        if (string.Equals(normalized, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(normalized, "ApiCancelled", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Cancelled;
-
-        if (string.Equals(normalized, "PendingCancel", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.PendingCancel;
-
-        if (string.Equals(normalized, "Inactive", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Rejected;
-
-        if (filled > 0 && remaining > 0)
-            return OrderStatus.PartiallyFilled;
-
-        if (string.Equals(normalized, "Submitted", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Accepted;
-
-        if (string.Equals(normalized, "PreSubmitted", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(normalized, "PendingSubmit", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(normalized, "ApiPending", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.PendingNew;
-
-        return filled > 0 ? OrderStatus.PartiallyFilled : OrderStatus.Accepted;
-    }
-
-    private static string MapAssetClass(string? securityType)
-        => securityType?.ToUpperInvariant() switch
-        {
-            "OPT" => "option",
-            "FUT" => "futures",
-            "CASH" => "forex",
-            "BOND" => "bond",
-            "GOVT" => "bond",
-            _ => "equity"
-        };
-
-    private static OrderSide ParseSide(string? action)
-        => string.Equals(action, "SELL", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(action, "SLD", StringComparison.OrdinalIgnoreCase)
-            ? OrderSide.Sell
-            : OrderSide.Buy;
-
-    private static OrderSide ParseExecutionSide(string? side)
-        => string.Equals(side, "SLD", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(side, "SELL", StringComparison.OrdinalIgnoreCase)
-            ? OrderSide.Sell
-            : OrderSide.Buy;
-
-    private static OrderType ParseOrderType(string? orderType)
-        => orderType?.ToUpperInvariant() switch
-        {
-            "LMT" => OrderType.Limit,
-            "STP" => OrderType.StopMarket,
-            "STP LMT" => OrderType.StopLimit,
-            _ => OrderType.Market
-        };
 
     private static decimal? TryGetDecimal(IReadOnlyDictionary<string, string>? metadata, string key)
     {
@@ -851,6 +795,70 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             ? parsed
             : null;
     }
+
+    private static OptionContractIdentity? TryParseOptionContract(IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null)
+            return null;
+
+        var secType = GetMetadata(metadata, "sec_type");
+        if (!string.Equals(secType, "OPT", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(secType, "FOP", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var right = GetMetadata(metadata, "right");
+        right = string.Equals(right, "CALL", StringComparison.OrdinalIgnoreCase) ? "C" :
+            string.Equals(right, "PUT", StringComparison.OrdinalIgnoreCase) ? "P" : right?.ToUpperInvariant();
+
+        return new OptionContractIdentity
+        {
+            UnderlyingSymbol = GetMetadata(metadata, "underlying_symbol"),
+            LocalSymbol = GetMetadata(metadata, "local_symbol"),
+            TradingClass = GetMetadata(metadata, "trading_class"),
+            Multiplier = GetMetadata(metadata, "multiplier"),
+            ContractMonth = GetMetadata(metadata, "last_trade_date_or_contract_month"),
+            ExpirationDate = DateOnly.TryParseExact(GetMetadata(metadata, "last_trade_date_or_contract_month")?.Substring(0, Math.Min(8, GetMetadata(metadata, "last_trade_date_or_contract_month")?.Length ?? 0)), "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var expiry) ? expiry : null,
+            StrikePrice = TryGetDecimal(metadata, "strike"),
+            Right = right
+        };
+    }
+
+    private static ExecutionDiagnostics? BuildDiagnostics(string? brokerStatus, string? rejectReason)
+    {
+        if (string.IsNullOrWhiteSpace(brokerStatus) && string.IsNullOrWhiteSpace(rejectReason))
+            return null;
+
+        var reason = rejectReason ?? string.Empty;
+        var category =
+            reason.Contains("insufficient", StringComparison.OrdinalIgnoreCase) ? "risk.margin" :
+            reason.Contains("outside", StringComparison.OrdinalIgnoreCase) || reason.Contains("rth", StringComparison.OrdinalIgnoreCase) ? "session.restriction" :
+            reason.Contains("permission", StringComparison.OrdinalIgnoreCase) || reason.Contains("not subscribed", StringComparison.OrdinalIgnoreCase) ? "entitlement" :
+            reason.Contains("price", StringComparison.OrdinalIgnoreCase) || reason.Contains("tick", StringComparison.OrdinalIgnoreCase) ? "validation.price" :
+            reason.Contains("size", StringComparison.OrdinalIgnoreCase) || reason.Contains("quantity", StringComparison.OrdinalIgnoreCase) ? "validation.size" :
+            "broker.unknown";
+
+        return new ExecutionDiagnostics
+        {
+            BrokerStatus = brokerStatus,
+            BrokerRejectReason = rejectReason,
+            Category = category,
+            Severity = string.IsNullOrWhiteSpace(rejectReason) ? "info" : "error",
+            RecommendedAction = category switch
+            {
+                "risk.margin" => "Reduce order size or free buying power before retry.",
+                "session.restriction" => "Route during regular trading hours or enable extended-hours routing.",
+                "entitlement" => "Check market data/trading permissions for the account.",
+                "validation.price" => "Review limit/stop values against venue tick size and collars.",
+                "validation.size" => "Review quantity constraints and lot-size requirements.",
+                _ => "Review broker diagnostics and escalate if repeated."
+            }
+        };
+    }
+
+    private static string? GetMetadata(IReadOnlyDictionary<string, string>? metadata, string key)
+        => metadata is not null && metadata.TryGetValue(key, out var value) ? value : null;
 
     private sealed record SubmittedOrderContext(
         int GatewayOrderId,
@@ -864,6 +872,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         decimal? StopPrice,
         TimeInForce TimeInForce,
         string? StrategyId,
+        OptionContractIdentity? OptionContract,
+        IReadOnlyList<OrderLeg>? Legs,
         IReadOnlyDictionary<string, string>? Metadata,
         DateTimeOffset CreatedAt)
     {
@@ -880,6 +890,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
                 request.StopPrice,
                 request.TimeInForce,
                 request.StrategyId,
+                request.OptionContract,
+                request.Legs,
                 request.Metadata,
                 DateTimeOffset.UtcNow);
 
@@ -895,6 +907,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
                 TimeInForce = TimeInForce,
                 ClientOrderId = ClientOrderId,
                 StrategyId = StrategyId,
+                OptionContract = OptionContract,
+                Legs = Legs,
                 Metadata = Metadata
             };
     }

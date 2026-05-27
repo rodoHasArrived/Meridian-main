@@ -34,6 +34,7 @@ using Meridian.Ui.Services.Services;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -115,6 +116,7 @@ public partial class App : System.Windows.Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        WpfServices.LoggingService.Instance.LogInfo("WPF application startup beginning");
         _launchArgs = e.Args;
         var launchRequest = DesktopLaunchArguments.Parse(e.Args);
         if (launchRequest.HasActions && WpfServices.SingleInstanceService.TrySendArgsToPrimary(e.Args, timeoutMs: 5000))
@@ -148,15 +150,18 @@ public partial class App : System.Windows.Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                ConfigureServices(services);
+                ConfigureServices(services, context.Configuration);
             })
             .Build();
+        WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
         Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
 
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
+        Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
+            .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
 
         // Handle unhandled exceptions gracefully
         DispatcherUnhandledException += OnDispatcherUnhandledException;
@@ -167,6 +172,7 @@ public partial class App : System.Windows.Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
         mainWindow.Show();
+        WpfServices.LoggingService.Instance.LogInfo("WPF main window shown");
         mainWindow.ForceStartupWindowRecovery();
 
         // Begin listening for args forwarded from secondary instances as soon as
@@ -178,6 +184,7 @@ public partial class App : System.Windows.Application
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+        WpfServices.LoggingService.Instance.LogInfo("WPF async startup completed");
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
     }
@@ -203,7 +210,7 @@ public partial class App : System.Windows.Application
     /// C1: DI-first registration — services registered by interface where possible.
     /// Pages registered as transient for constructor injection via NavigationService.
     /// </summary>
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
@@ -240,7 +247,12 @@ public partial class App : System.Windows.Application
 
         // ── Onboarding / workspace services ──────────────────────────────────
         services.AddSingleton<Meridian.Ui.Services.OnboardingTourService>(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
-        services.AddSingleton<WpfServices.WorkspaceService>(_ => WpfServices.WorkspaceService.Instance);
+        services.AddSingleton(sp =>
+        {
+            var workspaceService = WpfServices.WorkspaceService.Instance;
+            workspaceService.SetServiceScopeFactory(sp.GetRequiredService<IServiceScopeFactory>());
+            return workspaceService;
+        });
         services.AddSingleton<Meridian.Ui.Services.AlertService>(_ => Meridian.Ui.Services.AlertService.Instance);
         services.AddSingleton<WpfServices.FundContextService>(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
@@ -318,7 +330,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<MainWindow>();
 
         // ── Catalog-driven WPF shell pages and shell services ───────────────
-        services.AddMeridianWpfShell();
+        services.AddMeridianWpfShell(configuration);
 
         // ── Additional pages not yet catalog-backed ─────────────────────────
         services.AddTransient<FundProfileSelectionPage>();
@@ -505,7 +517,13 @@ public partial class App : System.Windows.Application
         });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
-        services.AddSingleton(PromotionRecordStoreOptions.Default);
+        services.AddSingleton<PromotionRecordStoreOptions>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            return new PromotionRecordStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "promotions"));
+        });
         services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
@@ -627,7 +645,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
-            // Continue - app should still work without persistence
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Offline tracking persistence failed to initialize; continuing without crash recovery persistence");
         }
     }
 
@@ -646,7 +665,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
-            // Continue - app should still work without background services
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Background services failed to initialize; continuing with reduced background processing");
         }
     }
 
@@ -669,6 +689,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Workspace session restore failed; continuing with default workspace");
         }
     }
 
@@ -693,6 +715,8 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Workspace session save failed during shutdown");
         }
     }
 
@@ -749,9 +773,11 @@ public partial class App : System.Windows.Application
     /// </summary>
     private void OnExit(object sender, ExitEventArgs e)
     {
+        WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown requested");
         SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
         WpfServices.SingleInstanceService.Instance.Dispose();
+        WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown complete");
     }
 
     /// <summary>
@@ -775,7 +801,7 @@ public partial class App : System.Windows.Application
             // Shutdown services in parallel with timeout for better performance
             var shutdownTasks = new[]
             {
-                ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(), "BackgroundTaskScheduler", cts.Token),
+                ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(cts.Token), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token),
@@ -797,11 +823,15 @@ public partial class App : System.Windows.Application
             }
 
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF shutdown timed out",
+                ("Error", ex.Message));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError("WPF shutdown failed", ex);
         }
     }
 
@@ -822,9 +852,13 @@ public partial class App : System.Windows.Application
         }
         catch (OperationCanceledException)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF host stop timed out",
+                ("TimeoutMs", HostShutdownTimeoutMs.ToString()));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError("WPF host stop failed", ex);
         }
 
         try
@@ -837,9 +871,11 @@ public partial class App : System.Windows.Application
             {
                 host.Dispose();
             }
+            WpfServices.LoggingService.Instance.LogInfo("WPF host disposed");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError("WPF host dispose failed", ex);
         }
     }
 
@@ -862,12 +898,22 @@ public partial class App : System.Windows.Application
         try
         {
             await shutdownAction().WaitAsync(ct).ConfigureAwait(false);
+            WpfServices.LoggingService.Instance.LogInfo(
+                "WPF shutdown service completed",
+                ("Service", serviceName));
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF shutdown service timed out",
+                ("Service", serviceName),
+                ("Error", ex.Message));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            WpfServices.LoggingService.Instance.LogError(
+                $"WPF shutdown service failed: {serviceName}",
+                ex);
         }
     }
 
@@ -885,9 +931,15 @@ public partial class App : System.Windows.Application
             }
             catch (OperationCanceledException)
             {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "WPF shutdown service timed out",
+                    ("Service", serviceName));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                WpfServices.LoggingService.Instance.LogError(
+                    $"WPF shutdown service failed: {serviceName}",
+                    ex);
             }
         }, ct).ConfigureAwait(false);
     }
@@ -921,6 +973,11 @@ public partial class App : System.Windows.Application
     {
         try
         {
+            var provisioningResult = await WpfServices.FirstRunService.Instance.EnsureConfigurationExistsAsync();
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Configuration presence verification finished before validation",
+                ("Outcome", provisioningResult.ToString()));
+
             // Initialize the config service
             await WpfServices.ConfigService.Instance.InitializeAsync();
 

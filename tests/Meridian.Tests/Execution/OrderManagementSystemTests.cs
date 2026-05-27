@@ -284,7 +284,7 @@ public sealed class OrderManagementSystemTests : IDisposable
                 return Task.CompletedTask;
             });
         gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
-            .Returns(_ => throw new InvalidOperationException("robinhood is not connected. Call ConnectAsync first."));
+            .Returns((_) => Task.FromException<ExecutionReport>(new InvalidOperationException("robinhood is not connected. Call ConnectAsync first.")));
 
         var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
@@ -314,6 +314,90 @@ public sealed class OrderManagementSystemTests : IDisposable
             entry.Action == "OrderRejected" &&
             entry.BrokerName == "robinhood" &&
             entry.Symbol == "AAPL");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenBrokerRoutingGateRejects_DoesNotSubmitToGateway()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var config = new BrokerageConfiguration
+        {
+            Gateway = "alpaca",
+            LiveExecutionEnabled = true,
+            BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["alpaca"] = new() { ProductionOrderRoutingEnabled = false }
+            }
+        };
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: config);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Production order routing is disabled");
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WithClientBrokerAccountMetadata_StripsRoutingKeysBeforeGatewaySubmit()
+    {
+        OrderRequest? submittedRequest = null;
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        gateway.SubmitOrderAsync(Arg.Do<OrderRequest>(request => submittedRequest = request), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var request = callInfo.Arg<OrderRequest>();
+                return new ExecutionReport
+                {
+                    OrderId = request.ClientOrderId ?? "ord-1",
+                    ClientOrderId = request.ClientOrderId,
+                    ReportType = ExecutionReportType.New,
+                    Symbol = request.Symbol,
+                    Side = request.Side,
+                    OrderStatus = OrderStatus.Accepted,
+                    OrderQuantity = request.Quantity,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
+            });
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "912797AB1",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1000m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "treasury",
+                ["broker_account_id"] = "attacker-broker-account",
+                ["account_id"] = "attacker-ledger-account",
+                ["manualOverrideId"] = "forged-override"
+            }
+        });
+
+        result.Success.Should().BeTrue();
+        submittedRequest.Should().NotBeNull();
+        submittedRequest!.Metadata.Should().NotBeNull();
+        submittedRequest.Metadata!.Should().NotContainKey("broker_account_id");
+        submittedRequest.Metadata.Should().NotContainKey("account_id");
+        submittedRequest.Metadata.Should().NotContainKey("manualOverrideId");
+        submittedRequest.Metadata["asset_class"].Should().Be("treasury");
     }
 }
 

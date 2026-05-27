@@ -1,5 +1,8 @@
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Workstation;
+using Meridian.FSharp.Ledger;
 using Meridian.Storage.DirectLending;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -15,17 +18,23 @@ public sealed class DailyAccrualWorker : BackgroundService
     private readonly IDirectLendingOperationsStore _operationsStore;
     private readonly IDirectLendingQueryService _queryService;
     private readonly IDirectLendingCommandService _commandService;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
+    private readonly IOperatorInboxService? _operatorInbox;
     private readonly ILogger<DailyAccrualWorker> _logger;
 
     public DailyAccrualWorker(
         IDirectLendingOperationsStore operationsStore,
         IDirectLendingQueryService queryService,
         IDirectLendingCommandService commandService,
-        ILogger<DailyAccrualWorker> logger)
+        ILogger<DailyAccrualWorker> logger,
+        ILedgerJournalStore? ledgerJournalStore = null,
+        IOperatorInboxService? operatorInbox = null)
     {
         _operationsStore = operationsStore;
         _queryService = queryService;
         _commandService = commandService;
+        _ledgerJournalStore = ledgerJournalStore;
+        _operatorInbox = operatorInbox;
         _logger = logger;
     }
 
@@ -94,6 +103,14 @@ public sealed class DailyAccrualWorker : BackgroundService
                     continue;
                 }
 
+                var postingCheck = await CheckPostingDateAsync(accrualDate, ct).ConfigureAwait(false);
+                if (postingCheck is not null && !string.Equals(postingCheck, "Allowed", StringComparison.Ordinal))
+                {
+                    await RoutePeriodBlockedAsync(loanId, accrualDate, postingCheck, ct).ConfigureAwait(false);
+                    failed++;
+                    continue;
+                }
+
                 var result = await _commandService.PostDailyAccrualAsync(
                     loanId,
                     new PostDailyAccrualRequest(accrualDate),
@@ -127,6 +144,60 @@ public sealed class DailyAccrualWorker : BackgroundService
         _logger.LogInformation(
             "DailyAccrualWorker: batch complete for {Date} — posted={Posted}, skipped={Skipped}, failed={Failed}.",
             accrualDate, posted, skipped, failed);
+    }
+
+    private async Task<string?> CheckPostingDateAsync(DateOnly accrualDate, CancellationToken ct)
+    {
+        if (_ledgerJournalStore is null)
+        {
+            return null;
+        }
+
+        var periods = await _ledgerJournalStore.ListPeriodsAsync(ct: ct).ConfigureAwait(false);
+        var periodDtos = periods.Select(static period => new AccountingPeriodDto(
+            period.PeriodId,
+            period.FiscalYear,
+            period.PeriodNo,
+            period.Label,
+            period.StartDate,
+            period.EndDate,
+            period.Status,
+            period.OpenedAt,
+            period.ClosedAt.HasValue
+                ? Microsoft.FSharp.Core.FSharpOption<DateTimeOffset>.Some(period.ClosedAt.Value)
+                : null)).ToArray();
+
+        return LedgerInterop.CheckPostingDate(accrualDate, isAdjustment: false, periodDtos);
+    }
+
+    private async Task RoutePeriodBlockedAsync(Guid loanId, DateOnly accrualDate, string reason, CancellationToken ct)
+    {
+        _logger.LogWarning(
+            "DailyAccrualWorker: accrual blocked for loan {LoanId} on {Date}: {Reason}",
+            loanId,
+            accrualDate,
+            reason);
+
+        if (_operatorInbox is null)
+        {
+            return;
+        }
+
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: $"direct-lending-period-blocked:{loanId:D}:{accrualDate:yyyyMMdd}",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "Direct lending accrual blocked by accounting period",
+            Detail: $"Loan {loanId:D} could not post accrual for {accrualDate:yyyy-MM-dd}: {reason}.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.UtcNow,
+            RunId: loanId.ToString("D"),
+            AuditReference: $"period-blocked:{accrualDate:yyyyMMdd}",
+            Workspace: "Accounting",
+            TargetRoute: "/accounting/reconciliation",
+            TargetPageTag: "FundReconciliation",
+            Scope: "DirectLendingAccrual");
+
+        await _operatorInbox.UpsertItemAsync(workItem, ct).ConfigureAwait(false);
     }
 
     /// <summary>

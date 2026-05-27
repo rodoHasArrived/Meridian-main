@@ -1,10 +1,12 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Meridian.Application.Backfill;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.UI;
 
@@ -102,7 +104,7 @@ public sealed class ConfigStore
             {
                 Directory.CreateDirectory(dir);
             }
-            await File.WriteAllTextAsync(ConfigPath, json, ct);
+            await AtomicFileWriter.WriteAsync(ConfigPath, json, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -111,6 +113,55 @@ public sealed class ConfigStore
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to save configuration: {ex.Message}", ex);
+        }
+    }
+
+    public async Task SaveFeatureCapabilityOverridesAsync(
+        IReadOnlyDictionary<string, bool> overrides,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+
+        try
+        {
+            var directory = Path.GetDirectoryName(ConfigPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            JsonObject root;
+            if (File.Exists(ConfigPath))
+            {
+                var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+                root = ParseConfigRoot(json);
+            }
+            else
+            {
+                root = new JsonObject();
+            }
+
+            var section = root["FeatureCapabilities"] as JsonObject ?? new JsonObject();
+            var persistedOverrides = new JsonObject();
+
+            foreach (var entry in overrides.OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                persistedOverrides[entry.Key] = entry.Value;
+            }
+
+            section["Overrides"] = persistedOverrides;
+            root["FeatureCapabilities"] = section;
+
+            var output = root.ToJsonString(AppConfigJsonOptions.Write);
+            await AtomicFileWriter.WriteAsync(ConfigPath, output, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to save feature capability overrides: {ex.Message}", ex);
         }
     }
 
@@ -195,6 +246,23 @@ public sealed class ConfigStore
 
     private static AppConfig CreateDefaultConfig(string path)
         => new(DataRoot: MeridianPathDefaults.ResolveDataRoot(path, null));
+
+    private static JsonObject ParseConfigRoot(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new JsonObject();
+        }
+
+        var documentOptions = new JsonDocumentOptions
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip
+        };
+
+        var node = JsonNode.Parse(json, documentOptions: documentOptions);
+        return node as JsonObject ?? new JsonObject();
+    }
 
     private static AppConfig NormalizeLoadedConfig(string path, string json, AppConfig? config)
     {

@@ -23,13 +23,21 @@ public sealed class Dk1TrustGateReadinessService
     ];
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
+    private const string EvidenceBundleFileName = "provider-validation-evidence-bundle.json";
+    private const int MaxAutomationSearchFiles = 2_048;
 
     private readonly Dk1TrustGateReadinessOptions _options;
     private readonly ILogger<Dk1TrustGateReadinessService> _logger;
     private readonly object _cacheLock = new();
 
     private TradingTrustGateReadinessDto? _cachedReadiness;
+    private PacketCacheState _cachedPacketState = PacketCacheState.Empty;
     private DateTimeOffset _cachedAtUtc;
+
+    private readonly record struct PacketCacheState(string? PacketPath, long? LastWriteTicksUtc, long? Length)
+    {
+        public static PacketCacheState Empty { get; } = new(null, null, null);
+    }
 
     public Dk1TrustGateReadinessService(
         Dk1TrustGateReadinessOptions options,
@@ -43,24 +51,44 @@ public sealed class Dk1TrustGateReadinessService
     {
         ct.ThrowIfCancellationRequested();
         var now = DateTimeOffset.UtcNow;
-
         lock (_cacheLock)
         {
             if (_cachedReadiness is not null && now - _cachedAtUtc <= CacheDuration)
             {
-                return _cachedReadiness;
+                if (_cachedPacketState != PacketCacheState.Empty &&
+                    PacketStateMatchesCachedPath(_cachedPacketState))
+                {
+                    return _cachedReadiness;
+                }
             }
         }
 
-        var readiness = await BuildCurrentAsync(ct).ConfigureAwait(false);
+        var snapshot = await BuildCurrentAsync(ct).ConfigureAwait(false);
 
         lock (_cacheLock)
         {
-            _cachedReadiness = readiness;
+            _cachedReadiness = snapshot.Readiness;
+            _cachedPacketState = snapshot.PacketState;
             _cachedAtUtc = now;
         }
 
-        return readiness;
+        return snapshot.Readiness;
+    }
+
+    private bool PacketStateMatchesCachedPath(PacketCacheState cachedState)
+    {
+        if (string.IsNullOrWhiteSpace(cachedState.PacketPath))
+        {
+            return false;
+        }
+
+        var currentState = BuildPacketCacheState(cachedState.PacketPath);
+        if (currentState.LastWriteTicksUtc is null && currentState.Length is null)
+        {
+            return true;
+        }
+
+        return currentState == cachedState;
     }
 
     public static TradingTrustGateReadinessDto CreateUnavailable(string detail) =>
@@ -88,37 +116,72 @@ public sealed class Dk1TrustGateReadinessService
                 CompletedAt: null,
                 SourcePath: null));
 
-    private async Task<TradingTrustGateReadinessDto> BuildCurrentAsync(CancellationToken ct)
+    private async Task<(TradingTrustGateReadinessDto Readiness, PacketCacheState PacketState)> BuildCurrentAsync(CancellationToken ct)
     {
         var automationRoot = ResolveAutomationRoot();
         if (automationRoot is null)
         {
-            return CreateUnavailable(
-                $"DK1 parity packet root was not found: {_options.AutomationRoot}.");
+            return (
+                CreateUnavailable(
+                    $"DK1 parity packet root was not found: {_options.AutomationRoot}."),
+                PacketCacheState.Empty);
         }
 
         var packetPath = FindLatestPacketPath(automationRoot);
         if (packetPath is null)
         {
-            return CreateUnavailable(
-                $"No DK1 pilot parity packet was found under {NormalizePath(automationRoot)}.");
+            return (
+                CreateUnavailable(
+                    "No DK1 pilot parity packet was found under the configured automation root."),
+                PacketCacheState.Empty);
         }
+
+        var packetState = BuildPacketCacheState(packetPath);
 
         try
         {
             await using var stream = File.OpenRead(packetPath);
             using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
-            return BuildReadinessFromPacket(packetPath, document.RootElement);
+            return (BuildReadinessFromPacket(packetPath, automationRoot, document.RootElement), packetState);
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             _logger.LogWarning(ex, "Unable to read DK1 pilot parity packet at {PacketPath}.", packetPath);
-            return CreateUnavailable(
-                $"DK1 pilot parity packet could not be read from {NormalizePath(packetPath)}.");
+            return (
+                CreateUnavailable(
+                    "DK1 pilot parity packet could not be read from the automation archive."),
+                packetState);
         }
     }
 
-    private TradingTrustGateReadinessDto BuildReadinessFromPacket(string packetPath, JsonElement root)
+    private PacketCacheState BuildPacketCacheState(string? packetPath)
+    {
+        if (string.IsNullOrWhiteSpace(packetPath))
+        {
+            return PacketCacheState.Empty;
+        }
+
+        try
+        {
+            var info = new FileInfo(packetPath);
+            if (!info.Exists)
+            {
+                return new PacketCacheState(packetPath, null, null);
+            }
+
+            return new PacketCacheState(
+                packetPath,
+                info.LastWriteTimeUtc.Ticks,
+                info.Length);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogDebug(ex, "Unable to inspect DK1 packet metadata for cache state at {PacketPath}.", packetPath);
+            return new PacketCacheState(packetPath, null, null);
+        }
+    }
+
+    private TradingTrustGateReadinessDto BuildReadinessFromPacket(string packetPath, string automationRoot, JsonElement root)
     {
         var status = GetString(root, "status") ?? "unknown";
         var generatedAt = TryParseDateTimeOffset(GetString(root, "generatedAtUtc"));
@@ -170,6 +233,7 @@ public sealed class Dk1TrustGateReadinessService
             MissingOwners: missingOwners,
             CompletedAt: operatorSignoffCompletedAt,
             SourcePath: operatorSignoffSourcePath);
+        var latestEvidenceBundle = TryGetLatestEvidenceBundle(automationRoot);
 
         return new TradingTrustGateReadinessDto(
             GateId: "DK1",
@@ -178,7 +242,7 @@ public sealed class Dk1TrustGateReadinessService
             OperatorSignoffRequired: operatorSignoffRequired,
             OperatorSignoffStatus: operatorSignoffStatus,
             GeneratedAt: generatedAt,
-            PacketPath: NormalizePath(packetPath),
+            PacketPath: BuildDisplayPacketPath(packetPath, automationRoot),
             SourceSummary: sourceSummary,
             RequiredSampleCount: requiredSampleCount,
             ReadySampleCount: readySampleCount,
@@ -201,8 +265,42 @@ public sealed class Dk1TrustGateReadinessService
             SampleReviews = sampleReviews,
             EvidenceDocuments = evidenceDocumentReviews,
             TrustRationaleContract = trustRationaleContract,
-            BaselineThresholdContract = baselineThresholdContract
+            BaselineThresholdContract = baselineThresholdContract,
+            CalibrationVersion = TryGetCalibrationVersion(latestEvidenceBundle),
+            CalibrationValidatedAt = TryGetCalibrationValidatedAt(latestEvidenceBundle),
+            PromotionPosture = TryGetPromotionPosture(latestEvidenceBundle)
         };
+    }
+
+    private static JsonElement? TryGetLatestEvidenceBundle(string automationRoot)
+    {
+        var bundlePath = EnumerateBoundedFiles(automationRoot, EvidenceBundleFileName)
+            .Select(path => new FileInfo(path))
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .Select(file => file.FullName)
+            .FirstOrDefault();
+        if (bundlePath is null)
+        {
+            return null;
+        }
+
+        using var doc = JsonDocument.Parse(File.ReadAllText(bundlePath));
+        return doc.RootElement.Clone();
+    }
+
+    private static string? TryGetCalibrationVersion(JsonElement? bundle)
+    {
+        return GetString(TryGetProperty(TryGetProperty(bundle, "promotionPosture"), "candidateKernelVersion"));
+    }
+
+    private static DateTimeOffset? TryGetCalibrationValidatedAt(JsonElement? bundle)
+    {
+        return TryParseDateTimeOffset(GetString(bundle, "generatedAtUtc"));
+    }
+
+    private static string? TryGetPromotionPosture(JsonElement? bundle)
+    {
+        return GetString(TryGetProperty(TryGetProperty(bundle, "promotionPosture"), "status"));
     }
 
     private string? ResolveAutomationRoot()
@@ -260,12 +358,59 @@ public sealed class Dk1TrustGateReadinessService
 
     private static string? FindLatestPacketPath(string automationRoot)
     {
-        return Directory
-            .EnumerateFiles(automationRoot, "dk1-pilot-parity-packet.json", SearchOption.AllDirectories)
+        return EnumerateBoundedFiles(automationRoot, "dk1-pilot-parity-packet.json")
             .Select(path => new FileInfo(path))
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .Select(file => file.FullName)
             .FirstOrDefault();
+    }
+
+    private static IEnumerable<string> EnumerateBoundedFiles(string root, string searchPattern)
+    {
+        if (string.IsNullOrWhiteSpace(root) || string.IsNullOrWhiteSpace(searchPattern))
+        {
+            return [];
+        }
+
+        try
+        {
+            return Directory
+                .EnumerateFiles(root, searchPattern, SearchOption.AllDirectories)
+                .Take(MaxAutomationSearchFiles)
+                .ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
+        {
+            return [];
+        }
+    }
+
+    private static string? BuildDisplayPacketPath(string? packetPath, string automationRoot)
+    {
+        if (string.IsNullOrWhiteSpace(packetPath))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(automationRoot))
+        {
+            return Path.GetFileName(packetPath);
+        }
+
+        try
+        {
+            var relativePath = Path.GetRelativePath(automationRoot, packetPath);
+            if (relativePath.StartsWith("..", StringComparison.Ordinal))
+            {
+                return Path.GetFileName(packetPath);
+            }
+
+            return NormalizePath(relativePath);
+        }
+        catch (ArgumentException)
+        {
+            return Path.GetFileName(packetPath);
+        }
     }
 
     private static string BuildDetail(
@@ -394,6 +539,11 @@ public sealed class Dk1TrustGateReadinessService
 
         if (string.Equals(contract.Status, "validated", StringComparison.OrdinalIgnoreCase))
         {
+            if (!IsContractPayloadComplete(contract))
+            {
+                blockers.Add($"DK1 {label} contract is validated but missing required contract fields.");
+            }
+
             return;
         }
 
@@ -401,6 +551,28 @@ public sealed class Dk1TrustGateReadinessService
             ? $": missing {string.Join(", ", contract.MissingRequirements)}"
             : ".";
         blockers.Add($"DK1 {label} contract is {contract.Status}{missing}");
+    }
+
+    private static bool IsContractPayloadComplete(TradingTrustGateContractReadinessDto contract)
+    {
+        if (string.IsNullOrWhiteSpace(contract.DocumentPath))
+        {
+            return false;
+        }
+
+        if (contract.ContractId == "trust-rationale")
+        {
+            return contract.RequiredPayloadFields.Count > 0 &&
+                   contract.RequiredReasonCodes.Count > 0;
+        }
+
+        if (contract.ContractId == "baseline-threshold")
+        {
+            return contract.RequiredMetrics.Count > 0 &&
+                   contract.FpFnReviewRequired.HasValue;
+        }
+
+        return true;
     }
 
     private static IReadOnlyList<TradingTrustGateSampleReviewDto> ReadSampleReviews(JsonElement? element)
@@ -480,6 +652,9 @@ public sealed class Dk1TrustGateReadinessService
         var property = TryGetProperty(element, propertyName);
         return property is { ValueKind: JsonValueKind.String } value ? value.GetString() : null;
     }
+
+    private static string? GetString(JsonElement? element) =>
+        element is { ValueKind: JsonValueKind.String } value ? value.GetString() : null;
 
     private static int GetInt32(JsonElement? element, string propertyName)
     {

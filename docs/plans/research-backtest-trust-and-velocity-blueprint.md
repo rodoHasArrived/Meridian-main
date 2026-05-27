@@ -2,8 +2,16 @@
 
 **Owner:** Core Team
 **Audience:** Research, Desktop, Backtesting, API, and Architecture contributors
-**Last Updated:** 2026-04-29
-**Status:** Active focused blueprint for the next Research implementation slice; the active web dashboard now has a Research run-library first cut with pair selection, compare/diff command readiness, promotion-history loading, operator-visible command errors, and built workstation assets, while request-level batch sweeps, WPF Batch Backtest ViewModel coverage, BatchBacktest results empty guidance, and StrategyRuns filter-aware run-scope recovery remain retained support evidence. Real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open.
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **research backtest trust and velocity blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the research backtest trust and velocity blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+**Status:** Active focused blueprint for the next Research implementation slice; the active browser and WPF workstations now has a Research run-library first cut with pair selection, compare/diff command readiness, promotion-history loading, operator-visible command errors, and built workstation assets, while request-level batch sweeps, WPF Batch Backtest ViewModel coverage, BatchBacktest results empty guidance, and StrategyRuns filter-aware run-scope recovery remain operator-surface evidence. Real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open.
 
 > Companion to:
 >
@@ -16,7 +24,7 @@
 
 This blueprint defines the next implementation slice for Meridian's Research workspace.
 
-The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, web run library, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-29, the active web dashboard has a Research run library with two-run selection, compare/diff command readiness, shared API calls, promotion-history loading state, command-error alerts, and focused component/view-model coverage. The Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, stateful results empty guidance, and ViewModel tests are present. The StrategyRuns browser also now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded scope, and can reset filters against already-loaded rows. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, canonical web workspace navigation, and deeper stage-aware shared orchestration.
+The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, web run library, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-29, the active browser and WPF workstations has a Research run library with two-run selection, compare/diff command readiness, shared API calls, promotion-history loading state, command-error alerts, and focused component/view-model coverage. The Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, stateful results empty guidance, and ViewModel tests are present. The StrategyRuns browser also now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded scope, and can reset filters against already-loaded rows. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, canonical web workspace navigation, and deeper stage-aware shared orchestration.
 
 The slice delivers three user-facing outcomes:
 
@@ -55,7 +63,7 @@ The design reuses Meridian's existing strengths:
 
 ### Assumptions
 
-- The primary new operator surface for this slice is the web dashboard in `src/Meridian.Ui/dashboard/`; WPF remains retained support and shared-contract regression coverage.
+- The operator surfaces for this slice are the web dashboard in `src/Meridian.Ui/dashboard/` and WPF in `src/Meridian.Wpf/`, both consuming shared contracts and regression coverage.
 - The retained localhost workstation API remains important for automation, Swagger, and future shared tooling, so new research contracts should not be WPF-only.
 - Native Meridian backtests ship first in this slice; Lean stays on the broader unification track.
 - Additive contract changes are preferred; wide breaking changes should be avoided unless the existing seam is unused or demonstrably placeholder-only.

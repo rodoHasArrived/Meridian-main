@@ -48,6 +48,7 @@ public sealed class QuantDataContext(
         if (bars.Count == 0)
         {
             logger.LogWarning("No price data found for {Symbol} from {From} to {To}", symbol, from, to);
+            await LogSecMasterHintAsync(symbol, ct).ConfigureAwait(false);
         }
 
         bars.Sort((a, b) => a.Date.CompareTo(b.Date));
@@ -111,6 +112,32 @@ public sealed class QuantDataContext(
             return new ScriptOrderBook(closest.Timestamp, bids, asks);
         }
         return null;
+    }
+
+    private async Task LogSecMasterHintAsync(string symbol, CancellationToken ct)
+    {
+        if (securityMasterQuery is null) return;
+        try
+        {
+            var detail = await securityMasterQuery.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker, symbol, null, ct)
+                .ConfigureAwait(false);
+
+            if (detail is null)
+                logger.LogWarning(
+                    "Symbol {Symbol} is not registered in the Security Master. " +
+                    "Verify the ticker spelling. " +
+                    "Use Data.SecMaster(symbol) inside a script to query registered identifiers.",
+                    symbol);
+            else
+                logger.LogDebug(
+                    "Security Master: {Symbol} is known ({DisplayName}, {AssetClass}) but no price data was stored for the requested date range.",
+                    symbol, detail.DisplayName, detail.AssetClass);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogDebug(ex, "Security Master hint lookup failed for {Symbol}", symbol);
+        }
     }
 
     /// <inheritdoc />

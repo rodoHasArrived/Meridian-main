@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Chart and table standards</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
   .axis { stroke: var(--chart-grid-major); }
@@ -22,6 +23,7 @@
 </head>
 <body>
   <main class="chart-standard-shell">
+<a class="preview-home-link" href="index.html">Catalogue</a>
     <header class="chart-standard-head">
       <div>
         <div class="chart-standard-sub">Evidence standards · charts and tables</div>
@@ -132,6 +134,29 @@
             <div>Headers are sticky and mono. Numeric columns are right-aligned with tabular figures.</div>
             <div>Selected rows must drive a visible detail panel, not just a highlight.</div>
             <div>Group columns only when it clarifies workflow scope such as price, settlement, or evidence.</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chart-standard-card">
+        <div class="chart-standard-title"><b>Reference schedule tables</b><span>cash flow · factor · audit</span></div>
+        <div class="chart-standard-body">
+          <div class="dense-table-wrap">
+            <table class="dense-table">
+              <thead>
+                <tr><th>Event</th><th>Pay date</th><th class="r">Factor</th><th class="r">Expected</th><th class="r">Actual</th><th>Source</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr class="selected"><td>Coupon</td><td class="mono">2026-06-15</td><td class="r">1.000000</td><td class="r">$1,842,551.25</td><td class="r">$1,842,551.25</td><td class="mono">SM-PRIMARY</td><td><span class="state-matrix-badge state-healthy">Posted</span></td></tr>
+                <tr><td>Factor</td><td class="mono">2026-07-15</td><td class="r">0.984512</td><td class="r">$1,814,013.08</td><td class="r">--</td><td class="mono">PX-VENDOR</td><td><span class="state-matrix-badge state-pending">Pending</span></td></tr>
+                <tr><td>Redemption</td><td class="mono">2029-05-15</td><td class="r">0.000000</td><td class="r">$25,000,000.00</td><td class="r">--</td><td class="mono">TERM-SHEET</td><td><span class="state-matrix-badge state-warn">Review</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="chart-standard-notes">
+            <div>Schedule tables keep expected and actual values side by side so variance is visible without opening a modal.</div>
+            <div>Asset-class-specific fields such as factor, reset rate, conversion ratio, lot size, and redemption terms may replace unused columns.</div>
+            <div>Attach schedule selection to the selected security detail, with audit, notes, and override history in the same workbench.</div>
           </div>
         </div>
       </article>

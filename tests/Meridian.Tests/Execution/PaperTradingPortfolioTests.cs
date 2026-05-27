@@ -369,6 +369,24 @@ public sealed class PaperTradingPortfolioRegTMarginTests
         // Assert
         portfolio.Cash.Should().Be(90_000m, because: "only $10 000 initial margin is debited");
         portfolio.MarginBalance.Should().Be(10_000m, because: "broker loaned the other $10 000");
+        portfolio.PortfolioValue.Should().Be(100_000m, because: "equity must subtract outstanding margin loan");
+    }
+
+    [Fact]
+    public void RegTAccount_BuyLong_PostsMarginLoanLiabilityInLedger()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Account", AccountKind.Brokerage, 100_000m,
+                MarginType: MarginAccountType.RegT),
+        ], ledger);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+
+        var buyEntry = ledger.Journal.Last(e => e.Description.Contains("Buy"));
+        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 10_000m);
+        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.MarginLoanPayable && l.Credit == 10_000m);
     }
 
     [Fact]
@@ -613,6 +631,21 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         status.IsMarginCall.Should().BeFalse();
         status.MarginDeficiency.Should().Be(0m);
         status.PortfolioRequirement.MaintenanceMargin.Should().Be(5_000m);
+    }
+
+    [Fact]
+    public void CheckMarginStatus_RegTLongPosition_TriggersMarginCall_WhenLoanConsumesEquity()
+    {
+        var portfolio = BuildRegTPortfolio(10_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 200, price: 100m));
+
+        var status = portfolio.CheckMarginStatus("margin-1",
+            new Dictionary<string, decimal> { ["AAPL"] = 50m });
+
+        status.IsMarginCall.Should().BeTrue();
+        status.PortfolioRequirement.MaintenanceMargin.Should().Be(2_500m);
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(-2_500m);
+        status.MarginDeficiency.Should().Be(2_500m);
     }
 
     [Fact]

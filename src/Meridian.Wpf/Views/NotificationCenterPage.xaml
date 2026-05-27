@@ -90,7 +90,11 @@
             </Border>
 
             <!-- Alert Summary Bar -->
-            <Border x:Name="AlertSummaryBar" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16">
+            <Border x:Name="AlertSummaryBar"
+                    Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,16"
+                    Padding="16"
+                    AutomationProperties.Name="{Binding AlertSummaryAutomationName}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -113,23 +117,43 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0">
-                        <Border x:Name="CriticalBadge" Background="#F44336" CornerRadius="999" Padding="10,3" Margin="0,0,8,0" Visibility="Collapsed">
-                            <TextBlock x:Name="CriticalCountText" Text="0 Critical" FontSize="11" Foreground="White" FontWeight="SemiBold" />
+                        <Border x:Name="CriticalBadge"
+                                Background="#F44336"
+                                CornerRadius="999"
+                                Padding="10,3"
+                                Margin="0,0,8,0"
+                                Visibility="{Binding IsCriticalAlertBadgeVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding CriticalAlertCountText}">
+                            <TextBlock x:Name="CriticalCountText" Text="{Binding CriticalAlertCountText}" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                         </Border>
-                        <Border x:Name="ErrorBadge" Background="#FF5722" CornerRadius="999" Padding="10,3" Margin="0,0,8,0" Visibility="Collapsed">
-                            <TextBlock x:Name="ErrorCountText" Text="0 Errors" FontSize="11" Foreground="White" FontWeight="SemiBold" />
+                        <Border x:Name="ErrorBadge"
+                                Background="#FF5722"
+                                CornerRadius="999"
+                                Padding="10,3"
+                                Margin="0,0,8,0"
+                                Visibility="{Binding IsErrorAlertBadgeVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding ErrorAlertCountText}">
+                            <TextBlock x:Name="ErrorCountText" Text="{Binding ErrorAlertCountText}" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                         </Border>
-                        <Border x:Name="WarningBadge" Background="#FFC107" CornerRadius="999" Padding="10,3" Margin="0,0,8,0" Visibility="Collapsed">
-                            <TextBlock x:Name="WarningCountText" Text="0 Warnings" FontSize="11" Foreground="#333" FontWeight="SemiBold" />
+                        <Border x:Name="WarningBadge"
+                                Background="#FFC107"
+                                CornerRadius="999"
+                                Padding="10,3"
+                                Margin="0,0,8,0"
+                                Visibility="{Binding IsWarningAlertBadgeVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding WarningAlertCountText}">
+                            <TextBlock x:Name="WarningCountText" Text="{Binding WarningAlertCountText}" FontSize="11" Foreground="#333" FontWeight="SemiBold" />
                         </Border>
-                        <TextBlock x:Name="SnoozedCountText" Text=""
+                        <TextBlock x:Name="SnoozedCountText"
+                                   Text="{Binding SnoozedAlertCountText}"
                                    FontSize="11"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   VerticalAlignment="Center" />
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsSnoozedAlertCountVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
 
                     <TextBlock Grid.Column="2" x:Name="AlertTotalText"
-                               Text="0 active"
+                               Text="{Binding AlertTotalText}"
                                FontSize="13"
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                VerticalAlignment="Center" />

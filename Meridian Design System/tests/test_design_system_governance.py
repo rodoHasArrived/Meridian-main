@@ -53,6 +53,30 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         violations = self.run_on_files({"preview/new.html": "<table><tr><td>123.45</td></tr></table>"})
         self.assertTrue(any(v.code == "numeric-table-cell" for v in violations))
 
+    def test_preview_file_requires_document_contract(self):
+        violations = self.run_on_files(
+            {
+                "preview/new.html": (
+                    '<!DOCTYPE html><html><head><title>Preview</title></head><body><section>Content</section></body></html>'
+                )
+            }
+        )
+        self.assertTrue(any(v.code == "preview-viewport" for v in violations))
+        self.assertTrue(any(v.code == "preview-main-landmark" for v in violations))
+        self.assertTrue(any(v.code == "preview-heading" for v in violations))
+        self.assertTrue(any(v.code == "preview-common-stylesheet" for v in violations))
+
+    def test_preview_file_accepts_document_contract(self):
+        violations = self.run_on_files(
+            {
+                "preview/new.html": (
+                    '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'
+                    '<link rel="stylesheet" href="preview-common.css"></head><body><main><h1>Preview</h1>Content</main></body></html>'
+                )
+            }
+        )
+        self.assertFalse(any(v.code.startswith("preview-") for v in violations))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Charts: Exposure sparklines</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
   .card { background: #0B1520; border: 1px solid #2A4566; border-radius: 8px; padding: 16px; }
@@ -20,6 +22,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Charts: Exposure sparklines">
+<h1 class="preview-sr-only">Charts: Exposure sparklines</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
 <div class="card">
   <div class="head"><b>POSITIONS</b>intraday · 1min · net $1.24M</div>
   <div class="rows" id="list"></div>
@@ -54,5 +59,6 @@
     list.appendChild(row);
   });
 </script>
+</main>
 </body>
 </html>

@@ -181,7 +181,8 @@ public sealed class CollectorModeRunner
                     coordinationSnapshot.RootPath);
             }
 
-            using var connectTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var connectTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
         }
         catch (OperationCanceledException)
@@ -221,17 +222,23 @@ public sealed class CollectorModeRunner
             {
                 watcher = ctx.ConfigurationService.StartHotReload(ctx.ConfigPath, newCfg =>
                 {
-                    try
+                    var nextCfg = SharedStartupHelpers.EnsureDefaultSymbols(newCfg);
+                    _ = subscriptionManager.ApplyAsync(nextCfg, ct).ContinueWith(task =>
                     {
-                        var nextCfg = SharedStartupHelpers.EnsureDefaultSymbols(newCfg);
-                        subscriptionManager.ApplyAsync(nextCfg).GetAwaiter().GetResult();
+                        if (task.IsCanceled)
+                        {
+                            return;
+                        }
+
+                        if (task.IsFaulted)
+                        {
+                            _log.Error(task.Exception?.GetBaseException(), "Failed to apply hot-reloaded configuration");
+                            return;
+                        }
+
                         _ = statusWriter.WriteOnceAsync();
                         _log.Information("Applied hot-reloaded configuration: {Count} symbols", nextCfg.Symbols?.Length ?? 0);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.Error(ex, "Failed to apply hot-reloaded configuration");
-                    }
+                    }, TaskScheduler.Default);
                 }, ex => _log.Error(ex, "Configuration watcher error"));
 
                 _log.Information("Watching {ConfigPath} for subscription changes", ctx.ConfigPath);
@@ -266,11 +273,21 @@ public sealed class CollectorModeRunner
         }
         finally
         {
-            watcher?.Dispose();
+            if (watcher is not null)
+            {
+                await watcher.DisposeAsync().ConfigureAwait(false);
+                _log.Information("Configuration watcher stopped");
+            }
 
             try
             {
-                await dataClient.DisconnectAsync();
+                using var disconnectCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                await dataClient.DisconnectAsync(disconnectCts.Token);
+                _log.Information("Data provider disconnect completed");
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Warning("Data provider disconnect did not complete within the shutdown timeout");
             }
             catch (Exception ex)
             {

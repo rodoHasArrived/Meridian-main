@@ -11,6 +11,9 @@ namespace Meridian.Application.Logging;
 /// </summary>
 public static class LoggingSetup
 {
+    private const long LogFileSizeLimitBytes = 16L * 1024L * 1024L;
+    private const int RetainedLogFileCountLimit = 30;
+
     private static ILogger? _logger;
     private static LoggingLevelSwitch? _levelSwitch;
 
@@ -75,7 +78,7 @@ public static class LoggingSetup
     public static bool IsDebugEnabled => _levelSwitch?.MinimumLevel <= LogEventLevel.Debug;
 
     /// <summary>
-    /// Initializes the logging infrastructure with default settings.
+    /// Initializes the logging infrastructure with bounded default file logging.
     /// Call this early in application startup.
     /// </summary>
     /// <param name="configuration">Optional configuration for customizing log settings.</param>
@@ -114,7 +117,9 @@ public static class LoggingSetup
             .WriteTo.File(
                 path: logPath,
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 30,
+                retainedFileCountLimit: RetainedLogFileCountLimit,
+                fileSizeLimitBytes: LogFileSizeLimitBytes,
+                rollOnFileSizeLimit: true,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ThreadId}] {SourceContext} {Message:lj}{NewLine}{Exception}",
                 shared: true,
                 flushToDiskInterval: TimeSpan.FromSeconds(1));

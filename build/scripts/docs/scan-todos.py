@@ -10,6 +10,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
+MAX_SCAN_BYTES = 512 * 1024
+
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT = ROOT / "docs/status/TODO.md"
 
@@ -25,6 +27,7 @@ SKIP_DIRS = {
     ".vs",
     ".idea",
     ".vscode",
+    ".tools",
     "packages",
     "__pycache__",
     ".pytest_cache",
@@ -106,9 +109,23 @@ def iter_files(root: Path) -> Iterable[Path]:
             path = current / filename
             if path.suffix.lower() not in TEXT_EXTENSIONS:
                 continue
+            if path.is_symlink():
+                continue
+
             rel_path = f"{rel_dir}/{filename}".strip("/")
             if is_excluded(rel_path):
                 continue
+
+            try:
+                resolved = path.resolve(strict=True)
+                resolved.relative_to(root)
+                stat_info = path.stat()
+            except (OSError, ValueError):
+                continue
+
+            if stat_info.st_size > MAX_SCAN_BYTES:
+                continue
+
             yield path
 
 

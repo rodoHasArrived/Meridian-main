@@ -1,8 +1,9 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, Settings, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
 import {
   Sheet,
@@ -22,6 +24,7 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -30,19 +33,34 @@ import {
   usePaperSessionsViewModel,
   useSessionReplayControlsViewModel,
   useStrategyLifecycleControlsViewModel,
+  useTradingBlotterViewModel,
   useTradingConfirmViewModel,
   useOrderTicketViewModel,
   usePromotionGateViewModel,
   useTradingReadinessViewModel,
+  useTradingScreenShellViewModel,
   type AcceptanceLevel,
+  type OrderPreview,
+  type OrderPreviewEffect,
+  type OrderPreviewLevel,
+  type OrderPreviewWarning,
   type PaperSessionDetailPanel,
   type PaperSessionReplayPanel,
   type PromotionOutcomeLevel,
+  type TradingLoadingState,
+  type TradingBlotterDetail,
+  type TradingDataTone,
+  type TradingFillRow,
+  type TradingOrderRow,
+  type TradingPositionRow,
+  type TradingWorkflowCommandState,
   type TradingConfirmViewModel,
+  type TradingReadinessWorkItemRow,
   type TradingReadinessState,
-  type TradingReadinessSummaryRow
+  type TradingReadinessSummaryRow,
+  type TradingReadinessWarningRow
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingAcceptanceGate, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingAcceptanceGate, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -60,21 +78,6 @@ const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], st
   Disconnected: "text-danger"
 };
 
-const focusCopy: Record<string, { title: string; description: string }> = {
-  orders: {
-    title: "Orders blotter",
-    description: "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
-  },
-  positions: {
-    title: "Position book",
-    description: "Open positions with mark prices, exposure, and unrealized P&L are refreshed from the live execution layer each time the workspace loads."
-  },
-  risk: {
-    title: "Risk guardrails",
-    description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
-  }
-};
-
 interface CockpitAcceptanceItem {
   label: string;
   value: string;
@@ -85,13 +88,30 @@ interface CockpitAcceptanceItem {
 const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
   success: "text-success",
   warning: "text-warning",
-  error: "text-destructive"
+  danger: "text-danger"
 };
+
+const promotionEvaluationPanelTone = {
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
+
+const promotionEvaluationTextTone = {
+  success: "text-success",
+  warning: "text-warning"
+} as const;
+
+const promotionChecklistDotTone = {
+  ready: "bg-success",
+  blocked: "bg-danger",
+  review: "bg-warning"
+} as const;
 
 const acceptanceTone: Record<AcceptanceLevel, string> = {
   ready: "border-success/30 bg-success/10 text-success",
   review: "border-warning/30 bg-warning/10 text-warning",
-  atRisk: "border-destructive/30 bg-destructive/10 text-destructive"
+  atRisk: "border-danger/30 bg-danger/10 text-danger"
 };
 
 const acceptanceLabel: Record<AcceptanceLevel, string> = {
@@ -104,20 +124,296 @@ const workItemTone: Record<string, string> = {
   Info: "border-border/70 bg-secondary/25 text-muted-foreground",
   Success: "border-success/30 bg-success/10 text-success",
   Warning: "border-warning/30 bg-warning/10 text-warning",
-  Critical: "border-destructive/30 bg-destructive/10 text-destructive"
+  Critical: "border-danger/30 bg-danger/10 text-danger"
 };
+
+const dataToneClass: Record<TradingDataTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
+  muted: "text-muted-foreground"
+};
+
+const dataTonePanelClass: Record<TradingDataTone, string> = {
+  default: "border-border/70",
+  success: "border-success/35 bg-success/10",
+  warning: "border-warning/35 bg-warning/10",
+  danger: "border-danger/35 bg-danger/10",
+  muted: "border-border/70 bg-secondary/20"
+};
+
+function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
+  return [
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono font-semibold text-foreground",
+      render: (position) => position.symbol
+    },
+    {
+      id: "side",
+      label: "Side",
+      className: "font-mono text-foreground",
+      render: (position) => position.side
+    },
+    {
+      id: "quantity",
+      label: "Qty",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (position) => position.quantity
+    },
+    {
+      id: "average",
+      label: "Avg",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (position) => position.averagePrice
+    },
+    {
+      id: "mark",
+      label: "Mark",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (position) => position.markPrice
+    },
+    {
+      id: "day-pnl",
+      label: "Day P&L",
+      align: "right",
+      render: (position) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[position.dayPnlTone])}>
+          {position.dayPnl}
+        </span>
+      )
+    },
+    {
+      id: "unrealized",
+      label: "Unrealized",
+      align: "right",
+      render: (position) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>
+          {position.unrealizedPnl}
+        </span>
+      )
+    },
+    {
+      id: "exposure",
+      label: "Exposure",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (position) => position.exposure
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (position) => (
+        <button
+          type="button"
+          onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
+          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={position.closeAriaLabel}
+          title={position.closeTitleLabel}
+        >
+          {position.closeActionLabel}
+        </button>
+      )
+    }
+  ];
+}
+
+function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingOrderRow>[] {
+  return [
+    {
+      id: "order",
+      label: "Order",
+      className: "font-mono font-semibold text-foreground",
+      render: (order) => order.orderId
+    },
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono text-foreground",
+      render: (order) => order.symbol
+    },
+    {
+      id: "side",
+      label: "Side",
+      className: "font-mono text-foreground",
+      render: (order) => order.side
+    },
+    {
+      id: "type",
+      label: "Type",
+      className: "font-mono text-foreground",
+      render: (order) => order.type
+    },
+    {
+      id: "quantity",
+      label: "Qty",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (order) => order.quantity
+    },
+    {
+      id: "limit",
+      label: "Limit",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (order) => order.limitPrice
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (order) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[order.statusTone])}>
+          {order.status}
+        </span>
+      )
+    },
+    {
+      id: "submitted",
+      label: "Submitted",
+      className: "font-mono text-muted-foreground",
+      render: (order) => order.submittedAt
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (order) => (
+        <button
+          type="button"
+          onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
+          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={order.cancelAriaLabel}
+          title={order.cancelTitleLabel}
+        >
+          {order.cancelActionLabel}
+        </button>
+      )
+    }
+  ];
+}
+
+const fillColumns: DenseDataTableColumn<TradingFillRow>[] = [
+  {
+    id: "fill",
+    label: "Fill",
+    className: "font-mono font-semibold text-foreground",
+    render: (fill) => fill.fillId
+  },
+  {
+    id: "order",
+    label: "Order",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.orderId
+  },
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.symbol
+  },
+  {
+    id: "side",
+    label: "Side",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.side
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.quantity
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.price
+  },
+  {
+    id: "venue",
+    label: "Venue",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.venue
+  },
+  {
+    id: "timestamp",
+    label: "Timestamp",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.timestamp
+  }
+];
+
+const sessionReplayStatusPanelClass = {
+  default: "border-border/70 bg-secondary/25 text-muted-foreground",
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
+
+function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
+  return (
+    <Card
+      role={state.role}
+      aria-busy={state.ariaBusy}
+      aria-live={state.ariaLive}
+      aria-label={state.regionLabel}
+      aria-labelledby={state.titleId}
+      aria-describedby={state.detailId}
+      className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+    >
+      <CardHeader className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--state-pending-fg)]"
+              aria-hidden="true"
+            />
+            <span className="state-matrix-badge state-pending">{state.statusLabel}</span>
+            <span className="toolbar-chip" aria-label={`Route ${state.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{state.routeLabel}</b>
+            </span>
+          </div>
+          <RotateCcw className="h-4 w-4 animate-spin text-[var(--state-pending-fg)]" aria-hidden="true" />
+        </div>
+        <div>
+          <CardTitle id={state.titleId}>{state.title}</CardTitle>
+          <CardDescription id={state.detailId} className="mt-2 max-w-3xl leading-6">
+            {state.detail}
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2" aria-label="Trading loading dependencies">
+          {state.chips.map((chip) => (
+            <span key={chip.label} className="toolbar-chip">
+              <span className="text-muted-foreground">{chip.label}</span>
+              <span className="font-mono text-[var(--state-pending-fg)]">{chip.value}</span>
+            </span>
+          ))}
+        </div>
+      </CardHeader>
+    </Card>
+  );
+}
 
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
-  const workstream = useMemo(() => {
-    if (pathname.includes("/positions")) return "positions";
-    if (pathname.includes("/risk")) return "risk";
-    return "orders";
-  }, [pathname]);
-  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
+  const shellVm = useTradingScreenShellViewModel({ pathname, data });
+  const blotterVm = useTradingBlotterViewModel(data);
+  const fundAccountId = asGuid(data?.brokerage?.account);
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const orderTicket = useOrderTicketViewModel({
+    positions: data?.positions ?? [],
+    risk: data?.risk ?? null,
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
@@ -134,6 +430,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
       ]);
     }
   });
+  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
+  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -145,10 +443,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
 
-  const [strategySheetOpen, setStrategySheetOpen] = useState(false);
-  const [replaySheetOpen, setReplaySheetOpen] = useState(false);
-  const [promotionSheetOpen, setPromotionSheetOpen] = useState(false);
-
   async function refreshSessionEvidence() {
     await Promise.all([
       executionEvidence.refresh(),
@@ -157,14 +451,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   if (!data) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading trading cockpit</CardTitle>
-          <CardDescription>Waiting for paper-trading state, order flow, and brokerage wiring snapshots.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
+    return <TradingLoadingPanel state={shellVm.loadingState} />;
   }
 
   const cockpitAcceptance = buildCockpitAcceptance({
@@ -188,15 +475,36 @@ export function TradingScreen({ data }: TradingScreenProps) {
         ))}
       </section>
 
+      <section
+        role="region"
+        aria-label="Execution cockpit context"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Trading lane</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {shellVm.route.title}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+            {shellVm.route.description}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {shellVm.headerChips.map((chip) => (
+            <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
+        </div>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Trading Lane</div>
             <CardTitle className="flex items-center gap-2">
               <RadioTower className="h-5 w-5 text-primary" />
-              {focusCopy[workstream].title}
+              {shellVm.route.title}
             </CardTitle>
-            <CardDescription>{focusCopy[workstream].description}</CardDescription>
+            <CardDescription>{shellVm.route.description}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <TradingHighlight
@@ -217,21 +525,21 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="panel-surface-strong bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Route Context</div>
             <CardTitle>Current workstream</CardTitle>
-            <CardDescription className="text-slate-300">
+            <CardDescription>
               Deep links under{" "}
-              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{shellVm.route.pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-200">
-            <ContextRow label="Open positions" value={String(data.positions.length)} />
-            <ContextRow label="Working orders" value={String(data.openOrders.length)} />
-            <ContextRow label="Completed fills" value={String(data.fills.length)} />
-            <ContextRow label="Risk state" value={data.risk.state} />
+          <CardContent className="space-y-3 text-sm">
+            <KeyValueRow label="Open positions" value={String(data.positions.length)} />
+            <KeyValueRow label="Working orders" value={String(data.openOrders.length)} />
+            <KeyValueRow label="Completed fills" value={String(data.fills.length)} />
+            <KeyValueRow label="Risk state" value={data.risk.state} />
           </CardContent>
         </Card>
       </section>
@@ -241,25 +549,31 @@ export function TradingScreen({ data }: TradingScreenProps) {
         readinessVm={tradingReadiness}
       />
 
-      {/* Workflow tools strip — triggered workflows live in side panels, not inline */}
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
-        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workflow tools</span>
-        <Button size="sm" variant="outline" onClick={() => setStrategySheetOpen(true)}>
-          <PlayCircle className="mr-2 h-4 w-4" />
-          Strategy controls
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => setReplaySheetOpen(true)}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Session replay
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => setPromotionSheetOpen(true)}>
-          <FlaskConical className="mr-2 h-4 w-4" />
-          Promotion gate
-        </Button>
+      <div
+        role="region"
+        aria-label={shellVm.workflowStrip.ariaLabel}
+        className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
+      >
+        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {shellVm.workflowStrip.eyebrow}
+        </span>
+        {shellVm.workflowStrip.chips.map((chip) => (
+          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+        ))}
+        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
+          {shellVm.workflowStrip.statusText}
+        </span>
+        {shellVm.workflowStrip.commands.map((command) => (
+          <WorkflowPanelButton
+            key={command.id}
+            command={command}
+            onOpen={() => shellVm.openWorkflowPanel(command.id)}
+          />
+        ))}
       </div>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Risk State</div>
             <CardTitle className="flex items-center gap-2">
@@ -298,7 +612,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => { void executionEvidence.refresh(); }}
-                    disabled={executionEvidence.loading}
+                    disabled={executionEvidence.refreshDisabled}
+                    disabledReason={executionEvidence.refreshDisabledReason}
+                    busy={executionEvidence.loading}
+                    busyLabel={executionEvidence.refreshBusyLabel}
                     aria-label={executionEvidence.refreshAriaLabel}
                   >
                     {executionEvidence.refreshButtonLabel}
@@ -335,80 +652,69 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
             </div>
+            <div className="mt-3">
+              <RiskControlPanel />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="panel-surface-strong bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Brokerage Wiring</div>
             <CardTitle className="flex items-center gap-2">
               <Cable className="h-5 w-5 text-primary" />
               Execution adapter health
             </CardTitle>
-            <CardDescription className="text-slate-300">{data.brokerage.notes}</CardDescription>
+            <CardDescription>{data.brokerage.notes}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <WiringRow label="Provider" value={data.brokerage.provider} />
-            <WiringRow label="Account" value={data.brokerage.account} />
-            <WiringRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
-            <WiringRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
-            <WiringRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
-            <WiringRow label="Order ingress" value={data.brokerage.orderIngress} />
-            <WiringRow label="Fill feed" value={data.brokerage.fillFeed} />
+            <KeyValueRow label="Provider" value={data.brokerage.provider} />
+            <KeyValueRow label="Account" value={data.brokerage.account} />
+            <KeyValueRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
+            <KeyValueRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
+            <KeyValueRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
+            <KeyValueRow label="Order ingress" value={data.brokerage.orderIngress} />
+            <KeyValueRow label="Fill feed" value={data.brokerage.fillFeed} />
           </CardContent>
         </Card>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Wallet className="h-4 w-4 text-primary" />
-              Live positions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-xl border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure", ""].map((col) => (
-                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {data.positions.map((position, i) => (
-                    <tr key={`pos-${i}`} className="bg-background/20">
-                      <td className="px-3 py-2 font-mono text-foreground">{position.symbol}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.side}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.quantity}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.averagePrice}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.markPrice}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.dayPnl}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.unrealizedPnl}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{position.exposure}</td>
-                      <td className="px-3 py-2">
-                        <button
-                          type="button"
-                          onClick={() => confirmVm.openConfirm({ kind: "close-position", symbol: position.symbol })}
-                          className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                          title="Close position"
-                        >
-                          Close
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Wallet className="h-4 w-4 text-primary" />
+                  Live positions
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Select a holding to keep risk, exposure, and guardrail context visible.
+                </CardDescription>
+              </div>
+              <CockpitChip label="Rows" value={String(blotterVm.positionRows.length)} />
             </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <DenseDataTable
+              ariaLabel={blotterVm.positionsTableLabel}
+              caption="Select a position to update the position detail status window."
+              columns={positionColumns}
+              rows={blotterVm.positionRows}
+              getRowId={(position) => position.id}
+              getRowAriaLabel={(position) => position.ariaLabel}
+              getRowSelectAriaLabel={(position) => position.selectAriaLabel}
+              getRowAriaControls={(position) => position.detailPanelId}
+              getRowAriaExpanded={(position) => position.ariaExpanded}
+              selectedRowId={blotterVm.selectedPositionRowId}
+              onRowSelect={(position) => blotterVm.selectPosition(position.id)}
+              emptyText={blotterVm.positionEmptyText}
+            />
+            <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
@@ -420,7 +726,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   size="sm"
                   variant="outline"
                   onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
-                  disabled={data.openOrders.length === 0}
+                  disabled={blotterVm.cancelAllDisabled}
+                  disabledReason={blotterVm.cancelAllDisabledReason}
+                  aria-label={blotterVm.cancelAllAriaLabel}
                   title="Cancel all open orders"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -532,6 +840,37 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </p>
                 <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
 
+                <OrderPreviewPanel preview={orderTicket.preview} />
+
+                <label
+                  htmlFor={orderTicket.acknowledgement.id}
+                  className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+                >
+                  <input
+                    id={orderTicket.acknowledgement.id}
+                    type="checkbox"
+                    checked={orderTicket.acknowledgement.checked}
+                    disabled={orderTicket.acknowledgement.disabled}
+                    onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
+                    aria-describedby={joinDescribedByIds(
+                      `${orderTicket.acknowledgement.id}-description`,
+                      `${orderTicket.acknowledgement.id}-disabled-reason`
+                    )}
+                    className="mt-1 h-4 w-4 accent-primary"
+                  />
+                  <span>
+                    <span className="block font-medium text-foreground">{orderTicket.acknowledgement.label}</span>
+                    <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                      {orderTicket.acknowledgement.description}
+                    </span>
+                    <FieldSupportText
+                      disabledReason={orderTicket.acknowledgement.disabledReason}
+                      disabledReasonId={`${orderTicket.acknowledgement.id}-disabled-reason`}
+                      disabledReasonClassName="mt-1 block"
+                    />
+                  </span>
+                </label>
+
                 {orderTicket.errorText && (
                   <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
                     <XCircle className="h-4 w-4 shrink-0" />
@@ -544,6 +883,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!orderTicket.canSubmit}
+                    disabledReason={orderTicket.submitDisabledReason}
+                    busy={orderTicket.submitBusy}
+                    busyLabel={orderTicket.submitBusyLabel}
                     aria-label={orderTicket.submitAriaLabel}
                     aria-describedby="order-ticket-requirements"
                   >
@@ -555,8 +897,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     variant="outline"
                     onClick={orderTicket.closeTicket}
                     disabled={!orderTicket.canClose}
+                    disabledReason={orderTicket.closeDisabledReason}
+                    aria-label={orderTicket.closeAriaLabel}
                   >
-                    Cancel
+                    {orderTicket.closeButtonLabel}
                   </Button>
                 </div>
               </form>
@@ -570,75 +914,65 @@ export function TradingScreen({ data }: TradingScreenProps) {
               </div>
             </CardContent>
           )}
-          <CardContent>
-            <div className="overflow-x-auto rounded-xl border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted", ""].map((col) => (
-                      <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {data.openOrders.map((order, i) => (
-                    <tr key={`order-${i}`} className="bg-background/20">
-                      <td className="px-3 py-2 font-mono text-foreground">{order.orderId}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.symbol}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.side}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.type}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.quantity}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.limitPrice}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.status}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{order.submittedAt}</td>
-                      <td className="px-3 py-2">
-                        <button
-                          type="button"
-                          onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
-                          className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
-                          title="Cancel order"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <CardContent className="space-y-3">
+            <DenseDataTable
+              ariaLabel={blotterVm.ordersTableLabel}
+              caption="Select an order to update the order detail status window."
+              columns={orderColumns}
+              rows={blotterVm.orderRows}
+              getRowId={(order) => order.id}
+              getRowAriaLabel={(order) => order.ariaLabel}
+              getRowSelectAriaLabel={(order) => order.selectAriaLabel}
+              getRowAriaControls={(order) => order.detailPanelId}
+              getRowAriaExpanded={(order) => order.ariaExpanded}
+              selectedRowId={blotterVm.selectedOrderRowId}
+              onRowSelect={(order) => blotterVm.selectOrder(order.id)}
+              emptyText={blotterVm.orderEmptyText}
+            />
+            <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} />
           </CardContent>
         </Card>
       </section>
 
-      <Card>
+      <Card className="panel-surface">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CandlestickChart className="h-4 w-4 text-primary" />
-            Recent fills
-          </CardTitle>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CandlestickChart className="h-4 w-4 text-primary" />
+                Recent fills
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Select a fill to inspect execution venue, price, and linked order context.
+              </CardDescription>
+            </div>
+            <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
+          </div>
         </CardHeader>
-        <CardContent>
-          <TradingTable
-            columns={["Fill", "Order", "Symbol", "Side", "Qty", "Price", "Venue", "Timestamp"]}
-            rows={data.fills.map((fill) => [
-              fill.fillId,
-              fill.orderId,
-              fill.symbol,
-              fill.side,
-              fill.quantity,
-              fill.price,
-              fill.venue,
-              fill.timestamp
-            ])}
-          />
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+            <DenseDataTable
+              ariaLabel={blotterVm.fillsTableLabel}
+              caption="Select a fill to update the fill detail status window."
+              columns={fillColumns}
+              rows={blotterVm.fillRows}
+              getRowId={(fill) => fill.id}
+              getRowAriaLabel={(fill) => fill.ariaLabel}
+              getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
+              getRowAriaControls={(fill) => fill.detailPanelId}
+              getRowAriaExpanded={(fill) => fill.ariaExpanded}
+              selectedRowId={blotterVm.selectedFillRowId}
+              onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
+              emptyText={blotterVm.fillEmptyText}
+            />
+            <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} />
+          </div>
         </CardContent>
       </Card>
 
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
@@ -651,9 +985,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 onClick={paperSessions.toggleCreateForm}
                 aria-expanded={paperSessions.showCreateForm}
                 aria-controls={paperSessions.formPanelId}
+                aria-label={paperSessions.toggleCreateButtonAriaLabel}
                 disabled={paperSessions.isBusy && !paperSessions.showCreateForm}
+                disabledReason={paperSessions.toggleCreateButtonDisabledReason}
               >
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="mr-2 h-4 w-4" aria-hidden="true" />
                 {paperSessions.toggleCreateButtonLabel}
               </Button>
             </div>
@@ -664,8 +1000,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
           {paperSessions.errorText && (
             <CardContent className="pt-0 pb-2">
-              <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
-                <XCircle className="h-4 w-4 shrink-0" />
+              <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
+                <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {paperSessions.errorText}
               </div>
             </CardContent>
@@ -680,33 +1016,55 @@ export function TradingScreen({ data }: TradingScreenProps) {
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor="paper-session-strategy-id" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Strategy ID
+                    <label htmlFor={paperSessions.strategyIdField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {paperSessions.strategyIdField.label}
                     </label>
-                    <input
-                      id="paper-session-strategy-id"
-                      type="text"
-                      placeholder="my-strategy-01"
-                      value={paperSessions.form.strategyId}
-                      onChange={(e) => paperSessions.updateField("strategyId", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    <Input
+                      id={paperSessions.strategyIdField.id}
+                      type={paperSessions.strategyIdField.type}
+                      placeholder={paperSessions.strategyIdField.placeholder}
+                      value={paperSessions.strategyIdField.value}
+                      autoComplete={paperSessions.strategyIdField.autoComplete}
+                      aria-label={paperSessions.strategyIdField.ariaLabel}
+                      aria-describedby={joinDescribedByIds(
+                        paperSessions.strategyIdField.describedBy,
+                        `${paperSessions.strategyIdField.id}-disabled-reason`
+                      )}
+                      disabled={paperSessions.strategyIdField.disabled}
+                      error={paperSessions.strategyIdField.invalid}
+                      onChange={(e) => paperSessions.updateField(paperSessions.strategyIdField.field, e.target.value)}
+                      className="font-mono"
+                    />
+                    <FieldSupportText
+                      disabledReason={paperSessions.strategyIdField.disabledReason}
+                      disabledReasonId={`${paperSessions.strategyIdField.id}-disabled-reason`}
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="paper-session-initial-cash" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Initial cash ($)
+                    <label htmlFor={paperSessions.initialCashField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {paperSessions.initialCashField.label}
                     </label>
-                    <input
-                      id="paper-session-initial-cash"
-                      type="number"
-                      min={1000}
-                      step={1000}
-                      value={paperSessions.form.initialCash}
-                      onChange={(e) => paperSessions.updateField("initialCash", e.target.value)}
-                      aria-describedby={paperSessions.formDescriptionId}
-                      aria-invalid={!paperSessions.canSubmitCreate ? true : undefined}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    <Input
+                      id={paperSessions.initialCashField.id}
+                      type={paperSessions.initialCashField.type}
+                      min={paperSessions.initialCashField.min}
+                      step={paperSessions.initialCashField.step}
+                      value={paperSessions.initialCashField.value}
+                      autoComplete={paperSessions.initialCashField.autoComplete}
+                      aria-label={paperSessions.initialCashField.ariaLabel}
+                      aria-describedby={joinDescribedByIds(
+                        paperSessions.initialCashField.describedBy,
+                        `${paperSessions.initialCashField.id}-disabled-reason`
+                      )}
+                      disabled={paperSessions.initialCashField.disabled}
+                      error={paperSessions.initialCashField.invalid}
+                      onChange={(e) => paperSessions.updateField(paperSessions.initialCashField.field, e.target.value)}
+                      className="font-mono"
                       required
+                    />
+                    <FieldSupportText
+                      disabledReason={paperSessions.initialCashField.disabledReason}
+                      disabledReasonId={`${paperSessions.initialCashField.id}-disabled-reason`}
                     />
                   </div>
                 </div>
@@ -718,6 +1076,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!paperSessions.canSubmitCreate}
+                    disabledReason={paperSessions.createButtonDisabledReason}
+                    busy={paperSessions.createButtonBusy}
+                    busyLabel={paperSessions.createButtonBusyLabel}
                     aria-label={paperSessions.createButtonAriaLabel}
                   >
                     {paperSessions.createButtonLabel}
@@ -728,6 +1089,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     variant="outline"
                     onClick={paperSessions.closeCreateForm}
                     disabled={!paperSessions.canCloseCreateForm}
+                    disabledReason={paperSessions.cancelCreateButtonDisabledReason}
                   >
                     {paperSessions.cancelCreateButtonLabel}
                   </Button>
@@ -767,6 +1129,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         variant="outline"
                         onClick={() => { void paperSessions.restoreSession(session.sessionId); }}
                         disabled={!session.canRestore}
+                        disabledReason={session.restoreDisabledReason}
                         aria-label={session.restoreAriaLabel}
                       >
                         {session.restoreButtonLabel}
@@ -776,6 +1139,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         variant="outline"
                         onClick={() => { void paperSessions.verifySessionReplay(session.sessionId); }}
                         disabled={!session.canVerify}
+                        disabledReason={session.verifyDisabledReason}
                         aria-label={session.verifyAriaLabel}
                       >
                         {session.verifyButtonLabel}
@@ -786,6 +1150,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                           variant="outline"
                           onClick={() => { void paperSessions.closeSession(session.sessionId); }}
                           disabled={!session.canClose}
+                          disabledReason={session.closeDisabledReason}
                           aria-label={session.closeAriaLabel}
                         >
                           {session.closeButtonLabel}
@@ -853,15 +1218,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </section>
 
       {/* ---- Strategy Controls Sheet ---- */}
-      <Sheet open={strategySheetOpen} onOpenChange={setStrategySheetOpen}>
-        <SheetContent>
+      <Sheet open={shellVm.strategySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("strategy", open)}>
+        <SheetContent id="strategy-lifecycle-panel" aria-labelledby="strategy-lifecycle-title" aria-describedby="strategy-lifecycle-description">
           <SheetHeader>
-            <SheetTitle>
+            <SheetTitle id="strategy-lifecycle-title">
               <PlayCircle className="h-4 w-4 text-primary" />
               {strategyLifecycle.title}
             </SheetTitle>
-            <SheetDescription>{strategyLifecycle.description}</SheetDescription>
-            <SheetCloseButton onClick={() => setStrategySheetOpen(false)} />
+            <SheetDescription id="strategy-lifecycle-description">{strategyLifecycle.description}</SheetDescription>
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("strategy")} />
           </SheetHeader>
           <SheetBody>
             <div className="space-y-1">
@@ -875,7 +1240,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 value={strategyLifecycle.strategyId}
                 aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
                 onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
               <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
                 {strategyLifecycle.helpText}
@@ -892,6 +1257,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 aria-label={strategyLifecycle.pauseAriaLabel}
                 onClick={strategyLifecycle.openPauseConfirm}
                 disabled={!strategyLifecycle.canPause}
+                disabledReason={strategyLifecycle.pauseDisabledReason}
               >
                 <PauseCircle className="mr-2 h-4 w-4" />
                 {strategyLifecycle.pauseButtonLabel}
@@ -902,6 +1268,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 aria-label={strategyLifecycle.stopAriaLabel}
                 onClick={strategyLifecycle.openStopConfirm}
                 disabled={!strategyLifecycle.canStop}
+                disabledReason={strategyLifecycle.stopDisabledReason}
               >
                 <StopCircle className="mr-2 h-4 w-4" />
                 {strategyLifecycle.stopButtonLabel}
@@ -912,15 +1279,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Sheet>
 
       {/* ---- Session Replay Sheet ---- */}
-      <Sheet open={replaySheetOpen} onOpenChange={setReplaySheetOpen}>
-        <SheetContent aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
+      <Sheet open={shellVm.replaySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("replay", open)}>
+        <SheetContent id="session-replay-panel" aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
           <SheetHeader>
             <SheetTitle id={sessionReplay.sectionTitleId}>
               <RotateCcw className="h-4 w-4 text-primary" />
               {sessionReplay.sectionTitle}
             </SheetTitle>
             <SheetDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</SheetDescription>
-            <SheetCloseButton onClick={() => setReplaySheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("replay")} />
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div className="grid gap-2">
@@ -964,18 +1331,41 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button size="sm" onClick={sessionReplay.startReplay} disabled={!sessionReplay.canStart}>
+                <Button
+                  size="sm"
+                  onClick={sessionReplay.startReplay}
+                  disabled={!sessionReplay.canStart}
+                  disabledReason={sessionReplay.startDisabledReason}
+                >
                   {sessionReplay.startButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.pauseReplay} disabled={!sessionReplay.canPause}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.pauseReplay}
+                  disabled={!sessionReplay.canPause}
+                  disabledReason={sessionReplay.pauseDisabledReason}
+                >
                   <PauseCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.pauseButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.resumeReplay} disabled={!sessionReplay.canResume}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.resumeReplay}
+                  disabled={!sessionReplay.canResume}
+                  disabledReason={sessionReplay.resumeDisabledReason}
+                >
                   <PlayCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.resumeButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.stopReplay} disabled={!sessionReplay.canStop}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.stopReplay}
+                  disabled={!sessionReplay.canStop}
+                  disabledReason={sessionReplay.stopDisabledReason}
+                >
                   <StopCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.stopButtonLabel}
                 </Button>
@@ -1001,22 +1391,44 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button size="sm" variant="outline" onClick={sessionReplay.seekReplay} disabled={!sessionReplay.canSeek}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.seekReplay}
+                  disabled={!sessionReplay.canSeek}
+                  disabledReason={sessionReplay.seekDisabledReason}
+                >
                   {sessionReplay.seekButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.applyReplaySpeed} disabled={!sessionReplay.canApplySpeed}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.applyReplaySpeed}
+                  disabled={!sessionReplay.canApplySpeed}
+                  disabledReason={sessionReplay.applySpeedDisabledReason}
+                >
                   <FastForward className="mr-2 h-4 w-4" />
                   {sessionReplay.applySpeedButtonLabel}
                 </Button>
               </div>
             </div>
 
-            <div id={sessionReplay.statusId} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-xs text-muted-foreground">
-              {sessionReplay.statusText}
+            <div
+              id={sessionReplay.statusId}
+              role={sessionReplay.statusPanel.role}
+              aria-live={sessionReplay.statusPanel.ariaLive}
+              aria-label={sessionReplay.statusPanel.ariaLabel}
+              className={cn(
+                "rounded-lg border px-3 py-2 text-xs",
+                sessionReplayStatusPanelClass[sessionReplay.statusPanel.tone]
+              )}
+            >
+              <div className="font-semibold">{sessionReplay.statusPanel.title}</div>
+              <div className="mt-1">{sessionReplay.statusPanel.detail}</div>
             </div>
-            {(sessionReplay.errorText || sessionReplay.speedValidationText || sessionReplay.seekValidationText) && (
-              <p id={sessionReplay.errorId} className="text-xs text-destructive">
-                {sessionReplay.errorText ?? sessionReplay.speedValidationText ?? sessionReplay.seekValidationText}
+            {sessionReplay.activeErrorText && (
+              <p id={sessionReplay.errorId} className="sr-only">
+                {sessionReplay.activeErrorText}
               </p>
             )}
             <span className="sr-only" aria-live="polite">{sessionReplay.statusAnnouncement}</span>
@@ -1025,15 +1437,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Sheet>
 
       {/* ---- Promotion Gate Sheet ---- */}
-      <Sheet open={promotionSheetOpen} onOpenChange={setPromotionSheetOpen}>
-        <SheetContent>
+      <Sheet open={shellVm.promotionSheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("promotion", open)}>
+        <SheetContent id="promotion-gate-panel" aria-labelledby="promotion-gate-title" aria-describedby="promotion-gate-description">
           <SheetHeader>
-            <SheetTitle>
+            <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
               Backtest → Paper promotion gate
             </SheetTitle>
-            <SheetDescription>Requires eligibility check before confirmation and audit refresh.</SheetDescription>
-            <SheetCloseButton onClick={() => setPromotionSheetOpen(false)} />
+            <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
@@ -1048,109 +1460,188 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <span className="sr-only" aria-live="polite">{promotionGate.statusAnnouncement}</span>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label htmlFor="promotion-run-id" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Run id</span>
+              <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.runId.label}</span>
                 <input
-                  id="promotion-run-id"
-                  aria-label="Run id"
-                  placeholder="backtest run id"
+                  id={promotionGate.fields.runId.id}
+                  aria-label={promotionGate.fields.runId.ariaLabel}
+                  placeholder={promotionGate.fields.runId.placeholder}
                   value={promotionGate.form.runId}
-                  onChange={(e) => promotionGate.updateField("runId", e.target.value)}
-                  aria-describedby="promotion-run-help promotion-action-state"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
-                <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
+                {promotionGate.fields.runId.helpText ? (
+                  <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
+                ) : null}
               </label>
-              <label htmlFor="promotion-operator-id" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Operator id</span>
+              <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvedBy.label}</span>
                 <input
-                  id="promotion-operator-id"
-                  aria-label="Operator id"
-                  placeholder="operator id"
+                  id={promotionGate.fields.approvedBy.id}
+                  aria-label={promotionGate.fields.approvedBy.ariaLabel}
+                  placeholder={promotionGate.fields.approvedBy.placeholder}
                   value={promotionGate.form.approvedBy}
-                  onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
-                  aria-describedby="promotion-action-state"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  required
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  required={promotionGate.fields.approvedBy.required}
                 />
               </label>
             </div>
-            <label htmlFor="promotion-approval-reason" className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</span>
+            <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvalReason.label}</span>
               <input
-                id="promotion-approval-reason"
-                aria-label="Approval reason"
-                placeholder="why this promotion is approved"
+                id={promotionGate.fields.approvalReason.id}
+                aria-label={promotionGate.fields.approvalReason.ariaLabel}
+                placeholder={promotionGate.fields.approvalReason.placeholder}
                 value={promotionGate.form.approvalReason}
-                onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
-                aria-describedby="promotion-action-state"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                required
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
+                aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
+                disabled={promotionGate.busy}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                required={promotionGate.fields.approvalReason.required}
               />
             </label>
-            <label htmlFor="promotion-rejection-reason" className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Rejection reason</span>
+            <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.rejectionReason.label}</span>
               <input
-                id="promotion-rejection-reason"
-                aria-label="Rejection reason"
-                placeholder="why this promotion is rejected"
+                id={promotionGate.fields.rejectionReason.id}
+                aria-label={promotionGate.fields.rejectionReason.ariaLabel}
+                placeholder={promotionGate.fields.rejectionReason.placeholder}
                 value={promotionGate.form.rejectionReason}
-                onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
-                aria-describedby="promotion-action-state"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
+                aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
+                disabled={promotionGate.busy}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label htmlFor="promotion-review-notes" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</span>
+              <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.reviewNotes.label}</span>
                 <input
-                  id="promotion-review-notes"
-                  aria-label="Review notes"
-                  placeholder="optional review notes"
+                  id={promotionGate.fields.reviewNotes.id}
+                  aria-label={promotionGate.fields.reviewNotes.ariaLabel}
+                  placeholder={promotionGate.fields.reviewNotes.placeholder}
                   value={promotionGate.form.reviewNotes}
-                  onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
-              <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Manual override id</span>
+              <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.manualOverrideId.label}</span>
                 <input
-                  id="promotion-manual-override"
-                  aria-label="Manual override id"
-                  placeholder="optional manual override id"
+                  id={promotionGate.fields.manualOverrideId.id}
+                  aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
+                  placeholder={promotionGate.fields.manualOverrideId.placeholder}
                   value={promotionGate.form.manualOverrideId}
-                  onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => void promotionGate.evaluateGateChecks()} disabled={!promotionGate.canEvaluate}>
-                {promotionGate.evaluateButtonLabel}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void promotionGate.evaluateGateChecks()}
+                disabled={promotionGate.evaluateCommand.disabled}
+                disabledReason={promotionGate.evaluateCommand.disabledReason}
+                busy={promotionGate.evaluateCommand.busy}
+                busyLabel={promotionGate.evaluateCommand.busyLabel}
+                aria-label={promotionGate.evaluateCommand.ariaLabel}
+              >
+                {promotionGate.evaluateCommand.label}
               </Button>
-              <Button size="sm" onClick={() => void promotionGate.promoteToPaper()} disabled={!promotionGate.canPromote}>
-                {promotionGate.promoteButtonLabel}
+              <Button
+                size="sm"
+                onClick={() => void promotionGate.promoteToPaper()}
+                disabled={promotionGate.promoteCommand.disabled}
+                disabledReason={promotionGate.promoteCommand.disabledReason}
+                busy={promotionGate.promoteCommand.busy}
+                busyLabel={promotionGate.promoteCommand.busyLabel}
+                aria-label={promotionGate.promoteCommand.ariaLabel}
+              >
+                {promotionGate.promoteCommand.label}
               </Button>
-              <Button size="sm" variant="destructive" onClick={() => void promotionGate.rejectPromotion()} disabled={!promotionGate.canReject}>
-                {promotionGate.rejectButtonLabel}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => void promotionGate.rejectPromotion()}
+                disabled={promotionGate.rejectCommand.disabled}
+                disabledReason={promotionGate.rejectCommand.disabledReason}
+                busy={promotionGate.rejectCommand.busy}
+                busyLabel={promotionGate.rejectCommand.busyLabel}
+                aria-label={promotionGate.rejectCommand.ariaLabel}
+              >
+                {promotionGate.rejectCommand.label}
               </Button>
             </div>
-            {promotionGate.evaluation && (
-              <div className="rounded-lg border border-border/60 p-3 text-xs">
-                <p>Eligible: {promotionGate.evaluation.isEligible ? "Yes" : "No"}</p>
-                <p>Sharpe: {promotionGate.evaluation.sharpeRatio} · Max DD: {promotionGate.evaluation.maxDrawdownPercent}% · Return: {promotionGate.evaluation.totalReturn}%</p>
-                <p>{promotionGate.evaluation.reason}</p>
-                {promotionGate.evaluation.requiresHumanApproval && <p>Human approval required</p>}
-                {promotionGate.evaluation.requiresManualOverride && (
-                  <p>Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
-                )}
-                {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
-                  <ul className="mt-2 list-disc space-y-1 pl-4">
-                    {promotionGate.evaluation.blockingReasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
+            {promotionGate.evaluationPanel && (
+              <div className="space-y-3">
+                <div
+                  role={promotionGate.evaluationPanel.role}
+                  aria-live={promotionGate.evaluationPanel.ariaLive}
+                  aria-label={promotionGate.evaluationPanel.ariaLabel}
+                  className={cn(
+                    "rounded-lg border p-3 text-xs",
+                    promotionEvaluationPanelTone[promotionGate.evaluationPanel.tone]
+                  )}
+                >
+                  <p className="font-semibold">{promotionGate.evaluationPanel.title}</p>
+                  <p className="mt-1">
+                    <span className={promotionEvaluationTextTone[promotionGate.evaluationPanel.eligibleTone]}>
+                      {promotionGate.evaluationPanel.eligibleLabel}
+                    </span>
+                  </p>
+                  <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+                    {promotionGate.evaluationPanel.metrics.map((metric) => (
+                      <div key={metric.id}>
+                        <dt className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-75">{metric.label}</dt>
+                        <dd className="font-mono text-xs">{metric.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {promotionGate.evaluationPanel.reason && (
+                    <p className="mt-2 text-muted-foreground">{promotionGate.evaluationPanel.reason}</p>
+                  )}
+                  {promotionGate.evaluationPanel.warnings.map((warning) => (
+                    <p key={warning.id} className="mt-1 text-warning">{warning.text}</p>
+                  ))}
+                  {promotionGate.evaluationPanel.blockingReasons.length > 0 && (
+                    <div className="mt-2 rounded border border-danger/30 bg-danger/10 p-2">
+                      <p className="font-semibold text-danger">Blocking reasons:</p>
+                      <ul aria-label={promotionGate.evaluationPanel.blockingListLabel ?? undefined} className="mt-1 list-disc space-y-1 pl-4 text-danger">
+                        {promotionGate.evaluationPanel.blockingReasons.map((reason) => (
+                          <li key={reason.id}>{reason.text}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border/60 p-3 text-xs">
+                  <p className="font-semibold">Approval checklist</p>
+                  <ul className="mt-2 space-y-2">
+                    {promotionGate.approvalChecklist.map((item) => (
+                      <li key={item.id} className="flex items-start gap-2" aria-label={item.ariaLabel}>
+                        <span className={cn(
+                          "mt-0.5 inline-block h-2 w-2 rounded-full flex-shrink-0",
+                          promotionChecklistDotTone[item.status]
+                        )} />
+                        <div>
+                          <p className="font-medium">{item.label}</p>
+                          {item.description && <p className="text-muted-foreground">{item.description}</p>}
+                        </div>
+                      </li>
                     ))}
                   </ul>
-                )}
+                </div>
               </div>
             )}
             {promotionGate.outcome && (
@@ -1158,24 +1649,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 {promotionGate.outcome.message}
               </p>
             )}
-            {promotionGate.errorText && <p role="alert" className="text-xs text-destructive">{promotionGate.errorText}</p>}
+            {promotionGate.errorText && <p role="alert" className="text-xs text-danger">{promotionGate.errorText}</p>}
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
-                {promotionGate.history.length === 0 && (
+                {promotionGate.historyRows.length === 0 && (
                   <li className="text-muted-foreground">{promotionGate.historyEmptyText}</li>
                 )}
-                {promotionGate.history.slice(0, 4).map((record) => (
-                  <li key={record.promotionId} className="font-mono">
-                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
-                    {record.decision ? ` · ${record.decision}` : ""}
-                    {record.sourceRunId ? ` · source: ${record.sourceRunId}` : record.runId ? ` · source: ${record.runId}` : ""}
-                    {record.targetRunId ? ` · target: ${record.targetRunId}` : ""}
-                    {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
-                    {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
-                    {record.auditReference ? ` · audit: ${record.auditReference}` : ""}
-                    {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
-                    {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
+                {promotionGate.historyRows.map((record) => (
+                  <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
+                    {record.label}
                   </li>
                 ))}
               </ul>
@@ -1187,6 +1670,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
       <ConfirmActionDialog vm={confirmVm} />
     </div>
   );
+}
+
+function asGuid(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    ? value
+    : undefined;
 }
 
 function buildCockpitAcceptance({
@@ -1397,7 +1890,7 @@ function AcceptanceStatusCard({
   const overallLevel: AcceptanceLevel = readyCount === totalCount ? "ready" : hasAtRisk ? "atRisk" : "review";
 
   return (
-    <Card>
+    <Card className="panel-surface">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -1414,11 +1907,20 @@ function AcceptanceStatusCard({
             <Button asChild size="sm" variant="secondary">
               <Link to="/trading/readiness">Open console</Link>
             </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={readinessVm.evidenceAction.href} aria-label={readinessVm.evidenceAction.ariaLabel}>
+                <Network className="h-4 w-4" />
+                {readinessVm.evidenceAction.label}
+              </Link>
+            </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => { void readinessVm.refresh(); }}
-              disabled={readinessVm.refreshing}
+              disabled={readinessVm.refreshDisabled}
+              disabledReason={readinessVm.refreshDisabledReason}
+              busy={readinessVm.refreshing}
+              busyLabel={readinessVm.refreshBusyLabel}
               aria-label={readinessVm.refreshAriaLabel}
             >
               <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
@@ -1449,8 +1951,16 @@ function AcceptanceStatusCard({
             <AcceptanceRow key={item.label} item={item} />
           ))}
         </div>
-        {(readinessVm.workItems.length > 0 || readinessVm.warnings.length > 0) && (
-          <OperatorWorkItemList workItems={readinessVm.workItems} warnings={readinessVm.warnings} />
+        {readinessVm.hasOperatorAttention && (
+          <OperatorWorkItemList
+            summaryText={readinessVm.workItemSummaryText}
+            listLabel={readinessVm.workItemListLabel}
+            primaryKind={readinessVm.primaryWorkItemKind}
+            workItems={readinessVm.visibleWorkItems}
+            workItemOverflowLabel={readinessVm.workItemOverflowLabel}
+            warnings={readinessVm.visibleWarnings}
+            warningOverflowLabel={readinessVm.warningOverflowLabel}
+          />
         )}
       </CardContent>
     </Card>
@@ -1459,7 +1969,7 @@ function AcceptanceStatusCard({
 
 function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
   return (
-    <div className={cn("rounded-lg border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
+    <div className={cn("data-grid-surface border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
       <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
       <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
     </div>
@@ -1468,7 +1978,7 @@ function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
 
 function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
   return (
-    <div className={cn("rounded-xl border px-4 py-3", acceptanceTone[item.level])}>
+    <div className={cn("data-grid-surface border px-4 py-3", acceptanceTone[item.level])}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
@@ -1484,58 +1994,87 @@ function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
 }
 
 function OperatorWorkItemList({
+  summaryText,
+  listLabel,
+  primaryKind,
   workItems,
-  warnings
+  workItemOverflowLabel,
+  warnings,
+  warningOverflowLabel
 }: {
-  workItems: OperatorWorkItem[];
-  warnings: string[];
+  summaryText: string;
+  listLabel: string;
+  primaryKind: string | null;
+  workItems: TradingReadinessWorkItemRow[];
+  workItemOverflowLabel: string | null;
+  warnings: TradingReadinessWarningRow[];
+  warningOverflowLabel: string | null;
 }) {
-  const primaryWorkItem = workItems[0] ?? null;
-
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/25 p-4">
+    <div className="panel-surface p-4" role="region" aria-label={listLabel}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator work items</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {workItems.length} readiness item{workItems.length === 1 ? "" : "s"} and {warnings.length} warning{warnings.length === 1 ? "" : "s"}.
+            {summaryText}
           </p>
         </div>
-        {primaryWorkItem && (
+        {primaryKind && (
           <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {primaryWorkItem.kind}
+            {primaryKind}
           </span>
         )}
       </div>
 
       {workItems.length > 0 && (
         <ul className="mt-3 grid gap-2 md:grid-cols-2">
-          {workItems.slice(0, 4).map((item) => (
-            <li key={item.workItemId} className={cn("rounded-lg border px-3 py-2 text-sm", workItemTone[item.tone] ?? workItemTone.Info)}>
+          {workItems.map((item) => (
+            <li
+              key={item.workItemId}
+              aria-label={item.ariaLabel}
+              className={cn("rounded-lg border px-3 py-2 text-sm", workItemTone[item.tone] ?? workItemTone.Info)}
+            >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold text-foreground">{item.label}</span>
                 <span className="font-mono text-[11px] uppercase tracking-[0.12em]">{item.tone}</span>
               </div>
               <p className="mt-1 text-xs leading-5 text-foreground/80">{item.detail}</p>
-              {(item.runId || item.auditReference || item.targetPageTag || item.workspace) && (
+              {item.metadataText && (
                 <p className="mt-2 font-mono text-[11px] text-foreground/70">
-                  {[item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" · ")}
+                  {item.metadataText}
                 </p>
+              )}
+              {item.action && (
+                <div className="mt-3">
+                  <Button asChild size="sm" variant="outline" className="bg-background/40">
+                    <Link to={item.action.href} aria-label={item.action.ariaLabel}>
+                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{item.action.label}</span>
+                    </Link>
+                  </Button>
+                  <span className="sr-only">{item.action.detail}</span>
+                </div>
               )}
             </li>
           ))}
         </ul>
       )}
+      {workItemOverflowLabel && (
+        <p className="mt-3 font-mono text-[11px] text-muted-foreground">{workItemOverflowLabel}</p>
+      )}
 
       {warnings.length > 0 && (
         <ul className="mt-3 space-y-1 text-xs text-warning">
-          {warnings.slice(0, 3).map((warning) => (
-            <li key={warning} className="flex gap-2">
+          {warnings.map((warning) => (
+            <li key={warning.id} aria-label={warning.ariaLabel} className="flex gap-2">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <span>{warning}</span>
+              <span>{warning.text}</span>
             </li>
           ))}
         </ul>
+      )}
+      {warningOverflowLabel && (
+        <p className="mt-3 font-mono text-[11px] text-warning/90">{warningOverflowLabel}</p>
       )}
     </div>
   );
@@ -1560,14 +2099,14 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
 
       <div className="grid gap-3 sm:grid-cols-2">
         {detail.infoRows.map((row) => (
-          <SessionInfoRow key={row.label} label={row.label} value={row.value} />
+          <DataRow key={row.label} label={row.label} value={row.value} />
         ))}
       </div>
 
       {detail.metricRows.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-3">
           {detail.metricRows.map((row) => (
-            <SessionMetric key={row.label} label={row.label} value={row.value} />
+            <DataRow key={row.label} label={row.label} value={row.value} />
           ))}
         </div>
       )}
@@ -1612,20 +2151,12 @@ function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel
   );
 }
 
-function SessionInfoRow({ label, value }: { label: string; value: string | null }) {
+/** Shared label+value tile used in session info and session metric contexts. */
+function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
+    <div className="data-grid-surface px-3 py-2">
       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
-    </div>
-  );
-}
-
-function SessionMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
-      <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
     </div>
   );
 }
@@ -1647,7 +2178,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
 
         {vm.errorPanel && (
-          <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+          <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
             <XCircle className="h-4 w-4 shrink-0" />
             {vm.errorPanel.text}
           </div>
@@ -1678,13 +2209,48 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         )}
 
         {!vm.isCompleted && (
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
-              {vm.cancelButtonLabel}
-            </Button>
-            <Button onClick={() => { void vm.executeConfirm(); }} disabled={!vm.canConfirm} aria-label={vm.confirmAriaLabel}>
-              {vm.confirmButtonLabel}
-            </Button>
+          <div className="space-y-3 pt-2">
+            <label
+              htmlFor={vm.acknowledgement.id}
+              className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+            >
+              <input
+                id={vm.acknowledgement.id}
+                type="checkbox"
+                checked={vm.acknowledgement.checked}
+                disabled={vm.acknowledgement.disabled}
+                onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
+                aria-describedby={joinDescribedByIds(
+                  `${vm.acknowledgement.id}-description`,
+                  `${vm.acknowledgement.id}-disabled-reason`
+                )}
+                className="mt-1 h-4 w-4 accent-primary"
+              />
+              <span>
+                <span className="block font-medium text-foreground">{vm.acknowledgement.label}</span>
+                <span id={`${vm.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {vm.acknowledgement.description}
+                </span>
+                <FieldSupportText
+                  disabledReason={vm.acknowledgement.disabledReason}
+                  disabledReasonId={`${vm.acknowledgement.id}-disabled-reason`}
+                  disabledReasonClassName="mt-1 block"
+                />
+              </span>
+            </label>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
+                {vm.cancelButtonLabel}
+              </Button>
+              <Button
+                onClick={() => { void vm.executeConfirm(); }}
+                disabled={!vm.canConfirm}
+                disabledReason={vm.confirmDisabledReason}
+                aria-label={vm.confirmAriaLabel}
+              >
+                {vm.confirmButtonLabel}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -1700,56 +2266,85 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
   );
 }
 
-function TradingTable({ columns, rows }: { columns: string[]; rows: string[][] }) {
+function TradingBlotterDetailPanel({
+  id,
+  detail,
+  emptyText
+}: {
+  id: string;
+  detail: TradingBlotterDetail | null;
+  emptyText: string;
+}) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border/70">
-      <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-        <thead className="bg-secondary/30">
-          <tr>
-            {columns.map((column) => (
-              <th key={column} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {column}
-              </th>
+    <aside
+      id={id}
+      role="region"
+      aria-live="polite"
+      aria-label={detail?.ariaLabel ?? "Trading blotter detail"}
+      className={cn(
+        "rounded-md border bg-background/70 p-3",
+        detail ? dataTonePanelClass[detail.statusTone] : "border-border/70"
+      )}
+    >
+      {detail ? (
+        <>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">{detail.statusLabel}</div>
+              <h3 className="mt-1 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+            </div>
+            <span className={cn("rounded-sm border px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", dataTonePanelClass[detail.statusTone], dataToneClass[detail.statusTone])}>
+              Detail
+            </span>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
+          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+            {detail.fields.map((field) => (
+              <div key={field.label} className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2">
+                <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                <dd className={cn("break-words text-right font-mono text-xs", dataToneClass[field.tone])}>{field.value}</dd>
+              </div>
             ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/50">
-          {rows.map((row, rowIndex) => (
-            <tr key={`row-${rowIndex}`} className="bg-background/20">
-              {row.map((value, valueIndex) => (
-                <td key={`cell-${rowIndex}-${valueIndex}`} className="px-3 py-2 font-mono text-foreground">
-                  {value}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </dl>
+        </>
+      ) : (
+        <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
+      )}
+    </aside>
+  );
+}
+
+function EmptyEvidenceState({ text }: { text: string }) {
+  return (
+    <div role="status" className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
+      {text}
     </div>
   );
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/30 p-4">
+    <div className="workspace-header-card p-4">
       <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
       <div className={cn("mt-2 font-mono text-sm font-semibold text-foreground", tone)}>{value}</div>
     </div>
   );
 }
 
-function WiringRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
+/** Shared key-value row used in brokerage wiring and route context panels. */
+function KeyValueRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
-      <span className="text-slate-300">{label}</span>
-      <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
+    <div className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={cn("font-mono text-foreground", tone)}>{value}</span>
     </div>
   );
 }
 
 function TradingHighlight({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/30 p-4">
+    <div className="workspace-header-card p-4">
       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <Icon className="h-4 w-4 text-primary shrink-0" />
         {title}
@@ -1759,11 +2354,124 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
   );
 }
 
-function ContextRow({ label, value }: { label: string; value: string }) {
+function CockpitChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
-      <span className="text-slate-300">{label}</span>
-      <span className="font-mono text-slate-100">{value}</span>
+    <span className="toolbar-chip" aria-label={`${label}: ${value}`}>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono text-foreground">{value}</span>
+    </span>
+  );
+}
+
+function WorkflowPanelButton({
+  command,
+  onOpen
+}: {
+  command: TradingWorkflowCommandState;
+  onOpen: () => void;
+}) {
+  const Icon = command.icon === "strategy" ? PlayCircle : command.icon === "replay" ? RotateCcw : FlaskConical;
+
+  return (
+    <Button
+      size="sm"
+      variant={command.active ? "secondary" : "outline"}
+      aria-label={command.ariaLabel}
+      aria-expanded={command.expanded}
+      aria-controls={command.controlsId}
+      onClick={onOpen}
+    >
+      <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+      {command.label}
+    </Button>
+  );
+}
+
+const orderPreviewWarningTone: Record<OrderPreviewLevel, string> = {
+  info: "border-border/70 bg-secondary/30 text-muted-foreground",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+};
+
+const orderPreviewEffectTone: Record<OrderPreviewEffect, string> = {
+  "open-long": "text-success",
+  "open-short": "text-warning",
+  "add-long": "text-success",
+  "add-short": "text-warning",
+  "reduce-long": "text-muted-foreground",
+  "reduce-short": "text-muted-foreground",
+  "close-long": "text-foreground",
+  "close-short": "text-foreground",
+  "flip-to-short": "text-danger",
+  "flip-to-long": "text-danger"
+};
+
+function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
+  const effectTone = preview.effect ? orderPreviewEffectTone[preview.effect] : "text-muted-foreground";
+  return (
+    <section
+      role="region"
+      aria-label="Order impact preview"
+      aria-live="polite"
+      className="rounded-lg border border-border/60 bg-secondary/15 p-3 text-xs"
+      data-testid="order-preview"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Order impact preview
+        </div>
+        <div className={cn("font-semibold", effectTone)} data-testid="order-preview-effect">
+          {preview.effectLabel}
+        </div>
+      </div>
+
+      <p className="sr-only">{preview.ariaSummary}</p>
+
+      <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+        <PreviewStat label="Estimated notional" value={preview.notionalLabel} mono />
+        <PreviewStat
+          label={preview.priceSourceLabel}
+          value={preview.referencePriceLabel}
+          mono
+        />
+        <PreviewStat label="Resulting position" value={preview.resultingPositionLabel} />
+      </dl>
+
+      <p className="mt-2 text-muted-foreground" data-testid="order-preview-detail">
+        {preview.effectDetail}
+      </p>
+
+      {preview.riskNote && (
+        <p className="mt-1 text-muted-foreground">{preview.riskNote}</p>
+      )}
+
+      {preview.warnings.length > 0 && (
+        <ul className="mt-2 space-y-1" data-testid="order-preview-warnings">
+          {preview.warnings.map((warning) => (
+            <OrderPreviewWarningRow key={warning.id} warning={warning} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function PreviewStat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <dt className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dd className={cn("text-foreground", mono && "font-mono")}>{value}</dd>
     </div>
+  );
+}
+
+function OrderPreviewWarningRow({ warning }: { warning: OrderPreviewWarning }) {
+  return (
+    <li
+      className={cn("rounded-md border px-2 py-1.5 text-xs", orderPreviewWarningTone[warning.level])}
+      role={warning.level === "danger" ? "alert" : undefined}
+    >
+      {warning.message}
+    </li>
   );
 }

@@ -1,6 +1,6 @@
 # Meridian Copilot Guide
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-20
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:
 shared policy belongs in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md),
@@ -31,17 +31,20 @@ current source instead.
 | [`../../../.github/instructions/`](../../../.github/instructions/) | Auto-applied path-specific rules for C#, tests, docs, and WPF |
 | [`../../../.github/agents/`](../../../.github/agents/) | Copilot coding-agent role definitions |
 | [`../../../.github/prompts/`](../../../.github/prompts/) | Reusable Copilot Chat prompt templates |
-| [`../../../.github/workflows/copilot-setup-steps.yml`](../../../.github/workflows/copilot-setup-steps.yml) | Copilot coding-agent environment bootstrap |
-| [`../../../.github/workflows/copilot-swe-agent-copilot.yml`](../../../.github/workflows/copilot-swe-agent-copilot.yml) | Copilot SWE automation workflow |
-| [`../../../.github/workflows/copilot-pull-request-reviewer.yml`](../../../.github/workflows/copilot-pull-request-reviewer.yml) | Copilot PR review workflow |
+| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive note for retired Copilot workflow files |
 
 ## Current Product Framing
 
-Meridian is a .NET 10 fund-management and trading platform. The active operator UI lane is
-[`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/), with built assets in
+Meridian is a .NET 10 fund-management and trading platform. Active operator UI work spans
+[`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
+[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
 [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
-[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/) is retained for shared contracts,
-regression fixes, and desktop support rather than broad new UI feature work.
+Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
+read models before either client composes it.
+
+**No mobile development lane:** do not create mobile applications, mobile-specific product
+surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+mobile-first workflows. Responsive browser validation may continue for the browser workstation.
 
 Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Accounting`,
 `Reporting`, `Strategy`, `Data`, and `Settings`.

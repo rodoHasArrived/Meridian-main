@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian - Reference workbench</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
+<style>
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--fg);
+    background: var(--bg);
+    background-image: var(--bg-ambient);
+  }
+
+  .reference-shell {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 28px;
+  }
+
+  .reference-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: end;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .reference-sub,
+  .reference-meta,
+  .metric-label,
+  .module-k,
+  .table-caption,
+  .toolbar-chip,
+  .state-badge,
+  .detail-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-muted);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 4px 0 0;
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .reference-frame,
+  .contract-card,
+  .module,
+  .schedule-panel {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: hsl(var(--card));
+    box-shadow: var(--shadow-panel);
+  }
+
+  .command-deck {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(4, minmax(116px, 150px));
+    gap: 1px;
+    overflow: hidden;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--border-color);
+  }
+
+  .deck-title,
+  .metric-cell {
+    background: hsl(var(--panel-strong));
+    padding: 14px;
+  }
+
+  .deck-title h2 {
+    margin: 2px 0 4px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: hsl(var(--foreground));
+    letter-spacing: 0;
+  }
+
+  .deck-title p {
+    margin: 0;
+    max-width: 760px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+
+  .metric-value {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: hsl(var(--foreground));
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-cell.warn .metric-value { color: var(--state-warn-fg); }
+  .metric-cell.good .metric-value { color: var(--state-healthy-fg); }
+  .metric-cell.pending .metric-value { color: var(--state-pending-fg); }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    background: hsl(var(--background));
+  }
+
+  .toolbar-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 9px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: hsl(var(--card));
+    color: var(--fg-muted);
+  }
+
+  .toolbar-chip.active {
+    color: var(--cyan-primary);
+    border-color: hsl(var(--primary) / 0.58);
+    background: hsl(var(--primary) / 0.10);
+  }
+
+  .toolbar-chip.disabled {
+    opacity: 0.54;
+  }
+
+  .workbench {
+    display: grid;
+    grid-template-columns: minmax(360px, 0.84fr) minmax(0, 1.16fr);
+    min-height: 560px;
+  }
+
+  .master-list {
+    border-right: 1px solid var(--border-color);
+    background: hsl(var(--background));
+    min-width: 0;
+  }
+
+  .master-head,
+  .detail-head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+    background: hsl(var(--panel-strong));
+  }
+
+  .search-line {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: hsl(var(--background));
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .search-line .prompt { color: var(--cyan-primary); }
+  .search-line .term { color: hsl(var(--foreground)); }
+  .search-line .count { color: var(--fg-muted); font-size: 10px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    height: 30px;
+    padding: 0 10px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-color);
+    background: hsl(var(--card));
+  }
+
+  td {
+    min-height: var(--data-row-h);
+    padding: 8px 10px;
+    border-bottom: 1px solid hsl(var(--border) / 0.55);
+    font-size: 12px;
+    vertical-align: top;
+  }
+
+  tr.selected td {
+    background: hsl(var(--primary) / 0.10);
+    box-shadow: inset 3px 0 0 var(--cyan-primary);
+  }
+
+  tr:hover td {
+    background: hsl(var(--secondary) / 0.32);
+  }
+
+  .mono,
+  .r {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .r {
+    text-align: right;
+  }
+
+  .primary-cell {
+    display: grid;
+    gap: 2px;
+  }
+
+  .primary-cell b {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  .primary-cell span {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+
+  .detail-pane {
+    min-width: 0;
+    background: hsl(var(--card));
+  }
+
+  .detail-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .detail-title h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: hsl(var(--foreground));
+    letter-spacing: 0;
+  }
+
+  .detail-title code {
+    padding: 2px 7px;
+    border: 1px solid hsl(var(--primary) / 0.35);
+    border-radius: var(--radius-xs);
+    background: hsl(var(--primary) / 0.10);
+    color: var(--cyan-primary);
+  }
+
+  .state-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 0 7px;
+    border-radius: var(--radius-xs);
+  }
+
+  .state-badge.good {
+    color: var(--state-healthy-fg);
+    border: 1px solid var(--state-healthy-bd);
+    background: var(--state-healthy-bg);
+  }
+
+  .state-badge.warn {
+    color: var(--state-warn-fg);
+    border: 1px solid var(--state-warn-bd);
+    background: var(--state-warn-bg);
+  }
+
+  .state-badge.pending {
+    color: var(--state-pending-fg);
+    border: 1px solid var(--state-pending-bd);
+    background: var(--state-pending-bg);
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .module,
+  .schedule-panel {
+    overflow: hidden;
+  }
+
+  .module {
+    padding: 11px 12px;
+  }
+
+  .module-k {
+    margin-bottom: 6px;
+  }
+
+  .module-v {
+    font-family: var(--font-mono);
+    color: hsl(var(--foreground));
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .schedule-panel {
+    margin: 0 14px 14px;
+  }
+
+  .table-caption {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    background: hsl(var(--panel-strong));
+  }
+
+  .detail-notes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0 14px 14px;
+  }
+
+  .detail-note {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: hsl(var(--background));
+    padding: 11px;
+  }
+
+  .detail-label {
+    margin-bottom: 5px;
+  }
+
+  .detail-note p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.48;
+    color: var(--fg-muted);
+  }
+
+  .contract-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .contract-card {
+    padding: 13px;
+  }
+
+  .contract-card h2 {
+    margin: 0 0 7px;
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 0;
+    color: hsl(var(--foreground));
+  }
+
+  .contract-card p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 12px;
+    line-height: 1.52;
+  }
+
+  @media (max-width: 980px) {
+    .reference-head,
+    .command-deck,
+    .workbench,
+    .detail-grid,
+    .detail-notes,
+    .contract-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .master-list {
+      border-right: 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+  }
+</style>
+</head>
+<body>
+<main class="reference-shell" aria-labelledby="reference-workbench-title">
+  <a class="preview-home-link" href="index.html">Catalogue</a>
+  <header class="reference-head">
+    <div>
+      <div class="reference-sub">Workstation recipe - Security Master and schedules</div>
+      <h1 id="reference-workbench-title">Reference workbench</h1>
+    </div>
+    <div class="reference-meta">Command deck - master list - selected detail - schedule evidence</div>
+  </header>
+
+  <section class="reference-frame" aria-label="Reference workbench example">
+    <div class="command-deck">
+      <div class="deck-title">
+        <div class="reference-sub">Accounting / Security Master</div>
+        <h2>Selected-security review stays in one frame</h2>
+        <p>Use this shape for securities, cash-flow factor schedules, provider identity evidence, overrides, notes, and audit history. The selected record is never lost while the operator moves between schedules and controls.</p>
+      </div>
+      <div class="metric-cell good">
+        <div class="metric-label">Coverage</div>
+        <div class="metric-value">98.4%</div>
+      </div>
+      <div class="metric-cell warn">
+        <div class="metric-label">Conflicts</div>
+        <div class="metric-value">5</div>
+      </div>
+      <div class="metric-cell pending">
+        <div class="metric-label">Schedules</div>
+        <div class="metric-value">17</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Updated</div>
+        <div class="metric-value">19:42Z</div>
+      </div>
+    </div>
+
+    <div class="toolbar" aria-label="Reference workbench toolbar">
+      <span class="toolbar-chip active">Identity</span>
+      <span class="toolbar-chip">Schedules</span>
+      <span class="toolbar-chip">Controls</span>
+      <span class="toolbar-chip">Audit</span>
+      <span class="toolbar-chip">CUSIP + FIGI visible</span>
+      <span class="toolbar-chip disabled">Bulk edit gated</span>
+      <span class="toolbar-chip">Export packet</span>
+    </div>
+
+    <div class="workbench">
+      <section class="master-list" aria-label="Securities master list">
+        <div class="master-head">
+          <div class="search-line">
+            <span class="prompt">&gt;</span>
+            <span class="term">gs callable preferred</span>
+            <span class="count">5 results</span>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Security</th>
+              <th>Type</th>
+              <th>CUSIP</th>
+              <th class="r">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="selected">
+              <td class="mono"><span class="primary-cell"><b>Goldman preferred A</b><span>GS-A / FIGI BBG001S5N8V8</span></span></td>
+              <td>Preferred</td>
+              <td class="mono">38141G104</td>
+              <td class="r">0.982</td>
+            </tr>
+            <tr>
+              <td class="mono"><span class="primary-cell"><b>GS callable 2029</b><span>Corp bond / senior note</span></span></td>
+              <td>Bond</td>
+              <td class="mono">38148L3B4</td>
+              <td class="r">0.917</td>
+            </tr>
+            <tr>
+              <td class="mono"><span class="primary-cell"><b>GS CLO 2028-A A1</b><span>Structured credit / factor</span></span></td>
+              <td>CLO</td>
+              <td class="mono">36260R2J9</td>
+              <td class="r">0.884</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="detail-pane" aria-label="Selected security detail">
+        <div class="detail-head">
+          <div class="detail-title">
+            <h2>Goldman preferred A</h2>
+            <code>38141G104</code>
+            <span class="state-badge good">Active</span>
+            <span class="state-badge warn">Manual override</span>
+          </div>
+        </div>
+
+        <div class="detail-grid" aria-label="Selected security identity modules">
+          <div class="module">
+            <div class="module-k">Identifiers</div>
+            <div class="module-v">ISIN US38141G1040<br>FIGI BBG001S5N8V8<br>Ticker GS-A</div>
+          </div>
+          <div class="module">
+            <div class="module-k">Classification</div>
+            <div class="module-v">Asset class Preferred<br>Currency USD<br>Exchange NYSE</div>
+          </div>
+          <div class="module">
+            <div class="module-k">Controls</div>
+            <div class="module-v">Editable fields 12<br>Hidden overrides 3<br>Approval status Pending</div>
+          </div>
+        </div>
+
+        <div class="schedule-panel">
+          <div class="table-caption">
+            <span>Cash-flow and factor schedule</span>
+            <span>Asset-class columns stay dense and comparable</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Pay date</th>
+                <th class="r">Expected</th>
+                <th class="r">Actual</th>
+                <th class="r">Variance</th>
+                <th class="r">Factor</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="selected">
+                <td>Coupon</td>
+                <td class="mono">2026-06-15</td>
+                <td class="r">$1,842,551.25</td>
+                <td class="r">$1,842,551.25</td>
+                <td class="r">$0.00</td>
+                <td class="r">1.000000</td>
+                <td><span class="state-badge good">Posted</span></td>
+              </tr>
+              <tr>
+                <td>Paydown</td>
+                <td class="mono">2026-07-15</td>
+                <td class="r">$1,814,013.08</td>
+                <td class="r">$1,812,650.22</td>
+                <td class="r">-$1,362.86</td>
+                <td class="r">1.000000 -> 0.984512</td>
+                <td><span class="state-badge pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>Redemption</td>
+                <td class="mono">2029-05-15</td>
+                <td class="r">$25,000,000.00</td>
+                <td class="r">--</td>
+                <td class="r">--</td>
+                <td class="r">0.984512 -> 0.000000</td>
+                <td><span class="state-badge warn">Review</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="detail-notes" aria-label="Reference workbench implementation rules">
+          <div class="detail-note">
+            <div class="detail-label">Selection</div>
+            <p>Rows must support keyboard activation and expose selected state to the detail frame.</p>
+          </div>
+          <div class="detail-note">
+            <div class="detail-label">Selected event detail</div>
+            <p>Expected, actual, variance, factor, posting state, notes, and audit references stay inspectable beside the table.</p>
+          </div>
+          <div class="detail-note">
+            <div class="detail-label">Visibility</div>
+            <p>Hide irrelevant asset-class fields visually, but preserve overrides and correction state.</p>
+          </div>
+          <div class="detail-note">
+            <div class="detail-label">Actions</div>
+            <p>Import, export, bulk edit, and delete actions need disabled reasons or confirmation gates.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="contract-grid" aria-label="Reference workbench contract">
+    <article class="contract-card">
+      <h2>Command deck</h2>
+      <p>Metrics, action labels, disabled reasons, loading text, and live-region status come from the view model. The deck is not decorative.</p>
+    </article>
+    <article class="contract-card">
+      <h2>Schedule density</h2>
+      <p>Cash-flow, factor, redemption, conversion, lot, and corporate-action schedules render as tables or compact metadata grids.</p>
+    </article>
+    <article class="contract-card">
+      <h2>Controls and validation</h2>
+      <p>Selected event detail, validation posture, notes, disabled reasons, and audit evidence stay attached to the selected security.</p>
+    </article>
+    <article class="contract-card">
+      <h2>Attached audit</h2>
+      <p>Provider conflicts, notes, alias history, overrides, and audit events stay attached to the selected security context.</p>
+    </article>
+  </section>
+</main>
+</body>
+</html>

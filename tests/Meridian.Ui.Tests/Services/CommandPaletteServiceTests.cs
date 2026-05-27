@@ -194,7 +194,7 @@ public sealed class CommandPaletteServiceTests
         var service = CommandPaletteService.Instance;
 
         // Act
-        var results = service.Search("Open Research: Dashboard");
+        var results = service.Search("Open Reporting: Dashboard");
 
         // Assert
         results.Should().NotBeEmpty();
@@ -202,13 +202,15 @@ public sealed class CommandPaletteServiceTests
     }
 
     [Fact]
-    public void Search_WorkspaceTerm_ShouldReturnWorkstationAlignedCommands()
+    public void Search_WorkspaceTerm_ShouldReturnCanonicalAndAliasCommands()
     {
         var service = CommandPaletteService.Instance;
 
-        var results = service.Search("governance");
+        var accountingResults = service.Search("accounting");
+        var aliasResults = service.Search("governance");
 
-        results.Should().Contain(c => c.Id == "nav-data-quality");
+        accountingResults.Should().Contain(c => c.Id == "nav-run-ledger");
+        aliasResults.Should().Contain(c => c.Id == "nav-data-quality");
     }
 
     [Fact]
@@ -492,7 +494,7 @@ public sealed class CommandPaletteServiceTests
 
         var command = service.GetAllCommands().First(c => c.Id == "nav-backfill");
 
-        command.Description.Should().Contain("Data Operations workspace");
+        command.Description.Should().Contain("Data workspace");
     }
 
     [Fact]
@@ -503,5 +505,16 @@ public sealed class CommandPaletteServiceTests
         var command = service.GetAllCommands().First(c => c.Id == "nav-run-portfolio");
 
         command.Description.Should().Contain("Trading workspace");
+    }
+
+    [Fact]
+    public void GetAllCommands_ShouldExposeBacktestTradingAndPortfolioLedgerWorkflowEntries()
+    {
+        var service = CommandPaletteService.Instance;
+        var commands = service.GetAllCommands();
+
+        commands.Should().Contain(c => c.Id == "nav-backtest-workflow" && c.ActionId == "Backtest");
+        commands.Should().Contain(c => c.Id == "nav-trading-workflow" && c.ActionId == "LiveData");
+        commands.Should().Contain(c => c.Id == "nav-portfolio-ledger-workflow" && c.ActionId == "RunLedger");
     }
 }

@@ -5,6 +5,7 @@ using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -16,6 +17,7 @@ public static class StorageEndpoints
 {
     public static void MapStorageEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        var logger = app.Logger;
         var group = app.MapGroup("").WithTags("Storage");
 
         // GET /api/storage/profiles — available storage profile presets
@@ -98,7 +100,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to compute breakdown: {ex.Message}");
+                logger.LogError(ex, "Failed to compute storage breakdown.");
+                return Results.Problem("Failed to compute storage breakdown.");
             }
         })
         .WithName("GetStorageBreakdown").Produces(200);
@@ -165,8 +168,8 @@ public static class StorageEndpoints
             if (searchService is null)
                 return Results.Json(new { symbol, files = Array.Empty<object>() }, jsonOptions);
 
-            var skip = int.TryParse(ctx.Request.Query["skip"].FirstOrDefault(), out var s) ? s : 0;
-            var take = int.TryParse(ctx.Request.Query["take"].FirstOrDefault(), out var t) ? Math.Min(t, 200) : 50;
+            var skip = int.TryParse(ctx.Request.Query["skip"].FirstOrDefault(), out var s) ? Math.Max(0, s) : 0;
+            var take = int.TryParse(ctx.Request.Query["take"].FirstOrDefault(), out var t) ? Math.Clamp(t, 1, 200) : 50;
 
             var result = await searchService.SearchFilesAsync(
                 new FileSearchQuery(Symbols: new[] { symbol }, Skip: skip, Take: take), ct);
@@ -305,7 +308,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Cleanup failed: {ex.Message}");
+                logger.LogError(ex, "Storage cleanup failed.");
+                return Results.Problem("Storage cleanup failed.");
             }
         })
         .WithName("RunStorageCleanup").Produces(200).Produces(500)
@@ -361,7 +365,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to load catalog: {ex.Message}");
+                logger.LogError(ex, "Failed to load storage catalog.");
+                return Results.Problem("Failed to load storage catalog.");
             }
         })
         .WithName("GetStorageCatalog").Produces(200);
@@ -378,8 +383,8 @@ public static class StorageEndpoints
             var symbol = ctx.Request.Query["symbol"].FirstOrDefault();
             var type = ctx.Request.Query["type"].FirstOrDefault();
             var q = ctx.Request.Query["q"].FirstOrDefault();
-            var skip = int.TryParse(ctx.Request.Query["skip"].FirstOrDefault(), out var s) ? s : 0;
-            var take = int.TryParse(ctx.Request.Query["take"].FirstOrDefault(), out var t) ? Math.Min(t, 200) : 50;
+            var skip = int.TryParse(ctx.Request.Query["skip"].FirstOrDefault(), out var s) ? Math.Max(0, s) : 0;
+            var take = int.TryParse(ctx.Request.Query["take"].FirstOrDefault(), out var t) ? Math.Clamp(t, 1, 200) : 50;
 
             // If natural language query provided, parse it
             if (!string.IsNullOrWhiteSpace(q))
@@ -423,7 +428,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Health check failed: {ex.Message}");
+                logger.LogError(ex, "Storage health check failed.");
+                return Results.Problem("Storage health check failed.");
             }
         })
         .WithName("RunStorageHealthCheck").Produces(200);
@@ -443,7 +449,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Orphan scan failed: {ex.Message}");
+                logger.LogError(ex, "Storage orphan scan failed.");
+                return Results.Problem("Storage orphan scan failed.");
             }
         })
         .WithName("FindOrphanedFiles").Produces(200);
@@ -472,7 +479,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Migration failed: {ex.Message}");
+                logger.LogError(ex, "Storage tier migration failed.");
+                return Results.Problem("Storage tier migration failed.");
             }
         })
         .WithName("MigrateTier").Produces(200).Produces(400)
@@ -493,7 +501,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get tier statistics: {ex.Message}");
+                logger.LogError(ex, "Failed to get tier statistics.");
+                return Results.Problem("Failed to get tier statistics.");
             }
         })
         .WithName("GetTierStatistics").Produces(200);
@@ -507,7 +516,7 @@ public static class StorageEndpoints
             if (tierService is null)
                 return Results.Json(new { message = "Tier migration service not available" }, jsonOptions);
 
-            var days = int.TryParse(ctx.Request.Query["days"].FirstOrDefault(), out var d) ? d : 7;
+            var days = int.TryParse(ctx.Request.Query["days"].FirstOrDefault(), out var d) ? Math.Clamp(d, 1, 365) : 7;
 
             try
             {
@@ -516,7 +525,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to generate migration plan: {ex.Message}");
+                logger.LogError(ex, "Failed to generate migration plan.");
+                return Results.Problem("Failed to generate migration plan.");
             }
         })
         .WithName("GetTierMigrationPlan").Produces(200);
@@ -536,7 +546,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Defragmentation failed: {ex.Message}");
+                logger.LogError(ex, "Storage defragmentation failed.");
+                return Results.Problem("Storage defragmentation failed.");
             }
         })
         .WithName("RunDefragmentation").Produces(200)
@@ -564,7 +575,8 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Parquet conversion failed: {ex.Message}");
+                logger.LogError(ex, "Parquet conversion failed.");
+                return Results.Problem("Parquet conversion failed.");
             }
         })
         .WithName("ConvertToParquet").Produces(200)
@@ -667,9 +679,10 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to compute storage capacity forecast.");
                 return Results.Json(new
                 {
-                    error = $"Failed to compute capacity forecast: {ex.Message}"
+                    error = "Failed to compute storage capacity forecast."
                 }, jsonOptions, statusCode: 500);
             }
         })

@@ -120,7 +120,7 @@ internal static class ResearchWorkspaceShellPresentationDefaults
     public static WorkspaceWorkflowSummary Workflow { get; } =
         new(
             WorkspaceId: "research",
-            WorkspaceTitle: "Research",
+            WorkspaceTitle: "Strategy",
             StatusLabel: "Ready for a new research cycle",
             StatusDetail: "No live workflow summary is available, so the shell is using deterministic fallback guidance.",
             StatusTone: "Info",
@@ -140,7 +140,7 @@ internal static class ResearchWorkspaceShellPresentationDefaults
     public static ResearchDeskHeroState DeskHero { get; } =
         new(
             FocusLabel: "New cycle",
-            Summary: "Research queue is empty.",
+            Summary: "Strategy queue is empty.",
             Detail: "Start a backtest and stage a watchlist to seed comparisons, alerts, and the promotion pipeline.",
             BadgeText: "Setup",
             BadgeTone: ResearchDeskHeroTone.Info,

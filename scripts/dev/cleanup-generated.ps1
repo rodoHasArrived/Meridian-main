@@ -150,19 +150,93 @@ function Test-GeneratedArtifactContainer {
     return $relativePath -in @('artifacts/bin', 'artifacts/obj', 'artifacts/publish')
 }
 
+function Test-SkipGeneratedOutputTraversal {
+    param(
+        [Parameter(Mandatory)]
+        [string]$RepoRoot,
+
+        [Parameter(Mandatory)]
+        [System.IO.DirectoryInfo]$Directory
+    )
+
+    if ($Directory.Name -in @('.git', '.vs', '.idea', 'node_modules')) {
+        return $true
+    }
+
+    return Test-GeneratedArtifactContainer -RepoRoot $RepoRoot -FullPath $Directory.FullName
+}
+
+function Add-GeneratedBuildOutputDirectories {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepoRoot
+    )
+
+    $generatedDirectoryNames = @('bin', 'obj', 'TestResults', 'BenchmarkDotNet.Artifacts')
+    $pendingDirectories = New-Object 'System.Collections.Generic.Stack[string]'
+    $pendingDirectories.Push($RepoRoot)
+
+    while ($pendingDirectories.Count -gt 0) {
+        $currentDirectory = $pendingDirectories.Pop()
+        foreach ($directory in Get-ChildItem -LiteralPath $currentDirectory -Directory -Force -ErrorAction SilentlyContinue) {
+            if (Test-SkipGeneratedOutputTraversal -RepoRoot $RepoRoot -Directory $directory) {
+                continue
+            }
+
+            if ($directory.Name -in $generatedDirectoryNames) {
+                $Candidates.Add((New-Candidate -Path $directory.FullName -Reason "Generated .NET build/test output"))
+                continue
+            }
+
+            $pendingDirectories.Push($directory.FullName)
+        }
+    }
+}
+
+function Add-NodeModuleDirectories {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepoRoot
+    )
+
+    $pendingDirectories = New-Object 'System.Collections.Generic.Stack[string]'
+    $pendingDirectories.Push($RepoRoot)
+
+    while ($pendingDirectories.Count -gt 0) {
+        $currentDirectory = $pendingDirectories.Pop()
+        foreach ($directory in Get-ChildItem -LiteralPath $currentDirectory -Directory -Force -ErrorAction SilentlyContinue) {
+            if ($directory.Name -in @('.git', '.vs', '.idea')) {
+                continue
+            }
+
+            if ($directory.Name -eq 'node_modules') {
+                $Candidates.Add((New-Candidate -Path $directory.FullName -Reason "Restorable Node.js dependencies"))
+                continue
+            }
+
+            if (Test-GeneratedArtifactContainer -RepoRoot $RepoRoot -FullPath $directory.FullName) {
+                continue
+            }
+
+            $pendingDirectories.Push($directory.FullName)
+        }
+    }
+}
+
 $repoRoot = Get-RepoRoot
 Set-Location -LiteralPath $repoRoot
 
 $candidateDirectories = New-Object System.Collections.Generic.List[object]
 
-Get-ChildItem -LiteralPath $repoRoot -Recurse -Directory -Force -ErrorAction SilentlyContinue |
-    Where-Object {
-        $_.Name -in @('bin', 'obj', 'TestResults', 'BenchmarkDotNet.Artifacts') -and
-        -not (Test-GeneratedArtifactContainer -RepoRoot $repoRoot -FullPath $_.FullName)
-    } |
-    ForEach-Object {
-        $candidateDirectories.Add((New-Candidate -Path $_.FullName -Reason "Generated .NET build/test output"))
-    }
+Add-GeneratedBuildOutputDirectories -Candidates $candidateDirectories -RepoRoot $repoRoot
 
 Add-GeneratedArtifactChildren `
     -Candidates $candidateDirectories `
@@ -208,10 +282,7 @@ if ($IncludeVisualStudio) {
 }
 
 if ($IncludeNodeModules) {
-    $nodeModulesPath = Join-Path $repoRoot 'node_modules'
-    if (Test-Path -LiteralPath $nodeModulesPath -PathType Container) {
-        $candidateDirectories.Add((New-Candidate -Path $nodeModulesPath -Reason "Restorable Node.js dependencies"))
-    }
+    Add-NodeModuleDirectories -Candidates $candidateDirectories -RepoRoot $repoRoot
 }
 
 $seen = @{}
@@ -256,9 +327,9 @@ foreach ($candidate in $candidateDirectories | Sort-Object Path -Unique) {
         })
 }
 
-$totalBytes = ($removable | Measure-Object -Property SizeBytes -Sum).Sum
-if ($null -eq $totalBytes) {
-    $totalBytes = 0L
+$totalBytes = 0L
+foreach ($entry in $removable) {
+    $totalBytes += [int64]$entry.SizeBytes
 }
 
 Write-Host ""

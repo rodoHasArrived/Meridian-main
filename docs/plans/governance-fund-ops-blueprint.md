@@ -1,8 +1,17 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-20
+
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **governance fund ops blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the governance fund ops blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 This blueprint is subordinate to
+[`current-direction-and-status.md`](current-direction-and-status.md) and
 [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md)
 and should be read as the Wave 4 implementation shape for the accounting, reconciliation, and
 governed-output parts of Meridian's active differentiation plan.
@@ -22,9 +31,11 @@ This blueprint starts from the current repository state:
 - Security Master contracts, services, storage, migrations, workstation propagation, and F# domain modules already exist as an authoritative instrument-definition seam
 - run-scoped reconciliation contracts, services, and workstation endpoints already exist
 - direct-lending services, migrations, projections, and `/api/loans/*` endpoints already exist as the first deep governance/UFL vertical slice
+- UFL/reference-data projection services, DTOs, Postgres stores, migrations, and `/api/reference-data/*` endpoint slices now cover bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit as support evidence for broader instrument and fund-ops depth
 - export infrastructure already exists for JSONL, Parquet, Arrow, XLSX, and CSV
 - `/api/workstation/operator/inbox` now includes open and in-review reconciliation breaks with Governance navigation targets, and the WPF shell queue button resolves the primary work item's route metadata into the concrete `FundReconciliation` workbench when applicable
 - `FundAccountsPage` now includes a stateful operator brief that projects fund-context, account-queue, provider-routing, blocked-route, shared-data-access, balance-evidence snapshot posture, and ready-for-reconciliation states from already-loaded account, provider, and balance-history evidence
+- `OperationsContinuityWorkflow` plus `/api/workstation/operations/continuity*` routes now provide a shared account-period close-lane contract for broker import/normalization, Security Master resolution and governed override approval, ledger draft/validate/post, reconciliation, approval, close, governed reopen, and hash-chained timeline inspection, with trusted actor handling and optional transactional journal/audit/workflow commits
 
 The design goal is to finish these capabilities without creating a parallel architecture outside
 Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian
@@ -69,8 +80,9 @@ The current repository now includes the first organization-rooted governance str
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
 - Reconciliation break work items now flow into the shared operator inbox with stable scoped IDs, severity-derived tone, audit references, exception route, tolerance profile/band, required sign-off role, sign-off status, and Governance navigation hints, while WPF resolves the reconciliation route into `FundReconciliation` and preserves the active account context as `fundAccountId` so the queue surface no longer has to infer break posture from one-off page state. `/api/workstation/reconciliation/calibration-summary` now aggregates the same break metadata into Ready/ReviewRequired/Blocked profile posture for tolerance and sign-off review.
 - The WPF Fund Accounts workbench now turns the former static operator brief into a stateful account handoff by projecting fund context, empty queue, missing route evidence, blocked provider routes, shared-data access gaps, balance-evidence snapshot posture, and ready-for-reconciliation posture without another service read.
+- Security Master now also has UFL/reference-data projection support for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit, plus browser search-result selection, identity drill-ins, details/lots tracking, and server-side operator override storage. Treat those as governance inputs, not as completion of governed override approvals, instrument passports, or confidence scoring.
 
-This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, the Fund Accounts operator and balance-evidence brief, the first governed report-pack artifact generation path, a file-backed reconciliation break queue for run-scoped breaks, seeded exception-route/tolerance/sign-off metadata, a calibration-summary rollup, and shared operator-inbox projection for those breaks are now in place. Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation across external statements/custodians, broader board/investor/compliance templates, operator-approved tolerance/severity calibration, end-to-end queue acceptance, and publication/readiness controls still remain future implementation waves.
+This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, the Fund Accounts operator and balance-evidence brief, the first governed report-pack artifact generation path, a file-backed reconciliation break queue for run-scoped breaks, seeded exception-route/tolerance/sign-off metadata, a calibration-summary rollup, shared operator-inbox projection for those breaks, browser Accounting dense-table detail-queue selection, keyboard-expanded detail, no-host break-queue fixture, empty-state projection, and the first shared operations-continuity close-lane API are now in place. Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation across external statements/custodians, browser/operator close acceptance, broader board/investor/compliance templates, operator-approved tolerance/severity calibration, end-to-end queue acceptance, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
@@ -506,7 +518,7 @@ Current delivered slice: workstation `FundLedgerSummary` now carries both the se
 
 ### Phase F2.5: Reconciliation Engine
 
-Current delivered slice: run-scoped reconciliation service/history, Security Master coverage issue detection, and a file-backed break queue now exist. `/api/workstation/reconciliation/break-queue` plus review, resolve/dismiss, and audit routes seed and persist run-scoped breaks with exception route, tolerance profile/band, required sign-off role, and sign-off status metadata; `/api/workstation/reconciliation/calibration-summary` rolls those breaks into profile-level Ready/ReviewRequired/Blocked posture. External-statement/custodian adapters, operator-approved calibration, richer match rules, and generalized governance exception workflows remain open.
+Current delivered slice: run-scoped reconciliation service/history, Security Master coverage issue detection, and a file-backed break queue now exist. `/api/workstation/reconciliation/break-queue` plus review, resolve/dismiss, and audit routes seed and persist run-scoped breaks with exception route, tolerance profile/band, required sign-off role, and sign-off status metadata; `/api/workstation/reconciliation/calibration-summary` rolls those breaks into profile-level Ready/ReviewRequired/Blocked posture. Browser Accounting now projects a selectable reconciliation detail queue with selected/expanded row state, open-break copy, and no-run detail guidance from its view model. External-statement/custodian adapters, operator-approved calibration, richer match rules, and generalized governance exception workflows remain open.
 
 - [x] Define reconciliation DTOs and rule categories.
 - [ ] Implement structured source adapters for ledger, portfolio, cash, and external statements.
@@ -527,6 +539,14 @@ Current delivered slice: run-scoped reconciliation service/history, Security Mas
 ### Phase F4: Fund Operations Workstation
 
 Current delivered slice: fund-level shared workspace and report-preview API projections now exist for governance/fund-ops entry points, but broader workstation UX and queue workflows still remain.
+
+Current delivered slice: `OperationsContinuityWorkflowService` provides the first shared
+account-period close-lane command service. It records broker import/normalization, Security Master
+resolution and override approval, ledger draft/validate/post, reconciliation, approval, close, and
+governed reopen transitions with optimistic versions, trusted actor replacement at workstation
+mutation endpoints, hash-chained timeline entries, and optional transactional journal/audit/workflow
+commit support. Browser close-workflow UX, external statement/custodian adapters, SLA/casework
+depth, and governed publication controls remain open.
 
 - [ ] Define governance dashboard sections and quick actions.
 - [ ] Add NAV and attribution baseline service.
