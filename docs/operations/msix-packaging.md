@@ -17,6 +17,9 @@ For trusted release signing in CI, configure repository secrets:
 - `MDC_SIGNING_CERT_PASSWORD` (PFX password)
 
 If those secrets are not configured, CI falls back to a temporary development certificate.
+Installers signed with that fallback certificate are not trusted by default on end-user machines.
+For production release tags, verify the workflow log shows `Release signing certificate configured.`
+before distributing the package.
 
 ## Quick Start
 
