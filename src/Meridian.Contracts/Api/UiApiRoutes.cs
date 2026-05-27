@@ -541,6 +541,8 @@ public static class UiApiRoutes
     public const string OperationsContinuityTimeline = "/api/workstation/operations/continuity/{workflowId:guid}/timeline";
     public const string OperationsContinuityBreaks = "/api/workstation/operations/continuity/{workflowId:guid}/breaks";
     public const string OperationsContinuityLedgerPreview = "/api/workstation/operations/continuity/{workflowId:guid}/ledger-preview";
+    public const string OperationsContinuityChecklist = "/api/workstation/operations/continuity/{workflowId:guid}/checklist";
+    public const string OperationsContinuityChecklistAcknowledge = "/api/workstation/operations/continuity/{workflowId:guid}/checklist/{taskId}/acknowledge";
     public const string OperationsContinuityBrokerImport = "/api/workstation/operations/continuity/{workflowId:guid}/broker/import";
     public const string OperationsContinuityBrokerNormalize = "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize";
     public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
