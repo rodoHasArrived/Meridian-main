@@ -153,7 +153,14 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     modules_doc = _load_yaml(modules_path)
     coverage_doc = _load_yaml(coverage_path)
 
-    modules = [m for m in _as_list(modules_doc.get("modules")) if isinstance(m, dict)]
+    modules: list[dict[str, Any]] = []
+    for index, module in enumerate(_as_list(modules_doc.get("modules"))):
+        if not isinstance(module, dict):
+            errors.append(
+                f"source-modules.yml entry at modules[{index}] must be a mapping/object."
+            )
+            continue
+        modules.append(module)
 
     module_ids: list[str] = []
     for module in modules:
