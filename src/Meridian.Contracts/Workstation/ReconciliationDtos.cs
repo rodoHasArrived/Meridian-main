@@ -287,13 +287,13 @@ public enum ReconciliationBreakQueueStatus : byte
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
-    Opened = 0,
-    Triaged = 1,
-    Calibrated = 2,
-    Approved = 3,
-    Escalated = 4,
-    Closed = 5,
-    Superseded = 6
+    New = 0,
+    Classified = 1,
+    Assigned = 2,
+    Investigating = 3,
+    PendingExternal = 4,
+    Resolved = 5,
+    Closed = 6
 }
 
 /// <summary>
@@ -337,7 +337,16 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Opened,
+    int PriorityScore = 0,
+    string? PriorityBand = null,
+    decimal MaterialityScore = 0m,
+    decimal AgeScore = 0m,
+    decimal CounterpartyCriticalityScore = 0m,
+    decimal RecurringPatternScore = 0m,
+    DateTimeOffset? SlaDueAt = null,
+    DateTimeOffset? LastEscalatedAt = null,
+    bool IsSlaBreached = false,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.New,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
@@ -406,7 +415,8 @@ public sealed record ReviewReconciliationBreakRequest(
     string BreakId,
     string AssignedTo,
     string ReviewedBy,
-    string? ReviewNote = null);
+    string? ReviewNote = null,
+    string? Team = null);
 
 /// <summary>
 /// Request to resolve or dismiss a break with audit metadata.
@@ -416,4 +426,25 @@ public sealed record ResolveReconciliationBreakRequest(
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
     string ResolutionNote,
-    string OperatorRationale);
+    string OperatorRationale,
+    string? DispositionCode = null);
+
+
+public sealed record ReconciliationBreakWorkflowActionRequest(
+    string BreakId,
+    string Actor,
+    string ActionType,
+    string? AssignedTo = null,
+    string? EvidenceNote = null,
+    string? LinkedDocument = null,
+    string? CommentTemplate = null,
+    string? DispositionCode = null,
+    ReconciliationCaseLifecycleState? TargetLifecycleState = null);
+
+public sealed record ReconciliationBreakBulkActionRequest(
+    IReadOnlyList<string> BreakIds,
+    string Actor,
+    string ActionType,
+    string? AssignedTo = null,
+    string? CommentTemplate = null,
+    ReconciliationCaseLifecycleState? TargetLifecycleState = null);
