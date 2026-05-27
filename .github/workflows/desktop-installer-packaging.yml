@@ -53,15 +53,18 @@ jobs:
 
       - name: Prepare optional signing certificate
         shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PFX_BASE64: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
         run: |
-          if ('${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}') {
+          if (-not [string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
             $certPath = Join-Path $env:RUNNER_TEMP "meridian-release-signing.pfx"
             [System.IO.File]::WriteAllBytes(
               $certPath,
-              [System.Convert]::FromBase64String('${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}')
+              [System.Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64)
             )
             "MDC_SIGNING_CERT_PFX=$certPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "MDC_SIGNING_CERT_PASSWORD=${{ secrets.MDC_SIGNING_CERT_PASSWORD }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "MDC_SIGNING_CERT_PASSWORD=$($env:MDC_SIGNING_CERT_PASSWORD)" | Out-File -FilePath $env:GITHUB_ENV -Append
             Write-Host "Release signing certificate configured."
           } else {
             Write-Host "No signing certificate secret found; installer will use a temporary development certificate."
@@ -91,7 +94,9 @@ jobs:
           $releaseRoot = "artifacts/release/$runtime"
           New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
 
-          $packageFiles = Get-ChildItem -Path $sourceRoot -File -Include *.msix, *.msixbundle, *.appinstaller
+          $packageFiles = Get-ChildItem -Path $sourceRoot -File | Where-Object {
+            $_.Extension -in @('.msix', '.msixbundle', '.appinstaller')
+          }
           if (-not $packageFiles) {
             throw "No packaged installer files found under $sourceRoot"
           }
