@@ -676,6 +676,7 @@ public sealed record OperationsTimelineEntryDto(
     string Actor,
     string? Rationale,
     string? CorrelationId,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash);
@@ -695,6 +696,7 @@ public sealed record OperationsWorkflowAuditDto(
     string Actor,
     string? Rationale,
     string? CorrelationId,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash);
@@ -715,7 +717,16 @@ public sealed record OperationsBreakCaseDto(
     string? SecurityId,
     string? Symbol,
     string? SuggestedAction,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
+
+public sealed record OperationsContinuityCorrelationKeysDto(
+    string? RunId = null,
+    Guid? FundAccountId = null,
+    string? PortfolioSnapshotId = null,
+    string? LedgerBatchId = null,
+    string? LedgerPostingGroupId = null,
+    string? ReconciliationCaseId = null);
 
 public sealed record OperationsApprovalDto(
     string ApprovalId,

@@ -672,6 +672,7 @@ public sealed class OperationsContinuityWorkflow
         EnsureUtc(now);
 
         BreakCases = request.BreakCases?.ToList() ?? [];
+        EnsureBreakCaseLineage(BreakCases);
         var openCriticalBreaks = BreakCases.Count(static item =>
             !IsClosedBreakStatus(item.Status) &&
             string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
@@ -685,6 +686,24 @@ public sealed class OperationsContinuityWorkflow
             evidenceLinks,
             now,
             request.Actor);
+    }
+
+    private static void EnsureBreakCaseLineage(IReadOnlyList<OperationsBreakCaseDto> breakCases)
+    {
+        foreach (var breakCase in breakCases)
+        {
+            var keys = breakCase.CorrelationKeys;
+            if (keys is null)
+            {
+                throw new InvalidOperationException($"Reconciliation break '{breakCase.BreakId}' is missing continuity correlation keys.");
+            }
+
+            if (string.IsNullOrWhiteSpace(keys.RunId))
+            {
+                throw new InvalidOperationException($"Reconciliation break '{breakCase.BreakId}' must include run lineage.");
+            }
+
+        }
     }
 
     public OperationsWorkflowBlockerDto? ResolveBreakCase(
