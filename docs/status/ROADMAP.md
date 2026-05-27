@@ -157,9 +157,9 @@ to `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLe
 Use it before treating retained-WPF changes as Wave 2, Wave 3, or Wave 4 progress. The matrix maps
 Lane A W2 cockpit reliability, Lane B W3 run -> portfolio -> ledger continuity, and Lane C W4
 reconciliation/governance close flow to required operator scenarios, shared endpoint/read-model
-checks, focused WPF tests, browser parity checks, release blockers, and milestone evidence.
-Support evidence is still separate from exit claims: matrix row support counts only after the matching
-happy path, blocker path, and recovery path evidence is present.
+checks, focused WPF tests, browser parity checks, release blockers, and milestone evidence; support
+evidence remains separate from exit claims until the matching happy path, blocker path, and recovery
+path evidence is present.
 The same 2026-05-27 desktop pass added W4 support evidence in Fund Ledger: selected reconciliation
 breaks now show lifecycle and required sign-off posture from shared queue metadata in the retained
 WPF detail panel. Treat this as blocker-path support evidence, not durable close/casework

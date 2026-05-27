@@ -145,7 +145,7 @@ It should be read with:
 10. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
 11. This addendum is a technical dependency plan, not an owner-sprint assignment artifact; scheduling can vary by lane while dependency and gate constraints remain fixed.
 12. Detailed W3/W4 pre-work definition is mandatory even during Wave 2/DK2 execution windows so downstream work can start without contract drift.
-13. Desktop/WPF delivery is measured by `desktop-ui-workflow-acceptance-matrix.md`; support evidence is not an exit claim unless the row's happy/blocker/recovery evidence is complete.
+13. Desktop/WPF delivery is measured by [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md); support evidence is not an exit claim unless the row's happy/blocker/recovery evidence is complete.
 14. For desktop work, prioritize high-traffic page-body workflow outcomes before additional shell chrome or framing polish.
 15. Do not widen live-readiness language while Wave 2 cockpit reliability remains non-green in Lane A acceptance and pilot-readiness stage posture.
 
