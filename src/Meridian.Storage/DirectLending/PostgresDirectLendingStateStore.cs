@@ -621,7 +621,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     commitment_fee_rate,
                     default_rate_spread_bps,
                     prepayment_allowed,
-                    covenants_json)
+                    covenants_json,
+                    interest_only_months,
+                    grace_period_days,
+                    effective_rate_floor,
+                    effective_rate_cap,
+                    prepayment_penalty_rate)
                 values (
                     @loan_id,
                     @terms_version,
@@ -645,7 +650,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @commitment_fee_rate,
                     @default_rate_spread_bps,
                     @prepayment_allowed,
-                    cast(@covenants_json as jsonb));
+                    cast(@covenants_json as jsonb),
+                    @interest_only_months,
+                    @grace_period_days,
+                    @effective_rate_floor,
+                    @effective_rate_cap,
+                    @prepayment_penalty_rate);
                 """;
             insert.Parameters.AddWithValue("loan_id", loanId);
             insert.Parameters.AddWithValue("terms_version", termsVersion.VersionNumber);
@@ -670,6 +680,11 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("default_rate_spread_bps", (object?)termsVersion.Terms.DefaultRateSpreadBps ?? DBNull.Value);
             insert.Parameters.AddWithValue("prepayment_allowed", termsVersion.Terms.PrepaymentAllowed);
             insert.Parameters.AddWithValue("covenants_json", (object?)termsVersion.Terms.CovenantsJson ?? "null");
+            insert.Parameters.AddWithValue("interest_only_months", termsVersion.Terms.InterestOnlyMonths);
+            insert.Parameters.AddWithValue("grace_period_days", (object?)termsVersion.Terms.GracePeriodDays ?? DBNull.Value);
+            insert.Parameters.AddWithValue("effective_rate_floor", (object?)termsVersion.Terms.EffectiveRateFloor ?? DBNull.Value);
+            insert.Parameters.AddWithValue("effective_rate_cap", (object?)termsVersion.Terms.EffectiveRateCap ?? DBNull.Value);
+            insert.Parameters.AddWithValue("prepayment_penalty_rate", (object?)termsVersion.Terms.PrepaymentPenaltyRate ?? DBNull.Value);
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1125,7 +1140,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    commitment_fee_rate,
                    default_rate_spread_bps,
                    prepayment_allowed,
-                   covenants_json::text
+                   covenants_json::text,
+                   interest_only_months,
+                   grace_period_days,
+                   effective_rate_floor,
+                   effective_rate_cap,
+                   prepayment_penalty_rate
             from {Qualified("loan_terms_version")}
             where loan_id = @loan_id
             order by terms_version desc;
@@ -1153,7 +1173,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 reader.IsDBNull(18) ? null : reader.GetDecimal(18),
                 reader.IsDBNull(19) ? null : reader.GetDecimal(19),
                 reader.GetBoolean(20),
-                NormalizeJsonText(reader.IsDBNull(21) ? null : reader.GetString(21)));
+                NormalizeJsonText(reader.IsDBNull(21) ? null : reader.GetString(21)),
+                reader.GetInt32(22),
+                reader.IsDBNull(23) ? null : reader.GetInt32(23),
+                reader.IsDBNull(24) ? null : reader.GetDecimal(24),
+                reader.IsDBNull(25) ? null : reader.GetDecimal(25),
+                reader.IsDBNull(26) ? null : reader.GetDecimal(26));
 
             results.Add(new LoanTermsVersionDto(
                 reader.GetInt32(0),
