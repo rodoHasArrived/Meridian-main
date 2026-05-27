@@ -166,6 +166,70 @@ public sealed class WorkflowLibraryEndpointTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRejectOversizedPayloadFields()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: new string('p', 129),
+                Name: "Valid name",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("cannot exceed 128");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRejectNewPresetWhenLimitReached()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        for (var i = 0; i < 250; i++)
+        {
+            var saveResponse = await client.PostAsJsonAsync(
+                "/api/workstation/workflows/presets",
+                new WorkflowPresetSaveRequest(
+                    PresetId: $"preset-{i}",
+                    Name: $"Preset {i}",
+                    Description: null,
+                    WorkflowId: "data-provider-recovery",
+                    ActionId: null,
+                    Tags: [],
+                    IsPinned: false),
+                ServerJsonOptions);
+            saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        var overflowResponse = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: "preset-overflow",
+                Name: "Preset overflow",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false),
+            ServerJsonOptions);
+
+        overflowResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await overflowResponse.Content.ReadAsStringAsync();
+        body.Should().Contain("limit (250)");
+    }
+
+    [Fact]
     public async Task FileWorkflowPresetStore_LoadAsync_ShouldHonorCancellation()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
