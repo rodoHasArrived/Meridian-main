@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
@@ -337,6 +338,11 @@ public static class WorkstationEndpoints
 
         group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {
+            if (!CanViewReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
@@ -397,8 +403,17 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
+            if (!CanMutateReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ReviewBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ReviewBreakAsync(context.RequestServices, request with
+            {
+                AssignedTo = ResolveCurrentActor(context),
+                ReviewedBy = ResolveCurrentActor(context)
+            }, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -427,8 +442,16 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
+            if (!CanMutateReconciliationBreakQueue(context))
+            {
+                return Results.Forbid();
+            }
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ResolveBreakAsync(context.RequestServices, request with
+            {
+                ResolvedBy = ResolveCurrentActor(context)
+            }, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -4073,6 +4096,49 @@ public static class WorkstationEndpoints
         }
 
         return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
+    }
+
+
+    private static string ResolveCurrentActor(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is string currentUser && !string.IsNullOrWhiteSpace(currentUser))
+        {
+            return currentUser;
+        }
+
+        if (context.User.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(context.User.Identity.Name))
+        {
+            return context.User.Identity.Name!;
+        }
+
+        return "operator";
+    }
+
+    private static bool CanViewReconciliationBreakQueue(HttpContext context)
+    {
+        const UserPermission requiredPermission = UserPermission.ViewTrades;
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        {
+            return (permissionsFromContext & requiredPermission) == requiredPermission;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        {
+            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
+        }
+
+        return false;
+    }
+
+    private static bool CanMutateReconciliationBreakQueue(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
+        {
+            return false;
+        }
+
+        return role is UserRole.Admin or UserRole.Developer or UserRole.Accounting;
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
