@@ -29,7 +29,7 @@ messages:
       - Overall status is derived server-side only.
       - State transitions are command-driven.
       - Every transition writes an append-only audit event.
-      - Shared workstation endpoints must be usable by browser dashboard and retained WPF surfaces.
+      - Shared workstation endpoints must be usable by browser dashboard and active WPF desktop workstation surfaces.
       - v1 DTO/route changes should be additive by default.
 
       ## Hard Invariants
@@ -70,8 +70,8 @@ messages:
 
       ## Validation Defaults
       - `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true`
-      - `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release /p:EnableWindowsTargeting=true`
-      - `dotnet build -c Release /p:EnableWindowsTargeting=true`
+      - `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true`
+      - `dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true`
       - If dashboard endpoint catalog changes: `npm run test` and `npm run build` under `src/Meridian.Ui/dashboard`.
 
       ## Completion Criteria
