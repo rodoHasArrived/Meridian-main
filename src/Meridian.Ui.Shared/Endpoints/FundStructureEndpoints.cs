@@ -523,7 +523,7 @@ public static class FundStructureEndpoints
             return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.Create(fundProfileId, fundAccountId, period, templateId, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
         });
 
-        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.InReview, actor, role));
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.PendingApproval, actor, role));
         group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved, actor, role));
         group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Published, actor, role));
 
