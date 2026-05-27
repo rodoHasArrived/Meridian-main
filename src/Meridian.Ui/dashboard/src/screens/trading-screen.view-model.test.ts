@@ -32,10 +32,12 @@ import {
   validatePromotionApproval,
   validatePromotionRejection,
   useOrderTicketViewModel,
+  usePaperSessionsViewModel,
   useTradingConfirmViewModel,
   useTradingReadinessViewModel,
   usePromotionGateViewModel,
   type OrderTicketServices,
+  type PaperSessionServices,
   type PromotionGateServices,
   type TradingConfirmServices,
   type TradingReadinessServices
@@ -625,6 +627,54 @@ describe("paper session view model", () => {
     expect(invalidState.initialCashField.invalid).toBe(true);
     expect(invalidState.initialCashField.disabled).toBe(false);
     expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
+  });
+
+  it("verifies replay through the paper-session hook and requests readiness refresh", async () => {
+    const services: PaperSessionServices = {
+      getExecutionSessions: vi.fn<PaperSessionServices["getExecutionSessions"]>().mockResolvedValue([activePaperSession]),
+      createPaperSession: vi.fn<PaperSessionServices["createPaperSession"]>(),
+      closePaperSession: vi.fn<PaperSessionServices["closePaperSession"]>(),
+      getPaperSessionDetail: vi.fn<PaperSessionServices["getPaperSessionDetail"]>().mockResolvedValue(selectedPaperSessionDetail),
+      getPaperSessionReplayVerification: vi.fn<PaperSessionServices["getPaperSessionReplayVerification"]>()
+        .mockResolvedValue(consistentReplayVerification)
+    };
+    const onSessionEvidenceChanged = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const { result } = renderHook(() => usePaperSessionsViewModel({ services, onSessionEvidenceChanged }));
+
+    await waitFor(() => {
+      expect(result.current.rows).toHaveLength(1);
+      expect(result.current.isBusy).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.restoreSession("sess-1");
+    });
+
+    expect(services.getPaperSessionDetail).toHaveBeenCalledWith("sess-1");
+    expect(result.current.selectedSessionId).toBe("sess-1");
+    expect(result.current.selectedSessionDetail).toBe(selectedPaperSessionDetail);
+    expect(result.current.sessionReplayVerification).toBeNull();
+    expect(result.current.detail?.replay).toBeNull();
+    expect(result.current.statusAnnouncement).toBe("Paper session sess-1 restored.");
+    expect(onSessionEvidenceChanged).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.verifySessionReplay("sess-1");
+    });
+
+    expect(services.getPaperSessionDetail).toHaveBeenCalledTimes(2);
+    expect(services.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1");
+    expect(result.current.selectedSessionId).toBe("sess-1");
+    expect(result.current.selectedSessionDetail).toBe(selectedPaperSessionDetail);
+    expect(result.current.sessionReplayVerification).toBe(consistentReplayVerification);
+    expect(result.current.detail?.replay).toEqual(expect.objectContaining({
+      tone: "success",
+      statusLabel: "Matched current state",
+      ariaLabel: "Replay verification matched current state for sess-1"
+    }));
+    expect(result.current.detail?.replay?.rows).toContainEqual({ label: "Verification audit", value: "audit-verify-1" });
+    expect(result.current.statusAnnouncement).toBe("Replay verification matched current state for sess-1.");
+    expect(onSessionEvidenceChanged).toHaveBeenCalledOnce();
   });
 });
 
