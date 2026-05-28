@@ -8,7 +8,20 @@ public sealed record CanonicalStatementImport(
     string SourcePath,
     string SourceChecksum,
     int RawRowCount,
-    int NormalizedRowCount);
+    int NormalizedRowCount)
+{
+    public string SourceInstitution { get; init; } = string.Empty;
+    public string FundAccountId { get; init; } = string.Empty;
+    public string ExternalAccountId { get; init; } = string.Empty;
+    public DateOnly StatementPeriodStart { get; init; } = StatementDate;
+    public DateOnly StatementPeriodEnd { get; init; } = StatementDate;
+    public string OriginalFileName { get; init; } = string.Empty;
+    public string MappingProfileId { get; init; } = string.Empty;
+    public string ToleranceProfileId { get; init; } = string.Empty;
+    public string ImportedBy { get; init; } = "system";
+    public string SourceFileHash { get; init; } = SourceChecksum;
+    public string DuplicateKey { get; init; } = string.Empty;
+}
 
 public sealed record CanonicalStatementRow(
     string ImportId,

@@ -1,3 +1,4 @@
+using Meridian.Application.Reconciliation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Application.ResultTypes;
@@ -32,16 +33,27 @@ public sealed class StatementImportCommands(string dataRoot, ILogger log) : ICli
         var store = new JsonCanonicalStatementStore(dataRoot);
         var service = new CsvBrokerStatementService(store);
 
-        var request = new BrokerStatementImportRequest(broker, path, statementDate);
         if (args.Contains("--statement-validate", StringComparer.OrdinalIgnoreCase))
         {
-            var result = await service.ValidateAsync(request, ct);
+            var result = await service.ValidateAsync(new BrokerStatementImportRequest(broker, path, statementDate), ct);
             Console.WriteLine($"valid={result.IsValid}; rows={result.RowCount}");
             foreach (var error in result.Errors) Console.WriteLine($"error={error}");
             return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
         }
 
-        var imported = await service.ImportAsync(request, ct);
+        var runRequest = await StatementRunCreateRequest.FromFileAsync(
+            broker,
+            Get(args, "--statement-source-institution") ?? Get(args, "--statement-custodian") ?? broker,
+            Get(args, "--statement-fund-account-id") ?? "legacy-fund-account",
+            Get(args, "--statement-external-account-id") ?? "legacy-external-account",
+            TryGetDate(args, "--statement-period-start", out var periodStart) ? periodStart : statementDate,
+            TryGetDate(args, "--statement-period-end", out var periodEnd) ? periodEnd : statementDate,
+            path,
+            Get(args, "--statement-mapping-profile-id") ?? "legacy-mapping-profile",
+            Get(args, "--statement-tolerance-profile-id") ?? "legacy-tolerance-profile",
+            Get(args, "--statement-imported-by") ?? Environment.UserName,
+            ct: ct);
+        var imported = await service.ImportAsync(runRequest.ToBrokerStatementImportRequest(), ct);
         Console.WriteLine($"imported={imported.Import.ImportId}; rows={imported.Rows.Count}");
         log.Information("Imported broker statement {ImportId} from {SourcePath}", imported.Import.ImportId, path);
         return CliResult.Ok();
@@ -58,13 +70,21 @@ public sealed class StatementImportCommands(string dataRoot, ILogger log) : ICli
 
     private static bool TryGetStatementDate(string[] args, out DateOnly statementDate)
     {
-        var value = Get(args, "--statement-date");
-        if (string.IsNullOrWhiteSpace(value))
+        if (TryGetDate(args, "--statement-date", out statementDate))
+            return true;
+
+        if (!Has(args, "--statement-date"))
         {
             statementDate = DateOnly.FromDateTime(DateTime.UtcNow);
             return true;
         }
 
-        return DateOnly.TryParse(value, out statementDate);
+        return false;
+    }
+
+    private static bool TryGetDate(string[] args, string key, out DateOnly date)
+    {
+        var value = Get(args, key);
+        return DateOnly.TryParse(value, out date);
     }
 }
