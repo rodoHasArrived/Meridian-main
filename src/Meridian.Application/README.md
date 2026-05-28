@@ -40,6 +40,8 @@ and UI presentation concerns in their owning layers.
   orchestration. Statement validation returns structured issue DTOs so operator workflows can
   distinguish hard blockers from policy-controlled soft issues before import.
 - `Services/` - application use cases and orchestration services.
+- `Reconciliation/` - statement intake, canonical reconciliation orchestration, and staged
+  broker-versus-internal matching for positions, cash, and transactions.
 - `Composition/` - application feature registration and service wiring.
 - `Reconciliation/` - statement reconciliation workflows, external statement mapping profiles, case intake, and match orchestration.
 
@@ -50,6 +52,12 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
+- Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication,
+  health lookup, fallback detection, logging, and metrics.
+- `StatementMatchingEngine` accepts normalized statement positions, cash balances, transactions,
+  internal portfolio/cash/ledger views, and a tolerance profile. It emits deterministic exact,
+  tolerance, candidate, and unmatched results with rule IDs, confidence, side-specific evidence
+  references, variance, tolerance, and operator explanations.
 - Statement reconciliation classifies broker and custodian breaks before case creation; only
   material unresolved breaks are promoted into casework, with severity and recommended action
   stored in the classification result.
