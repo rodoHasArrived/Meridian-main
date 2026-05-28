@@ -16,8 +16,13 @@
     <Compile Include="PipelineTests.fs" />
     <Compile Include="RiskPolicyTests.fs" />
     <Compile Include="PromotionPolicyTests.fs" />
+    <Compile Include="OperationsContinuityRulesTests.fs" />
+    <Compile Include="ReportPackValidationRulesTests.fs" />
+    <Compile Include="SensitiveActionPolicyTests.fs" />
+    <Compile Include="TradingReadinessRulesTests.fs" />
     <Compile Include="TradingTransitionTests.fs" />
     <Compile Include="LedgerKernelTests.fs" />
+    <Compile Include="ReconciliationCaseWorkflowTests.fs" />
     <Compile Include="PeriodManagementTests.fs" />
     <Compile Include="DirectLendingInteropTests.fs" />
     <Compile Include="CashFlowProjectorTests.fs" />
@@ -42,6 +47,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp\Meridian.FSharp.fsproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp.DirectLending.Aggregates\Meridian.FSharp.DirectLending.Aggregates.fsproj" />

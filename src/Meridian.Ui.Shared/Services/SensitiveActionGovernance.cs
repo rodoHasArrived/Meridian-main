@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Auth;
+using Meridian.FSharp.Operations;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -29,61 +30,25 @@ public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDu
 
 public sealed class SensitiveActionPolicyEngine
 {
-    private static readonly IReadOnlyDictionary<SensitiveActionType, UserPermission> PermissionMatrix =
-        new Dictionary<SensitiveActionType, UserPermission>
-        {
-            [SensitiveActionType.RuleEdit] = UserPermission.ModifyConfig,
-            [SensitiveActionType.BreakClosure] = UserPermission.ManageDirectLending,
-            [SensitiveActionType.PaymentRelease] = UserPermission.ManageDirectLending,
-            [SensitiveActionType.OverrideApproval] = UserPermission.AdminMaintenance
-        };
-
-    private static readonly HashSet<UserRole> PrivilegedRoles = [UserRole.Admin, UserRole.Developer, UserRole.Executive];
-
     public PolicyDecision Evaluate(SensitiveActionType action, AccessContext context)
     {
-        if (!PermissionMatrix.TryGetValue(action, out var required))
+        ArgumentNullException.ThrowIfNull(context);
+        var decision = SensitiveActionPolicyInterop.Evaluate(new SensitiveActionPolicyInput
         {
-            return new PolicyDecision(false, "Unknown action.", false, false, false);
-        }
+            Action = action.ToString(),
+            Actor = context.Actor,
+            Role = context.Role,
+            Team = context.Team,
+            MfaSatisfied = context.MfaSatisfied,
+            SecondaryApprovers = context.SecondaryApprovers?.ToArray() ?? []
+        });
 
-        if (!RolePermissions.HasPermission(context.Role, required))
-        {
-            return new PolicyDecision(false, $"Role {context.Role} lacks {required} permission.", false, false, false);
-        }
-
-        // Segregation-of-duties: accounting users cannot approve overrides on their own entity.
-        if (action is SensitiveActionType.OverrideApproval &&
-            context.Role is UserRole.Accounting &&
-            context.Team.Equals("accounting", StringComparison.OrdinalIgnoreCase))
-        {
-            return new PolicyDecision(false, "Segregation-of-duties blocked override approval for accounting actor.", true, true, true);
-        }
-
-        var dualApproval = action is SensitiveActionType.PaymentRelease or SensitiveActionType.OverrideApproval;
-        var privilegedRole = action is SensitiveActionType.OverrideApproval;
-        var requiresMfa = action is SensitiveActionType.PaymentRelease or SensitiveActionType.OverrideApproval;
-
-        if (privilegedRole && !PrivilegedRoles.Contains(context.Role))
-        {
-            return new PolicyDecision(false, "Privileged role is required.", dualApproval, true, requiresMfa);
-        }
-
-        if (dualApproval)
-        {
-            var secondary = context.SecondaryApprovers ?? [];
-            if (secondary.Count < 1 || secondary.Contains(context.Actor, StringComparer.OrdinalIgnoreCase))
-            {
-                return new PolicyDecision(false, "Dual approval requires a distinct secondary approver.", true, privilegedRole, requiresMfa);
-            }
-        }
-
-        if (requiresMfa && !context.MfaSatisfied)
-        {
-            return new PolicyDecision(false, "MFA requirement not satisfied.", dualApproval, privilegedRole, true);
-        }
-
-        return new PolicyDecision(true, "Approved.", dualApproval, privilegedRole, requiresMfa);
+        return new PolicyDecision(
+            decision.Allowed,
+            decision.Reason,
+            decision.RequiresDualApproval,
+            decision.RequiresPrivilegedRole,
+            decision.RequiresMfa);
     }
 }
 

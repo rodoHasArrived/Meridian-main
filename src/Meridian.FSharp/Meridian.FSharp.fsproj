@@ -59,6 +59,12 @@
     <Compile Include="Promotion/PromotionTypes.fs" />
     <Compile Include="Promotion/PromotionPolicy.fs" />
 
+    <!-- Operations and readiness kernels consumed by C# services -->
+    <Compile Include="Operations/OperationsContinuityRules.fs" />
+    <Compile Include="Operations/ReportPackValidationRules.fs" />
+    <Compile Include="Operations/SensitiveActionPolicy.fs" />
+    <Compile Include="Operations/TradingReadinessRules.fs" />
+
     <!-- Pipeline layer: depends on all above -->
     <Compile Include="Pipeline/Transforms.fs" />
 

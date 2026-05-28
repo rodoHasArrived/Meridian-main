@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
+using Meridian.FSharp.Operations;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
@@ -1583,38 +1584,8 @@ public sealed class TradingOperatorReadinessService
     private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(
         IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
-        var canonicalGateOrder = new[]
-        {
-            "replay",
-            "reconciliation",
-            "audit-controls",
-            "risk-rules",
-            "promotion",
-            "dk1-trust",
-            "report-pack",
-            "session",
-            "brokerage-sync"
-        };
-
-        var ordered = canonicalGateOrder
-            .Select(gateId => gates.FirstOrDefault(gate => string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase)))
-            .Where(static gate => gate is not null)
-            .Cast<TradingAcceptanceGateDto>()
-            .ToArray();
-
-        if (ordered.Length == 0)
-        {
-            return TradingAcceptanceGateStatusDto.Unknown;
-        }
-
-        if (ordered.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
-        {
-            return TradingAcceptanceGateStatusDto.Blocked;
-        }
-
-        return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
-            ? TradingAcceptanceGateStatusDto.Ready
-            : TradingAcceptanceGateStatusDto.ReviewRequired;
+        var status = TradingReadinessInterop.EvaluateOverallPosture(ToGateFacts(gates));
+        return Enum.Parse<TradingAcceptanceGateStatusDto>(status);
     }
 
     private static void AddTrustGateWorkItem(
@@ -1688,45 +1659,43 @@ public sealed class TradingOperatorReadinessService
         IReadOnlyList<TradingAcceptanceGateDto> gates,
         IReadOnlyList<OperatorWorkItemDto> workItems)
     {
-        var readyGateCount = gates.Count(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready);
-        var totalGateCount = gates.Count;
-        var scorePercent = totalGateCount == 0
-            ? 0
-            : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
-        var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
-        var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var status = EvaluateOverallPosture(gates);
+        var summary = TradingReadinessInterop.SummarizeEvidence(
+            ToGateFacts(gates),
+            workItems
+                .Select(static item => new TradingWorkItemEvidenceFactDto
+                {
+                    Tone = item.Tone.ToString(),
+                    EvidenceId = item.AuditReference ?? item.RunId ?? item.WorkItemId
+                })
+                .ToArray());
+        var status = Enum.Parse<TradingAcceptanceGateStatusDto>(summary.Status);
 
         return new EvidenceCompletenessSummaryDto(
             Status: status,
-            ReadyGateCount: readyGateCount,
-            TotalGateCount: totalGateCount,
-            CriticalWorkItemCount: criticalCount,
-            WarningWorkItemCount: warningCount,
-            ScorePercent: scorePercent,
-            BlockingGateIds: gates
-                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked)
-                .Select(static gate => gate.GateId)
-                .ToArray(),
-            ReviewGateIds: gates
-                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired)
-                .Select(static gate => gate.GateId)
-                .ToArray(),
-            MissingEvidenceIds: workItems
-                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
-                .Select(static item => item.AuditReference ?? item.RunId ?? item.WorkItemId)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
-            ReadyGateIds: gates
-                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
-                .Select(static gate => gate.GateId)
-                .ToArray())
+            ReadyGateCount: summary.ReadyGateCount,
+            TotalGateCount: summary.TotalGateCount,
+            CriticalWorkItemCount: summary.CriticalWorkItemCount,
+            WarningWorkItemCount: summary.WarningWorkItemCount,
+            ScorePercent: summary.ScorePercent,
+            BlockingGateIds: summary.BlockingGateIds,
+            ReviewGateIds: summary.ReviewGateIds,
+            MissingEvidenceIds: summary.MissingEvidenceIds,
+            ReadyGateIds: summary.ReadyGateIds)
         {
-            BlockingIssueCount = criticalCount,
-            WarningIssueCount = warningCount,
+            BlockingIssueCount = summary.CriticalWorkItemCount,
+            WarningIssueCount = summary.WarningWorkItemCount,
             OrphanEvidenceIds = []
         };
     }
+
+    private static TradingAcceptanceGateFactDto[] ToGateFacts(IReadOnlyList<TradingAcceptanceGateDto> gates)
+        => gates
+            .Select(static gate => new TradingAcceptanceGateFactDto
+            {
+                GateId = gate.GateId,
+                Status = gate.Status.ToString()
+            })
+            .ToArray();
 
     private static bool IsOperatorSignoffComplete(string status) =>
         string.Equals(status, "signed", StringComparison.OrdinalIgnoreCase) ||

@@ -1,0 +1,110 @@
+namespace Meridian.FSharp.Ledger
+
+open System
+
+[<CLIMutable>]
+type ReconciliationCaseTransitionInput =
+    {
+        LifecycleState: string
+        QueueStatus: string
+        Action: string
+        Actor: string
+        Reason: string
+        EvidenceReferenceCount: int
+        ReviewedBy: string
+    }
+
+[<CLIMutable>]
+type ReconciliationCaseTransitionDecisionDto =
+    {
+        IsValid: bool
+        Error: string
+        ErrorCode: string
+        NextLifecycleState: string
+        NextQueueStatus: string
+    }
+
+[<CLIMutable>]
+type ProviderLedgerAmountCheckDto =
+    {
+        IsMatched: bool
+        Variance: decimal
+        Reason: string
+    }
+
+module ReconciliationCaseWorkflow =
+
+    let private fail message code input =
+        {
+            IsValid = false
+            Error = message
+            ErrorCode = code
+            NextLifecycleState = input.LifecycleState
+            NextQueueStatus = input.QueueStatus
+        }
+
+    let private success next status =
+        {
+            IsValid = true
+            Error = String.Empty
+            ErrorCode = "None"
+            NextLifecycleState = next
+            NextQueueStatus = status
+        }
+
+    let apply (input: ReconciliationCaseTransitionInput) =
+        if String.IsNullOrWhiteSpace input.Actor then
+            fail "Actor is required." "MissingActor" input
+        elif String.IsNullOrWhiteSpace input.Reason then
+            fail "Reason is required." "MissingReason" input
+        elif input.EvidenceReferenceCount = 0 then
+            fail "Evidence references are required." "MissingEvidence" input
+        else
+            let transition =
+                match input.Action, input.LifecycleState with
+                | "StartReview", "Open"
+                | "StartReview", "Reopened" -> Some("InReview", "InReview")
+                | "RequestApproval", "InReview" -> Some("AwaitingApproval", "InReview")
+                | "Approve", "AwaitingApproval" -> Some("Approved", "InReview")
+                | "Post", "Approved" -> Some("Posted", "Resolved")
+                | "Reopen", "Posted"
+                | "Reopen", "Approved" -> Some("Reopened", "Open")
+                | "Supersede", state when state <> "Superseded" -> Some("Superseded", "Dismissed")
+                | _ -> None
+
+            match transition with
+            | None -> fail "Illegal transition." "IllegalTransition" input
+            | Some _ when input.Action = "Approve"
+                          && String.Equals(input.ReviewedBy, input.Actor, StringComparison.OrdinalIgnoreCase) ->
+                fail "Approver must differ from reviewer." "DualReviewRequired" input
+            | Some _ when input.Action = "Reopen" && input.LifecycleState = "Approved" ->
+                fail "Cannot reopen from approved prior to posting." "ReopenNotAllowed" input
+            | Some(next, status) -> success next status
+
+module ProviderLedgerReconciliationRules =
+
+    let evaluateAmountCheck label expectedAmount actualAmount tolerance =
+        let variance = actualAmount - expectedAmount
+        let absoluteTolerance = abs tolerance
+
+        if abs variance <= absoluteTolerance then
+            {
+                IsMatched = true
+                Variance = variance
+                Reason = "Provider and internal ledger values are within tolerance."
+            }
+        else
+            {
+                IsMatched = false
+                Variance = variance
+                Reason = sprintf "%s variance %s exceeds tolerance %s." label (variance.ToString("N2")) (absoluteTolerance.ToString("N2"))
+            }
+
+[<Sealed>]
+type ReconciliationCaseWorkflowInterop private () =
+
+    static member Apply(input: ReconciliationCaseTransitionInput) =
+        ReconciliationCaseWorkflow.apply input
+
+    static member EvaluateProviderLedgerAmountCheck(label: string, expectedAmount: decimal, actualAmount: decimal, tolerance: decimal) =
+        ProviderLedgerReconciliationRules.evaluateAmountCheck label expectedAmount actualAmount tolerance

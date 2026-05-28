@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FsCheck.Xunit;
 using Meridian.Ledger;
 using Xunit;
 
@@ -550,6 +551,57 @@ public sealed class LedgerIntegrationTests
         entry.IsBalanced.Should().BeTrue();
     }
 
+    [Property(MaxTest = 200)]
+    public void Scenario_FundAccountingClose_GeneratedBalancedJournalIsStableUnderLineReordering(
+        int lineCountSeed,
+        int amountSeed,
+        int accountSeed)
+    {
+        var timestamp = DateTimeOffset.UnixEpoch.AddMinutes(BoundedLong(accountSeed, 0, 525_600));
+        var forwardLedger = new Meridian.Ledger.Ledger();
+        var reversedLedger = new Meridian.Ledger.Ledger();
+        var forwardEntry = BuildGeneratedBalancedJournal(lineCountSeed, amountSeed, accountSeed, timestamp, reverse: false);
+        var reversedEntry = BuildGeneratedBalancedJournal(lineCountSeed, amountSeed, accountSeed, timestamp, reverse: true);
+
+        forwardLedger.Post(forwardEntry);
+        reversedLedger.Post(reversedEntry);
+
+        forwardEntry.IsBalanced.Should().BeTrue();
+        reversedEntry.IsBalanced.Should().BeTrue();
+        forwardLedger.TrialBalance().Should().BeEquivalentTo(reversedLedger.TrialBalance());
+        forwardLedger.SummarizeAccounts().Should().BeEquivalentTo(reversedLedger.SummarizeAccounts());
+        forwardLedger.TotalLedgerEntryCount.Should().Be(reversedLedger.TotalLedgerEntryCount);
+    }
+
+    [Property(MaxTest = 200)]
+    public void Scenario_FundAccountingClose_GeneratedDuplicateLedgerLineIdsAlwaysReject(
+        int lineCountSeed,
+        int amountSeed,
+        int accountSeed)
+    {
+        var timestamp = DateTimeOffset.UnixEpoch.AddMinutes(BoundedLong(accountSeed, 0, 525_600));
+        var journalId = DeterministicGuid("duplicate-journal", lineCountSeed, amountSeed, accountSeed);
+        var duplicateEntryId = DeterministicGuid("duplicate-line", lineCountSeed, amountSeed, accountSeed);
+        var lines = BuildGeneratedBalancedLines(journalId, timestamp, lineCountSeed, amountSeed, accountSeed);
+        var duplicate = new LedgerEntry(
+            duplicateEntryId,
+            journalId,
+            timestamp,
+            lines[0].Account,
+            lines[0].Debit,
+            lines[0].Credit,
+            lines[0].Description);
+        var duplicatedLines = new[] { duplicate, duplicate }
+            .Concat(lines.Skip(1))
+            .ToArray();
+
+        var act = () => new JournalEntry(journalId, timestamp, "generated duplicate line", duplicatedLines);
+
+        act.Should()
+            .Throw<LedgerValidationException>()
+            .WithMessage("*duplicated within the journal entry*");
+    }
+
     [Fact]
     public void FundLedgerBook_EntitySleeveVehicle_GetIndependentLedgers()
     {
@@ -629,5 +681,95 @@ public sealed class LedgerIntegrationTests
         snap.Sleeves["s1"].LedgerEntryCount.Should().Be(2);
         snap.Vehicles.Should().ContainKey("v1");
         snap.Vehicles["v1"].Balances[cash].Should().Be(25m);
+    }
+
+    private static JournalEntry BuildGeneratedBalancedJournal(
+        int lineCountSeed,
+        int amountSeed,
+        int accountSeed,
+        DateTimeOffset timestamp,
+        bool reverse)
+    {
+        var journalId = DeterministicGuid("journal", lineCountSeed, amountSeed, accountSeed);
+        var lines = BuildGeneratedBalancedLines(journalId, timestamp, lineCountSeed, amountSeed, accountSeed);
+        if (reverse)
+            Array.Reverse(lines);
+
+        return new JournalEntry(journalId, timestamp, "generated balanced journal", lines);
+    }
+
+    private static LedgerEntry[] BuildGeneratedBalancedLines(
+        Guid journalId,
+        DateTimeOffset timestamp,
+        int lineCountSeed,
+        int amountSeed,
+        int accountSeed)
+    {
+        var pairCount = (int)BoundedLong(lineCountSeed, 1, 16);
+        var lines = new List<LedgerEntry>(pairCount * 2);
+
+        for (var index = 0; index < pairCount; index++)
+        {
+            var amount = BoundedLong(HashCode.Combine(amountSeed, index), 1, 1_000_000) / 100m;
+            var debitAccount = new LedgerAccount(
+                $"Generated Asset {BoundedLong(HashCode.Combine(accountSeed, index), 1, 5)}",
+                LedgerAccountType.Asset);
+            var creditAccount = new LedgerAccount(
+                $"Generated Revenue {BoundedLong(HashCode.Combine(accountSeed, ~index), 1, 5)}",
+                LedgerAccountType.Revenue);
+
+            lines.Add(new LedgerEntry(
+                DeterministicGuid("debit", lineCountSeed, amountSeed, accountSeed, index),
+                journalId,
+                timestamp,
+                debitAccount,
+                amount,
+                0m,
+                "generated balanced journal"));
+            lines.Add(new LedgerEntry(
+                DeterministicGuid("credit", lineCountSeed, amountSeed, accountSeed, index),
+                journalId,
+                timestamp,
+                creditAccount,
+                0m,
+                amount,
+                "generated balanced journal"));
+        }
+
+        return lines.ToArray();
+    }
+
+    private static long BoundedLong(int seed, long min, long max)
+    {
+        var range = (ulong)(max - min + 1);
+        return min + (long)((uint)seed % range);
+    }
+
+    private static Guid DeterministicGuid(string scope, params int[] seeds)
+    {
+        unchecked
+        {
+            var h0 = (uint)StringComparer.Ordinal.GetHashCode(scope);
+            var h1 = 0x9E3779B9u;
+            var h2 = 0x85EBCA6Bu;
+            var h3 = 0xC2B2AE35u;
+
+            foreach (var seed in seeds)
+            {
+                var value = (uint)seed;
+                h0 = (h0 ^ value) * 16777619u;
+                h1 = (h1 + value) * 2246822519u;
+                h2 = (h2 ^ (value << 13 | value >> 19)) * 3266489917u;
+                h3 = (h3 + (value ^ h0)) * 668265263u;
+            }
+
+            var bytes = new byte[16];
+            BitConverter.GetBytes(h0).CopyTo(bytes, 0);
+            BitConverter.GetBytes(h1).CopyTo(bytes, 4);
+            BitConverter.GetBytes(h2).CopyTo(bytes, 8);
+            BitConverter.GetBytes(h3).CopyTo(bytes, 12);
+
+            return new Guid(bytes);
+        }
     }
 }

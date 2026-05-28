@@ -5,6 +5,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.FSharp.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
@@ -488,8 +489,12 @@ public sealed class ProviderLedgerReconciliationService
         string expectedSource,
         string actualSource)
     {
-        var variance = actualAmount - expectedAmount;
-        if (Math.Abs(variance) <= tolerance)
+        var amountCheck = ReconciliationCaseWorkflowInterop.EvaluateProviderLedgerAmountCheck(
+            label,
+            expectedAmount,
+            actualAmount,
+            tolerance);
+        if (amountCheck.IsMatched)
         {
             AddMatched(
                 checks,
@@ -500,7 +505,7 @@ public sealed class ProviderLedgerReconciliationService
                 actualSource,
                 expectedAmount,
                 actualAmount,
-                "Provider and internal ledger values are within tolerance.");
+                amountCheck.Reason);
             return;
         }
 
@@ -518,7 +523,7 @@ public sealed class ProviderLedgerReconciliationService
             actualSource,
             expectedAmount,
             actualAmount,
-            $"{label} variance {variance:N2} exceeds tolerance {tolerance:N2}.");
+            amountCheck.Reason);
     }
 
     private static void AddMatched(

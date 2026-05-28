@@ -80,6 +80,14 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "stale-required-evidence" &&
             issue.EvidenceId == "stale");
+        packet.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "replay-check-freshness" &&
+            assessment.EvidenceId == "stale" &&
+            assessment.IsBreached);
+        packet.Completeness.AssuranceScore.Status.Should().Be(EvidenceStatusDto.Blocked);
+        packet.Completeness.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "stale" &&
+            component.Status == EvidenceStatusDto.Stale);
         packet.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "review-required-evidence" &&
             issue.EvidenceId == "review" &&
@@ -139,6 +147,52 @@ public sealed class EvidenceWorkflowFabricTests
         reviewResult.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "review-required-evidence" &&
             issue.RelatedWorkItemId == "report-pack-lineage:current");
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringAssuranceReview_AppliesEvidenceSlaFreshnessPolicies()
+    {
+        var subject = Subject(EvidenceSubjectResolver.PaperReadinessKind, "current");
+        var provider = Node(subject, "provider", "provider-trust", EvidenceStatusDto.Ready);
+        var replay = Node(subject, "replay", "paper-replay", EvidenceStatusDto.Ready);
+        var reconciliation = Node(subject, "reconciliation", "reconciliation-run", EvidenceStatusDto.Ready);
+        var approval = Node(subject, "approval", "approval", EvidenceStatusDto.Ready);
+        var report = Node(subject, "report", "report-pack", EvidenceStatusDto.Ready) with
+        {
+            Freshness = new EvidenceFreshnessDto(
+                DateTimeOffset.UtcNow.AddDays(-3),
+                IsStale: true,
+                Reason: "Report package is outside the governed publication freshness window.")
+        };
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [provider, replay, reconciliation, approval, report],
+            [],
+            new HashSet<string>(["provider", "replay", "reconciliation", "approval", "report"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        var policyIds = result.Completeness.SlaPolicies.Select(policy => policy.PolicyId);
+        policyIds.Should().Contain("provider-validation-freshness");
+        policyIds.Should().Contain("replay-check-freshness");
+        policyIds.Should().Contain("reconciliation-freshness");
+        policyIds.Should().Contain("approval-freshness");
+        policyIds.Should().Contain("report-pack-freshness");
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "report-pack-freshness" &&
+            assessment.EvidenceId == "report" &&
+            assessment.IsBreached &&
+            assessment.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "evidence-sla-breached" &&
+            issue.EvidenceId == "report" &&
+            issue.EvidenceKind == "report-pack");
+        result.Completeness.AssuranceScore.Status.Should().Be(EvidenceStatusDto.Stale);
+        result.Completeness.AssuranceScore.Score.Should().BeLessThan(100);
+        result.Completeness.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "report" &&
+            component.Status == EvidenceStatusDto.Stale &&
+            component.Score == 60);
     }
 
     [Fact]

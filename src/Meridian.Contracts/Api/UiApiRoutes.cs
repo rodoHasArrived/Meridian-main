@@ -604,6 +604,8 @@ public static class UiApiRoutes
     public const string FundAccountBrokerageSyncRun = "/api/fund-accounts/{accountId}/brokerage-sync/run";
     public const string FundAccountBrokerageSyncPositions = "/api/fund-accounts/{accountId}/brokerage-sync/positions";
     public const string FundAccountBrokerageSyncActivity = "/api/fund-accounts/{accountId}/brokerage-sync/activity";
+    public const string FundAccountBrokerageSyncReconcileLedger = "/api/fund-accounts/{accountId}/brokerage-sync/reconcile-ledger";
+    public const string FundAccountBrokerageSyncReconciliationLatest = "/api/fund-accounts/{accountId}/brokerage-sync/reconciliation/latest";
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";

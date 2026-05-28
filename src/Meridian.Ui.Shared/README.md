@@ -40,6 +40,9 @@ changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 Report-pack workflow state is shared here as well: publication requires sign-off, evidence hash,
 retained manifest metadata, and retained evidence links for every report-line provenance pointer so
 browser and WPF clients do not invent local lifecycle or no-orphan-evidence rules.
+Evidence packet validation also owns the shared SLA/freshness policy and Meridian Assurance Score
+calculation for provider validation, replay, reconciliation, approval, and reporting evidence so
+client surfaces consume the same readiness posture instead of recalculating it locally.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to

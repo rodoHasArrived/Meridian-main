@@ -234,6 +234,14 @@ public sealed class ProviderLedgerReconciliationServiceTests
             Institution: "alpaca",
             LedgerReference: "BROKERAGE-CASH"));
 
+        var brokerageSync = provider.GetRequiredService<BrokeragePortfolioSyncService>();
+        if (runProviderSync)
+        {
+            await brokerageSync.RunSyncAsync(
+                accountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-LEDGER", "tests"));
+        }
+
         if (recordInternalSnapshot)
         {
             await accountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
@@ -245,14 +253,6 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 RecordedBy: "tests",
                 SecuritiesMarketValue: internalSecuritiesMarketValue,
                 ExternalReference: "internal-ledger-snapshot"));
-        }
-
-        var brokerageSync = provider.GetRequiredService<BrokeragePortfolioSyncService>();
-        if (runProviderSync)
-        {
-            await brokerageSync.RunSyncAsync(
-                accountId,
-                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-LEDGER", "tests"));
         }
 
         return new TestFixture(

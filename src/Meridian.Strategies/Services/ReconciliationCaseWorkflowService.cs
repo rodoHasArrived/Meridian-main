@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.FSharp.Ledger;
 
 namespace Meridian.Strategies.Services;
 
@@ -14,31 +15,32 @@ public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkf
 {
     public ReconciliationBreakQueueTransitionResult Apply(ReconciliationBreakQueueItem item, ReconciliationCaseTransitionCommand command, DateTimeOffset now)
     {
-        if (string.IsNullOrWhiteSpace(command.Actor)) return Fail("Actor is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor, item);
-        if (string.IsNullOrWhiteSpace(command.Reason)) return Fail("Reason is required.", ReconciliationBreakQueueTransitionErrorCode.MissingReason, item);
-        if (command.EvidenceReferences is null || command.EvidenceReferences.Count == 0) return Fail("Evidence references are required.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, item);
-
-        var (next, status) = command.Action switch
+        var decision = ReconciliationCaseWorkflowInterop.Apply(new ReconciliationCaseTransitionInput
         {
-            ReconciliationCaseTransitionAction.StartReview when item.LifecycleState is ReconciliationCaseLifecycleState.Open or ReconciliationCaseLifecycleState.Reopened
-                => (ReconciliationCaseLifecycleState.InReview, ReconciliationBreakQueueStatus.InReview),
-            ReconciliationCaseTransitionAction.RequestApproval when item.LifecycleState == ReconciliationCaseLifecycleState.InReview
-                => (ReconciliationCaseLifecycleState.AwaitingApproval, ReconciliationBreakQueueStatus.InReview),
-            ReconciliationCaseTransitionAction.Approve when item.LifecycleState == ReconciliationCaseLifecycleState.AwaitingApproval
-                => (ReconciliationCaseLifecycleState.Approved, ReconciliationBreakQueueStatus.InReview),
-            ReconciliationCaseTransitionAction.Post when item.LifecycleState == ReconciliationCaseLifecycleState.Approved
-                => (ReconciliationCaseLifecycleState.Posted, ReconciliationBreakQueueStatus.Resolved),
-            ReconciliationCaseTransitionAction.Reopen when item.LifecycleState is ReconciliationCaseLifecycleState.Posted or ReconciliationCaseLifecycleState.Approved
-                => (ReconciliationCaseLifecycleState.Reopened, ReconciliationBreakQueueStatus.Open),
-            ReconciliationCaseTransitionAction.Supersede when item.LifecycleState != ReconciliationCaseLifecycleState.Superseded
-                => (ReconciliationCaseLifecycleState.Superseded, ReconciliationBreakQueueStatus.Dismissed),
-            _ => throw new InvalidOperationException("illegal")
-        };
+            LifecycleState = item.LifecycleState.ToString(),
+            QueueStatus = item.Status.ToString(),
+            Action = command.Action.ToString(),
+            Actor = command.Actor,
+            Reason = command.Reason,
+            EvidenceReferenceCount = command.EvidenceReferences?.Count ?? 0,
+            ReviewedBy = item.ReviewedBy ?? string.Empty
+        });
 
-        if (command.Action == ReconciliationCaseTransitionAction.Approve && string.Equals(item.ReviewedBy, command.Actor, StringComparison.OrdinalIgnoreCase))
-            return Fail("Approver must differ from reviewer.", ReconciliationBreakQueueTransitionErrorCode.DualReviewRequired, item);
-        if (command.Action == ReconciliationCaseTransitionAction.Reopen && item.LifecycleState == ReconciliationCaseLifecycleState.Approved)
-            return Fail("Cannot reopen from approved prior to posting.", ReconciliationBreakQueueTransitionErrorCode.ReopenNotAllowed, item);
+        if (!decision.IsValid)
+        {
+            if (string.Equals(decision.ErrorCode, nameof(ReconciliationBreakQueueTransitionErrorCode.IllegalTransition), StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("illegal");
+            }
+
+            return Fail(
+                decision.Error,
+                Enum.Parse<ReconciliationBreakQueueTransitionErrorCode>(decision.ErrorCode),
+                item);
+        }
+
+        var next = Enum.Parse<ReconciliationCaseLifecycleState>(decision.NextLifecycleState);
+        var status = Enum.Parse<ReconciliationBreakQueueStatus>(decision.NextQueueStatus);
 
         var previousHash = item.StateTransitions?.LastOrDefault()?.EntryHash;
         var transition = new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, next, command.Actor, command.Reason, now, command.EvidenceReferences, previousHash, ComputeHash(item.BreakId, item.LifecycleState, next, command, now, previousHash));

@@ -46,6 +46,11 @@ retained manifest path, retained evidence links, report-line provenance, and res
 links. Keep these fields shared so browser, WPF, and service tests enforce the same publication and
 no-orphan-evidence rules.
 
+Evidence workflow contracts now carry policy-owned SLA/freshness assessments and the Meridian
+Assurance Score on packet completeness. Keep provider validation, replay checks, reconciliation,
+approval, and report freshness policy output in shared DTOs so browser and WPF clients render the
+same cross-workflow readiness signal without local scoring rules.
+
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
 `FundAccountBrokerageSyncActivityDto` for durable account-level evidence, positions, orders, fills,

@@ -71,6 +71,39 @@ public sealed record EvidenceValidationIssueDto(
     string? SourceSystem = null,
     string? RelatedWorkItemId = null);
 
+public sealed record EvidenceSlaPolicyDto(
+    string PolicyId,
+    string EvidenceKind,
+    string WorkflowKind,
+    int FreshnessMinutes,
+    EvidenceValidationSeverityDto BreachSeverity,
+    bool RequiredForAssurance,
+    string Description);
+
+public sealed record EvidenceSlaAssessmentDto(
+    string PolicyId,
+    string EvidenceId,
+    string EvidenceKind,
+    string SourceSystem,
+    int? AgeMinutes,
+    int FreshnessMinutes,
+    bool IsBreached,
+    EvidenceValidationSeverityDto Severity,
+    string Message);
+
+public sealed record EvidenceAssuranceComponentDto(
+    string ComponentId,
+    string Label,
+    int Score,
+    EvidenceStatusDto Status,
+    string Detail);
+
+public sealed record MeridianAssuranceScoreDto(
+    int Score,
+    EvidenceStatusDto Status,
+    IReadOnlyList<EvidenceAssuranceComponentDto> Components,
+    IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments);
+
 public sealed record EvidenceVaultIdentityDto(
     string VaultId,
     string SubjectKind,
@@ -123,6 +156,13 @@ public sealed record EvidenceCompletenessDto(
     public int BlockingIssueCount { get; init; }
     public int WarningIssueCount { get; init; }
     public IReadOnlyList<string> OrphanEvidenceIds { get; init; } = [];
+    public IReadOnlyList<EvidenceSlaPolicyDto> SlaPolicies { get; init; } = [];
+    public IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments { get; init; } = [];
+    public MeridianAssuranceScoreDto AssuranceScore { get; init; } = new(
+        Score: 0,
+        Status: EvidenceStatusDto.Unknown,
+        Components: [],
+        SlaAssessments: []);
 }
 
 public sealed record EvidencePacketDto(
