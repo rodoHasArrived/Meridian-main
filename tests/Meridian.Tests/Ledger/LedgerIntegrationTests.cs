@@ -683,6 +683,85 @@ public sealed class LedgerIntegrationTests
         snap.Vehicles["v1"].Balances[cash].Should().Be(25m);
     }
 
+    [Fact]
+    public void ChartOfAccounts_Register_CreatesHierarchyForCustomAccountPaths()
+    {
+        var chart = new ChartOfAccounts();
+
+        var brokerageCash = chart.Register(" Assets : Cash : Brokerage ", LedgerAccountType.Asset, financialAccountId: "broker-1");
+        var collateralCash = chart.Register("Assets:Cash:Collateral", LedgerAccountType.Asset);
+
+        brokerageCash.Name.Should().Be("Assets:Cash:Brokerage");
+        brokerageCash.FinancialAccountId.Should().Be("broker-1");
+        collateralCash.Name.Should().Be("Assets:Cash:Collateral");
+        chart.Find("Assets").Should().NotBeNull();
+        chart.Find("Assets:Cash").Should().NotBeNull();
+        chart.GetChildren("Assets").Should().ContainSingle(node => node.Path == "Assets:Cash");
+        chart.GetDescendants("Assets").Select(node => node.Path).Should().Contain(new[]
+        {
+            "Assets:Cash",
+            "Assets:Cash:Brokerage",
+            "Assets:Cash:Collateral",
+        });
+    }
+
+    [Fact]
+    public void ChartOfAccounts_Register_RejectsConflictingParentAccountTypes()
+    {
+        var chart = new ChartOfAccounts();
+        chart.Register("Assets:Cash", LedgerAccountType.Asset);
+
+        var act = () => chart.Register("Assets:Fees", LedgerAccountType.Expense);
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*parent 'Assets' is registered as Asset, not Expense*");
+    }
+
+    [Fact]
+    public void ChartOfAccounts_Register_RejectsDuplicatePathWithDifferentScope()
+    {
+        var chart = new ChartOfAccounts();
+        chart.Register("Assets:Cash:Brokerage", LedgerAccountType.Asset, financialAccountId: "broker-1");
+
+        var act = () => chart.Register("Assets:Cash:Brokerage", LedgerAccountType.Asset, financialAccountId: "broker-2");
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*already registered with a different account scope*");
+    }
+
+    [Fact]
+    public void ChartOfAccounts_AggregateBalances_RollsTrialBalanceUpHierarchy()
+    {
+        var chart = new ChartOfAccounts();
+        var brokerageCash = chart.Register("Assets:Cash:Brokerage", LedgerAccountType.Asset);
+        var collateralCash = chart.Register("Assets:Cash:Collateral", LedgerAccountType.Asset);
+        var investorCapital = chart.Register("Equity:Partners:Capital", LedgerAccountType.Equity);
+        var ledger = new Meridian.Ledger.Ledger();
+        var ts = new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero);
+
+        ledger.PostLines(ts, "capital contribution", new[]
+        {
+            (brokerageCash, 100m, 0m),
+            (collateralCash, 25m, 0m),
+            (investorCapital, 0m, 125m),
+        });
+
+        var balances = chart.AggregateBalances(ledger.TrialBalance());
+        var assets = balances.Single(row => row.Path == "Assets");
+        var cash = balances.Single(row => row.Path == "Assets:Cash");
+        var brokerage = balances.Single(row => row.Path == "Assets:Cash:Brokerage");
+        var equity = balances.Single(row => row.Path == "Equity");
+
+        assets.DirectBalance.Should().Be(0m);
+        assets.AggregateBalance.Should().Be(125m);
+        cash.AggregateBalance.Should().Be(125m);
+        brokerage.DirectBalance.Should().Be(100m);
+        brokerage.AggregateBalance.Should().Be(100m);
+        equity.AggregateBalance.Should().Be(125m);
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,

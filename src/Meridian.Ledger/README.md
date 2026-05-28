@@ -27,6 +27,9 @@ This layer should model ledger behavior and accounting evidence without owning U
 ## Important workflows
 
 Use this module for books, ledger behavior, reconciliation evidence, and accounting workflow support.
+`ChartOfAccounts` supports customizable colon-delimited account hierarchies such as
+`Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for
+fund/accounting reports.
 
 ## Diagrams
 

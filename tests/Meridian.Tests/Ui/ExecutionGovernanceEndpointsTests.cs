@@ -64,6 +64,62 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
+    public async Task ControlsEndpoints_UpdatePositionLimitsAndExposeAuditTrail()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+        });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var defaultResponse = await client.PostAsync(
+            "/api/execution/controls/position-limits/default",
+            JsonContent(new { maxPositionSize = 75m, reason = "desk risk cap" }));
+        defaultResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var symbolResponse = await client.PostAsync(
+            "/api/execution/controls/position-limits/aapl",
+            JsonContent(new { maxPositionSize = 10m, reason = "event risk cap" }));
+        symbolResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var controlsResponse = await client.GetAsync("/api/execution/controls");
+        controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var controls = JsonSerializer.Deserialize<ExecutionControlSnapshot>(
+            await controlsResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        controls.Should().NotBeNull();
+        controls!.DefaultMaxPositionSize.Should().Be(75m);
+        controls.SymbolPositionLimits.Should().ContainKey("AAPL").WhoseValue.Should().Be(10m);
+
+        var auditResponse = await client.GetAsync("/api/execution/audit?take=10");
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(
+            await auditResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        auditEntries.Should().NotBeNull();
+        auditEntries!.Should().Contain(entry =>
+            entry.Action == "DefaultPositionLimitUpdated" &&
+            entry.Actor == "ops-user" &&
+            entry.Metadata != null &&
+            entry.Metadata["limit"] == "75");
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "SymbolPositionLimitUpdated" &&
+            entry.Actor == "ops-user" &&
+            entry.Symbol == "AAPL" &&
+            entry.Metadata != null &&
+            entry.Metadata["limit"] == "10");
+    }
+
+    [Fact]
     public async Task AuditSearchEndpoint_ReturnsSharedCrossObjectTimeline()
     {
         var tempRoot = CreateTempRoot();

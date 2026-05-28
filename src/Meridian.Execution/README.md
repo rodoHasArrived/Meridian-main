@@ -38,7 +38,10 @@ orders that use an override carry the applied override ID, run/strategy/symbol s
 decision metadata in the execution audit trail. The OMS also records durable audit outcomes for
 submitted, rejected, cancelled, cancel-rejected, modified, and modify-rejected order lifecycle
 events with broker, order, symbol, scope, reject reason, and operation metadata for operations
-review.
+review. Shared `/api/execution/controls/*` endpoints expose the snapshot plus secured mutations for
+the global circuit breaker, default position limit, symbol position limits, and manual override
+create/clear actions so browser and desktop clients do not need client-local execution-control
+state.
 
 ## Diagrams
 

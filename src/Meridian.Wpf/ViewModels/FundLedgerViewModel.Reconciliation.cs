@@ -930,9 +930,10 @@ public sealed partial class FundLedgerViewModel
         }
 
         ReconciliationCalibrationStatusText = FormatCalibrationStatus(summary.Status);
+        var kpiSummary = $"Break trend {summary.BreakCountTrend:+#;-#;0}; auto-match {summary.AutoMatchRate:P0}; T+0 closure {summary.T0ClosureRate:P0}.";
         ReconciliationCalibrationSummaryText = string.IsNullOrWhiteSpace(summary.Summary)
-            ? "Calibration summary did not include operator guidance."
-            : summary.Summary;
+            ? kpiSummary
+            : $"{summary.Summary} {kpiSummary}";
         ReconciliationCalibrationProfilesText = snapshot.CalibrationProfiles.Count.ToString("N0");
         ReconciliationCalibrationPendingSignoffText = summary.PendingSignoffCount.ToString("N0");
         ReconciliationCalibrationMissingMetadataText = summary.MissingCalibrationMetadataCount.ToString("N0");

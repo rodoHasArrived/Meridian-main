@@ -341,6 +341,90 @@ function Invoke-AutomationButton {
     }
 }
 
+function Backup-FileState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$BackupDirectory
+    )
+
+    New-Item -ItemType Directory -Force -Path $BackupDirectory | Out-Null
+    $backupPath = Join-Path $BackupDirectory ([System.IO.Path]::GetFileName($Path) + '.bak')
+    if (Test-Path -LiteralPath $Path) {
+        Copy-Item -LiteralPath $Path -Destination $backupPath -Force
+        return [pscustomobject]@{ Path = $Path; BackupPath = $backupPath; Existed = $true }
+    }
+
+    return [pscustomobject]@{ Path = $Path; BackupPath = $backupPath; Existed = $false }
+}
+
+function Restore-FileState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$States
+    )
+
+    foreach ($state in $States) {
+        try {
+            if ($state.Existed -and (Test-Path -LiteralPath $state.BackupPath)) {
+                Copy-Item -LiteralPath $state.BackupPath -Destination $state.Path -Force
+            }
+            elseif (Test-Path -LiteralPath $state.Path) {
+                Remove-Item -LiteralPath $state.Path -Force
+            }
+        }
+        catch {
+            Write-Warn "Failed to restore fixture state '$($state.Path)': $($_.Exception.Message)"
+        }
+    }
+}
+
+function Initialize-FixtureOperatingContext {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BackupDirectory
+    )
+
+    $meridianLocalAppData = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'Meridian'
+    New-Item -ItemType Directory -Force -Path $meridianLocalAppData | Out-Null
+
+    $fundProfilesPath = Join-Path $meridianLocalAppData 'fund-profiles.json'
+    $operatingContextPath = Join-Path $meridianLocalAppData 'workstation-operating-context.json'
+    $states = @(
+        (Backup-FileState -Path $fundProfilesPath -BackupDirectory $BackupDirectory),
+        (Backup-FileState -Path $operatingContextPath -BackupDirectory $BackupDirectory)
+    )
+
+    [ordered]@{
+        LastSelectedFundProfileId = 'alpha-credit'
+        Profiles = @(
+            [ordered]@{
+                FundProfileId = 'alpha-credit'
+                DisplayName = 'Alpha Credit'
+                LegalEntityName = 'Alpha Credit Master Fund LP'
+                BaseCurrency = 'USD'
+                DefaultWorkspaceId = 'governance'
+                DefaultLandingPageTag = 'GovernanceShell'
+                DefaultLedgerScope = 0
+                EntityIds = @()
+                SleeveIds = @()
+                VehicleIds = @()
+                IsDefault = $true
+            }
+        )
+    } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $fundProfilesPath -Encoding utf8
+
+    [ordered]@{
+        LastSelectedOperatingContextKey = 'Fund:alpha-credit'
+        WindowMode = 1
+        CurrentLayoutPresetId = 'accounting-review'
+    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $operatingContextPath -Encoding utf8
+
+    return $states
+}
+
 function Test-AutomationElementEnabled {
     param(
         [Parameter(Mandatory = $true)]
@@ -392,6 +476,8 @@ function Ensure-EnteredOperatingContext {
 
     # Delay between invoking Switch Context and probing Enter Workstation on FundProfileSelection.
     $contextSwitchTransitionDelayMs = 800
+    # The desktop window can appear before the WPF frame has finished rendering the selector.
+    $contextSelectorProbeAttempts = 40
     # Settle time after Seed Sample Contexts completes before re-probing Enter Workstation.
     $contextSeedSettleSeconds = 2
     # Settle time after entering the workstation before the capture loop starts.
@@ -425,7 +511,7 @@ function Ensure-EnteredOperatingContext {
         return $true
     }
 
-    $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+    $enterButton = Wait-ForElement -Attempts $contextSelectorProbeAttempts -DelayMilliseconds 300 -Finder {
         if ($null -ne $Process -and $Process.HasExited) {
             throw "Meridian desktop exited before operating context could be selected."
         }
@@ -469,7 +555,7 @@ function Ensure-EnteredOperatingContext {
             if (Invoke-AutomationButton -Button $switchContextButton -Description 'switch context') {
                 # Allow the FundProfileSelection page transition to complete before probing for Enter Workstation.
                 Start-Sleep -Milliseconds $contextSwitchTransitionDelayMs
-                $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+                $enterButton = Wait-ForElement -Attempts $contextSelectorProbeAttempts -DelayMilliseconds 300 -Finder {
                     $currentWindow = Find-MeridianWindow -Process $Process
                     if ($null -eq $currentWindow) {
                         return $null
@@ -481,7 +567,7 @@ function Ensure-EnteredOperatingContext {
         }
     }
 
-    if ($enterButton -and -not (Test-AutomationElementEnabled -Element $enterButton)) {
+    if (-not $enterButton -or -not (Test-AutomationElementEnabled -Element $enterButton)) {
         $seedButton = Wait-ForElement -Attempts 5 -DelayMilliseconds 250 -Finder {
             $currentWindow = Find-MeridianWindow -Process $Process
             if ($null -eq $currentWindow) {
@@ -497,7 +583,7 @@ function Ensure-EnteredOperatingContext {
             }
         }
 
-        $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+        $enterButton = Wait-ForElement -Attempts $contextSelectorProbeAttempts -DelayMilliseconds 300 -Finder {
             $currentWindow = Find-MeridianWindow -Process $Process
             if ($null -eq $currentWindow) {
                 return $null
@@ -1049,6 +1135,7 @@ $workflowTranscriptActive = $false
 $stageStatusEntries = [System.Collections.Generic.List[object]]::new()
 $lastSuccessfulStep = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
+$fixtureFileStates = @()
 
 $environmentSnapshot = [ordered]@{
     workflow = $Workflow
@@ -1107,6 +1194,11 @@ try {
     if (-not (Test-Path -LiteralPath 'config/appsettings.json') -and (Test-Path -LiteralPath 'config/appsettings.sample.json')) {
         Copy-Item -LiteralPath 'config/appsettings.sample.json' -Destination 'config/appsettings.json' -Force
         Write-Info 'Created config/appsettings.json from sample.'
+    }
+
+    if ($useFixture) {
+        $fixtureFileStates = @(Initialize-FixtureOperatingContext -BackupDirectory (Join-Path $bundleDirectory 'fixture-state-backup'))
+        Write-Info 'Prepared fixture operating context for desktop workflow startup.'
     }
 
     if ($stageStatuses['preflight'] -ne 'skipped-valid') {
@@ -1710,6 +1802,10 @@ finally {
         catch {
             Write-Warn "Failed to stop Meridian desktop cleanly: $($_.Exception.Message)"
         }
+    }
+
+    if ($fixtureFileStates.Count -gt 0 -and (-not $KeepAppOpen -or $null -eq $ownedProcess -or $ownedProcess.HasExited)) {
+        Restore-FileState -States $fixtureFileStates
     }
 
     [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', $originalFixtureEnv, 'Process')

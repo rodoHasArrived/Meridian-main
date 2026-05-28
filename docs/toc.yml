@@ -159,6 +159,16 @@
       href: status/README.md
     - name: UFL Asset Packages
       href: plans/ufl-supported-assets-index.md
+    - name: UFL Capability Model
+      href: plans/ufl-capability-model.md
+    - name: UFL Conformance Matrix
+      href: plans/ufl-conformance-matrix.md
+    - name: UFL Projection And Evidence Kernel
+      href: plans/ufl-projection-and-evidence-kernel.md
+    - name: UFL Accounting Impact Model
+      href: plans/ufl-accounting-impact-model.md
+    - name: UFL Asset Profile Template
+      href: plans/ufl-asset-profile-template.md
     - name: UFL Direct Lending V2
       href: plans/ufl-direct-lending-target-state-v2.md
     - name: UFL Direct Lending Roadmap
@@ -189,6 +199,8 @@
       href: plans/ufl-cash-sweep-target-state-v2.md
     - name: UFL Other Security V2
       href: plans/ufl-other-security-target-state-v2.md
+    - name: UFL Custom Asset Composability
+      href: plans/ufl-custom-asset-composability.md
     - name: UFL Swap V2
       href: plans/ufl-swap-target-state-v2.md
     - name: UFL Commodity V2

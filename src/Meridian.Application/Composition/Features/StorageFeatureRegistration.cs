@@ -260,8 +260,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 "Set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
         }
 
-        // Local fixture/dev profile: keep in-memory working sets persisted to local snapshots.
-        services.TryAddSingleton<IFundAccountService>(sp =>
         // Fund accounts and governance structure.
         if (FundAccountsStartup.IsConfigured())
         {

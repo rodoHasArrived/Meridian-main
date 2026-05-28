@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, reviewers, and product stakeholders
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-28
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl direct lending implementation roadmap** and document explicit in-scope vs out-of-scope items.
@@ -18,6 +18,14 @@
 **In Scope:** A dependency-aware implementation roadmap from the current Meridian direct-lending slice to the full UFL direct-lending target state, including contract servicing, event lineage, relational projections, cash, accruals, projections, accounting, reconciliation, servicer ingestion, and operational hardening.
 
 **Out of Scope:** Other UFL asset packages, broad workstation redesign outside direct-lending needs, non-direct-lending collateral workflows, syndications, impairment/ECL, and major portfolio-analytics work beyond what is required to complete Phase 1 and the first production-ready Phase 2 controls.
+
+## UFL Conformance Contract
+
+This roadmap remains the delivery plan for the [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md). The target-state package owns the full Evidence Boundary, UFL Capability Profile, Current Maturity, Next Milestone Contract, and Provider Payload Boundary sections.
+
+Direct lending is currently treated as `L3/L4 partial`: it has implemented projection, rebuild, endpoint, storage, and operational workflow evidence, but L5 remains target-state until journals, period controls, reconciliation, reporting evidence, and replay behavior are proven together.
+
+Provider and servicer payloads may be retained as evidence. Roadmap work must consume canonical loan identity, contract terms, accepted servicing revisions, projection runs, and reconciliation records before any accounting or reporting effect.
 
 **Assumptions:**
 

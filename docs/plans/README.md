@@ -97,14 +97,15 @@ These plans remain useful, but they normally follow the Wave 2-4 operator-readin
 
 ## UFL And Asset Packages
 
-Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). The individual target-state packages remain active reference designs for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation work. Keep delivered baseline evidence separate from target-state additions; these packages are not readiness-closure documents.
+Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). UFL is now organized around shared capability profiles, maturity levels, conformance evidence, and thin asset deltas over the common model. The individual target-state packages remain active reference designs for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation work. Keep delivered baseline evidence separate from target-state additions; these packages are not readiness-closure documents.
 
 | Area | Documents |
 | --- | --- |
-| Index and direct lending | [ufl-supported-assets-index.md](ufl-supported-assets-index.md), [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md), [ufl-direct-lending-target-state-v2.md](ufl-direct-lending-target-state-v2.md) |
+| Foundation and conformance | [ufl-supported-assets-index.md](ufl-supported-assets-index.md), [ufl-capability-model.md](ufl-capability-model.md), [ufl-conformance-matrix.md](ufl-conformance-matrix.md), [ufl-projection-and-evidence-kernel.md](ufl-projection-and-evidence-kernel.md), [ufl-accounting-impact-model.md](ufl-accounting-impact-model.md), [ufl-asset-profile-template.md](ufl-asset-profile-template.md) |
+| Direct lending | [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md), [ufl-direct-lending-target-state-v2.md](ufl-direct-lending-target-state-v2.md) |
 | Listed and derivative instruments | [ufl-equity-target-state-v2.md](ufl-equity-target-state-v2.md), [ufl-option-target-state-v2.md](ufl-option-target-state-v2.md), [ufl-future-target-state-v2.md](ufl-future-target-state-v2.md), [ufl-warrant-target-state-v2.md](ufl-warrant-target-state-v2.md), [ufl-cfd-target-state-v2.md](ufl-cfd-target-state-v2.md), [ufl-swap-target-state-v2.md](ufl-swap-target-state-v2.md) |
 | Rates, cash, and credit | [ufl-bond-target-state-v2.md](ufl-bond-target-state-v2.md), [ufl-treasury-bill-target-state-v2.md](ufl-treasury-bill-target-state-v2.md), [ufl-commercial-paper-target-state-v2.md](ufl-commercial-paper-target-state-v2.md), [ufl-certificate-of-deposit-target-state-v2.md](ufl-certificate-of-deposit-target-state-v2.md), [ufl-deposit-target-state-v2.md](ufl-deposit-target-state-v2.md), [ufl-cash-sweep-target-state-v2.md](ufl-cash-sweep-target-state-v2.md), [ufl-money-market-fund-target-state-v2.md](ufl-money-market-fund-target-state-v2.md), [ufl-repo-target-state-v2.md](ufl-repo-target-state-v2.md) |
-| Other asset coverage | [ufl-fx-spot-target-state-v2.md](ufl-fx-spot-target-state-v2.md), [ufl-commodity-target-state-v2.md](ufl-commodity-target-state-v2.md), [ufl-crypto-target-state-v2.md](ufl-crypto-target-state-v2.md), [ufl-other-security-target-state-v2.md](ufl-other-security-target-state-v2.md) |
+| Other asset coverage | [ufl-fx-spot-target-state-v2.md](ufl-fx-spot-target-state-v2.md), [ufl-commodity-target-state-v2.md](ufl-commodity-target-state-v2.md), [ufl-crypto-target-state-v2.md](ufl-crypto-target-state-v2.md), [ufl-other-security-target-state-v2.md](ufl-other-security-target-state-v2.md), [ufl-custom-asset-composability.md](ufl-custom-asset-composability.md) |
 
 ## Technical And Optional Tracks
 

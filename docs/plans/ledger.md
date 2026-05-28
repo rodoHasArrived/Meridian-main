@@ -12,9 +12,10 @@
 - [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 **Status:** Active execution roadmap; F# period management, PostgreSQL ledger persistence, ledger
-book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins, and
-the first governed trial-balance report-pack artifact slice are complete. Accrual-to-ledger posting
-and ledger-specific reporting endpoints remain open.
+book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins,
+customizable hierarchical chart-of-accounts rollups, and the first governed trial-balance
+report-pack artifact slice are complete. Accrual-to-ledger posting and ledger-specific reporting
+endpoints remain open.
 
 ## Overview
 
@@ -44,6 +45,7 @@ baseline.
 | ---- | ------- |
 | `Ledger.cs` | Double-entry ledger; validates and posts `JournalEntry` records, maintains per-account totals |
 | `LedgerAccount.cs` | Named account with type, optional symbol, and optional financial-account ID |
+| `ChartOfAccounts.cs` | Customizable colon-delimited account hierarchy with parent creation and rollup balances |
 | `LedgerAccountType.cs` | Asset / Liability / Equity / Revenue / Expense ordinals |
 | `JournalEntry.cs` | Balanced set of `LedgerEntry` lines |
 | `JournalEntryMetadata.cs` | Command/correlation/causation lineage attached to a journal entry |
@@ -163,6 +165,7 @@ say "basis per configured policy" until accountant review.
 - Accounting period lifecycle (Open → Soft-Close → Hard-Close)
 - PostgreSQL-backed journal entry persistence with full event lineage
 - Multi-ledger model aligned to the `FundStructure` node hierarchy (fund, sleeve, vehicle, entity, account)
+- Customizable hierarchical chart of accounts for parent/child reporting rollups
 - Period locking and close workflow with operator sign-off
 - Trial balance and period-over-period P&L summary
 - Accrual tracking integrated with direct-lending payment schedules

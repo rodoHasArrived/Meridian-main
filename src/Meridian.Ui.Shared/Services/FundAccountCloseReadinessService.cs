@@ -413,18 +413,16 @@ public sealed class FundAccountCloseReadinessService
             return;
         }
 
-        var hasDirectFactorOrPrincipalSupport =
-            readiness.FactorScheduleEventCount > 0 ||
-            readiness.LoanScheduleEventCount > 0 ||
-            readiness.LedgerEffects.Any(static effect =>
-                effect.Status == ProviderLedgerReconciliationCheckStatusDto.Matched &&
-                string.Equals(effect.LedgerEffectKind, "PrincipalReturnRecognition", StringComparison.OrdinalIgnoreCase) &&
-                effect.PrincipalAmount.HasValue);
-        if (readiness.FixedIncomeOrStructuredPositionCount > 0 && !hasDirectFactorOrPrincipalSupport)
+        var hasSecurityMasterScheduleSupport = readiness.SecurityMasterScheduleFeeds.Any(static feed =>
+            feed.Status == ProviderLedgerReconciliationCheckStatusDto.Matched &&
+            feed.CanUpdateSecurityMaster &&
+            feed.CanSupportLedgerValuation &&
+            IsCloseSupportingScheduleFeed(feed));
+        if (readiness.FixedIncomeOrStructuredPositionCount > 0 && !hasSecurityMasterScheduleSupport)
         {
             AddComponent(components, blockers, "corporate-action-factor-readiness", "Corporate action and factor readiness", CorporateActionWeight,
                 FundAccountCloseReadinessStatusDto.ReviewRequired, "Warning",
-                $"{readiness.FixedIncomeOrStructuredPositionCount} fixed-income or structured position(s) require direct provider factor-schedule, loan-schedule, or principal/paydown evidence before close.",
+                $"{readiness.FixedIncomeOrStructuredPositionCount} fixed-income or structured position(s) require matched Security Master schedule feed evidence that can update Security Master history and support ledger valuation before close.",
                 "close.corporate_actions.factor_evidence_missing", "CorporateActions", route);
             return;
         }
@@ -438,11 +436,16 @@ public sealed class FundAccountCloseReadinessService
             "Info",
             readiness.EvidenceCandidates.Count == 0
                 ? "No corporate-action-sensitive provider evidence is present for this close."
-                : hasDirectFactorOrPrincipalSupport
-                    ? "Corporate-action, income/principal cash, and direct provider factor-schedule, loan-schedule, or principal/paydown evidence are retained and attributed."
+                : hasSecurityMasterScheduleSupport
+                    ? "Corporate-action, income/principal cash, and Security Master schedule feed evidence are retained, attributed, and ledger-valuation ready."
                     : "Corporate-action, income/principal cash, and factor-schedule evidence candidates are retained and attributed.",
             route);
     }
+
+    private static bool IsCloseSupportingScheduleFeed(ProviderSecurityMasterScheduleFeedDto feed) =>
+        string.Equals(feed.FeedKind, "SecurityMasterFactorHistory", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(feed.FeedKind, "SecurityMasterLoanSchedule", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(feed.FeedKind, "SecurityMasterPrincipalSchedule", StringComparison.OrdinalIgnoreCase);
 
     private static void AddApprovalComponent(
         ICollection<FundAccountCloseReadinessComponentDto> components,

@@ -168,8 +168,9 @@ amounts, attribution status, and whether the row can update Security Master hist
 ledger valuation. Degraded candidate rows can also be represented as durable
 reconciliation casework with
 Security Master steward sign-off metadata. Account close-readiness contracts consume the same
-readiness evidence and require direct provider factor-schedule or loan-schedule events or matched principal/paydown
-ledger-effect rows before fixed-income or structured positions can be marked ready for close. Close readiness also treats retained
+readiness evidence and require matched Security Master schedule feed rows that can update Security
+Master history and support ledger valuation before fixed-income or structured positions can be
+marked ready for close. Close readiness also treats retained
 shadow-book comparison breaks as reconciliation review blockers and bridges retained Security Master
 passports to open global Security Master casework for the same held securities, so pending
 identifier-conflict or operator-override cases remain visible in the controller score.

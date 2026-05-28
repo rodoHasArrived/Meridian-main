@@ -1655,7 +1655,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
                 component.Score == 5 &&
-                component.Reason.Contains("direct provider factor-schedule, loan-schedule, or principal/paydown evidence", StringComparison.OrdinalIgnoreCase));
+                component.Reason.Contains("matched Security Master schedule feed evidence", StringComparison.OrdinalIgnoreCase));
             readiness.Blockers.Should().Contain(blocker =>
                 blocker.Code == "close.corporate_actions.factor_evidence_missing" &&
                 blocker.Category == "CorporateActions");
@@ -1694,7 +1694,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Ready &&
-                component.Reason.Contains("direct provider factor-schedule, loan-schedule, or principal/paydown evidence", StringComparison.OrdinalIgnoreCase));
+                component.Reason.Contains("Security Master schedule feed evidence", StringComparison.OrdinalIgnoreCase));
             readiness.Blockers.Should().BeEmpty();
         }
         finally
@@ -1730,7 +1730,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Ready &&
-                component.Reason.Contains("factor-schedule", StringComparison.OrdinalIgnoreCase));
+                component.Reason.Contains("Security Master schedule feed evidence", StringComparison.OrdinalIgnoreCase));
             readiness.Blockers.Should().BeEmpty();
         }
         finally
@@ -1766,7 +1766,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Ready &&
-                component.Reason.Contains("principal/paydown evidence", StringComparison.OrdinalIgnoreCase));
+                component.Reason.Contains("Security Master schedule feed evidence", StringComparison.OrdinalIgnoreCase));
             readiness.Blockers.Should().BeEmpty();
         }
         finally

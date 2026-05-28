@@ -49,6 +49,17 @@ The target lanes are:
 
 ## Current Support Evidence
 
+- 2026-05-28: Live execution-control support evidence now adds first-class shared routes for
+  default and symbol position-limit mutation beside the existing circuit-breaker and manual-override
+  controls. Contracts, shared endpoints, browser API helpers, endpoint parity tests, and execution
+  governance endpoint tests were updated so position limits remain server-owned and audit-backed.
+  Validation is partially blocked by unrelated unresolved worktree conflicts: browser Vitest startup
+  stops on conflict markers in `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts`, and
+  .NET build/test stops before endpoint assertions on existing `StorageFeatureRegistration.cs`
+  syntax errors, with one test attempt also hitting a stale `csc` lock on `Meridian.Domain.dll`.
+  This is live-control implementation support evidence only; it is not a full live execution
+  acceptance claim until the conflicted worktree is resolved and the focused endpoint tests pass.
+
 - 2026-05-27: Lane A and Lane B acceptance evidence is green for W2/W3 closure. The shared
   build-enabled W2/W3 filter passed (`Wave2PaperTradingCockpitAcceptanceTests`,
   `Wave2OperatorInboxAcceptanceTests`, `TradingOperatorReadinessServiceTests`,

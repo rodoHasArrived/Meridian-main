@@ -37,6 +37,7 @@ import {
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
+  executionSymbolPositionLimitEndpoint,
   historicalBarsEndpoint,
   marketDataOrderbookEndpoint,
   marketDataQuoteEndpoint,
@@ -495,11 +496,23 @@ describe("workstation API endpoint catalog", () => {
 });
 
 describe("execution control route contract parity", () => {
+  const CONTRACT_EXECUTION_DEFAULT_POSITION_LIMIT = "/api/execution/controls/position-limits/default" as const;
+  const CONTRACT_EXECUTION_SYMBOL_POSITION_LIMIT_TEMPLATE = "/api/execution/controls/position-limits/{symbol}" as const;
   const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
   const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE =
     "/api/execution/controls/manual-overrides/{overrideId}/clear" as const;
 
   it("keeps frontend helper constants aligned with backend contracts", () => {
+    expect(
+      EXECUTION_API_ENDPOINTS.defaultPositionLimit,
+      "frontend helper diverged from backend contract: default position-limit route"
+    ).toBe(CONTRACT_EXECUTION_DEFAULT_POSITION_LIMIT);
+
+    expect(
+      executionSymbolPositionLimitEndpoint("AAPL"),
+      "frontend helper diverged from backend contract: symbol position-limit route template"
+    ).toBe(CONTRACT_EXECUTION_SYMBOL_POSITION_LIMIT_TEMPLATE.replace("{symbol}", "AAPL"));
+
     expect(
       EXECUTION_API_ENDPOINTS.manualOverrides,
       "frontend helper diverged from backend contract: manual override create route"

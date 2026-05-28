@@ -1016,6 +1016,15 @@ const fixtureCalibrationSummary: ReconciliationCalibrationSummary = {
   pendingSignoffCount: 1,
   signedOffCount: 2,
   missingCalibrationMetadataCount: 0,
+  breakCountTrend: 1,
+  autoMatchRate: 0.86,
+  t0ClosureRate: 0.67,
+  breakCountAlertThreshold: 25,
+  autoMatchRateAlertThreshold: 0.85,
+  t0ClosureRateAlertThreshold: 0.9,
+  breakCountAlertTriggered: false,
+  autoMatchRateAlertTriggered: false,
+  t0ClosureRateAlertTriggered: true,
   profiles: [
     {
       toleranceProfileId: "tp-cash-variance",

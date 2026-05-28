@@ -78,3 +78,5 @@ shared projections over browser-only or WPF-only product logic.
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/reference/oms-ems-integration.md`
 - `docs/source/generated/source-module-index.md`
+
+- Reconciliation API service projections expose statement runs, open breaks, account queue status, case summaries, and calibration KPIs for break trend, auto-match rate, T+0 closure rate, and alert thresholds shared by desktop and browser operators.

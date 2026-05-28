@@ -407,6 +407,68 @@ public static class ExecutionEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces(503);
 
+        group.MapPost("/controls/position-limits/default", async (UpdateExecutionDefaultPositionLimitRequest request, HttpContext context) =>
+        {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var snapshot = await controls
+                .SetDefaultPositionLimitAsync(request.MaxPositionSize, actor, request.Reason, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("UpdateExecutionDefaultPositionLimit")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces(503);
+
+        group.MapPost("/controls/position-limits/{symbol}", async (string symbol, UpdateExecutionSymbolPositionLimitRequest request, HttpContext context) =>
+        {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var snapshot = await controls
+                .SetSymbolPositionLimitAsync(symbol, request.MaxPositionSize, actor, request.Reason, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("UpdateExecutionSymbolPositionLimit")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces(503);
+
         group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
             if (!HasExecutionControlMutationPermission(context))
@@ -1498,6 +1560,16 @@ public sealed record UpdateExecutionCircuitBreakerRequest(
     bool IsOpen,
     string? Reason = null,
     string? CorrelationId = null);
+
+/// <summary>Request to update the default execution position limit.</summary>
+public sealed record UpdateExecutionDefaultPositionLimitRequest(
+    decimal? MaxPositionSize,
+    string? Reason = null);
+
+/// <summary>Request to update or clear a symbol-specific execution position limit.</summary>
+public sealed record UpdateExecutionSymbolPositionLimitRequest(
+    decimal? MaxPositionSize,
+    string? Reason = null);
 
 /// <summary>Request to create an execution manual override.</summary>
 public sealed record CreateExecutionManualOverrideRequest(

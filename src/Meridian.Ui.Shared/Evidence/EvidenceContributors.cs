@@ -356,28 +356,37 @@ public sealed class ReconciliationEvidenceContributor : IEvidenceContributor
         }
 
         var nodeId = NodeId(context.Subject, "statement-run");
-        var evidenceLink = detail.EvidenceLinks?.FirstOrDefault();
-        var status = detail.OpenExceptionCount > 0 ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready;
+        var runKey = string.IsNullOrWhiteSpace(detail.RunId) ? runId : detail.RunId!;
+        var matchSummary = detail.MatchSummary;
+        var openExceptionCount = detail.Breaks?.Count(static item =>
+            string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(item.Status, "InReview", StringComparison.OrdinalIgnoreCase)) ?? 0;
+        var status = openExceptionCount > 0 ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready;
+        var generatedAt = detail.CompletedAtUtc ?? detail.ImportedAtUtc ?? detail.StartedAtUtc ?? DateTimeOffset.UtcNow;
+        var route = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(runKey)}";
+        var sourceFileHash = string.IsNullOrWhiteSpace(detail.SourceFileHash) ? null : detail.SourceFileHash;
         var node = Node(
             context.Subject,
             nodeId,
             "statement-run",
             status,
-            evidenceLink?.MatchSummary ?? $"{detail.PositionMatches + detail.CashMatches + detail.TransactionMatches} match(es), {detail.OpenExceptionCount} open exception(s).",
+            matchSummary is null
+                ? $"{openExceptionCount} open exception(s)."
+                : $"{matchSummary.MatchedItemCount}/{matchSummary.StatementItemCount} item(s) matched; {matchSummary.BreakCount} break(s); {openExceptionCount} open exception(s).",
             "ReconciliationApiService",
-            DateTimeOffset.TryParse(detail.CompletedAtUtc, out var completedAt) ? completedAt : DateTimeOffset.UtcNow,
-            artifacts: evidenceLink is null
+            generatedAt,
+            artifacts: sourceFileHash is null
                 ? []
                 :
                 [
                     Artifact(
                         $"{nodeId}:detail",
                         "statement-run-detail-route",
-                        route: evidenceLink.EvidenceRoute,
-                        generatedAt: DateTimeOffset.TryParse(evidenceLink.ReconciledAtUtc, out var reconciledAt) ? reconciledAt : DateTimeOffset.UtcNow,
-                        hash: evidenceLink.SourceFileHash)
+                        route: route,
+                        generatedAt: generatedAt,
+                        hash: sourceFileHash)
                 ],
-            workItemIds: evidenceLink?.BreakIds.Concat(evidenceLink.CaseIds).ToArray() ?? []);
+            workItemIds: detail.Breaks?.Select(static item => item.BreakId).ToArray() ?? []);
 
         return new EvidenceContribution([node], [], [], [nodeId], []);
     }

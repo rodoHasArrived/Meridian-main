@@ -81,6 +81,14 @@ var realized  = LedgerAccounts.RealizedGain;
 var dividends = LedgerAccounts.DividendIncome;
 ```
 
+### `ChartOfAccounts`
+
+`ChartOfAccounts` registers customizable colon-delimited account paths such as
+`Assets:Cash:Brokerage`, creates missing parent accounts, rejects parent/child account-type
+conflicts, and aggregates flat trial-balance balances up the hierarchy. This keeps the core ledger
+compatible with fixed built-in accounts while supporting fund-specific chart-of-accounts structures
+for reporting and close workflows.
+
 ---
 
 ## How backtesting posts to the ledger

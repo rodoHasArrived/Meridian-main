@@ -1708,7 +1708,7 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
             <BookCheck className="h-4 w-4 text-primary" />
             Calibration summary
           </CardTitle>
-          <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+          <CardDescription>Tolerance profile health, break trend, auto-match rate, and T+0 closure rate across active reconciliation routes.</CardDescription>
         </div>
         <Button
           type="button"
@@ -1749,7 +1749,7 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
               </div>
               <span className="shrink-0 font-mono text-xs text-muted-foreground">as of {view.asOfLabel}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-9">
               {view.metricRows.map((metric) => (
                 <div
                   key={metric.id}

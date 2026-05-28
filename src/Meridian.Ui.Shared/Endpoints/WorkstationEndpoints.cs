@@ -6603,8 +6603,22 @@ public static partial class WorkstationEndpoints
             PendingSignoffCount: pendingSignoffCount,
             SignedOffCount: signedOffCount,
             MissingCalibrationMetadataCount: missingCalibrationMetadataCount,
-            Profiles: profiles);
+            Profiles: profiles)
+        {
+            BreakCountTrend = activeBreakCount - resolvedBreakCount,
+            AutoMatchRate = CalculateAutoMatchRate(totalBreakCount, activeBreakCount),
+            T0ClosureRate = CalculateT0ClosureRate(totalBreakCount, resolvedBreakCount, dismissedBreakCount),
+            BreakCountAlertThreshold = 25,
+            AutoMatchRateAlertThreshold = 0.85m,
+            T0ClosureRateAlertThreshold = 0.90m
+        };
     }
+
+    private static decimal CalculateAutoMatchRate(int totalBreakCount, int activeBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)Math.Max(0, totalBreakCount - activeBreakCount) / totalBreakCount, 4);
+
+    private static decimal CalculateT0ClosureRate(int totalBreakCount, int resolvedBreakCount, int dismissedBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)(resolvedBreakCount + dismissedBreakCount) / totalBreakCount, 4);
 
     private static ReconciliationCalibrationProfileSummaryDto BuildCalibrationProfileSummary(
         IGrouping<(string Profile, string Route), ReconciliationBreakQueueItem> group)
