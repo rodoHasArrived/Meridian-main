@@ -86,7 +86,7 @@ public sealed class ReportingOrchestrationServiceTests
         failed!.Status.Should().Be(ReportingRunStatus.Failed);
         failed.AttemptCount.Should().Be(2);
         failed.FailureReason.Should().Be("renderer unavailable");
-        sut.GetAudit(failed.RunId).Count(e => e.Action is "RunRetry" or "RunFailed").Should().Be(2);
+        sut.GetAudit(failed.RunId).Count(e => e.Action == "RunRetry" || e.Action == "RunFailed").Should().Be(2);
     }
 
     private sealed class FailingOnceRenderer : IReportingSectionRenderer

@@ -190,6 +190,7 @@ public sealed class BrokerCustodianMatchingPipeline
             || string.Equals(left.InstrumentId, right.InstrumentId, StringComparison.OrdinalIgnoreCase);
         var referenceMatches = !string.IsNullOrWhiteSpace(left.ExternalReference)
             && string.Equals(left.ExternalReference, right.ExternalReference, StringComparison.OrdinalIgnoreCase);
+        var currencyMatches = string.Equals(left.Currency, right.Currency, StringComparison.OrdinalIgnoreCase);
 
         var withinNumericTolerance = quantityVariance <= rule.QuantityTolerance
             && priceVariance <= rule.PriceTolerance
@@ -199,11 +200,11 @@ public sealed class BrokerCustodianMatchingPipeline
 
         var confidence = rule.Tier switch
         {
-            ReconciliationMatchTier.Exact when withinNumericTolerance && referenceMatches => 1.00m,
-            ReconciliationMatchTier.Exact when withinNumericTolerance && symbolMatches => 0.99m,
-            ReconciliationMatchTier.Tolerance when withinNumericTolerance && (symbolMatches || referenceMatches) => 0.93m,
-            ReconciliationMatchTier.Heuristic when symbolMatches && left.TradeDate == right.TradeDate => 0.78m,
-            ReconciliationMatchTier.Heuristic when referenceMatches => 0.74m,
+            ReconciliationMatchTier.Exact when currencyMatches && withinNumericTolerance && referenceMatches => 1.00m,
+            ReconciliationMatchTier.Exact when currencyMatches && withinNumericTolerance && symbolMatches => 0.99m,
+            ReconciliationMatchTier.Tolerance when currencyMatches && withinNumericTolerance && (symbolMatches || referenceMatches) => 0.93m,
+            ReconciliationMatchTier.Heuristic when currencyMatches && symbolMatches && left.TradeDate == right.TradeDate => 0.78m,
+            ReconciliationMatchTier.Heuristic when currencyMatches && referenceMatches => 0.74m,
             _ => 0m
         };
 

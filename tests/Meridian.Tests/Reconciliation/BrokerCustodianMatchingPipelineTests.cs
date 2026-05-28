@@ -22,6 +22,20 @@ public sealed class BrokerCustodianMatchingPipelineTests
     }
 
     [Fact]
+    public void Match_WhenRecordsAlignButCurrencyDiffers_ShouldLeaveBothRowsUnmatched()
+    {
+        var now = new DateTimeOffset(2026, 5, 28, 10, 0, 0, TimeSpan.Zero);
+        var broker = CreateRecord("broker-1", CanonicalReconciliationSourceKind.Broker, quantity: 100m, price: 10m, marketValue: 1_000m, cash: 0m, currency: "USD");
+        var custodian = CreateRecord("custodian-1", CanonicalReconciliationSourceKind.Custodian, quantity: 100m, price: 10m, marketValue: 1_000m, cash: 0m, currency: "EUR");
+
+        var decisions = new BrokerCustodianMatchingPipeline().Match("run-1", [broker], [custodian], now, "ops@example.test");
+
+        decisions.Should().HaveCount(2);
+        decisions.Should().OnlyContain(decision => decision.Status == CanonicalReconciliationDecisionStatus.UnresolvedBreak);
+        decisions.Should().OnlyContain(decision => decision.RightRecordId is null);
+    }
+
+    [Fact]
     public void Match_WhenOnlyHeuristicRuleFits_ShouldProposeDecisionForOperatorReview()
     {
         var now = new DateTimeOffset(2026, 5, 28, 10, 0, 0, TimeSpan.Zero);
@@ -75,6 +89,46 @@ public sealed class BrokerCustodianMatchingPipelineTests
         }
     }
 
+    [Fact]
+    public async Task FileReconciliationDecisionJournal_WhenInterruptedTempFileExists_ShouldKeepCommittedJsonlReadable()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-recon-journal-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var now = new DateTimeOffset(2026, 5, 28, 10, 0, 0, TimeSpan.Zero);
+            var journal = new FileReconciliationDecisionJournal(root);
+            var firstDecision = new BrokerCustodianMatchingPipeline().Match(
+                "run-1",
+                [CreateRecord("broker-1", CanonicalReconciliationSourceKind.Broker, quantity: 100m, price: 10m, marketValue: 1_000m, cash: 0m)],
+                [],
+                now,
+                "ops@example.test").Single();
+            var secondDecision = new BrokerCustodianMatchingPipeline().Match(
+                "run-1",
+                [CreateRecord("broker-2", CanonicalReconciliationSourceKind.Broker, quantity: 50m, price: 20m, marketValue: 1_000m, cash: 0m)],
+                [],
+                now,
+                "ops@example.test").Single();
+
+            await journal.AppendDecisionAsync(firstDecision);
+            var decisionPath = Path.Combine(root, "reconciliation", "decision-journal", "runs", "run-1", "decisions.jsonl");
+            await File.WriteAllTextAsync(Path.Combine(Path.GetDirectoryName(decisionPath)!, ".decisions.jsonl.interrupted.tmp"), "partial-json");
+
+            await journal.AppendDecisionAsync(secondDecision);
+
+            var decisions = await journal.ListDecisionsAsync("run-1");
+            decisions.Select(static decision => decision.LeftRecordId).Should().Equal("broker-1", "broker-2");
+            File.ReadLines(decisionPath).Should().HaveCount(2);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     private static CanonicalReconciliationRecord CreateRecord(
         string recordId,
         CanonicalReconciliationSourceKind sourceKind,
@@ -82,7 +136,8 @@ public sealed class BrokerCustodianMatchingPipelineTests
         decimal price,
         decimal marketValue,
         decimal cash,
-        string reference = "EXT-1")
+        string reference = "EXT-1",
+        string currency = "USD")
     {
         var descriptor = new BrokerCustodianFeedDescriptor(
             FeedId: $"feed-{sourceKind}",
@@ -91,7 +146,7 @@ public sealed class BrokerCustodianMatchingPipelineTests
             AccountId: "fund-account-1",
             ExternalAccountId: "external-account-1",
             BusinessDate: new DateOnly(2026, 5, 28),
-            BaseCurrency: "USD",
+            BaseCurrency: currency,
             CapturedAtUtc: new DateTimeOffset(2026, 5, 28, 9, 0, 0, TimeSpan.Zero),
             ContentHash: "HASH",
             AdapterId: "test-adapter",
@@ -107,7 +162,7 @@ public sealed class BrokerCustodianMatchingPipelineTests
             Price: price,
             MarketValue: marketValue,
             CashAmount: cash,
-            Currency: "USD",
+            Currency: currency,
             TradeDate: new DateOnly(2026, 5, 28),
             SettlementDate: new DateOnly(2026, 5, 29),
             ActivityType: "Position",

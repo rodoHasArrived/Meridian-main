@@ -762,6 +762,82 @@ public sealed class LedgerIntegrationTests
         equity.AggregateBalance.Should().Be(125m);
     }
 
+    [Fact]
+    public void LedgerFinancialStatementBuilder_BuildsIncomeStatementAndBalanceSheetFromChart()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash:Brokerage", LedgerAccountType.Asset);
+        var investorCapital = chart.Register("Equity:Partners:Capital", LedgerAccountType.Equity);
+        var feeRevenue = chart.Register("Revenue:Management Fees", LedgerAccountType.Revenue);
+        var commissionExpense = chart.Register("Expenses:Commissions", LedgerAccountType.Expense);
+        var ledger = new Meridian.Ledger.Ledger();
+        var ts = new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero);
+
+        ledger.PostLines(ts, "capital contribution", new[]
+        {
+            (cash, 1_000m, 0m),
+            (investorCapital, 0m, 1_000m),
+        });
+        ledger.PostLines(ts.AddHours(1), "management fee accrual", new[]
+        {
+            (cash, 100m, 0m),
+            (feeRevenue, 0m, 100m),
+        });
+        ledger.PostLines(ts.AddHours(2), "commission accrual", new[]
+        {
+            (commissionExpense, 25m, 0m),
+            (cash, 0m, 25m),
+        });
+
+        var statements = LedgerFinancialStatementBuilder.Build(ledger, chart);
+
+        statements.TotalAssets.Should().Be(1_075m);
+        statements.TotalLiabilities.Should().Be(0m);
+        statements.TotalEquity.Should().Be(1_000m);
+        statements.TotalRevenue.Should().Be(100m);
+        statements.TotalExpenses.Should().Be(25m);
+        statements.NetIncome.Should().Be(75m);
+        statements.EndingEquity.Should().Be(1_075m);
+        statements.AccountingEquationVariance.Should().Be(0m);
+        statements.IncomeStatementRows.Should().Contain(row => row.Path == "Revenue" && row.AggregateBalance == 100m);
+        statements.IncomeStatementRows.Should().Contain(row => row.Path == "Expenses" && row.AggregateBalance == 25m);
+        statements.BalanceSheetRows.Should().Contain(row => row.Path == "Assets" && row.AggregateBalance == 1_075m);
+    }
+
+    [Fact]
+    public void LedgerFinancialStatementBuilder_BuildAsOf_ExcludesLaterPostings()
+    {
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var investorCapital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var ledger = new Meridian.Ledger.Ledger();
+        var t1 = new DateTimeOffset(2026, 5, 28, 9, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+
+        ledger.PostLines(t1, "capital contribution", new[]
+        {
+            (cash, 500m, 0m),
+            (investorCapital, 0m, 500m),
+        });
+        ledger.PostLines(t2, "fee accrual", new[]
+        {
+            (cash, 40m, 0m),
+            (revenue, 0m, 40m),
+        });
+
+        var beforeFee = LedgerFinancialStatementBuilder.BuildAsOf(ledger, t1);
+        var afterFee = LedgerFinancialStatementBuilder.BuildAsOf(ledger, t2);
+
+        beforeFee.AsOf.Should().Be(t1);
+        beforeFee.TotalAssets.Should().Be(500m);
+        beforeFee.NetIncome.Should().Be(0m);
+        beforeFee.AccountingEquationVariance.Should().Be(0m);
+
+        afterFee.TotalAssets.Should().Be(540m);
+        afterFee.NetIncome.Should().Be(40m);
+        afterFee.AccountingEquationVariance.Should().Be(0m);
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,

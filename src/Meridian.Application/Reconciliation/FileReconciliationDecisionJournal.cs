@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.Reconciliation;
 
@@ -45,7 +46,7 @@ public sealed class FileReconciliationDecisionJournal : IReconciliationDecisionJ
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await File.AppendAllLinesAsync(path, [payload], ct).ConfigureAwait(false);
+            await AtomicFileWriter.AppendLinesAsync(path, [payload], ct).ConfigureAwait(false);
         }
         finally
         {

@@ -89,6 +89,13 @@ conflicts, and aggregates flat trial-balance balances up the hierarchy. This kee
 compatible with fixed built-in accounts while supporting fund-specific chart-of-accounts structures
 for reporting and close workflows.
 
+### `LedgerFinancialStatementBuilder`
+
+`LedgerFinancialStatementBuilder` projects a current or point-in-time trial balance into
+income-statement rows, balance-sheet rows, net income, ending equity, and an accounting-equation
+variance. Totals are computed from the flat trial balance to avoid double-counting parent rollups;
+rows use the chart hierarchy for operator-facing statement sections.
+
 ---
 
 ## How backtesting posts to the ledger

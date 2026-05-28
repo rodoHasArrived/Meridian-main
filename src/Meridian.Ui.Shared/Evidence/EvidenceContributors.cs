@@ -386,7 +386,11 @@ public sealed class ReconciliationEvidenceContributor : IEvidenceContributor
                         generatedAt: generatedAt,
                         hash: sourceFileHash)
                 ],
-            workItemIds: detail.Breaks?.Select(static item => item.BreakId).ToArray() ?? []);
+            workItemIds: detail.Breaks?
+                .Select(static item => item.BreakId)
+                .Where(static breakId => !string.IsNullOrWhiteSpace(breakId))
+                .Select(static breakId => breakId!)
+                .ToArray() ?? []);
 
         return new EvidenceContribution([node], [], [], [nodeId], []);
     }

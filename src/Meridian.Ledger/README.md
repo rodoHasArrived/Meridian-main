@@ -30,6 +30,8 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 `ChartOfAccounts` supports customizable colon-delimited account hierarchies such as
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for
 fund/accounting reports.
+`LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
+income-statement and balance-sheet rows with net-income and accounting-equation checks.
 
 ## Diagrams
 

@@ -13,9 +13,9 @@
 
 **Status:** Active execution roadmap; F# period management, PostgreSQL ledger persistence, ledger
 book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins,
-customizable hierarchical chart-of-accounts rollups, and the first governed trial-balance
-report-pack artifact slice are complete. Accrual-to-ledger posting and ledger-specific reporting
-endpoints remain open.
+customizable hierarchical chart-of-accounts rollups, ledger-domain income-statement/balance-sheet
+projection, and the first governed trial-balance report-pack artifact slice are complete.
+Accrual-to-ledger posting and ledger-specific reporting endpoints remain open.
 
 ## Overview
 
@@ -46,6 +46,7 @@ baseline.
 | `Ledger.cs` | Double-entry ledger; validates and posts `JournalEntry` records, maintains per-account totals |
 | `LedgerAccount.cs` | Named account with type, optional symbol, and optional financial-account ID |
 | `ChartOfAccounts.cs` | Customizable colon-delimited account hierarchy with parent creation and rollup balances |
+| `LedgerFinancialStatementBuilder.cs` | Trial-balance projection into income-statement and balance-sheet read models |
 | `LedgerAccountType.cs` | Asset / Liability / Equity / Revenue / Expense ordinals |
 | `JournalEntry.cs` | Balanced set of `LedgerEntry` lines |
 | `JournalEntryMetadata.cs` | Command/correlation/causation lineage attached to a journal entry |
