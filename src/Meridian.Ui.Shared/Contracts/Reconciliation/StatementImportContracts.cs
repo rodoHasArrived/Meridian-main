@@ -45,6 +45,28 @@ public sealed record ReconciliationQueueAccountStatusDto(
     string BlockerReason,
     IReadOnlyList<string> EvidenceLinks);
 
+public sealed record StatementRunEvidenceLinkDto(
+    string EvidenceId,
+    string EvidenceRoute,
+    string RunId,
+    string SourceFileHash,
+    string BrokerCustodian,
+    string Account,
+    string StatementPeriodStart,
+    string StatementPeriodEnd,
+    string MappingProfileId,
+    int MappingProfileVersion,
+    string ToleranceProfileId,
+    int ToleranceProfileVersion,
+    string ValidationSummary,
+    string MatchSummary,
+    IReadOnlyList<string> BreakIds,
+    IReadOnlyList<string> CaseIds,
+    string ImportedBy,
+    string ImportedAtUtc,
+    string ReconciledBy,
+    string ReconciledAtUtc);
+
 public sealed record StatementRunSummaryDto(
     string RunId,
     string ImportId,
@@ -53,7 +75,8 @@ public sealed record StatementRunSummaryDto(
     int PositionMatches,
     int CashMatches,
     int TransactionMatches,
-    int OpenExceptionCount);
+    int OpenExceptionCount,
+    IReadOnlyList<StatementRunEvidenceLinkDto>? EvidenceLinks = null);
 
 public sealed record StatementRunExceptionDto(
     string BreakId,

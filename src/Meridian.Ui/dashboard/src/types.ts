@@ -1310,6 +1310,41 @@ export interface PortfolioWorkspaceResponse {
   cashFlow: GovernanceCashFlowSummary | null;
 }
 
+
+export interface StatementRunSummary {
+  runId: string;
+  importId: string;
+  startedAtUtc: string;
+  completedAtUtc: string;
+  positionMatches: number;
+  cashMatches: number;
+  transactionMatches: number;
+  openExceptionCount: number;
+  brokerCustodian?: string | null;
+  account?: string | null;
+  period?: string | null;
+  status?: string | null;
+  validationIssueCount?: number | null;
+  matchCount?: number | null;
+  breakCount?: number | null;
+  caseCount?: number | null;
+  importedAtUtc?: string | null;
+}
+
+export interface StatementRunException {
+  breakId: string;
+  runId: string;
+  importId: string;
+  sourceReference: string;
+  breakCode: string;
+  category: string;
+  delta: number;
+  tolerance: number;
+  toleranceBreached: boolean;
+  createdAtUtc: string;
+  status: string;
+}
+
 export interface GovernanceReconciliationRecord {
   runId: string;
   strategyName: string;
@@ -1393,6 +1428,32 @@ export interface ExportAnalysisFile {
   format: string | null;
   sizeBytes: number;
   recordCount: number;
+}
+
+
+export interface StatementRunSummary {
+  runId: string;
+  importId: string;
+  startedAtUtc: string;
+  completedAtUtc: string;
+  positionMatches: number;
+  cashMatches: number;
+  transactionMatches: number;
+  openExceptionCount: number;
+}
+
+export interface StatementRunException {
+  breakId: string;
+  runId: string;
+  importId: string;
+  sourceReference: string;
+  breakCode: string;
+  category: string;
+  delta: number;
+  tolerance: number;
+  toleranceBreached: boolean;
+  createdAtUtc: string;
+  status: string;
 }
 
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed" | "SignedOff";
