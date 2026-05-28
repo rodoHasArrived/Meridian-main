@@ -35,6 +35,8 @@ and UI presentation concerns in their owning layers.
   mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
   fund-structure assignments before falling back to account ledger references.
 - `Services/` - application use cases and orchestration services.
+- `Reconciliation/` - statement intake, canonical reconciliation orchestration, and staged
+  broker-versus-internal matching for positions, cash, and transactions.
 - `Composition/` - application feature registration and service wiring.
 
 ## Important workflows
@@ -44,7 +46,12 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
-- Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
+- Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication,
+  health lookup, fallback detection, logging, and metrics.
+- `StatementMatchingEngine` accepts normalized statement positions, cash balances, transactions,
+  internal portfolio/cash/ledger views, and a tolerance profile. It emits deterministic exact,
+  tolerance, candidate, and unmatched results with rule IDs, confidence, side-specific evidence
+  references, variance, tolerance, and operator explanations.
 
 ## Diagrams
 
