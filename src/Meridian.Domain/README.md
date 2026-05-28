@@ -6,7 +6,7 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Domain
@@ -29,6 +29,10 @@ This layer owns domain concepts without depending on application orchestration, 
 ## Important workflows
 
 Use this module for domain behavior that should remain stable across providers, storage, execution, and UI projections.
+
+## API contract notes
+
+- Broker statement runs carry broker, source institution, fund account, external account, statement period, source path, original file name, mapping profile, tolerance profile, importer, and source file hash metadata. Duplicate statement detection is keyed deterministically from fund account, statement period, and content-derived source file hash rather than the source path.
 
 ## Diagrams
 

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Application
@@ -45,6 +45,7 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
+- `StatementRunCreateRequest` is the application-level request for creating broker statement reconciliation runs. It computes `SourceFileHash` from file bytes, then derives the duplicate key from fund account, statement period, and that content hash.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
 - Statement reconciliation intake uses `StatementMappingProfileRegistry` to resolve broker/custodian CSV fields into canonical account, security identifier, quantity, price, cash amount, activity type, trade date, settlement date, currency, fees/commission, and external transaction ID fields. The `canonical-csv-v1` profile preserves the existing fixture header, while `sample-broker-csv-v1` documents a broker-shaped CSV mapping.
 
