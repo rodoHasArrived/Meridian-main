@@ -841,15 +841,33 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   />
                   {reconciliation.trialBalanceView.selectedDetail ? (
                     <div id={reconciliation.trialBalanceView.detailPanelId} className="min-w-0">
-                      <EntitySummary
-                        eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
-                        title={reconciliation.trialBalanceView.selectedDetail.title}
-                        subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
-                        description={reconciliation.trialBalanceView.selectedDetail.description}
-                        status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
-                        fields={reconciliation.trialBalanceView.selectedDetail.fields}
-                        ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
-                      />
+                      <>
+                        <EntitySummary
+                          eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
+                          title={reconciliation.trialBalanceView.selectedDetail.title}
+                          subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
+                          description={reconciliation.trialBalanceView.selectedDetail.description}
+                          status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
+                          fields={reconciliation.trialBalanceView.selectedDetail.fields}
+                          ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
+                        />
+                        <div className="mt-3 flex flex-wrap gap-2" aria-label="Trial balance audit drill-through actions">
+                          {reconciliation.trialBalanceView.selectedDetail.auditDrillThroughHref ? (
+                            <Button asChild size="sm" variant="secondary">
+                              <Link to={reconciliation.trialBalanceView.selectedDetail.auditDrillThroughHref}>
+                                {reconciliation.trialBalanceView.selectedDetail.auditDrillThroughLabel}
+                              </Link>
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">{reconciliation.trialBalanceView.selectedDetail.auditDrillThroughLabel}</span>
+                          )}
+                          {reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref ? (
+                            <Button asChild size="sm" variant="outline">
+                              <Link to={reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref}>Open approval evidence</Link>
+                            </Button>
+                          ) : null}
+                        </div>
+                      </>
                     </div>
                   ) : (
                     <aside

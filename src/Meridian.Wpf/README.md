@@ -93,3 +93,7 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
 - `docs/source/generated/source-module-index.md`
+
+## Accounting close operator views
+
+The WPF accounting lane uses `AccountingCloseViewModel` to surface trial-balance rows, roll-forward rows, close-state text, and audit drill-through details from the shared UI services projection layer. Keep posting/translation business rules in `src/Meridian.Application/AccountingClose/` and avoid moving close gating into XAML code-behind.

@@ -25,6 +25,7 @@ and UI presentation concerns in their owning layers.
 ## Key folders and files
 
 - `Commands/` - CLI command handlers and operator workflows.
+- `AccountingClose/` - journal posting, deterministic ledger replay, FX translation adjustments, trial-balance/roll-forward projections, source-event audit linkage, and month-end close state gates.
 - `Reconciliation/` - statement intake, canonical matching, materiality-aware break
   classification, recommended actions, and case creation gates.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
@@ -47,7 +48,10 @@ and UI presentation concerns in their owning layers.
 ## Important workflows
 
 Use this module when changing command behavior, workflow orchestration, feature registration, or
-application service contracts consumed by host and UI surfaces.
+application service contracts consumed by host and UI surfaces. Accounting close workflows now require
+source-linked balanced journal postings, deterministic replay order, FX rate lineage, trial-balance
+evidence, reconciliation sign-off, approvals, and required evidence checks before a period can lock as
+closed.
 
 ## API contract notes
 
