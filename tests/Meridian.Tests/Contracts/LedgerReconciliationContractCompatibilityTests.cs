@@ -94,6 +94,79 @@ public sealed class LedgerReconciliationContractCompatibilityTests
             "PayloadId", "Schema", "Correlation", "CreatedAt", "Producer", "Direction", "IdempotencyKey", "Payload");
     }
 
+
+    [Fact]
+    public void StatementReconciliationRun_WebAndRetainedConsumers_SerializeEvidenceAndNormalizedPayloads()
+    {
+        var dto = BuildStatementRunDto();
+
+        var json = JsonSerializer.Serialize(dto, JsonOptions);
+
+        Assert.Contains("\"runId\":\"statement-run-1\"", json);
+        Assert.Contains("\"status\":\"ReviewRequired\"", json);
+        Assert.Contains("\"sourceFileName\":\"custodian-statement.csv\"", json);
+        Assert.Contains("\"sourceFileHash\":\"sha256:statement-source\"", json);
+        Assert.Contains("\"mappingProfileId\":\"map-custodian-v1\"", json);
+        Assert.Contains("\"mappingProfileVersion\":3", json);
+        Assert.Contains("\"toleranceProfileId\":\"tol-equity-cash\"", json);
+        Assert.Contains("\"toleranceProfileVersion\":2", json);
+        Assert.Contains("\"importedBy\":\"ops@example.com\"", json);
+        Assert.Contains("\"importedAtUtc\":\"2026-01-05T12:00:00+00:00\"", json);
+        Assert.Contains("\"positions\"", json);
+        Assert.Contains("\"cashBalances\"", json);
+        Assert.Contains("\"transactions\"", json);
+        Assert.Contains("\"breaks\"", json);
+        Assert.Contains("\"cases\"", json);
+
+        Assert.DoesNotContain("\"SourceFileName\"", json);
+        Assert.DoesNotContain("\"MappingProfileId\"", json);
+    }
+
+    [Fact]
+    public void AdditiveOnlyContractShape_GuardForStatementReconciliationDtos()
+    {
+        AssertMembers(typeof(StatementRunDto),
+            "RunId", "Status", "Source", "StartedAtUtc", "CompletedAtUtc", "SourceFileName",
+            "SourceFileHash", "MappingProfileId", "MappingProfileVersion", "ToleranceProfileId",
+            "ToleranceProfileVersion", "ImportedBy", "ImportedAtUtc", "ValidationIssues",
+            "Positions", "CashBalances", "Transactions", "MatchSummary", "Breaks", "Cases",
+            "ImportId", "FundProfileId", "FundAccountId", "Notes");
+
+        AssertMembers(typeof(StatementSourceDto),
+            "SourceId", "SourceKind", "SourceSystem", "AccountId", "AccountName", "Currency",
+            "PeriodStart", "PeriodEnd", "StatementAsOfUtc", "CustodianId", "ExternalAccountId");
+
+        AssertMembers(typeof(StatementValidationIssueDto),
+            "IssueId", "Severity", "Code", "Message", "SourceRowNumber", "SourceColumn",
+            "RawValue", "RecommendedAction", "EvidenceLink");
+
+        AssertMembers(typeof(StatementNormalizedPositionDto),
+            "RowId", "AccountId", "Symbol", "Quantity", "MarketPrice", "MarketValue",
+            "Currency", "AsOfUtc", "Fingerprint", "SecurityId", "Cusip", "Isin", "Sedol", "SourceReference");
+
+        AssertMembers(typeof(StatementNormalizedCashDto),
+            "RowId", "AccountId", "Currency", "Amount", "AsOfUtc", "Fingerprint", "CashType", "SourceReference");
+
+        AssertMembers(typeof(StatementNormalizedTransactionDto),
+            "RowId", "AccountId", "ActivityType", "TradeDate", "Amount", "Currency", "Fingerprint",
+            "SettleDate", "ExternalTransactionId", "Symbol", "Quantity", "Price", "Description", "SourceReference");
+
+        AssertMembers(typeof(StatementMatchSummaryDto),
+            "StatementItemCount", "MatchedItemCount", "AutoMatchedItemCount", "ManualMatchedItemCount",
+            "ReviewRequiredItemCount", "BreakCount", "PositionBreakCount", "CashBreakCount",
+            "TransactionBreakCount", "HighestUnresolvedTier", "MatchedNotional", "UnmatchedNotional", "BaseCurrency");
+
+        AssertMembers(typeof(StatementBreakDto),
+            "BreakId", "BreakType", "Severity", "MatchTier", "StatementReference", "Description",
+            "StatementAmount", "BookAmount", "Delta", "Tolerance", "Currency", "CreatedAtUtc",
+            "Status", "InternalReference", "Owner", "LastObservedAtUtc", "RecommendedAction", "EvidenceLink");
+
+        AssertMembers(typeof(StatementReconciliationCaseDto),
+            "CaseId", "RunId", "Status", "Priority", "Title", "Summary", "BreakIds", "CreatedAtUtc",
+            "LastUpdatedAtUtc", "LastUpdatedBy", "Owner", "DueAtUtc", "ResolvedAtUtc", "ResolutionCode",
+            "ResolutionSummary", "EvidenceLink");
+    }
+
     [Fact]
     public void ReconciliationEnvelope_SerializesCanonicalVersionAndCorrelationShape()
     {
@@ -124,6 +197,131 @@ public sealed class LedgerReconciliationContractCompatibilityTests
         var expected = expectedMembers.OrderBy(x => x).ToArray();
         Assert.Equal(expected, actual);
     }
+
+
+    private static StatementRunDto BuildStatementRunDto() => new(
+        RunId: "statement-run-1",
+        Status: StatementRunStatus.ReviewRequired,
+        Source: new StatementSourceDto(
+            SourceId: "source-1",
+            SourceKind: "custodian",
+            SourceSystem: "PrimeBroker",
+            AccountId: "acct-1",
+            AccountName: "Alpha Prime",
+            Currency: "USD",
+            PeriodStart: DateOnly.Parse("2026-01-01"),
+            PeriodEnd: DateOnly.Parse("2026-01-05"),
+            StatementAsOfUtc: DateTimeOffset.Parse("2026-01-05T11:59:00Z")),
+        StartedAtUtc: DateTimeOffset.Parse("2026-01-05T12:00:00Z"),
+        CompletedAtUtc: null,
+        SourceFileName: "custodian-statement.csv",
+        SourceFileHash: "sha256:statement-source",
+        MappingProfileId: "map-custodian-v1",
+        MappingProfileVersion: 3,
+        ToleranceProfileId: "tol-equity-cash",
+        ToleranceProfileVersion: 2,
+        ImportedBy: "ops@example.com",
+        ImportedAtUtc: DateTimeOffset.Parse("2026-01-05T12:00:00Z"),
+        ValidationIssues:
+        [
+            new StatementValidationIssueDto(
+                IssueId: "issue-1",
+                Severity: StatementValidationSeverity.Warning,
+                Code: "UNKNOWN_COLUMN",
+                Message: "Statement included an unmapped memo column.",
+                SourceRowNumber: 4,
+                SourceColumn: "memo",
+                RecommendedAction: "Review mapping profile before promotion.")
+        ],
+        Positions:
+        [
+            new StatementNormalizedPositionDto(
+                RowId: "row-position-1",
+                AccountId: "acct-1",
+                Symbol: "MSFT",
+                Quantity: 10m,
+                MarketPrice: 420m,
+                MarketValue: 4200m,
+                Currency: "USD",
+                AsOfUtc: DateTimeOffset.Parse("2026-01-05T11:59:00Z"),
+                Fingerprint: "fp-position-1",
+                Cusip: "594918104")
+        ],
+        CashBalances:
+        [
+            new StatementNormalizedCashDto(
+                RowId: "row-cash-1",
+                AccountId: "acct-1",
+                Currency: "USD",
+                Amount: 1250m,
+                AsOfUtc: DateTimeOffset.Parse("2026-01-05T11:59:00Z"),
+                Fingerprint: "fp-cash-1",
+                CashType: "settled")
+        ],
+        Transactions:
+        [
+            new StatementNormalizedTransactionDto(
+                RowId: "row-transaction-1",
+                AccountId: "acct-1",
+                ActivityType: "buy",
+                TradeDate: DateOnly.Parse("2026-01-03"),
+                Amount: -4200m,
+                Currency: "USD",
+                Fingerprint: "fp-transaction-1",
+                SettleDate: DateOnly.Parse("2026-01-05"),
+                ExternalTransactionId: "txn-1",
+                Symbol: "MSFT",
+                Quantity: 10m,
+                Price: 420m)
+        ],
+        MatchSummary: new StatementMatchSummaryDto(
+            StatementItemCount: 3,
+            MatchedItemCount: 2,
+            AutoMatchedItemCount: 2,
+            ManualMatchedItemCount: 0,
+            ReviewRequiredItemCount: 1,
+            BreakCount: 1,
+            PositionBreakCount: 0,
+            CashBreakCount: 1,
+            TransactionBreakCount: 0,
+            HighestUnresolvedTier: StatementMatchTier.Probable,
+            MatchedNotional: 4200m,
+            UnmatchedNotional: 25m,
+            BaseCurrency: "USD"),
+        Breaks:
+        [
+            new StatementBreakDto(
+                BreakId: "break-1",
+                BreakType: StatementBreakType.CashBalanceMismatch,
+                Severity: StatementValidationSeverity.Warning,
+                MatchTier: StatementMatchTier.Probable,
+                StatementReference: "row-cash-1",
+                Description: "Statement cash differs from book cash by tolerance breach.",
+                StatementAmount: 1250m,
+                BookAmount: 1225m,
+                Delta: 25m,
+                Tolerance: 1m,
+                Currency: "USD",
+                CreatedAtUtc: DateTimeOffset.Parse("2026-01-05T12:01:00Z"),
+                Status: "Open")
+        ],
+        Cases:
+        [
+            new StatementReconciliationCaseDto(
+                CaseId: "case-1",
+                RunId: "statement-run-1",
+                Status: "Open",
+                Priority: "Normal",
+                Title: "Cash variance review",
+                Summary: "Review the custodian cash balance variance.",
+                BreakIds: ["break-1"],
+                CreatedAtUtc: DateTimeOffset.Parse("2026-01-05T12:02:00Z"),
+                LastUpdatedAtUtc: DateTimeOffset.Parse("2026-01-05T12:02:00Z"),
+                LastUpdatedBy: "ops@example.com")
+        ],
+        ImportId: "import-1",
+        FundProfileId: "fund-1",
+        FundAccountId: Guid.Parse("22222222-2222-2222-2222-222222222222"));
 
     private static FundLedgerSummary BuildFundLedgerSummary() => new(
         FundProfileId: "fund-1",

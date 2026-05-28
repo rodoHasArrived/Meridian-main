@@ -174,6 +174,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-05-27: Added `WorkstationEndpointContractCompatibilityTests` in `tests/Meridian.Tests/Ui/` to snapshot critical readiness/inbox/replay/report-pack DTO fingerprints, enforce enum member/value stability for backward compatibility, and assert additive-only top-level payload evolution for workstation readiness, operator inbox, and replay verification payloads. CI now fails contract lanes when these critical payloads drift without explicit snapshot/versioning updates and migration handling notes.
 
 - 2026-05-27: Expanded evidence packet/workstation completeness contracts with additive diagnostics fields (`EvidenceCompletenessDto.BlockingIssueCount`, `WarningIssueCount`, `OrphanEvidenceIds`, plus matching `EvidenceCompletenessSummaryDto` counters) and retained-artifact canonical subject linkage (`EvidenceArtifactRefDto.CanonicalSubjectKind`/`CanonicalSubjectId`). Changes are additive-only; older clients may ignore new nullable fields but should treat new critical validation issues as blocking readiness/promotion gates.
+- 2026-05-28: Added additive statement reconciliation workstation DTOs for source/run evidence, normalized positions/cash/transactions, match summaries, breaks, validation issues, and operator cases. The payloads are contract-only and transport-safe; existing clients can ignore the new DTO family until route surfaces begin returning it.
 
 ## Pull Request Author Checklist
 
