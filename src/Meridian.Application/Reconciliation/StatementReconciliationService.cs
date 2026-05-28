@@ -23,16 +23,22 @@ public sealed class StatementReconciliationService
         _mappingProfiles = mappingProfiles ?? StatementMappingProfileRegistry.Defaults;
     }
 
-    public Task<string> ValidateAsync(string sourceKind, string sourcePath, CancellationToken ct)
+    public Task<string> ValidateAsync(string sourceKind, string sourcePath, CancellationToken ct) =>
+        ValidateAsync(sourceKind, sourcePath, mappingProfileId: null, ct: ct);
+
+    public Task<string> ValidateAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
+        var profileId = mappingProfileId;
         if (RequiresCanonicalStatementSchema(normalizedSourceKind))
         {
-            ValidateStatementHeader(normalizedSourceKind, sourcePath);
+            var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, profileId);
+            profileId = profile.ProfileId;
         }
 
-        return Task.FromResult($"Statement source '{normalizedSourceKind}:{sourcePath}' passed local file accessibility checks.");
+        var profileSuffix = string.IsNullOrWhiteSpace(profileId) ? string.Empty : $" using mapping profile '{profileId}'";
+        return Task.FromResult($"Statement source '{normalizedSourceKind}:{sourcePath}' passed local file accessibility checks{profileSuffix}.");
     }
 
     public async Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, CancellationToken ct)
@@ -58,21 +64,32 @@ public sealed class StatementReconciliationService
         return new NormalizedStatementImportResult(id, normalizedSourceKind, sourcePath, sourceRows.Count, [], [], [], [], sourceRows);
     }
 
-    public Task<(string ImportId, int MatchCount, int UnresolvedCount)> ReconcileAsync(string sourceKind, string sourcePath, CancellationToken ct)
+    public Task<(string ImportId, int MatchCount, int UnresolvedCount)> ReconcileAsync(string sourceKind, string sourcePath, CancellationToken ct) =>
+        ReconcileAsync(sourceKind, sourcePath, mappingProfileId: null, ct: ct);
+
+    public Task<(string ImportId, int MatchCount, int UnresolvedCount)> ReconcileAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct)
     {
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
-        var intake = CreateExternalStatementCases(normalizedSourceKind, sourcePath);
+        ct.ThrowIfCancellationRequested();
+        var intake = CreateExternalStatementCases(normalizedSourceKind, sourcePath, mappingProfileId);
         return Task.FromResult((intake.ImportId, intake.MatchCount, intake.Cases.Count));
     }
 
     public Task<ExternalStatementCaseIntakeResult> CreateExternalStatementCasesAsync(
         string sourceKind,
         string sourcePath,
+        CancellationToken ct = default) =>
+        CreateExternalStatementCasesAsync(sourceKind, sourcePath, mappingProfileId: null, ct: ct);
+
+    public Task<ExternalStatementCaseIntakeResult> CreateExternalStatementCasesAsync(
+        string sourceKind,
+        string sourcePath,
+        string? mappingProfileId,
         CancellationToken ct = default)
     {
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(CreateExternalStatementCases(normalizedSourceKind, sourcePath));
+        return Task.FromResult(CreateExternalStatementCases(normalizedSourceKind, sourcePath, mappingProfileId));
     }
 
     private static string ValidateSourceAccess(string sourceKind, string sourcePath)
@@ -259,10 +276,9 @@ public sealed class StatementReconciliationService
         }
     }
 
-    private static IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath)
+    private IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
-        ValidateStatementHeader(normalizedSourceKind, sourcePath, profile.ProfileId);
+        var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, mappingProfileId);
 
         var content = File.ReadAllText(sourcePath);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
@@ -284,13 +300,18 @@ public sealed class StatementReconciliationService
                 throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
             }
 
-            var account = parts[0];
-            var symbol = parts[1];
-            var quantity = decimal.Parse(parts[2], CultureInfo.InvariantCulture);
-            var price = decimal.Parse(parts[3], CultureInfo.InvariantCulture);
-            var cashAmount = decimal.Parse(parts[4], CultureInfo.InvariantCulture);
-            var activityType = parts[5];
-            var tradeDate = DateOnly.Parse(parts[6], CultureInfo.InvariantCulture);
+            var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
+            var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
+            var symbol = mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
+            var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
+            var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
+            var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
+            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
+            var tradeDate = mapped.GetRequiredDate(StatementCanonicalField.TradeDate, rowNumber);
+            var settlementDate = mapped.GetOptional(StatementCanonicalField.SettlementDate);
+            var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
+            var feesCommission = mapped.GetOptional(StatementCanonicalField.FeesCommission);
+            var externalTransactionId = mapped.GetOptional(StatementCanonicalField.ExternalTransactionId);
             var rowFingerprint = DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}");
             var rawSnapshot = mapped.ToCanonicalSnapshot();
             rawSnapshot["importId"] = importId;
@@ -302,6 +323,7 @@ public sealed class StatementReconciliationService
             rawSnapshot["activityType"] = activityType;
             rawSnapshot["tradeDate"] = tradeDate.ToString("O");
             rawSnapshot["rowNumber"] = rowNumber.ToString();
+            rawSnapshot["rawLine"] = line;
             if (!string.IsNullOrWhiteSpace(settlementDate)) rawSnapshot["settlementDate"] = settlementDate;
             if (!string.IsNullOrWhiteSpace(currency)) rawSnapshot["currency"] = currency;
             if (!string.IsNullOrWhiteSpace(feesCommission)) rawSnapshot["feesCommission"] = feesCommission;
@@ -314,24 +336,31 @@ public sealed class StatementReconciliationService
                 quantity,
                 cashAmount == 0m ? price * quantity : cashAmount,
                 new DateTimeOffset(tradeDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-                GetOptional(parts, 11) ?? "USD",
+                currency,
                 rowFingerprint,
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["importId"] = importId,
-                    ["sourceKind"] = normalizedSourceKind,
-                    ["sourcePath"] = sourcePath,
-                    ["account"] = account,
-                    ["activityType"] = activityType,
-                    ["rowNumber"] = rowNumber.ToString(),
-                    ["rawLine"] = line
-                }));
+                rawSnapshot));
         }
 
         return rows;
     }
 
-    private void ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
+
+    private static void ValidateCanonicalStatementHeader(string sourcePath)
+    {
+        var header = File.ReadLines(sourcePath).FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(header))
+        {
+            throw new InvalidDataException("Statement source file is empty.");
+        }
+
+        var actual = header.Split(',', StringSplitOptions.TrimEntries);
+        if (!CanonicalCsvHeaderPrefixMatches(actual))
+        {
+            throw new InvalidDataException("Statement source must use the canonical external statement header: account,symbol,quantity,price,cashAmount,activityType,tradeDate.");
+        }
+    }
+
+    private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
         var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var header = File.ReadLines(sourcePath).FirstOrDefault();
@@ -356,6 +385,8 @@ public sealed class StatementReconciliationService
         {
             throw new InvalidDataException($"Statement source is missing required columns for mapping profile '{profile.ProfileId}': {string.Join(", ", missingColumns)}.");
         }
+
+        return profile;
     }
 
     private static bool CanonicalCsvHeaderPrefixMatches(string[] actual)
