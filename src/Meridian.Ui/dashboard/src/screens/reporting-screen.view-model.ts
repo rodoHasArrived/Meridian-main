@@ -4,13 +4,7 @@ import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type {
-  ExportAnalysisResult,
-  GovernanceReportingProfile,
-  GovernanceReportingSummary,
-  ReportPackChangedLine,
-  ReportPackWorkflowRecord
-} from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -112,6 +106,25 @@ export interface ReportingChipViewModel {
   value: string;
 }
 
+export interface ReportingTemplateRow {
+  id: string;
+  name: string;
+  family: string;
+  version: string;
+  sectionSummary: string;
+}
+
+export interface ReportingRunStatusRow {
+  id: string;
+  templateId: string;
+  family: string;
+  status: string;
+  trigger: string;
+  lineageSummary: string;
+  auditSummary: string;
+  failureReason: string | null;
+}
+
 export interface ReportingWorkbenchAction {
   id: "evidence";
   label: string;
@@ -142,30 +155,6 @@ export interface ReportingWorkflowBackendLink {
   ariaLabel: string;
   isBrowserNavigable: boolean;
   interactionLabel: "Open" | "Reference";
-}
-
-export interface ReportingRestatementChangedLineRow {
-  id: string;
-  lineKey: string;
-  valueBridge: string;
-  evidenceLabel: string;
-  evidenceHref: string | null;
-  ariaLabel: string;
-}
-
-export interface ReportingRestatementReviewPanel {
-  regionLabel: string;
-  title: string;
-  description: string;
-  statusLabel: string;
-  statusVariant: ReportingBadgeVariant;
-  summaryText: string;
-  fields: ReportingDetailField[];
-  changedLinesLabel: string;
-  changedLines: ReportingRestatementChangedLineRow[];
-  hasChangedLines: boolean;
-  emptyText: string;
-  evidenceSummary: string;
 }
 
 export interface ReportingWorkflowTaskPanel {
@@ -201,7 +190,6 @@ export interface ReportingWorkflowTaskPanel {
   backendLinksLabel: string;
   backendPanelId: string;
   backendLinks: ReportingWorkflowBackendLink[];
-  restatementReview: ReportingRestatementReviewPanel;
 }
 
 export interface ReportingLoadingState {
@@ -231,6 +219,9 @@ export interface ReportingScreenViewModel {
   workbenchChips: ReportingChipViewModel[];
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
+  templateRows: ReportingTemplateRow[];
+  runStatusRows: ReportingRunStatusRow[];
+  hasRunStatusRows: boolean;
   detailId: string;
   statusTitle: string;
   statusDetail: string;
@@ -357,6 +348,9 @@ export function useReportingScreenViewModel(
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
+      templateRows: [],
+      runStatusRows: [],
+      hasRunStatusRows: false,
       detailId,
       statusTitle: "No profile selected",
       statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
@@ -458,6 +452,8 @@ export function useReportingScreenViewModel(
     selectedProfileActions: reportPackTaskActions,
     pathname
   });
+  const templateRows = buildTemplateRows(reporting.templates ?? []);
+  const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
 
   return {
     title: "Report packs",
@@ -475,6 +471,9 @@ export function useReportingScreenViewModel(
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
+    templateRows,
+    runStatusRows,
+    hasRunStatusRows: runStatusRows.length > 0,
     detailId,
     statusTitle,
     statusDetail: selectedProfileData
@@ -504,6 +503,29 @@ export function useReportingScreenViewModel(
     selectProfile,
     selectAdjacentReportPackProfile
   };
+}
+
+function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
+  return templates.map((template) => ({
+    id: template.templateId,
+    name: template.name,
+    family: template.family,
+    version: template.version,
+    sectionSummary: `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`
+  }));
+}
+
+function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
+  return runs.map((run) => ({
+    id: run.runId,
+    templateId: run.templateId,
+    family: run.family,
+    status: run.status,
+    trigger: run.trigger,
+    lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
+    auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
+    failureReason: run.failureReason
+  }));
 }
 
 function buildLoadingState(pathname: string): ReportingLoadingState {
@@ -700,87 +722,7 @@ function buildWorkflowTaskPanel({
         label: selectedProfile ? `${selectedProfile.name} export analysis` : "Run export",
         href: EXPORT_API_ENDPOINTS.analysis
       })
-    ],
-    restatementReview: buildRestatementReviewPanel(reporting.workflowRecords ?? [])
-  };
-}
-
-export function buildRestatementReviewPanel(
-  workflowRecords: ReportPackWorkflowRecord[]
-): ReportingRestatementReviewPanel {
-  const restatedRecords = workflowRecords
-    .filter((record) => record.state === "Restated" && record.restatement)
-    .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
-  const latest = restatedRecords[0] ?? null;
-  const changedLines = latest?.restatement?.changedLines ?? [];
-  const evidenceIds = new Set<string>();
-  for (const line of changedLines) {
-    for (const link of line.evidenceLinks ?? []) {
-      if (link.evidenceId.trim()) {
-        evidenceIds.add(link.evidenceId.trim());
-      }
-    }
-  }
-
-  if (!latest || !latest.restatement) {
-    return {
-      regionLabel: "Report-pack restatement review",
-      title: "Restatement review",
-      description: "No restated report pack is present in the shared reporting workflow history.",
-      statusLabel: "No restatements",
-      statusVariant: "outline",
-      summaryText: "Published report packs can move into restatement review once changed lines carry evidence links.",
-      fields: [
-        buildReportingDetailField("Workflow records", String(workflowRecords.length), "default"),
-        buildReportingDetailField("Restated records", "0", "muted")
-      ],
-      changedLinesLabel: "Restatement changed lines",
-      changedLines: [],
-      hasChangedLines: false,
-      emptyText: "No changed lines are available because no restated report pack is in the reporting workflow history.",
-      evidenceSummary: "0 evidence links"
-    };
-  }
-
-  return {
-    regionLabel: "Report-pack restatement review",
-    title: "Restatement review",
-    description: `${latest.templateId.name} v${latest.version} is restated for ${latest.period}.`,
-    statusLabel: "Restated",
-    statusVariant: "warning",
-    summaryText: `${latest.restatement.reasonCode} approved by ${latest.restatement.approver}.`,
-    fields: [
-      buildReportingDetailField("Report ID", latest.reportId, "default"),
-      buildReportingDetailField("Prior version", latest.restatement.priorVersionReportId, "default"),
-      buildReportingDetailField("Approver", latest.restatement.approver, "success"),
-      buildReportingDetailField("Changed lines", String(changedLines.length), changedLines.length > 0 ? "warning" : "muted"),
-      buildReportingDetailField("Audit events", String(latest.auditTrail.length), latest.auditTrail.length > 0 ? "success" : "muted")
-    ],
-    changedLinesLabel: "Restatement changed lines",
-    changedLines: changedLines.map(buildRestatementChangedLineRow),
-    hasChangedLines: changedLines.length > 0,
-    emptyText: "This restatement record has no changed lines.",
-    evidenceSummary: `${evidenceIds.size} evidence link${evidenceIds.size === 1 ? "" : "s"}`
-  };
-}
-
-function buildRestatementChangedLineRow(
-  line: ReportPackChangedLine,
-  index: number
-): ReportingRestatementChangedLineRow {
-  const evidenceLinks = line.evidenceLinks ?? [];
-  const firstEvidence = evidenceLinks.find((link) => link.evidenceId.trim().length > 0) ?? null;
-  const evidenceLabel = evidenceLinks.length === 0
-    ? "No evidence"
-    : `${evidenceLinks.length} evidence link${evidenceLinks.length === 1 ? "" : "s"}`;
-
-  return {
-    id: `${line.lineKey || "line"}-${index}`,
-    lineKey: line.lineKey || "Unnamed line",
-    valueBridge: `${line.previousValue || "blank"} -> ${line.currentValue || "blank"}`,
-    evidenceLabel,
-    evidenceHref: firstEvidence?.route ?? null,
-    ariaLabel: `${line.lineKey || "Unnamed line"} changed from ${line.previousValue || "blank"} to ${line.currentValue || "blank"} with ${evidenceLabel}`
+    ]
   };
 }
 

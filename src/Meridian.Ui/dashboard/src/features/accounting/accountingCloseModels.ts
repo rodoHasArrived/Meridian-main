@@ -5,6 +5,8 @@ export interface TrialBalanceRow {
   debit: number;
   credit: number;
   net: number;
+  sourceEventIds?: string[];
+  approvalIds?: string[];
 }
 
 export interface RollForwardRow {
@@ -13,10 +15,34 @@ export interface RollForwardRow {
   activity: number;
   translationAdjustment: number;
   closingBalance: number;
+  sourceEventIds?: string[];
+  approvalIds?: string[];
 }
 
 export interface AuditDrillThroughRow {
   journalEntryId: string;
   sourceEventId: string;
   approvalId: string;
+  accountingPeriod?: string | null;
+  description?: string | null;
+  accountCodes?: string[];
+}
+
+export interface CloseEvidenceCheck {
+  checkId: string;
+  label: string;
+  required: boolean;
+  passed: boolean;
+  sourceEventId: string;
+  approvalId: string;
+  detail: string;
+}
+
+export interface ClosePeriodProjection {
+  ledgerId: string;
+  period: string;
+  state: CloseWorkflowState;
+  blockers: string[];
+  trialBalanceBalanced: boolean;
+  evidenceChecks: CloseEvidenceCheck[];
 }

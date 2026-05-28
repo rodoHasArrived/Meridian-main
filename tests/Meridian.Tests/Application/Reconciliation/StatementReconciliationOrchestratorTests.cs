@@ -20,6 +20,10 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(StatementReconciliationStage.Completed, result.CurrentStage);
             Assert.Equal("Completed", result.Status);
             Assert.True(result.ImportedRowCount > 0);
+            var evidenceLink = Assert.Single(result.EvidenceLinks!);
+            Assert.Equal(result.ImportId, evidenceLink.RunId);
+            Assert.False(string.IsNullOrWhiteSpace(evidenceLink.SourceFileHash));
+            Assert.Equal("local", evidenceLink.BrokerCustodian);
         }
         finally
         {
@@ -64,6 +68,13 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(2, result.ImportedRowCount);
             Assert.Equal(1, result.MatchCount);
             Assert.Equal(1, result.UnresolvedCount);
+            var evidenceLink = Assert.Single(result.EvidenceLinks!);
+            Assert.Equal(result.ImportId, evidenceLink.RunId);
+            Assert.Equal(2, evidenceLink.MatchSummary.StatementItemCount);
+            Assert.Equal(1, evidenceLink.MatchSummary.BreakCount);
+            Assert.Equal("A1", evidenceLink.Account);
+            Assert.Equal(new DateOnly(2026, 5, 29), evidenceLink.StatementPeriodStart);
+            Assert.Equal(new DateOnly(2026, 5, 30), evidenceLink.StatementPeriodEnd);
             Assert.Single(intake.Cases);
             var reconciliationCase = intake.Cases[0];
             Assert.Equal("fund-ops", reconciliationCase.Owner);

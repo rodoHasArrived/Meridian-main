@@ -18,11 +18,10 @@ import {
   buildReconciliationBreakRows,
   buildReconciliationDetailActions,
   buildReconciliationQueuePanelViewState,
+  buildReconciliationStatementRunsViewState,
   buildReconciliationDetailViewState,
   buildReconciliationNarrative,
   buildReconciliationResolveDialogState,
-  buildTransactionLabPreviewRequest,
-  buildTransactionLabPreviewViewState,
   buildSecurityConflictRows,
   buildSecurityConflictRefreshCommand,
   buildSecurityIdentityDrillInState,
@@ -46,7 +45,6 @@ import type {
   CorporateAction,
   GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
-  InvestmentAccountingTransactionLabPreview,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   ReconciliationBreakQueueItem,
@@ -494,15 +492,7 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     signoffStatus: "Pending Signoff",
     routingTarget: "FundTrialBalance",
     routingDetail: "Open the accounting trial balance for evidence review.",
-    recommendedAction: "Review matched fee entries before closing.",
-    breakExplanation: {
-      summary: "Fee mismatch from custodian statement row 7.",
-      sourceSystems: ["custodian", "Meridian ledger"],
-      probableCause: "External fee activity has no matching ledger expense posting.",
-      ledgerImpact: "Expense and cash accounts may be understated by USD 25.",
-      suggestedNextAction: "Map the fee to the fund expense policy and attach approval evidence.",
-      evidenceLinks: ["/api/workstation/reconciliation/statement-runs/run-57#row-7", "statement-hash:abc"]
-    }
+    recommendedAction: "Review matched fee entries before closing."
   }
 ];
 
@@ -527,63 +517,6 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
   }
 ];
 
-const transactionLabPreview: InvestmentAccountingTransactionLabPreview = {
-  previewId: "lab-preview-1",
-  kind: "Trade",
-  fundAccountId: "browser-ledger-preview",
-  symbol: "AAPL",
-  eventDate: "2026-05-28",
-  currency: "USD",
-  journalPreview: {
-    journalPreviewId: "journal-preview-1",
-    expectedEventId: "event-1",
-    description: "Buy AAPL",
-    eventDate: "2026-05-28",
-    isBalanced: true,
-    requiresOperatorApproval: true,
-    idempotencyKey: "trade:AAPL:2026-05-28",
-    lines: [
-      { accountName: "Investment asset", accountType: "Asset", symbol: "AAPL", debit: 120500, credit: 0 },
-      { accountName: "Cash", accountType: "Asset", symbol: null, debit: 0, credit: 120500 }
-    ]
-  },
-  ledgerImpact: {
-    draftEntryCount: 1,
-    netDebitEffect: 120500,
-    netCreditEffect: 120500,
-    netBalanceDelta: 0,
-    hasValidationWarnings: false,
-    validationFlags: []
-  },
-  trialBalanceImpact: [
-    {
-      accountName: "Investment asset",
-      accountType: "Asset",
-      symbol: "AAPL",
-      balanceDelta: 120500,
-      explanation: "Security position increases before broker movement."
-    },
-    {
-      accountName: "Cash",
-      accountType: "Asset",
-      symbol: null,
-      balanceDelta: -120500,
-      explanation: "Cash decreases under trade settlement preview."
-    }
-  ],
-  reconciliationExpectation: {
-    expectedState: "ExpectedOpenBreak",
-    expectedBreakType: "BooksBeforeBroker",
-    detail: "Broker statement will not match until movement settles.",
-    evidenceIds: ["run:run-42", "reconciliation:BreaksOpen"],
-    brokerStatementId: null,
-    reconciliationCaseId: "run-42:open-breaks"
-  },
-  evidenceIds: ["run:run-42", "reconciliation:BreaksOpen"],
-  sourceRunId: "run-42",
-  sourceSessionId: "run-42"
-};
-
 describe("governance-screen view model", () => {
   it("derives the governance workstream and selected reconciliation run", () => {
     expect(resolveGovernanceWorkstream("/accounting/security-master")).toBe("security-master");
@@ -598,6 +531,65 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("derives statement run rows and detail tabs from endpoint supplied counts", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2,
+          brokerCustodian: "Northern Trust",
+          account: "Fund A - Prime",
+          period: "2026-04",
+          status: "ReviewRequired",
+          validationIssueCount: 4,
+          breakCount: 2,
+          caseCount: 1,
+          importedAtUtc: "2026-05-01T00:04:00Z"
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: "statement-run-1",
+      loading: false,
+      error: null
+    });
+
+    expect(state).toMatchObject({
+      title: "Statement runs",
+      tableLabel: "Accounting statement runs",
+      hasRows: true,
+      loadingText: null,
+      errorText: null
+    });
+    expect(state.rows[0]).toMatchObject({
+      brokerCustodianLabel: "Northern Trust",
+      accountLabel: "Fund A - Prime",
+      periodLabel: "2026-04",
+      statusLabel: "ReviewRequired",
+      validationIssueCountLabel: "4",
+      matchCountLabel: "24",
+      breakCountLabel: "2",
+      caseCountLabel: "1",
+      importedAtLabel: "2026-05-01T00:04:00Z",
+      unavailableReason: null
+    });
+    expect(state.tabs.map((tab) => tab.label)).toEqual([
+      "Overview",
+      "Validation",
+      "Positions",
+      "Cash",
+      "Transactions",
+      "Breaks & Cases",
+      "Evidence"
+    ]);
+    expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
   });
 
   it("derives reconciliation detail queue row state and empty inspector copy", () => {
@@ -917,7 +909,8 @@ describe("governance-screen view model", () => {
       getCalibrationSummary: vi.fn()
         .mockReturnValueOnce(firstLoad)
         .mockResolvedValueOnce(retrySummary),
-      previewTransactionLab: vi.fn().mockResolvedValue(transactionLabPreview)
+      getStatementRuns: vi.fn().mockResolvedValue([]),
+      getStatementRun: vi.fn()
     };
     const bootstrapData = {
       metrics: [],
@@ -1009,96 +1002,32 @@ describe("governance-screen view model", () => {
     });
   });
 
-  it("builds Transaction Lab requests and preview state from shared ledger context", () => {
-    const request = buildTransactionLabPreviewRequest({
-      ...reconciliationQueue[0],
-      lastUpdated: "2026-05-28T15:30:00Z"
-    }, [
-      {
-        ...trialBalanceLines[0],
-        symbol: "AAPL"
-      }
-    ]);
-
-    expect(request).toMatchObject({
-      kind: "Trade",
-      fundAccountId: "browser-ledger-preview",
-      symbol: "AAPL",
-      eventDate: "2026-05-28",
-      amount: 120500,
-      quantity: 1,
-      price: 120500,
-      side: "Buy",
-      sourceRunId: "run-42",
-      sourceSessionId: "run-42",
-      reconciliationCaseId: "run-42:open-breaks",
-      evidenceIds: ["run:run-42", "reconciliation:BreaksOpen"]
-    });
-
-    const state = buildTransactionLabPreviewViewState({
-      selectedReconciliation: reconciliationQueue[0],
-      trialBalance: trialBalanceLines,
-      preview: transactionLabPreview,
+  it("adds source-event and approval drill-through details to trial-balance selections", () => {
+    const state = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 120500,
+          entryCount: 12,
+          security: null,
+          sourceEventIds: ["evt-cash-1"],
+          approvalIds: ["approval-cash-1"]
+        } as unknown as LedgerTrialBalanceLine
+      ],
       loading: false,
       error: null
     });
 
-    expect(state).toMatchObject({
-      title: "Transaction Lab",
-      statusTone: "success",
-      statusRole: "status",
-      journalLineCountLabel: "2 journal lines",
-      ledgerImpactLabel: "$120,500 debit / $120,500 credit",
-      reconciliationLabel: "ExpectedOpenBreak",
-      evidenceLabel: "2 evidence ids",
-      requestSummaryLabel: "run-42 · BreaksOpen"
-    });
-    expect(state.impactRows).toEqual([
-      expect.objectContaining({ label: "Investment asset · AAPL", value: "+$120,500.00", tone: "success" }),
-      expect.objectContaining({ label: "Cash", value: "-$120,500.00", tone: "danger" })
-    ]);
-  });
-
-  it("runs Transaction Lab preview from the selected ledger workstream run", async () => {
-    const services: GovernanceReconciliationServices = {
-      getBreakQueue: vi.fn().mockResolvedValue([]),
-      reviewBreak: vi.fn(),
-      resolveBreak: vi.fn(),
-      getTrialBalance: vi.fn().mockResolvedValue([
-        {
-          ...trialBalanceLines[0],
-          symbol: "AAPL"
-        }
-      ]),
-      getCalibrationSummary: vi.fn(),
-      previewTransactionLab: vi.fn().mockResolvedValue(transactionLabPreview)
-    };
-    const bootstrapData = {
-      metrics: [],
-      reconciliationQueue,
-      breakQueue: [],
-      cashFlow: null,
-      reporting: null
-    } as unknown as GovernanceWorkspaceResponse;
-
-    const { result } = renderHook(() => useGovernanceReconciliationViewModel(bootstrapData, "ledger", services));
-
-    await waitFor(() => expect(services.getTrialBalance).toHaveBeenCalledWith("run-42"));
-    await act(async () => {
-      await result.current.runTransactionLabPreview();
-    });
-
-    expect(services.previewTransactionLab).toHaveBeenCalledWith(expect.objectContaining({
-      kind: "Trade",
-      symbol: "AAPL",
-      sourceRunId: "run-42",
-      reconciliationCaseId: "run-42:open-breaks"
-    }));
-    expect(result.current.transactionLabView).toMatchObject({
-      statusTone: "success",
-      journalLineCountLabel: "2 journal lines",
-      reconciliationLabel: "ExpectedOpenBreak"
-    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Source events", value: "evt-cash-1" },
+      { label: "Approvals", value: "approval-cash-1" }
+    ]));
+    expect(state.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=evt-cash-1");
+    expect(state.selectedDetail?.approvalDrillThroughHref).toBe("/accounting/approvals?approvalId=approval-cash-1");
   });
 
   it("filters trial-balance rows by basis and builds a basis bridge", () => {
@@ -1916,8 +1845,7 @@ describe("governance-screen view model", () => {
       title: "Intraday Vol Carry - FeeMismatch",
       statusLabel: "Resolved",
       statusBadgeVariant: "success",
-      analysisText: "Fee mismatch from custodian statement row 7.",
-      recommendedActionText: "Map the fee to the fund expense policy and attach approval evidence.",
+      recommendedActionText: "Review matched fee entries before closing.",
       routingActionLabel: "Open routing target",
       routingActionHref: "/accounting/ledger",
       routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
@@ -1932,11 +1860,7 @@ describe("governance-screen view model", () => {
         label: "Required sign-off",
         value: "Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked."
       },
-      { label: "Decision note", value: "Reviewed in governance panel." },
-      { label: "Source systems", value: "custodian, Meridian ledger" },
-      { label: "Probable cause", value: "External fee activity has no matching ledger expense posting." },
-      { label: "Ledger impact", value: "Expense and cash accounts may be understated by USD 25." },
-      { label: "Evidence links", value: "/api/workstation/reconciliation/statement-runs/run-57#row-7, statement-hash:abc" }
+      { label: "Decision note", value: "Reviewed in governance panel." }
     ]));
     expect(state.rows[1]).toMatchObject({
       isSelected: true,

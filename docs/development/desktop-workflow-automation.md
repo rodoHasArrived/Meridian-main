@@ -61,10 +61,12 @@ For migration context and replacement mappings, see:
 | `manual-research-and-trading` | Research, backtesting, Quant Script, and trading flow | Included in the generated user manual |
 | `manual-governance` | Governance, ledger, notifications, and reference data flow | Included in the generated user manual |
 
-The `Refresh UI Screenshots` GitHub workflow derives its desktop matrix from this same catalog via
-`scripts/dev/screenshot_workflow_plan.py`. A workflow named `screenshot-catalog` runs for catalog
-captures, and any workflow with `includeInManual: true` is automatically included when the manual
-screenshot group is selected. The web capture set is planned from
+The `Desktop Screenshot Capture` GitHub workflow runs the `screenshot-catalog` workflow for catalog
+captures and can commit refreshed PNGs under `docs/screenshots/desktop/`. Each hosted run also
+prepares a `desktop-screenshots-complete-<run-number>` artifact under
+`artifacts/desktop-screenshot-capture/all-screenshots/` that mirrors every captured PNG from both
+the requested catalog output and the timestamped `artifacts/desktop-workflows/` run bundles, plus a
+`screenshot-artifact-manifest.json` index of those files. The web capture set is planned from
 `scripts/dev/web-screenshot-routes.json`, so screenshot additions should be made in the definition
 files rather than by editing the workflow matrix directly. Strategy Designer is part of that web
 evidence lane through `/workstation/strategy/designer`; keep its screenshot route paired with

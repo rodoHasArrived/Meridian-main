@@ -15,7 +15,25 @@ public sealed record ReconciliationCaseSummaryDto(
     string Reason,
     decimal Confidence,
     string Rationale,
-    string CreatedAtUtc);
+    string CreatedAtUtc,
+    string? Assignee = null,
+    string Priority = "Normal",
+    string? SlaPolicyId = null,
+    string? SlaDueAtUtc = null,
+    string? SlaWarningAtUtc = null,
+    string? SlaBreachedAtUtc = null,
+    string SlaState = "OnTrack",
+    string? AgeBand = null,
+    double BusinessAgeHours = 0,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? ResolutionNote = null,
+    string? SignedOffBy = null,
+    string? SignedOffAtUtc = null,
+    string? ReopenedBy = null,
+    string? ReopenedAtUtc = null,
+    string? ReopenReason = null,
+    long Version = 0);
 
 public sealed record ReconciliationQueueAccountStatusDto(
     Guid AccountId,
@@ -27,25 +45,24 @@ public sealed record ReconciliationQueueAccountStatusDto(
     string BlockerReason,
     IReadOnlyList<string> EvidenceLinks);
 
-public sealed record StatementRunSummaryDto(
+public sealed record StatementRunEvidenceLinkDto(
+    string EvidenceId,
+    string EvidenceRoute,
     string RunId,
-    string ImportId,
-    string StartedAtUtc,
-    string CompletedAtUtc,
-    int PositionMatches,
-    int CashMatches,
-    int TransactionMatches,
-    int OpenExceptionCount);
-
-public sealed record StatementRunExceptionDto(
-    string BreakId,
-    string RunId,
-    string ImportId,
-    string SourceReference,
-    string BreakCode,
-    string Category,
-    decimal Delta,
-    decimal Tolerance,
-    bool ToleranceBreached,
-    string CreatedAtUtc,
-    string Status);
+    string SourceFileHash,
+    string BrokerCustodian,
+    string Account,
+    string StatementPeriodStart,
+    string StatementPeriodEnd,
+    string MappingProfileId,
+    int MappingProfileVersion,
+    string ToleranceProfileId,
+    int ToleranceProfileVersion,
+    string ValidationSummary,
+    string MatchSummary,
+    IReadOnlyList<string> BreakIds,
+    IReadOnlyList<string> CaseIds,
+    string ImportedBy,
+    string ImportedAtUtc,
+    string ReconciledBy,
+    string ReconciledAtUtc);

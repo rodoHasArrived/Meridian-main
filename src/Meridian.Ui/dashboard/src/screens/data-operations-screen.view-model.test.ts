@@ -527,7 +527,7 @@ describe("data-operations-screen view model", () => {
     expect(previewCard.rows).toContainEqual({ id: "symbols", label: "Symbols", value: "AAPL, MSFT" });
     expect(previewCard.rows).toContainEqual({ id: "bars", label: "Bars", value: "1,200" });
     expect(previewCard.rows).toContainEqual({ id: "range", label: "Range", value: "2024-01-01 to 2024-01-31" });
-    expect(previewCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "Jan 31, 2024 10:00 UTC · 5s elapsed" });
+    expect(previewCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "5 sec est." });
     expect(previewCard.ariaLabel).toContain("Status Preview only");
 
     const completedCard = buildBackfillResultCardState(completedBackfill, "result");

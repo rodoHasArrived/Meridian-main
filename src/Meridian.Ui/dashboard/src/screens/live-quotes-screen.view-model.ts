@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { workflowTargetPath } from "@/lib/workspace";
@@ -111,6 +112,7 @@ export interface QuickTradeTicketViewModel {
   setReviewAcknowledged: (value: boolean) => void;
   submitTicket: (event: FormEvent) => Promise<void>;
   resetTicket: () => void;
+  requestStatus: RequestLifecycleStatus;
 }
 
 export interface QuickTradeTicketApi {
@@ -120,6 +122,12 @@ export interface QuickTradeTicketApi {
 export interface LiveQuotesLoadState<T> {
   data: T | null;
   error: string | null;
+}
+
+export interface LiveQuotesRequestStatusModel {
+  market: RequestLifecycleStatus;
+  snapshot: RequestLifecycleStatus;
+  orderSubmission: RequestLifecycleStatus;
 }
 
 export interface LiveQuoteSymbolLookupCommandViewModel {
@@ -473,6 +481,7 @@ export interface LiveQuotesScreenViewModel {
   pollIntervalSecondsLabel: string;
   submitLookup: (event: FormEvent<HTMLFormElement>) => void;
   refreshMarketData: () => Promise<void>;
+  requestStatus: LiveQuotesRequestStatusModel;
 }
 
 export interface LiveQuoteRefreshCommandViewModel {
@@ -482,6 +491,20 @@ export interface LiveQuoteRefreshCommandViewModel {
   disabledReason: string | null;
   busy: boolean;
 }
+
+
+const idleOrderSubmissionStatus: RequestLifecycleStatus = {
+  operation: "quick trade order submission",
+  phase: "idle",
+  inFlight: false,
+  version: 0,
+  message: "Ready to submit order.",
+  error: null,
+  startedAt: null,
+  settledAt: null,
+  staleDiscardCount: 0,
+  backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+};
 
 export const initialQuickTicketState: QuickTicketState = {
   side: "Buy",
@@ -515,28 +538,23 @@ export function useLiveQuotesScreenViewModel(
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingSnapshot, setRefreshingSnapshot] = useState(false);
   const [paused, setPaused] = useState(false);
-  const requestIdRef = useRef(0);
-  const snapshotRequestIdRef = useRef(0);
-  const inFlightSymbolRef = useRef<string | null>(null);
-  const inFlightSnapshotKeyRef = useRef<string | null>(null);
-  const mountedRef = useRef(true);
-  const marketAbortRef = useRef<AbortController | null>(null);
-  const snapshotAbortRef = useRef<AbortController | null>(null);
+  const marketLifecycle = useRequestLifecycle({
+    operation: "live quote market panels",
+    runningMessage: "Refreshing live quote, trade, and order-book panels.",
+    successMessage: "Live market panels refreshed.",
+    failureMessage: "Live market refresh failed.",
+    staleMessage: "Older live market response discarded.",
+    maxRetries: 2
+  });
+  const snapshotLifecycle = useRequestLifecycle({
+    operation: "live quote matrix",
+    runningMessage: "Refreshing live quote matrix.",
+    successMessage: "Live quote matrix refreshed.",
+    failureMessage: "Live quote matrix refresh failed.",
+    staleMessage: "Older live quote matrix response discarded.",
+    maxRetries: 2
+  });
   const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder: api.submitOrder });
-
-  useEffect(() => {
-    mountedRef.current = true;
-
-    return () => {
-      mountedRef.current = false;
-      requestIdRef.current += 1;
-      snapshotRequestIdRef.current += 1;
-      inFlightSymbolRef.current = null;
-      inFlightSnapshotKeyRef.current = null;
-      marketAbortRef.current?.abort();
-      snapshotAbortRef.current?.abort();
-    };
-  }, []);
 
   const resetMarketState = useCallback(() => {
     setQuote({ data: null, error: null });
@@ -552,18 +570,17 @@ export function useLiveQuotesScreenViewModel(
 
   const fetchMarketData = useCallback(async (symbol: string) => {
     const requestedSymbol = normalizeLiveQuoteSymbol(symbol);
-    if (!requestedSymbol || inFlightSymbolRef.current === requestedSymbol) {
+    if (!requestedSymbol) {
       return;
     }
 
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
-    marketAbortRef.current?.abort();
-    const controller = new AbortController();
-    marketAbortRef.current = controller;
-    const requestOptions = { signal: controller.signal };
-    inFlightSymbolRef.current = requestedSymbol;
-    setRefreshing(true);
+    const token = marketLifecycle.start({ runningMessage: `Refreshing live market panels for ${requestedSymbol}.` });
+    if (!token) {
+      return;
+    }
+
+    const requestOptions = { signal: token.signal };
+    token.safeSetState(setRefreshing, true);
 
     try {
       const [quoteResult, tradesResult, orderbookResult] = await Promise.allSettled([
@@ -572,59 +589,66 @@ export function useLiveQuotesScreenViewModel(
         api.getLiveOrderbook(requestedSymbol, 10, requestOptions)
       ]);
 
-      if (!mountedRef.current || requestIdRef.current !== requestId) {
+      if (!token.isCurrent()) {
+        marketLifecycle.markStale(token.version);
         return;
       }
 
-      setQuote((current) => mergeLiveQuotesLoadState(quoteResult, current, "Failed to load quote"));
-      setTrades((current) => mergeLiveQuotesLoadState(tradesResult, current, "Failed to load trades"));
-      setOrderbook((current) => mergeLiveQuotesLoadState(orderbookResult, current, "Failed to load order book"));
-    } finally {
-      if (mountedRef.current && requestIdRef.current === requestId) {
-        if (marketAbortRef.current === controller) {
-          marketAbortRef.current = null;
-        }
-        inFlightSymbolRef.current = null;
-        setRefreshing(false);
+      token.safeSetState(setQuote, (current) => mergeLiveQuotesLoadState(quoteResult, current, "Failed to load quote"));
+      token.safeSetState(setTrades, (current) => mergeLiveQuotesLoadState(tradesResult, current, "Failed to load trades"));
+      token.safeSetState(setOrderbook, (current) => mergeLiveQuotesLoadState(orderbookResult, current, "Failed to load order book"));
+      const hasFailure = [quoteResult, tradesResult, orderbookResult].some((result) => result.status === "rejected");
+      if (hasFailure) {
+        const failure = [quoteResult, tradesResult, orderbookResult].find((result) => result.status === "rejected");
+        marketLifecycle.fail(token, failure?.status === "rejected" ? failure.reason : null, { fallback: "Live market refresh failed." });
+      } else {
+        marketLifecycle.succeed(token);
       }
+    } finally {
+      if (token.isCurrent()) {
+        token.safeSetState(setRefreshing, false);
+      }
+      marketLifecycle.finish(token);
     }
-  }, [api.getLiveOrderbook, api.getLiveQuote, api.getLiveTrades]);
+  }, [api.getLiveOrderbook, api.getLiveQuote, api.getLiveTrades, marketLifecycle.fail, marketLifecycle.finish, marketLifecycle.markStale, marketLifecycle.start, marketLifecycle.succeed]);
 
   const fetchSnapshotData = useCallback(async (symbols: readonly string[]) => {
     const normalizedSymbols = normalizeLiveQuoteSymbols(symbols.join(","));
     const snapshotKey = normalizedSymbols.join(",");
-    if (normalizedSymbols.length === 0 || inFlightSnapshotKeyRef.current === snapshotKey) {
+    if (normalizedSymbols.length === 0) {
       return;
     }
 
-    const requestId = snapshotRequestIdRef.current + 1;
-    snapshotRequestIdRef.current = requestId;
-    snapshotAbortRef.current?.abort();
-    const controller = new AbortController();
-    snapshotAbortRef.current = controller;
-    inFlightSnapshotKeyRef.current = snapshotKey;
-    setRefreshingSnapshot(true);
+    const token = snapshotLifecycle.start({ runningMessage: `Refreshing live quote matrix for ${snapshotKey}.` });
+    if (!token) {
+      return;
+    }
+
+    token.safeSetState(setRefreshingSnapshot, true);
 
     try {
       const result = await Promise.allSettled([
-        api.getLiveQuotesSnapshot(normalizedSymbols, { signal: controller.signal })
+        api.getLiveQuotesSnapshot(normalizedSymbols, { signal: token.signal })
       ]);
 
-      if (!mountedRef.current || snapshotRequestIdRef.current !== requestId) {
+      if (!token.isCurrent()) {
+        snapshotLifecycle.markStale(token.version);
         return;
       }
 
-      setSnapshot((current) => mergeLiveQuotesLoadState(result[0], current, "Failed to load quote matrix"));
-    } finally {
-      if (mountedRef.current && snapshotRequestIdRef.current === requestId) {
-        if (snapshotAbortRef.current === controller) {
-          snapshotAbortRef.current = null;
-        }
-        inFlightSnapshotKeyRef.current = null;
-        setRefreshingSnapshot(false);
+      token.safeSetState(setSnapshot, (current) => mergeLiveQuotesLoadState(result[0], current, "Failed to load quote matrix"));
+      if (result[0].status === "fulfilled") {
+        snapshotLifecycle.succeed(token);
+      } else {
+        snapshotLifecycle.fail(token, result[0].reason, { fallback: "Live quote matrix refresh failed." });
       }
+    } finally {
+      if (token.isCurrent()) {
+        token.safeSetState(setRefreshingSnapshot, false);
+      }
+      snapshotLifecycle.finish(token);
     }
-  }, [api.getLiveQuotesSnapshot]);
+  }, [api.getLiveQuotesSnapshot, snapshotLifecycle.fail, snapshotLifecycle.finish, snapshotLifecycle.markStale, snapshotLifecycle.start, snapshotLifecycle.succeed]);
 
   useEffect(() => {
     if (!activeSymbol || paused) {
@@ -819,7 +843,12 @@ export function useLiveQuotesScreenViewModel(
     refreshCommand: buildLiveQuoteRefreshCommand(activeSymbol, refreshing || refreshingSnapshot),
     pollIntervalSecondsLabel: String(LIVE_QUOTES_POLL_INTERVAL_MS / 1000),
     submitLookup,
-    refreshMarketData
+    refreshMarketData,
+    requestStatus: {
+      market: marketLifecycle.status,
+      snapshot: snapshotLifecycle.status,
+      orderSubmission: quickTrade.requestStatus
+    }
   };
 }
 
@@ -1456,23 +1485,26 @@ export function useQuickTradeTicket(
 ): QuickTradeTicketViewModel {
   const [ticket, setTicket] = useState<QuickTicketState>(initialQuickTicketState);
   const activeSymbolRef = useRef(activeSymbol);
-  const submitRevisionRef = useRef(0);
+  const submitLifecycle = useRequestLifecycle({
+    operation: "quick trade order submission",
+    runningMessage: "Submitting quick trade order.",
+    successMessage: "Quick trade order submitted.",
+    failureMessage: "Quick trade order submission failed.",
+    staleMessage: "Older quick trade submission response discarded.",
+    maxRetries: 1
+  });
 
   activeSymbolRef.current = activeSymbol;
 
   const resetTicket = useCallback(() => {
-    submitRevisionRef.current += 1;
+    submitLifecycle.invalidate();
     setTicket(initialQuickTicketState);
-  }, []);
+  }, [submitLifecycle.invalidate]);
 
   useEffect(() => {
-    submitRevisionRef.current += 1;
+    submitLifecycle.invalidate();
     setTicket(initialQuickTicketState);
-  }, [activeSymbol]);
-
-  useEffect(() => () => {
-    submitRevisionRef.current += 1;
-  }, []);
+  }, [activeSymbol, submitLifecycle.invalidate]);
 
   const seedTicket = useCallback((side: "Buy" | "Sell", price: number) => {
     const priceLabel = formatTicketPrice(price);
@@ -1524,7 +1556,7 @@ export function useQuickTradeTicket(
     if (validation) {
       setTicket((current) => ({
         ...current,
-        phase: "error",
+        phase: "error" as const,
         message: validation,
         details: [],
         orderId: null,
@@ -1536,7 +1568,7 @@ export function useQuickTradeTicket(
     if (!ticket.acknowledged) {
       setTicket((current) => ({
         ...current,
-        phase: "error",
+        phase: "error" as const,
         message: "Review and acknowledge the ticket before submitting.",
         details: [],
         orderId: null,
@@ -1546,51 +1578,58 @@ export function useQuickTradeTicket(
     }
 
     const request = buildOrderRequest(submitSymbol, ticket);
-    const submitRevision = submitRevisionRef.current + 1;
-    submitRevisionRef.current = submitRevision;
+    const token = submitLifecycle.start();
+    if (!token) {
+      return;
+    }
     const applyCurrentSubmission = (update: (current: QuickTicketState) => QuickTicketState) => {
-      if (submitRevisionRef.current === submitRevision && activeSymbolRef.current === submitSymbol) {
-        setTicket(update);
+      if (token.isCurrent() && activeSymbolRef.current === submitSymbol) {
+        token.safeSetState(setTicket, update);
       }
     };
 
-    setTicket((current) => ({ ...current, phase: "submitting", message: null, details: [], orderId: null }));
+    token.safeSetState(setTicket, (current) => ({ ...current, phase: "submitting" as const, message: null, details: [], orderId: null }));
     try {
       const result = await api.submitOrder(request);
       if (result.success) {
         applyCurrentSubmission((current) => ({
           ...current,
-          phase: "submitted",
+          phase: "submitted" as const,
           message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
           details: [],
           orderId: result.orderId,
           validationVisible: false,
           acknowledged: false
         }));
+        submitLifecycle.succeed(token);
       } else {
         applyCurrentSubmission((current) => ({
           ...current,
-          phase: "error",
+          phase: "error" as const,
           message: result.reason ?? "Order rejected.",
           details: [],
           orderId: null,
           validationVisible: false,
           acknowledged: false
         }));
+        submitLifecycle.fail(token, result.reason ?? "Order rejected.", { fallback: "Order rejected." });
       }
     } catch (error) {
       const display = describeApiError(error, "Order submission failed.");
       applyCurrentSubmission((current) => ({
         ...current,
-        phase: "error",
+        phase: "error" as const,
         message: display.summary,
         details: display.details,
         orderId: null,
         validationVisible: false,
         acknowledged: false
       }));
+      submitLifecycle.fail(token, error, { fallback: "Order submission failed." });
+    } finally {
+      submitLifecycle.finish(token);
     }
-  }, [activeSymbol, api, ticket]);
+  }, [activeSymbol, api, submitLifecycle.fail, submitLifecycle.finish, submitLifecycle.start, submitLifecycle.succeed, ticket]);
 
   return useMemo(
     () => buildQuickTradeTicketViewModel({
@@ -1600,9 +1639,10 @@ export function useQuickTradeTicket(
       updateField,
       setReviewAcknowledged,
       submitTicket,
-      resetTicket
+      resetTicket,
+      requestStatus: submitLifecycle.status
     }),
-    [activeSymbol, resetTicket, seedTicket, setReviewAcknowledged, submitTicket, ticket, updateField]
+    [activeSymbol, resetTicket, seedTicket, setReviewAcknowledged, submitLifecycle.status, submitTicket, ticket, updateField]
   );
 }
 
@@ -1613,7 +1653,8 @@ export function buildQuickTradeTicketViewModel({
   updateField,
   setReviewAcknowledged,
   submitTicket,
-  resetTicket
+  resetTicket,
+  requestStatus
 }: {
   activeSymbol: string | null;
   ticket: QuickTicketState;
@@ -1622,6 +1663,7 @@ export function buildQuickTradeTicketViewModel({
   setReviewAcknowledged: QuickTradeTicketViewModel["setReviewAcknowledged"];
   submitTicket: QuickTradeTicketViewModel["submitTicket"];
   resetTicket: QuickTradeTicketViewModel["resetTicket"];
+  requestStatus?: RequestLifecycleStatus;
 }): QuickTradeTicketViewModel {
   const validation = validateQuickTicket(ticket);
   const submitting = ticket.phase === "submitting";
@@ -1668,7 +1710,8 @@ export function buildQuickTradeTicketViewModel({
     updateField,
     setReviewAcknowledged,
     submitTicket,
-    resetTicket
+    resetTicket,
+    requestStatus: requestStatus ?? idleOrderSubmissionStatus
   };
 }
 

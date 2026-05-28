@@ -249,6 +249,19 @@ public sealed class UiApiClient
     public async Task<ReconciliationCalibrationSummaryDto?> GetReconciliationCalibrationSummaryAsync(CancellationToken ct = default)
         => await GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct).ConfigureAwait(false);
 
+    public async Task<ReconciliationTaxonomySnapshot?> GetReconciliationCaseTaxonomyAsync(CancellationToken ct = default)
+        => await GetAsync<ReconciliationTaxonomySnapshot>(UiApiRoutes.ReconciliationCaseTaxonomy, ct).ConfigureAwait(false);
+
+    public async Task<List<ReconciliationCaseComment>?> GetReconciliationBreakCommentsAsync(string breakId, CancellationToken ct = default)
+        => await GetAsync<List<ReconciliationCaseComment>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakComments, "breakId", breakId),
+            ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationBreakQueueItem?> RebuildReconciliationBreakSnapshotAsync(string breakId, CancellationToken ct = default)
+        => await GetAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakRebuiltSnapshot, "breakId", breakId),
+            ct).ConfigureAwait(false);
+
     public async Task<ReconciliationRunDetail?> GetLatestRunReconciliationAsync(string runId, CancellationToken ct = default)
         => await GetAsync<ReconciliationRunDetail>(
             UiApiRoutes.WithParam(UiApiRoutes.RunsReconciliation, "runId", runId),
@@ -275,6 +288,39 @@ public sealed class UiApiClient
         => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
             request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ApplyReconciliationCaseworkAsync(
+        string breakId,
+        string routeTemplate,
+        ReconciliationCaseworkCommand request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(routeTemplate, "breakId", breakId),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBulkCaseworkResult>> DryRunReconciliationBulkCaseworkAsync(
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.ReconciliationBreakBulkDryRun,
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBulkCaseworkResult>> ExecuteReconciliationBulkCaseworkAsync(
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.ReconciliationBreakBulkExecute,
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationBulkCaseworkResult?> GetReconciliationBulkCaseworkResultAsync(
+        string bulkActionId,
+        CancellationToken ct = default)
+        => await GetAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakBulkResult, "bulkActionId", bulkActionId),
             ct).ConfigureAwait(false);
 
     public async Task<List<FundReportPackHistoryItemDto>?> GetFundReportPackHistoryAsync(

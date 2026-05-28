@@ -53,7 +53,12 @@ public sealed record FundWorkspaceSummary(
     int TrialBalanceLineCount,
     int SecurityResolvedCount = 0,
     int SecurityMissingCount = 0,
-    int SecurityCoverageIssues = 0);
+    int SecurityCoverageIssues = 0,
+    int UnresolvedCriticalReconciliationCases = 0,
+    int BreachedReconciliationCases = 0,
+    int AwaitingEvidenceReconciliationCases = 0,
+    int SignedOffReconciliationCaseEvidenceCount = 0,
+    string? ReportPackExceptionSummary = null);
 
 /// <summary>
 /// Account-first row used by governance banking and account tabs.
@@ -210,7 +215,10 @@ public sealed record ReconciliationBreakQueueProjectionDto(
     int ResolvedCount,
     int DismissedCount,
     int CriticalOpenCount,
-    IReadOnlyList<ReconciliationBreakQueueProjectionItemDto> Items);
+    IReadOnlyList<ReconciliationBreakQueueProjectionItemDto> Items,
+    int BreachedCount = 0,
+    int AwaitingEvidenceCount = 0,
+    int SignedOffEvidenceCount = 0);
 
 /// <summary>
 /// One projected reconciliation break row including routing and sign-off evidence fields.
@@ -226,7 +234,19 @@ public sealed record ReconciliationBreakQueueProjectionItemDto(
     string? RoutingTarget,
     string? RoutingDetail,
     string? EvidenceReference,
-    DateTimeOffset LastUpdatedAt);
+    DateTimeOffset LastUpdatedAt,
+    ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal,
+    ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack,
+    string? AgeBand = null,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    DateTimeOffset? LastActivityAt = null,
+    string? LastCommentExcerpt = null,
+    int RelatedCaseCount = 0,
+    string? SlaBadgeLabel = null,
+    string? SlaBadgeTone = null);
 
 /// <summary>
 /// Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.

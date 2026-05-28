@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Wpf.Services;
 
@@ -12,6 +13,18 @@ public interface IWorkstationReconciliationApiClient
     Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default);
 
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default);
+
+    Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default);
 
     Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default);
 
@@ -43,6 +56,26 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
         => await _apiClient.UiApi.GetReconciliationBreakQueueAsync(ct).ConfigureAwait(false)
         ?? [];
+
+    public async Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<StatementRunSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRuns, ct).ConfigureAwait(false) ?? [];
+
+    public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        => _apiClient.GetAsync<StatementRunSummaryDto>(
+            Meridian.Contracts.Api.UiApiRoutes.WithParam(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRunById, "runId", runId),
+            ct);
+
+    public async Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<StatementRunExceptionDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementExceptions, ct).ConfigureAwait(false) ?? [];
+
+    public async Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<StatementBreakDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementBreaks, ct).ConfigureAwait(false) ?? [];
+
+    public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<ReconciliationCaseSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationOpenCases, ct).ConfigureAwait(false) ?? [];
+
+    public async Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<ReconciliationQueueAccountStatusDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationQueueStatus, ct).ConfigureAwait(false) ?? [];
 
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
         => _apiClient.UiApi.GetLatestRunReconciliationAsync(runId, ct);

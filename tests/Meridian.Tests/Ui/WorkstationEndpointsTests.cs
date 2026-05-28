@@ -28,7 +28,6 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.Ledger;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -38,7 +37,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
+using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using StatementImportSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportSummaryDto;
 
 namespace Meridian.Tests.Ui;
 
@@ -3360,16 +3363,103 @@ public sealed partial class WorkstationEndpointsTests
             ServerJsonOptions);
         runs.Should().ContainSingle(run => run.RunId == "statement-run-1");
 
-        var run = await client.GetFromJsonAsync<StatementRunSummaryDto>(
+        var run = await client.GetFromJsonAsync<StatementRunDto>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunById, "runId", "statement-run-1"),
             ServerJsonOptions);
         run.Should().NotBeNull();
         run!.OpenExceptionCount.Should().Be(1);
+        run.EvidenceLinks.Should().ContainSingle(link =>
+            link.RunId == "statement-run-1"
+            && link.SourceFileHash == "HASH-1"
+            && link.BrokerCustodian == "custodian"
+            && link.Account == "external-account-1"
+            && link.BreakIds.Contains("break-1")
+            && link.CaseIds.Contains("case-1"));
+        run!.RunId.Should().Be("statement-run-1");
+
+        var validation = await client.GetFromJsonAsync<StatementRunValidationDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunValidation, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        validation.Should().NotBeNull();
+        validation!.IsBlocked.Should().BeFalse();
+
+        var breaks = await client.GetFromJsonAsync<List<StatementRunBreakDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunBreaks, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        breaks.Should().ContainSingle(item => item.RunId == "statement-run-1");
+
+        var reconcileResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunReconcile, "runId", "statement-run-1"),
+            new StatementRunReconcileRequestDto(Actor: "ops-user"),
+            ServerJsonOptions);
+        reconcileResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reconciled = await reconcileResponse.Content.ReadFromJsonAsync<StatementRunDto>(ServerJsonOptions);
+        reconciled.Should().NotBeNull();
+        reconciled!.RunId.Should().Be("statement-run-1");
+
+        var createdResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "samplebroker",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: "fund-1",
+                ExternalAccountId: "ext-1",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 27),
+                SourcePath: "/tmp/statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "ops-user",
+                SourceFileHash: "ABC123"),
+            ServerJsonOptions);
+        createdResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        service.CreatedRequests.Should().ContainSingle(request => request.FundAccountId == "fund-1");
 
         var exceptions = await client.GetFromJsonAsync<List<StatementRunExceptionDto>>(
             UiApiRoutes.ReconciliationStatementExceptions,
             ServerJsonOptions);
         exceptions.Should().ContainSingle(item => item.RunId == "statement-run-1");
+    }
+
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunMutations_ShouldRequireReconciliationPermission()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var client = app.GetTestClient();
+
+        var createResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "samplebroker",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: "fund-1",
+                ExternalAccountId: "ext-1",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 27),
+                SourcePath: "/tmp/statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "ops-user",
+                SourceFileHash: "ABC123"),
+            ServerJsonOptions);
+
+        var reconcileResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunReconcile, "runId", "statement-run-1"),
+            new StatementRunReconcileRequestDto(Actor: "ops-user"),
+            ServerJsonOptions);
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reconcileResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.CreatedRequests.Should().BeEmpty();
+        service.ReconciledRunIds.Should().BeEmpty();
     }
 
     [Fact]
@@ -3616,7 +3706,50 @@ public sealed partial class WorkstationEndpointsTests
             !string.IsNullOrWhiteSpace(item.ExceptionRoute) &&
             !string.IsNullOrWhiteSpace(item.ToleranceProfileId) &&
             !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) &&
-            !string.IsNullOrWhiteSpace(item.SignoffStatus));
+            !string.IsNullOrWhiteSpace(item.SignoffStatus) &&
+            item.SourceType == "provider-ledger" &&
+            item.SourceFingerprint != null);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldSeedStatementBreaksOnceWithSourceMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(new StubReconciliationApiService());
+        });
+
+        var client = app.GetTestClient();
+        var first = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        second!.Should().ContainSingle(item =>
+            item.SourceType == "statement" &&
+            item.SourceSystem == "statement-reconciliation" &&
+            item.SourceImportId == "import-1" &&
+            item.SourceBreakId == "break-1" &&
+            item.SourceReference == "import-1:row-42" &&
+            item.BreakId.StartsWith("statement:", StringComparison.OrdinalIgnoreCase) &&
+            item.AssignedTo == "statement-owner" &&
+            item.Severity == ReconciliationBreakSeverity.High &&
+            item.ToleranceBand == 1m &&
+            item.RequiredSignoffRole == "Fund operations lead" &&
+            item.SignoffStatus == "pending-signoff" &&
+            item.ResolutionNote is null);
+        first!.Count(item => item.SourceType == "statement").Should().Be(1);
+        second.Count(item => item.SourceType == "statement").Should().Be(1);
+
+        var statementBreak = second.Single(item => item.SourceType == "statement");
+        var audit = await client.GetFromJsonAsync<List<ReconciliationBreakQueueAuditEvent>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAudit, "breakId", statementBreak.BreakId),
+            ServerJsonOptions);
+        audit.Should().ContainSingle(e => e.EventType == "CaseCreated" && e.Source == "statement");
     }
 
     [Fact]
@@ -3659,6 +3792,10 @@ public sealed partial class WorkstationEndpointsTests
             profile.TotalBreakCount > 0 &&
             profile.PendingSignoffCount > 0);
         summary.Summary.Should().Contain("reconciliation");
+        summary.BreakCountTrend.Should().BeGreaterThanOrEqualTo(0);
+        summary.AutoMatchRate.Should().BeInRange(0m, 1m);
+        summary.T0ClosureRate.Should().BeInRange(0m, 1m);
+        summary.BreakCountAlertThreshold.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -3727,6 +3864,9 @@ public sealed partial class WorkstationEndpointsTests
         summary.SignedOffCount.Should().Be(summary.TotalBreakCount);
         summary.Profiles.Should().OnlyContain(profile => profile.PendingSignoffCount == 0);
         summary.Summary.Should().Contain("ready for governance sign-off");
+        summary.BreakCountTrend.Should().BeLessThanOrEqualTo(0);
+        summary.T0ClosureRate.Should().Be(1m);
+        summary.T0ClosureRateAlertTriggered.Should().BeFalse();
     }
 
     [Fact]
@@ -3822,9 +3962,9 @@ public sealed partial class WorkstationEndpointsTests
 
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
         resolved.Should().NotBeNull();
-        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         resolved.ResolvedBy.Should().Be("ops-user");
-        resolved.SignoffStatus.Should().Be("signed-off");
+        resolved.SignoffStatus.Should().Be("awaiting-approval");
     }
 
     [Fact]
@@ -7520,12 +7660,40 @@ public sealed partial class WorkstationEndpointsTests
         private static readonly StatementRunSummaryDto StatementRun = new(
             RunId: "statement-run-1",
             ImportId: "import-1",
-            StartedAtUtc: "2026-05-27T12:00:00Z",
-            CompletedAtUtc: "2026-05-27T12:01:00Z",
+            Status: StatementRunStatus.ReviewRequired,
+            StartedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 0, 0, TimeSpan.Zero),
+            CompletedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 1, 0, TimeSpan.Zero),
             PositionMatches: 3,
             CashMatches: 2,
             TransactionMatches: 1,
-            OpenExceptionCount: 1);
+            OpenExceptionCount: 1,
+            EvidenceLinks:
+            [
+                new StatementRunEvidenceLinkDto(
+                    EvidenceId: "statement-run:statement-run-1",
+                    EvidenceRoute: "/api/workstation/evidence/statement-run/statement-run-1",
+                    RunId: "statement-run-1",
+                    SourceFileHash: "HASH-1",
+                    BrokerCustodian: "custodian",
+                    Account: "external-account-1",
+                    StatementPeriodStart: "2026-05-01",
+                    StatementPeriodEnd: "2026-05-27",
+                    MappingProfileId: "mapping-v1",
+                    MappingProfileVersion: 1,
+                    ToleranceProfileId: "tolerance-v1",
+                    ToleranceProfileVersion: 2,
+                    ValidationSummary: "Passed: 0 issue(s), 0 error(s), 0 warning(s).",
+                    MatchSummary: "6/7 item(s) matched; 1 break(s); 1 case(s).",
+                    BreakIds: ["break-1"],
+                    CaseIds: ["case-1"],
+                    ImportedBy: "ops@example.test",
+                    ImportedAtUtc: "2026-05-27T12:00:00Z",
+                    ReconciledBy: "ops@example.test",
+                    ReconciledAtUtc: "2026-05-27T12:01:00Z")
+            ]);
+
+        public List<StatementRunCreateDto> CreatedRequests { get; } = [];
+        public List<string> ReconciledRunIds { get; } = [];
 
         public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
         {
@@ -7548,12 +7716,47 @@ public sealed partial class WorkstationEndpointsTests
             return Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([StatementRun]);
         }
 
-        public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        public Task<StatementRunDto?> CreateStatementRunAsync(StatementRunCreateDto request, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            CreatedRequests.Add(request);
+            return Task.FromResult<StatementRunDto?>(BuildRunDto("created-statement-run", StatementRunStatus.Completed));
+        }
+
+        public Task<StatementRunDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(
                 string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
-                    ? StatementRun
+                    ? BuildRunDto(StatementRun.RunId, StatementRun.Status)
+                    : null);
+        }
+
+        public Task<StatementRunValidationDto?> GetStatementRunValidationAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<StatementRunValidationDto?>(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? new StatementRunValidationDto(runId, [], IsBlocked: false)
+                    : null);
+        }
+
+        public Task<IReadOnlyList<StatementRunBreakDto>?> ListStatementRunBreaksAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunBreakDto>?>(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? [BuildBreakDto()]
+                    : null);
+        }
+
+        public Task<StatementRunDto?> ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ReconciledRunIds.Add(runId);
+            return Task.FromResult<StatementRunDto?>(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? BuildRunDto(runId, StatementRunStatus.ReviewRequired)
                     : null);
         }
 
@@ -7576,6 +7779,65 @@ public sealed partial class WorkstationEndpointsTests
                     Status: "Open")
             ]);
         }
+
+
+        private static StatementRunDto BuildRunDto(string runId, StatementRunStatus status) => new(
+            RunId: runId,
+            Status: status,
+            Source: new StatementSourceDto(
+                SourceId: "import-1",
+                SourceKind: "custodian",
+                SourceSystem: "Sample Custodian",
+                AccountId: "fund-1",
+                AccountName: "External Account",
+                Currency: "USD",
+                PeriodStart: new DateOnly(2026, 5, 1),
+                PeriodEnd: new DateOnly(2026, 5, 27)),
+            StartedAtUtc: StatementRun.StartedAtUtc,
+            CompletedAtUtc: StatementRun.CompletedAtUtc,
+            SourceFileName: "statement.csv",
+            SourceFileHash: "ABC123",
+            MappingProfileId: "mapping-v1",
+            MappingProfileVersion: 1,
+            ToleranceProfileId: "tolerance-v1",
+            ToleranceProfileVersion: 1,
+            ImportedBy: "ops-user",
+            ImportedAtUtc: StatementRun.StartedAtUtc,
+            ValidationIssues: [],
+            Positions: [],
+            CashBalances: [],
+            Transactions: [],
+            MatchSummary: new StatementMatchSummaryDto(6, 5, 5, 0, 1, 1, 0, 1, 0),
+            Breaks: [new StatementBreakDto(
+                BreakId: "break-1",
+                BreakType: StatementBreakType.CashBalanceMismatch,
+                Severity: StatementValidationSeverity.Error,
+                MatchTier: StatementMatchTier.Unmatched,
+                StatementReference: "row-42",
+                Description: "Cash delta",
+                StatementAmount: 10m,
+                BookAmount: 0m,
+                Delta: 10m,
+                Tolerance: 1m,
+                Currency: "USD",
+                CreatedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 2, 0, TimeSpan.Zero),
+                Status: "Open")],
+            Cases: [],
+            ImportId: "import-1",
+            FundProfileId: "fund-1");
+
+        private static StatementRunBreakDto BuildBreakDto() => new(
+            BreakId: "break-1",
+            RunId: StatementRun.RunId,
+            ImportId: StatementRun.ImportId,
+            SourceReference: "row-42",
+            BreakType: StatementBreakType.CashBalanceMismatch,
+            Category: "Cash",
+            Delta: 10m,
+            Tolerance: 1m,
+            ToleranceBreached: true,
+            CreatedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 2, 0, TimeSpan.Zero),
+            Status: "Open");
 
         public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
         {

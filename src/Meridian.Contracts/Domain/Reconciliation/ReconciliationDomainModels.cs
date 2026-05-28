@@ -26,7 +26,11 @@ public sealed record ReconciliationRun(
     string SnapshotVersion,
     bool IsRerun,
     string Trigger,
-    IReadOnlyList<DataSourceSnapshot> SourceSnapshots);
+    IReadOnlyList<DataSourceSnapshot> SourceSnapshots)
+{
+    public string ToleranceProfileId { get; init; } = string.Empty;
+    public int ToleranceProfileVersion { get; init; }
+}
 
 public sealed record DataSourceSnapshot(
     string SourceId,
@@ -74,7 +78,12 @@ public sealed record MatchGroup(
     IReadOnlyDictionary<string, string> Evidence,
     IReadOnlyList<NormalizedPosition> Positions,
     IReadOnlyList<NormalizedCashEntry> CashEntries,
-    DateTimeOffset EvaluatedAt);
+    DateTimeOffset EvaluatedAt)
+{
+    public string ToleranceProfileId { get; init; } = string.Empty;
+    public int ToleranceProfileVersion { get; init; }
+    public string? ToleranceRuleId { get; init; }
+}
 
 public sealed record BreakRecord(
     Guid BreakId,

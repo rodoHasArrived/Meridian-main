@@ -1,4 +1,9 @@
-import { useId, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS,
+  buildDenseRowDetailAnnouncement,
+  focusDenseRowDetailPanel
+} from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
 
 export interface ToolbarStripItem {
@@ -89,13 +94,19 @@ export function DenseDataTable<T>({
   const selectableRows = onRowSelect !== undefined && rows.length > 0;
   const keyboardInstructionsId = `${tableId ?? generatedKeyboardInstructionsId}-keyboard-instructions`;
   const focusableRowId = resolveFocusableDenseRowId(rows, getRowId, selectedRowId);
+  const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
 
   return (
     <div className="dense-data-table-wrap">
       {selectableRows ? (
         <p id={keyboardInstructionsId} className="sr-only">
-          Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row.
+          {DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS}
         </p>
+      ) : null}
+      {selectableRows ? (
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          {selectionAnnouncement}
+        </div>
       ) : null}
       <table
         id={tableId}
@@ -161,7 +172,7 @@ export function DenseDataTable<T>({
                 className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined, getRowClassName?.(row))}
                 onClick={selectable ? (event) => {
                   if (isInteractiveTableTarget(event.target)) return;
-                  onRowSelect(row);
+                  selectDenseRow(row, rowAriaLabel, getRowAriaControls?.(row), false, onRowSelect, setSelectionAnnouncement);
                 } : undefined}
                 onKeyDown={selectable ? (event) => {
                   handleSelectableRowKeyDown(event, {
@@ -169,7 +180,10 @@ export function DenseDataTable<T>({
                     rowIndex,
                     rows,
                     getRowId,
-                    onRowSelect
+                    getRowAriaControls,
+                    getRowAnnouncementLabel: (item) => getRowSelectAriaLabel?.(item) ?? getRowAriaLabel?.(item),
+                    onRowSelect,
+                    setSelectionAnnouncement
                   });
                 } : undefined}
               >
@@ -230,14 +244,24 @@ function handleSelectableRowKeyDown<T>(
     rowIndex: number;
     rows: T[];
     getRowId: (row: T) => string;
+    getRowAriaControls?: (row: T) => string | undefined;
+    getRowAnnouncementLabel?: (row: T) => string | undefined;
     onRowSelect: (row: T) => void;
+    setSelectionAnnouncement: (announcement: string) => void;
   }
 ) {
   if (event.target !== event.currentTarget) return;
 
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
-    options.onRowSelect(options.row);
+    selectDenseRow(
+      options.row,
+      options.getRowAnnouncementLabel?.(options.row),
+      options.getRowAriaControls?.(options.row),
+      true,
+      options.onRowSelect,
+      options.setSelectionAnnouncement
+    );
     return;
   }
 
@@ -257,7 +281,31 @@ function handleSelectableRowKeyDown<T>(
     .closest("tbody")
     ?.querySelector<HTMLTableRowElement>(`tr[data-dense-row-id="${escapeAttributeSelectorValue(targetRowId)}"]`);
   targetElement?.focus();
-  options.onRowSelect(targetRow);
+  selectDenseRow(
+    targetRow,
+    options.getRowAnnouncementLabel?.(targetRow),
+    options.getRowAriaControls?.(targetRow),
+    false,
+    options.onRowSelect,
+    options.setSelectionAnnouncement
+  );
+}
+
+function selectDenseRow<T>(
+  row: T,
+  rowAnnouncementLabel: string | undefined,
+  rowDetailPanelId: string | undefined,
+  moveFocusToDetailPanel: boolean,
+  onRowSelect: (row: T) => void,
+  setSelectionAnnouncement: (announcement: string) => void
+) {
+  onRowSelect(row);
+  if (rowAnnouncementLabel) {
+    setSelectionAnnouncement(buildDenseRowDetailAnnouncement(rowAnnouncementLabel));
+  }
+  if (moveFocusToDetailPanel) {
+    focusDenseRowDetailPanel(rowDetailPanelId);
+  }
 }
 
 function resolveKeyboardTargetRowIndex(key: string, rowIndex: number, rowCount: number): number | null {

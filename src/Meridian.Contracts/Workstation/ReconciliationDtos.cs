@@ -282,7 +282,8 @@ public enum ReconciliationBreakQueueStatus : byte
     Open = 0,
     InReview = 1,
     Resolved = 2,
-    Dismissed = 3
+    Dismissed = 3,
+    SignedOff = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
@@ -294,7 +295,56 @@ public enum ReconciliationCaseLifecycleState : byte
     Approved = 3,
     Posted = 4,
     Reopened = 5,
-    Superseded = 6
+    Superseded = 6,
+    Investigating = 7,
+    AwaitingEvidence = 8,
+    Resolved = 9,
+    SignedOff = 10
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCasePriority>))]
+public enum ReconciliationCasePriority : byte
+{
+    Low = 0,
+    Normal = 1,
+    High = 2,
+    Critical = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseSlaState>))]
+public enum ReconciliationCaseSlaState : byte
+{
+    NotStarted = 0,
+    OnTrack = 1,
+    Warning = 2,
+    Breached = 3,
+    Paused = 4,
+    Stopped = 5
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseCommentVisibility>))]
+public enum ReconciliationCaseCommentVisibility : byte
+{
+    Internal = 0,
+    CloseEvidence = 1,
+    ExternalSummary = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseworkAction>))]
+public enum ReconciliationCaseworkAction : byte
+{
+    Assign = 0,
+    ChangePriority = 1,
+    TransitionStatus = 2,
+    AddComment = 3,
+    EditComment = 4,
+    DeleteComment = 5,
+    SetRootCause = 6,
+    SetResolution = 7,
+    LinkEvidence = 8,
+    SignOff = 9,
+    Reopen = 10,
+    Resolve = 11
 }
 
 /// <summary>
@@ -351,6 +401,35 @@ public sealed record ReconciliationBreakQueueItem(
     ReconciliationBreakScore? Score = null,
     DateTimeOffset? SlaDueAt = null,
     bool SlaBreached = false,
+    string? AssigneeId = null,
+    string? AssigneeDisplayName = null,
+    ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal,
+    string? SlaPolicyId = null,
+    DateTimeOffset? SlaWarningAt = null,
+    DateTimeOffset? SlaBreachedAt = null,
+    ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack,
+    string? AgeBand = null,
+    double BusinessAgeHours = 0,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? SignedOffBy = null,
+    DateTimeOffset? SignedOffAt = null,
+    string? SignOffNote = null,
+    string? ReopenedBy = null,
+    DateTimeOffset? ReopenedAt = null,
+    string? ReopenReason = null,
+    long Version = 0,
+    IReadOnlyList<ReconciliationCaseComment>? Comments = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    DateTimeOffset? LastActivityAt = null,
+    string? SourceType = null,
+    string? SourceSystem = null,
+    string? SourceReference = null,
+    string? SourceImportId = null,
+    string? SourceBreakId = null,
+    string? SourceFingerprint = null,
     ReconciliationBreakExplanationDto? BreakExplanation = null);
 
 public sealed record ReconciliationBreakExplanationDto(
@@ -360,6 +439,128 @@ public sealed record ReconciliationBreakExplanationDto(
     string LedgerImpact,
     string SuggestedNextAction,
     IReadOnlyList<string> EvidenceLinks);
+
+
+public sealed record ReconciliationCaseComment(
+    string CommentId,
+    string? ParentCommentId,
+    string AuthorId,
+    string AuthorDisplayName,
+    ReconciliationCaseCommentVisibility Visibility,
+    string Body,
+    IReadOnlyList<string> EvidenceLinks,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? EditedAt = null,
+    DateTimeOffset? DeletedAt = null,
+    string? DeletedBy = null,
+    IReadOnlyList<string>? Mentions = null,
+    IReadOnlyList<string>? LinkedEvidenceIds = null,
+    string? PreviousTextHash = null,
+    string? EditReason = null,
+    string? DeleteReason = null,
+    ReconciliationCaseLifecycleState? StatusTransition = null);
+
+public sealed record ReconciliationSlaPolicy(
+    string PolicyId,
+    string? FundId,
+    string? AccountId,
+    string? BreakType,
+    ReconciliationBreakSeverity Severity,
+    ReconciliationCasePriority Priority,
+    string TimeZoneId,
+    TimeOnly BusinessDayStart,
+    TimeOnly BusinessDayEnd,
+    int DueBusinessHours,
+    int WarningBusinessHours,
+    bool StopOnResolved = true,
+    bool StopOnSignedOff = false,
+    bool PauseAwaitingEvidence = true,
+    string? BusinessCalendarId = null,
+    IReadOnlyList<string>? HolidayCalendarIds = null,
+    IReadOnlyList<string>? PauseRules = null,
+    IReadOnlyList<string>? StopRules = null,
+    IReadOnlyList<string>? EscalationRules = null);
+
+public sealed record ReconciliationSlaComputationResult(
+    string PolicyId,
+    DateTimeOffset DueAt,
+    DateTimeOffset WarningAt,
+    DateTimeOffset? BreachedAt,
+    ReconciliationCaseSlaState State,
+    string AgeBand,
+    double BusinessAgeHours);
+
+
+public sealed record ReconciliationTaxonomyValue(
+    string Code,
+    string DisplayName,
+    int Version,
+    bool IsActive,
+    IReadOnlyList<string>? RequiredEvidencePrefixes = null);
+
+public sealed record ReconciliationTaxonomySnapshot(
+    int Version,
+    IReadOnlyList<ReconciliationTaxonomyValue> RootCauses,
+    IReadOnlyList<ReconciliationTaxonomyValue> ResolutionCodes);
+
+public sealed record ReconciliationCaseworkCommand(
+    string BreakId,
+    ReconciliationCaseworkAction Action,
+    string Actor,
+    string CommandId,
+    string CorrelationId,
+    string Source,
+    long ExpectedVersion,
+    string? Reason = null,
+    string? Assignee = null,
+    ReconciliationCasePriority? Priority = null,
+    ReconciliationCaseLifecycleState? Status = null,
+    string? Note = null,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? CausationId = null,
+    string? CommentId = null,
+    string? ParentCommentId = null,
+    ReconciliationCaseCommentVisibility Visibility = ReconciliationCaseCommentVisibility.Internal,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    bool Privileged = false,
+    ReconciliationCaseLifecycleState? StatusTransition = null,
+    IReadOnlyList<string>? Mentions = null);
+
+public sealed record ReconciliationBulkCaseworkRequest(
+    IReadOnlyList<string> BreakIds,
+    ReconciliationCaseworkAction Action,
+    string Actor,
+    string CommandId,
+    string CorrelationId,
+    string Source,
+    string IdempotencyKey,
+    bool DryRun,
+    bool AllowPartialSuccess,
+    string? Reason = null,
+    string? Assignee = null,
+    ReconciliationCasePriority? Priority = null,
+    ReconciliationCaseLifecycleState? Status = null,
+    string? Note = null,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    int MaxCaseCount = 100);
+
+public sealed record ReconciliationBulkCaseworkCaseResult(
+    string BreakId,
+    bool Succeeded,
+    bool WouldSucceed,
+    string? Error,
+    ReconciliationBreakQueueItem? Item);
+
+public sealed record ReconciliationBulkCaseworkResult(
+    string BulkActionId,
+    string IdempotencyKey,
+    bool DryRun,
+    int RequestedCount,
+    int SucceededCount,
+    int FailedCount,
+    IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,
@@ -447,7 +648,18 @@ public sealed record ReconciliationCalibrationSummaryDto(
     int PendingSignoffCount,
     int SignedOffCount,
     int MissingCalibrationMetadataCount,
-    IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles);
+    IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles)
+{
+    public int BreakCountTrend { get; init; }
+    public decimal AutoMatchRate { get; init; }
+    public decimal T0ClosureRate { get; init; }
+    public int BreakCountAlertThreshold { get; init; } = 25;
+    public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;
+    public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;
+    public bool BreakCountAlertTriggered => ActiveBreakCount >= BreakCountAlertThreshold;
+    public bool AutoMatchRateAlertTriggered => AutoMatchRate < AutoMatchRateAlertThreshold;
+    public bool T0ClosureRateAlertTriggered => T0ClosureRate < T0ClosureRateAlertThreshold;
+}
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

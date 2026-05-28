@@ -310,7 +310,7 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
-    public void EvidencePacketValidationService_BlocksWhenRetainedArtifactsMissCanonicalSubject()
+    public void EvidencePacketValidationService_DoesNotBlockWhenRetainedArtifactsOmitCanonicalSubject()
     {
         var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
         var node = Node(
@@ -330,11 +330,10 @@ public sealed class EvidenceWorkflowFabricTests
             new HashSet<string>(["report"], StringComparer.OrdinalIgnoreCase),
             enforceNoOrphanRule: false);
 
-        result.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
-        result.Completeness.BlockingIssueCount.Should().BeGreaterThan(0);
-        result.Completeness.ValidationIssues.Should().Contain(issue =>
-            issue.Code == "retained-artifact-missing-canonical-subject" &&
-            issue.Severity == EvidenceValidationSeverityDto.Critical);
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        result.Completeness.BlockingIssueCount.Should().Be(0);
+        result.Completeness.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "retained-artifact-missing-canonical-subject");
     }
 
     [Fact]

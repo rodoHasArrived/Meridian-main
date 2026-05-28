@@ -24,6 +24,7 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
@@ -2268,11 +2269,9 @@ function TradingBlotterDetailPanel({
   emptyText: string;
 }) {
   return (
-    <aside
+    <DenseRowDetailPanel
       id={id}
-      role="region"
-      aria-live="polite"
-      aria-label={detail?.ariaLabel ?? "Trading blotter detail"}
+      ariaLabel={detail?.ariaLabel ?? "Trading blotter detail"}
       className={cn(
         "rounded-md border bg-background/70 p-3",
         detail ? dataTonePanelClass[detail.statusTone] : "border-border/70"
@@ -2303,7 +2302,7 @@ function TradingBlotterDetailPanel({
       ) : (
         <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
       )}
-    </aside>
+    </DenseRowDetailPanel>
   );
 }
 

@@ -27,6 +27,7 @@ import type {
   ReconciliationBreakRowViewModel,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
+  ReconciliationStatementRunRowViewModel,
   ReconciliationQueueRunTone,
   GovernanceTrialBalanceRowViewModel,
   SecuritySchedulesViewState,
@@ -138,6 +139,19 @@ const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRow
     )
   },
   { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
+];
+
+
+const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStatementRunRowViewModel>[] = [
+  { id: "brokerCustodian", label: "Broker/Custodian", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.brokerCustodianLabel}</span> },
+  { id: "account", label: "Account", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.accountLabel}</span> },
+  { id: "period", label: "Period", render: (row) => <span className="font-mono text-muted-foreground" title={row.unavailableReason ?? undefined}>{row.periodLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusLabel === "Matched" || row.statusLabel === "Balanced" ? "success" : "warning"}>{row.statusLabel}</Badge> },
+  { id: "validation", label: "Validation issues", align: "right", render: (row) => <span className="font-mono">{row.validationIssueCountLabel}</span> },
+  { id: "matches", label: "Matches", align: "right", render: (row) => <span className="font-mono">{row.matchCountLabel}</span> },
+  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono">{row.breakCountLabel}</span> },
+  { id: "cases", label: "Cases", align: "right", render: (row) => <span className="font-mono">{row.caseCountLabel}</span> },
+  { id: "imported", label: "Imported", render: (row) => <span className="font-mono text-muted-foreground">{row.importedAtLabel}</span> }
 ];
 
 const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
@@ -589,6 +603,93 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
       {workstream === "reconciliation" ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card className="panel-surface xl:col-span-2">
+            <CardHeader>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Landmark className="h-4 w-4 text-primary" aria-hidden="true" />
+                    {reconciliation.statementRunsView.title}
+                  </CardTitle>
+                  <CardDescription className="mt-2">{reconciliation.statementRunsView.description}</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={reconciliation.statementRunsView.loadingText !== null}
+                  disabledReason={reconciliation.statementRunsView.loadingText ? "Statement run refresh is already in progress." : null}
+                  aria-label={reconciliation.statementRunsView.recoveryActionAriaLabel}
+                  onClick={reconciliation.refreshStatementRuns}
+                >
+                  <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                  {reconciliation.statementRunsView.recoveryActionLabel}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <span className="sr-only" aria-live="polite">{reconciliation.statementRunsView.statusAnnouncement}</span>
+              {reconciliation.statementRunsView.loadingText ? (
+                <p role="status" className="rounded-lg border border-border/60 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
+                  {reconciliation.statementRunsView.loadingText}
+                </p>
+              ) : null}
+              {reconciliation.statementRunsView.errorText ? (
+                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  <div>{reconciliation.statementRunsView.errorText}</div>
+                  {reconciliation.statementRunsView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc pl-5">
+                      {reconciliation.statementRunsView.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
+              <DenseDataTable
+                columns={reconciliationStatementRunColumns}
+                rows={reconciliation.statementRunsView.rows}
+                getRowId={(row) => row.runId}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                getRowAriaControls={(row) => row.controlsId}
+                getRowAriaExpanded={(row) => row.isSelected}
+                selectedRowId={reconciliation.selectedRunId}
+                onRowSelect={(row) => reconciliation.selectRun(row.runId)}
+                emptyText={reconciliation.statementRunsView.emptyText}
+                ariaLabel={reconciliation.statementRunsView.tableLabel}
+                caption={reconciliation.statementRunsView.tableCaption}
+              />
+              <div
+                id={reconciliation.statementRunsView.detailPanelId}
+                role="tablist"
+                aria-label="Statement run detail tabs"
+                className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+              >
+                {reconciliation.statementRunsView.tabs.map((tab) => (
+                  <Button
+                    key={tab.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    role="tab"
+                    aria-selected={tab.id === "overview" && !tab.disabled}
+                    disabled={tab.disabled}
+                    disabledReason={tab.disabledReason}
+                    aria-label={tab.ariaLabel}
+                    className="min-h-16 justify-start whitespace-normal text-left"
+                  >
+                    <span>
+                      <span className="block font-semibold">{tab.label}</span>
+                      {tab.badgeLabel ? <span className="mt-1 block font-mono text-[10px] text-muted-foreground">{tab.badgeLabel}</span> : null}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Matching, tolerance, validation, and case-state decisions remain in the shared reconciliation services; this view only renders endpoint-supplied read models.
+              </p>
+            </CardContent>
+          </Card>
+
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -740,15 +841,33 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   />
                   {reconciliation.trialBalanceView.selectedDetail ? (
                     <div id={reconciliation.trialBalanceView.detailPanelId} className="min-w-0">
-                      <EntitySummary
-                        eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
-                        title={reconciliation.trialBalanceView.selectedDetail.title}
-                        subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
-                        description={reconciliation.trialBalanceView.selectedDetail.description}
-                        status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
-                        fields={reconciliation.trialBalanceView.selectedDetail.fields}
-                        ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
-                      />
+                      <>
+                        <EntitySummary
+                          eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
+                          title={reconciliation.trialBalanceView.selectedDetail.title}
+                          subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
+                          description={reconciliation.trialBalanceView.selectedDetail.description}
+                          status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
+                          fields={reconciliation.trialBalanceView.selectedDetail.fields}
+                          ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
+                        />
+                        <div className="mt-3 flex flex-wrap gap-2" aria-label="Trial balance audit drill-through actions">
+                          {reconciliation.trialBalanceView.selectedDetail.auditDrillThroughHref ? (
+                            <Button asChild size="sm" variant="secondary">
+                              <Link to={reconciliation.trialBalanceView.selectedDetail.auditDrillThroughHref}>
+                                {reconciliation.trialBalanceView.selectedDetail.auditDrillThroughLabel}
+                              </Link>
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">{reconciliation.trialBalanceView.selectedDetail.auditDrillThroughLabel}</span>
+                          )}
+                          {reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref ? (
+                            <Button asChild size="sm" variant="outline">
+                              <Link to={reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref}>Open approval evidence</Link>
+                            </Button>
+                          ) : null}
+                        </div>
+                      </>
                     </div>
                   ) : (
                     <aside

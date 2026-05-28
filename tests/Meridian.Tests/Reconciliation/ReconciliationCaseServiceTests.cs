@@ -126,6 +126,35 @@ public sealed class ReconciliationCaseServiceTests
     }
 
     [Fact]
+    public async Task Terminal_decisions_retain_evidence_references_and_decision_notes()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
+        var store = new JsonReconciliationCaseStore(root);
+        var service = new ReconciliationCaseService(store);
+        var created = await service.CreateOpenCasesAsync("imp1", [new MatchOutcome("row-hash-1", "unmatched", "", 0.2m, "none")]);
+
+        var investigating = await service.UpdateStatusAsync(created[0].CaseId, "Investigating", "triaged with broker statement evidence");
+        var resolved = await service.UpdateStatusAsync(investigating.CaseId, "Resolved", "broker correction posted");
+
+        Assert.Contains("statement-row:row-hash-1", resolved.EvidenceReferences);
+        Assert.Contains(resolved.History, entry => entry.ToStatus == "Resolved" && entry.EvidenceId == "statement-row:row-hash-1");
+        var note = Assert.Single(resolved.DecisionNotes);
+        Assert.Equal("broker correction posted", note.Note);
+        Assert.Contains("statement-row:row-hash-1", note.EvidenceReferences);
+
+        var reloaded = await store.GetAsync(created[0].CaseId);
+        Assert.NotNull(reloaded);
+        Assert.Contains("statement-row:row-hash-1", reloaded!.EvidenceReferences);
+        Assert.Single(reloaded.DecisionNotes);
+
+        var dismissed = await service.CreateOpenCasesAsync("imp1", [new MatchOutcome("row-hash-2", "unmatched", "", 0.2m, "none")]);
+        var dismissedDecision = await service.UpdateStatusAsync(dismissed[0].CaseId, "Dismissed", "custodian memo accepted");
+        Assert.Equal("Dismissed", dismissedDecision.Status);
+        Assert.Equal("dismissed", dismissedDecision.Resolution!.ResolutionCode);
+        Assert.Contains("statement-row:row-hash-2", dismissedDecision.DecisionNotes.Single().EvidenceReferences);
+    }
+
+    [Fact]
     public async Task SaveAsync_WhenCancelledBeforeWrite_DoesNotCreateCaseOrAuditFiles()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");

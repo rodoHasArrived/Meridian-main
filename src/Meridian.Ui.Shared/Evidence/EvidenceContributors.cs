@@ -5,6 +5,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using static Meridian.Ui.Shared.Evidence.EvidenceContributionHelpers;
@@ -298,17 +299,23 @@ public sealed class ReconciliationEvidenceContributor : IEvidenceContributor
 
     public bool Supports(EvidenceSubjectDto subject)
         => string.Equals(subject.SubjectKind, EvidenceSubjectResolver.StrategyRunKind, StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(subject.SubjectKind, EvidenceSubjectResolver.StatementRunKind, StringComparison.OrdinalIgnoreCase) ||
            string.Equals(subject.SubjectKind, EvidenceSubjectResolver.ReconciliationReviewKind, StringComparison.OrdinalIgnoreCase);
 
     public async Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
     {
+        var runId = context.Subject.SubjectId;
+        if (string.Equals(context.Subject.SubjectKind, EvidenceSubjectResolver.StatementRunKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return await ContributeStatementRunAsync(context, runId).ConfigureAwait(false);
+        }
+
         var service = _services.GetService<IReconciliationRunService>();
         if (service is null)
         {
             return new EvidenceContribution([], [], [], [], ["Reconciliation run service is not registered."]);
         }
 
-        var runId = context.Subject.SubjectId;
         var detail = string.Equals(context.Subject.SubjectKind, EvidenceSubjectResolver.StrategyRunKind, StringComparison.OrdinalIgnoreCase)
             ? await service.GetLatestForRunAsync(runId, context.CancellationToken).ConfigureAwait(false)
             : await service.GetByIdAsync(runId, context.CancellationToken).ConfigureAwait(false);
@@ -330,6 +337,47 @@ public sealed class ReconciliationEvidenceContributor : IEvidenceContributor
             "ReconciliationRunService",
             detail.Summary.CreatedAt,
             workItemIds: detail.Breaks.Select(static item => item.CheckId).ToArray());
+
+        return new EvidenceContribution([node], [], [], [nodeId], []);
+    }
+
+    private async Task<EvidenceContribution> ContributeStatementRunAsync(EvidenceContributionContext context, string runId)
+    {
+        var service = _services.GetService<IReconciliationApiService>();
+        if (service is null)
+        {
+            return new EvidenceContribution([], [], [], [], ["Statement reconciliation API service is not registered."]);
+        }
+
+        var detail = await service.GetStatementRunAsync(runId, context.CancellationToken).ConfigureAwait(false);
+        if (detail is null)
+        {
+            return new EvidenceContribution([], [], [], [], [$"No statement-run evidence is available for '{runId}'."]);
+        }
+
+        var nodeId = NodeId(context.Subject, "statement-run");
+        var evidenceLink = detail.EvidenceLinks?.FirstOrDefault();
+        var status = detail.OpenExceptionCount > 0 ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready;
+        var node = Node(
+            context.Subject,
+            nodeId,
+            "statement-run",
+            status,
+            evidenceLink?.MatchSummary ?? $"{detail.PositionMatches + detail.CashMatches + detail.TransactionMatches} match(es), {detail.OpenExceptionCount} open exception(s).",
+            "ReconciliationApiService",
+            DateTimeOffset.TryParse(detail.CompletedAtUtc, out var completedAt) ? completedAt : DateTimeOffset.UtcNow,
+            artifacts: evidenceLink is null
+                ? []
+                :
+                [
+                    Artifact(
+                        $"{nodeId}:detail",
+                        "statement-run-detail-route",
+                        route: evidenceLink.EvidenceRoute,
+                        generatedAt: DateTimeOffset.TryParse(evidenceLink.ReconciledAtUtc, out var reconciledAt) ? reconciledAt : DateTimeOffset.UtcNow,
+                        hash: evidenceLink.SourceFileHash)
+                ],
+            workItemIds: evidenceLink?.BreakIds.Concat(evidenceLink.CaseIds).ToArray() ?? []);
 
         return new EvidenceContribution([node], [], [], [nodeId], []);
     }

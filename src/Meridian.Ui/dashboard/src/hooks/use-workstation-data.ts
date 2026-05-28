@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
   getBrokerageHouseholdPortfolio,
   getDataWorkspace,
@@ -81,6 +82,10 @@ interface WorkstationDataState {
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
+  refreshStatus: RequestLifecycleStatus;
+  tradingRefreshStatus: RequestLifecycleStatus;
+  providerRoutingRefreshStatus: RequestLifecycleStatus;
+  portfolioRefreshStatus: RequestLifecycleStatus;
 }
 
 const initialState: WorkstationDataState = {
@@ -110,55 +115,80 @@ const initialState: WorkstationDataState = {
   usingDevelopmentFixtures: false,
   loading: true,
   error: null,
-  workspaceErrors: {}
+  workspaceErrors: {},
+  refreshStatus: null as unknown as RequestLifecycleStatus,
+  tradingRefreshStatus: null as unknown as RequestLifecycleStatus,
+  providerRoutingRefreshStatus: null as unknown as RequestLifecycleStatus,
+  portfolioRefreshStatus: null as unknown as RequestLifecycleStatus
 };
 
 export function useWorkstationData() {
-  const [state, setState] = useState<WorkstationDataState>(initialState);
-  const mountedRef = useRef(true);
-  const refreshRevisionRef = useRef(0);
-  const tradingRefreshRevisionRef = useRef(0);
-  const providerRoutingRefreshRevisionRef = useRef(0);
-  const portfolioRefreshRevisionRef = useRef(0);
-  const refreshAbortRef = useRef<AbortController | null>(null);
-  const tradingRefreshAbortRef = useRef<AbortController | null>(null);
-  const providerRoutingRefreshAbortRef = useRef<AbortController | null>(null);
-  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
+  const fullRefreshLifecycle = useRequestLifecycle({
+    operation: "workstation overview refresh",
+    runningMessage: "Refreshing workstation overview, workspaces, and shared evidence.",
+    successMessage: "Workstation data refreshed.",
+    failureMessage: "Workstation refresh failed.",
+    staleMessage: "Older workstation refresh response discarded.",
+    maxRetries: 2
+  });
+  const tradingRefreshLifecycle = useRequestLifecycle({
+    operation: "trading workspace refresh",
+    runningMessage: "Refreshing trading workspace evidence.",
+    successMessage: "Trading workspace refreshed.",
+    failureMessage: "Trading workspace refresh failed.",
+    staleMessage: "Older trading refresh response discarded.",
+    maxRetries: 2
+  });
+  const providerRoutingRefreshLifecycle = useRequestLifecycle({
+    operation: "provider routing refresh",
+    runningMessage: "Refreshing provider-routing evidence.",
+    successMessage: "Provider-routing evidence refreshed.",
+    failureMessage: "Provider-routing refresh failed.",
+    staleMessage: "Older provider-routing response discarded.",
+    maxRetries: 2
+  });
+  const portfolioRefreshLifecycle = useRequestLifecycle({
+    operation: "portfolio refresh",
+    runningMessage: "Refreshing portfolio positions and brokerage household.",
+    successMessage: "Portfolio evidence refreshed.",
+    failureMessage: "Portfolio refresh failed.",
+    staleMessage: "Older portfolio response discarded.",
+    maxRetries: 2
+  });
+  const [state, setState] = useState<WorkstationDataState>(() => ({
+    ...initialState,
+    refreshStatus: fullRefreshLifecycle.status,
+    tradingRefreshStatus: tradingRefreshLifecycle.status,
+    providerRoutingRefreshStatus: providerRoutingRefreshLifecycle.status,
+    portfolioRefreshStatus: portfolioRefreshLifecycle.status
+  }));
   const refreshingPortfolio = useRef(false);
 
   useEffect(() => {
-    mountedRef.current = true;
-
-    return () => {
-      mountedRef.current = false;
-      refreshRevisionRef.current += 1;
-      tradingRefreshRevisionRef.current += 1;
-      providerRoutingRefreshRevisionRef.current += 1;
-      portfolioRefreshRevisionRef.current += 1;
-      refreshAbortRef.current?.abort();
-      tradingRefreshAbortRef.current?.abort();
-      providerRoutingRefreshAbortRef.current?.abort();
-      portfolioRefreshAbortRef.current?.abort();
-    };
-  }, []);
+    setState((current) => ({
+      ...current,
+      refreshStatus: fullRefreshLifecycle.status,
+      tradingRefreshStatus: tradingRefreshLifecycle.status,
+      providerRoutingRefreshStatus: providerRoutingRefreshLifecycle.status,
+      portfolioRefreshStatus: portfolioRefreshLifecycle.status
+    }));
+  }, [
+    fullRefreshLifecycle.status,
+    portfolioRefreshLifecycle.status,
+    providerRoutingRefreshLifecycle.status,
+    tradingRefreshLifecycle.status
+  ]);
 
   const refresh = useCallback(async () => {
-    if (!mountedRef.current) {
+    tradingRefreshLifecycle.invalidate();
+    providerRoutingRefreshLifecycle.invalidate();
+    portfolioRefreshLifecycle.invalidate();
+    const token = fullRefreshLifecycle.start();
+    if (!token) {
       return;
     }
 
-    const revision = refreshRevisionRef.current + 1;
-    refreshRevisionRef.current = revision;
-    tradingRefreshRevisionRef.current += 1;
-    providerRoutingRefreshRevisionRef.current += 1;
-    portfolioRefreshRevisionRef.current += 1;
-    refreshAbortRef.current?.abort();
-    tradingRefreshAbortRef.current?.abort();
-    providerRoutingRefreshAbortRef.current?.abort();
-    portfolioRefreshAbortRef.current?.abort();
-    const controller = new AbortController();
-    refreshAbortRef.current = controller;
-    const requestOptions = { signal: controller.signal };
+    const requestOptions = { signal: token.signal };
     resetDevelopmentFixtureUsage();
     setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
@@ -241,7 +271,7 @@ export function useWorkstationData() {
       return null;
     };
 
-    const nextState: WorkstationDataState = {
+    const nextState = {
       session: readBootstrap(session),
       overview: readBootstrap(overview),
       research: readWorkspace(["strategy"], research),
@@ -271,15 +301,27 @@ export function useWorkstationData() {
       workspaceErrors
     };
 
-    if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+    if (!token.isCurrent()) {
+      fullRefreshLifecycle.markStale(token.version);
       return;
     }
 
-    if (refreshAbortRef.current === controller) {
-      refreshAbortRef.current = null;
-    }
-    setState(nextState);
-  }, []);
+    token.safeSetState(setState, (current) => ({
+      ...nextState,
+      refreshStatus: current.refreshStatus,
+      tradingRefreshStatus: current.tradingRefreshStatus,
+      providerRoutingRefreshStatus: current.providerRoutingRefreshStatus,
+      portfolioRefreshStatus: current.portfolioRefreshStatus
+    }));
+    fullRefreshLifecycle.succeed(token);
+  }, [
+    fullRefreshLifecycle.markStale,
+    fullRefreshLifecycle.start,
+    fullRefreshLifecycle.succeed,
+    portfolioRefreshLifecycle.invalidate,
+    providerRoutingRefreshLifecycle.invalidate,
+    tradingRefreshLifecycle.invalidate
+  ]);
 
   useEffect(() => {
     void refresh();
@@ -287,21 +329,16 @@ export function useWorkstationData() {
 
   // Keep the trading cockpit fresh without re-fetching every workspace.
   // Positions, orders, fills, and readiness status change as trading runs.
-  const refreshingTrading = useRef(false);
   const refreshTrading = useCallback(async () => {
-    if (refreshingTrading.current || !mountedRef.current) return;
-    const revision = tradingRefreshRevisionRef.current + 1;
-    tradingRefreshRevisionRef.current = revision;
-    tradingRefreshAbortRef.current?.abort();
-    const controller = new AbortController();
-    tradingRefreshAbortRef.current = controller;
-    refreshingTrading.current = true;
+    const token = tradingRefreshLifecycle.start({ busyMode: "drop" });
+    if (!token) return;
     try {
-      const result = await getTradingWorkspace({ signal: controller.signal });
-      if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
+      const result = await getTradingWorkspace({ signal: token.signal });
+      if (!token.isCurrent()) {
+        tradingRefreshLifecycle.markStale(token.version);
         return;
       }
-      setState((current) => {
+      token.safeSetState(setState, (current) => {
         const tradingError = current.workspaceErrors.trading;
         const workspaceErrors = withoutWorkspaceError(current.workspaceErrors, "trading");
         return {
@@ -312,13 +349,15 @@ export function useWorkstationData() {
           usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
         };
       });
+      tradingRefreshLifecycle.succeed(token);
     } catch (err) {
-      if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
+      if (!token.isCurrent()) {
+        tradingRefreshLifecycle.markStale(token.version);
         return;
       }
 
       const message = formatRequestError(err, "Trading workspace refresh failed.");
-      setState((current) => {
+      token.safeSetState(setState, (current) => {
         const workspaceErrors = {
           ...current.workspaceErrors,
           trading: message
@@ -329,20 +368,20 @@ export function useWorkstationData() {
           workspaceErrors
         };
       });
+      tradingRefreshLifecycle.fail(token, err, { fallback: "Trading workspace refresh failed." });
     } finally {
-      if (tradingRefreshAbortRef.current === controller) {
-        tradingRefreshAbortRef.current = null;
-      }
-      refreshingTrading.current = false;
+      tradingRefreshLifecycle.finish(token);
     }
-  }, []);
+  }, [
+    tradingRefreshLifecycle.fail,
+    tradingRefreshLifecycle.finish,
+    tradingRefreshLifecycle.markStale,
+    tradingRefreshLifecycle.start,
+    tradingRefreshLifecycle.succeed
+  ]);
 
   const updateFeatureCapability = useCallback(async (capabilityKey: string, isEnabled: boolean) => {
     const result = await setFeatureCapability(capabilityKey, isEnabled);
-    if (!mountedRef.current) {
-      return;
-    }
-
     setState((current) => ({
       ...current,
       featureCapabilities: result,
@@ -354,30 +393,25 @@ export function useWorkstationData() {
   }, []);
 
   // Keep provider-routing evidence current without reloading the full workstation.
-  const refreshingProviderRouting = useRef(false);
   const refreshProviderRouting = useCallback(async () => {
-    if (refreshingProviderRouting.current || !mountedRef.current) return;
-    const revision = providerRoutingRefreshRevisionRef.current + 1;
-    providerRoutingRefreshRevisionRef.current = revision;
-    providerRoutingRefreshAbortRef.current?.abort();
-    const controller = new AbortController();
-    providerRoutingRefreshAbortRef.current = controller;
-    refreshingProviderRouting.current = true;
-    setState((current) => ({ ...current, providerRoutingRefreshing: true }));
+    const token = providerRoutingRefreshLifecycle.start({ busyMode: "drop" });
+    if (!token) return;
+    token.safeSetState(setState, (current) => ({ ...current, providerRoutingRefreshing: true }));
 
     try {
       const [providerConnections, routingConnections, routingBindings, trustSnapshots] = await Promise.allSettled([
-        getProviderConnections({ signal: controller.signal }),
-        getProviderRoutingConnections({ signal: controller.signal }),
-        getProviderRoutingBindings({ signal: controller.signal }),
-        getProviderRoutingTrustSnapshots({ signal: controller.signal })
+        getProviderConnections({ signal: token.signal }),
+        getProviderRoutingConnections({ signal: token.signal }),
+        getProviderRoutingBindings({ signal: token.signal }),
+        getProviderRoutingTrustSnapshots({ signal: token.signal })
       ]);
 
-      if (!mountedRef.current || providerRoutingRefreshRevisionRef.current !== revision) {
+      if (!token.isCurrent()) {
+        providerRoutingRefreshLifecycle.markStale(token.version);
         return;
       }
 
-      setState((current) => {
+      token.safeSetState(setState, (current) => {
         let next = { ...current };
         const previousSettingsError = current.workspaceErrors.settings;
         const refreshErrors: string[] = [];
@@ -426,33 +460,36 @@ export function useWorkstationData() {
           usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
         };
       });
+      providerRoutingRefreshLifecycle.succeed(token);
     } finally {
-      if (providerRoutingRefreshAbortRef.current === controller) {
-        providerRoutingRefreshAbortRef.current = null;
-        if (mountedRef.current) {
-          setState((current) => ({ ...current, providerRoutingRefreshing: false }));
-        }
+      if (token.isCurrent()) {
+        token.safeSetState(setState, (current) => ({ ...current, providerRoutingRefreshing: false }));
       }
-      refreshingProviderRouting.current = false;
+      providerRoutingRefreshLifecycle.finish(token);
     }
-  }, []);
+  }, [
+    providerRoutingRefreshLifecycle.finish,
+    providerRoutingRefreshLifecycle.markStale,
+    providerRoutingRefreshLifecycle.start,
+    providerRoutingRefreshLifecycle.succeed
+  ]);
 
   // Keep portfolio positions in sync with strategy execution.
   const refreshPortfolio = useCallback(async () => {
-    if (refreshingPortfolio.current || !mountedRef.current) return;
-    const revision = portfolioRefreshRevisionRef.current + 1;
-    portfolioRefreshRevisionRef.current = revision;
-    portfolioRefreshAbortRef.current?.abort();
-    const controller = new AbortController();
-    portfolioRefreshAbortRef.current = controller;
+    if (refreshingPortfolio.current) return;
+    const token = portfolioRefreshLifecycle.start({ busyMode: "drop" });
+    if (!token) return;
     refreshingPortfolio.current = true;
     try {
       const [portfolio, brokeragePortfolio] = await Promise.allSettled([
-        getPortfolioWorkspace({ signal: controller.signal }),
-        getBrokerageHouseholdPortfolio("alpaca", { signal: controller.signal })
+        getPortfolioWorkspace({ signal: token.signal }),
+        getBrokerageHouseholdPortfolio("alpaca", { signal: token.signal })
       ]);
-      if (!mountedRef.current || portfolioRefreshRevisionRef.current !== revision) return;
-      setState((current) => {
+      if (!token.isCurrent()) {
+        portfolioRefreshLifecycle.markStale(token.version);
+        return;
+      }
+      token.safeSetState(setState, (current) => {
         let next = { ...current };
         const previousPortfolioError = current.workspaceErrors.portfolio;
         const refreshErrors: string[] = [];
@@ -486,17 +523,19 @@ export function useWorkstationData() {
         };
         return next;
       });
+      portfolioRefreshLifecycle.succeed(token);
     } finally {
-      if (portfolioRefreshAbortRef.current === controller) portfolioRefreshAbortRef.current = null;
+      portfolioRefreshLifecycle.finish(token);
       refreshingPortfolio.current = false;
     }
-  }, []);
+  }, [
+    portfolioRefreshLifecycle.finish,
+    portfolioRefreshLifecycle.markStale,
+    portfolioRefreshLifecycle.start,
+    portfolioRefreshLifecycle.succeed
+  ]);
 
   const upsertWorkflowPreset = useCallback((preset: WorkflowPreset) => {
-    if (!mountedRef.current) {
-      return;
-    }
-
     setState((current) => {
       const existingLibrary = current.workflowPresets ?? {
         generatedAt: preset.updatedAt,

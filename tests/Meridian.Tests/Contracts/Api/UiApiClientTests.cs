@@ -120,6 +120,11 @@ public sealed class UiApiClientTests
                 return JsonResponse("""{"asOf":"2026-05-27T12:00:00Z","status":"Ready","summary":"ready","totalBreakCount":0,"activeBreakCount":0,"openBreakCount":0,"inReviewBreakCount":0,"resolvedBreakCount":0,"dismissedBreakCount":0,"criticalOpenBreakCount":0,"pendingSignoffCount":0,"signedOffCount":0,"missingCalibrationMetadataCount":0,"profiles":[]}""");
             }
 
+            if (path.EndsWith("/bulk/dry-run", StringComparison.Ordinal) || path.EndsWith("/bulk/execute", StringComparison.Ordinal) || path.EndsWith("/bulk/bulk-1/result", StringComparison.Ordinal))
+            {
+                return JsonResponse("""{"bulkActionId":"bulk-1","idempotencyKey":"idem-1","dryRun":true,"requestedCount":1,"succeededCount":1,"failedCount":0,"results":[]}""");
+            }
+
             return JsonResponse("""{"summary":{"reconciliationRunId":"recon-1","runId":"run-1","createdAt":"2026-05-27T12:00:00Z","portfolioAsOf":null,"ledgerAsOf":null,"matchCount":0,"breakCount":0,"openBreakCount":0,"hasTimingDrift":false,"amountTolerance":0.01,"maxAsOfDriftMinutes":5,"securityIssueCount":0,"hasSecurityCoverageIssues":false},"matches":[],"breaks":[],"securityCoverageIssues":[]}""");
         });
         using var httpClient = new HttpClient(handler);
@@ -145,6 +150,26 @@ public sealed class UiApiClientTests
             new ResolveReconciliationBreakRequest("break-1", ReconciliationBreakQueueStatus.Resolved, "ops", "done", "evidence"));
         resolve.Success.Should().BeTrue();
         handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/break-queue/break-1/resolve");
+
+        var bulkRequest = new ReconciliationBulkCaseworkRequest(
+            BreakIds: ["break-1"],
+            Action: ReconciliationCaseworkAction.ChangePriority,
+            Actor: "ops",
+            CommandId: "bulk-1",
+            CorrelationId: "corr-1",
+            Source: "unit-test",
+            IdempotencyKey: "idem-1",
+            DryRun: true,
+            AllowPartialSuccess: true,
+            Priority: ReconciliationCasePriority.High);
+        (await sut.DryRunReconciliationBulkCaseworkAsync(bulkRequest)).Success.Should().BeTrue();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/break-queue/bulk/dry-run");
+
+        (await sut.ExecuteReconciliationBulkCaseworkAsync(bulkRequest with { DryRun = false })).Success.Should().BeTrue();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/break-queue/bulk/execute");
+
+        (await sut.GetReconciliationBulkCaseworkResultAsync("bulk-1")).Should().NotBeNull();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/break-queue/bulk/bulk-1/result");
     }
 
     private static HttpResponseMessage JsonResponse(string json) => new(HttpStatusCode.OK)

@@ -305,6 +305,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
         services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
+        services.AddSingleton<WpfServices.IStatementReconciliationWorkbenchService, WpfServices.StatementReconciliationWorkbenchService>();
 
         // ── AI Agent service (local Ollama) ──────────────────────────────────
         services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();

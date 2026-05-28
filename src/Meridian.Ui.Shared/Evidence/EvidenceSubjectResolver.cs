@@ -10,6 +10,7 @@ public sealed class EvidenceSubjectResolver
     public const string StrategyRunKind = "strategy-run";
     public const string PaperReadinessKind = "paper-readiness";
     public const string ReconciliationReviewKind = "reconciliation-review";
+    public const string StatementRunKind = "statement-run";
     public const string ReportPackKind = "report-pack";
     public const string ProviderTrustKind = "provider-trust";
     public const string AnalysisExportKind = "analysis-export";
@@ -21,6 +22,7 @@ public sealed class EvidenceSubjectResolver
         StrategyRunKind,
         PaperReadinessKind,
         ReconciliationReviewKind,
+        StatementRunKind,
         ReportPackKind,
         ProviderTrustKind,
         AnalysisExportKind,
@@ -159,6 +161,13 @@ public sealed class EvidenceSubjectResolver
                 Label: $"Reconciliation review {subjectId}",
                 Workspace: "Accounting",
                 Route: "/accounting",
+                PageTag: "FundReconciliation"),
+            StatementRunKind => new EvidenceSubjectDto(
+                SubjectId: subjectId,
+                SubjectKind: StatementRunKind,
+                Label: $"Statement run {subjectId}",
+                Workspace: "Accounting",
+                Route: $"/accounting?statementRunId={Uri.EscapeDataString(subjectId)}",
                 PageTag: "FundReconciliation"),
             ReportPackKind => new EvidenceSubjectDto(
                 SubjectId: subjectId,

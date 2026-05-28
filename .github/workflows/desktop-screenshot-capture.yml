@@ -77,13 +77,19 @@ jobs:
             exit 1
           }
 
-          $normalized = ($requested -replace '\\', '/')
-          if ($normalized -ne $baseDir -and -not $normalized.StartsWith("$baseDir/")) {
-            Write-Error "output_dir must stay within '$baseDir'. Received '$normalized'."
+          $repoRoot = [System.IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
+          $baseFull = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $baseDir))
+          $candidateFull = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $requested))
+
+          $basePrefix = $baseFull.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+          $basePrefix = "$basePrefix$([System.IO.Path]::DirectorySeparatorChar)"
+          if ($candidateFull -ne $baseFull -and -not $candidateFull.StartsWith($basePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            Write-Error "output_dir must stay within '$baseDir'. Received '$requested'."
             exit 1
           }
 
-          "safe_output_dir=$normalized" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $safeRelative = [System.IO.Path]::GetRelativePath($repoRoot, $candidateFull) -replace '\\', '/'
+          "safe_output_dir=$safeRelative" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Capture desktop screenshots
         id: capture_desktop
         shell: pwsh
@@ -117,6 +123,56 @@ jobs:
           } else {
             Write-Host "[INFO] Captured $($captures.Count) desktop screenshot(s) in '$outputDir'."
           }
+
+      - name: Prepare complete screenshot artifact
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          $artifactDir = "artifacts/desktop-screenshot-capture/all-screenshots"
+          New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
+          $entries = @()
+
+          function Copy-ScreenshotSet {
+            param(
+              [Parameter(Mandatory = $true)][string]$SourceRoot,
+              [Parameter(Mandatory = $true)][string]$Bucket
+            )
+
+            if ([string]::IsNullOrWhiteSpace($SourceRoot) -or -not (Test-Path -LiteralPath $SourceRoot)) {
+              Write-Host "[INFO] Screenshot source '$SourceRoot' was not found; skipping '$Bucket'."
+              return
+            }
+
+            $resolvedSourceRoot = [System.IO.Path]::GetFullPath($SourceRoot)
+            foreach ($capture in @(Get-ChildItem -LiteralPath $resolvedSourceRoot -Filter '*.png' -File -Recurse -ErrorAction SilentlyContinue)) {
+              $relativePath = [System.IO.Path]::GetRelativePath($resolvedSourceRoot, $capture.FullName)
+              $destination = Join-Path (Join-Path $artifactDir $Bucket) $relativePath
+              $destinationParent = Split-Path -Parent $destination
+              if (-not [string]::IsNullOrWhiteSpace($destinationParent)) {
+                New-Item -ItemType Directory -Force -Path $destinationParent | Out-Null
+              }
+
+              Copy-Item -LiteralPath $capture.FullName -Destination $destination -Force
+              $script:entries += [ordered]@{
+                bucket = $Bucket
+                source = $capture.FullName
+                artifactPath = $destination
+                bytes = $capture.Length
+                lastWriteTimeUtc = $capture.LastWriteTimeUtc.ToString('O')
+              }
+            }
+          }
+
+          Copy-ScreenshotSet -SourceRoot "${{ steps.validate_output_dir.outputs.safe_output_dir }}" -Bucket "catalog"
+          Copy-ScreenshotSet -SourceRoot "artifacts/desktop-workflows" -Bucket "workflow-runs"
+
+          [ordered]@{
+            generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
+            screenshotCount = $entries.Count
+            screenshots = $entries
+          } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $artifactDir 'screenshot-artifact-manifest.json') -Encoding utf8
+
+          Write-Host "[INFO] Prepared $($entries.Count) screenshot file(s) for the complete desktop screenshot artifact."
 
       - name: Commit and push results
         if: ${{ success() && inputs.commit == true }}
@@ -161,5 +217,14 @@ jobs:
         with:
           name: desktop-screenshots-${{ github.run_number }}
           path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload complete screenshot artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: desktop-screenshots-complete-${{ github.run_number }}
+          path: artifacts/desktop-screenshot-capture/all-screenshots/
           if-no-files-found: ignore
           retention-days: 14

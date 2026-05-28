@@ -38,7 +38,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
     private static readonly BoundedChannelOptions RunQueueOptions = new(capacity: 512)
     {
-        FullMode = BoundedChannelFullMode.DropWrite,
+        FullMode = BoundedChannelFullMode.Wait,
         SingleReader = true,
         SingleWriter = false
     };

@@ -65,7 +65,12 @@ import type {
   RiskRuleConfigUpdateRequest,
   RiskRuleStatus,
   ReconciliationBreakQueueItem,
+  ReconciliationBulkCaseworkRequest,
+  ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  StatementRunException,
+  StatementRunSummary,
+  ReconciliationCaseworkCommand,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
@@ -109,6 +114,7 @@ import type {
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride,
+  UpdateExecutionPositionLimitRequest,
   FeatureCapabilitySettingsResponse,
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
@@ -148,6 +154,7 @@ import {
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
   executionPositionCloseEndpoint,
+  executionSymbolPositionLimitEndpoint,
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
@@ -167,12 +174,26 @@ import {
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
+  reconciliationBreakAssignEndpoint,
   reconciliationBreakAuditEndpoint,
+  reconciliationBreakBulkDryRunEndpoint,
+  reconciliationBreakBulkExecuteEndpoint,
+  reconciliationBreakBulkStatusEndpoint,
+  reconciliationBreakCommentEndpoint,
+  reconciliationBreakCommentsEndpoint,
   reconciliationBreakEndpoint,
   reconciliationBreakQueueEndpoint,
+  reconciliationBreakReopenEndpoint,
+  reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakRootCauseEndpoint,
+  reconciliationBreakSignOffEndpoint,
+  reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
+  reconciliationStatementExceptionsEndpoint,
+  reconciliationStatementRunEndpoint,
+  reconciliationStatementRunsEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAliasUpsertEndpoint,
@@ -351,13 +372,15 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   return readJsonResponse<T>(path, response);
 }
 
-async function deleteJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body?: unknown): Promise<T> {
   const response = await fetch(path, {
     method: "DELETE",
     signal: options.signal,
     headers: {
-      Accept: "application/json"
-    }
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
   if (!response.ok) {
@@ -753,6 +776,14 @@ export function getExecutionControls() {
   return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
 }
 
+export function updateExecutionDefaultPositionLimit(request: UpdateExecutionPositionLimitRequest) {
+  return postJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.defaultPositionLimit, request);
+}
+
+export function updateExecutionSymbolPositionLimit(symbol: string, request: UpdateExecutionPositionLimitRequest) {
+  return postJson<ExecutionControlSnapshot>(executionSymbolPositionLimitEndpoint(symbol), request);
+}
+
 export function getRiskRules() {
   return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
 }
@@ -1005,6 +1036,22 @@ export function getReconciliationRun(reconciliationRunId: string) {
   return getJson<unknown>(reconciliationRunEndpoint(reconciliationRunId));
 }
 
+export function getReconciliationStatementRuns(options: ApiRequestOptions = {}) {
+  return getJson<StatementRunSummary[]>(reconciliationStatementRunsEndpoint(), options);
+}
+
+export function getReconciliationStatementRun(runId: string, options: ApiRequestOptions = {}) {
+  return getJson<StatementRunSummary>(reconciliationStatementRunEndpoint(runId), options);
+}
+
+export function getReconciliationStatementExceptions(options: ApiRequestOptions = {}) {
+  return getJson<StatementRunException[]>(reconciliationStatementExceptionsEndpoint(), options);
+}
+
+export const getStatementRuns = getReconciliationStatementRuns;
+export const getStatementRun = getReconciliationStatementRun;
+export const getStatementRunExceptions = getReconciliationStatementExceptions;
+
 export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
   return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
 }
@@ -1029,6 +1076,61 @@ export function resolveReconciliationBreak(request: ResolveReconciliationBreakRe
     reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
+}
+
+export function assignReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakAssignEndpoint(request.breakId), request);
+}
+
+export function transitionReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakTransitionEndpoint(request.breakId), request);
+}
+
+export function addReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentsEndpoint(request.breakId), request);
+}
+
+export function editReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(
+    reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
+    request
+  );
+}
+
+export function deleteReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
+  return deleteJson<ReconciliationBreakQueueItem>(
+    reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
+    {},
+    request
+  );
+}
+
+export function setReconciliationBreakRootCause(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
+}
+
+export function setReconciliationBreakResolution(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakResolutionEndpoint(request.breakId), request);
+}
+
+export function signOffReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakSignOffEndpoint(request.breakId), request);
+}
+
+export function reopenReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakReopenEndpoint(request.breakId), request);
+}
+
+export function dryRunReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
+  return postJson<ReconciliationBulkCaseworkResult>(reconciliationBreakBulkDryRunEndpoint(), request);
+}
+
+export function executeReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
+  return postJson<ReconciliationBulkCaseworkResult>(reconciliationBreakBulkExecuteEndpoint(), request);
+}
+
+export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
+  return getJson<unknown>(reconciliationBreakBulkStatusEndpoint(bulkActionId));
 }
 
 export function getReconciliationCalibrationSummary() {

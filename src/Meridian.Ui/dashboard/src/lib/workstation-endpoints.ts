@@ -53,6 +53,8 @@ export const EXECUTION_API_ENDPOINTS = {
   sessionsCreate: "/api/execution/sessions/create",
   audit: "/api/execution/audit",
   controls: "/api/execution/controls",
+  defaultPositionLimit: "/api/execution/controls/position-limits/default",
+  symbolPositionLimits: "/api/execution/controls/position-limits",
   manualOverrides: "/api/execution/controls/manual-overrides"
 } as const;
 
@@ -115,6 +117,8 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
 
 export const RECONCILIATION_API_ENDPOINTS = {
   runs: "/api/workstation/reconciliation/runs",
+  statementRuns: "/api/workstation/reconciliation/statement-runs",
+  statementExceptions: "/api/workstation/reconciliation/statement-exceptions",
   breakQueue: "/api/workstation/reconciliation/break-queue",
   calibrationSummary: "/api/workstation/reconciliation/calibration-summary"
 } as const;
@@ -418,6 +422,10 @@ export function executionManualOverrideClearEndpoint(overrideId: string): string
   return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${pathSegment(overrideId, "overrideId")}/clear`;
 }
 
+export function executionSymbolPositionLimitEndpoint(symbol: string): string {
+  return `${EXECUTION_API_ENDPOINTS.symbolPositionLimits}/${pathSegment(symbol, "symbol")}`;
+}
+
 export function replayFilesEndpoint(symbol?: string): string {
   return `${REPLAY_API_ENDPOINTS.files}${queryString({ symbol })}`;
 }
@@ -555,6 +563,18 @@ export function reconciliationRunEndpoint(reconciliationRunId: string): string {
   return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
 }
 
+export function reconciliationStatementRunsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementRuns;
+}
+
+export function reconciliationStatementRunEndpoint(runId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(runId, "runId")}`;
+}
+
+export function reconciliationStatementExceptionsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementExceptions;
+}
+
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {
   return `${RECONCILIATION_API_ENDPOINTS.breakQueue}${queryString(options)}`;
 }
@@ -573,6 +593,54 @@ export function reconciliationBreakReviewEndpoint(breakId: string): string {
 
 export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return `${reconciliationBreakEndpoint(breakId)}/resolve`;
+}
+
+export function reconciliationBreakAssignEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/assign`;
+}
+
+export function reconciliationBreakTransitionEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/transition`;
+}
+
+export function reconciliationBreakCommentsEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/comments`;
+}
+
+export function reconciliationBreakCommentEndpoint(breakId: string, commentId: string): string {
+  return `${reconciliationBreakCommentsEndpoint(breakId)}/${pathSegment(commentId, "commentId")}`;
+}
+
+export function reconciliationBreakRootCauseEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/root-cause`;
+}
+
+export function reconciliationBreakResolutionEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/resolution`;
+}
+
+export function reconciliationBreakSignOffEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/sign-off`;
+}
+
+export function reconciliationBreakReopenEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/reopen`;
+}
+
+export function reconciliationBreakBulkDryRunEndpoint(): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/dry-run`;
+}
+
+export function reconciliationBreakBulkExecuteEndpoint(): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/execute`;
+}
+
+export function reconciliationBreakBulkStatusEndpoint(bulkActionId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/${pathSegment(bulkActionId, "bulkActionId")}`;
+}
+
+export function reconciliationBreakBulkResultEndpoint(bulkActionId: string): string {
+  return `${reconciliationBreakBulkStatusEndpoint(bulkActionId)}/result`;
 }
 
 export function backfillCheckpointEndpoint(jobId: string): string {

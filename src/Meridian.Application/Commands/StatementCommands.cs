@@ -33,7 +33,7 @@ internal sealed class StatementCommands : ICliCommand
             if (CliArguments.HasFlag(args, "--statement-import"))
             {
                 var result = await svc.ImportAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
-                Console.WriteLine($"Imported statement batch {result.ImportId} with {result.RowCount} row(s).");
+                Console.WriteLine($"Imported statement batch {result.ImportId} with {result.RowCount} row(s): positions={result.Positions.Count}, cash={result.CashBalances.Count}, transactions={result.Transactions.Count}.");
                 return CliResult.Ok();
             }
 

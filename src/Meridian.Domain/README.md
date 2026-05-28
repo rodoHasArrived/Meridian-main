@@ -6,7 +6,7 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Domain
@@ -31,6 +31,10 @@ This layer owns domain concepts without depending on application orchestration, 
 ## Important workflows
 
 Use this module for domain behavior that should remain stable across providers, storage, execution, and UI projections.
+
+## API contract notes
+
+- Statement reconciliation domain models include typed normalized positions, cash balances, transactions, security references, and source-row references. Each normalized entity carries `StatementRunId`, `SourceRowNumber`, `SourceRowHash`, and `RawSnapshot` traceability fields so downstream reconciliation evidence can be tied back to the raw statement line.
 
 ## Diagrams
 

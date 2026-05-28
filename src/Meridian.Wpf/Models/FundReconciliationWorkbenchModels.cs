@@ -82,7 +82,17 @@ public sealed record FundReconciliationBreakQueueRow(
     string ProbableCauseLabel = "Not reported",
     string LedgerImpactLabel = "Not reported",
     string SuggestedNextActionLabel = "Review evidence, assign owner, and move the break through the governed case lifecycle.",
-    string EvidenceLinksLabel = "No evidence links reported");
+    string EvidenceLinksLabel = "No evidence links reported",
+    string PriorityLabel = "Normal",
+    string SlaBadge = "On track",
+    string AgeBandLabel = "0-4h",
+    string BreachStateLabel = "OnTrack",
+    string RootCauseCodeLabel = "Unset",
+    string ResolutionCodeLabel = "Unset",
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    string LastActivityText = "No activity",
+    string SignOffChecklist = "Resolution, evidence, and dual-control sign-off required");
 
 public sealed record FundReconciliationRunRow(
     string RowKey,

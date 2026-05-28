@@ -106,16 +106,18 @@ jobs:
 import os
 from pathlib import Path
 
-print(Path(os.environ["REQUESTED_OUTPUT_DIR"]).as_posix())
+repo_root = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+base_dir = (repo_root / "docs/screenshots/web").resolve()
+candidate = (repo_root / os.environ["REQUESTED_OUTPUT_DIR"]).resolve()
+
+try:
+    candidate.relative_to(base_dir)
+except ValueError:
+    raise SystemExit(f"::error::output_dir must stay within 'docs/screenshots/web'. Received '{os.environ['REQUESTED_OUTPUT_DIR']}'.")
+
+print(candidate.relative_to(repo_root).as_posix())
 PYTHON
 )"
-          case "$resolved" in
-            "$BASE_DIR"|"$BASE_DIR"/*) ;;
-            *)
-              echo "::error::output_dir must stay within '$BASE_DIR'. Received '$resolved'."
-              exit 1
-              ;;
-          esac
 
           echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
       - name: Capture web screenshots

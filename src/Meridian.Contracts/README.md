@@ -189,9 +189,18 @@ factor evidence. Provider-ledger corporate-action/factor casework also enriches 
 principal/income amount, and journal-preview line count so report-line provenance can show valuation
 or journal support without reconstructing provider-ledger detail payloads.
 
+Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
+source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,
+match summaries, breaks, operator cases, run create/reconcile commands, run validation envelopes,
+and run-scoped break rows in the shared contract lane. Keep these DTOs additive and
+transport-safe so browser, WPF, retained evidence, and automation consumers can reconcile custodian
+statements without referencing application, UI, or infrastructure types.
+
 Direct lending command result codes distinguish validation failures, missing aggregates,
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
 operator-safe failure reasons without parsing exception text.
+
+Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
 
 ## Diagrams
 
