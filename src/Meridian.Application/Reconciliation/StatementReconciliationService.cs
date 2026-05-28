@@ -207,7 +207,12 @@ public sealed class StatementReconciliationService
         {
             if (row.Kind == StatementRowKind.Position && Math.Abs(row.Quantity) > 0)
             {
-                matches.Add(new ReconciliationMatchLink(row.RowId, "position:auto", null, null, null, null, null, "high", "Symbol and quantity aligned within tolerance window."));
+                matches.Add(new ReconciliationMatchLink(row.RowId, "position:auto", null, null, null, null, null, "high", "Symbol and quantity aligned within tolerance rule position-default-v1.")
+                {
+                    ToleranceProfileId = StatementToleranceProfile.DefaultProfileId,
+                    ToleranceProfileVersion = StatementToleranceProfile.DefaultProfileVersion,
+                    ToleranceRuleId = "position-default-v1"
+                });
                 continue;
             }
 

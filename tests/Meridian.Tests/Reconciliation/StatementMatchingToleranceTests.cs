@@ -21,4 +21,32 @@ public sealed class StatementMatchingToleranceTests
         Assert.Equal("CASH_TOLERANCE_BREACH", outcomes[1].OutcomeType);
         Assert.Equal("TXN_TOLERANCE_BREACH", outcomes[2].OutcomeType);
     }
+
+    [Fact]
+    public void MatchRows_WhenToleranceAllowsMatch_EmbedsProfileVersionAndRuleIdInExplanation()
+    {
+        var tolerance = StatementMatchingTolerance.Default with
+        {
+            ToleranceProfileId = "ops-cash-profile",
+            ToleranceProfileVersion = 4,
+            CashToleranceRuleId = "cash-absolute-ops-v4",
+            BasisPointCashTolerance = 10m
+        };
+        var rows = new[]
+        {
+            new CanonicalStatementRow("i", 1, "acct", "SPY", 0m, 0m, 0.005m, "cash", new DateOnly(2026, 1, 1), "cash-row")
+        };
+
+        var outcomes = new StatementMatchingService().MatchRows(rows, tolerance);
+
+        Assert.Collection(outcomes, outcome =>
+        {
+            Assert.Equal("matched", outcome.OutcomeType);
+            Assert.Equal("ops-cash-profile", outcome.ToleranceProfileId);
+            Assert.Equal(4, outcome.ToleranceProfileVersion);
+            Assert.Equal("cash-absolute-ops-v4", outcome.ToleranceRuleId);
+            Assert.Contains("cash-absolute-ops-v4", outcome.Rationale, StringComparison.Ordinal);
+        });
+    }
+
 }

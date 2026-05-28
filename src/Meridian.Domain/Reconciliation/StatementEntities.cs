@@ -70,7 +70,11 @@ public sealed record StatementReconciliationRun(
     int PositionMatches,
     int CashMatches,
     int TransactionMatches,
-    int OpenExceptionCount);
+    int OpenExceptionCount)
+{
+    public string ToleranceProfileId { get; init; } = string.Empty;
+    public int ToleranceProfileVersion { get; init; }
+}
 
 public sealed record ReconciliationBreakRecord(
     string BreakId,
