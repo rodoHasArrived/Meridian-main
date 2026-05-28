@@ -232,6 +232,76 @@ public sealed class ReconciliationBreakQueueRepositoryTests
     }
 
     [Fact]
+    public async Task CaseworkCommentResolution_ControlClosure_RequiresResolutionGuardrails()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { AssignedTo = "controller-a" };
+        await repo.CreateIfMissingAsync(item);
+
+        var current = (await repo.GetByIdAsync(item.BreakId))!;
+        var investigating = await repo.ApplyCaseworkCommandAsync(Command(current, ReconciliationCaseworkAction.TransitionStatus) with
+        {
+            Status = ReconciliationCaseLifecycleState.Investigating
+        });
+        investigating.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+
+        var commentResolveWithoutTaxonomy = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.AddComment) with
+        {
+            CommentId = "comment-resolve-1",
+            Note = "Attempt to close from comment without a controller packet.",
+            StatusTransition = ReconciliationCaseLifecycleState.Resolved
+        });
+
+        commentResolveWithoutTaxonomy.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        commentResolveWithoutTaxonomy.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingRootCause);
+        commentResolveWithoutTaxonomy.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        commentResolveWithoutTaxonomy.Item.ResolvedBy.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CaseworkCommentResolution_ControlClosure_RecordsResolverBeforeSignoff()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { AssignedTo = "controller-a" };
+        await repo.CreateIfMissingAsync(item);
+
+        var current = (await repo.GetByIdAsync(item.BreakId))!;
+        var investigating = await repo.ApplyCaseworkCommandAsync(Command(current, ReconciliationCaseworkAction.TransitionStatus) with
+        {
+            Status = ReconciliationCaseLifecycleState.Investigating
+        });
+        investigating.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+
+        var commentResolved = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.AddComment) with
+        {
+            CommentId = "comment-resolve-2",
+            Note = "Security master mapping closed with security-master:sm-42 evidence.",
+            RootCauseCode = "SecurityMasterMapping",
+            ResolutionCode = "SecurityMasterUpdated",
+            EvidenceLinks = ["security-master:sm-42"],
+            StatusTransition = ReconciliationCaseLifecycleState.Resolved
+        });
+
+        commentResolved.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        commentResolved.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+        commentResolved.Item.ResolvedBy.Should().Be("controller-a");
+        commentResolved.Item.ResolvedAt.Should().NotBeNull();
+        commentResolved.Item.SignoffStatus.Should().Be("ready-for-signoff");
+
+        var sameSigner = await repo.ApplyCaseworkCommandAsync(Command(commentResolved.Item, ReconciliationCaseworkAction.SignOff));
+        sameSigner.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        sameSigner.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict);
+
+        var independentSigner = await repo.ApplyCaseworkCommandAsync(Command(commentResolved.Item, ReconciliationCaseworkAction.SignOff) with
+        {
+            Actor = "controller-b",
+            Note = "Independent review complete."
+        });
+        independentSigner.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        independentSigner.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
+    }
+
+    [Fact]
     public async Task Resolve_signoff_reopen_and_bulk_dry_run_follow_shared_casework_rules()
     {
         var repo = CreateRepository(out _);

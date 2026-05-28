@@ -6547,6 +6547,11 @@ public static partial class WorkstationEndpoints
             return Results.Unauthorized();
         }
 
+        if (request.Privileged && !HasReconciliationPrivilegedOverridePermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
         var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
         if (repository is null)
         {
@@ -6960,6 +6965,9 @@ public static partial class WorkstationEndpoints
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending,
             UserPermission.ModifySecurityMaster);
+
+    private static bool HasReconciliationPrivilegedOverridePermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
     private static bool HasOperationsContinuityReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(

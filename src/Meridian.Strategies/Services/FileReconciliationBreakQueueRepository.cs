@@ -800,6 +800,16 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
             ReconciliationCaseworkAction.AddComment when command.StatusTransition.HasValue && !IsLegalLifecycleTransition(item.LifecycleState, command.StatusTransition.Value)
                 => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.StatusTransition} from comment.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition, requestedState: command.StatusTransition),
+            ReconciliationCaseworkAction.AddComment when command.StatusTransition == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
+                => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause, requestedState: command.StatusTransition),
+            ReconciliationCaseworkAction.AddComment when command.StatusTransition == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
+                => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode, requestedState: command.StatusTransition),
+            ReconciliationCaseworkAction.AddComment when command.StatusTransition == ReconciliationCaseLifecycleState.Resolved && !IsKnownRootCause(command.RootCauseCode ?? item.RootCauseCode)
+                => Invalid(item, "Root cause code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy, requestedState: command.StatusTransition),
+            ReconciliationCaseworkAction.AddComment when command.StatusTransition == ReconciliationCaseLifecycleState.Resolved && !IsKnownResolution(command.ResolutionCode ?? item.ResolutionCode)
+                => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy, requestedState: command.StatusTransition),
+            ReconciliationCaseworkAction.AddComment when command.StatusTransition == ReconciliationCaseLifecycleState.Resolved && !HasRequiredResolutionEvidence(command.ResolutionCode ?? item.ResolutionCode, command.EvidenceLinks, item.EvidenceLinks, command.Note)
+                => Invalid(item, "Resolution-specific evidence is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, ["evidenceLinks"], command.StatusTransition),
             ReconciliationCaseworkAction.EditComment when string.IsNullOrWhiteSpace(command.CommentId)
                 => Invalid(item, "Comment id is required for comment edit.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, ["commentId"]),
             ReconciliationCaseworkAction.DeleteComment when string.IsNullOrWhiteSpace(command.CommentId) || string.IsNullOrWhiteSpace(command.Reason)
@@ -818,6 +828,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 => Invalid(item, "Resolution-specific evidence is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, ["evidenceLinks"]),
             ReconciliationCaseworkAction.SignOff when item.LifecycleState != ReconciliationCaseLifecycleState.Resolved
                 => Invalid(item, "Only resolved cases can be signed off.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
+            ReconciliationCaseworkAction.SignOff when string.IsNullOrWhiteSpace(item.ResolvedBy)
+                => Invalid(item, "Resolved operator is required before sign-off.", ReconciliationBreakQueueTransitionErrorCode.MissingActor, ["resolvedBy"]),
             ReconciliationCaseworkAction.SignOff when string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase) && (!command.Privileged || string.IsNullOrWhiteSpace(command.Reason))
                 => Invalid(item, "Resolver and signer must be different operators unless privileged override and reason are supplied.", ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict, ["reason"]),
             ReconciliationCaseworkAction.Reopen when item.LifecycleState != ReconciliationCaseLifecycleState.SignedOff
@@ -1001,7 +1013,23 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     StatusTransition: command.StatusTransition));
                 evidence.AddRange(command.EvidenceLinks ?? []);
                 var commentLifecycle = command.StatusTransition ?? item.LifecycleState;
-                return item with { LifecycleState = commentLifecycle, Status = MapQueueStatus(commentLifecycle, item.Status), Comments = comments.ToArray(), EvidenceLinks = evidence.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), CommentCount = comments.Count(c => c.DeletedAt is null), EvidenceCount = evidence.Distinct(StringComparer.OrdinalIgnoreCase).Count(), LastUpdatedAt = now };
+                var commentEvidence = evidence.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                return item with
+                {
+                    LifecycleState = commentLifecycle,
+                    Status = MapQueueStatus(commentLifecycle, item.Status),
+                    Comments = comments.ToArray(),
+                    RootCauseCode = commentLifecycle == ReconciliationCaseLifecycleState.Resolved ? command.RootCauseCode ?? item.RootCauseCode : item.RootCauseCode,
+                    ResolutionCode = commentLifecycle == ReconciliationCaseLifecycleState.Resolved ? command.ResolutionCode ?? item.ResolutionCode : item.ResolutionCode,
+                    ResolvedBy = commentLifecycle == ReconciliationCaseLifecycleState.Resolved ? command.Actor : item.ResolvedBy,
+                    ResolvedAt = commentLifecycle == ReconciliationCaseLifecycleState.Resolved ? now : item.ResolvedAt,
+                    ResolutionNote = commentLifecycle == ReconciliationCaseLifecycleState.Resolved ? command.Note ?? item.ResolutionNote : item.ResolutionNote,
+                    SignoffStatus = commentLifecycle == ReconciliationCaseLifecycleState.Resolved ? "ready-for-signoff" : item.SignoffStatus,
+                    EvidenceLinks = commentEvidence,
+                    CommentCount = comments.Count(c => c.DeletedAt is null),
+                    EvidenceCount = commentEvidence.Length,
+                    LastUpdatedAt = now
+                };
             case ReconciliationCaseworkAction.EditComment:
                 comments = comments.Select(c => c.CommentId == command.CommentId ? c with { Body = command.Note ?? c.Body, EditedAt = now, PreviousTextHash = HashPayload(c.Body), EditReason = command.Reason } : c).ToList();
                 return item with { Comments = comments.ToArray(), LastUpdatedAt = now };
