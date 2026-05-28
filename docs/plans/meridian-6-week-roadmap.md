@@ -1,10 +1,10 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-23
 
 ## Current Execution TODOs
 
-- [ ] Keep the DK1 packet, provider-validation matrix, kernel-readiness dashboard, and contract-compatibility matrix synchronized after any provider evidence change.
+- [ ] Keep the DK1 packet, provider-validation matrix, delivery-readiness dash, and contract-compatibility matrix synchronized after any provider evidence change.
 - [ ] Drive W2 cockpit acceptance through replay freshness, operator-inbox routing, promotion controls, and browser Trading scenario evidence.
 - [ ] Convert shared run, portfolio, ledger, brokerage/account, and reconciliation support into W3 continuity evidence across the seven-workspace path.
 - [ ] Prove W4 casework, approvals, report-pack lifecycle, provenance, and close/reopen controls with durable evidence before marking governance readiness complete.

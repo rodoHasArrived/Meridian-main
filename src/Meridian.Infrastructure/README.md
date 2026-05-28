@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-22
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Infrastructure
@@ -44,6 +44,10 @@ Streaming failover state is updated from explicit success, failure, and latency 
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
 failure. Backfill orchestration stores dependency job IDs on each job so chained jobs resume only
 after all upstream dependencies complete.
+
+Broker statement imports hash the source file bytes and persist the resulting content hash with a
+deterministic duplicate key derived from fund account, statement period, and source hash. Source
+paths and original file names remain provenance metadata, not duplicate-detection inputs.
 
 ## Diagrams
 
