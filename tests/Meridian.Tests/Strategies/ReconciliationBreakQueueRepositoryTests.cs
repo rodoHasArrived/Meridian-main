@@ -90,8 +90,12 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         await repo.ResolveAsync(new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "ops", "resolved", "packet evidence"));
 
         var history = await repo.GetAuditHistoryAsync(item.BreakId);
-        history.Should().HaveCount(3);
+        history.Should().HaveCount(4);
         history.Select(x => x.OccurredAt).Should().BeInAscendingOrder();
+        history.Select(x => x.EventType).Should().Contain("CaseCreated");
+        history.Select(x => x.EventType).Should().Contain("Assigned");
+        history.Select(x => x.EventType).Should().Contain("ReviewStarted");
+        history.Select(x => x.EventType).Should().Contain("Resolved");
 
         var auditPath = Path.Combine(root, "reconciliation-break-queue-audit.jsonl");
         var lines = await File.ReadAllLinesAsync(auditPath);
@@ -181,7 +185,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         comment.Item.EvidenceCount.Should().Be(1);
 
         var history = await repo.GetAuditHistoryAsync(item.BreakId);
-        history.Should().Contain(e => e.EventType == "AssigneeChanged" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1);
+        history.Should().Contain(e => e.EventType == "Assigned" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1);
         history.Should().Contain(e => e.EventType == "CommentAdded" && e.AfterPayload is not null);
     }
 
@@ -208,6 +212,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var signoff = await repo.ApplyCaseworkCommandAsync(Command(resolved.Item, ReconciliationCaseworkAction.SignOff) with { Actor = "controller-b", Note = "Independent review complete." });
         signoff.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         signoff.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
+        (await repo.GetAuditHistoryAsync(item.BreakId)).Should().Contain(e => e.EventType == "SignedOff");
 
         var reopenWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true });
         reopenWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);

@@ -41,7 +41,12 @@ public sealed record ReconciliationMatchLink(
     string? SessionEvidenceId,
     string? RunEvidenceId,
     string Confidence,
-    string Rationale);
+    string Rationale)
+{
+    public string ToleranceProfileId { get; init; } = string.Empty;
+    public int ToleranceProfileVersion { get; init; }
+    public string? ToleranceRuleId { get; init; }
+}
 
 public enum ReconciliationCaseState { Open, InReview, Resolved, Waived }
 

@@ -112,6 +112,27 @@ public sealed class ReconciliationApiService(
             .Select(x => new StatementRunExceptionDto(x.BreakId, x.RunId, x.ImportId, x.SourceReference, x.BreakCode, x.Category, x.Delta, x.Tolerance, x.ToleranceBreached, x.CreatedAtUtc.ToString("O"), x.Status))
             .ToList();
 
+    public async Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
+        => (await breakStore.ListOpenAsync(ct)).Select(x => new StatementBreakDto(
+            BreakId: x.BreakId,
+            BreakType: MapStatementBreakType(x.Category, x.BreakCode),
+            Severity: x.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
+            MatchTier: StatementMatchTier.Manual,
+            StatementReference: x.SourceReference,
+            Description: $"{x.Category} break {x.BreakCode} requires statement reconciliation review.",
+            StatementAmount: x.Delta,
+            BookAmount: null,
+            Delta: x.Delta,
+            Tolerance: x.Tolerance,
+            Currency: null,
+            CreatedAtUtc: x.CreatedAtUtc,
+            Status: x.Status,
+            InternalReference: x.RunId,
+            Owner: null,
+            LastObservedAtUtc: x.CreatedAtUtc,
+            RecommendedAction: "ReviewAndResolve",
+            EvidenceLink: $"/api/workstation/reconciliation/exceptions/{Uri.EscapeDataString(x.BreakId)}")).ToList();
+
     public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
         => (await caseStore.ListAsync(ct).ConfigureAwait(false))
             .Where(c => c.Status == "Open")

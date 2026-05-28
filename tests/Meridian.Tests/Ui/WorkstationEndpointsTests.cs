@@ -3695,7 +3695,50 @@ public sealed partial class WorkstationEndpointsTests
             !string.IsNullOrWhiteSpace(item.ExceptionRoute) &&
             !string.IsNullOrWhiteSpace(item.ToleranceProfileId) &&
             !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) &&
-            !string.IsNullOrWhiteSpace(item.SignoffStatus));
+            !string.IsNullOrWhiteSpace(item.SignoffStatus) &&
+            item.SourceType == "provider-ledger" &&
+            item.SourceFingerprint != null);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldSeedStatementBreaksOnceWithSourceMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(new StubReconciliationApiService());
+        });
+
+        var client = app.GetTestClient();
+        var first = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        second!.Should().ContainSingle(item =>
+            item.SourceType == "statement" &&
+            item.SourceSystem == "statement-reconciliation" &&
+            item.SourceImportId == "import-1" &&
+            item.SourceBreakId == "break-1" &&
+            item.SourceReference == "import-1:row-42" &&
+            item.BreakId.StartsWith("statement:", StringComparison.OrdinalIgnoreCase) &&
+            item.AssignedTo == "statement-owner" &&
+            item.Severity == ReconciliationBreakSeverity.High &&
+            item.ToleranceBand == 1m &&
+            item.RequiredSignoffRole == "Fund operations lead" &&
+            item.SignoffStatus == "pending-signoff" &&
+            item.ResolutionNote is null);
+        first!.Count(item => item.SourceType == "statement").Should().Be(1);
+        second.Count(item => item.SourceType == "statement").Should().Be(1);
+
+        var statementBreak = second.Single(item => item.SourceType == "statement");
+        var audit = await client.GetFromJsonAsync<List<ReconciliationBreakQueueAuditEvent>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAudit, "breakId", statementBreak.BreakId),
+            ServerJsonOptions);
+        audit.Should().ContainSingle(e => e.EventType == "CaseCreated" && e.Source == "statement");
     }
 
     [Fact]
