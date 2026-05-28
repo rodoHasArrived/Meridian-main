@@ -36,17 +36,26 @@ public static class PortfolioLedgerWorkflowStatusService
         var reconciliationGate = acceptanceGates.FirstOrDefault(static g => g.GateId == "reconciliation");
         var reviewGate = acceptanceGates.FirstOrDefault(static g => g.GateId == "report-pack");
 
-        var portfolio = drifts.Count > 0
-            ? PortfolioLedgerWorkflowStatusDto.DriftDetected
-            : MapGateStatus(reviewGate?.Status ?? TradingAcceptanceGateStatusDto.Unknown, awaitReconOnReview: false);
+        var portfolioGateStatus = MapGateStatus(reviewGate?.Status ?? TradingAcceptanceGateStatusDto.Unknown, awaitReconOnReview: false);
+        var portfolio = portfolioGateStatus == PortfolioLedgerWorkflowStatusDto.Blocked
+            ? PortfolioLedgerWorkflowStatusDto.Blocked
+            : drifts.Count > 0
+                ? PortfolioLedgerWorkflowStatusDto.DriftDetected
+                : portfolioGateStatus;
 
-        var reconciliation = drifts.Any(d => d.DriftType == "ledger-postings")
-            ? PortfolioLedgerWorkflowStatusDto.AwaitingReconciliation
-            : MapGateStatus(reconciliationGate?.Status ?? TradingAcceptanceGateStatusDto.Unknown, awaitReconOnReview: true);
+        var reconciliationGateStatus = MapGateStatus(reconciliationGate?.Status ?? TradingAcceptanceGateStatusDto.Unknown, awaitReconOnReview: true);
+        var reconciliation = reconciliationGateStatus == PortfolioLedgerWorkflowStatusDto.Blocked
+            ? PortfolioLedgerWorkflowStatusDto.Blocked
+            : drifts.Any(d => d.DriftType == "ledger-postings")
+                ? PortfolioLedgerWorkflowStatusDto.AwaitingReconciliation
+                : reconciliationGateStatus;
 
-        var summary = drifts.Count == 0
-            ? "Portfolio/ledger workflow posture is aligned with shared acceptance evidence."
-            : $"{drifts.Count} drift signal(s) require remediation before promoting portfolio/ledger readiness.";
+        var summary = portfolio is PortfolioLedgerWorkflowStatusDto.Blocked or PortfolioLedgerWorkflowStatusDto.Partial
+            || reconciliation is PortfolioLedgerWorkflowStatusDto.Blocked or PortfolioLedgerWorkflowStatusDto.Partial
+            ? "Portfolio/ledger workflow posture requires acceptance-gate review before promotion."
+            : drifts.Count == 0
+                ? "Portfolio/ledger workflow posture is aligned with shared acceptance evidence."
+                : $"{drifts.Count} drift signal(s) require remediation before promoting portfolio/ledger readiness.";
 
         return new PortfolioLedgerWorkflowStatusSnapshotDto(portfolio, reconciliation, drifts, summary);
     }
