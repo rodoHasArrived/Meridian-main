@@ -59,7 +59,8 @@ public partial class SymbolsPage : Page
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         await _vm.ActivateAsync();
-        RestorePageFilterState();
+        if (_vm.IsActive)
+            RestorePageFilterState();
     }
 
     private void SecurityType_Changed(object sender, SelectionChangedEventArgs e)
