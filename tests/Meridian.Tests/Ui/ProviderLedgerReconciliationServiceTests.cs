@@ -10,6 +10,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
+using Meridian.ProviderSdk;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -54,6 +55,64 @@ public sealed class ProviderLedgerReconciliationServiceTests
             passport.ResolutionSource.Should().Be("security-master-lookup");
             passport.ValidationIssueCodes.Should().BeEmpty();
             File.Exists(detail.Summary.DetailPath).Should().BeTrue("latest reconciliation detail must be retained as evidence");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_MatchesWhenProviderCapabilitiesAreRoutable()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:AccountBalances" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:AccountPositions" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:ReconciliationFeed" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_BlocksWhenProviderCapabilityIsNotRoutable()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: false));
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Blocked);
+            detail.Breaks.Should().Contain(breakRow =>
+                breakRow.Code == "PROVIDER_CAPABILITY_UNROUTABLE" &&
+                breakRow.CheckId == "provider-capability:ReconciliationFeed" &&
+                breakRow.Category == ReconciliationBreakCategory.MissingPortfolioCoverage);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:ReconciliationFeed" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Blocked);
         }
         finally
         {
@@ -260,7 +319,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
         bool runProviderSync = true,
         bool recordInternalSnapshot = true,
         decimal internalCash = 50_000m,
-        decimal? internalSecuritiesMarketValue = 18_750m)
+        decimal? internalSecuritiesMarketValue = 18_750m,
+        ICapabilityRouter? capabilityRouter = null)
     {
         var accountId = Guid.NewGuid();
         var services = new ServiceCollection();
@@ -275,6 +335,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
         if (includeSecurityLookup)
         {
             services.AddSingleton<ISecurityReferenceLookup>(new StaticSecurityReferenceLookup());
+        }
+        if (capabilityRouter is not null)
+        {
+            services.AddSingleton(capabilityRouter);
         }
 
         services.AddSingleton<BrokeragePortfolioSyncService>();
@@ -446,6 +510,40 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 MatchedIdentifierKind: "Ticker",
                 MatchedIdentifierValue: normalized,
                 MatchedProvider: "test"));
+        }
+    }
+
+    private sealed record FixedCapabilityRouter(bool IsRoutable) : ICapabilityRouter
+    {
+        public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!IsRoutable)
+            {
+                return ValueTask.FromResult(new ProviderRouteResult(
+                    context,
+                    SelectedDecision: null,
+                    Candidates: [],
+                    SkippedCandidates: [$"Provider fixture does not support capability '{context.Capability}'."],
+                    PolicyGate: $"Capability '{context.Capability}' requires an account-scoped provider binding."));
+            }
+
+            var decision = new ProviderRouteDecision(
+                ConnectionId: $"fixture-{context.Capability}",
+                ProviderFamilyId: "alpaca",
+                Capability: context.Capability,
+                SafetyMode: ProviderSafetyMode.NoAutomaticFailover,
+                ScopeRank: 500,
+                Priority: 100,
+                IsHealthy: true,
+                ReasonCodes: [$"Capability '{context.Capability}' is supported by the fixture."],
+                FallbackConnectionIds: []);
+
+            return ValueTask.FromResult(new ProviderRouteResult(
+                context,
+                SelectedDecision: decision,
+                Candidates: [decision],
+                SkippedCandidates: []));
         }
     }
 }

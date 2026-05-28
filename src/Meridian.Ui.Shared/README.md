@@ -52,6 +52,9 @@ latest detail so repeated provider-ledger variances can be controlled as account
 Reconciliation details also emit provider-to-Security-Master confidence passports for every
 provider position, preserving the resolution path, confidence score, validation issue codes, and
 identifier-conflict evidence alongside the persisted accounting detail.
+When provider-routing capability metadata is registered, the reconciliation service blocks runs
+that cannot route account balances, account positions, or reconciliation-feed capability for the
+fund account, so unsupported providers fail as accounting break evidence before ledger comparison.
 
 ## Diagrams
 

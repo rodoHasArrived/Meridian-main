@@ -6,6 +6,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
+using Meridian.ProviderSdk;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,7 @@ public sealed class ProviderLedgerReconciliationService
     private readonly BrokeragePortfolioSyncOptions _options;
     private readonly ISecurityReferenceLookup? _securityReferenceLookup;
     private readonly ISecurityValidationGateService? _securityValidationGate;
+    private readonly ICapabilityRouter? _capabilityRouter;
     private readonly ILogger<ProviderLedgerReconciliationService> _logger;
 
     public ProviderLedgerReconciliationService(
@@ -37,7 +39,8 @@ public sealed class ProviderLedgerReconciliationService
         BrokeragePortfolioSyncOptions options,
         ILogger<ProviderLedgerReconciliationService> logger,
         ISecurityReferenceLookup? securityReferenceLookup = null,
-        ISecurityValidationGateService? securityValidationGate = null)
+        ISecurityValidationGateService? securityValidationGate = null,
+        ICapabilityRouter? capabilityRouter = null)
     {
         _brokerageSync = brokerageSync ?? throw new ArgumentNullException(nameof(brokerageSync));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -45,6 +48,7 @@ public sealed class ProviderLedgerReconciliationService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _securityReferenceLookup = securityReferenceLookup;
         _securityValidationGate = securityValidationGate;
+        _capabilityRouter = capabilityRouter;
     }
 
     public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
@@ -108,6 +112,15 @@ public sealed class ProviderLedgerReconciliationService
                 null,
                 null,
                 "Latest brokerage sync projection is available.");
+
+            await AddProviderCapabilityChecksAsync(
+                    runId,
+                    lifecycle,
+                    providerProjection,
+                    checks,
+                    breaks,
+                    ct)
+                .ConfigureAwait(false);
 
             var staleAfter = TimeSpan.FromMinutes(staleAfterMinutes);
             if (providerProjection.Status.IsStale || createdAt - providerProjection.SyncedAt > staleAfter)
@@ -354,6 +367,72 @@ public sealed class ProviderLedgerReconciliationService
             .ConfigureAwait(false);
     }
 
+    private async Task AddProviderCapabilityChecksAsync(
+        Guid runId,
+        BreakLifecycleContext lifecycle,
+        FundAccountBrokerageSyncActivityDto providerProjection,
+        List<ProviderLedgerReconciliationCheckDto> checks,
+        List<ProviderLedgerReconciliationBreakDto> breaks,
+        CancellationToken ct)
+    {
+        if (_capabilityRouter is null)
+        {
+            return;
+        }
+
+        foreach (var capability in RequiredProviderLedgerCapabilities)
+        {
+            ct.ThrowIfCancellationRequested();
+            var routeContext = new ProviderRouteContext(
+                capability,
+                Workspace: "accounting",
+                AccountId: providerProjection.FundAccountId,
+                RequireProductionReady: capability is ProviderCapabilityKind.ReconciliationFeed);
+            var result = await _capabilityRouter.RouteAsync(routeContext, ct).ConfigureAwait(false);
+            var checkId = $"provider-capability:{capability}";
+            var label = $"Provider capability {capability}";
+            var expectedSource = "provider-capability-matrix";
+            var actualSource = providerProjection.Link.ProviderId;
+
+            if (result.IsSuccess)
+            {
+                var selected = result.SelectedDecision;
+                AddMatched(
+                    checks,
+                    checkId,
+                    label,
+                    ReconciliationBreakCategory.MissingPortfolioCoverage,
+                    expectedSource,
+                    actualSource,
+                    null,
+                    null,
+                    selected is null
+                        ? $"Capability '{capability}' is routable for provider-ledger reconciliation."
+                        : $"Capability '{capability}' is routable through connection '{selected.ConnectionId}'.");
+                continue;
+            }
+
+            var reason = BuildProviderCapabilityBlockReason(capability, result);
+            AddBreak(
+                runId,
+                lifecycle,
+                checks,
+                breaks,
+                checkId,
+                label,
+                ProviderLedgerReconciliationCheckStatusDto.Blocked,
+                "PROVIDER_CAPABILITY_UNROUTABLE",
+                ReconciliationBreakCategory.MissingPortfolioCoverage,
+                ReconciliationBreakSeverity.Critical,
+                expectedSource,
+                actualSource,
+                null,
+                null,
+                reason,
+                evidenceLink: "/workstation/settings/providers");
+        }
+    }
+
     private async Task AddSecurityCoverageChecksAsync(
         Guid runId,
         BreakLifecycleContext lifecycle,
@@ -535,6 +614,23 @@ public sealed class ProviderLedgerReconciliationService
                 symbol,
                 "/workstation/data/security-master");
         }
+    }
+
+    private static string BuildProviderCapabilityBlockReason(
+        ProviderCapabilityKind capability,
+        ProviderRouteResult result)
+    {
+        var reason = string.IsNullOrWhiteSpace(result.PolicyGate)
+            ? $"Provider capability '{capability}' is not routable for provider-ledger reconciliation."
+            : result.PolicyGate;
+        var skipped = result.SkippedCandidates
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Take(3)
+            .ToArray();
+
+        return skipped.Length == 0
+            ? reason
+            : $"{reason} Skipped: {string.Join(" ", skipped)}";
     }
 
     private static ProviderSecurityMasterPassportDto BuildSecurityMasterPassport(
@@ -806,6 +902,13 @@ public sealed class ProviderLedgerReconciliationService
         IReadOnlySet<string> SignedOffBreakKeys,
         string? SignedOffBy,
         IReadOnlyDictionary<string, ProviderLedgerReconciliationBreakDto> PreviousBreaksByKey);
+
+    private static readonly ProviderCapabilityKind[] RequiredProviderLedgerCapabilities =
+    [
+        ProviderCapabilityKind.AccountBalances,
+        ProviderCapabilityKind.AccountPositions,
+        ProviderCapabilityKind.ReconciliationFeed
+    ];
 
     private static string NormalizeBreakIdPart(string value)
         => string.Join("-", value.Trim().Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries))
