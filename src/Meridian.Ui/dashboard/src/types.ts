@@ -1452,6 +1452,12 @@ export interface ReconciliationBreakQueueItem {
   commentCount?: number;
   evidenceCount?: number;
   lastActivityAt?: string | null;
+  sourceType?: string | null;
+  sourceSystem?: string | null;
+  sourceReference?: string | null;
+  sourceImportId?: string | null;
+  sourceBreakId?: string | null;
+  sourceFingerprint?: string | null;
 }
 
 export interface ReconciliationCaseComment {

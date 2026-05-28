@@ -40,6 +40,7 @@ and UI presentation concerns in their owning layers.
   orchestration. Statement validation returns structured issue DTOs so operator workflows can
   distinguish hard blockers from policy-controlled soft issues before import.
 - `Services/` - application use cases and orchestration services.
+- `Reconciliation/` - canonical reconciliation matching, statement tolerance profile models, and profile-provider seams that stamp tolerance profile/version/rule evidence on runs and match explanations.
 - `Composition/` - application feature registration and service wiring.
 - `Reconciliation/` - statement reconciliation workflows, external statement mapping profiles, case intake, and match orchestration.
 
@@ -50,14 +51,21 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
+- Statement reconciliation tolerance profiles are versioned in `Reconciliation/`; match outputs that use a tolerance must carry the tolerance profile ID/version and the exact tolerance rule ID that allowed the match.
+- Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication,
+  health lookup, fallback detection, logging, and metrics.
+- `StatementMatchingEngine` accepts normalized statement positions, cash balances, transactions,
+  internal portfolio/cash/ledger views, and a tolerance profile. It emits deterministic exact,
+  tolerance, candidate, and unmatched results with rule IDs, confidence, side-specific evidence
+  references, variance, tolerance, and operator explanations.
 - Statement reconciliation classifies broker and custodian breaks before case creation; only
   material unresolved breaks are promoted into casework, with severity and recommended action
   stored in the classification result.
-- Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape.
+- Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape. File-backed statement repositories persist run manifests, validation issues, normalized entities, match results, breaks, and case links under `reconciliation/statement-runs/{runId}/` using atomic JSON writes.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
 - Statement validation checks source accessibility, account/profile references, duplicate imports,
   invariant date/decimal parsing, currency/activity/security resolution, and statement-period
-  alignment through application-layer DTOs rather than relying only on exceptions.
+  alignment through application-layer DTOs rather than relying only on exceptions. Statement run manifests retain source file hashes plus mapping/tolerance profile versions for reproducibility, and raw broker files are referenced by source path or approved evidence URI instead of being blindly copied into repository storage.
 
 ## Diagrams
 

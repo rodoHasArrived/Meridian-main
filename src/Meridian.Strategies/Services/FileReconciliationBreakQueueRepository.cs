@@ -110,7 +110,9 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 UpstreamSyncCursor: normalized.UpstreamSyncCursor,
                 Actor: normalized.AssignedTo ?? normalized.ReviewedBy ?? normalized.ResolvedBy,
                 BeforePayload: null,
-                AfterPayload: JsonSerializer.Serialize(normalized, _jsonOptions)), ct).ConfigureAwait(false);
+                AfterPayload: JsonSerializer.Serialize(item, _jsonOptions),
+                Source: item.SourceType,
+                Reason: item.SourceReference), ct).ConfigureAwait(false);
 
             return true;
         }
@@ -206,6 +208,35 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             updated = StampComputedFields(updated, now);
             _items[request.BreakId] = updated;
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            if (!string.Equals(item.AssignedTo, updated.AssignedTo, StringComparison.OrdinalIgnoreCase))
+            {
+                await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+                    EventId: Guid.NewGuid().ToString("N"),
+                    BreakId: request.BreakId,
+                    EventType: "Assigned",
+                    PreviousStatus: item.Status,
+                    NewStatus: updated.Status,
+                    PreviousLifecycleState: item.LifecycleState,
+                    NewLifecycleState: updated.LifecycleState,
+                    OccurredAt: now,
+                    AssignedTo: request.AssignedTo,
+                    ReviewedBy: request.ReviewedBy,
+                    ResolvedBy: null,
+                    Note: request.ReviewNote,
+                    ExceptionRoute: updated.ExceptionRoute,
+                    ToleranceBand: updated.ToleranceBand,
+                    RequiredSignoffRole: updated.RequiredSignoffRole,
+                    SignoffStatus: updated.SignoffStatus,
+                    ExternalAccountId: updated.ExternalAccountId,
+                    CustodianId: updated.CustodianId,
+                    UpstreamSyncCursor: updated.UpstreamSyncCursor,
+                    Actor: request.ReviewedBy,
+                    BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
+                    AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions),
+                    Source: updated.SourceType,
+                    Reason: updated.SourceReference), ct).ConfigureAwait(false);
+            }
+
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
                 BreakId: request.BreakId,
@@ -228,7 +259,9 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 UpstreamSyncCursor: updated.UpstreamSyncCursor,
                 Actor: request.ReviewedBy,
                 BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
-                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
+                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions),
+                Source: updated.SourceType,
+                Reason: updated.SourceReference), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }
@@ -304,7 +337,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
                 BreakId: request.BreakId,
-                EventType: request.Status == ReconciliationBreakQueueStatus.Resolved ? "Resolved" : "ResolutionSet",
+                EventType: request.Status == ReconciliationBreakQueueStatus.Resolved ? "Resolved" : "Dismissed",
                 PreviousStatus: item.Status,
                 NewStatus: updated.Status,
                 PreviousLifecycleState: item.LifecycleState,
@@ -323,7 +356,9 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 UpstreamSyncCursor: updated.UpstreamSyncCursor,
                 Actor: request.ResolvedBy,
                 BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
-                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
+                AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions),
+                Source: updated.SourceType,
+                Reason: updated.SourceReference), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }
@@ -881,7 +916,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     private static string ToAuditEventType(ReconciliationCaseworkAction action)
         => action switch
         {
-            ReconciliationCaseworkAction.Assign => "AssigneeChanged",
+            ReconciliationCaseworkAction.Assign => "Assigned",
             ReconciliationCaseworkAction.ChangePriority => "PriorityChanged",
             ReconciliationCaseworkAction.TransitionStatus => "StatusChanged",
             ReconciliationCaseworkAction.AddComment => "CommentAdded",
@@ -890,7 +925,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             ReconciliationCaseworkAction.SetRootCause => "RootCauseSet",
             ReconciliationCaseworkAction.SetResolution => "ResolutionSet",
             ReconciliationCaseworkAction.LinkEvidence => "EvidenceLinked",
-            ReconciliationCaseworkAction.SignOff => "SignOff",
+            ReconciliationCaseworkAction.SignOff => "SignedOff",
             ReconciliationCaseworkAction.Reopen => "Reopen",
             ReconciliationCaseworkAction.Resolve => "ResolutionSet",
             _ => action.ToString()
