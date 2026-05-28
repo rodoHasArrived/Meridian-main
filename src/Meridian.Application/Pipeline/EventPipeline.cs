@@ -447,10 +447,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// Attempts to publish an event to the pipeline without blocking.
     /// Returns false if the queue is full (event will be dropped based on FullMode).
     /// </summary>
-    /// <remarks>
-    /// When WAL is enabled, this method appends the event to the WAL before queue handoff.
-    /// If WAL persistence fails, the event is treated as dropped and the method returns false.
-    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
     {
@@ -467,25 +463,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             return false;
         }
 
-        TracedMarketEvent tracedEvent;
-        try
-        {
-            tracedEvent = PrepareTracedEventForPublishAsync(evt, CancellationToken.None)
-                .AsTask()
-                .GetAwaiter()
-                .GetResult();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Failed to append event to WAL in TryPublish for {EventType}/{Symbol}; event dropped",
-                evt.Type,
-                evt.EffectiveSymbol);
-            RecordDrop(in evt);
-            return false;
-        }
-
-        var written = _channel.Writer.TryWrite(tracedEvent);
+        var written = _channel.Writer.TryWrite(CaptureTraceContext(evt));
 
         if (written)
         {
