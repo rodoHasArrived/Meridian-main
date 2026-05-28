@@ -68,7 +68,8 @@ resolution source, confidence score, validation issue codes, and identifier-conf
 
 Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
 source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,
-match summaries, breaks, and operator cases in the shared contract lane. Keep these DTOs additive and
+match summaries, breaks, operator cases, run create/reconcile commands, run validation envelopes,
+and run-scoped break rows in the shared contract lane. Keep these DTOs additive and
 transport-safe so browser, WPF, retained evidence, and automation consumers can reconcile custodian
 statements without referencing application, UI, or infrastructure types.
 

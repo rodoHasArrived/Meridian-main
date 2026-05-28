@@ -241,3 +241,82 @@ public sealed record StatementRunDto(
     string? FundProfileId = null,
     Guid? FundAccountId = null,
     string? Notes = null);
+/// <summary>
+/// Request to create a statement reconciliation run from an already accessible source file.
+/// Endpoint implementations keep import and reconciliation behavior in shared services.
+/// </summary>
+public sealed record StatementRunCreateDto(
+    string Broker,
+    string SourceInstitution,
+    string FundAccountId,
+    string ExternalAccountId,
+    DateOnly StatementPeriodStart,
+    DateOnly StatementPeriodEnd,
+    string SourcePath,
+    string OriginalFileName,
+    string MappingProfileId,
+    string ToleranceProfileId,
+    string ImportedBy,
+    string? SourceFileHash = null,
+    string? Notes = null);
+
+/// <summary>
+/// Request to trigger reconciliation matching for an existing statement run.
+/// </summary>
+public sealed record StatementRunReconcileRequestDto(
+    string? Actor = null,
+    string? Reason = null,
+    bool Force = false);
+
+/// <summary>
+/// Lightweight statement-run index row returned by the workstation reconciliation API.
+/// </summary>
+public sealed record StatementRunSummaryDto(
+    string RunId,
+    string ImportId,
+    StatementRunStatus Status,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset? CompletedAtUtc,
+    int PositionMatches,
+    int CashMatches,
+    int TransactionMatches,
+    int OpenExceptionCount);
+
+/// <summary>
+/// Validation envelope for a statement reconciliation run.
+/// </summary>
+public sealed record StatementRunValidationDto(
+    string RunId,
+    IReadOnlyList<StatementValidationIssueDto> Issues,
+    bool IsBlocked);
+
+/// <summary>
+/// Open or retained break row scoped to a statement reconciliation run.
+/// </summary>
+public sealed record StatementRunBreakDto(
+    string BreakId,
+    string RunId,
+    string ImportId,
+    string SourceReference,
+    StatementBreakType BreakType,
+    string Category,
+    decimal Delta,
+    decimal Tolerance,
+    bool ToleranceBreached,
+    DateTimeOffset CreatedAtUtc,
+    string Status);
+/// <summary>
+/// Backward-compatible open exception projection for statement reconciliation queues.
+/// </summary>
+public sealed record StatementRunExceptionDto(
+    string BreakId,
+    string RunId,
+    string ImportId,
+    string SourceReference,
+    string BreakCode,
+    string Category,
+    decimal Delta,
+    decimal Tolerance,
+    bool ToleranceBreached,
+    string CreatedAtUtc,
+    string Status);
