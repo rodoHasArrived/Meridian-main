@@ -85,6 +85,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
             detail.Checks.Should().Contain(check =>
                 check.CheckId == "provider-capability:ReconciliationFeed" &&
                 check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:CorporateActions" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
         }
         finally
         {
@@ -113,6 +116,37 @@ public sealed class ProviderLedgerReconciliationServiceTests
             detail.Checks.Should().Contain(check =>
                 check.CheckId == "provider-capability:ReconciliationFeed" &&
                 check.Status == ProviderLedgerReconciliationCheckStatusDto.Blocked);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_DegradesWhenCorporateActionsAreNotRoutable()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.CorporateActions));
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
+            detail.Breaks.Should().ContainSingle(breakRow =>
+                breakRow.Code == "PROVIDER_CORPORATE_ACTION_CAPABILITY_MISSING" &&
+                breakRow.CheckId == "provider-capability:CorporateActions" &&
+                breakRow.Severity == ReconciliationBreakSeverity.Medium);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:AccountBalances" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:CorporateActions" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Break);
         }
         finally
         {
@@ -526,6 +560,42 @@ public sealed class ProviderLedgerReconciliationServiceTests
                     Candidates: [],
                     SkippedCandidates: [$"Provider fixture does not support capability '{context.Capability}'."],
                     PolicyGate: $"Capability '{context.Capability}' requires an account-scoped provider binding."));
+            }
+
+            var decision = new ProviderRouteDecision(
+                ConnectionId: $"fixture-{context.Capability}",
+                ProviderFamilyId: "alpaca",
+                Capability: context.Capability,
+                SafetyMode: ProviderSafetyMode.NoAutomaticFailover,
+                ScopeRank: 500,
+                Priority: 100,
+                IsHealthy: true,
+                ReasonCodes: [$"Capability '{context.Capability}' is supported by the fixture."],
+                FallbackConnectionIds: []);
+
+            return ValueTask.FromResult(new ProviderRouteResult(
+                context,
+                SelectedDecision: decision,
+                Candidates: [decision],
+                SkippedCandidates: []));
+        }
+    }
+
+    private sealed class SelectiveCapabilityRouter(params ProviderCapabilityKind[] unsupportedCapabilities) : ICapabilityRouter
+    {
+        private readonly HashSet<ProviderCapabilityKind> _unsupportedCapabilities = unsupportedCapabilities.ToHashSet();
+
+        public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (_unsupportedCapabilities.Contains(context.Capability))
+            {
+                return ValueTask.FromResult(new ProviderRouteResult(
+                    context,
+                    SelectedDecision: null,
+                    Candidates: [],
+                    SkippedCandidates: [$"Provider fixture does not support capability '{context.Capability}'."],
+                    PolicyGate: $"Capability '{context.Capability}' is unavailable for this provider account."));
             }
 
             var decision = new ProviderRouteDecision(

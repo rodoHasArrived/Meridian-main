@@ -382,55 +382,97 @@ public sealed class ProviderLedgerReconciliationService
 
         foreach (var capability in RequiredProviderLedgerCapabilities)
         {
-            ct.ThrowIfCancellationRequested();
-            var routeContext = new ProviderRouteContext(
-                capability,
-                Workspace: "accounting",
-                AccountId: providerProjection.FundAccountId,
-                RequireProductionReady: capability is ProviderCapabilityKind.ReconciliationFeed);
-            var result = await _capabilityRouter.RouteAsync(routeContext, ct).ConfigureAwait(false);
-            var checkId = $"provider-capability:{capability}";
-            var label = $"Provider capability {capability}";
-            var expectedSource = "provider-capability-matrix";
-            var actualSource = providerProjection.Link.ProviderId;
-
-            if (result.IsSuccess)
-            {
-                var selected = result.SelectedDecision;
-                AddMatched(
+            await AddProviderCapabilityCheckAsync(
+                    runId,
+                    lifecycle,
+                    providerProjection,
+                    capability,
                     checks,
-                    checkId,
-                    label,
-                    ReconciliationBreakCategory.MissingPortfolioCoverage,
-                    expectedSource,
-                    actualSource,
-                    null,
-                    null,
-                    selected is null
-                        ? $"Capability '{capability}' is routable for provider-ledger reconciliation."
-                        : $"Capability '{capability}' is routable through connection '{selected.ConnectionId}'.");
-                continue;
-            }
+                    breaks,
+                    missingStatus: ProviderLedgerReconciliationCheckStatusDto.Blocked,
+                    missingCode: "PROVIDER_CAPABILITY_UNROUTABLE",
+                    missingSeverity: ReconciliationBreakSeverity.Critical,
+                    ct)
+                .ConfigureAwait(false);
+        }
 
-            var reason = BuildProviderCapabilityBlockReason(capability, result);
-            AddBreak(
-                runId,
-                lifecycle,
+        if (providerProjection.Positions.Count > 0)
+        {
+            await AddProviderCapabilityCheckAsync(
+                    runId,
+                    lifecycle,
+                    providerProjection,
+                    ProviderCapabilityKind.CorporateActions,
+                    checks,
+                    breaks,
+                    missingStatus: ProviderLedgerReconciliationCheckStatusDto.Break,
+                    missingCode: "PROVIDER_CORPORATE_ACTION_CAPABILITY_MISSING",
+                    missingSeverity: ReconciliationBreakSeverity.Medium,
+                    ct)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task AddProviderCapabilityCheckAsync(
+        Guid runId,
+        BreakLifecycleContext lifecycle,
+        FundAccountBrokerageSyncActivityDto providerProjection,
+        ProviderCapabilityKind capability,
+        List<ProviderLedgerReconciliationCheckDto> checks,
+        List<ProviderLedgerReconciliationBreakDto> breaks,
+        ProviderLedgerReconciliationCheckStatusDto missingStatus,
+        string missingCode,
+        ReconciliationBreakSeverity missingSeverity,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var routeContext = new ProviderRouteContext(
+            capability,
+            Workspace: "accounting",
+            AccountId: providerProjection.FundAccountId,
+            RequireProductionReady: capability is ProviderCapabilityKind.ReconciliationFeed);
+        var result = await _capabilityRouter!.RouteAsync(routeContext, ct).ConfigureAwait(false);
+        var checkId = $"provider-capability:{capability}";
+        var label = $"Provider capability {capability}";
+        var expectedSource = "provider-capability-matrix";
+        var actualSource = providerProjection.Link.ProviderId;
+
+        if (result.IsSuccess)
+        {
+            var selected = result.SelectedDecision;
+            AddMatched(
                 checks,
-                breaks,
                 checkId,
                 label,
-                ProviderLedgerReconciliationCheckStatusDto.Blocked,
-                "PROVIDER_CAPABILITY_UNROUTABLE",
                 ReconciliationBreakCategory.MissingPortfolioCoverage,
-                ReconciliationBreakSeverity.Critical,
                 expectedSource,
                 actualSource,
                 null,
                 null,
-                reason,
-                evidenceLink: "/workstation/settings/providers");
+                selected is null
+                    ? $"Capability '{capability}' is routable for provider-ledger reconciliation."
+                    : $"Capability '{capability}' is routable through connection '{selected.ConnectionId}'.");
+            return;
         }
+
+        var reason = BuildProviderCapabilityBlockReason(capability, result);
+        AddBreak(
+            runId,
+            lifecycle,
+            checks,
+            breaks,
+            checkId,
+            label,
+            missingStatus,
+            missingCode,
+            ReconciliationBreakCategory.MissingPortfolioCoverage,
+            missingSeverity,
+            expectedSource,
+            actualSource,
+            null,
+            null,
+            reason,
+            evidenceLink: "/workstation/settings/providers");
     }
 
     private async Task AddSecurityCoverageChecksAsync(

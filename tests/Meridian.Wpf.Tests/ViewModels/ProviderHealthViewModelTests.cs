@@ -113,6 +113,29 @@ public sealed class ProviderHealthViewModelTests
     }
 
     [Fact]
+    public void ProviderHealthPostureSection_ShouldOwnMetricAndPostureStateWithAdapterBindings()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.cs"));
+        var section = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.Sections.cs"));
+
+        section.Should().Contain("internal sealed class ProviderHealthPostureSectionViewModel");
+        section.Should().Contain("public string ConnectedCount { get; set; } = \"0\";");
+        section.Should().Contain("public string LastUpdateText { get; set; } = \"Last updated: --\";");
+        section.Should().Contain("public bool HasNoHistory { get; set; } = true;");
+        section.Should().Contain("public string ProviderPostureTitle { get; set; } = \"Provider posture loading\";");
+        section.Should().Contain("public WorkstationStateModel ProviderPostureState { get; set; }");
+        section.Should().Contain("public WorkstationBadgeModel ProviderPostureBadge { get; set; }");
+        viewModel.Should().Contain("private readonly ProviderHealthPostureSectionViewModel _postureSection");
+        viewModel.Should().Contain("internal ProviderHealthPostureSectionViewModel PostureSection => _postureSection;");
+        viewModel.Should().Contain("get => _postureSection.ConnectedCount;");
+        viewModel.Should().Contain("get => _postureSection.ProviderPostureTitle;");
+        viewModel.Should().Contain("SetProviderHealthSectionProperty(_postureSection.ProviderPostureBadge, value, next => _postureSection.ProviderPostureBadge = next)");
+        viewModel.Should().NotContain("private string _connectedCount");
+        viewModel.Should().NotContain("private bool _hasNoHistory");
+        viewModel.Should().NotContain("private WorkstationStateModel _providerPostureState");
+    }
+
+    [Fact]
     public void BuildProviderManagementRows_MergesStreamingAndBackfillProvidersWithoutDuplicatingProviderFamilies()
     {
         var streamingProviders = new[]
