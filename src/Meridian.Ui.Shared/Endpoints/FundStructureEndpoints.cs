@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Auth;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -508,12 +509,22 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/templates", (ReportTemplateDefinitionDto request, HttpContext context) =>
         {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
             return registry is null ? WorkspaceServiceUnavailable() : Results.Json(registry.Register(request), jsonOptions, statusCode: StatusCodes.Status201Created);
         });
 
         group.MapPost("/reporting/templates/render", (RenderReportTemplateRequestDto request, HttpContext context) =>
         {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
             if (registry is null)
             {
@@ -530,8 +541,18 @@ public static class FundStructureEndpoints
             }
         });
 
-        group.MapPost("/reporting/packs/create", (string fundProfileId, string fundAccountId, string period, VersionedReportTemplateIdDto templateId, string actor, HttpContext context) =>
+        group.MapPost("/reporting/packs/create", (string fundProfileId, string fundAccountId, string period, VersionedReportTemplateIdDto templateId, HttpContext context) =>
         {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
             return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.Create(fundProfileId, fundAccountId, period, templateId, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
         });
@@ -540,8 +561,18 @@ public static class FundStructureEndpoints
         group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved, actor, role));
         group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, string actor, string role, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Published, actor, role));
 
-        group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
+        group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string reasonCode, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
         {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+            {
+                return Results.Unauthorized();
+            }
+
             var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
             if (svc is null)
             {
@@ -550,7 +581,7 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(svc.Restate(reportId, actor, role, reasonCode, approver, priorVersionReportId, changedLines), jsonOptions);
+                return Results.Json(svc.Restate(reportId, actor, role, reasonCode, actor, priorVersionReportId, changedLines), jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
             {
@@ -560,6 +591,11 @@ public static class FundStructureEndpoints
 
         group.MapGet("/reporting/packs/history", (string period, string fundAccountId, HttpContext context) =>
         {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
             return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.GetHistory(period, fundAccountId), jsonOptions);
         });
@@ -580,8 +616,18 @@ public static class FundStructureEndpoints
     }
 
 
-    private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target, string actor, string role)
+    private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target)
     {
+        if (!HasReportingWorkflowPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+        {
+            return Results.Unauthorized();
+        }
+
         var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
         if (svc is null)
         {
@@ -602,6 +648,30 @@ public static class FundStructureEndpoints
 
     private static FundOperationsWorkspaceReadService? ResolveWorkspaceService(HttpContext context) =>
         context.RequestServices.GetService<FundOperationsWorkspaceReadService>();
+
+    private static bool HasReportingWorkflowPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+
+    private static bool HasReportingReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewAnalytics, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+
+    private static bool TryResolveAuthorizedActorAndRole(HttpContext context, out string actor, out string role)
+    {
+        if (!EndpointAuthorization.TryResolveActor(context, out actor))
+        {
+            role = string.Empty;
+            return false;
+        }
+
+        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var rawRole) || rawRole is not UserRole currentRole)
+        {
+            role = string.Empty;
+            return false;
+        }
+
+        role = currentRole.ToString();
+        return true;
+    }
 
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund structure service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
