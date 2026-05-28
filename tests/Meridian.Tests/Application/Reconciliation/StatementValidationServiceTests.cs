@@ -96,6 +96,37 @@ public sealed class StatementValidationServiceTests
     }
 
     [Fact]
+    public async Task ValidateAsync_Truncated_Row_Treats_Absent_Required_Cell_As_Missing_Blocker()
+    {
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,securityIdentifier,quantity,price,cashAmount,activityCode,tradeDate,currency",
+                "A1,AAPL,10,150.25,1502.50,BUY,2026-05-15"
+            ]);
+            var service = new StatementValidationService(new FakeStatementValidationReferenceData());
+
+            var result = await service.ValidateAsync(CreateRequest(filePath));
+
+            Assert.True(result.IsBlocked);
+            Assert.Contains(result.Issues, issue =>
+                issue.Code == StatementValidationIssueCode.MissingRequiredField
+                && issue.Severity == StatementValidationIssueSeverity.Blocker
+                && issue.RowNumber == 2
+                && issue.Field == StatementValidationFields.Currency);
+            Assert.DoesNotContain(result.Issues, issue =>
+                issue.Code == StatementValidationIssueCode.UnsupportedCurrency
+                && issue.RowNumber == 2);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public async Task ValidateAsync_Can_Promote_Policy_Controlled_Soft_Issues_To_Blockers()
     {
         var filePath = Path.GetTempFileName();

@@ -321,9 +321,14 @@ public sealed class StatementValidationService(IStatementValidationReferenceData
         out string value)
     {
         value = string.Empty;
-        if (!mapping.TryGetValue(field, out var sourceColumn) || !headerLookup.TryGetValue(sourceColumn, out var index) || index >= values.Count)
+        if (!mapping.TryGetValue(field, out var sourceColumn) || !headerLookup.TryGetValue(sourceColumn, out var index))
         {
             return false;
+        }
+
+        if (index >= values.Count)
+        {
+            return true;
         }
 
         value = values[index].Trim();
