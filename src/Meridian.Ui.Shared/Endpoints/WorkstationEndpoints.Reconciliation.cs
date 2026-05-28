@@ -112,7 +112,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet("/api/workstation/accounting/continuity/statement-runs", async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
             if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -120,7 +120,7 @@ public static partial class WorkstationEndpoints
         .WithName("ListStatementRuns")
         .Produces<IReadOnlyList<StatementRunSummaryDto>>(200);
 
-        group.MapGet("/api/workstation/accounting/continuity/statement-runs/{runId}", async (string runId, [FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (string runId, [FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
             if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
@@ -130,7 +130,7 @@ public static partial class WorkstationEndpoints
         .Produces<StatementRunSummaryDto>(200)
         .Produces(404);
 
-        group.MapGet("/api/workstation/accounting/continuity/statement-exceptions", async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
             if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             return Results.Json(await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -311,7 +311,7 @@ public static partial class WorkstationEndpoints
         .Produces(404);
 
 
-        group.MapPost("/reconciliation/break-queue/bulk", async (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue) + "/bulk", async (
             ReconciliationBreakBulkActionRequest request,
             HttpContext context,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>

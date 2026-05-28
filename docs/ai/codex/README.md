@@ -9,6 +9,8 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | Surface | Purpose |
 | --- | --- |
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
+| [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
+| [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
 | [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
@@ -77,6 +79,11 @@ route by task phase:
 | Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
 | Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
 
+For speed, start with [`quickstart.md`](quickstart.md) when the task shape is unclear, then use
+[`route-cards.md`](route-cards.md) after generated navigation identifies the subsystem. Keep broad
+command discovery in `docs/developer/build-test-run.md`, `docs/HELP.md`, and route-specific docs
+instead of copying long command catalogs into assistant shims.
+
 ## Required Gates For Codex AI/Tooling Changes
 
 Run or account for these gates when Codex skill, catalog, prompt, docs automation, or AI workflow
@@ -130,6 +137,8 @@ Local helper surfaces:
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
+- Keep root `AGENTS.md` compact. It should route to canonical docs, not duplicate command catalogs,
+  repo maps, or long validation tables.
 - Before editing `src/**`, read the nearest registered source README and identify the module in
   `docs/source/data/source-modules.yml`.
 - For meaningful source behavior, workflow, validation, diagram, ownership, or TODO changes, update

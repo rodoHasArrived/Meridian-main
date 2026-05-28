@@ -5,24 +5,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Domain.Reconciliation;
 
-namespace Meridian.Application.Reconciliation.Legacy;
+namespace Meridian.Application.Reconciliation;
 
-public sealed record MatchingTolerance(decimal Quantity, decimal Price, decimal MarketValue, decimal CashAmount, TimeSpan TimingWindow);
+public sealed record LegacyMatchingTolerance(decimal Quantity, decimal Price, decimal MarketValue, decimal CashAmount, TimeSpan TimingWindow);
 
-public sealed record ReconciliationRuleContext(MatchingTolerance Tolerance, IReadOnlyDictionary<string, string> RuleIdsByStage);
+public sealed record LegacyReconciliationRuleContext(LegacyMatchingTolerance Tolerance, IReadOnlyDictionary<string, string> RuleIdsByStage);
 
-public interface IReconciliationRunRepository
+public interface ILegacyReconciliationRunRepository
 {
     Task<bool> ExistsAsync(DateOnly accountingPeriod, string snapshotVersion, CancellationToken cancellationToken);
     Task SaveAsync(ReconciliationRun run, IReadOnlyList<MatchGroup> matches, IReadOnlyList<BreakRecord> breaks, CancellationToken cancellationToken);
 }
 
-public sealed class ReconciliationNormalizer(
-    IInstrumentMappingService instrumentMappingService,
-    IFxConversionService fxConversionService,
-    IAccountingPeriodService accountingPeriodService)
+public sealed class LegacyReconciliationNormalizer(
+    ILegacyInstrumentMappingService instrumentMappingService,
+    ILegacyFxConversionService fxConversionService,
+    ILegacyAccountingPeriodService accountingPeriodService)
 {
-    public DataSourceSnapshot Normalize(ReconciliationSourcePayload payload, string baseCurrency)
+    public DataSourceSnapshot Normalize(LegacyReconciliationSourcePayload payload, string baseCurrency)
     {
         var positions = payload.RawPositions.Select(raw =>
         {
@@ -67,12 +67,12 @@ public sealed class ReconciliationNormalizer(
     }
 }
 
-public sealed class ReconciliationMatchingEngine
+public sealed class LegacyReconciliationMatchingEngine
 {
     public (IReadOnlyList<MatchGroup> Matches, IReadOnlyList<BreakRecord> Breaks) Execute(
         ReconciliationRun run,
         IReadOnlyList<DataSourceSnapshot> snapshots,
-        ReconciliationRuleContext rules)
+        LegacyReconciliationRuleContext rules)
     {
         var allPositions = snapshots.SelectMany(s => s.Positions).ToArray();
         var allCash = snapshots.SelectMany(s => s.CashEntries).ToArray();
@@ -135,7 +135,7 @@ public sealed class ReconciliationMatchingEngine
         return (groups, breaks);
     }
 
-    private static bool WithinTolerance(IEnumerable<NormalizedPosition> positions, MatchingTolerance tolerance, out string evidence)
+    private static bool WithinTolerance(IEnumerable<NormalizedPosition> positions, LegacyMatchingTolerance tolerance, out string evidence)
     {
         var list = positions.ToList();
         var qtySpread = list.Max(p => p.Quantity) - list.Min(p => p.Quantity);
@@ -150,15 +150,15 @@ public sealed class ReconciliationMatchingEngine
         return false;
     }
 
-    private static IReadOnlyList<string> ResolveRuleIds(ReconciliationRuleContext rules, string stage)
+    private static IReadOnlyList<string> ResolveRuleIds(LegacyReconciliationRuleContext rules, string stage)
         => rules.RuleIdsByStage.TryGetValue(stage, out var id) ? [id] : ["UNSPECIFIED_RULE"];
 }
 
-public sealed class DailyReconciliationOrchestrator(
-    IReconciliationSourceIngestionScheduler scheduler,
-    ReconciliationNormalizer normalizer,
-    ReconciliationMatchingEngine matchingEngine,
-    IReconciliationRunRepository repository)
+public sealed class LegacyDailyReconciliationOrchestrator(
+    ILegacyReconciliationSourceIngestionScheduler scheduler,
+    LegacyReconciliationNormalizer normalizer,
+    LegacyReconciliationMatchingEngine matchingEngine,
+    ILegacyReconciliationRunRepository repository)
 {
     public async Task<ReconciliationRun> RunAsync(
         DateOnly accountingPeriod,
@@ -166,9 +166,9 @@ public sealed class DailyReconciliationOrchestrator(
         bool forceRerun,
         string trigger,
         string baseCurrency,
-        ReconciliationPollingSchedule schedule,
-        ReconciliationRuleContext rules,
-        IReadOnlyList<IReconciliationSourceAdapter> adapters,
+        LegacyReconciliationPollingSchedule schedule,
+        LegacyReconciliationRuleContext rules,
+        IReadOnlyList<ILegacyReconciliationSourceAdapter> adapters,
         CancellationToken cancellationToken)
     {
         if (!forceRerun && await repository.ExistsAsync(accountingPeriod, snapshotVersion, cancellationToken).ConfigureAwait(false))

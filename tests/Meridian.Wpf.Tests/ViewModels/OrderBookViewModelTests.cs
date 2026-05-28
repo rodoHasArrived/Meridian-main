@@ -190,8 +190,10 @@ public sealed class OrderBookViewModelTests
             using var viewModel = CreateViewModel();
             viewModel.Should().BeAssignableTo<IPageActivationLifetime>();
             viewModel.SelectedSymbol = "SPY";
+            using var activationCts = new CancellationTokenSource();
+            activationCts.Cancel();
 
-            viewModel.ActivateAsync().GetAwaiter().GetResult();
+            viewModel.ActivateAsync(activationCts.Token).GetAwaiter().GetResult();
             var token = viewModel.ActivationToken;
 
             viewModel.IsActive.Should().BeTrue();

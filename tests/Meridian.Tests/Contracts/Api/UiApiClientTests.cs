@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Tests.Contracts.Api;
 
@@ -98,6 +99,59 @@ public sealed class UiApiClientTests
         handler.LastRequestUri.Query.Should().Contain("status=ApprovalPending");
     }
 
+    [Fact]
+    public async Task ReconciliationApiMethods_UseSharedRouteConstants()
+    {
+        using var handler = new RecordingStubHttpMessageHandler(request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path.EndsWith("/review", StringComparison.Ordinal))
+            {
+                return JsonResponse("""{"breakId":"break-1","runId":"run-1","strategyName":"Carry","category":"AmountMismatch","status":"InReview","variance":10,"reason":"review","assignedTo":"ops","detectedAt":"2026-05-27T12:00:00Z","lastUpdatedAt":"2026-05-27T12:01:00Z"}""");
+            }
+
+            if (path.EndsWith("/resolve", StringComparison.Ordinal))
+            {
+                return JsonResponse("""{"breakId":"break-1","runId":"run-1","strategyName":"Carry","category":"AmountMismatch","status":"Resolved","variance":10,"reason":"resolved","assignedTo":"ops","detectedAt":"2026-05-27T12:00:00Z","lastUpdatedAt":"2026-05-27T12:02:00Z"}""");
+            }
+
+            if (path.EndsWith("/calibration-summary", StringComparison.Ordinal))
+            {
+                return JsonResponse("""{"asOf":"2026-05-27T12:00:00Z","status":"Ready","summary":"ready","totalBreakCount":0,"activeBreakCount":0,"openBreakCount":0,"inReviewBreakCount":0,"resolvedBreakCount":0,"dismissedBreakCount":0,"criticalOpenBreakCount":0,"pendingSignoffCount":0,"signedOffCount":0,"missingCalibrationMetadataCount":0,"profiles":[]}""");
+            }
+
+            return JsonResponse("""{"summary":{"reconciliationRunId":"recon-1","runId":"run-1","createdAt":"2026-05-27T12:00:00Z","portfolioAsOf":null,"ledgerAsOf":null,"matchCount":0,"breakCount":0,"openBreakCount":0,"hasTimingDrift":false,"amountTolerance":0.01,"maxAsOfDriftMinutes":5,"securityIssueCount":0,"hasSecurityCoverageIssues":false},"matches":[],"breaks":[],"securityCoverageIssues":[]}""");
+        });
+        using var httpClient = new HttpClient(handler);
+        var sut = new UiApiClient(httpClient, "http://localhost:8080");
+
+        (await sut.GetReconciliationCalibrationSummaryAsync()).Should().NotBeNull();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/calibration-summary");
+
+        (await sut.GetLatestRunReconciliationAsync("run-1")).Should().NotBeNull();
+        handler.RequestPaths.Should().Contain("/api/workstation/runs/run-1/reconciliation");
+
+        (await sut.GetReconciliationRunAsync("recon-1")).Should().NotBeNull();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/runs/recon-1");
+
+        var review = await sut.ReviewReconciliationBreakAsync(
+            "break-1",
+            new ReviewReconciliationBreakRequest("break-1", "ops", "ops", "review"));
+        review.Success.Should().BeTrue();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/break-queue/break-1/review");
+
+        var resolve = await sut.ResolveReconciliationBreakAsync(
+            "break-1",
+            new ResolveReconciliationBreakRequest("break-1", ReconciliationBreakQueueStatus.Resolved, "ops", "done", "evidence"));
+        resolve.Success.Should().BeTrue();
+        handler.RequestPaths.Should().Contain("/api/workstation/reconciliation/break-queue/break-1/resolve");
+    }
+
+    private static HttpResponseMessage JsonResponse(string json) => new(HttpStatusCode.OK)
+    {
+        Content = new StringContent(json, Encoding.UTF8, "application/json")
+    };
+
     private sealed class StubHttpMessageHandler : HttpMessageHandler
     {
         private readonly HttpStatusCode _statusCode;
@@ -131,6 +185,7 @@ public sealed class UiApiClientTests
         }
 
         public Uri? LastRequestUri { get; private set; }
+        public List<string> RequestPaths { get; } = [];
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -138,6 +193,7 @@ public sealed class UiApiClientTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             LastRequestUri = request.RequestUri;
+            RequestPaths.Add(request.RequestUri!.AbsolutePath);
             return Task.FromResult(_responseFactory(request));
         }
     }

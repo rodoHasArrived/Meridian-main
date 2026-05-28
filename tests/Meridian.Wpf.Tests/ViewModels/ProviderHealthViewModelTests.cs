@@ -328,8 +328,10 @@ public sealed class ProviderHealthViewModelTests
                 WpfServices.NotificationService.Instance);
             viewModel.Should().BeAssignableTo<IPageActivationLifetime>();
             viewModel.StreamingProviders.Add(new ProviderStatusModel { ProviderId = "polygon", Name = "Polygon.io" });
+            using var activationCts = new CancellationTokenSource();
+            activationCts.Cancel();
 
-            viewModel.ActivateAsync().GetAwaiter().GetResult();
+            viewModel.ActivateAsync(activationCts.Token).GetAwaiter().GetResult();
             var token = viewModel.ActivationToken;
 
             viewModel.IsActive.Should().BeTrue();

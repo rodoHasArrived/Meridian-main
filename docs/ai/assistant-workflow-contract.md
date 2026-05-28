@@ -117,6 +117,7 @@ When editing `src/**`, assistants must:
 | --- | --- | --- |
 | Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
+| Codex task startup and proof routing | `docs/ai/codex/quickstart.md`, `docs/ai/codex/route-cards.md` | Root `AGENTS.md`, `.codex/skills/README.md`, Codex specialist skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
 | Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
@@ -155,6 +156,9 @@ Use this checklist when changing any AI-related asset:
       proposed by one assistant while another follows the browser-workstation plan.
 - [ ] Keep host-specific guides compact; route broad repository layout questions to generated
       navigation or structure artifacts instead of copying tree snapshots into assistant docs.
+- [ ] Keep root `AGENTS.md` as a compact compatibility shim. Put command catalogs, route cards, and
+      proof matrices in maintained docs such as `docs/HELP.md`, `docs/developer/build-test-run.md`,
+      and `docs/ai/codex/quickstart.md`.
 - [ ] Keep `.codex/agents/*.toml` documented in the Codex and agent indexes when Codex specialist
       profile routing changes.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill

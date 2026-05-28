@@ -28,6 +28,7 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.Ledger;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -3272,6 +3273,34 @@ public sealed partial class WorkstationEndpointsTests
         balancedRun.GetProperty("securityCoverage").GetProperty("missingReferences").EnumerateArray()
             .Should()
             .Contain(item => item.GetProperty("symbol").GetString() == "TSLA");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationStatementRoutes_ShouldUseCanonicalSharedRoutes()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+        });
+
+        var client = app.GetTestClient();
+
+        var runs = await client.GetFromJsonAsync<List<StatementRunSummaryDto>>(
+            UiApiRoutes.ReconciliationStatementRuns,
+            ServerJsonOptions);
+        runs.Should().ContainSingle(run => run.RunId == "statement-run-1");
+
+        var run = await client.GetFromJsonAsync<StatementRunSummaryDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunById, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.OpenExceptionCount.Should().Be(1);
+
+        var exceptions = await client.GetFromJsonAsync<List<StatementRunExceptionDto>>(
+            UiApiRoutes.ReconciliationStatementExceptions,
+            ServerJsonOptions);
+        exceptions.Should().ContainSingle(item => item.RunId == "statement-run-1");
     }
 
     [Fact]
@@ -7315,6 +7344,81 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(book);
+        }
+    }
+
+    private sealed class StubReconciliationApiService : IReconciliationApiService
+    {
+        private static readonly StatementRunSummaryDto StatementRun = new(
+            RunId: "statement-run-1",
+            ImportId: "import-1",
+            StartedAtUtc: "2026-05-27T12:00:00Z",
+            CompletedAtUtc: "2026-05-27T12:01:00Z",
+            PositionMatches: 3,
+            CashMatches: 2,
+            TransactionMatches: 1,
+            OpenExceptionCount: 1);
+
+        public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementImportSummaryDto>>(
+            [
+                new(
+                    ImportId: "import-1",
+                    Broker: "custodian",
+                    StatementDate: "2026-05-27",
+                    ImportedAtUtc: "2026-05-27T12:00:00Z",
+                    RawRowCount: 8,
+                    NormalizedRowCount: 6)
+            ]);
+        }
+
+        public Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([StatementRun]);
+        }
+
+        public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? StatementRun
+                    : null);
+        }
+
+        public Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunExceptionDto>>(
+            [
+                new(
+                    BreakId: "break-1",
+                    RunId: StatementRun.RunId,
+                    ImportId: StatementRun.ImportId,
+                    SourceReference: "row-42",
+                    BreakCode: "cash-delta",
+                    Category: "Cash",
+                    Delta: 10m,
+                    Tolerance: 1m,
+                    ToleranceBreached: true,
+                    CreatedAtUtc: "2026-05-27T12:02:00Z",
+                    Status: "Open")
+            ]);
+        }
+
+        public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ReconciliationCaseSummaryDto>>([]);
+        }
+
+        public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
         }
     }
 

@@ -1,5 +1,11 @@
 namespace Meridian.Wpf.Models;
 
+public enum WorkspaceShellSlot
+{
+    ContextStrip,
+    ActionBar
+}
+
 public static class WorkspaceTone
 {
     public const string Neutral = "Neutral";
@@ -18,6 +24,44 @@ public sealed class WorkspaceShellContext
     public string WorkspaceSubtitle { get; init; } = string.Empty;
 
     public IReadOnlyList<WorkspaceShellBadge> Badges { get; init; } = Array.Empty<WorkspaceShellBadge>();
+}
+
+public sealed record WorkspaceShellSlotContributionRequest(
+    string WorkspaceId,
+    string PageTag,
+    string? FundAccountId = null,
+    string? ActiveWorkItemId = null);
+
+public interface IWorkspaceShellSlotContribution
+{
+    string WorkspaceId { get; }
+
+    WorkspaceShellSlot Slot { get; }
+
+    int Order { get; }
+}
+
+public interface IWorkspaceShellSlotContributor
+{
+    ValueTask<IReadOnlyList<IWorkspaceShellSlotContribution>> GetContributionsAsync(
+        WorkspaceShellSlotContributionRequest request,
+        CancellationToken ct = default);
+}
+
+public sealed record WorkspaceShellContextStripContribution(
+    string WorkspaceId,
+    WorkspaceShellContext Context,
+    int Order = 0) : IWorkspaceShellSlotContribution
+{
+    public WorkspaceShellSlot Slot => WorkspaceShellSlot.ContextStrip;
+}
+
+public sealed record WorkspaceShellActionBarContribution(
+    string WorkspaceId,
+    WorkspaceCommandGroup CommandGroup,
+    int Order = 0) : IWorkspaceShellSlotContribution
+{
+    public WorkspaceShellSlot Slot => WorkspaceShellSlot.ActionBar;
 }
 
 public sealed class WorkspaceShellBadge

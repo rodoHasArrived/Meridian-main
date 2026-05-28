@@ -74,6 +74,10 @@ different work:
 - [`_shared/codex-execution-contract.md`](_shared/codex-execution-contract.md) — Codex-only
   execution gates for safe concurrency, narrow validation, cosmetic-churn avoidance, docs sync,
   AI tooling gates, and final response shape
+- [`docs/ai/codex/quickstart.md`](../../docs/ai/codex/quickstart.md) — first-10-minutes Codex task
+  routing, proof matrix, read budget, and dirty-worktree protocol
+- [`docs/ai/codex/route-cards.md`](../../docs/ai/codex/route-cards.md) — compact subsystem cards
+  for owner projects, first docs, entrypoints, and validation lanes
 - [`docs/ai/codex/README.md`](../../docs/ai/codex/README.md) — Codex-specific AI docs index,
   skill validation commands, and required/advisory/maintenance tooling split
 - [`../AGENTS.md`](../AGENTS.md) — Codex-specific desktop workstation implementation rules
