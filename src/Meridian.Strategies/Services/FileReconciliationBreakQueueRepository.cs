@@ -122,46 +122,140 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
 
     public async Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default)
     {
-        var assignment = await AssignAsync(
-            new ReconciliationAssignRequest(request.BreakId, request.AssignedTo, request.AssignedTo, request.ReviewNote ?? "Review assignment."),
-            request.ReviewedBy,
-            source: "review-compatibility-wrapper",
-            ct: ct).ConfigureAwait(false);
-        if (assignment.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.AssignedTo))
         {
-            return assignment;
+            return Fail("Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingAssignee);
         }
 
-        return await TransitionStatusAsync(
-            new ReconciliationStatusTransitionRequest(request.BreakId, ReconciliationCaseLifecycleState.Investigating, request.ReviewNote ?? "Review started.", ["review-note"]),
-            request.ReviewedBy,
+        return await MutateAsync(
+            request.BreakId,
+            expectedVersion: null,
+            actor: request.ReviewedBy,
+            correlationId: null,
+            commandId: null,
             source: "review-compatibility-wrapper",
-            ct: ct).ConfigureAwait(false);
+            eventType: "ReviewStarted",
+            reason: request.ReviewNote ?? "Review started.",
+            mutation: item =>
+            {
+                if (item.Status != ReconciliationBreakQueueStatus.Open)
+                {
+                    throw new ReconciliationCaseValidationException(
+                        $"Cannot move break from {item.Status} to {ReconciliationBreakQueueStatus.InReview}.",
+                        ReconciliationBreakQueueTransitionErrorCode.IllegalTransition);
+                }
+
+                var now = DateTimeOffset.UtcNow;
+                var transition = new ReconciliationCaseStateTransition(
+                    Guid.NewGuid().ToString("N"),
+                    NormalizeLifecycle(item.LifecycleState),
+                    ReconciliationCaseLifecycleState.Investigating,
+                    request.ReviewedBy,
+                    request.ReviewNote ?? "Review started.",
+                    now,
+                    ["review-note"],
+                    item.StateTransitions?.LastOrDefault()?.EntryHash,
+                    Guid.NewGuid().ToString("N"));
+
+                return item with
+                {
+                    AssignedTo = request.AssignedTo.Trim(),
+                    AssigneeId = request.AssignedTo.Trim(),
+                    AssigneeDisplayName = request.AssignedTo.Trim(),
+                    AssignedBy = request.ReviewedBy,
+                    AssignedAt = now,
+                    Status = ReconciliationBreakQueueStatus.InReview,
+                    LifecycleState = ReconciliationCaseLifecycleState.Investigating,
+                    LifecycleRationale = request.ReviewNote,
+                    ReviewedBy = request.ReviewedBy,
+                    ReviewedAt = now,
+                    ResolutionNote = request.ReviewNote,
+                    SignoffStatus = "in-review",
+                    StateTransitions = (item.StateTransitions ?? []).Concat([transition]).ToArray()
+                };
+            },
+            ct).ConfigureAwait(false);
     }
 
     public async Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default)
     {
-        var rootCause = string.IsNullOrWhiteSpace(request.RootCauseCode) ? "OperatorReviewed" : request.RootCauseCode;
-        var resolution = request.Status == ReconciliationBreakQueueStatus.Dismissed
-            ? "DismissedFalsePositive"
-            : string.IsNullOrWhiteSpace(request.ResolutionCode) ? "ResolvedByOperator" : request.ResolutionCode;
-        var rootResult = await SetRootCauseAsync(new ReconciliationTaxonomyRequest(request.BreakId, rootCause, null, request.OperatorRationale, request.ExpectedVersion), request.ResolvedBy, source: "resolve-compatibility-wrapper", ct: ct).ConfigureAwait(false);
-        if (rootResult.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Status is not ReconciliationBreakQueueStatus.Resolved and not ReconciliationBreakQueueStatus.Dismissed)
         {
-            return rootResult;
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.InvalidTransition,
+                Item: null,
+                Error: "Resolve transition only supports Resolved or Dismissed.");
         }
 
-        var resolutionResult = await SetResolutionAsync(new ReconciliationTaxonomyRequest(request.BreakId, resolution, request.ResolutionNote, request.OperatorRationale), request.ResolvedBy, source: "resolve-compatibility-wrapper", ct: ct).ConfigureAwait(false);
-        if (resolutionResult.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        if (string.IsNullOrWhiteSpace(request.OperatorRationale))
         {
-            return resolutionResult;
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.InvalidTransition,
+                Item: null,
+                Error: "Operator rationale is required.");
         }
 
-        return await TransitionStatusAsync(
-            new ReconciliationStatusTransitionRequest(request.BreakId, ReconciliationCaseLifecycleState.Resolved, request.OperatorRationale, ["resolution-note"]),
+        return await MutateAsync(
+            request.BreakId,
+            request.ExpectedVersion,
             request.ResolvedBy,
+            correlationId: null,
+            commandId: null,
             source: "resolve-compatibility-wrapper",
-            ct: ct).ConfigureAwait(false);
+            eventType: request.Status == ReconciliationBreakQueueStatus.Dismissed ? "Closed" : "Resolved",
+            reason: request.OperatorRationale,
+            mutation: item =>
+            {
+                if (item.Status != ReconciliationBreakQueueStatus.InReview)
+                {
+                    throw new ReconciliationCaseValidationException(
+                        $"Cannot move break from {item.Status} to {request.Status}.",
+                        ReconciliationBreakQueueTransitionErrorCode.IllegalTransition);
+                }
+
+                var now = DateTimeOffset.UtcNow;
+                var lifecycle = request.Status == ReconciliationBreakQueueStatus.Dismissed
+                    ? ReconciliationCaseLifecycleState.LegacyTerminal
+                    : ReconciliationCaseLifecycleState.AwaitingApproval;
+                var queueStatus = request.Status == ReconciliationBreakQueueStatus.Dismissed
+                    ? ReconciliationBreakQueueStatus.Dismissed
+                    : ReconciliationBreakQueueStatus.InReview;
+                var resolutionCode = request.Status == ReconciliationBreakQueueStatus.Dismissed
+                    ? "DismissedFalsePositive"
+                    : string.IsNullOrWhiteSpace(request.ResolutionCode) ? "ResolvedByOperator" : request.ResolutionCode.Trim();
+                var rootCauseCode = string.IsNullOrWhiteSpace(request.RootCauseCode) ? item.RootCauseCode ?? "OperatorReviewed" : request.RootCauseCode.Trim();
+                var transition = new ReconciliationCaseStateTransition(
+                    Guid.NewGuid().ToString("N"),
+                    NormalizeLifecycle(item.LifecycleState),
+                    lifecycle,
+                    request.ResolvedBy,
+                    request.OperatorRationale,
+                    now,
+                    ["resolution-note"],
+                    item.StateTransitions?.LastOrDefault()?.EntryHash,
+                    Guid.NewGuid().ToString("N"));
+
+                return item with
+                {
+                    Status = queueStatus,
+                    LifecycleState = lifecycle,
+                    LifecycleRationale = request.OperatorRationale,
+                    ResolvedBy = request.ResolvedBy,
+                    ResolvedAt = now,
+                    ResolutionNote = request.ResolutionNote,
+                    RootCauseCode = rootCauseCode,
+                    ResolutionCode = resolutionCode,
+                    SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "dismissed" : "awaiting-approval",
+                    SignoffHistory = (item.SignoffHistory ?? []).Concat(
+                    [
+                        new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
+                    ]).ToArray(),
+                    StateTransitions = (item.StateTransitions ?? []).Concat([transition]).ToArray()
+                };
+            },
+            ct).ConfigureAwait(false);
     }
 
     public async Task<ReconciliationBreakQueueTransitionResult> AssignAsync(ReconciliationAssignRequest request, string actor, string? correlationId = null, string? commandId = null, string? source = null, CancellationToken ct = default)

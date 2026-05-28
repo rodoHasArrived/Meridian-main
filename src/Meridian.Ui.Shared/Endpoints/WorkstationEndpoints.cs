@@ -5916,13 +5916,13 @@ public static partial class WorkstationEndpoints
         DateTimeOffset asOf)
     {
         var totalBreakCount = items.Count;
-        var openBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open);
-        var inReviewBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview);
-        var resolvedBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved);
-        var dismissedBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed);
+        var openBreakCount = items.Count(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.Reopened);
+        var inReviewBreakCount = items.Count(static item => item.Status is ReconciliationBreakQueueStatus.InReview or ReconciliationBreakQueueStatus.Investigating or ReconciliationBreakQueueStatus.AwaitingEvidence);
+        var resolvedBreakCount = items.Count(static item => item.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.SignedOff);
+        var dismissedBreakCount = items.Count(static item => item.Status is ReconciliationBreakQueueStatus.Dismissed or ReconciliationBreakQueueStatus.LegacyTerminal);
         var activeBreakCount = openBreakCount + inReviewBreakCount;
         var criticalOpenBreakCount = items.Count(static item =>
-            (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
+            (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.Reopened or ReconciliationBreakQueueStatus.InReview or ReconciliationBreakQueueStatus.Investigating or ReconciliationBreakQueueStatus.AwaitingEvidence) &&
             item.Severity == ReconciliationBreakSeverity.Critical);
         var pendingSignoffCount = items.Count(static item => RequiresCalibrationSignoff(item));
         var signedOffCount = items.Count(static item => IsSignedOff(item.SignoffStatus));
@@ -5986,10 +5986,10 @@ public static partial class WorkstationEndpoints
                 .Severity,
             MaxToleranceBand: toleranceBands.Length == 0 ? null : toleranceBands.Max(),
             TotalBreakCount: items.Length,
-            OpenBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
-            InReviewBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
-            ResolvedBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
-            DismissedBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
+            OpenBreakCount: items.Count(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.Reopened),
+            InReviewBreakCount: items.Count(static item => item.Status is ReconciliationBreakQueueStatus.InReview or ReconciliationBreakQueueStatus.Investigating or ReconciliationBreakQueueStatus.AwaitingEvidence),
+            ResolvedBreakCount: items.Count(static item => item.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.SignedOff),
+            DismissedBreakCount: items.Count(static item => item.Status is ReconciliationBreakQueueStatus.Dismissed or ReconciliationBreakQueueStatus.LegacyTerminal),
             PendingSignoffCount: items.Count(static item => RequiresCalibrationSignoff(item)),
             SignedOffCount: items.Count(static item => IsSignedOff(item.SignoffStatus)),
             LastUpdatedAt: items
@@ -6053,7 +6053,7 @@ public static partial class WorkstationEndpoints
     }
 
     private static bool HasMissingCalibrationMetadata(ReconciliationBreakQueueItem item)
-        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
+        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.Reopened or ReconciliationBreakQueueStatus.InReview or ReconciliationBreakQueueStatus.Investigating or ReconciliationBreakQueueStatus.AwaitingEvidence) &&
            (string.IsNullOrWhiteSpace(item.ExceptionRoute) ||
             string.IsNullOrWhiteSpace(item.ToleranceProfileId) ||
             !item.ToleranceBand.HasValue ||
@@ -6061,7 +6061,7 @@ public static partial class WorkstationEndpoints
             string.IsNullOrWhiteSpace(item.SignoffStatus));
 
     private static bool RequiresCalibrationSignoff(ReconciliationBreakQueueItem item)
-        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
+        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.Reopened or ReconciliationBreakQueueStatus.InReview or ReconciliationBreakQueueStatus.Investigating or ReconciliationBreakQueueStatus.AwaitingEvidence or ReconciliationBreakQueueStatus.Resolved) &&
            !IsTerminalCalibrationSignoff(item.SignoffStatus);
 
     private static bool IsTerminalCalibrationSignoff(string? signoffStatus)
