@@ -1,3 +1,4 @@
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -22,6 +23,38 @@ public sealed class SymbolsPageViewModelTests
         viewModel.Should().Contain("CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct)");
         viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _loadCts, null))");
         viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _activationCts, null))");
+    }
+
+    [Fact]
+    public async Task Deactivate_CancelsInFlightSymbolLoadWithoutClearingLoadedSymbols()
+    {
+        var loadStarted = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var loadCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var viewModel = CreateViewModel(
+            getConfiguredSymbolsAsync: async ct =>
+            {
+                loadStarted.SetResult(ct);
+                using var registration = ct.UnsafeRegister(_ => loadCanceled.TrySetResult(), null);
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                return Array.Empty<SymbolConfigDto>();
+            });
+        AddSymbol(viewModel, "SPY", exchange: "SMART", trades: true, depth: false);
+        viewModel.ApplyFilters();
+
+        var activationTask = viewModel.ActivateAsync();
+        var activeLoadToken = await loadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        viewModel.Deactivate();
+
+        await loadCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await activationTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        activeLoadToken.IsCancellationRequested.Should().BeTrue();
+        viewModel.IsActive.Should().BeFalse();
+        viewModel.Symbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
+        viewModel.FilteredSymbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
+        viewModel.VisibleSymbolScopeText.Should().Be("1 configured symbols");
     }
 
     [Fact]
@@ -151,7 +184,10 @@ public sealed class SymbolsPageViewModelTests
         viewModel.Should().Contain("public CancellationToken ActivationToken");
     }
 
-    private static SymbolsPageViewModel CreateViewModel() =>
+    private static SymbolsPageViewModel CreateViewModel(
+        Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync = null,
+        Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync = null,
+        Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>>? getAllWatchlistsAsync = null) =>
         new(
             WpfServices.ConfigService.Instance,
             WpfServices.WatchlistService.Instance,
@@ -159,7 +195,10 @@ public sealed class SymbolsPageViewModelTests
             WpfServices.NotificationService.Instance,
             WpfServices.NavigationService.Instance,
             SymbolManagementService.Instance,
-            CommandPaletteService.Instance);
+            CommandPaletteService.Instance,
+            getConfiguredSymbolsAsync,
+            saveSymbolsAsync,
+            getAllWatchlistsAsync);
 
     private static void AddSymbol(
         SymbolsPageViewModel viewModel,

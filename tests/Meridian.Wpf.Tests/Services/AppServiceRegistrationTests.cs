@@ -9,6 +9,7 @@ using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -48,6 +49,7 @@ public sealed class AppServiceRegistrationTests
             ResolveRequired<FundLedgerPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<OrderBookPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<RunRiskPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<RunCashFlowPage>(serviceProvider).DataContext.Should().BeOfType<CashFlowViewModel>();
             ResolveRequired<EnvironmentDesignerPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<ResearchWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<TradingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
@@ -162,6 +164,7 @@ public sealed class AppServiceRegistrationTests
         source.Should().Contain("StrategyRunWorkspaceService workspaceService");
         source.Should().Contain("WpfNavigationService navigationService");
         source.Should().Contain("StrategyRunContinuityService? continuityService = null");
+        source.Should().Contain("ResolveOptional<StrategyRunContinuityService>()");
         source.Should().Contain("DataContext = new CashFlowViewModel(workspaceService, navigationService, continuityService)");
         source.Should().NotContain("App.Services.GetRequiredService<StrategyRunWorkspaceService>()");
         source.Should().NotContain("App.Services.GetRequiredService<NavigationService>()");

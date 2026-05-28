@@ -346,11 +346,10 @@ public static class FundStructureEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            if (scopeKind == GovernanceCashFlowScopeKindDto.LedgerGroup
-                && ledgerGroupId == LedgerGroupId.Unassigned
-                && !HasExplicitCashFlowScope(q))
+            if (TryCreateEmptyUnassignedLedgerGroupCashFlowView(scopeKind.Value, ledgerGroupId, q)
+                is { } emptyUnassignedLedgerGroupView)
             {
-                return Results.Json(CreateEmptyUnassignedLedgerGroupCashFlowView(q), jsonOptions);
+                return Results.Json(emptyUnassignedLedgerGroupView, jsonOptions);
             }
 
             var service = ResolveService(context);
@@ -767,6 +766,21 @@ public static class FundStructureEndpoints
     private static bool HasAnyQueryValue(IQueryCollection query, params string[] keys) =>
         keys.Any(key => query.TryGetValue(key, out var values) && values.Any(static value => !string.IsNullOrWhiteSpace(value)));
 
+    private static GovernanceCashFlowViewDto? TryCreateEmptyUnassignedLedgerGroupCashFlowView(
+        GovernanceCashFlowScopeKindDto scopeKind,
+        LedgerGroupId? ledgerGroupId,
+        IQueryCollection query)
+    {
+        if (scopeKind != GovernanceCashFlowScopeKindDto.LedgerGroup
+            || ledgerGroupId != LedgerGroupId.Unassigned
+            || HasExplicitCashFlowScope(query))
+        {
+            return null;
+        }
+
+        return CreateEmptyUnassignedLedgerGroupCashFlowView(query);
+    }
+
     private static GovernanceCashFlowViewDto CreateEmptyUnassignedLedgerGroupCashFlowView(IQueryCollection query)
     {
         var asOf = ParseDateTimeOffset(query["asOf"]) ?? DateTimeOffset.UtcNow;
@@ -776,8 +790,10 @@ public static class FundStructureEndpoints
         var currency = string.IsNullOrWhiteSpace(query["currency"].FirstOrDefault())
             ? "USD"
             : query["currency"].FirstOrDefault()!;
-        var historicalWindowStart = asOf.AddDays(-(historicalDays - 1));
-        var projectionWindowEnd = asOf.AddDays(forecastDays);
+        var windowAnchor = StartOfDayUtc(asOf);
+        var historicalWindowStart = windowAnchor.AddDays(-(historicalDays - 1));
+        var projectionWindowStart = windowAnchor.AddDays(1);
+        var projectionWindowEnd = projectionWindowStart.AddDays(forecastDays);
         var scope = new GovernanceCashFlowScopeDto(
             GovernanceCashFlowScopeKindDto.LedgerGroup,
             LedgerGroupId.Unassigned.Value,
@@ -808,18 +824,52 @@ public static class FundStructureEndpoints
             Array.Empty<GovernanceCashFlowAccountViewDto>(),
             Array.Empty<GovernanceCashFlowEntryDto>(),
             Array.Empty<GovernanceCashFlowEntryDto>(),
-            CreateEmptyCashFlowLadder(asOf, asOf, currency, bucketDays),
-            CreateEmptyCashFlowLadder(asOf, projectionWindowEnd, currency, bucketDays),
+            CreateEmptyCashFlowLadder(historicalWindowStart, historicalDays, currency, bucketDays),
+            CreateEmptyCashFlowLadder(projectionWindowStart, forecastDays, currency, bucketDays),
             new GovernanceCashFlowVarianceSummaryDto(0m, 0m, 0m, 0m, 0m, 0m, 0m, "No accounts in scope."),
             Array.Empty<GovernanceCashFlowVarianceBucketDto>());
     }
 
     private static GovernanceCashFlowLadderDto CreateEmptyCashFlowLadder(
-        DateTimeOffset asOf,
-        DateTimeOffset windowEnd,
+        DateTimeOffset anchor,
+        int windowDays,
         string currency,
-        int bucketDays) =>
-        new(asOf, windowEnd, currency, bucketDays, 0m, 0m, 0m, Array.Empty<GovernanceCashFlowBucketDto>());
+        int bucketDays)
+    {
+        var effectiveBucketDays = Math.Max(1, bucketDays);
+        var effectiveWindowDays = Math.Max(1, windowDays);
+        var windowEnd = anchor.AddDays(effectiveWindowDays);
+        var bucketCount = Math.Max(1, (int)Math.Ceiling(effectiveWindowDays / (double)effectiveBucketDays));
+        var buckets = new List<GovernanceCashFlowBucketDto>(bucketCount);
+
+        for (var bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++)
+        {
+            var bucketStart = anchor.AddDays(bucketIndex * effectiveBucketDays);
+            var bucketEnd = bucketStart.AddDays(Math.Min(effectiveBucketDays, effectiveWindowDays - (bucketIndex * effectiveBucketDays)));
+            buckets.Add(new GovernanceCashFlowBucketDto(
+                bucketIndex,
+                bucketStart,
+                bucketEnd,
+                0m,
+                0m,
+                0m,
+                currency,
+                0));
+        }
+
+        return new GovernanceCashFlowLadderDto(
+            anchor,
+            windowEnd,
+            currency,
+            effectiveBucketDays,
+            0m,
+            0m,
+            0m,
+            buckets);
+    }
+
+    private static DateTimeOffset StartOfDayUtc(DateTimeOffset value) =>
+        new(value.UtcDateTime.Date, TimeSpan.Zero);
 
     private static IReadOnlyList<string>? ParseSelectedLedgerIds(params StringValues[] valueSets)
     {

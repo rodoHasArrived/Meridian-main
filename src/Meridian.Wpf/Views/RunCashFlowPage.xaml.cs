@@ -12,7 +12,7 @@ public partial class RunCashFlowPage : Page
         : this(
             ResolveRequired<StrategyRunWorkspaceService>(),
             ResolveRequired<WpfNavigationService>(),
-            App.Services?.GetService(typeof(StrategyRunContinuityService)) as StrategyRunContinuityService)
+            ResolveOptional<StrategyRunContinuityService>())
     {
     }
 
@@ -38,4 +38,7 @@ public partial class RunCashFlowPage : Page
             : throw new InvalidOperationException(
                 $"{nameof(RunCashFlowPage)} could not resolve required service '{typeof(T).Name}'.");
     }
+
+    private static T? ResolveOptional<T>() where T : class =>
+        App.Services?.GetService(typeof(T)) as T;
 }

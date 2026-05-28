@@ -298,6 +298,44 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task GetCashFlowView_WithUnassignedLedgerGroupAndNoScope_ReturnsEmptyWindowedView()
+    {
+        var response = await _client.GetAsync(
+            "/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=unassigned&asOf=2026-04-12T15%3A45%3A00Z&currency=EUR&historicalDays=3&forecastDays=5&bucketDays=2");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<GovernanceCashFlowViewDto>();
+
+        payload.Should().NotBeNull();
+        payload!.Scope.ScopeKind.Should().Be(GovernanceCashFlowScopeKindDto.LedgerGroup);
+        payload.Scope.LedgerGroupId.Should().Be(LedgerGroupId.Unassigned);
+        payload.Scope.AccountIds.Should().BeEmpty();
+        payload.AccountCount.Should().Be(0);
+        payload.Accounts.Should().BeEmpty();
+        payload.RealizedEntries.Should().BeEmpty();
+        payload.ProjectedEntries.Should().BeEmpty();
+        payload.Currency.Should().Be("EUR");
+        payload.HistoricalDays.Should().Be(3);
+        payload.ForecastDays.Should().Be(5);
+        payload.BucketDays.Should().Be(2);
+        payload.HistoricalWindowStart.Should().Be(new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero));
+        payload.ProjectionWindowEnd.Should().Be(new DateTimeOffset(2026, 4, 18, 0, 0, 0, TimeSpan.Zero));
+        payload.RealizedLadder.AsOf.Should().Be(payload.HistoricalWindowStart);
+        payload.RealizedLadder.WindowEnd.Should().Be(new DateTimeOffset(2026, 4, 13, 0, 0, 0, TimeSpan.Zero));
+        payload.ProjectedLadder.AsOf.Should().Be(new DateTimeOffset(2026, 4, 13, 0, 0, 0, TimeSpan.Zero));
+        payload.ProjectedLadder.WindowEnd.Should().Be(payload.ProjectionWindowEnd);
+        payload.RealizedLadder.Buckets.Should().HaveCount(2);
+        payload.ProjectedLadder.Buckets.Should().HaveCount(3);
+        payload.ProjectedLadder.Buckets.Should().OnlyContain(bucket =>
+            bucket.ProjectedInflows == 0m &&
+            bucket.ProjectedOutflows == 0m &&
+            bucket.NetFlow == 0m &&
+            bucket.Currency == "EUR" &&
+            bucket.EventCount == 0);
+        payload.VarianceSummary.ComparisonBasis.Should().Be("No accounts in scope.");
+    }
+
+    [Fact]
     public async Task AccountReadinessAndSyncHistoryEndpoints_ReturnSharedAccountSyncState()
     {
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
