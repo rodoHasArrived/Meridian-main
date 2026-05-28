@@ -296,6 +296,24 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryRouteTrade(in MarketEvent evt)
     {
+        if (evt.Payload is Trade trade)
+        {
+            var symbolHash = _symbolTable.GetOrAdd(evt.Symbol);
+            var raw = new RawTradeEvent(
+                evt.Timestamp.UtcTicks,
+                symbolHash,
+                trade.Price,
+                trade.Size,
+                (int)trade.Aggressor,
+                evt.Sequence);
+
+            if (_tradeBuffer.TryWrite(in raw))
+            {
+                Interlocked.Increment(ref _hotTradePublished);
+                return true;
+            }
+        }
+
         Interlocked.Increment(ref _hotTradeFallbacks);
         return _slowPath.TryPublish(in evt);
     }
@@ -303,6 +321,25 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryRouteQuote(in MarketEvent evt)
     {
+        if (evt.Payload is BboQuotePayload quote)
+        {
+            var symbolHash = _symbolTable.GetOrAdd(evt.Symbol);
+            var raw = new RawQuoteEvent(
+                evt.Timestamp.UtcTicks,
+                symbolHash,
+                quote.BidPrice,
+                quote.BidSize,
+                quote.AskPrice,
+                quote.AskSize,
+                evt.Sequence);
+
+            if (_quoteBuffer.TryWrite(in raw))
+            {
+                Interlocked.Increment(ref _hotQuotePublished);
+                return true;
+            }
+        }
+
         Interlocked.Increment(ref _hotQuoteFallbacks);
         return _slowPath.TryPublish(in evt);
     }
