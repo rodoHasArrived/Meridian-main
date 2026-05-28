@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -19,6 +20,11 @@ public static class ProviderRoutingEndpoints
             ProviderConnectionService service,
             HttpContext context) =>
         {
+            if (!HasManageCredentialsPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -30,6 +36,11 @@ public static class ProviderRoutingEndpoints
             ProviderBindingService service,
             HttpContext context) =>
         {
+            if (!HasManageCredentialsPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -41,6 +52,11 @@ public static class ProviderRoutingEndpoints
             ProviderTrustScoringService service,
             HttpContext context) =>
         {
+            if (!HasManageCredentialsPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -53,6 +69,11 @@ public static class ProviderRoutingEndpoints
             ProviderRouteExplainabilityService service,
             HttpContext context) =>
         {
+            if (!HasManageCredentialsPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service.PreviewAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -60,4 +81,7 @@ public static class ProviderRoutingEndpoints
         .WithDescription("Previews the selected provider route for a capability request.")
         .Produces<RoutePreviewResponse>(StatusCodes.Status200OK);
     }
+
+    private static bool HasManageCredentialsPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials);
 }
