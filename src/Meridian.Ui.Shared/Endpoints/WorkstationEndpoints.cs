@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Application.OperationsContinuity;
@@ -40,6 +41,7 @@ public static partial class WorkstationEndpoints
 {
     private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
+    private const int MaxOperatorInboxTokenLength = 256;
     private const string WorkstationApiRoutePrefix = "/api/workstation";
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
@@ -3016,32 +3018,45 @@ public static partial class WorkstationEndpoints
 
     private static string NormalizeOperatorInboxToken(string value)
     {
-        Span<char> buffer = stackalloc char[value.Length];
-        var length = 0;
-        var previousWasSeparator = false;
-
-        foreach (var character in value.Trim())
+        var trimmed = value.Trim();
+        if (trimmed.Length == 0)
         {
+            return string.Empty;
+        }
+
+        var output = new StringBuilder(Math.Min(trimmed.Length, MaxOperatorInboxTokenLength));
+        var previousWasSeparator = false;
+        var producedCharacters = 0;
+
+        foreach (var character in trimmed)
+        {
+            if (producedCharacters >= MaxOperatorInboxTokenLength)
+            {
+                break;
+            }
+
             if (char.IsLetterOrDigit(character))
             {
-                buffer[length++] = char.ToLowerInvariant(character);
+                output.Append(char.ToLowerInvariant(character));
                 previousWasSeparator = false;
+                producedCharacters++;
                 continue;
             }
 
-            if (!previousWasSeparator && length > 0)
+            if (!previousWasSeparator && output.Length > 0)
             {
-                buffer[length++] = '-';
+                output.Append('-');
                 previousWasSeparator = true;
+                producedCharacters++;
             }
         }
 
-        if (length > 0 && buffer[length - 1] == '-')
+        if (output.Length > 0 && output[^1] == '-')
         {
-            length--;
+            output.Length--;
         }
 
-        return new string(buffer[..length]);
+        return output.ToString();
     }
 
     private static string BuildTradingBrokerageNotes(
