@@ -1418,7 +1418,7 @@ public sealed class FundOperationsWorkspaceReadService
                 .Where(summary => accountIds.Contains(summary.FundAccountId))
                 .ToArray();
 
-            activeWorkflowSummary = (scopedSummaries.Length > 0 ? scopedSummaries : summaries)
+            activeWorkflowSummary = scopedSummaries
                 .OrderByDescending(static item => item.UpdatedAtUtc)
                 .FirstOrDefault();
 
