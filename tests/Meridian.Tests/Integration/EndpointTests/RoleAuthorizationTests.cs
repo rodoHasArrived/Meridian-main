@@ -155,6 +155,46 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         RolePermissions.HasPermission(UserRole.ReadOnly, UserPermission.ManageUsers).Should().BeFalse();
     }
 
+    [Fact]
+    public void RolePermissions_GetCatalog_ReturnsBuiltInProfilesAndPermissionMetadata()
+    {
+        var catalog = RolePermissions.GetCatalog();
+
+        catalog.Roles.Should().Contain(role =>
+            role.Role == nameof(UserRole.Accounting) &&
+            role.IsBuiltIn &&
+            role.Permissions.Contains(nameof(UserPermission.ManageDirectLending)));
+        catalog.Permissions.Should().Contain(permission =>
+            permission.Name == nameof(UserPermission.ManageUsers) &&
+            permission.Group == "Administration");
+    }
+
+    [Fact]
+    public void UserProfileRegistry_MultiUser_CustomPermissionsOverrideBuiltInRolePermissions()
+    {
+        const string usersJson = """
+            [{"username":"ledger-admin","password":"pw","role":"Accounting","roleProfileName":"Ledger Admin","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
+            """;
+        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+
+        try
+        {
+            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+
+            var profile = registry.Authenticate("ledger-admin", "pw");
+
+            profile.Should().NotBeNull();
+            profile!.Role.Should().Be(UserRole.Accounting);
+            profile.RoleProfileName.Should().Be("Ledger Admin");
+            profile.Permissions.Should().HaveFlag(UserPermission.ModifyConfig);
+            profile.Permissions.Should().NotHaveFlag(UserPermission.ManageDirectLending);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
     // ── UserProfileRegistry tests ────────────────────────────────────────────
 
     [Fact]

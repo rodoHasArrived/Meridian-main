@@ -18,6 +18,8 @@ namespace Meridian.Ui.Shared;
 ///     MDC_USERS=[{"username":"alice","password":"s3cr3t","role":"TradeDesk"},
 ///                {"username":"bob","password":"p@ss","role":"Accounting"}]
 ///     </code>
+///     A user can optionally include <c>permissions</c> to define a profile-specific permission
+///     set while retaining the closest built-in role label for compatibility.
 ///   </item>
 ///   <item>
 ///     <b>Single-user legacy (backward-compatible):</b> Set <c>MDC_USERNAME</c> and
@@ -60,7 +62,25 @@ public sealed class UserProfileRegistry
             if (CryptographicEquals(username, account.Username) &&
                 CryptographicEquals(password, account.Password))
             {
-                return new UserProfile(account.Username, account.Role);
+                if (account.Permissions is { Count: > 0 })
+                {
+                    if (!RolePermissions.TryParsePermissionNames(
+                            account.Permissions,
+                            out var permissions,
+                            out var invalidPermissionNames))
+                    {
+                        return null;
+                    }
+
+                    return new UserProfile(
+                        account.Username,
+                        account.Role,
+                        PermissionOverride: permissions,
+                        RoleProfileName: account.RoleProfileName,
+                        InvalidPermissionNames: invalidPermissionNames);
+                }
+
+                return new UserProfile(account.Username, account.Role, RoleProfileName: account.RoleProfileName);
             }
         }
 
@@ -106,10 +126,15 @@ public sealed class UserProfileRegistry
 /// <summary>
 /// Represents an authenticated user's identity and role within a session.
 /// </summary>
-public sealed record UserProfile(string Username, UserRole Role)
+public sealed record UserProfile(
+    string Username,
+    UserRole Role,
+    UserPermission? PermissionOverride = null,
+    string? RoleProfileName = null,
+    IReadOnlyList<string>? InvalidPermissionNames = null)
 {
     /// <summary>The permissions granted to this user based on their <see cref="Role"/>.</summary>
-    public UserPermission Permissions => RolePermissions.For(Role);
+    public UserPermission Permissions => PermissionOverride ?? RolePermissions.For(Role);
 }
 
 /// <summary>
@@ -118,7 +143,9 @@ public sealed record UserProfile(string Username, UserRole Role)
 public sealed record UserAccountConfig(
     [property: JsonPropertyName("username")] string Username,
     [property: JsonPropertyName("password")] string Password,
-    [property: JsonPropertyName("role")] UserRole Role);
+    [property: JsonPropertyName("role")] UserRole Role,
+    [property: JsonPropertyName("roleProfileName")] string? RoleProfileName = null,
+    [property: JsonPropertyName("permissions")] IReadOnlyList<string>? Permissions = null);
 
 /// <summary>AOT-safe JSON context for deserializing <see cref="UserAccountConfig"/> arrays.</summary>
 [JsonSerializable(typeof(UserAccountConfig[]))]

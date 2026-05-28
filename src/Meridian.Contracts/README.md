@@ -46,6 +46,10 @@ retained manifest path, retained evidence links, report-line provenance, and res
 links. Keep these fields shared so browser, WPF, and service tests enforce the same publication and
 no-orphan-evidence rules.
 
+Fund-structure contracts include the ledger mapping workbench payload used by accounting and
+governance surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
+and recommended operator action without requiring clients to duplicate mapping precedence rules.
+
 Evidence workflow contracts now carry policy-owned SLA/freshness assessments and the Meridian
 Assurance Score on packet completeness. Keep provider validation, replay checks, reconciliation,
 approval, and report freshness policy output in shared DTOs so browser and WPF clients render the

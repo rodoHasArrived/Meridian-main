@@ -31,6 +31,9 @@ and UI presentation concerns in their owning layers.
   approvals before the workflow can become ready for close or close against a report pack. Close
   readiness is scored server-side across Security Master, position, cash, ledger, pricing,
   reconciliation, report, and approval components.
+- `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
+  mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
+  fund-structure assignments before falling back to account ledger references.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 

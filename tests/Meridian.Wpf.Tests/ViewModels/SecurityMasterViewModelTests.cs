@@ -456,6 +456,31 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void SecurityMasterSearchSection_ShouldOwnSearchFilterAndRecoveryStateWithAdapterBindings()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
+
+        sections.Should().Contain("public string SearchQuery { get; set; } = string.Empty;");
+        sections.Should().Contain("public bool ActiveOnly { get; set; } = true;");
+        sections.Should().Contain("public string SelectedAssetClassFilter { get; set; }");
+        sections.Should().Contain("public string SelectedProviderFilter { get; set; }");
+        sections.Should().Contain("public bool ShowMappingGapsOnly { get; set; }");
+        sections.Should().Contain("public bool IsLoading { get; set; }");
+        sections.Should().Contain("public string StatusText { get; set; } = \"Enter a query and press Search.\";");
+        sections.Should().Contain("public bool HasSearchAttempted { get; set; }");
+        viewModel.Should().Contain("private readonly SecurityMasterSearchSectionViewModel _searchSection = new(AllAssetClassesFilterLabel, AllProvidersFilterLabel);");
+        viewModel.Should().Contain("get => _searchSection.SearchQuery;");
+        viewModel.Should().Contain("get => _searchSection.SelectedAssetClassFilter;");
+        viewModel.Should().Contain("get => _searchSection.IsLoading;");
+        viewModel.Should().Contain("get => _searchSection.StatusText;");
+        viewModel.Should().Contain("_searchSection.HasSearchAttempted = true;");
+        viewModel.Should().NotContain("private string _searchQuery");
+        viewModel.Should().NotContain("private bool _activeOnly");
+        viewModel.Should().NotContain("private bool _hasSearchAttempted");
+    }
+
+    [Fact]
     public void LoadSelectedTrustSnapshotAsync_WithOpenConflicts_ShouldSurfaceBlockedTrustPosture()
     {
         WpfTestThread.Run(async () =>

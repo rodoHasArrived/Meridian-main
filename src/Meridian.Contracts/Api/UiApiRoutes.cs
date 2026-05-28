@@ -479,6 +479,7 @@ public static class UiApiRoutes
     public const string AuthApiLogin = "/api/auth/login";
     public const string AuthApiLogout = "/api/auth/logout";
     public const string AuthApiMe = "/api/auth/me";
+    public const string AuthApiRoles = "/api/auth/roles";
 
     // Execution / Paper Trading Cockpit endpoints
     public const string ExecutionAccount = "/api/execution/account";

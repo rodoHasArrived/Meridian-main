@@ -315,5 +315,6 @@
     <SolidColorBrush x:Key="BadgeDangerBackgroundBrush" Color="{StaticResource ConsoleAccentRedAlpha10}" />
     <SolidColorBrush x:Key="BadgeDangerBorderBrush"     Color="{StaticResource ConsoleAccentRed}" />
     <SolidColorBrush x:Key="BadgeDangerForegroundBrush" Color="{StaticResource ConsoleAccentRedDim}" />
+    <SolidColorBrush x:Key="DangerColorBrush"           Color="{StaticResource ConsoleAccentRedDim}" />
 
 </ResourceDictionary>

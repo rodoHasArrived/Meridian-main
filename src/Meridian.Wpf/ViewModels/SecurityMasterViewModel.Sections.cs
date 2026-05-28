@@ -8,10 +8,24 @@ namespace Meridian.Wpf.ViewModels;
 
 internal sealed class SecurityMasterSearchSectionViewModel
 {
+    public SecurityMasterSearchSectionViewModel(string allAssetClassesLabel, string allProvidersLabel)
+    {
+        SelectedAssetClassFilter = allAssetClassesLabel;
+        SelectedProviderFilter = allProvidersLabel;
+    }
+
     public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
     public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults { get; } = new();
     public ObservableCollection<string> AssetClassFilterOptions { get; } = new();
     public ObservableCollection<string> ProviderFilterOptions { get; } = new();
+    public string SearchQuery { get; set; } = string.Empty;
+    public bool ActiveOnly { get; set; } = true;
+    public string SelectedAssetClassFilter { get; set; }
+    public string SelectedProviderFilter { get; set; }
+    public bool ShowMappingGapsOnly { get; set; }
+    public bool IsLoading { get; set; }
+    public string StatusText { get; set; } = "Enter a query and press Search.";
+    public bool HasSearchAttempted { get; set; }
 }
 
 internal sealed class SecurityMasterConflictSectionViewModel

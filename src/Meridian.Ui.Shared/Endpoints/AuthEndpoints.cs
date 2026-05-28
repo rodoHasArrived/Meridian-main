@@ -107,7 +107,11 @@ public static class AuthEndpoints
                     success = true,
                     username = profile?.Username,
                     role = profile?.Role.ToString(),
-                    permissions = profile?.Permissions.ToString()
+                    roleProfileName = profile?.RoleProfileName,
+                    permissions = profile?.Permissions.ToString(),
+                    permissionNames = profile is null
+                        ? Array.Empty<string>()
+                        : RolePermissions.GetPermissionNames(profile.Permissions).ToArray()
                 });
             }
 
@@ -137,12 +141,19 @@ public static class AuthEndpoints
             {
                 username = profile.Username,
                 role = profile.Role.ToString(),
-                permissions = profile.Permissions.ToString()
+                roleProfileName = profile.RoleProfileName,
+                permissions = profile.Permissions.ToString(),
+                permissionNames = RolePermissions.GetPermissionNames(profile.Permissions).ToArray()
             });
         }).WithName("GetCurrentUser")
           .WithSummary("Returns the currently authenticated user's profile, role, and permissions.")
           .Produces(StatusCodes.Status200OK)
           .Produces(StatusCodes.Status401Unauthorized);
+
+        app.MapGet(UiApiRoutes.AuthApiRoles, () => Results.Ok(RolePermissions.GetCatalog()))
+            .WithName("GetRolePermissionCatalog")
+            .WithSummary("Returns built-in roles, permissions, and permission metadata for role configuration surfaces.")
+            .Produces<RolePermissionCatalogDto>(StatusCodes.Status200OK);
     }
 
     private static string BuildLoginRedirect(string? returnUrl, bool error)

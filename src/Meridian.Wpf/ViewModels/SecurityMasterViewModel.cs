@@ -48,7 +48,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private CancellationTokenSource? _workflowCts;
     private Task? _workflowPollingTask;
 
-    private readonly SecurityMasterSearchSectionViewModel _searchSection = new();
+    private readonly SecurityMasterSearchSectionViewModel _searchSection = new(AllAssetClassesFilterLabel, AllProvidersFilterLabel);
     private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
     private readonly SecurityMasterScheduleAndOpenLotSectionViewModel _scheduleSection = new();
     private readonly SecurityMasterPrintSectionViewModel _printSection = new();
@@ -87,89 +87,82 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IReadOnlyList<string> CorpActTypes => new[] { "Dividend", "StockSplit" };
 
     // ── Bindable properties ─────────────────────────────────────────────────
-    private string _searchQuery = string.Empty;
     public string SearchQuery
     {
-        get => _searchQuery;
+        get => _searchSection.SearchQuery;
         set
         {
-            if (SetProperty(ref _searchQuery, value))
+            if (SetSectionProperty(_searchSection.SearchQuery, value, next => _searchSection.SearchQuery = next))
             {
                 RaiseSearchDerivedStateChanged();
             }
         }
     }
 
-    private bool _activeOnly = true;
     public bool ActiveOnly
     {
-        get => _activeOnly;
+        get => _searchSection.ActiveOnly;
         set
         {
-            if (SetProperty(ref _activeOnly, value))
+            if (SetSectionProperty(_searchSection.ActiveOnly, value, next => _searchSection.ActiveOnly = next))
             {
                 RaiseSearchDerivedStateChanged();
             }
         }
     }
 
-    private string _selectedAssetClassFilter = AllAssetClassesFilterLabel;
     public string SelectedAssetClassFilter
     {
-        get => _selectedAssetClassFilter;
+        get => _searchSection.SelectedAssetClassFilter;
         set
         {
-            if (SetProperty(ref _selectedAssetClassFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            if (SetSectionProperty(_searchSection.SelectedAssetClassFilter, value, next => _searchSection.SelectedAssetClassFilter = next) && !_isRefreshingSearchWorkspaceFilters)
             {
                 ApplySearchWorkspaceFilters();
             }
         }
     }
 
-    private string _selectedProviderFilter = AllProvidersFilterLabel;
     public string SelectedProviderFilter
     {
-        get => _selectedProviderFilter;
+        get => _searchSection.SelectedProviderFilter;
         set
         {
-            if (SetProperty(ref _selectedProviderFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            if (SetSectionProperty(_searchSection.SelectedProviderFilter, value, next => _searchSection.SelectedProviderFilter = next) && !_isRefreshingSearchWorkspaceFilters)
             {
                 ApplySearchWorkspaceFilters();
             }
         }
     }
 
-    private bool _showMappingGapsOnly;
     public bool ShowMappingGapsOnly
     {
-        get => _showMappingGapsOnly;
+        get => _searchSection.ShowMappingGapsOnly;
         set
         {
-            if (SetProperty(ref _showMappingGapsOnly, value) && !_isRefreshingSearchWorkspaceFilters)
+            if (SetSectionProperty(_searchSection.ShowMappingGapsOnly, value, next => _searchSection.ShowMappingGapsOnly = next) && !_isRefreshingSearchWorkspaceFilters)
             {
                 ApplySearchWorkspaceFilters();
             }
         }
     }
 
-    private bool _isLoading;
     public bool IsLoading
     {
-        get => _isLoading;
+        get => _searchSection.IsLoading;
         private set
         {
-            if (SetProperty(ref _isLoading, value))
+            if (SetSectionProperty(_searchSection.IsLoading, value, next => _searchSection.IsLoading = next))
             {
                 RaiseSearchDerivedStateChanged();
             }
         }
     }
 
-    private string _statusText = "Enter a query and press Search.";
     public string StatusText
     {
-        get => _statusText;
-        private set => SetProperty(ref _statusText, value);
+        get => _searchSection.StatusText;
+        private set => SetSectionProperty(_searchSection.StatusText, value, next => _searchSection.StatusText = next);
     }
 
     private SecurityMasterWorkstationDto? _selectedSecurity;
@@ -524,7 +517,6 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private SecurityMasterEventEnvelope? _latestHistoryEvent;
     private readonly Dictionary<Guid, SecurityConflictSecurityContext> _conflictSecurityContextCache = new();
     private readonly Dictionary<Guid, SecurityMasterConflictAssessmentDto> _conflictAssessmentById = new();
-    private bool _hasSearchAttempted;
     private bool _suppressConflictLaneSelectionSync;
     private bool _suppressConflictDrivenSelectionLoad;
 
@@ -734,7 +726,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         !string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal) ||
         ShowMappingGapsOnly;
 
-    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && ResultCount == 0;
+    public bool IsSearchRecoveryVisible => !IsLoading && _searchSection.HasSearchAttempted && ResultCount == 0;
 
     public string SearchRecoveryTitle
     {
@@ -784,7 +776,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SearchResultCountLabel => ResultCount switch
     {
-        0 => _hasSearchAttempted
+        0 => _searchSection.HasSearchAttempted
             ? HasLoadedResults && HasActiveSearchWorkspaceFilters
                 ? $"0 of {LoadedResultCount} matches shown"
                 : "No matches loaded"
@@ -801,7 +793,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
-            if (!_hasSearchAttempted)
+            if (!_searchSection.HasSearchAttempted)
             {
                 return "Search issuers, identifiers, venues, and provider-linked aliases from one desktop command deck.";
             }
@@ -1647,13 +1639,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         => HasSearchQuery && !IsLoading;
 
     private bool CanClearSearch()
-        => HasSearchQuery || HasSearchResults || HasSelectedSecurity || _hasSearchAttempted;
+        => HasSearchQuery || HasSearchResults || HasSelectedSecurity || _searchSection.HasSearchAttempted;
 
     private void OnClearSearch()
     {
         _cts?.Cancel();
         _cts = null;
-        _hasSearchAttempted = false;
+        _searchSection.HasSearchAttempted = false;
 
         ResetSearchWorkspaceFilters();
         SearchQuery = string.Empty;
@@ -2109,13 +2101,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         var query = SearchQuery.Trim();
         if (string.IsNullOrEmpty(query))
         {
-            _hasSearchAttempted = false;
+            _searchSection.HasSearchAttempted = false;
             RaiseSearchDerivedStateChanged();
             StatusText = "Enter a query and press Search.";
             return;
         }
 
-        _hasSearchAttempted = true;
+        _searchSection.HasSearchAttempted = true;
         RaiseSearchDerivedStateChanged();
 
         if (!_securityMasterRuntimeStatus.IsAvailable)

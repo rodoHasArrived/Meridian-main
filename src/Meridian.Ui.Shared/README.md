@@ -52,6 +52,11 @@ latest detail so repeated provider-ledger variances can be controlled as account
 Reconciliation details also emit provider-to-Security-Master confidence passports for every
 provider position, preserving the resolution path, confidence score, validation issue codes, and
 identifier-conflict evidence alongside the persisted accounting detail.
+
+Fund-structure endpoints expose `/api/fund-structure/ledger-mapping-view` as the shared accounting
+control surface for account ledger mappings. The endpoint returns server-derived assignment source,
+unmapped-account issue codes, and recommended action so browser and WPF surfaces do not invent
+client-local mapping or posting readiness rules.
 When provider-routing capability metadata is registered, the reconciliation service blocks runs
 that cannot route account balances, account positions, or reconciliation-feed capability for the
 fund account, so unsupported providers fail as accounting break evidence before ledger comparison.

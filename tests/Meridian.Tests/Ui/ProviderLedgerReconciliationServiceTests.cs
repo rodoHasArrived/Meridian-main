@@ -51,8 +51,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
             passport.ExternalAccountId.Should().Be("PA-LEDGER");
             passport.SecurityId.Should().Be(Guid.Parse("35D27D8E-4460-4B17-92B8-6E5F53773D1D"));
             passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Resolved);
-            passport.ConfidenceScore.Should().Be(90m);
-            passport.ResolutionSource.Should().Be("security-master-lookup");
+            passport.ConfidenceScore.Should().Be(100m);
+            passport.ResolutionSource.Should().Be("provider-position");
             passport.ValidationIssueCodes.Should().BeEmpty();
             File.Exists(detail.Summary.DetailPath).Should().BeTrue("latest reconciliation detail must be retained as evidence");
         }
@@ -282,7 +282,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             latest.SecurityMasterPassports.Should().NotBeNull().And.ContainSingle(item =>
                 item.Symbol == "AAPL" &&
                 item.Status == ProviderSecurityMasterPassportStatusDto.Resolved &&
-                item.ResolutionSource == "security-master-lookup");
+                item.ResolutionSource == "provider-position");
         }
         finally
         {
