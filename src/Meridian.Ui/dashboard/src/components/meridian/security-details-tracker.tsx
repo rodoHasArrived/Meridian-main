@@ -39,6 +39,7 @@ const defaultOperatorOverridesService: OperatorOverridesService = {
 
 const STORAGE_PREFIX_OVERRIDES = "meridian.security.overrides.";
 const STORAGE_PREFIX_LOTS = "meridian.security.lots.";
+const STORAGE_NAMESPACE = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 const OVERRIDES_CHANGED_EVENT = "meridian:security-overrides-changed";
 
 interface OverridesChangedDetail {
@@ -74,11 +75,15 @@ function safeLocalStorage(): Storage | null {
   }
 }
 
+function storageKey(prefix: string, securityId: string): string {
+  return `${prefix}${STORAGE_NAMESPACE}.${securityId}`;
+}
+
 function loadOverrides(securityId: string): Record<string, string> {
   const ls = safeLocalStorage();
   if (!ls) return {};
   try {
-    const raw = ls.getItem(STORAGE_PREFIX_OVERRIDES + securityId);
+    const raw = ls.getItem(storageKey(STORAGE_PREFIX_OVERRIDES, securityId));
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
@@ -91,7 +96,7 @@ function saveOverrides(securityId: string, overrides: Record<string, string>): v
   const ls = safeLocalStorage();
   if (!ls) return;
   try {
-    ls.setItem(STORAGE_PREFIX_OVERRIDES + securityId, JSON.stringify(overrides));
+    ls.setItem(storageKey(STORAGE_PREFIX_OVERRIDES, securityId), JSON.stringify(overrides));
   } catch {
     // ignore quota / serialization errors
   }
@@ -462,7 +467,7 @@ function loadLots(securityId: string): SecurityLot[] {
   const ls = safeLocalStorage();
   if (!ls) return [];
   try {
-    const raw = ls.getItem(STORAGE_PREFIX_LOTS + securityId);
+    const raw = ls.getItem(storageKey(STORAGE_PREFIX_LOTS, securityId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -481,7 +486,7 @@ function saveLots(securityId: string, lots: SecurityLot[]): void {
   const ls = safeLocalStorage();
   if (!ls) return;
   try {
-    ls.setItem(STORAGE_PREFIX_LOTS + securityId, JSON.stringify(lots));
+    ls.setItem(storageKey(STORAGE_PREFIX_LOTS, securityId), JSON.stringify(lots));
   } catch {
     // ignore quota errors
   }
