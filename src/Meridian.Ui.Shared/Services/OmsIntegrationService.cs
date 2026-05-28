@@ -6,6 +6,9 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed class OmsIntegrationService
 {
+    private const int MaxTrackedMessages = 10_000;
+    private const int MaxAuditEntries = 20_000;
+
     private readonly ConcurrentDictionary<string, OmsInboundMessage> _messages = new(StringComparer.Ordinal);
     private readonly ConcurrentQueue<OmsIntegrationAuditEntry> _audit = new();
 
@@ -14,10 +17,15 @@ public sealed class OmsIntegrationService
         ArgumentNullException.ThrowIfNull(message);
         var dedupKey = string.IsNullOrWhiteSpace(message.DeduplicationKey) ? ComputeKey(message) : message.DeduplicationKey.Trim();
         var normalized = message with { DeduplicationKey = dedupKey };
-        var isReplay = _messages.ContainsKey(dedupKey);
-        _messages[dedupKey] = normalized;
-        _audit.Enqueue(new OmsIntegrationAuditEntry(DateTimeOffset.UtcNow, dedupKey, isReplay ? "replay" : "ingest", message.SourceSystem, message.CorrelationId));
-        return new OmsIngestionResult(dedupKey, isReplay, isReplay ? "Replay-safe duplicate ignored." : "Accepted.");
+        if (_messages.TryAdd(dedupKey, normalized))
+        {
+            TrimMessagesIfRequired();
+            EnqueueAudit(new OmsIntegrationAuditEntry(DateTimeOffset.UtcNow, dedupKey, "ingest", message.SourceSystem, message.CorrelationId));
+            return new OmsIngestionResult(dedupKey, false, "Accepted.");
+        }
+
+        EnqueueAudit(new OmsIntegrationAuditEntry(DateTimeOffset.UtcNow, dedupKey, "replay", message.SourceSystem, message.CorrelationId));
+        return new OmsIngestionResult(dedupKey, true, "Replay-safe duplicate ignored.");
     }
 
     public IReadOnlyCollection<OmsInboundMessage> Snapshot() => _messages.Values.ToArray();
@@ -27,8 +35,34 @@ public sealed class OmsIntegrationService
     {
         var winner = request.PullRecord.UpdatedAtUtc >= request.PushRecord.UpdatedAtUtc ? request.PullRecord : request.PushRecord;
         var mode = request.Mode.Equals("push", StringComparison.OrdinalIgnoreCase) ? "push" : "pull";
-        _audit.Enqueue(new OmsIntegrationAuditEntry(DateTimeOffset.UtcNow, request.EntityId, "sync-resolve", "excel-bridge", request.CorrelationId));
+        EnqueueAudit(new OmsIntegrationAuditEntry(DateTimeOffset.UtcNow, request.EntityId, "sync-resolve", "excel-bridge", request.CorrelationId));
         return new OmsSyncConflictResult(mode, winner, "timestamp-precedence");
+    }
+
+    private void EnqueueAudit(OmsIntegrationAuditEntry entry)
+    {
+        _audit.Enqueue(entry);
+        while (_audit.Count > MaxAuditEntries && _audit.TryDequeue(out _))
+        {
+        }
+    }
+
+    private void TrimMessagesIfRequired()
+    {
+        if (_messages.Count <= MaxTrackedMessages)
+        {
+            return;
+        }
+
+        foreach (var key in _messages.Keys)
+        {
+            if (_messages.Count <= MaxTrackedMessages)
+            {
+                break;
+            }
+
+            _messages.TryRemove(key, out _);
+        }
     }
 
     private static string ComputeKey(OmsInboundMessage msg)
