@@ -103,7 +103,7 @@ public sealed class DailyAccrualWorker : BackgroundService
                     continue;
                 }
 
-                var postingCheck = await CheckPostingDateAsync(accrualDate, ct).ConfigureAwait(false);
+                var postingCheck = await CheckPostingDateAsync(loanId, accrualDate, ct).ConfigureAwait(false);
                 if (postingCheck is not null && !string.Equals(postingCheck, "Allowed", StringComparison.Ordinal))
                 {
                     await RoutePeriodBlockedAsync(loanId, accrualDate, postingCheck, ct).ConfigureAwait(false);
@@ -146,14 +146,31 @@ public sealed class DailyAccrualWorker : BackgroundService
             accrualDate, posted, skipped, failed);
     }
 
-    private async Task<string?> CheckPostingDateAsync(DateOnly accrualDate, CancellationToken ct)
+    private async Task<string?> CheckPostingDateAsync(Guid loanId, DateOnly accrualDate, CancellationToken ct)
     {
         if (_ledgerJournalStore is null)
         {
             return null;
         }
 
-        var periods = await _ledgerJournalStore.ListPeriodsAsync(ct: ct).ConfigureAwait(false);
+        var aggregateEntries = await _ledgerJournalStore.GetByAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var latestAggregatePeriodId = aggregateEntries
+            .OrderByDescending(static entry => entry.GlobalSequence)
+            .Select(static entry => (Guid?)entry.PeriodId)
+            .FirstOrDefault();
+
+        if (!latestAggregatePeriodId.HasValue)
+        {
+            return null;
+        }
+
+        var scopedPeriod = await _ledgerJournalStore.GetPeriodAsync(latestAggregatePeriodId.Value, ct).ConfigureAwait(false);
+        if (scopedPeriod?.LedgerBookId is not Guid ledgerBookId)
+        {
+            return null;
+        }
+
+        var periods = await _ledgerJournalStore.ListPeriodsAsync(ledgerBookId: ledgerBookId, ct: ct).ConfigureAwait(false);
         var periodDtos = periods.Select(static period => new AccountingPeriodDto(
             period.PeriodId,
             period.FiscalYear,
