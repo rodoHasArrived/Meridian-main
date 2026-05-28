@@ -77,13 +77,19 @@ jobs:
             exit 1
           }
 
-          $normalized = ($requested -replace '\\', '/')
-          if ($normalized -ne $baseDir -and -not $normalized.StartsWith("$baseDir/")) {
-            Write-Error "output_dir must stay within '$baseDir'. Received '$normalized'."
+          $repoRoot = [System.IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
+          $baseFull = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $baseDir))
+          $candidateFull = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $requested))
+
+          $basePrefix = $baseFull.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+          $basePrefix = "$basePrefix$([System.IO.Path]::DirectorySeparatorChar)"
+          if ($candidateFull -ne $baseFull -and -not $candidateFull.StartsWith($basePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            Write-Error "output_dir must stay within '$baseDir'. Received '$requested'."
             exit 1
           }
 
-          "safe_output_dir=$normalized" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $safeRelative = [System.IO.Path]::GetRelativePath($repoRoot, $candidateFull) -replace '\\', '/'
+          "safe_output_dir=$safeRelative" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Capture desktop screenshots
         id: capture_desktop
         shell: pwsh
