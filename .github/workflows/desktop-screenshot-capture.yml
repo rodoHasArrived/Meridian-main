@@ -61,17 +61,40 @@ jobs:
           /p:EnableWindowsTargeting=true
           /p:EnableFullWpfBuild=true
 
+      - name: Validate desktop output directory
+        id: validate_output_dir
+        shell: pwsh
+        run: |
+          $baseDir = "docs/screenshots/desktop"
+          $requested = "${{ inputs.output_dir }}"
+          if ([string]::IsNullOrWhiteSpace($requested)) {
+            $requested = $baseDir
+          }
+
+          if ([System.IO.Path]::IsPathRooted($requested)) {
+            Write-Error "output_dir must be a repository-relative path under '$baseDir'."
+            exit 1
+          }
+
+          $normalized = ($requested -replace '\\', '/')
+          if ($normalized -ne $baseDir -and -not $normalized.StartsWith("$baseDir/")) {
+            Write-Error "output_dir must stay within '$baseDir'. Received '$normalized'."
+            exit 1
+          }
+
+          "safe_output_dir=$normalized" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Capture desktop screenshots
+        id: capture_desktop
         shell: pwsh
         run: >
           scripts/dev/capture-desktop-screenshots.ps1
-          -OutputDir "${{ inputs.output_dir }}"
+          -OutputDir "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
 
       - name: Log desktop screenshot capture status
         if: ${{ always() }}
         shell: pwsh
         run: |
-          $outputDir = "${{ inputs.output_dir }}"
+          $outputDir = "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
           if (-not (Test-Path -LiteralPath $outputDir)) {
             Write-Warning "Desktop screenshot output directory '$outputDir' was not created."
             return
@@ -90,10 +113,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if (Test-Path -LiteralPath "${{ inputs.output_dir }}") {
-            git add -- "${{ inputs.output_dir }}"
+          if (Test-Path -LiteralPath "${{ steps.validate_output_dir.outputs.safe_output_dir }}") {
+            git add -- "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
           } else {
-            Write-Warning "Output path '${{ inputs.output_dir }}' does not exist; nothing to stage."
+            Write-Warning "Output path '${{ steps.validate_output_dir.outputs.safe_output_dir }}' does not exist; nothing to stage."
           }
           $changed = git diff --cached --name-only
           if ($changed) {
@@ -122,10 +145,10 @@ jobs:
           }
 
       - name: Upload screenshot artifacts
-        if: ${{ always() && inputs.commit != true }}
+        if: ${{ inputs.commit != true && steps.capture_desktop.outcome == 'success' }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: desktop-screenshots-${{ github.run_number }}
-          path: ${{ inputs.output_dir }}
+          path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           if-no-files-found: ignore
           retention-days: 14
