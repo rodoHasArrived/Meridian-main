@@ -65,6 +65,38 @@ public sealed class CanonicalReconciliationMatchingEngineTests
     }
 
     [Fact]
+    public void Run_WhenTolerancePairLeavesPositionOutlier_EmitsToleranceMatchAndTrueBreak()
+    {
+        // Scenario: month-end broker/custodian position comparison where one near-match must not hide an extra lot.
+        var engine = new ReconciliationMatchingEngine();
+        var profile = new StatementToleranceProfile(
+            "month-end-close",
+            3,
+            [],
+            [new PositionToleranceRule("pos-close-qty-price-mv-v3", 0.10m, 10m, 0.10m)],
+            []);
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, [CreatePosition("p1", "AAPL", 10m, 100m, 1000m)]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian,
+            [
+                CreatePosition("p2", "AAPL", 10.05m, 100.01m, 1005m),
+                CreatePosition("p3", "AAPL", 50m, 100m, 5000m)
+            ])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        result.matches.Should().ContainSingle(m =>
+            m.Classification == BreakClassification.MatchedWithinTolerance &&
+            m.ToleranceRuleId == "pos-close-qty-price-mv-v3" &&
+            m.PositionIds.OrderBy(static id => id).SequenceEqual(new[] { "p1", "p2" }));
+        result.breaks.Should().ContainSingle(b => b.Classification == BreakClassification.TrueBreak && b.RuleId == "true-break-position-v1");
+        result.evidence.Should().ContainSingle(e =>
+            e.RuleId == "true-break-position-v1" &&
+            e.Attributes["unresolvedPositionIds"] == "p3");
+    }
+
+    [Fact]
     public void Run_WhenCashFallsInsideBasisPointTolerance_RecordsCashRuleEvidence()
     {
         var engine = new ReconciliationMatchingEngine();
