@@ -152,7 +152,10 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
         var now = _timeProvider.GetUtcNow();
         var cases = outcomes
             .Where(o => string.Equals(o.OutcomeType, "unmatched", StringComparison.OrdinalIgnoreCase))
-            .Select(o => new ReconciliationCase(
+            .Select(o =>
+            {
+                var evidenceRef = $"statement-row:{o.RowChecksum}";
+                return new ReconciliationCase(
                 Guid.NewGuid().ToString("N"),
                 importId.Trim(),
                 "Open",
@@ -160,13 +163,15 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
                 o.Confidence,
                 o.Rationale,
                 now,
-                [new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from matcher outcome")])
+                [new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from matcher outcome") { EvidenceId = evidenceRef }])
             {
+                EvidenceReferences = [evidenceRef],
                 DueAtUtc = now.AddDays(2),
                 Priority = "High",
                 LastUpdatedAtUtc = now,
                 LastUpdatedBy = "system",
                 AuditEvents = [new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "CaseOpened", now, "system", "Case created from matcher outcome.")]
+            };
             })
             .ToList();
         foreach (var c in cases)
@@ -186,6 +191,9 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
         ValidateTransition(c.Status, normalizedStatus);
         var now = _timeProvider.GetUtcNow();
         var breachedAt = c.SlaBreachedAtUtc ?? ((c.DueAtUtc.HasValue && now > c.DueAtUtc.Value) ? now : null);
+        var decisionNote = string.IsNullOrWhiteSpace(note) ? "Status updated." : note.Trim();
+        var isTerminalDecision = normalizedStatus is "Resolved" or "Dismissed" or "SignedOff";
+        var evidenceId = c.EvidenceReferences.FirstOrDefault();
         var updated = c with
         {
             Status = normalizedStatus,
@@ -198,10 +206,20 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
                     now,
                     c.Status,
                     normalizedStatus,
-                    string.IsNullOrWhiteSpace(note) ? "Status updated." : note.Trim())
+                    decisionNote)
+                {
+                    EvidenceId = evidenceId
+                }
             ]).ToList(),
             AuditEvents = c.AuditEvents.Concat([new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "StatusChanged", now, "system", $"Status changed from {c.Status} to {normalizedStatus}.")]).ToList(),
-            Resolution = normalizedStatus == "Resolved" || normalizedStatus == "SignedOff" ? new ReconciliationResolutionMetadata("resolved", string.IsNullOrWhiteSpace(note) ? "Resolved." : note.Trim(), "system", now, normalizedStatus == "SignedOff" ? "system" : null, normalizedStatus == "SignedOff" ? now : null) : c.Resolution
+            DecisionNotes = isTerminalDecision
+                ? c.DecisionNotes.Concat([new ReconciliationCaseDecisionNote(Guid.NewGuid().ToString("N"), "system", now, decisionNote, c.EvidenceReferences)]).ToList()
+                : c.DecisionNotes,
+            Resolution = normalizedStatus == "Resolved" || normalizedStatus == "SignedOff"
+                ? new ReconciliationResolutionMetadata("resolved", decisionNote, "system", now, normalizedStatus == "SignedOff" ? "system" : null, normalizedStatus == "SignedOff" ? now : null)
+                : normalizedStatus == "Dismissed"
+                    ? new ReconciliationResolutionMetadata("dismissed", decisionNote, "system", now)
+                    : c.Resolution
         };
         await _store.SaveAsync(updated, ct).ConfigureAwait(false);
         return updated;
@@ -263,6 +281,7 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
             "Investigating" => "Investigating",
             "AwaitingEvidence" => "AwaitingEvidence",
             "Resolved" => "Resolved",
+            "Dismissed" => "Dismissed",
             "SignedOff" => "SignedOff",
             _ => throw new ArgumentException($"Unsupported reconciliation case status '{status}'.", nameof(status))
         };
@@ -276,10 +295,11 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
 
         var allowed = fromStatus switch
         {
-            "Open" => toStatus is "Investigating",
-            "Investigating" => toStatus is "AwaitingEvidence" or "Resolved",
-            "AwaitingEvidence" => toStatus is "Investigating" or "Resolved",
+            "Open" => toStatus is "Investigating" or "Dismissed",
+            "Investigating" => toStatus is "AwaitingEvidence" or "Resolved" or "Dismissed",
+            "AwaitingEvidence" => toStatus is "Investigating" or "Resolved" or "Dismissed",
             "Resolved" => toStatus is "SignedOff",
+            "Dismissed" => false,
             _ => false
         };
         if (!allowed)

@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Ui.Shared
@@ -22,6 +22,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 `src/Meridian.Wpf`.
 
 ## Key folders and files
+
+- `Evidence/` - shared evidence graph contributors and subject routing for strategy runs, reconciliation reviews, statement runs, report packs, provider trust gates, and retained exports.
 
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.

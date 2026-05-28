@@ -11,10 +11,15 @@ public sealed class ReconciliationApiService(ICanonicalStatementStore importStor
 
 
     public async Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
-        => (await importStore.ListImportsAsync(ct)).Select(i => new StatementRunSummaryDto(i.ImportId, i.ImportId, i.ImportedAtUtc.ToString("O"), i.ImportedAtUtc.ToString("O"), i.NormalizedRowCount, 0, 0, 0)).ToList();
+    {
+        var imports = await importStore.ListImportsAsync(ct).ConfigureAwait(false);
+        var breaks = await breakStore.ListOpenAsync(ct).ConfigureAwait(false);
+        var cases = await caseStore.ListAsync(ct).ConfigureAwait(false);
+        return imports.Select(i => ToStatementRunSummary(i, breaks, cases)).ToList();
+    }
 
     public async Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
-        => (await ListStatementRunsAsync(ct)).FirstOrDefault(x => x.RunId == runId);
+        => (await ListStatementRunsAsync(ct).ConfigureAwait(false)).FirstOrDefault(x => string.Equals(x.RunId, runId, StringComparison.OrdinalIgnoreCase));
 
     public async Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
         => (await breakStore.ListOpenAsync(ct)).Select(x => new StatementRunExceptionDto(x.BreakId, x.RunId, x.ImportId, x.SourceReference, x.BreakCode, x.Category, x.Delta, x.Tolerance, x.ToleranceBreached, x.CreatedAtUtc.ToString("O"), x.Status)).ToList();
@@ -59,6 +64,85 @@ public sealed class ReconciliationApiService(ICanonicalStatementStore importStor
                 EvidenceLinks: group.Select(c => $"/api/workstation/reconciliation/cases/{Uri.EscapeDataString(c.CaseId)}").ToList()))
             .ToList();
     }
+
+    private static StatementRunSummaryDto ToStatementRunSummary(
+        Meridian.Domain.Reconciliation.CanonicalStatementImport import,
+        IReadOnlyList<Meridian.Domain.Reconciliation.ReconciliationBreakRecord> breaks,
+        IReadOnlyList<Meridian.Domain.Reconciliation.ReconciliationCase> cases)
+    {
+        var relatedBreaks = breaks
+            .Where(item => string.Equals(item.ImportId, import.ImportId, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(item.RunId, import.ImportId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var relatedCases = cases
+            .Where(item => string.Equals(item.ImportId, import.ImportId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var openExceptionCount = relatedBreaks.Count(item => string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase));
+        var matchedCount = Math.Max(0, import.NormalizedRowCount - relatedBreaks.Length);
+        var evidenceLink = BuildEvidenceLink(import, relatedBreaks, relatedCases, matchedCount);
+
+        return new StatementRunSummaryDto(
+            import.ImportId,
+            import.ImportId,
+            import.ImportedAtUtc.ToString("O"),
+            import.ImportedAtUtc.ToString("O"),
+            matchedCount,
+            0,
+            0,
+            openExceptionCount,
+            [evidenceLink]);
+    }
+
+    private static StatementRunEvidenceLinkDto BuildEvidenceLink(
+        Meridian.Domain.Reconciliation.CanonicalStatementImport import,
+        IReadOnlyList<Meridian.Domain.Reconciliation.ReconciliationBreakRecord> breaks,
+        IReadOnlyList<Meridian.Domain.Reconciliation.ReconciliationCase> cases,
+        int matchedCount)
+    {
+        var runId = import.ImportId;
+        var breakIds = breaks
+            .Select(static item => item.BreakId)
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static id => id, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var caseIds = cases
+            .Select(static item => item.CaseId)
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static id => id, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var sourceFileHash = FirstNonEmpty(import.SourceFileHash, import.SourceChecksum);
+        var brokerCustodian = FirstNonEmpty(import.SourceInstitution, import.Broker);
+        var account = FirstNonEmpty(import.ExternalAccountId, import.FundAccountId);
+        var validationSummary = "Passed: 0 issue(s), 0 error(s), 0 warning(s).";
+        var matchSummary = $"{matchedCount}/{import.NormalizedRowCount} item(s) matched; {breakIds.Length} break(s); {caseIds.Length} case(s).";
+
+        return new StatementRunEvidenceLinkDto(
+            EvidenceId: $"statement-run:{runId}",
+            EvidenceRoute: $"/api/workstation/evidence/statement-run/{Uri.EscapeDataString(runId)}",
+            RunId: runId,
+            SourceFileHash: sourceFileHash,
+            BrokerCustodian: brokerCustodian,
+            Account: account,
+            StatementPeriodStart: import.StatementPeriodStart.ToString("yyyy-MM-dd"),
+            StatementPeriodEnd: import.StatementPeriodEnd.ToString("yyyy-MM-dd"),
+            MappingProfileId: FirstNonEmpty(import.MappingProfileId, "unknown"),
+            MappingProfileVersion: 1,
+            ToleranceProfileId: FirstNonEmpty(import.ToleranceProfileId, "statement-default"),
+            ToleranceProfileVersion: 1,
+            ValidationSummary: validationSummary,
+            MatchSummary: matchSummary,
+            BreakIds: breakIds,
+            CaseIds: caseIds,
+            ImportedBy: FirstNonEmpty(import.ImportedBy, "system"),
+            ImportedAtUtc: import.ImportedAtUtc.ToString("O"),
+            ReconciledBy: FirstNonEmpty(import.ImportedBy, "system"),
+            ReconciledAtUtc: import.ImportedAtUtc.ToString("O"));
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
 
     private static StatementBreakType MapStatementBreakType(string category, string breakCode)
     {

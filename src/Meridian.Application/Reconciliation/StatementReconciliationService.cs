@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 
@@ -259,7 +260,7 @@ public sealed class StatementReconciliationService
         }
     }
 
-    private static IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath)
+    private IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
         var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         ValidateStatementHeader(normalizedSourceKind, sourcePath, profile.ProfileId);
@@ -284,13 +285,18 @@ public sealed class StatementReconciliationService
                 throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
             }
 
-            var account = parts[0];
-            var symbol = parts[1];
-            var quantity = decimal.Parse(parts[2], CultureInfo.InvariantCulture);
-            var price = decimal.Parse(parts[3], CultureInfo.InvariantCulture);
-            var cashAmount = decimal.Parse(parts[4], CultureInfo.InvariantCulture);
-            var activityType = parts[5];
-            var tradeDate = DateOnly.Parse(parts[6], CultureInfo.InvariantCulture);
+            var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
+            var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
+            var symbol = mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
+            var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
+            var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
+            var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
+            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
+            var tradeDate = mapped.GetRequiredDate(StatementCanonicalField.TradeDate, rowNumber);
+            var settlementDate = mapped.GetOptional(StatementCanonicalField.SettlementDate);
+            var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
+            var feesCommission = mapped.GetOptional(StatementCanonicalField.FeesCommission);
+            var externalTransactionId = mapped.GetOptional(StatementCanonicalField.ExternalTransactionId);
             var rowFingerprint = DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}");
             var rawSnapshot = mapped.ToCanonicalSnapshot();
             rawSnapshot["importId"] = importId;
@@ -301,7 +307,8 @@ public sealed class StatementReconciliationService
             rawSnapshot["symbol"] = symbol;
             rawSnapshot["activityType"] = activityType;
             rawSnapshot["tradeDate"] = tradeDate.ToString("O");
-            rawSnapshot["rowNumber"] = rowNumber.ToString();
+            rawSnapshot["rowNumber"] = rowNumber.ToString(CultureInfo.InvariantCulture);
+            rawSnapshot["rawLine"] = line;
             if (!string.IsNullOrWhiteSpace(settlementDate)) rawSnapshot["settlementDate"] = settlementDate;
             if (!string.IsNullOrWhiteSpace(currency)) rawSnapshot["currency"] = currency;
             if (!string.IsNullOrWhiteSpace(feesCommission)) rawSnapshot["feesCommission"] = feesCommission;
@@ -314,18 +321,9 @@ public sealed class StatementReconciliationService
                 quantity,
                 cashAmount == 0m ? price * quantity : cashAmount,
                 new DateTimeOffset(tradeDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-                GetOptional(parts, 11) ?? "USD",
+                currency,
                 rowFingerprint,
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["importId"] = importId,
-                    ["sourceKind"] = normalizedSourceKind,
-                    ["sourcePath"] = sourcePath,
-                    ["account"] = account,
-                    ["activityType"] = activityType,
-                    ["rowNumber"] = rowNumber.ToString(),
-                    ["rawLine"] = line
-                }));
+                rawSnapshot));
         }
 
         return rows;
@@ -502,16 +500,18 @@ public sealed class StatementReconciliationService
                 continue;
             }
 
+            var evidenceRef = $"statement-row:{row.RowId}";
             cases.Add(new ReconciliationCase(
                 $"case:{row.RowId}",
-                row.Fingerprint,
+                row.RawSnapshot.GetValueOrDefault("importId", row.Fingerprint),
                 "Open",
                 classification.WorkflowRationale,
                 0.35m,
                 classification.WorkflowRationale,
                 DateTimeOffset.UtcNow,
-                [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.")])
+                [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.") { EvidenceId = evidenceRef }])
             {
+                EvidenceReferences = [evidenceRef],
                 Owner = "fund-ops",
                 Priority = ToCasePriority(classification.Severity),
                 DueAtUtc = DateTimeOffset.UtcNow.AddBusinessDays(2),

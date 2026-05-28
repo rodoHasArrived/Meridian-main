@@ -62,6 +62,7 @@ application service contracts consumed by host and UI surfaces.
   material unresolved breaks are promoted into casework, with severity and recommended action
   stored in the classification result.
 - Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape.
+- Statement reconciliation completion creates evidence links that bind run IDs, source hashes, broker/custodian and account-period metadata, mapping and tolerance profile versions, validation and match summaries, break/case identifiers, actors, and timestamps.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
 - Statement validation checks source accessibility, account/profile references, duplicate imports,
   invariant date/decimal parsing, currency/activity/security resolution, and statement-period
