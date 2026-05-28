@@ -1562,7 +1562,7 @@ public static partial class WorkstationEndpoints
         group.MapGet("/security-master/securities", async (
             string? query,
             int? take,
-            bool activeOnly,
+            bool? activeOnly,
             [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
@@ -1574,7 +1574,7 @@ public static partial class WorkstationEndpoints
             var request = new SecuritySearchRequest(
                 Query: query.Trim(),
                 Take: Math.Clamp(take ?? 25, 1, 100),
-                ActiveOnly: activeOnly);
+                ActiveOnly: activeOnly ?? true);
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results.Select(MapToWorkstationSecurity).ToArray(), jsonOptions);
         })
@@ -1650,7 +1650,10 @@ public static partial class WorkstationEndpoints
             string? fundProfileId,
             HttpContext context) =>
         {
-            if (!HasPermission(context, UserPermission.ViewSecurityMaster))
+            if (!EndpointAuthorization.HasAnyPermission(
+                    context,
+                    UserPermission.ViewSecurityMaster,
+                    UserPermission.ModifySecurityMaster))
             {
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             }

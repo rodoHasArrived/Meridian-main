@@ -3,6 +3,7 @@ using Meridian.Application.Compliance;
 using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -14,8 +15,8 @@ public static class ComplianceEndpoints
         app.MapPost("/api/compliance/actions/evaluate", (
             HttpContext http,
             ComplianceActionRequest request,
-            ICompliancePolicyEngine policy,
-            ImmutableAuditLogService auditLog) =>
+            [FromServices] ICompliancePolicyEngine policy,
+            [FromServices] ImmutableAuditLogService auditLog) =>
         {
             var actor = BuildActorContext(http);
             var decision = policy.Evaluate(actor, request);
@@ -29,11 +30,16 @@ public static class ComplianceEndpoints
         })
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
 
+<<<<<<< Updated upstream
         app.MapGet("/api/compliance/audit/extract", (ImmutableAuditLogService auditLog) =>
             Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }))
             .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+=======
+        app.MapGet("/api/compliance/audit/extract", ([FromServices] ImmutableAuditLogService auditLog) =>
+            Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }));
+>>>>>>> Stashed changes
 
-        app.MapGet("/api/compliance/controls/attestation", (ImmutableAuditLogService auditLog) =>
+        app.MapGet("/api/compliance/controls/attestation", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new
             {
                 generatedAtUtc = DateTimeOffset.UtcNow,
@@ -50,15 +56,19 @@ public static class ComplianceEndpoints
 
         app.MapPost("/api/compliance/access-reviews/run", (
             AccessReviewRunRequest request,
-            AccessReviewService reviews) =>
+            [FromServices] AccessReviewService reviews) =>
         {
             var result = reviews.ReviewDormantPermissions(request.ActorId, request.ReviewedBy, request.CurrentRoles, request.LastUsedAtUtc);
             return Results.Ok(result);
         })
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
 
+<<<<<<< Updated upstream
         app.MapGet("/api/compliance/access-reviews", (AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
             .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+=======
+        app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()));
+>>>>>>> Stashed changes
 
         return app;
     }

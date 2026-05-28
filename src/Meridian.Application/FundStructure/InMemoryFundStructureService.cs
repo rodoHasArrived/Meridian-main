@@ -1125,10 +1125,11 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         }
 
         var currency = ResolveCashFlowCurrency(query.Currency, resolvedScope);
-        var accountWindows = resolvedScope.Accounts.Count == 0
-            ? Array.Empty<AccountCashFlowWindow>()
-            : await Task.WhenAll(resolvedScope.Accounts.Select(account =>
-                BuildAccountCashFlowWindowAsync(
+        var accountWindows = new List<AccountCashFlowWindow>(resolvedScope.Accounts.Count);
+        foreach (var account in resolvedScope.Accounts)
+        {
+            ct.ThrowIfCancellationRequested();
+            accountWindows.Add(await BuildAccountCashFlowWindowAsync(
                     account,
                     scoped,
                     currency,
@@ -1138,7 +1139,9 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                     projectionWindowEnd,
                     forecastDays,
                     bucketDays,
-                    ct))).ConfigureAwait(false);
+                    ct)
+                .ConfigureAwait(false));
+        }
 
         var accountViews = accountWindows
             .Select(window => new GovernanceCashFlowAccountViewDto(

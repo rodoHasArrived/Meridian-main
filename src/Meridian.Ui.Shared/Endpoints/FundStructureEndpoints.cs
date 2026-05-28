@@ -326,23 +326,36 @@ public static class FundStructureEndpoints
 
         group.MapGet("/cash-flow-view", async (HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
-                return ServiceUnavailable();
-
             var q = context.Request.Query;
             var scopeKind = ParseCashFlowScopeKind(q["scopeKind"]);
             if (scopeKind is null)
             {
-                return Results.Problem(
-                    "scopeKind is required and must be a valid governance cash-flow scope.",
+                return Results.Json(
+                    new { error = "scopeKind is required and must be a valid governance cash-flow scope." },
+                    jsonOptions,
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
             var ledgerGroupId = ParseLedgerGroupId(q["ledgerGroupId"], out var ledgerGroupParseError);
             if (ledgerGroupParseError is not null)
             {
-                return Results.Problem(ledgerGroupParseError, statusCode: StatusCodes.Status400BadRequest);
+                return Results.Json(
+                    new { error = ledgerGroupParseError },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (scopeKind == GovernanceCashFlowScopeKindDto.LedgerGroup
+                && ledgerGroupId == LedgerGroupId.Unassigned
+                && !HasExplicitCashFlowScope(q))
+            {
+                return Results.Json(CreateEmptyUnassignedLedgerGroupCashFlowView(q), jsonOptions);
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
             }
 
             var query = new GovernanceCashFlowQuery(
@@ -631,6 +644,75 @@ public static class FundStructureEndpoints
 
         return parsed;
     }
+
+    private static bool HasExplicitCashFlowScope(IQueryCollection query) =>
+        HasAnyQueryValue(
+            query,
+            "organizationId",
+            "businessId",
+            "clientId",
+            "fundId",
+            "sleeveId",
+            "vehicleId",
+            "investmentPortfolioId",
+            "accountId");
+
+    private static bool HasAnyQueryValue(IQueryCollection query, params string[] keys) =>
+        keys.Any(key => query.TryGetValue(key, out var values) && values.Any(static value => !string.IsNullOrWhiteSpace(value)));
+
+    private static GovernanceCashFlowViewDto CreateEmptyUnassignedLedgerGroupCashFlowView(IQueryCollection query)
+    {
+        var asOf = ParseDateTimeOffset(query["asOf"]) ?? DateTimeOffset.UtcNow;
+        var historicalDays = Math.Max(1, ParseInt(query["historicalDays"], 7));
+        var forecastDays = Math.Max(1, ParseInt(query["forecastDays"], 7));
+        var bucketDays = Math.Max(1, ParseInt(query["bucketDays"], 7));
+        var currency = string.IsNullOrWhiteSpace(query["currency"].FirstOrDefault())
+            ? "USD"
+            : query["currency"].FirstOrDefault()!;
+        var historicalWindowStart = asOf.AddDays(-(historicalDays - 1));
+        var projectionWindowEnd = asOf.AddDays(forecastDays);
+        var scope = new GovernanceCashFlowScopeDto(
+            GovernanceCashFlowScopeKindDto.LedgerGroup,
+            "Unassigned ledger group",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            LedgerGroupId.Unassigned,
+            Array.Empty<Guid>(),
+            Array.Empty<Guid>());
+
+        return new GovernanceCashFlowViewDto(
+            scope,
+            asOf,
+            historicalWindowStart,
+            projectionWindowEnd,
+            currency,
+            historicalDays,
+            forecastDays,
+            bucketDays,
+            0,
+            0m,
+            0m,
+            Array.Empty<GovernanceCashFlowAccountViewDto>(),
+            Array.Empty<GovernanceCashFlowEntryDto>(),
+            Array.Empty<GovernanceCashFlowEntryDto>(),
+            CreateEmptyCashFlowLadder(asOf, asOf, currency, bucketDays),
+            CreateEmptyCashFlowLadder(asOf, projectionWindowEnd, currency, bucketDays),
+            new GovernanceCashFlowVarianceSummaryDto(0m, 0m, 0m, 0m, 0m, 0m, 0m, "No accounts in scope."),
+            Array.Empty<GovernanceCashFlowVarianceBucketDto>());
+    }
+
+    private static GovernanceCashFlowLadderDto CreateEmptyCashFlowLadder(
+        DateTimeOffset asOf,
+        DateTimeOffset windowEnd,
+        string currency,
+        int bucketDays) =>
+        new(asOf, windowEnd, currency, bucketDays, 0m, 0m, 0m, Array.Empty<GovernanceCashFlowBucketDto>());
 
     private static IReadOnlyList<string>? ParseSelectedLedgerIds(params StringValues[] valueSets)
     {

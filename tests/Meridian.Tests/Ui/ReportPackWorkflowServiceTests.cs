@@ -18,7 +18,12 @@ public sealed class ReportPackWorkflowServiceTests
         var published = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Published, "publisher", "publisher");
 
         published.State.Should().Be(ReportPackWorkflowStateDto.Published);
-        published.AuditTrail.Should().HaveCount(4);
+        published.AuditTrail.Should().HaveCount(5);
+        published.AuditTrail.Should().ContainSingle(e =>
+            e.Action == "create"
+            && e.ActorId == "author"
+            && e.From == ReportPackWorkflowStateDto.Draft
+            && e.To == ReportPackWorkflowStateDto.Draft);
     }
 
     [Fact]
