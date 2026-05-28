@@ -261,3 +261,76 @@ public sealed record FundAccountBrokerageSyncActivityDto(
     DateTimeOffset SyncedAt,
     string RawSnapshotPath,
     string ProjectionPath);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationStatusDto>))]
+public enum ProviderLedgerReconciliationStatusDto
+{
+    Matched = 0,
+    Breaks = 1,
+    Blocked = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationCheckStatusDto>))]
+public enum ProviderLedgerReconciliationCheckStatusDto
+{
+    Matched = 0,
+    Break = 1,
+    Blocked = 2
+}
+
+public sealed record ProviderLedgerReconciliationRequestDto(
+    decimal AmountTolerance = 0.01m,
+    int ProviderStaleAfterMinutes = 30,
+    string? RequestedBy = null);
+
+public sealed record ProviderLedgerReconciliationCheckDto(
+    string CheckId,
+    string Label,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    ReconciliationBreakCategory Category,
+    string ExpectedSource,
+    string ActualSource,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? Variance,
+    ReconciliationBreakSeverity Severity,
+    string Reason);
+
+public sealed record ProviderLedgerReconciliationBreakDto(
+    string BreakId,
+    string CheckId,
+    string Code,
+    ReconciliationBreakCategory Category,
+    ReconciliationBreakSeverity Severity,
+    string ExpectedSource,
+    string ActualSource,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? Variance,
+    string Reason,
+    string? Symbol = null,
+    string? EvidenceLink = null);
+
+public sealed record ProviderLedgerReconciliationSummaryDto(
+    Guid ReconciliationRunId,
+    Guid AccountId,
+    DateTimeOffset CreatedAt,
+    ProviderLedgerReconciliationStatusDto Status,
+    int TotalChecks,
+    int MatchedChecks,
+    int BreakCount,
+    int SecurityIssueCount,
+    decimal AmountTolerance,
+    int ProviderStaleAfterMinutes,
+    string? ProviderId,
+    string? ExternalAccountId,
+    DateTimeOffset? ProviderSyncedAt,
+    DateOnly? InternalAsOfDate,
+    string? DetailPath = null);
+
+public sealed record ProviderLedgerReconciliationDetailDto(
+    ProviderLedgerReconciliationSummaryDto Summary,
+    IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks,
+    IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> EvidenceLinks);

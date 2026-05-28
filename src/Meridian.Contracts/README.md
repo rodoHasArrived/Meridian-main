@@ -41,10 +41,17 @@ are also contract-owned and include server-derived Security Master, position, ca
 pricing, reconciliation, report, and approval components so UI clients can render readiness without
 client-local scoring rules.
 
+Report-pack workflow contracts carry governed publication metadata: sign-off actor, evidence hash,
+retained manifest path, retained evidence links, report-line provenance, and restatement evidence
+links. Keep these fields shared so browser, WPF, and service tests enforce the same publication and
+no-orphan-evidence rules.
+
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
 `FundAccountBrokerageSyncActivityDto` for durable account-level evidence, positions, orders, fills,
-and cash-transaction details.
+and cash-transaction details. Provider-ledger reconciliation payloads in the same file are also
+fund-account scoped and compare the latest provider projection with Meridian's internal
+account-balance snapshot plus Security Master coverage posture.
 
 Direct lending command result codes distinguish validation failures, missing aggregates,
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return

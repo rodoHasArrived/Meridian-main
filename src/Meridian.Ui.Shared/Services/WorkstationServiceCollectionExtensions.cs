@@ -97,6 +97,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton<ProviderLedgerReconciliationService>();
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
 

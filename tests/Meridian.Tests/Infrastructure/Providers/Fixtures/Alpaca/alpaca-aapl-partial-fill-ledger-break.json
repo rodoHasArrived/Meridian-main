@@ -1,0 +1,302 @@
+{
+  "schemaVersion": "providerGoldenPathScenario/v1",
+  "metadata": {
+    "provider": "alpaca",
+    "scenarioName": "AAPL partial fill creates ledger-backed reconciliation break",
+    "generatedAtUtc": "2026-05-28T00:00:00Z",
+    "noLiveNetwork": true,
+    "sourceDocs": [
+      "https://docs.alpaca.markets/us/docs/real-time-stock-pricing-data",
+      "https://docs.alpaca.markets/us/docs/streaming-market-data",
+      "https://docs.alpaca.markets/us/docs/websocket-streaming",
+      "https://docs.alpaca.markets/us/docs/orders-at-alpaca"
+    ]
+  },
+  "providerMessages": {
+    "marketData": [
+      {
+        "messageId": "alpaca.market.trade.aapl.001",
+        "T": "t",
+        "S": "AAPL",
+        "i": 96921,
+        "x": "V",
+        "p": 190.00,
+        "s": 40,
+        "t": "2026-04-11T14:30:00.123456789Z",
+        "c": [
+          "@"
+        ],
+        "z": "C"
+      },
+      {
+        "messageId": "alpaca.market.quote.aapl.001",
+        "T": "q",
+        "S": "AAPL",
+        "bx": "V",
+        "bp": 189.95,
+        "bs": 4,
+        "ax": "V",
+        "ap": 190.05,
+        "as": 3,
+        "t": "2026-04-11T14:30:00.223456789Z",
+        "c": [
+          "R"
+        ],
+        "z": "C"
+      }
+    ],
+    "streamingControl": [
+      {
+        "messageId": "alpaca.stream.auth.001",
+        "action": "auth",
+        "status": "authorized"
+      },
+      {
+        "messageId": "alpaca.stream.subscribe.001",
+        "action": "subscribe",
+        "trades": [
+          "AAPL"
+        ],
+        "quotes": [
+          "AAPL"
+        ],
+        "trade_updates": true
+      },
+      {
+        "messageId": "alpaca.stream.subscription.001",
+        "T": "subscription",
+        "trades": [
+          "AAPL"
+        ],
+        "quotes": [
+          "AAPL"
+        ],
+        "trade_updates": true
+      }
+    ],
+    "orderUpdates": [
+      {
+        "messageId": "alpaca.order.submitted.001",
+        "stream": "trade_updates",
+        "event": "new",
+        "timestamp": "2026-04-11T14:30:01.000000000Z",
+        "order": {
+          "id": "alpaca-order-fixture-001",
+          "client_order_id": "fixture-alpaca-aapl-001",
+          "symbol": "AAPL",
+          "qty": "100",
+          "filled_qty": "0",
+          "filled_avg_price": null,
+          "side": "buy",
+          "type": "limit",
+          "limit_price": "190.50",
+          "status": "new"
+        }
+      },
+      {
+        "messageId": "alpaca.order.partial_fill.001",
+        "stream": "trade_updates",
+        "event": "partial_fill",
+        "timestamp": "2026-04-11T14:30:02.000000000Z",
+        "order": {
+          "id": "alpaca-order-fixture-001",
+          "client_order_id": "fixture-alpaca-aapl-001",
+          "symbol": "AAPL",
+          "qty": "100",
+          "filled_qty": "40",
+          "filled_avg_price": "190.00",
+          "side": "buy",
+          "type": "limit",
+          "limit_price": "190.50",
+          "status": "partially_filled"
+        }
+      },
+      {
+        "messageId": "alpaca.order.fill.001",
+        "stream": "trade_updates",
+        "event": "fill",
+        "timestamp": "2026-04-11T14:30:03.000000000Z",
+        "order": {
+          "id": "alpaca-order-fixture-001",
+          "client_order_id": "fixture-alpaca-aapl-001",
+          "symbol": "AAPL",
+          "qty": "100",
+          "filled_qty": "100",
+          "filled_avg_price": "190.10",
+          "side": "buy",
+          "type": "limit",
+          "limit_price": "190.50",
+          "status": "filled"
+        }
+      }
+    ]
+  },
+  "expectedCanonicalEvents": {
+    "trade": {
+      "kind": "trade",
+      "provider": "alpaca",
+      "sourceMessageId": "alpaca.market.trade.aapl.001",
+      "symbol": "AAPL",
+      "timestamp": "2026-04-11T14:30:00.123456789Z",
+      "venue": "V",
+      "price": 190.00,
+      "size": 40,
+      "conditions": [
+        "@"
+      ],
+      "tape": "C"
+    },
+    "quote": {
+      "kind": "bboQuote",
+      "provider": "alpaca",
+      "sourceMessageId": "alpaca.market.quote.aapl.001",
+      "symbol": "AAPL",
+      "timestamp": "2026-04-11T14:30:00.223456789Z",
+      "bidVenue": "V",
+      "bidPrice": 189.95,
+      "bidSize": 400,
+      "askVenue": "V",
+      "askPrice": 190.05,
+      "askSize": 300,
+      "conditions": [
+        "R"
+      ],
+      "tape": "C"
+    },
+    "fill": {
+      "kind": "executionFill",
+      "provider": "alpaca",
+      "orderId": "alpaca-order-fixture-001",
+      "clientOrderId": "fixture-alpaca-aapl-001",
+      "symbol": "AAPL",
+      "side": "buy",
+      "quantity": 100,
+      "averagePrice": 190.10,
+      "commission": 0.00,
+      "timestamp": "2026-04-11T14:30:03.000000000Z"
+    }
+  },
+  "executionLifecycle": {
+    "orderId": "alpaca-order-fixture-001",
+    "clientOrderId": "fixture-alpaca-aapl-001",
+    "symbol": "AAPL",
+    "side": "buy",
+    "submittedQuantity": 100,
+    "finalQuantity": 100,
+    "averagePrice": 190.10,
+    "commission": 0.00,
+    "states": [
+      {
+        "state": "submitted",
+        "timestamp": "2026-04-11T14:30:01.000000000Z",
+        "filledQuantity": 0
+      },
+      {
+        "state": "partial_fill",
+        "timestamp": "2026-04-11T14:30:02.000000000Z",
+        "filledQuantity": 40
+      },
+      {
+        "state": "fill",
+        "timestamp": "2026-04-11T14:30:03.000000000Z",
+        "filledQuantity": 100
+      }
+    ],
+    "fills": [
+      {
+        "fillId": "alpaca-fill-fixture-001",
+        "sourceMessageId": "alpaca.order.partial_fill.001",
+        "quantity": 40,
+        "price": 190.00,
+        "commission": 0.00,
+        "timestamp": "2026-04-11T14:30:02.000000000Z"
+      },
+      {
+        "fillId": "alpaca-fill-fixture-002",
+        "sourceMessageId": "alpaca.order.fill.001",
+        "quantity": 60,
+        "price": 190.1666666667,
+        "commission": 0.00,
+        "timestamp": "2026-04-11T14:30:03.000000000Z"
+      }
+    ]
+  },
+  "expectedLedger": {
+    "ledgerId": "ledger-fixture-alpaca-aapl",
+    "timestamp": "2026-04-11T14:30:03.000000000Z",
+    "description": "Buy 100 AAPL through Alpaca fixture",
+    "lines": [
+      {
+        "lineId": "ledger.alpaca.aapl.security",
+        "account": "Securities",
+        "accountType": "Asset",
+        "symbol": "AAPL",
+        "debit": 19010.00,
+        "credit": 0.00,
+        "evidenceId": "alpaca-fill-fixture-002"
+      },
+      {
+        "lineId": "ledger.alpaca.cash",
+        "account": "Cash",
+        "accountType": "Asset",
+        "symbol": null,
+        "debit": 0.00,
+        "credit": 19010.00,
+        "evidenceId": "alpaca-fill-fixture-002"
+      }
+    ],
+    "debitTotal": 19010.00,
+    "creditTotal": 19010.00,
+    "portfolio": {
+      "portfolioId": "portfolio-fixture-alpaca-aapl",
+      "symbol": "AAPL",
+      "quantity": 100,
+      "cashImpact": -19010.00
+    }
+  },
+  "statementRows": [
+    {
+      "rowId": "statement.alpaca.position.aapl",
+      "rowType": "position",
+      "provider": "alpaca",
+      "symbol": "AAPL",
+      "quantity": 99,
+      "marketValue": 18819.90,
+      "asOf": "2026-04-11T21:00:00.000000000Z"
+    },
+    {
+      "rowId": "statement.alpaca.cash.usd",
+      "rowType": "cash",
+      "provider": "alpaca",
+      "currency": "USD",
+      "amount": -19010.00,
+      "asOf": "2026-04-11T21:00:00.000000000Z"
+    }
+  ],
+  "expectedBreaks": [
+    {
+      "breakId": "break.alpaca.aapl.position.quantity",
+      "category": "PositionQuantityMismatch",
+      "severity": "High",
+      "materiality": 1,
+      "symbol": "AAPL",
+      "expectedQuantity": 100,
+      "actualQuantity": 99,
+      "evidenceIds": [
+        "alpaca.market.trade.aapl.001",
+        "alpaca.order.fill.001",
+        "ledger.alpaca.aapl.security",
+        "statement.alpaca.position.aapl"
+      ]
+    }
+  ],
+  "expectedEvidence": {
+    "provider": "evidence.provider.alpaca",
+    "dataset": "evidence.dataset.alpaca.aapl.2026-04-11",
+    "paperSession": "evidence.paper-session.alpaca.aapl.partial-fill",
+    "portfolio": "portfolio-fixture-alpaca-aapl",
+    "ledger": "ledger-fixture-alpaca-aapl",
+    "reconciliation": "break.alpaca.aapl.position.quantity",
+    "reportPack": "evidence.report-pack.alpaca.aapl.partial-fill"
+  }
+}

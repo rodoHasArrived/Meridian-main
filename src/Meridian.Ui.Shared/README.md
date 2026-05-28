@@ -37,6 +37,13 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+Report-pack workflow state is shared here as well: publication requires sign-off, evidence hash,
+retained manifest metadata, and retained evidence links for every report-line provenance pointer so
+browser and WPF clients do not invent local lifecycle or no-orphan-evidence rules.
+Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
+projection, compares it with the internal fund-account balance snapshot, validates Security Master
+coverage, and retains the latest detail under workstation data for browser and WPF clients to
+consume later without adding client-specific reconciliation logic.
 
 ## Diagrams
 

@@ -333,6 +333,13 @@ public sealed record ReportPackPublicationManifestDto(
     string SignedOffBy,
     DateTimeOffset SignedOffAt,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+public sealed record ReportPackPublishRequestDto(
+    string SignedOffBy,
+    string EvidenceHash,
+    string ManifestId,
+    string RetainedManifestPath,
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
+    string? Note = null);
 public sealed record ReportPackRestatementMetadataDto(
     string ReasonCode,
     string Approver,
