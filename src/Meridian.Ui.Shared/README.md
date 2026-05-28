@@ -45,6 +45,7 @@ browser and WPF clients do not invent local lifecycle or no-orphan-evidence rule
 Evidence packet validation also owns the shared SLA/freshness policy and Meridian Assurance Score
 calculation for provider validation, replay, reconciliation, approval, and reporting evidence so
 client surfaces consume the same readiness posture instead of recalculating it locally.
+OMS/EMS integration contracts now live under `Contracts/Integrations/` with canonical inbound/outbound DTOs, adapter boundaries, replay-safe ingestion results, Excel sync conflict records, request-signing hooks, key-rotation hooks, and integration audit entries. Runtime API handling is owned by `src/Meridian.Ui.Services` through the shared `IOmsIntegrationApiHandler` seam.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to
@@ -113,4 +114,5 @@ domain-specific endpoint edits to the matching partial file.
 
 - `src/Meridian.Ui.Services/README.md`
 - `docs/status/contract-compatibility-matrix.md`
+- `docs/reference/oms-ems-integration.md`
 - `docs/source/generated/source-module-index.md`

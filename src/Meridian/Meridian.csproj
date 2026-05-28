@@ -78,6 +78,7 @@
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
+    <ProjectReference Include="..\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
   </ItemGroup>
 
   <!-- Host static assets -->

@@ -3,35 +3,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Ui.Shared.Contracts.Integrations;
 
+namespace Meridian.Ui.Services.Services.Integrations;
 
-namespace Meridian.Ui.Shared.Services;
-
-/// <summary>
-/// Compatibility facade for older tests and hosts. New OMS/EMS API handling lives behind
-/// <see cref="IOmsIntegrationApiHandler"/> and is registered from Meridian.Ui.Services.
-/// </summary>
-public sealed class OmsIntegrationService : IOmsIntegrationApiHandler
-{
-    private readonly InMemoryOmsIntegrationApiHandler _inner = new();
-
-    public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null)
-        => _inner.Ingest(message, signature);
-
-    public IReadOnlyCollection<OmsInboundMessage> Snapshot() => _inner.Snapshot();
-
-    public IReadOnlyCollection<OmsAdapterDiagnostics> AdapterDiagnostics() => _inner.AdapterDiagnostics();
-
-    public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null)
-        => _inner.ResolveSyncConflict(request, signature);
-
-    public IReadOnlyCollection<OmsIntegrationAuditEntry> AuditTrail(int take = 200) => _inner.AuditTrail(take);
-
-    public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature)
-        => _inner.VerifyRequestSignature(signature);
-
-    public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request) => _inner.RotateSigningKey(request);
-}
-internal sealed class InMemoryOmsIntegrationApiHandler : IOmsIntegrationApiHandler
+public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
 {
     private const int MaxTrackedMessages = 10_000;
     private const int MaxAuditEntries = 20_000;
@@ -45,7 +19,7 @@ internal sealed class InMemoryOmsIntegrationApiHandler : IOmsIntegrationApiHandl
     private readonly ConcurrentDictionary<string, byte[]> _signingKeys = new(StringComparer.Ordinal);
     private readonly TimeProvider _timeProvider;
 
-    public InMemoryOmsIntegrationApiHandler(TimeProvider? timeProvider = null)
+    public OmsIntegrationApiHandler(TimeProvider? timeProvider = null)
     {
         _timeProvider = timeProvider ?? TimeProvider.System;
         _signingKeys.TryAdd("default", Encoding.UTF8.GetBytes("meridian-local-integration-signing-key"));

@@ -39,6 +39,7 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [Data Uniformity](data-uniformity.md) | Cross-provider consistency guidelines |
 | [Environment Variables](environment-variables.md) | Credential and configuration reference |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements |
+| [OMS/EMS Integration Contracts and Runbook](oms-ems-integration.md) | Versioned integration endpoint contracts, idempotent ingest semantics, adapter diagnostics, Excel sync policy, signing, and runbook steps |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference |
 | [Export Preflight Rules](export-preflight-rules.md) | Export validation rule engine, rule IDs, and reuse pattern |

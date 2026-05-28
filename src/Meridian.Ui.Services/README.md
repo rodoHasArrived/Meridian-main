@@ -31,6 +31,7 @@ contracts aligned with shared UI models and compatibility gates.
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.
 Accounting reconciliation casework endpoints are shared workstation behavior, not client-specific UI logic. Preserve compatibility wrappers for legacy review/resolve calls while routing assign, lifecycle, taxonomy, comments, sign-off, reopen, audit, and bulk triage through shared contracts. Statement break read models are projected into shared `StatementBreakDto` records so the break queue can seed statement-originated cases without depending on infrastructure records.
+OMS/EMS integration API handlers are registered from `Services/Integrations/` and implement the shared `IOmsIntegrationApiHandler` contract for idempotent ingestion, replay-safe deduplication, adapter diagnostics, Excel pull/push conflict resolution, request-signing validation, key-rotation hooks, and audit logging.
 
 ## Diagrams
 
@@ -70,4 +71,5 @@ shared projections over browser-only or WPF-only product logic.
 
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/status/contract-compatibility-matrix.md`
+- `docs/reference/oms-ems-integration.md`
 - `docs/source/generated/source-module-index.md`
