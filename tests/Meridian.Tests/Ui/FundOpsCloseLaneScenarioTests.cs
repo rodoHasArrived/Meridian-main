@@ -141,7 +141,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Reviewer: "fund-controller",
                 Rationale: "All gates clean — submitting period close for controller sign-off",
-                ReportPackId: "report-pack-may-2026"));
+                ReportPackId: "report-pack-may-2026",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         submitted.Success.Should().BeTrue();
         submitted.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -155,7 +156,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "fund-controller",
                 Reviewer: "fund-controller",
                 Rationale: "Reviewed and approved — all evidence clean and consistent",
-                ReportPackId: "report-pack-may-2026"));
+                ReportPackId: "report-pack-may-2026",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         approved.Success.Should().BeTrue();
         approved.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
@@ -278,11 +280,13 @@ public sealed class FundOpsCloseLaneScenarioTests
         var submitted = await service.SubmitForApprovalAsync(workflowId,
             new OperationsSubmitApprovalRequestDto(
                 posture.Workflow!.Version, "ops-user", "controller",
-                "Break resolved — submitting for close", "report-pack-break-test"));
+                "Break resolved — submitting for close", "report-pack-break-test",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var approved = await service.ApproveWorkflowAsync(workflowId,
             new OperationsApprovalDecisionRequestDto(
                 submitted.Workflow!.Version, "controller", "controller",
-                "Reviewed resolution evidence — approved", "report-pack-break-test"));
+                "Reviewed resolution evidence — approved", "report-pack-break-test",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var closed = await service.CloseWorkflowAsync(workflowId,
             new OperationsCloseWorkflowRequestDto(
                 approved.Workflow!.Version, "ops-user",
@@ -382,7 +386,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Reviewer: "controller",
                 Rationale: "Report pack confirmed — submitting for approval",
-                ReportPackId: "report-pack-rp-gate"));
+                ReportPackId: "report-pack-rp-gate",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         submitted.Success.Should().BeTrue(
             "submission must succeed once the report pack is marked ready");
@@ -402,6 +407,11 @@ public sealed class FundOpsCloseLaneScenarioTests
             derivation,
             new RecordingLedgerJournalStore());
     }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
+    [
+        new("approval-close-checklist", "controller", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero))
+    ];
 
     private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null)
     {

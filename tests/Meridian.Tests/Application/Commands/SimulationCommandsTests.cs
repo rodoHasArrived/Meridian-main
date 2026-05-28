@@ -19,7 +19,7 @@ public class SimulationCommandsTests
     {
         var cmd = new SimulationCommands(new FakeOrchestrator());
         var result = await cmd.ExecuteAsync(["--simulate-execution"]);
-        result.Code.Should().Be(ErrorCode.RequiredFieldMissing);
+        result.Error.Should().Be(ErrorCode.RequiredFieldMissing);
     }
 
     private sealed class FakeOrchestrator : IExecutionSimulationOrchestrator

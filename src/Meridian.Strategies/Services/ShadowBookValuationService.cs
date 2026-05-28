@@ -103,7 +103,7 @@ public sealed class ShadowBookValuationService : IShadowBookValuationService
                 ResolvedBy: null,
                 ResolvedAt: null,
                 ResolutionNote: $"Policy threshold breached for strategy profile '{request.StrategyProfile}'.",
-                LifecycleState: ReconciliationCaseLifecycleState.Detected,
+                LifecycleState: ReconciliationCaseLifecycleState.Open,
                 LifecycleRationale: "Auto-generated from shadow-book valuation variance.",
                 StateTransitions: []);
         }

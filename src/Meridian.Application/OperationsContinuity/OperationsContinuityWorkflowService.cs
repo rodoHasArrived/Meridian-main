@@ -1012,23 +1012,29 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ]);
         }
 
-        return await ExecuteTransitionAsync(
+        return await ApplyCommandAsync(
             workflowId,
-            request,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
             request.CorrelationId,
-            null,
+            evidenceLinks: null,
             "checklist-task-acknowledged",
             task.Gate,
             command: (workflow, _, now) =>
             {
                 var gate = GetGate(workflow, task.Gate);
-                if (gate.Status != OperationsGateStatusDto.Completed)
+                if (gate.Status != OperationsGateStatusDto.Passed)
                 {
                     return new OperationsWorkflowBlockerDto("CHECKLIST_GATE_NOT_COMPLETE", "Checklist tasks can only be acknowledged when the gate is complete.", task.Gate, "Error", []);
                 }
 
-                gate.CompletedBy = request.Actor.Trim();
-                gate.CompletedAtUtc ??= now;
+                workflow.ReplaceGate(gate.WithStatus(
+                    gate.Status,
+                    gate.Blockers,
+                    gate.NextActions,
+                    gate.CompletedAtUtc ?? now,
+                    request.Actor.Trim()));
                 return null;
             },
             ct: ct).ConfigureAwait(false);
@@ -1084,7 +1090,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 string.Equals(link.Source, gate.GateKey.ToString(), StringComparison.OrdinalIgnoreCase));
             var status = gate.Status switch
             {
-                OperationsGateStatusDto.Completed => "Done",
+                OperationsGateStatusDto.Passed => "Done",
                 OperationsGateStatusDto.Blocked => "Blocked",
                 OperationsGateStatusDto.InProgress => "InProgress",
                 _ => "Pending"
@@ -1103,7 +1109,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 gate.Blockers.FirstOrDefault()?.Message,
                 evidence?.EvidenceId,
                 gate.NextActions.FirstOrDefault()?.Route,
-                CanAcknowledge: gate.Status == OperationsGateStatusDto.Completed && evidence is not null,
+                CanAcknowledge: gate.Status == OperationsGateStatusDto.Passed && evidence is not null,
                 gate.CompletedAtUtc,
                 gate.CompletedBy);
         }).ToArray();
@@ -1190,6 +1196,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             entry.Actor,
             entry.Rationale,
             entry.CorrelationId,
+            entry.CorrelationKeys,
             entry.References,
             entry.PreviousHash,
             entry.CurrentHash);

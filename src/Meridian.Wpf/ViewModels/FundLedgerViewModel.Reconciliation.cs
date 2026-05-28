@@ -1217,9 +1217,9 @@ public sealed partial class FundLedgerViewModel
         ReconciliationNextBestActionText = SelectedBreakQueueItem.Status is ReconciliationBreakQueueStatus.Open
             ? "Review evidence, assign owner, and move the break to InReview."
             : "Capture operator decision and finalize resolution notes.";
-        ReconciliationBlockerReasonText = string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Summary)
+        ReconciliationBlockerReasonText = string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Reason)
             ? "Awaiting break summary from workstation host."
-            : SelectedBreakQueueItem.Summary;
+            : SelectedBreakQueueItem.Reason;
         ReconciliationEvidenceLinksText = $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}";
     }
 

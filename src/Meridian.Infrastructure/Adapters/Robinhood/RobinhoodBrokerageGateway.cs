@@ -152,8 +152,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                 return rejectReport;
             }
 
-            using var client = CreateHttpClient();
-            var optionInstrument = await ResolveOptionInstrumentAsync(optionInstrumentUrl, client, ct).ConfigureAwait(false);
+            using var optionClient = CreateHttpClient();
+            var optionInstrument = await ResolveOptionInstrumentAsync(optionInstrumentUrl, optionClient, ct).ConfigureAwait(false);
             if (optionInstrument is null)
             {
                 var rejectReport = BuildRejectedReport(

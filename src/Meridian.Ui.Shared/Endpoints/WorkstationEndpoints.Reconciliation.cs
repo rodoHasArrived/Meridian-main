@@ -5,7 +5,7 @@ using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Services.Services.Reconciliation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +15,14 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
+    private sealed record ReconciliationBreakBulkActionRequest(
+        IReadOnlyList<string> BreakIds,
+        string Action,
+        string? Actor = null,
+        string? Assignee = null,
+        ReconciliationBreakQueueStatus? Status = null,
+        string? CommentTemplate = null);
+
     private static void MapReconciliationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (

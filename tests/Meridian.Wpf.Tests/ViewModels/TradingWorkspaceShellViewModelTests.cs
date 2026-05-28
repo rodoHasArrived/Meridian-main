@@ -352,7 +352,7 @@ public sealed class TradingWorkspaceShellViewModelTests
             operatingContextDisplayName: "Mixed Desk");
 
         hero.FocusLabel.Should().Be("Readiness blocked");
-        hero.PrimaryActionId.Should().Be("FundAuditTrail");
+        hero.PrimaryActionId.Should().Be("ReplayVerification");
     }
 
     [Fact]
@@ -422,7 +422,9 @@ public sealed class TradingWorkspaceShellViewModelTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-stale",
-                MismatchReasons: ["Fill count mismatch: expected 10, found 8."]),
+                MismatchReasons: ["Fill count mismatch: expected 10, found 8."],
+                DriftStatus: "DriftDetected",
+                RequiredNextAction: "Run replay verification."),
             workItems:
             [
                 new OperatorWorkItemDto(
@@ -576,7 +578,9 @@ public sealed class TradingWorkspaceShellViewModelTests
             LastPersistedFillAt: null,
             LastPersistedOrderUpdateAt: null,
             VerificationAuditId: "audit-ready",
-            MismatchReasons: []);
+            MismatchReasons: [],
+            DriftStatus: "Aligned",
+            RequiredNextAction: "No action required.");
 
     private static TradingControlReadinessDto CreateControls()
         => new(

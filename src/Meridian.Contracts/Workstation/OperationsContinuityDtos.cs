@@ -565,7 +565,8 @@ public sealed record OperationsSubmitApprovalRequestDto(
     string Rationale,
     string ReportPackId,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null);
 
 public sealed record OperationsApprovalDecisionRequestDto(
     long ExpectedVersion,
@@ -574,7 +575,8 @@ public sealed record OperationsApprovalDecisionRequestDto(
     string Rationale,
     string ReportPackId,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null);
 
 public sealed record OperationsRejectWorkflowRequestDto(
     long ExpectedVersion,

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Meridian.Ui.Shared.Contracts;
 
 namespace Meridian.Application.Services;
 
@@ -17,6 +16,15 @@ public sealed record ExecutionSimulationResult(
     int SymbolsProcessed,
     int EventCount,
     bool DryRun);
+
+internal sealed record ExecutionSimulationSummary(
+    IReadOnlyList<string> Symbols,
+    string? FromDate,
+    string? ToDate,
+    bool DryRun,
+    int EventCount,
+    DateTimeOffset GeneratedAtUtc,
+    string OutputDirectory);
 
 public interface IExecutionSimulationOrchestrator
 {
@@ -65,7 +73,7 @@ public sealed class ExecutionSimulationOrchestrator(HistoricalDataQueryService q
         await File.WriteAllLinesAsync(Path.Combine(request.OutputDirectory, "order-lifecycle.jsonl"), lifecycle, ct);
         await File.WriteAllLinesAsync(Path.Combine(request.OutputDirectory, "queue-diagnostics.jsonl"), diagnostics, ct);
 
-        var summary = new ExecutionSimulationSummaryDto(
+        var summary = new ExecutionSimulationSummary(
             symbols,
             request.FromDate?.ToString("yyyy-MM-dd"),
             request.ToDate?.ToString("yyyy-MM-dd"),

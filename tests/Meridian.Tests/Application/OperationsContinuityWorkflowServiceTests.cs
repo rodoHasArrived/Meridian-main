@@ -393,18 +393,21 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             Reviewer: "reviewer",
             Rationale: "Submit clean workflow",
-            ReportPackId: "report-pack-1"));
+            ReportPackId: "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var approved = await service.ApproveWorkflowAsync(workflowId, new OperationsApprovalDecisionRequestDto(
             submitted.Workflow!.Version,
             "ops-user",
             Reviewer: "reviewer",
             Rationale: "Approved close evidence",
-            ReportPackId: "report-pack-1"));
+            ReportPackId: "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var closed = await service.CloseWorkflowAsync(workflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",
             Rationale: "Close accounting period",
-            ReportPackId: "report-pack-1"));
+            ReportPackId: "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
@@ -1161,7 +1164,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             Reviewer: "reviewer",
             Rationale: "Submit after critical break cleared",
-            ReportPackId: "report-pack-1"));
+            ReportPackId: "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         resolved.Workflow!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Complete);
         resolved.Workflow.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -1376,7 +1380,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "reviewer",
             "Approved close",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",
@@ -1437,7 +1442,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "reviewer",
             "Approved close",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
 
         var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
@@ -1472,7 +1478,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "reviewer",
             "Approved close",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var appendCountBefore = auditStore.AppendCount;
         auditStore.TimelineTransform = timeline => timeline
             .Select((entry, index) => index == 1 ? entry with { PreviousHash = "tampered" } : entry)
@@ -1679,6 +1686,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
             registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null);
     }
 
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
+    [
+        new("approval-close-checklist", "controller", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero))
+    ];
+
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerValidatedWorkflowAsync(
         OperationsContinuityWorkflowService service)
     {
@@ -1723,7 +1735,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "reviewer",
             "Submit for approval",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         return submitted.Workflow!;
     }
 
@@ -1736,7 +1749,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "reviewer",
             "Approved close",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",

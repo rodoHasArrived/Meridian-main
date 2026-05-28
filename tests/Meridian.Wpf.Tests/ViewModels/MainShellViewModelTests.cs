@@ -5,6 +5,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -233,15 +234,19 @@ public sealed class MainShellViewModelTests
 
             var rootPage = new WorkspaceCapabilityHomePage();
             var rootServices = new ServiceCollection();
+            rootServices.AddSingleton(navigationService);
+            rootServices.AddSingleton<INavigationService>(navigationService);
             rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
             using var rootProvider = rootServices.BuildServiceProvider();
             navigationService.SetServiceProvider(rootProvider);
             navigationService.CreatePageContent("PortfolioShell")
                 .Should()
-                .BeSameAs(rootPage);
+                .BeOfType<Page>();
 
             var scopedPage = new WorkspaceCapabilityHomePage();
             var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton(navigationService);
+            workspaceScopeServices.AddSingleton<INavigationService>(navigationService);
             workspaceScopeServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
             using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
 

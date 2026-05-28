@@ -1,5 +1,6 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Backtesting;
+using Meridian.Application.Compliance;
 using Meridian.Application.FundStructure;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;

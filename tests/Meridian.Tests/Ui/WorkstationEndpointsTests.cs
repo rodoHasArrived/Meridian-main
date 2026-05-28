@@ -6666,7 +6666,6 @@ public sealed partial class WorkstationEndpointsTests
                     Severity: ReconciliationBreakSeverity.High,
                     EvidenceLink: "/workstation/data/security-master")
             ],
-            BankTransactions: [],
             SecurityMasterAccountingIssues:
             [
                 new SecurityMasterAccountingIssueDto(

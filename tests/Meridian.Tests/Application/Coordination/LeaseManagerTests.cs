@@ -201,7 +201,7 @@ public sealed class LeaseManagerTests
             _lease = new LeaseRecord(
                 resourceId,
                 instanceId,
-                Version: 1,
+                LeaseVersion: 1,
                 AcquiredAtUtc: DateTimeOffset.UtcNow,
                 ExpiresAtUtc: DateTimeOffset.UtcNow.Add(leaseTtl),
                 LastRenewedAtUtc: DateTimeOffset.UtcNow);

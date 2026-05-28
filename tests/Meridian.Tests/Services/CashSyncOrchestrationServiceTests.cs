@@ -53,7 +53,7 @@ public sealed class CashSyncOrchestrationServiceTests
         var ladder = _service.BuildCashLadder(
             new DateOnly(2026, 5, 27),
             7,
-            [new PaymentInstruction("p-1", "acct-1", "USD", -500m, new DateOnly(2026, 5, 28), "Fee", "Submitted")],
+            [new PaymentInstruction("p-1", "acct-1", "cp-a", "USD", -500m, new DateOnly(2026, 5, 28), "Fee", "Submitted")],
             [new SettlementInstruction("s-1", "acct-1", "USD", 100m, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), DateTimeOffset.UtcNow, "Matched")],
             [new CouponEvent("c-1", "sec-1", "acct-1", "USD", 10m, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 29), "Projected")]);
 

@@ -1035,10 +1035,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       onChange={(e) => paperSessions.updateField(paperSessions.strategyIdField.field, e.target.value)}
                       className="font-mono"
                     />
-                    <FieldSupportText
-                      disabledReason={paperSessions.strategyIdField.disabledReason}
-                      disabledReasonId={`${paperSessions.strategyIdField.id}-disabled-reason`}
-                    />
                   </div>
                   <div className="space-y-1">
                     <label htmlFor={paperSessions.initialCashField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
@@ -1061,10 +1057,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       onChange={(e) => paperSessions.updateField(paperSessions.initialCashField.field, e.target.value)}
                       className="font-mono"
                       required
-                    />
-                    <FieldSupportText
-                      disabledReason={paperSessions.initialCashField.disabledReason}
-                      disabledReasonId={`${paperSessions.initialCashField.id}-disabled-reason`}
                     />
                   </div>
                 </div>

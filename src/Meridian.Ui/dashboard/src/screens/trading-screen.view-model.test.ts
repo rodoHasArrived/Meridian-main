@@ -813,6 +813,7 @@ describe("trading readiness view model", () => {
         workItemId: "brokerage-sync-failed-fund-1",
         kind: "BrokerageSync",
         label: "Brokerage sync failed",
+        tone: "danger",
         metadataText: "Trading · AccountPortfolio",
         action: {
           label: "Fix provider setup",
@@ -2418,7 +2419,7 @@ describe("trading readiness blocker recovery", () => {
 
     expect(blockedState.hasOperatorAttention).toBe(true);
     expect(blockedState.visibleWorkItems).toHaveLength(1);
-    expect(blockedState.visibleWorkItems[0].tone).toBe("Critical");
+    expect(blockedState.visibleWorkItems[0].tone).toBe("danger");
 
     // Step 2: simulate the refresh returning a cleared readiness payload
     const clearedReadiness: TradingOperatorReadiness = {

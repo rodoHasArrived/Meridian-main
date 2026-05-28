@@ -231,8 +231,8 @@ public static class FailoverEndpoints
         KernelPromotionDecision? promotion = null;
         try
         {
-            var store = new ProviderKernelCalibrationSnapshotStore(Path.Combine(dataRoot, "data"));
-            snapshot = store.GetLatestAsync().GetAwaiter().GetResult();
+            var snapshotStore = new ProviderKernelCalibrationSnapshotStore(Path.Combine(dataRoot, "data"));
+            snapshot = snapshotStore.GetLatestAsync().GetAwaiter().GetResult();
             var governancePath = Path.Combine(calibrationDir, "latest-governance-decision.json");
             if (File.Exists(governancePath))
             {

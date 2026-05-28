@@ -328,7 +328,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ExternalAccountId: updated.ExternalAccountId,
                 CustodianId: updated.CustodianId,
                 UpstreamSyncCursor: updated.UpstreamSyncCursor,
-                Actor: request.ReviewedBy,
+                Actor: request.ResolvedBy,
                 BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
                 AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions)), ct).ConfigureAwait(false);
 

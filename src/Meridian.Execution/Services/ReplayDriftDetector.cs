@@ -44,7 +44,7 @@ public static class ReplayDriftDetector
                 ReplayDriftStatus.DriftDetected,
                 true,
                 "Run replay verification again to refresh the audit marker.",
-                $"Replay drift detected: active({activeOrderCount} orders/{activeFillCount} fills/{activeLedgerEntryCount} ledger) vs verified({verifiedOrderCount} orders/{verifiedFillCount} fills/{verifiedLedgerEntryCount} ledger).")
+                $"Replay verification is stale: active({activeOrderCount} orders/{activeFillCount} fills/{activeLedgerEntryCount} ledger) vs verified({verifiedOrderCount} orders/{verifiedFillCount} fills/{verifiedLedgerEntryCount} ledger).")
             : new ReplayDriftAssessment(
                 ReplayDriftStatus.Aligned,
                 false,

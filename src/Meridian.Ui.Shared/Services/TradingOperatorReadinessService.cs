@@ -1221,7 +1221,7 @@ public sealed class TradingOperatorReadinessService
             return new TradingAcceptanceGateDto(
                 GateId: "replay",
                 Label: "Replay verified",
-                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
                 Detail: replayFreshness.Detail,
                 SessionId: replay.SessionId,
                 AuditReference: replay.VerificationAuditId,

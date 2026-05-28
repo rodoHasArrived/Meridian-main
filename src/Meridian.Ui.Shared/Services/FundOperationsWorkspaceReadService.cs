@@ -1325,9 +1325,9 @@ public sealed class FundOperationsWorkspaceReadService
         foreach (var line in report.TrialBalance)
         {
             var lineKey = string.IsNullOrWhiteSpace(line.Symbol)
-                ? line.Account
-                : $"{line.Account}:{line.Symbol}";
-            pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "ledger-account", line.Account));
+                ? line.AccountName
+                : $"{line.AccountName}:{line.Symbol}";
+            pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "ledger-account", line.AccountName));
             if (!string.IsNullOrWhiteSpace(line.Symbol))
             {
                 pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "security", line.Symbol));

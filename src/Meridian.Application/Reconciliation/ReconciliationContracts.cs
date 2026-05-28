@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Domain.Reconciliation;
 
-namespace Meridian.Application.Reconciliation;
+namespace Meridian.Application.Reconciliation.Legacy;
 
 public sealed record ReconciliationPollingSchedule(TimeSpan PollInterval, TimeSpan Timeout);
 

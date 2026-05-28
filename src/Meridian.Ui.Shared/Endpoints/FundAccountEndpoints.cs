@@ -567,7 +567,7 @@ public static class FundAccountEndpoints
 
             var payload = new ReconciliationQueueAccountStatusDto(
                 AccountId: accountId,
-                AccountCode: latestRun?.AccountCode ?? "unknown",
+                AccountCode: latestRun?.AccountId.ToString("D") ?? "unknown",
                 QueueState: unresolvedBreaks == 0 ? "Ready" : "Blocked",
                 UnresolvedBreakCount: unresolvedBreaks,
                 SignOffReady: unresolvedBreaks == 0 && latestRun is not null,

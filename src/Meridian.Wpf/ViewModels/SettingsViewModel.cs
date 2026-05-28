@@ -647,7 +647,7 @@ public sealed class SettingsViewModel : BindableBase
         try
         {
             var settings = config.Settings ?? new AppSettingsDto();
-            ApiBaseUrl = config.IB?.BaseUrl ?? "http://localhost:8080";
+            ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? "http://localhost:8080";
             StatusRefreshInterval = settings.StatusRefreshIntervalSeconds.ToString();
             IsNotificationsEnabled = settings.NotificationsEnabled;
             SelectedShellDensityMode = settings.CompactMode ? ShellDensityMode.Compact : ShellDensityMode.Standard;
@@ -671,7 +671,7 @@ public sealed class SettingsViewModel : BindableBase
         var maxReconnect = int.TryParse(MaxConcurrentDownloads, out var parsedMaxReconnect) ? parsedMaxReconnect : 10;
         return new AppConfigDto
         {
-            IB = new IBOptionsDto { BaseUrl = ApiBaseUrl },
+            IBClientPortal = new IBClientPortalOptionsDto { BaseUrl = ApiBaseUrl },
             Compress = WriteBufferSize != "0",
             Settings = new AppSettingsDto
             {
@@ -701,7 +701,7 @@ public sealed class SettingsViewModel : BindableBase
         _notificationService.ShowNotification(messageTitle, "Settings have been written to disk.", NotificationType.Success);
     }
 
-    private async Task<ConfigServiceValidationResult> RefreshValidationAsync()
+    private async Task<WpfServices.ConfigServiceValidationResult> RefreshValidationAsync()
     {
         var result = await _configService.ValidateConfigAsync();
         IsConfigValid = result.IsValid;

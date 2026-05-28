@@ -49,6 +49,21 @@ The target lanes are:
 
 ## Current Support Evidence
 
+- 2026-05-27: Lane A and Lane B acceptance evidence is green for W2/W3 closure. The shared
+  build-enabled W2/W3 filter passed (`Wave2PaperTradingCockpitAcceptanceTests`,
+  `Wave2OperatorInboxAcceptanceTests`, `TradingOperatorReadinessServiceTests`,
+  `BrokeragePortfolioSyncServiceTests`, and `PilotAcceptanceHarnessTests`; 71 passed). Browser
+  parity passed from `C:\Meridian-local-drive\Meridian-main`
+  (`trading-screen.view-model.test.ts`, `trading-screen.test.tsx`, `api.trading.test.ts`,
+  `workstation-endpoints.test.ts`, `workspace.test.ts`, and `command-palette.view-model.test.ts`;
+  154 passed, 1 existing todo). Focused WPF Lane A/B shell validation passed
+  (`TradingWorkspaceShellViewModelTests`, `Wave2OperatorInboxAcceptanceTests`,
+  `MainShellViewModelTests`, `StrategyRunPortfolioViewModelTests`, `AccountPortfolioViewModelTests`,
+  `AggregatePortfolioViewModelTests`, `CashFlowViewModelTests`, `FundLedgerViewModelTests`, and
+  `FundAccountsViewModelTests`; 113 passed). The latest
+  `artifacts/pilot-acceptance/latest/pilot-readiness.json` has all W2/W3 mapped gates `Ready` with
+  no blockers, so Milestone 1 and Milestone 2 are accepted in the current evidence slice.
+
 - 2026-05-27: W2/W3/W4 route-parity support evidence now covers shared workflow target tags used by the browser command palette, workstation links, and WPF source routing. Browser route tests pin Trading readiness targets (`TradingReadiness`, `TradingReadinessConsole`, `RunRisk`) to `/trading/readiness`, close-lane targets (`OperationsContinuity`, `OperationsClose`) to `/accounting/operations-continuity`, and accounting workflow targets (`FundReconciliation`, `FundTrialBalance`, `FundAuditTrail`) to the same Accounting routes guarded by WPF navigation. Command-palette tests now use the canonical shared accounting workflow action ids for reconciliation breaks, ledger continuity, and audit-trail review. The source-only WPF UX checker also verifies shared paper-trading workflow actions and inbox API routes resolve to WPF `TradingShell` / `RunRisk`, and shared report-pack approval actions/work items resolve to WPF `FundReportPack` and browser `/reporting/report-packs`. Focused validation: `npm --prefix src/Meridian.Ui/dashboard run test:vitest -- src/components/meridian/command-palette.view-model.test.ts src/lib/workspace.test.ts` (2 files passed, 27 tests passed) and `python scripts/wpf_finance_ux_checks.py --root . --paths src/Meridian.Wpf src/Meridian.Ui.Shared src/Meridian.Ui/dashboard` (10 passed, 0 failed). This is route-parity support evidence; it is not a full W2 cockpit, W3 continuity, or W4 close-flow acceptance claim.
 
 - 2026-05-27: Lane B/C desktop-browser drift guard now checks shared accounting workflow routing across the shared workflow provider, WPF navigation, and browser route catalog. The source-only WPF UX checker verifies that `AccountingReviewReconciliation`, `AccountingReviewLedgerContinuity`, and `AccountingReviewAuditTrail` continue to route to WPF `FundOperations` reconciliation/trial-balance/audit tabs and browser Accounting reconciliation/ledger/audit routes instead of diverging through page-local route logic. Focused validation: `python scripts/wpf_finance_ux_checks.py --root . --paths src/Meridian.Wpf src/Meridian.Ui.Shared src/Meridian.Ui/dashboard` (8 passed, 0 failed). This closes a W3/W4 drift-risk guard only; milestone acceptance still requires the focused WPF view-model/shared/pilot gates in the matrix.
