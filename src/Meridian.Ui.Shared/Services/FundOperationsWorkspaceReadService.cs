@@ -763,7 +763,15 @@ public sealed class FundOperationsWorkspaceReadService
                 RoutingTarget: item.RoutingTarget,
                 RoutingDetail: item.RoutingDetail,
                 EvidenceReference: item.UpstreamSyncCursor ?? item.ExternalAccountId,
-                LastUpdatedAt: item.LastUpdatedAt))
+                LastUpdatedAt: item.LastUpdatedAt,
+                Priority: item.Priority,
+                SlaState: item.SlaState,
+                AgeBand: item.AgeBand,
+                RootCauseCode: item.RootCauseCode,
+                ResolutionCode: item.ResolutionCode,
+                CommentCount: item.CommentCount,
+                EvidenceCount: item.EvidenceCount,
+                LastActivityAt: item.LastActivityAt))
             .ToArray();
 
         return new ReconciliationBreakQueueProjectionDto(
@@ -773,7 +781,10 @@ public sealed class FundOperationsWorkspaceReadService
             ResolvedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
             DismissedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
             CriticalOpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open && item.Severity == ReconciliationBreakSeverity.Critical),
-            Items: projected);
+            Items: projected,
+            BreachedCount: projected.Count(static item => item.SlaState == ReconciliationCaseSlaState.Breached),
+            AwaitingEvidenceCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview && string.Equals(item.SignoffStatus, "awaiting-evidence", StringComparison.OrdinalIgnoreCase)),
+            SignedOffEvidenceCount: projected.Where(static item => item.Status == ReconciliationBreakQueueStatus.SignedOff).Sum(static item => item.EvidenceCount));
     }
 
     private static LedgerImpactPreviewDto BuildLedgerImpactPreview(IReadOnlyList<FundReconciliationItem> items)
@@ -1418,7 +1429,7 @@ public sealed class FundOperationsWorkspaceReadService
                 .Where(summary => accountIds.Contains(summary.FundAccountId))
                 .ToArray();
 
-            activeWorkflowSummary = (scopedSummaries.Length > 0 ? scopedSummaries : summaries)
+            activeWorkflowSummary = scopedSummaries
                 .OrderByDescending(static item => item.UpdatedAtUtc)
                 .FirstOrDefault();
 

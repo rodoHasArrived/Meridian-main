@@ -15,7 +15,25 @@ public sealed record ReconciliationCaseSummaryDto(
     string Reason,
     decimal Confidence,
     string Rationale,
-    string CreatedAtUtc);
+    string CreatedAtUtc,
+    string? Assignee = null,
+    string Priority = "Normal",
+    string? SlaPolicyId = null,
+    string? SlaDueAtUtc = null,
+    string? SlaWarningAtUtc = null,
+    string? SlaBreachedAtUtc = null,
+    string SlaState = "OnTrack",
+    string? AgeBand = null,
+    double BusinessAgeHours = 0,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? ResolutionNote = null,
+    string? SignedOffBy = null,
+    string? SignedOffAtUtc = null,
+    string? ReopenedBy = null,
+    string? ReopenedAtUtc = null,
+    string? ReopenReason = null,
+    long Version = 0);
 
 public sealed record ReconciliationQueueAccountStatusDto(
     Guid AccountId,

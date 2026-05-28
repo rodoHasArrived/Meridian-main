@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Application
@@ -39,6 +39,7 @@ and UI presentation concerns in their owning layers.
   distinguish hard blockers from policy-controlled soft issues before import.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
+- `Reconciliation/` - statement reconciliation workflows, external statement mapping profiles, case intake, and match orchestration.
 
 ## Important workflows
 
@@ -47,6 +48,7 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
+- Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
 - Statement validation checks source accessibility, account/profile references, duplicate imports,
   invariant date/decimal parsing, currency/activity/security resolution, and statement-period
