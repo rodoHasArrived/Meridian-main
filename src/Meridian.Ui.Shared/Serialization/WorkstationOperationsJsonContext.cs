@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Serialization;
 
@@ -67,4 +68,15 @@ namespace Meridian.Ui.Shared.Serialization;
 [JsonSerializable(typeof(IReadOnlyList<OperationsNextActionDto>))]
 [JsonSerializable(typeof(OperationsEvidenceLinkDto))]
 [JsonSerializable(typeof(IReadOnlyList<OperationsEvidenceLinkDto>))]
+[JsonSerializable(typeof(ReconciliationBreakQueueItem))]
+[JsonSerializable(typeof(IReadOnlyList<ReconciliationBreakQueueItem>))]
+[JsonSerializable(typeof(ReconciliationBreakQueueAuditEvent))]
+[JsonSerializable(typeof(IReadOnlyList<ReconciliationBreakQueueAuditEvent>))]
+[JsonSerializable(typeof(ReconciliationCaseworkCommand))]
+[JsonSerializable(typeof(ReconciliationBulkCaseworkRequest))]
+[JsonSerializable(typeof(ReconciliationBulkCaseworkResult))]
+[JsonSerializable(typeof(ReconciliationCaseComment))]
+[JsonSerializable(typeof(IReadOnlyList<ReconciliationCaseComment>))]
+[JsonSerializable(typeof(ReconciliationTaxonomySnapshot))]
+[JsonSerializable(typeof(ReconciliationCaseValidationProblem))]
 internal sealed partial class WorkstationOperationsJsonContext : JsonSerializerContext;

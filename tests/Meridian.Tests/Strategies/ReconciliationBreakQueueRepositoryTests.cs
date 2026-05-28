@@ -111,7 +111,13 @@ public sealed class ReconciliationBreakQueueRepositoryTests
             rootEl.GetProperty("newStatus").GetString().Should().NotBeNullOrWhiteSpace();
             rootEl.GetProperty("newLifecycleState").GetString().Should().NotBeNullOrWhiteSpace();
             rootEl.GetProperty("occurredAt").GetString().Should().NotBeNullOrWhiteSpace();
+            rootEl.GetProperty("sequence").GetInt64().Should().BeGreaterThan(0);
         }
+
+        var rebuilt = await repo.RebuildSnapshotFromAuditAsync(item.BreakId);
+        rebuilt.Should().NotBeNull();
+        rebuilt!.BreakId.Should().Be(item.BreakId);
+        rebuilt.Version.Should().Be((await repo.GetByIdAsync(item.BreakId))!.Version);
     }
 
     [Fact]
@@ -174,19 +180,55 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         });
         awaitingEvidence.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingEvidence);
 
-        var comment = await repo.ApplyCaseworkCommandAsync(Command(assigned.Item, ReconciliationCaseworkAction.AddComment) with
+        var investigating = await repo.ApplyCaseworkCommandAsync(Command(assigned.Item, ReconciliationCaseworkAction.TransitionStatus) with
         {
+            Status = ReconciliationCaseLifecycleState.Investigating
+        });
+        investigating.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+
+        var comment = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.AddComment) with
+        {
+            CommentId = "comment-1",
             Note = "Need custodian close packet.",
             Visibility = ReconciliationCaseCommentVisibility.CloseEvidence,
-            EvidenceLinks = ["evidence://close/packet-1"]
+            EvidenceLinks = ["evidence://close/packet-1"],
+            Mentions = ["@custody"],
+            StatusTransition = ReconciliationCaseLifecycleState.AwaitingEvidence
         });
         comment.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         comment.Item!.CommentCount.Should().Be(1);
         comment.Item.EvidenceCount.Should().Be(1);
+        comment.Item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.AwaitingEvidence);
+        comment.Item.Comments![0].Mentions.Should().Contain("@custody");
+
+        var edited = await repo.ApplyCaseworkCommandAsync(Command(comment.Item, ReconciliationCaseworkAction.EditComment) with
+        {
+            CommentId = "comment-1",
+            Note = "Need custodian close packet and provider-record:abc.",
+            Reason = "Clarify requested source."
+        });
+        edited.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        edited.Item!.Comments![0].PreviousTextHash.Should().NotBeNullOrWhiteSpace();
+
+        var deletedWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1" });
+        deletedWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);
+
+        var deleted = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1", Reason = "Duplicate request." });
+        deleted.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        deleted.Item!.Comments![0].DeleteReason.Should().Be("Duplicate request.");
 
         var history = await repo.GetAuditHistoryAsync(item.BreakId);
-        history.Should().Contain(e => e.EventType == "Assigned" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1);
-        history.Should().Contain(e => e.EventType == "CommentAdded" && e.AfterPayload is not null);
+        history.Should().Contain(e => e.EventType == "Assigned" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1 && e.Sequence > 0);
+        history.Should().Contain(e => e.EventType == "CommentAdded" && e.AfterPayload is not null && e.AfterPayloadHash is not null);
+
+        var retried = await repo.ApplyCaseworkCommandAsync(Command(comment.Item, ReconciliationCaseworkAction.AddComment) with
+        {
+            CommandId = history.Single(e => e.EventType == "CommentAdded").CommandId!,
+            ExpectedVersion = comment.Item.Version,
+            Note = "Retry should return the original comment result."
+        });
+        retried.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        retried.Item!.Version.Should().Be(comment.Item.Version);
     }
 
     [Fact]
@@ -215,14 +257,44 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var rootCause = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.SetRootCause) with { RootCauseCode = "BrokerCashTiming" });
         var resolution = await repo.ApplyCaseworkCommandAsync(Command(rootCause.Item!, ReconciliationCaseworkAction.SetResolution) with { ResolutionCode = "LedgerAdjusted", Note = "Adjusted ledger lot." });
-        var resolved = await repo.ApplyCaseworkCommandAsync(Command(resolution.Item!, ReconciliationCaseworkAction.Resolve) with { Note = "Resolved with close packet." });
+        var missingResolutionEvidence = await repo.ApplyCaseworkCommandAsync(Command(resolution.Item!, ReconciliationCaseworkAction.Resolve) with { Note = "Resolved with close packet." });
+        missingResolutionEvidence.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingEvidence);
+        missingResolutionEvidence.Validation!.MissingFields.Should().Contain("evidenceLinks");
+
+        var resolved = await repo.ApplyCaseworkCommandAsync(Command(resolution.Item!, ReconciliationCaseworkAction.Resolve) with
+        {
+            Note = "Resolved with close packet.",
+            EvidenceLinks = ["ledger-event:close-1"]
+        });
         resolved.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         resolved.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
 
         var sameSigner = await repo.ApplyCaseworkCommandAsync(Command(resolved.Item, ReconciliationCaseworkAction.SignOff));
         sameSigner.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict);
 
-        var signoff = await repo.ApplyCaseworkCommandAsync(Command(resolved.Item, ReconciliationCaseworkAction.SignOff) with { Actor = "controller-b", Note = "Independent review complete." });
+        var privilegedSameSigner = await repo.ApplyCaseworkCommandAsync(Command(resolved.Item, ReconciliationCaseworkAction.SignOff) with
+        {
+            Privileged = true,
+            Reason = "Emergency close override."
+        });
+        privilegedSameSigner.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+
+        var reopenedForIndependentSignoff = await repo.ApplyCaseworkCommandAsync(Command(privilegedSameSigner.Item!, ReconciliationCaseworkAction.Reopen) with
+        {
+            Actor = "controller-manager",
+            Privileged = true,
+            Reason = "Route to independent signer after override test."
+        });
+        var investigatingAgain = await repo.ApplyCaseworkCommandAsync(Command(reopenedForIndependentSignoff.Item!, ReconciliationCaseworkAction.TransitionStatus) with { Status = ReconciliationCaseLifecycleState.Investigating });
+        var resolvedAgain = await repo.ApplyCaseworkCommandAsync(Command(investigatingAgain.Item!, ReconciliationCaseworkAction.Resolve) with
+        {
+            RootCauseCode = "BrokerCashTiming",
+            ResolutionCode = "LedgerAdjusted",
+            EvidenceLinks = ["ledger-event:close-2"],
+            Note = "Resolved again."
+        });
+
+        var signoff = await repo.ApplyCaseworkCommandAsync(Command(resolvedAgain.Item!, ReconciliationCaseworkAction.SignOff) with { Actor = "controller-b", Note = "Independent review complete." });
         signoff.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         signoff.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
         (await repo.GetAuditHistoryAsync(item.BreakId)).Should().Contain(e => e.EventType == "SignedOff");

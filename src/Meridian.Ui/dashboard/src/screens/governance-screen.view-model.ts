@@ -2933,6 +2933,15 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
       { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
+      { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
+      { label: "SLA", value: row.slaBadgeLabel ?? buildReconciliationSlaText(row) },
+      { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },
+      { label: "Age band", value: formatReconciliationMetadata(row.ageBand, "0-4h") },
+      { label: "Root cause", value: formatReconciliationMetadata(row.rootCauseCode, "Unset") },
+      { label: "Resolution code", value: formatReconciliationMetadata(row.resolutionCode, "Unset") },
+      { label: "Comments", value: `${row.commentCount ?? 0} comment(s); latest: ${formatReconciliationMetadata(row.lastCommentExcerpt, "No visible comment")}` },
+      { label: "Evidence links", value: `${row.evidenceCount ?? 0} evidence link(s)` },
+      { label: "Related cases", value: `${row.relatedCaseCount ?? 0}` },
       { label: "Required sign-off", value: buildReconciliationBreakSignoffText(row) },
       { label: "Decision note", value: formatReconciliationMetadata(row.resolutionNote, "No decision captured") },
       { label: "Routing", value: row.routingTarget ?? "No routing target" },
@@ -2944,6 +2953,21 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
     routingActionHref,
     routingActionAriaLabel: routingActionHref ? `Open routing target for reconciliation break ${row.breakId}` : null
   };
+}
+
+
+function buildReconciliationSlaText(row: Pick<ReconciliationBreakQueueItem, "slaState" | "slaDueAt" | "slaWarningAt" | "slaBreachedAt">): string {
+  const state = row.slaState ?? "OnTrack";
+  if (row.slaBreachedAt) {
+    return `${state}; breached ${formatDateTimeLabel(row.slaBreachedAt)}`;
+  }
+  if (row.slaDueAt) {
+    return `${state}; due ${formatDateTimeLabel(row.slaDueAt)}`;
+  }
+  if (row.slaWarningAt) {
+    return `${state}; warning ${formatDateTimeLabel(row.slaWarningAt)}`;
+  }
+  return state;
 }
 
 function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {

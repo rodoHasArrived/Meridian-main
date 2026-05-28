@@ -1457,7 +1457,7 @@ export interface StatementRunException {
 }
 
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed" | "SignedOff";
-export type ReconciliationCaseLifecycleState = "Open" | "Investigating" | "InReview" | "AwaitingEvidence" | "Resolved" | "SignedOff" | "Reopened";
+export type ReconciliationCaseLifecycleState = "Open" | "InReview" | "AwaitingApproval" | "Approved" | "Posted" | "Reopened" | "Superseded" | "Investigating" | "AwaitingEvidence" | "Resolved" | "SignedOff";
 export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
 export type ReconciliationCaseSlaState = "NotStarted" | "OnTrack" | "Warning" | "Breached" | "Paused" | "Stopped";
 export type ReconciliationCaseCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
@@ -1519,6 +1519,10 @@ export interface ReconciliationBreakQueueItem {
   sourceImportId?: string | null;
   sourceBreakId?: string | null;
   sourceFingerprint?: string | null;
+  lastCommentExcerpt?: string | null;
+  relatedCaseCount?: number;
+  slaBadgeLabel?: string | null;
+  slaBadgeTone?: "info" | "warning" | "danger" | "neutral" | "success" | string | null;
 }
 
 export interface ReconciliationCaseComment {
@@ -1533,6 +1537,12 @@ export interface ReconciliationCaseComment {
   editedAt?: string | null;
   deletedAt?: string | null;
   deletedBy?: string | null;
+  mentions?: string[] | null;
+  linkedEvidenceIds?: string[] | null;
+  previousTextHash?: string | null;
+  editReason?: string | null;
+  deleteReason?: string | null;
+  statusTransition?: ReconciliationCaseLifecycleState | null;
 }
 
 export interface ReconciliationCaseworkCommand {
@@ -1550,11 +1560,14 @@ export interface ReconciliationCaseworkCommand {
   note?: string | null;
   rootCauseCode?: string | null;
   resolutionCode?: string | null;
+  causationId?: string | null;
   commentId?: string | null;
   parentCommentId?: string | null;
   visibility?: ReconciliationCaseCommentVisibility;
   evidenceLinks?: string[] | null;
   privileged?: boolean;
+  statusTransition?: ReconciliationCaseLifecycleState | null;
+  mentions?: string[] | null;
 }
 
 export interface ReconciliationBulkCaseworkRequest {

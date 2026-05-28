@@ -20,6 +20,9 @@ public interface IReconciliationBreakQueueRepository
 
     Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default);
 
+    Task<ReconciliationBreakQueueItem?> RebuildSnapshotFromAuditAsync(string breakId, CancellationToken ct = default)
+        => Task.FromResult<ReconciliationBreakQueueItem?>(null);
+
     Task<ReconciliationBulkCaseworkResult?> GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default)
         => Task.FromResult<ReconciliationBulkCaseworkResult?>(null);
 
@@ -71,11 +74,18 @@ public enum ReconciliationBreakQueueTransitionErrorCode : byte
     InvalidTaxonomy = 11
 }
 
+public sealed record ReconciliationCaseValidationProblem(
+    string CurrentState,
+    string RequestedState,
+    IReadOnlyList<string> MissingFields,
+    string Message);
+
 public sealed record ReconciliationBreakQueueTransitionResult(
     ReconciliationBreakQueueTransitionStatus Status,
     ReconciliationBreakQueueItem? Item,
     string? Error = null,
-    ReconciliationBreakQueueTransitionErrorCode ErrorCode = ReconciliationBreakQueueTransitionErrorCode.None);
+    ReconciliationBreakQueueTransitionErrorCode ErrorCode = ReconciliationBreakQueueTransitionErrorCode.None,
+    ReconciliationCaseValidationProblem? Validation = null);
 
 public sealed record ReconciliationBreakQueueAuditEvent(
     string EventId,
@@ -104,4 +114,8 @@ public sealed record ReconciliationBreakQueueAuditEvent(
     string? CommandId = null,
     string? Source = null,
     string? Reason = null,
-    int SchemaVersion = 1);
+    int SchemaVersion = 1,
+    long Sequence = 0,
+    string? CausationId = null,
+    string? BeforePayloadHash = null,
+    string? AfterPayloadHash = null);
