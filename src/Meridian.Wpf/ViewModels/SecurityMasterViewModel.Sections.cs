@@ -46,3 +46,18 @@ internal sealed class SecurityMasterPrintSectionViewModel
     public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems { get; } = new();
     public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems { get; } = new();
 }
+
+internal sealed class SecurityMasterWorkflowSectionViewModel
+{
+    public int ImportTotal { get; set; }
+    public int ImportProcessed { get; set; }
+    public int ImportImported { get; set; }
+    public int ImportFailed { get; set; }
+    public bool IsImporting { get; set; }
+    public bool IsImportResultVisible { get; set; }
+    public string ImportResultSummary { get; set; } = string.Empty;
+    public string ImportSessionSummary { get; set; } = "No import activity recorded by the workstation service.";
+    public string WorkflowStatusText { get; set; } = "Polling Security Master ingest and conflict posture.";
+    public string WorkflowRetrievedAtText { get; set; } = "-";
+    public int OpenConflictCount { get; set; }
+}

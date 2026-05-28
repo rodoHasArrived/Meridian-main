@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +52,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
     private readonly SecurityMasterScheduleAndOpenLotSectionViewModel _scheduleSection = new();
     private readonly SecurityMasterPrintSectionViewModel _printSection = new();
+    private readonly SecurityMasterWorkflowSectionViewModel _workflowSection = new();
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SecurityMasterWorkstationDto> Results => _searchSection.Results;
@@ -305,13 +307,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     }
 
     // ── Import properties ───────────────────────────────────────────────────────
-    private int _importTotal;
     public int ImportTotal
     {
-        get => _importTotal;
+        get => _workflowSection.ImportTotal;
         private set
         {
-            if (SetProperty(ref _importTotal, value))
+            if (SetSectionProperty(_workflowSection.ImportTotal, value, next => _workflowSection.ImportTotal = next))
             {
                 RaisePropertyChanged(nameof(ImportStatus));
                 RaisePropertyChanged(nameof(ImportSessionText));
@@ -319,13 +320,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private int _importProcessed;
     public int ImportProcessed
     {
-        get => _importProcessed;
+        get => _workflowSection.ImportProcessed;
         private set
         {
-            if (SetProperty(ref _importProcessed, value))
+            if (SetSectionProperty(_workflowSection.ImportProcessed, value, next => _workflowSection.ImportProcessed = next))
             {
                 RaisePropertyChanged(nameof(ImportStatus));
                 RaisePropertyChanged(nameof(ImportSessionText));
@@ -333,39 +333,36 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private int _importImported;
     public int ImportImported
     {
-        get => _importImported;
+        get => _workflowSection.ImportImported;
         private set
         {
-            if (SetProperty(ref _importImported, value))
+            if (SetSectionProperty(_workflowSection.ImportImported, value, next => _workflowSection.ImportImported = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private int _importFailed;
     public int ImportFailed
     {
-        get => _importFailed;
+        get => _workflowSection.ImportFailed;
         private set
         {
-            if (SetProperty(ref _importFailed, value))
+            if (SetSectionProperty(_workflowSection.ImportFailed, value, next => _workflowSection.ImportFailed = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private bool _isImporting;
     public bool IsImporting
     {
-        get => _isImporting;
+        get => _workflowSection.IsImporting;
         private set
         {
-            if (SetProperty(ref _isImporting, value))
+            if (SetSectionProperty(_workflowSection.IsImporting, value, next => _workflowSection.IsImporting = next))
             {
                 ImportFromFileCommand.NotifyCanExecuteChanged();
                 RaisePropertyChanged(nameof(ImportSessionText));
@@ -383,63 +380,58 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private bool _isImportResultVisible;
     public bool IsImportResultVisible
     {
-        get => _isImportResultVisible;
+        get => _workflowSection.IsImportResultVisible;
         private set
         {
-            if (SetProperty(ref _isImportResultVisible, value))
+            if (SetSectionProperty(_workflowSection.IsImportResultVisible, value, next => _workflowSection.IsImportResultVisible = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private string _importResultSummary = string.Empty;
     public string ImportResultSummary
     {
-        get => _importResultSummary;
+        get => _workflowSection.ImportResultSummary;
         private set
         {
-            if (SetProperty(ref _importResultSummary, value))
+            if (SetSectionProperty(_workflowSection.ImportResultSummary, value, next => _workflowSection.ImportResultSummary = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private string _importSessionSummary = "No import activity recorded by the workstation service.";
     public string ImportSessionSummary
     {
-        get => _importSessionSummary;
+        get => _workflowSection.ImportSessionSummary;
         private set
         {
-            if (SetProperty(ref _importSessionSummary, value))
+            if (SetSectionProperty(_workflowSection.ImportSessionSummary, value, next => _workflowSection.ImportSessionSummary = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private string _workflowStatusText = "Polling Security Master ingest and conflict posture.";
     public string WorkflowStatusText
     {
-        get => _workflowStatusText;
+        get => _workflowSection.WorkflowStatusText;
         private set
         {
-            if (SetProperty(ref _workflowStatusText, value))
+            if (SetSectionProperty(_workflowSection.WorkflowStatusText, value, next => _workflowSection.WorkflowStatusText = next))
             {
                 RaisePropertyChanged(nameof(RuntimeStatusDetail));
             }
         }
     }
 
-    private string _workflowRetrievedAtText = "-";
     public string WorkflowRetrievedAtText
     {
-        get => _workflowRetrievedAtText;
-        private set => SetProperty(ref _workflowRetrievedAtText, value);
+        get => _workflowSection.WorkflowRetrievedAtText;
+        private set => SetSectionProperty(_workflowSection.WorkflowRetrievedAtText, value, next => _workflowSection.WorkflowRetrievedAtText = next);
     }
 
     private string _conflictOperatorText = "desktop-user";
@@ -1425,14 +1417,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IRelayCommand CopySelectedIdentifierCommand { get; }
 
     // ── Conflict badge ───────────────────────────────────────────────────────
-    private int _openConflictCount;
     /// <summary>Number of open identifier conflicts detected in Security Master. Drives the badge.</summary>
     public int OpenConflictCount
     {
-        get => _openConflictCount;
+        get => _workflowSection.OpenConflictCount;
         private set
         {
-            if (SetProperty(ref _openConflictCount, value))
+            if (SetSectionProperty(_workflowSection.OpenConflictCount, value, next => _workflowSection.OpenConflictCount = next))
             {
                 RaisePropertyChanged(nameof(HasOpenConflicts));
                 RaiseConflictDerivedStateChanged();
@@ -1441,11 +1432,27 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     }
 
     /// <summary>True when at least one open conflict exists. Drives badge visibility.</summary>
-    public bool HasOpenConflicts => _openConflictCount > 0;
+    public bool HasOpenConflicts => OpenConflictCount > 0;
 
     public bool CanResolveSelectedConflict =>
         SelectedConflict is not null &&
         !string.IsNullOrWhiteSpace(ConflictOperatorText);
+
+    private bool SetSectionProperty<T>(
+        T currentValue,
+        T newValue,
+        Action<T> assign,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
+        {
+            return false;
+        }
+
+        assign(newValue);
+        RaisePropertyChanged(propertyName);
+        return true;
+    }
 
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterViewModel(

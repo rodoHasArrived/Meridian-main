@@ -432,6 +432,30 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void SecurityMasterWorkflowSection_ShouldOwnImportPollingAndBadgeStateWithAdapterBindings()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
+
+        sections.Should().Contain("internal sealed class SecurityMasterWorkflowSectionViewModel");
+        sections.Should().Contain("public int ImportTotal { get; set; }");
+        sections.Should().Contain("public int ImportProcessed { get; set; }");
+        sections.Should().Contain("public bool IsImporting { get; set; }");
+        sections.Should().Contain("public string WorkflowStatusText { get; set; }");
+        sections.Should().Contain("public string WorkflowRetrievedAtText { get; set; }");
+        sections.Should().Contain("public int OpenConflictCount { get; set; }");
+        viewModel.Should().Contain("private readonly SecurityMasterWorkflowSectionViewModel _workflowSection = new();");
+        viewModel.Should().Contain("get => _workflowSection.ImportTotal;");
+        viewModel.Should().Contain("get => _workflowSection.IsImporting;");
+        viewModel.Should().Contain("get => _workflowSection.WorkflowStatusText;");
+        viewModel.Should().Contain("get => _workflowSection.OpenConflictCount;");
+        viewModel.Should().Contain("SetSectionProperty(_workflowSection.OpenConflictCount, value, next => _workflowSection.OpenConflictCount = next)");
+        viewModel.Should().NotContain("private int _openConflictCount;");
+        viewModel.Should().NotContain("private bool _isImporting;");
+        viewModel.Should().NotContain("private string _workflowStatusText");
+    }
+
+    [Fact]
     public void LoadSelectedTrustSnapshotAsync_WithOpenConflicts_ShouldSurfaceBlockedTrustPosture()
     {
         WpfTestThread.Run(async () =>

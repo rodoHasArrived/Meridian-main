@@ -104,29 +104,28 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         var tone = Pick(Enum.GetValues<OperatorWorkItemToneDto>(), toneSeed);
         var workItemId = $"item-{Math.Abs((long)kindSeed) % 10_000}";
         var includeOptionalNulls = Math.Abs((long)optionalShapeSeed) % 2 == 0;
-        var optionalJson = includeOptionalNulls
-            ? """,
-              "runId": null,
-              "workspace": "Trading",
-              "targetRoute": null,
-              "targetPageTag": "ProviderHealth",
-              "scope": null,
-              "priorityExplanation": null
-              """
-            : string.Empty;
-        var json = $$"""
-            {
-              "workItemId": "{{workItemId}}",
-              "kind": "{{kind}}",
-              "label": "Generated {{kind}}",
-              "detail": "Generated contract item",
-              "tone": "{{tone}}",
-              "createdAt": "2026-02-11T13:30:00+00:00",
-              "priorityScore": 42{{optionalJson}}
-            }
-            """;
+        var payload = new JsonObject
+        {
+            ["workItemId"] = workItemId,
+            ["kind"] = kind.ToString(),
+            ["label"] = $"Generated {kind}",
+            ["detail"] = "Generated contract item",
+            ["tone"] = tone.ToString(),
+            ["createdAt"] = "2026-02-11T13:30:00+00:00",
+            ["priorityScore"] = 42
+        };
 
-        var item = JsonSerializer.Deserialize<OperatorWorkItemDto>(json, JsonOptions);
+        if (includeOptionalNulls)
+        {
+            payload["runId"] = null;
+            payload["workspace"] = "Trading";
+            payload["targetRoute"] = null;
+            payload["targetPageTag"] = "ProviderHealth";
+            payload["scope"] = null;
+            payload["priorityExplanation"] = null;
+        }
+
+        var item = JsonSerializer.Deserialize<OperatorWorkItemDto>(payload.ToJsonString(JsonOptions), JsonOptions);
         var roundTripped = JsonSerializer.Deserialize<OperatorWorkItemDto>(
             JsonSerializer.Serialize(item, JsonOptions),
             JsonOptions);
