@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Channels;
 using FluentAssertions;
+using Meridian.Application.Canonicalization;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
@@ -115,6 +116,35 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
         dualPath.HotTradePublished.Should().Be(1);
     }
 
+    [Fact]
+    public async Task Register_WithCanonicalizationEnabled_KeepsDualPathTradeIngress()
+    {
+        var root = CreateTempDirectory();
+        var dataRoot = Path.Combine(root, "persistent-data");
+        var configPath = WriteConfig(root, new AppConfig(
+            DataRoot: "persistent-data",
+            Canonicalization: new CanonicalizationConfig(
+                Enabled: true,
+                EnableDualWrite: false)));
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new StorageOptions { RootPath = dataRoot });
+
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new PipelineFeatureRegistration().Register(services, options);
+        new CanonicalizationFeatureRegistration().Register(services, options);
+        services.AddSingleton<IEventCanonicalizer, PassthroughCanonicalizer>();
+
+        await using var provider = services.BuildServiceProvider();
+        var publisher = provider.GetRequiredService<IMarketEventPublisher>();
+        var dualPath = provider.GetRequiredService<DualPathEventPipeline>();
+
+        publisher.TryPublish(CreateTradeEvent("SPY", 1)).Should().BeTrue();
+        dualPath.HotTradePublished.Should().Be(1);
+    }
+
     private static string GetReportOutputDirectory(DataQualityReportGenerator generator)
     {
         var field = typeof(DataQualityReportGenerator).GetField("_outputDirectory", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -170,5 +200,10 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
                 Directory.Delete(directory, recursive: true);
             }
         }
+    }
+
+    private sealed class PassthroughCanonicalizer : IEventCanonicalizer
+    {
+        public MarketEvent Canonicalize(MarketEvent evt, CancellationToken ct = default) => evt;
     }
 }

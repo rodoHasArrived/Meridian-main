@@ -152,8 +152,18 @@ public sealed class HistoricalBackfillService
                     {
                         _log.Debug("Skipping {Symbol}: fully covered by checkpoint through {LastCompleted}", symbol, lastCompleted);
                         skippedSymbols.Add(symbol);
-                        var checkpointBarCount = checkpointBarCounts is not null && checkpointBarCounts.TryGetValue(symbol, out var cpCount) ? cpCount : 0L;
-                        validationSignals.Add(SymbolValidationSignal.PassSkipped(symbol, checkpointBarCount, lastCompleted));
+                        if (checkpointBarCounts is not null && checkpointBarCounts.TryGetValue(symbol, out var cpCount) && cpCount > 0)
+                        {
+                            validationSignals.Add(SymbolValidationSignal.PassSkipped(symbol, cpCount, lastCompleted));
+                        }
+                        else
+                        {
+                            validationSignals.Add(SymbolValidationSignal.Warn(
+                                symbol,
+                                null,
+                                lastCompleted,
+                                "Checkpoint coverage exists but bar-count evidence is missing; cannot assert completeness."));
+                        }
                         return;
                     }
                     // Advance the start date to the day after the last checkpoint.
@@ -167,6 +177,7 @@ public sealed class HistoricalBackfillService
                     _log.Information("Starting backfill for {Symbol} via {Provider}", symbol, provider.DisplayName);
                 }
 
+                DateOnly? firstBarDate = null;
                 DateOnly? lastBarDate = null;
                 long symbolBars = 0;
                 if (request.Granularity.IsIntraday())
@@ -187,6 +198,8 @@ public sealed class HistoricalBackfillService
                         symbolBars++;
 
                         var barDate = DateOnly.FromDateTime(bar.EndTime.UtcDateTime);
+                        if (firstBarDate is null || barDate < firstBarDate.Value)
+                            firstBarDate = barDate;
                         if (lastBarDate is null || barDate > lastBarDate.Value)
                             lastBarDate = barDate;
                     }
@@ -201,6 +214,8 @@ public sealed class HistoricalBackfillService
                         _metrics.IncHistoricalBars();
                         Interlocked.Increment(ref barsWritten);
                         symbolBars++;
+                        if (firstBarDate is null || bar.SessionDate < firstBarDate.Value)
+                            firstBarDate = bar.SessionDate;
                         if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
                             lastBarDate = bar.SessionDate;
                     }
@@ -220,8 +235,16 @@ public sealed class HistoricalBackfillService
                 }
 
                 // Emit validation signal.
-                if (symbolBars > 0)
+                var coversRequestedRange =
+                    symbolBars > 0 &&
+                    firstBarDate.HasValue &&
+                    (effectiveFrom is null || firstBarDate.Value <= effectiveFrom.Value) &&
+                    (!request.To.HasValue || (lastBarDate.HasValue && lastBarDate.Value >= request.To.Value));
+
+                if (coversRequestedRange)
                     validationSignals.Add(SymbolValidationSignal.Pass(symbol, symbolBars, effectiveFrom, lastBarDate));
+                else if (symbolBars > 0)
+                    validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, "Provider returned partial bars that do not cover the requested date range"));
                 else
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, "Provider returned zero bars for the requested date range"));
             }

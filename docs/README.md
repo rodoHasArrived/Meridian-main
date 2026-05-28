@@ -25,6 +25,7 @@ Meridian's current solution includes:
 - **Operational procedures:** [Operator Runbook](operations/operator-runbook.md)
 - **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md), [Developer Quick Guides](developer/README.md), [Design Documentation](design/README.md)
 - **Repository hygiene:** [Cleanup and Maintenance](operations/cleanup-and-maintenance.md), [Disk Space Hygiene](operations/disk-space-hygiene.md)
+- **Documentation cleanup intake:** [Orphaned Doc Triage Index](operations/orphaned-doc-triage-index.md)
 - **Prompt and agent guidance:** [Automation Prompts](prompts/automation-prompts.md), [Repo Maintenance Prompts](prompts/repo-maintenance-prompts.md)
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
 - **Structured roadmap registry:** [Roadmap Registry](roadmap/README.md)
@@ -136,7 +137,7 @@ Use the documents below to manage that path:
 17. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 The 2026-05-18 documentation refresh consolidates the active planning entry point and preserves the
-current interpretation: browser workstation first for new operator UI, WPF retained as support,
+current interpretation: browser workstation is the parallel new-operator-UI surface, WPF is the active desktop shell,
 Waves 2-4 as the core operator-ready path, Wave 5-6 as later work, and mobile-specific product
 lanes out of scope.
 
@@ -174,9 +175,7 @@ short current command paths from `C:\Dev\Meridian-main`.
 
 ## Archive
 
-Historical and superseded material consolidated during docs cleanup now lives under `docs/archive/`.
-Older root-level archive links under `archive/docs/` remain valid historical references until those
-records are migrated intentionally.
+Historical and superseded material consolidated during docs cleanup now lives under `archive/docs/`.
 
 - [Docs archive overview](archive/README.md)
 

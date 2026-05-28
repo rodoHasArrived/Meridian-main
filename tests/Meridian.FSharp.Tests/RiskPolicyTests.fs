@@ -3,6 +3,7 @@ module Meridian.FSharp.Tests.RiskPolicyTests
 open System
 open System.Collections.Generic
 open Xunit
+open FsCheck
 open FsUnit.Xunit
 open Meridian.Execution.Sdk
 open Meridian.Backtesting.Sdk
@@ -16,6 +17,10 @@ let private createOrder side quantity =
         Type = Meridian.Execution.Sdk.OrderType.Market,
         Quantity = quantity,
         StrategyId = "strategy")
+
+let private boundedInt minInclusive maxInclusive seed =
+    let width = int64 maxInclusive - int64 minInclusive + 1L
+    minInclusive + int (abs (int64 seed) % width)
 
 let private createBacktestResult sharpe drawdown totalReturn =
     let attribution = Dictionary<string, SymbolAttribution>() :> IReadOnlyDictionary<string, SymbolAttribution>
@@ -65,6 +70,26 @@ let ``Position limit rejects projected quantity above max`` () =
 
     result.Approved |> should equal false
     result.Reasons[0].Contains("Position limit exceeded") |> should equal true
+
+[<Fact>]
+let ``Scenario_RiskPositionLimit_GeneratedLargerExposureNeverTurnsRejectIntoApprove`` () =
+    let property currentSeed maxSeed excessSeed extraSeed =
+        let maxPosition = boundedInt 1 10_000 maxSeed |> decimal
+        let currentPosition = boundedInt 0 (int maxPosition) currentSeed |> decimal
+        let rejectedQuantity = (maxPosition - currentPosition) + (boundedInt 1 5_000 excessSeed |> decimal)
+        let largerQuantity = rejectedQuantity + (boundedInt 0 5_000 extraSeed |> decimal)
+
+        let rejected =
+            RiskInterop.CreateContext(createOrder OrderSide.Buy rejectedQuantity, currentPosition, maxPosition, Nullable(), Nullable(), Nullable())
+            |> RiskInterop.EvaluatePositionLimit
+
+        let larger =
+            RiskInterop.CreateContext(createOrder OrderSide.Buy largerQuantity, currentPosition, maxPosition, Nullable(), Nullable(), Nullable())
+            |> RiskInterop.EvaluatePositionLimit
+
+        (not rejected.Approved) && (not larger.Approved)
+
+    Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
 [<Fact>]
 let ``Risk aggregation returns approve when all decisions approve`` () =

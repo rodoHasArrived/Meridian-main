@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Storage.Archival;
+using FsCheck.Xunit;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
@@ -220,6 +221,14 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         sequences.Distinct().Should().HaveCount(10, "all sequences should be unique");
     }
 
+    [Property(MaxTest = 75)]
+    public void Scenario_WalReplay_GeneratedUncommittedStreamsReplayOnceInSequence(int recordCountSeed, int duplicateModuloSeed)
+    {
+        Scenario_WalReplay_GeneratedUncommittedStreamsReplayOnceInSequenceAsync(recordCountSeed, duplicateModuloSeed)
+            .GetAwaiter()
+            .GetResult();
+    }
+
     [Fact]
     public async Task WalRecord_DeserializePayload_WorksForSimpleTypes()
     {
@@ -242,5 +251,62 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         var act = () => wal.DisposeAsync().AsTask();
 
         await act.Should().NotThrowAsync();
+    }
+
+    private async Task Scenario_WalReplay_GeneratedUncommittedStreamsReplayOnceInSequenceAsync(
+        int recordCountSeed,
+        int duplicateModuloSeed)
+    {
+        var scenarioDir = Path.Combine(_walDir, $"property_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(scenarioDir);
+        var recordCount = Bound(recordCountSeed, minInclusive: 1, maxInclusive: 120);
+        var duplicateModulo = Bound(duplicateModuloSeed, minInclusive: 1, maxInclusive: 12);
+
+        await using (var wal = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite }))
+        {
+            await wal.InitializeAsync();
+            for (var i = 0; i < recordCount; i++)
+            {
+                await wal.AppendAsync($"event-{i % duplicateModulo}", i % 2 == 0 ? "trade" : "quote");
+            }
+
+            await wal.FlushAsync();
+        }
+
+        List<WalRecord> replayed;
+        await using (var recovery = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        {
+            await recovery.InitializeAsync();
+            replayed = await ReadUncommittedAsync(recovery);
+            replayed.Should().HaveCount(recordCount);
+            replayed.Select(record => record.Sequence).Should().BeInAscendingOrder();
+            replayed.Select(record => record.Sequence).Distinct().Should().HaveCount(recordCount);
+
+            await recovery.CommitAsync(replayed[^1].Sequence);
+        }
+
+        await using (var secondRecovery = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        {
+            await secondRecovery.InitializeAsync();
+            var afterCommit = await ReadUncommittedAsync(secondRecovery);
+            afterCommit.Should().BeEmpty("committed WAL records must not replay a second time");
+        }
+    }
+
+    private static async Task<List<WalRecord>> ReadUncommittedAsync(WriteAheadLog wal)
+    {
+        var records = new List<WalRecord>();
+        await foreach (var record in wal.GetUncommittedRecordsAsync())
+        {
+            records.Add(record);
+        }
+
+        return records;
+    }
+
+    private static int Bound(int seed, int minInclusive, int maxInclusive)
+    {
+        var width = (long)maxInclusive - minInclusive + 1L;
+        return minInclusive + (int)(Math.Abs((long)seed) % width);
     }
 }

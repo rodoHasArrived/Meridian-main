@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Config;
+using Meridian.Application.Subscriptions.Models;
+using Meridian.Contracts.Domain;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
@@ -154,6 +157,37 @@ public sealed class MarketDataClientFactoryTests
     }
 
     [Fact]
+    public void CreateStreamingClient_NormalizesConfiguredProviderIdentifier()
+    {
+        var registry = CreateRegistryWithFactories();
+
+        var client = registry.CreateStreamingClient("  ALPACA  ");
+
+        client.Should().BeOfType<AlpacaMarketDataClient>();
+    }
+
+    [Fact]
+    public void Register_AllowsMultipleAdapterContractsForSameProviderIdentifier()
+    {
+        var registry = new ProviderRegistry();
+        var backfill = ProviderBehaviorBuilder.Create()
+            .WithName("alpaca")
+            .WithDisplayName("Alpaca Historical")
+            .WithCapabilities(HistoricalDataCapabilities.BarsOnly)
+            .WithDailyBars((_, _, _, _) => Task.FromResult<IReadOnlyList<HistoricalBar>>(Array.Empty<HistoricalBar>()))
+            .Build();
+        var search = new FakeSymbolSearchProvider("alpaca");
+
+        registry.Register(backfill);
+        registry.Register(search);
+
+        registry.GetProvider<IHistoricalDataProvider>("ALPACA").Should().BeSameAs(backfill);
+        registry.GetProvider<ISymbolSearchProvider>(" alpaca ").Should().BeSameAs(search);
+        registry.GetProviders<IHistoricalDataProvider>().Should().ContainSingle();
+        registry.GetProviders<ISymbolSearchProvider>().Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task DisposeAsync_SessionShutdown_AwaitsAsyncProviderDisposal()
     {
         await using var registry = new ProviderRegistry();
@@ -214,5 +248,23 @@ public sealed class MarketDataClientFactoryTests
             await Task.Yield();
             DisposeCompleted.TrySetResult();
         }
+    }
+
+    private sealed class FakeSymbolSearchProvider(string providerId) : ISymbolSearchProvider
+    {
+        public string Name => providerId;
+        public string DisplayName => $"{providerId} search";
+        public int Priority => 50;
+
+        public Task<bool> IsAvailableAsync(CancellationToken ct = default) => Task.FromResult(true);
+
+        public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
+            string query,
+            int limit = 10,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SymbolSearchResult>>(Array.Empty<SymbolSearchResult>());
+
+        public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
+            => Task.FromResult<SymbolDetails?>(null);
     }
 }

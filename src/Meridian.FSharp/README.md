@@ -13,7 +13,7 @@ last_reviewed: 2026-05-20
 
 ## Purpose
 
-FSharp contains functional models, calculations, and workflow support used by research and domain logic.
+FSharp contains deterministic functional models, calculations, and workflow support used by research, operations, governance, and domain logic.
 
 ## Layer responsibility
 
@@ -22,11 +22,21 @@ This layer should keep functional domain calculations reusable and testable from
 ## Key folders and files
 
 - `Meridian.FSharp.fsproj` - main F# project boundary.
+- `Operations/OperationsContinuityRules.fs` - pure status precedence rules for Operations Continuity.
+- `Operations/ReportPackValidationRules.fs` - data-driven report-pack validation rules.
+- `Operations/SensitiveActionPolicy.fs` - pure sensitive-action approval and segregation-of-duties policy.
+- `Operations/TradingReadinessRules.fs` - trading readiness and evidence-completeness scoring.
 - Functional models and calculation modules.
 
 ## Important workflows
 
-Use this module for functional calculation changes shared by strategy, trading, or accounting workflows.
+Use this module for deterministic business-rule kernels shared by strategy, trading, accounting, operations, and governed reporting workflows. Keep C# services responsible for orchestration, DI, storage, logging, endpoint composition, and UI-facing DTO assembly.
+
+## API contract notes
+
+- C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
+- Operations kernels should remain pure and deterministic: inputs in, decisions/issues/statuses out.
+- Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
 
 ## Diagrams
 

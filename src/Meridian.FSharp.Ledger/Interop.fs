@@ -279,7 +279,7 @@ type LedgerInterop private () =
         |> Seq.toArray
 
     static member private NormalizeString (value: string) : string option =
-        if String.IsNullOrWhiteSpace value then None else Some value
+        if String.IsNullOrWhiteSpace value then None else Some (value.Trim())
 
     static member private ToRawBreakFacts (dto: BreakFactsDto) : RawBreakFacts =
         {

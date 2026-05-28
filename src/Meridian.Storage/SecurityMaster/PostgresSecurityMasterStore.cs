@@ -674,7 +674,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             join {Qualified("securities")} s on s.security_id = i.security_id
             where i.identifier_kind = @identifier_kind
               and i.normalized_identifier_value = @normalized_identifier_value
-              and (@normalized_provider is null or i.normalized_provider = @normalized_provider)
+              and ((@normalized_provider is null and i.normalized_provider is null) or i.normalized_provider = @normalized_provider)
               and i.valid_from <= @as_of
               and (i.valid_to is null or i.valid_to > @as_of)
               and (@include_inactive = true or s.status = 'Active')
@@ -687,7 +687,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             join {Qualified("securities")} s on s.security_id = a.security_id
             where a.alias_kind = @identifier_kind
               and a.normalized_alias_value = @normalized_identifier_value
-              and (@normalized_provider is null or a.normalized_provider = @normalized_provider)
+              and ((@normalized_provider is null and a.normalized_provider is null) or a.normalized_provider = @normalized_provider)
               and a.valid_from <= @as_of
               and (a.valid_to is null or a.valid_to > @as_of)
               and a.is_enabled = true
@@ -1236,8 +1236,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         var lastTradingDate = GetOptionalDateOnly(record.AssetSpecificTerms, "lastTradingDt") ?? expiryDate;
         var lifecycleStat =
             record.EffectiveTo.HasValue ? "Retired" :
-            isRollTarget ? "RollTarget" :
             expiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired" :
+            isRollTarget ? "RollTarget" :
             "Active";
 
         await using var command = connection.CreateCommand();

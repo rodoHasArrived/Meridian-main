@@ -36,6 +36,7 @@ public sealed class WorkspaceService
     private readonly Dictionary<string, SessionState> _sessionsByFundProfileId = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, WorkstationLayoutState> _workspaceLayouts = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, IServiceScope> _workspaceScopes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly WorkspaceStateTokenStore _workspaceStateTokenStore = new();
     private readonly SemaphoreSlim _stateGate = new(1, 1);
     private IServiceScopeFactory? _serviceScopeFactory;
     private bool _isInitialized;
@@ -169,6 +170,13 @@ public sealed class WorkspaceService
         {
             var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
             return GetWorkspaceScopeCore(normalizedWorkspaceId);
+        });
+
+    public IServiceScope? GetOrCreateWorkspaceScope(string workspaceId)
+        => WithStateLock(() =>
+        {
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            return EnsureWorkspaceScopeCore(normalizedWorkspaceId);
         });
 
     /// <summary>
@@ -491,10 +499,50 @@ public sealed class WorkspaceService
 
                 PersistActiveWorkspaceSnapshot();
                 await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+                await SaveWorkspaceStateTokenCoreAsync(state, normalizedFundProfileId, ct).ConfigureAwait(false);
             }
             catch (Exception)
             {
             }
+        }, ct);
+
+    public Task<WorkspaceStateToken?> CaptureWorkspaceStateTokenAsync(
+        SessionState state,
+        string? fundProfileId = null,
+        CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+            var resolvedWorkspace = ResolveWorkspaceForSession(state, state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+            var workspaceId = resolvedWorkspace?.Id ?? NormalizeWorkspaceId(state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+            if (string.IsNullOrWhiteSpace(workspaceId))
+            {
+                return null;
+            }
+
+            return BuildWorkspaceStateToken(state, workspaceId, NormalizeFundProfileId(fundProfileId));
+        }, ct);
+
+    public Task<WorkspaceStateRestoreResult?> RestoreWorkspaceStateTokenAsync(
+        string workspaceId,
+        string pageTag,
+        WorkspaceStateRestoreValidation? validation = null,
+        CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            var workspace = _workspaces.FirstOrDefault(candidate =>
+                string.Equals(candidate.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
+            if (workspace is null ||
+                workspace.Pages.All(page => !string.Equals(page.PageTag, pageTag, StringComparison.OrdinalIgnoreCase)))
+            {
+                return null;
+            }
+
+            return await _workspaceStateTokenStore
+                .RestoreAsync(workspace.Id, pageTag, validation, ct)
+                .ConfigureAwait(false);
         }, ct);
 
     public SessionState? GetLastSessionState() => WithStateLock(() => _lastSession);
@@ -833,6 +881,37 @@ public sealed class WorkspaceService
         return changed;
     }
 
+    private async Task SaveWorkspaceStateTokenCoreAsync(
+        SessionState state,
+        string? normalizedFundProfileId,
+        CancellationToken ct)
+    {
+        var workspaceId = state.ActiveWorkspaceId ?? _activeWorkspace?.Id;
+        if (string.IsNullOrWhiteSpace(workspaceId))
+        {
+            return;
+        }
+
+        var token = BuildWorkspaceStateToken(state, workspaceId, normalizedFundProfileId);
+        await _workspaceStateTokenStore.SaveAsync(token, ct).ConfigureAwait(false);
+    }
+
+    private static WorkspaceStateToken BuildWorkspaceStateToken(
+        SessionState state,
+        string workspaceId,
+        string? normalizedFundProfileId)
+    {
+        var token = WorkspaceStateTokenStore.CreateToken(workspaceId, state);
+        if (string.IsNullOrWhiteSpace(token.SelectedFundProfileId) &&
+            !string.IsNullOrWhiteSpace(normalizedFundProfileId))
+        {
+            token.SelectedFundProfileId = normalizedFundProfileId;
+            token.StateValues["SelectedFundProfileId"] = normalizedFundProfileId;
+        }
+
+        return token;
+    }
+
     private static string? NormalizeWorkspaceId(string? workspaceId)
     {
         if (string.IsNullOrWhiteSpace(workspaceId))
@@ -968,6 +1047,9 @@ public sealed class WorkspaceService
     {
         _settingsFilePathOverride = filePath;
     }
+
+    internal static void SetWorkspaceStateFilePathOverrideForTests(string? filePath)
+        => WorkspaceStateTokenStore.SetFilePathOverrideForTests(filePath);
 
     internal void ResetForTests()
         => WithStateLock(() =>

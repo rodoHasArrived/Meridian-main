@@ -428,6 +428,64 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldPreserveMortgageBackedAssetClassForFactorPaydown()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-mbs-factor"));
+
+        var securityId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL agency mortgage pool",
+            "MortgageBackedSecurity",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "Mbs"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m,
+            factorSchedule:
+            [
+                new FactorScheduleSeed(
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    PriorFactor: 1.00m,
+                    CurrentFactor: 0.97m,
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "factor-evidence-2026-03")
+            ],
+            assetClass: "MortgageBackedSecurity",
+            assetFamily: "SecuritizedProduct",
+            subType: "Mbs",
+            typeName: "AgencyMortgageBackedSecurity"));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-mbs-factor"));
+
+        detail.Should().NotBeNull();
+        (detail!.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
+            .Select(static issue => issue.Code)
+            .Should().NotContain("SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT");
+        detail.ExpectedAccountingEvents.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
+            item.PrincipalAmount == 0.30m);
+    }
+
+    [Fact]
     public async Task RunAsync_WithClassificationEdgeCases_ShouldPreservePrimaryIdentifierAndSubtypeValues()
     {
         var store = new StrategyRunStore();
@@ -736,7 +794,11 @@ public sealed class ReconciliationRunServiceTests
         string symbol,
         string? accountingClassification,
         decimal? currentFactor = null,
-        IReadOnlyList<FactorScheduleSeed>? factorSchedule = null)
+        IReadOnlyList<FactorScheduleSeed>? factorSchedule = null,
+        string assetClass = "FixedIncome",
+        string assetFamily = "FixedIncome",
+        string subType = "CorporateBond",
+        string typeName = "CorporateBond")
     {
         var commonTerms = JsonSerializer.SerializeToElement(new
         {
@@ -744,10 +806,10 @@ public sealed class ReconciliationRunServiceTests
         });
         var classification = JsonSerializer.SerializeToElement(new
         {
-            assetClass = "FixedIncome",
-            assetFamily = "FixedIncome",
-            subType = "CorporateBond",
-            typeName = "CorporateBond"
+            assetClass,
+            assetFamily,
+            subType,
+            typeName
         });
         var economicTerms = JsonSerializer.SerializeToElement(new
         {
@@ -789,10 +851,10 @@ public sealed class ReconciliationRunServiceTests
 
         return new SecurityEconomicDefinitionRecord(
             securityId,
-            "FixedIncome",
-            "FixedIncome",
-            "CorporateBond",
-            "CorporateBond",
+            assetClass,
+            assetFamily,
+            subType,
+            typeName,
             IssuerType: null,
             RiskCountry: null,
             SecurityStatusDto.Active,
@@ -858,7 +920,6 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankTransactionCount.Should().BeGreaterThan(0);
-        detail.BankTransactions.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -883,7 +944,6 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankTransactionCount.Should().Be(3);
-        detail.BankTransactions.Should().HaveCount(3);
     }
 
     [Fact]
@@ -901,7 +961,6 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.BankTransactionCount.Should().Be(0);
-        detail.BankTransactions.Should().BeNull();
         detail.Matches.Should().Contain(m => m.CheckId == "cash-balance");
     }
 

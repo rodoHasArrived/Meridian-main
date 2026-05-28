@@ -1,6 +1,6 @@
 // Workstation Delivery Diagram
-// Meridian v1.8.x
-// Last Updated: 2026-04-21
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows how the WPF workstation and the retained desktop-local API
 // seams converge on shared run, portfolio, ledger, cash-flow, reconciliation,
@@ -13,7 +13,7 @@ digraph WorkstationDelivery {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Workstation Delivery\nShared read models, governance handoffs, and security review across WPF and desktop-local API surfaces | v1.8.x";
+  label="Meridian - Workstation Delivery\nShared read models, governance handoffs, and security review across WPF and desktop-local API surfaces";
 
   subgraph cluster_surfaces {
     label="Operator Surfaces";

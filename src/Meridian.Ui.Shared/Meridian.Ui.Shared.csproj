@@ -40,6 +40,8 @@
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Execution\Meridian.Execution.csproj" />
+    <ProjectReference Include="..\Meridian.FSharp\Meridian.FSharp.fsproj" />
+    <ProjectReference Include="..\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
     <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" Condition="'$(EnableCppTraderIntegration)' == 'true'" />
     <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />

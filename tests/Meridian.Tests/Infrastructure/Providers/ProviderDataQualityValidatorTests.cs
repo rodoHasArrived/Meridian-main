@@ -69,6 +69,72 @@ public sealed class ProviderDataQualityValidatorTests
     }
 
     [Fact]
+    public void ValidateQuote_FutureTimestampInsideAllowedSkew_ReturnsNoTimestampIssue()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var update = new MarketQuoteUpdate(
+            Timestamp: now.AddMinutes(5),
+            Symbol: "MSFT",
+            BidPrice: 410.10m,
+            BidSize: 100,
+            AskPrice: 410.12m,
+            AskSize: 200,
+            StreamId: "TEST",
+            Venue: "TEST");
+
+        var issues = ProviderDataQualityValidator.ValidateQuote("polygon", update, now);
+
+        issues.Should().NotContain(issue => issue.FieldPath == "timestamp");
+    }
+
+    [Fact]
+    public void ValidateTrade_StaleTimestampWithThreshold_ReturnsWarning()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var update = new MarketTradeUpdate(
+            Timestamp: now.AddMinutes(-15),
+            Symbol: "SPY",
+            Price: 450.25m,
+            Size: 100,
+            Aggressor: AggressorSide.Unknown,
+            SequenceNumber: 1,
+            StreamId: "TEST",
+            Venue: "TEST");
+
+        var issues = ProviderDataQualityValidator.ValidateTrade(
+            "polygon",
+            update,
+            now,
+            staleThreshold: TimeSpan.FromMinutes(5));
+
+        issues.Should().ContainSingle(issue =>
+            issue.FieldPath == "timestamp" &&
+            issue.Severity == ProviderDataQualitySeverity.Warning &&
+            issue.Message.Contains("stale", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void ValidateQuote_NegativeBidAndAskSizes_ReturnsFieldSpecificIssues()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var update = new MarketQuoteUpdate(
+            Timestamp: now,
+            Symbol: "MSFT",
+            BidPrice: 410.10m,
+            BidSize: -1,
+            AskPrice: 410.12m,
+            AskSize: -2,
+            StreamId: "TEST",
+            Venue: "TEST");
+
+        var issues = ProviderDataQualityValidator.ValidateQuote("polygon", update, now);
+
+        issues.Should().Contain(issue => issue.FieldPath == "bidSize");
+        issues.Should().Contain(issue => issue.FieldPath == "askSize");
+        issues.Should().OnlyContain(issue => issue.Severity == ProviderDataQualitySeverity.Error);
+    }
+
+    [Fact]
     public async Task WebSocketConnectionManager_DisconnectWithoutConnect_ReportsSafeDiagnostics()
     {
         await using var manager = new WebSocketConnectionManager("stub");

@@ -9,6 +9,74 @@ public sealed record EvidencePacketValidationResult(
 
 public sealed class EvidencePacketValidationService
 {
+    private static readonly EvidenceSlaPolicyDto[] DefaultSlaPolicies =
+    [
+        new(
+            PolicyId: "provider-validation-freshness",
+            EvidenceKind: "provider-trust",
+            WorkflowKind: "provider-validation",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Provider validation evidence should be refreshed at least daily."),
+        new(
+            PolicyId: "replay-check-freshness",
+            EvidenceKind: "paper-replay",
+            WorkflowKind: "replay-check",
+            FreshnessMinutes: 4 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Paper replay evidence should be refreshed before operational promotion review."),
+        new(
+            PolicyId: "continuity-replay-freshness",
+            EvidenceKind: "run-continuity",
+            WorkflowKind: "replay-check",
+            FreshnessMinutes: 4 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Run continuity replay evidence should remain current for operator review."),
+        new(
+            PolicyId: "reconciliation-freshness",
+            EvidenceKind: "reconciliation-run",
+            WorkflowKind: "reconciliation",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Reconciliation evidence should be refreshed at least daily."),
+        new(
+            PolicyId: "approval-freshness",
+            EvidenceKind: "approval",
+            WorkflowKind: "approval",
+            FreshnessMinutes: 72 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Approval evidence should remain inside the governed review window."),
+        new(
+            PolicyId: "promotion-approval-freshness",
+            EvidenceKind: "promotion-review",
+            WorkflowKind: "approval",
+            FreshnessMinutes: 72 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Promotion approval evidence should remain inside the governed review window."),
+        new(
+            PolicyId: "report-pack-freshness",
+            EvidenceKind: "report-pack",
+            WorkflowKind: "reporting",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Report-pack evidence should be refreshed at least daily."),
+        new(
+            PolicyId: "report-export-freshness",
+            EvidenceKind: "analysis-export",
+            WorkflowKind: "reporting",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Report export evidence should be refreshed at least daily.")
+    ];
+
     public EvidencePacketValidationResult Validate(
         IReadOnlyList<EvidenceNodeDto> nodes,
         IEnumerable<EvidenceEdgeDto> candidateEdges,
@@ -30,8 +98,10 @@ public sealed class EvidencePacketValidationService
         }
 
         ApplyLedgerIntegrityIssues(nodes, issues);
+        ApplyCanonicalSubjectLinkageIssues(nodes, issues);
+        var slaAssessments = ApplyEvidenceSlaIssues(nodes, issues);
 
-        var completeness = BuildCompleteness(nodes, nodeLookup, requiredIds, issues);
+        var completeness = BuildCompleteness(nodes, nodeLookup, requiredIds, issues, DefaultSlaPolicies, slaAssessments);
         return new EvidencePacketValidationResult(
             Edges: validatedEdges,
             Completeness: completeness,
@@ -99,7 +169,9 @@ public sealed class EvidencePacketValidationService
         IReadOnlyList<EvidenceNodeDto> nodes,
         IReadOnlyDictionary<string, EvidenceNodeDto> nodeLookup,
         IReadOnlySet<string> requiredIds,
-        List<EvidenceValidationIssueDto> issues)
+        List<EvidenceValidationIssueDto> issues,
+        IReadOnlyList<EvidenceSlaPolicyDto> slaPolicies,
+        IReadOnlyList<EvidenceSlaAssessmentDto> slaAssessments)
     {
         var required = requiredIds.Count > 0
             ? requiredIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray()
@@ -174,6 +246,12 @@ public sealed class EvidencePacketValidationService
             ready.Count == required.Length ? EvidenceStatusDto.Ready :
             EvidenceStatusDto.ReviewRequired;
 
+        var orphanEvidenceIds = issues
+            .Where(static issue => string.Equals(issue.Code, "orphan-evidence", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(issue.EvidenceId))
+            .Select(static issue => issue.EvidenceId!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static id => id, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         return new EvidenceCompletenessDto(
             Score: score,
             Status: status,
@@ -183,9 +261,145 @@ public sealed class EvidencePacketValidationService
             StaleIds: stale.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray(),
             BlockingWorkItemIds: blockers.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase).ToArray())
         {
-            ValidationIssues = issues.Distinct().ToArray()
+            ValidationIssues = issues.Distinct().ToArray(),
+            BlockingIssueCount = issues.Count(static issue => issue.Severity == EvidenceValidationSeverityDto.Critical),
+            WarningIssueCount = issues.Count(static issue => issue.Severity == EvidenceValidationSeverityDto.Warning),
+            OrphanEvidenceIds = orphanEvidenceIds,
+            SlaPolicies = slaPolicies,
+            SlaAssessments = slaAssessments,
+            AssuranceScore = BuildAssuranceScore(required, nodeLookup, issues, slaAssessments)
         };
     }
+
+    private static IReadOnlyList<EvidenceSlaAssessmentDto> ApplyEvidenceSlaIssues(
+        IReadOnlyList<EvidenceNodeDto> nodes,
+        List<EvidenceValidationIssueDto> issues)
+    {
+        var assessments = new List<EvidenceSlaAssessmentDto>();
+
+        foreach (var node in nodes)
+        {
+            foreach (var policy in DefaultSlaPolicies.Where(policy => EvidenceKindMatches(node.Kind, policy.EvidenceKind)))
+            {
+                var ageMinutes = node.Freshness.AsOf.HasValue
+                    ? Math.Max(0, (int)Math.Floor((DateTimeOffset.UtcNow - node.Freshness.AsOf.Value).TotalMinutes))
+                    : (int?)null;
+                var breached = node.Freshness.IsStale || ageMinutes is null || ageMinutes > policy.FreshnessMinutes;
+                var message = breached
+                    ? BuildSlaBreachMessage(node, policy, ageMinutes)
+                    : $"Evidence '{node.EvidenceId}' satisfies policy '{policy.PolicyId}'.";
+                var assessment = new EvidenceSlaAssessmentDto(
+                    PolicyId: policy.PolicyId,
+                    EvidenceId: node.EvidenceId,
+                    EvidenceKind: node.Kind,
+                    SourceSystem: node.SourceSystem,
+                    AgeMinutes: ageMinutes,
+                    FreshnessMinutes: policy.FreshnessMinutes,
+                    IsBreached: breached,
+                    Severity: breached ? policy.BreachSeverity : EvidenceValidationSeverityDto.Info,
+                    Message: message);
+                assessments.Add(assessment);
+
+                if (!breached)
+                {
+                    continue;
+                }
+
+                issues.Add(new EvidenceValidationIssueDto(
+                    Code: "evidence-sla-breached",
+                    Severity: policy.BreachSeverity,
+                    Message: message,
+                    EvidenceId: node.EvidenceId,
+                    EvidenceKind: node.Kind,
+                    SourceSystem: node.SourceSystem));
+            }
+        }
+
+        return assessments
+            .OrderBy(static assessment => assessment.PolicyId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static assessment => assessment.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static MeridianAssuranceScoreDto BuildAssuranceScore(
+        IReadOnlyList<string> requiredIds,
+        IReadOnlyDictionary<string, EvidenceNodeDto> nodeLookup,
+        IReadOnlyList<EvidenceValidationIssueDto> issues,
+        IReadOnlyList<EvidenceSlaAssessmentDto> slaAssessments)
+    {
+        var components = requiredIds
+            .Select(requiredId => BuildAssuranceComponent(requiredId, nodeLookup, issues, slaAssessments))
+            .ToArray();
+        var score = components.Length == 0
+            ? 100
+            : (int)Math.Round(components.Average(static component => component.Score), MidpointRounding.AwayFromZero);
+        var status =
+            issues.Any(static issue => issue.Severity == EvidenceValidationSeverityDto.Critical) ? EvidenceStatusDto.Blocked :
+            slaAssessments.Any(static assessment => assessment.IsBreached) ? EvidenceStatusDto.Stale :
+            issues.Any(static issue => issue.Severity == EvidenceValidationSeverityDto.Warning) ? EvidenceStatusDto.ReviewRequired :
+            components.All(static component => component.Status == EvidenceStatusDto.Ready) ? EvidenceStatusDto.Ready :
+            EvidenceStatusDto.ReviewRequired;
+
+        return new MeridianAssuranceScoreDto(
+            Score: score,
+            Status: status,
+            Components: components,
+            SlaAssessments: slaAssessments);
+    }
+
+    private static EvidenceAssuranceComponentDto BuildAssuranceComponent(
+        string requiredId,
+        IReadOnlyDictionary<string, EvidenceNodeDto> nodeLookup,
+        IReadOnlyList<EvidenceValidationIssueDto> issues,
+        IReadOnlyList<EvidenceSlaAssessmentDto> slaAssessments)
+    {
+        if (!nodeLookup.TryGetValue(requiredId, out var node))
+        {
+            return new EvidenceAssuranceComponentDto(
+                ComponentId: requiredId,
+                Label: requiredId,
+                Score: 0,
+                Status: EvidenceStatusDto.Missing,
+                Detail: $"Required evidence '{requiredId}' is missing.");
+        }
+
+        var hasCriticalIssue = issues.Any(issue =>
+            issue.Severity == EvidenceValidationSeverityDto.Critical &&
+            string.Equals(issue.EvidenceId, requiredId, StringComparison.OrdinalIgnoreCase));
+        var hasSlaBreach = slaAssessments.Any(assessment =>
+            assessment.IsBreached &&
+            string.Equals(assessment.EvidenceId, requiredId, StringComparison.OrdinalIgnoreCase));
+        var hasWarningIssue = issues.Any(issue =>
+            issue.Severity == EvidenceValidationSeverityDto.Warning &&
+            string.Equals(issue.EvidenceId, requiredId, StringComparison.OrdinalIgnoreCase));
+
+        var score =
+            hasCriticalIssue || node.Status is EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing ? 0 :
+            hasSlaBreach || node.Status is EvidenceStatusDto.Stale ? 60 :
+            hasWarningIssue || node.Status == EvidenceStatusDto.ReviewRequired ? 75 :
+            node.Status == EvidenceStatusDto.Ready ? 100 :
+            50;
+        var status =
+            hasCriticalIssue ? EvidenceStatusDto.Blocked :
+            hasSlaBreach ? EvidenceStatusDto.Stale :
+            hasWarningIssue && node.Status == EvidenceStatusDto.Ready ? EvidenceStatusDto.ReviewRequired :
+            node.Status;
+
+        return new EvidenceAssuranceComponentDto(
+            ComponentId: requiredId,
+            Label: node.Kind,
+            Score: score,
+            Status: status,
+            Detail: node.Summary);
+    }
+
+    private static bool EvidenceKindMatches(string nodeKind, string policyKind)
+        => string.Equals(nodeKind, policyKind, StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildSlaBreachMessage(EvidenceNodeDto node, EvidenceSlaPolicyDto policy, int? ageMinutes)
+        => ageMinutes is null
+            ? $"Evidence '{node.EvidenceId}' has no as-of timestamp for policy '{policy.PolicyId}'."
+            : $"Evidence '{node.EvidenceId}' is {ageMinutes.Value} minute(s) old and exceeds policy '{policy.PolicyId}' freshness limit of {policy.FreshnessMinutes} minute(s).";
 
     private static void AddStateIssue(EvidenceNodeDto node, List<EvidenceValidationIssueDto> issues)
     {
@@ -283,5 +497,51 @@ public sealed class EvidencePacketValidationService
             EvidenceId: node.EvidenceId,
             EvidenceKind: node.Kind,
             SourceSystem: node.SourceSystem));
+    }
+
+    private static void ApplyCanonicalSubjectLinkageIssues(
+        IReadOnlyList<EvidenceNodeDto> nodes,
+        List<EvidenceValidationIssueDto> issues)
+    {
+        var canonicalKinds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "run", "account", "fund", "strategy", "instrument", "reconciliation", "report", "approval"
+        };
+
+        foreach (var node in nodes)
+        {
+            foreach (var artifact in node.ArtifactRefs.Where(static artifact => artifact.Retained))
+            {
+                var hasCanonicalKind = !string.IsNullOrWhiteSpace(artifact.CanonicalSubjectKind);
+                var hasCanonicalId = !string.IsNullOrWhiteSpace(artifact.CanonicalSubjectId);
+                if (hasCanonicalKind != hasCanonicalId)
+                {
+                    issues.Add(new EvidenceValidationIssueDto(
+                        Code: "retained-artifact-missing-canonical-subject",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: $"Retained artifact '{artifact.ArtifactId}' must provide both canonical subject kind and canonical subject id when either field is present.",
+                        EvidenceId: node.EvidenceId,
+                        EvidenceKind: node.Kind,
+                        SourceSystem: node.SourceSystem));
+                    continue;
+                }
+
+                if (!hasCanonicalKind)
+                {
+                    continue;
+                }
+
+                if (!canonicalKinds.Contains(artifact.CanonicalSubjectKind))
+                {
+                    issues.Add(new EvidenceValidationIssueDto(
+                        Code: "retained-artifact-invalid-canonical-subject-kind",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: $"Retained artifact '{artifact.ArtifactId}' links to unsupported subject kind '{artifact.CanonicalSubjectKind}'.",
+                        EvidenceId: node.EvidenceId,
+                        EvidenceKind: node.Kind,
+                        SourceSystem: node.SourceSystem));
+                }
+            }
+        }
     }
 }

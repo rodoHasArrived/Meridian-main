@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -109,6 +110,29 @@ public sealed class ProviderHealthViewModelTests
         xaml.Should().Contain("SelectedProviderRoutingMatrix");
         xaml.Should().Contain("ActivityLogGridControl");
         xaml.Should().Contain("ProviderActivityTimeline");
+    }
+
+    [Fact]
+    public void ProviderHealthPostureSection_ShouldOwnMetricAndPostureStateWithAdapterBindings()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.cs"));
+        var section = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.Sections.cs"));
+
+        section.Should().Contain("internal sealed class ProviderHealthPostureSectionViewModel");
+        section.Should().Contain("public string ConnectedCount { get; set; } = \"0\";");
+        section.Should().Contain("public string LastUpdateText { get; set; } = \"Last updated: --\";");
+        section.Should().Contain("public bool HasNoHistory { get; set; } = true;");
+        section.Should().Contain("public string ProviderPostureTitle { get; set; } = \"Provider posture loading\";");
+        section.Should().Contain("public WorkstationStateModel ProviderPostureState { get; set; }");
+        section.Should().Contain("public WorkstationBadgeModel ProviderPostureBadge { get; set; }");
+        viewModel.Should().Contain("private readonly ProviderHealthPostureSectionViewModel _postureSection");
+        viewModel.Should().Contain("internal ProviderHealthPostureSectionViewModel PostureSection => _postureSection;");
+        viewModel.Should().Contain("get => _postureSection.ConnectedCount;");
+        viewModel.Should().Contain("get => _postureSection.ProviderPostureTitle;");
+        viewModel.Should().Contain("SetProviderHealthSectionProperty(_postureSection.ProviderPostureBadge, value, next => _postureSection.ProviderPostureBadge = next)");
+        viewModel.Should().NotContain("private string _connectedCount");
+        viewModel.Should().NotContain("private bool _hasNoHistory");
+        viewModel.Should().NotContain("private WorkstationStateModel _providerPostureState");
     }
 
     [Fact]
@@ -311,5 +335,48 @@ public sealed class ProviderHealthViewModelTests
 
             exception.Should().BeNull();
         });
+    }
+
+    [Fact]
+    public void ActivationLifetime_DeactivateCancelsVisiblePageLifetimeWithoutClearingLoadedRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            using var viewModel = new ProviderHealthViewModel(
+                WpfServices.StatusService.Instance,
+                WpfServices.ConnectionService.Instance,
+                WpfServices.LoggingService.Instance,
+                WpfServices.NotificationService.Instance);
+            viewModel.Should().BeAssignableTo<IPageActivationLifetime>();
+            viewModel.StreamingProviders.Add(new ProviderStatusModel { ProviderId = "polygon", Name = "Polygon.io" });
+            using var activationCts = new CancellationTokenSource();
+            activationCts.Cancel();
+
+            viewModel.ActivateAsync(activationCts.Token).GetAwaiter().GetResult();
+            var token = viewModel.ActivationToken;
+
+            viewModel.IsActive.Should().BeTrue();
+            token.CanBeCanceled.Should().BeTrue();
+
+            viewModel.Deactivate();
+
+            viewModel.IsActive.Should().BeFalse();
+            token.IsCancellationRequested.Should().BeTrue();
+            viewModel.StreamingProviders.Should().ContainSingle(provider => provider.ProviderId == "polygon");
+        });
+    }
+
+    [Fact]
+    public void ActivationLifetime_SparklineLoopIsBoundToCurrentActivationTimer()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.cs"));
+
+        source.Should().Contain("var timer = new PeriodicTimer(TimeSpan.FromSeconds(2))");
+        source.Should().Contain("_ = RefreshSparklineDataAsync(timer, ActivationToken)");
+        source.Should().Contain("ReferenceEquals(_sparklineTimer, timer)");
+        source.Should().Contain("timer.WaitForNextTickAsync(ct)");
+        source.Should().Contain("Interlocked.Exchange(ref _sparklineTimer, null)");
     }
 }

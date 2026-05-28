@@ -54,7 +54,9 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger, NullLogger<LedgerPostingConsumer>.Instance);
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new PassingSecurityValidationGate());
 
         var evt = new TradeExecutedEvent(
             FillId: Guid.NewGuid(),
@@ -78,6 +80,11 @@ public sealed class EventDrivenDecouplingTests
             .Be(100 * 150m);
         entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should()
             .Be(100 * 150m);
+        entry.Metadata.SecurityId.Should().Be(PassingSecurityValidationGate.SecurityId);
+        entry.Metadata.Symbol.Should().Be("AAPL");
+        entry.Metadata.FillId.Should().Be(evt.FillId);
+        entry.Metadata.Tags.Should().ContainKey("securityMaster.gate")
+            .WhoseValue.Should().Be("resolved-approved-mapped");
     }
 
     [Fact]
@@ -85,7 +92,9 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger, NullLogger<LedgerPostingConsumer>.Instance);
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new PassingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
             Guid.NewGuid(), "ord-1", "AAPL", OrderSide.Buy,
@@ -102,7 +111,9 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger, NullLogger<LedgerPostingConsumer>.Instance);
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new PassingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
             Guid.NewGuid(), "ord-2", "AAPL", OrderSide.Sell,
@@ -121,7 +132,9 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger, NullLogger<LedgerPostingConsumer>.Instance);
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new PassingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
             Guid.NewGuid(), "ord-3", "MSFT", OrderSide.Sell,
@@ -152,6 +165,88 @@ public sealed class EventDrivenDecouplingTests
         await consumer.DisposeAsync();
 
         ledger.Journal.Should().BeEmpty("blocked Security Master validation must prevent ledger posting");
+    }
+
+    [Fact]
+    public async Task LedgerPostingConsumer_WhenSecurityValidationGateMissing_DoesNotPostJournalEntry()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var consumer = new LedgerPostingConsumer(
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance);
+
+        consumer.Publish(new TradeExecutedEvent(
+            Guid.NewGuid(), "ord-ungated", "AAPL", OrderSide.Buy,
+            FilledQuantity: 10, FillPrice: 100m, Commission: 0m,
+            RealizedPnl: 0m, NewCash: 0m, DateTimeOffset.UtcNow));
+
+        await consumer.DisposeAsync();
+
+        ledger.Journal.Should().BeEmpty("ledger posting now requires a configured Security Master gate");
+    }
+
+    [Fact]
+    public async Task LedgerPostingConsumer_WhenSecurityIsUnresolved_DoesNotPostJournalEntry()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var consumer = new LedgerPostingConsumer(
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new UnresolvedSecurityValidationGate());
+
+        consumer.Publish(new TradeExecutedEvent(
+            Guid.NewGuid(), "ord-unresolved", "MISSING", OrderSide.Buy,
+            FilledQuantity: 10, FillPrice: 100m, Commission: 0m,
+            RealizedPnl: 0m, NewCash: 0m, DateTimeOffset.UtcNow));
+
+        await consumer.DisposeAsync();
+
+        ledger.Journal.Should().BeEmpty("ledger posting requires a resolved Security Master identity");
+    }
+
+    private sealed class PassingSecurityValidationGate : ISecurityValidationGateService
+    {
+        public static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol, workflow));
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol ?? securityId.ToString(), workflow));
+
+        private static SecurityValidationGateResultDto BuildResult(string symbol, SecurityValidationWorkflowDto workflow)
+        {
+            var report = new SecurityValidationReportDto(
+                SecurityId,
+                Scope: "Security",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: false,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 0,
+                Issues: []);
+
+            return new SecurityValidationGateResultDto(
+                workflow,
+                symbol.Trim().ToUpperInvariant(),
+                report.SecurityId,
+                IsResolved: true,
+                IsBlocked: false,
+                Report: report,
+                Snapshot: null);
+        }
     }
 
     private sealed class BlockingSecurityValidationGate : ISecurityValidationGateService
@@ -201,6 +296,59 @@ public sealed class EventDrivenDecouplingTests
                 symbol.Trim().ToUpperInvariant(),
                 report.SecurityId,
                 IsResolved: true,
+                IsBlocked: true,
+                Report: report,
+                Snapshot: null);
+        }
+    }
+
+    private sealed class UnresolvedSecurityValidationGate : ISecurityValidationGateService
+    {
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol, workflow));
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol ?? securityId.ToString(), workflow));
+
+        private static SecurityValidationGateResultDto BuildResult(string symbol, SecurityValidationWorkflowDto workflow)
+        {
+            var report = new SecurityValidationReportDto(
+                SecurityId: null,
+                Scope: "SecurityMasterResolution",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                Issues:
+                [
+                    new SecurityValidationIssueDto(
+                        SecurityValidationSeverityDto.Error,
+                        "SM_SYMBOL_UNRESOLVED",
+                        "Security Master identity is unresolved",
+                        $"Ticker '{symbol}' could not be resolved.",
+                        ["symbol"],
+                        "Resolve the instrument before posting.",
+                        [])
+                ]);
+
+            return new SecurityValidationGateResultDto(
+                workflow,
+                symbol.Trim().ToUpperInvariant(),
+                SecurityId: null,
+                IsResolved: false,
                 IsBlocked: true,
                 Report: report,
                 Snapshot: null);

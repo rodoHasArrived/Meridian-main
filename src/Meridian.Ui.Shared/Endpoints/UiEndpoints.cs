@@ -155,6 +155,7 @@ public static class UiEndpoints
         app.MapCronEndpoints(jsonOptions);
         app.MapLeanEndpoints(jsonOptions);
         app.MapMessagingEndpoints(jsonOptions);
+        app.MapOmsIntegrationEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
         if (mapCppTraderEndpoints)
         {
@@ -243,6 +244,7 @@ public static class UiEndpoints
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
         app.MapRiskEndpoints(jsonOptions);
+        app.MapComplianceEndpoints(jsonOptions);
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);

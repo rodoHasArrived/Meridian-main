@@ -52,14 +52,15 @@ public partial class SymbolsPage : Page
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        _vm.Stop();
+        _vm.Deactivate();
         SavePageFilterState();
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _vm.StartAsync();
-        RestorePageFilterState();
+        await _vm.ActivateAsync();
+        if (_vm.IsActive)
+            RestorePageFilterState();
     }
 
     private void SecurityType_Changed(object sender, SelectionChangedEventArgs e)

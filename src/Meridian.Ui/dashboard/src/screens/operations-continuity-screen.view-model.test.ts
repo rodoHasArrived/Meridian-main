@@ -77,8 +77,8 @@ const detail: OperationsContinuityWorkflow = {
   brokerIntakeState: "Complete",
   securityMasterState: "Complete",
   ledgerPostingState: "Drafted",
-  reconciliationState: "Pending",
-  approvalState: "Pending",
+  reconciliationState: "InReview",
+  approvalState: "ReviewerAssigned",
   timeline: [
     {
       auditId: "cdb9449e-7402-48b7-9acf-8568b7363e16",
@@ -102,14 +102,51 @@ const detail: OperationsContinuityWorkflow = {
   ],
   breakCases: [],
   ledgerPreview: null,
-  approvals: [],
+  approvals: [
+    {
+      approvalId: "approval-close-2026-05",
+      status: "ReviewerAssigned",
+      operator: "ops-user",
+      reviewer: "fund-controller",
+      rationale: "Pending final ledger validation before close sign-off.",
+      submittedAtUtc: "2026-05-08T15:05:00Z",
+      decidedAtUtc: null,
+      evidenceLinks: [
+        {
+          evidenceId: "approval-evidence-1",
+          label: "Approval assignment",
+          route: "/workstation/accounting/approvals",
+          source: "ops-continuity",
+          capturedAtUtc: "2026-05-08T15:05:00Z"
+        }
+      ]
+    }
+  ],
   reportPackReadiness: {
     isReady: false,
     reportPackId: null,
     blockingReason: "Close workflow has unresolved ledger blockers.",
-    evidenceLinks: []
+    evidenceLinks: [
+      {
+        evidenceId: "report-pack-blocker-1",
+        label: "Report pack blocker",
+        route: "/workstation/reporting",
+        source: "ops-continuity",
+        capturedAtUtc: "2026-05-08T15:10:00Z"
+      }
+    ]
   },
-  evidenceLinks: [],
+  closeChecklist: [],
+  closeReadiness: null,
+  evidenceLinks: [
+    {
+      evidenceId: "close-workflow-1",
+      label: "Close workflow snapshot",
+      route: "/workstation/accounting/operations-continuity",
+      source: "ops-continuity",
+      capturedAtUtc: "2026-05-08T15:10:00Z"
+    }
+  ],
   blockers: gates[1]!.blockers
 };
 
@@ -144,6 +181,17 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.workflowsTableCaption).toContain("Select a row to inspect close-lane gates");
     expect(vm.selectedDetail?.metadata).toContainEqual({ label: "Break cases", value: "0" });
+    expect(vm.selectedDetail?.metadata).toEqual(expect.arrayContaining([
+      { label: "Reconciliation", value: "In Review" },
+      { label: "Approval", value: "Reviewer Assigned" },
+      {
+        label: "Sign-off",
+        value: "Reviewer Assigned by fund-controller at May 08, 15:05 UTC: Pending final ledger validation before close sign-off."
+      },
+      { label: "Report pack", value: "Blocked: Close workflow has unresolved ledger blockers." },
+      { label: "Close evidence", value: "3 close evidence links" },
+      { label: "Latest audit", value: "Ledger Draft Blocked cdb9449e / devhash-ledg" }
+    ]));
     expect(vm.gates.map((gate) => gate.label)).toEqual(["Broker intake", "Ledger posting"]);
     expect(vm.blockers[0]).toMatchObject({
       code: "LEDGER_VALIDATION_REQUIRED",
@@ -189,6 +237,97 @@ describe("Operations Continuity view model", () => {
 
     expect(vm.nextAction.disabled).toBe(true);
     expect(vm.nextAction.disabledReason).toBe("The server did not provide a local workstation route for this action.");
+  });
+
+  it("counts durable break-case evidence and keeps the latest case-decision audit visible", () => {
+    const workflowWithBreakCaseEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      timeline: [
+        ...detail.timeline,
+        {
+          auditId: "f21e0941-c844-41f5-a5f8-6af06e46d497",
+          occurredAtUtc: "2026-05-08T15:35:00Z",
+          workflowId,
+          fundAccountId,
+          periodId: "2026-05",
+          eventType: "reconciliation-case-resolved",
+          fromState: "ReconciliationActive",
+          toState: "ApprovalPending",
+          gate: "Reconciliation",
+          fromGateStatus: "ReviewRequired",
+          toGateStatus: "Passed",
+          actor: "fund-controller",
+          rationale: "Accepted broker cash variance after custodian close statement matched the ledger adjustment.",
+          correlationId: "case-decision-recon-break-42",
+          references: [
+            {
+              evidenceId: "case-decision-audit-1",
+              label: "Case decision audit",
+              route: "/workstation/accounting/reconciliation/recon-break-42",
+              source: "operations-continuity",
+              capturedAtUtc: "2026-05-08T15:35:00Z"
+            }
+          ],
+          previousHash: "devhash-ledger",
+          currentHash: "casehash-decision-accepted-202605"
+        }
+      ],
+      breakCases: [
+        {
+          breakId: "recon-break-42",
+          checkId: "cash-balance-check",
+          category: "CashBalance",
+          severity: "Warning",
+          status: "Resolved",
+          owner: "fund-controller",
+          dueDate: "2026-05-09",
+          expectedSource: "ledger",
+          actualSource: "custodian",
+          expectedAmount: 125000.25,
+          actualAmount: 124998.25,
+          variance: -2,
+          securityId: null,
+          symbol: null,
+          suggestedAction: "Accept custodian statement evidence and close the reconciliation break.",
+          evidenceLinks: [
+            {
+              evidenceId: "recon-break-close-evidence-1",
+              label: "Custodian statement case close evidence",
+              route: "/workstation/accounting/reconciliation/recon-break-42/evidence",
+              source: "operations-continuity",
+              capturedAtUtc: "2026-05-08T15:34:00Z"
+            }
+          ]
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithBreakCaseEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.selectedDetail?.metadata).toEqual(expect.arrayContaining([
+      { label: "Break cases", value: "1" },
+      { label: "Close evidence", value: "4 close evidence links" },
+      { label: "Latest audit", value: "Reconciliation Case Resolved f21e0941 / casehash-dec" }
+    ]));
+    expect(vm.timeline[0]).toMatchObject({
+      id: "f21e0941-c844-41f5-a5f8-6af06e46d497",
+      title: "Reconciliation Case Resolved",
+      detail: "Accepted broker cash variance after custodian close statement matched the ledger adjustment.",
+      actorLabel: "fund-controller",
+      stateLabel: "Reconciliation Active to Approval Pending",
+      hashLabel: "casehash-dec"
+    });
+    expect(vm.timeline[0]?.ariaLabel).toContain("Reconciliation Case Resolved by fund-controller");
   });
 
   it("prefers blocked gate actions over earlier lower-priority workflow actions", () => {

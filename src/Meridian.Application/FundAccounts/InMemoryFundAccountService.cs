@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Storage.Archival;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.FundAccounts;
 
@@ -25,7 +26,7 @@ public sealed class AccountStatusPolicyException : InvalidOperationException
 /// Thread-safe fund-account service backed by an in-memory working set with optional
 /// durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundAccountService : IFundAccountService, IAccountManagementService, IAccountQueryService
+public sealed class InMemoryFundAccountService : INonProductionOnlyService, IFundAccountService, IAccountManagementService, IAccountQueryService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -282,7 +283,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
-                EnsureAllowed(stored.Summary, "record-balance-snapshot", request.IsBackfill);
+                EnsureAllowed(stored.Summary, "record-balance-snapshot");
                 stored.Snapshots.Add(dto);
                 snapshot = CaptureSnapshotLocked();
             }
@@ -352,7 +353,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
-                EnsureAllowed(stored.Summary, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
+                EnsureAllowed(stored.Summary, "ingest-custodian-statement", allowSuspended: true);
                 stored.CustodianBatches.Add(batch);
                 UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
                 snapshot = CaptureSnapshotLocked();
@@ -382,7 +383,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
-                EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
+                EnsureAllowed(stored.Summary, "ingest-bank-statement", allowSuspended: true);
                 stored.BankBatches.Add(batch);
                 UpsertBankStatementLines(stored.BankLines, request.Lines);
                 snapshot = CaptureSnapshotLocked();

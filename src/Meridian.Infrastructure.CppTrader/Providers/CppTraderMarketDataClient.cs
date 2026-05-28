@@ -19,6 +19,7 @@ namespace Meridian.Infrastructure.CppTrader.Providers;
     Priority = 50, Description = "External CppTrader-native market data and execution host")]
 public sealed class CppTraderMarketDataClient : IMarketDataClient
 {
+    private const int MaxBookSnapshotDepthLevels = ushort.MaxValue;
     private readonly ICppTraderHostManager _hostManager;
     private readonly ICppTraderSymbolMapper _symbolMapper;
     private readonly TradeDataCollector _tradeCollector;
@@ -324,13 +325,23 @@ public sealed class CppTraderMarketDataClient : IMarketDataClient
     {
         _depthCollector.ResetSymbolStream(snapshot.Symbol);
 
-        for (ushort i = 0; i < snapshot.Bids.Count; i++)
+        var bidDepth = Math.Min(snapshot.Bids.Count, MaxBookSnapshotDepthLevels);
+        if (snapshot.Bids.Count > bidDepth)
+        {
+            _logger.LogWarning(
+                "Truncating CppTrader bid snapshot depth for {Symbol} from {OriginalCount} to {MaxCount}.",
+                snapshot.Symbol,
+                snapshot.Bids.Count,
+                bidDepth);
+        }
+
+        for (int i = 0; i < bidDepth; i++)
         {
             var level = snapshot.Bids[i];
             _depthCollector.OnDepth(new MarketDepthUpdate(
                 snapshot.Timestamp,
                 snapshot.Symbol,
-                Position: i,
+                Position: (ushort)i,
                 DepthOperation.Insert,
                 OrderBookSide.Bid,
                 level.Price,
@@ -340,13 +351,23 @@ public sealed class CppTraderMarketDataClient : IMarketDataClient
                 Venue: snapshot.Venue));
         }
 
-        for (ushort i = 0; i < snapshot.Asks.Count; i++)
+        var askDepth = Math.Min(snapshot.Asks.Count, MaxBookSnapshotDepthLevels);
+        if (snapshot.Asks.Count > askDepth)
+        {
+            _logger.LogWarning(
+                "Truncating CppTrader ask snapshot depth for {Symbol} from {OriginalCount} to {MaxCount}.",
+                snapshot.Symbol,
+                snapshot.Asks.Count,
+                askDepth);
+        }
+
+        for (int i = 0; i < askDepth; i++)
         {
             var level = snapshot.Asks[i];
             _depthCollector.OnDepth(new MarketDepthUpdate(
                 snapshot.Timestamp,
                 snapshot.Symbol,
-                Position: i,
+                Position: (ushort)i,
                 DepthOperation.Insert,
                 OrderBookSide.Ask,
                 level.Price,

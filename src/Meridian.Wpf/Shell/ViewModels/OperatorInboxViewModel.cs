@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
@@ -12,6 +13,7 @@ public sealed class OperatorInboxViewModel : BindableBase
     private string _error = "Operator queue has not refreshed yet.";
     private OperatorWorkItemDto? _primaryWorkItem;
     private string _targetPageTag = "NotificationCenter";
+    private IReadOnlyList<OperatorInboxLaneGroup> _laneGroups = [];
 
     public OperatorInboxDto? Inbox => _inbox;
 
@@ -43,6 +45,8 @@ public sealed class OperatorInboxViewModel : BindableBase
 
     public string TargetText => _targetPageTag;
 
+    public IReadOnlyList<OperatorInboxLaneGroup> LaneGroups => _laneGroups;
+
     public int ReviewCount => _inbox?.ReviewCount ?? 0;
 
     public string Tone => ResolveTone(_inbox);
@@ -60,6 +64,7 @@ public sealed class OperatorInboxViewModel : BindableBase
             : error;
         _primaryWorkItem = GetPrimaryWorkItem(inbox);
         _targetPageTag = resolveTargetPageTag(_primaryWorkItem) ?? "NotificationCenter";
+        _laneGroups = BuildLaneGroups(inbox);
 
         RaisePropertyChanged(nameof(Inbox));
         RaisePropertyChanged(nameof(PrimaryWorkItem));
@@ -69,14 +74,24 @@ public sealed class OperatorInboxViewModel : BindableBase
         RaisePropertyChanged(nameof(TargetText));
         RaisePropertyChanged(nameof(ReviewCount));
         RaisePropertyChanged(nameof(Tone));
+        RaisePropertyChanged(nameof(LaneGroups));
     }
 
     public static OperatorWorkItemDto? GetPrimaryWorkItem(OperatorInboxDto? inbox)
         => inbox?.Items
-            .OrderByDescending(item => item.Tone == OperatorWorkItemToneDto.Critical)
+            .OrderByDescending(item => item.PriorityScore)
+            .ThenByDescending(item => item.Tone == OperatorWorkItemToneDto.Critical)
             .ThenByDescending(item => item.Tone == OperatorWorkItemToneDto.Warning)
             .ThenBy(item => item.CreatedAt)
             .FirstOrDefault();
+
+    private static IReadOnlyList<OperatorInboxLaneGroup> BuildLaneGroups(OperatorInboxDto? inbox)
+        => inbox?.Items
+            .OrderByDescending(item => item.PriorityScore)
+            .ThenBy(item => item.CreatedAt)
+            .GroupBy(item => string.IsNullOrWhiteSpace(item.Workspace) ? "Trading" : item.Workspace)
+            .Select(group => new OperatorInboxLaneGroup(group.Key, group.ToArray()))
+            .ToArray() ?? [];
 
     public static string ResolveTone(OperatorInboxDto? inbox)
     {
@@ -100,3 +115,5 @@ public sealed class OperatorInboxViewModel : BindableBase
             : WorkspaceTone.Success;
     }
 }
+
+public sealed record OperatorInboxLaneGroup(string Lane, IReadOnlyList<OperatorWorkItemDto> Items);

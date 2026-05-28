@@ -1,6 +1,6 @@
 // Domain Event Model Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the MarketEvent domain model hierarchy: the sealed
 // record envelope, all payload types, event type enum, and tier classification.
@@ -16,7 +16,7 @@ digraph DomainEventModel {
 
   // Title
   labelloc="t";
-  label="Meridian - Domain Event Model\nMarketEvent Sealed Record Hierarchy | v1.7.x";
+  label="Meridian - Domain Event Model\nMarketEvent Sealed Record Hierarchy";
 
   // Top-Level Event Envelope
   subgraph cluster_envelope {

@@ -179,6 +179,86 @@ public sealed class BrokerageGatewayAdapterTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_RejectsOrderAboveConfiguredNotionalLimit()
+    {
+        var config = new BrokerageConfiguration { MaxOrderNotional = 100m };
+        await using var adapter = new BrokerageGatewayAdapter(
+            CreateMockGateway(),
+            NullLogger<BrokerageGatewayAdapter>.Instance,
+            config);
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.Limit,
+            Quantity = 2m,
+            LimitPrice = 75m
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("notional");
+    }
+
+
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsOrderWhenNotionalCannotBeEvaluated()
+    {
+        var config = new BrokerageConfiguration { MaxOrderNotional = 100m };
+        await using var adapter = new BrokerageGatewayAdapter(
+            CreateMockGateway(),
+            NullLogger<BrokerageGatewayAdapter>.Instance,
+            config);
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.Market,
+            Quantity = 2m
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("Unable to evaluate order notional");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsOrderWhenOpenOrderLimitReached()
+    {
+        var gateway = CreateMockGateway();
+        gateway.GetOpenOrdersAsync(Arg.Any<CancellationToken>()).Returns(
+        [
+            new BrokerOrder
+            {
+                OrderId = "1",
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = SdkOrderType.Limit,
+                Status = SdkOrderStatus.Accepted
+            }
+        ]);
+        var config = new BrokerageConfiguration { MaxOpenOrders = 1 };
+        await using var adapter = new BrokerageGatewayAdapter(
+            gateway,
+            NullLogger<BrokerageGatewayAdapter>.Instance,
+            config);
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.Market,
+            Quantity = 1m
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("Open order count");
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_RejectsLimitOnCloseWithoutLimitPrice()
     {
         var caps = BrokerageCapabilities.UsEquity() with

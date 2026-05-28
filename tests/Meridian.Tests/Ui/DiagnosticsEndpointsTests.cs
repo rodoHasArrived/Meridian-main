@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading.Channels;
 using System.Threading.RateLimiting;
@@ -15,6 +16,8 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Performance;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Sinks;
@@ -252,6 +255,58 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task DiagnosticsMetrics_IncludesSafeProviderConnectionDiagnostics()
+    {
+        var registry = new ProviderRegistry();
+        registry.Register(new DiagnosticProvider(
+            "alpaca-secret-provider",
+            "Alpaca accountNumber=ACCT-123456",
+            new WebSocketConnectionDiagnostics(
+                ProviderName: "Alpaca token=provider-secret",
+                LifecycleState: ProviderConnectionLifecycleState.Reconnecting,
+                WebSocketState: WebSocketState.Aborted,
+                IsConnected: false,
+                IsReconnecting: true,
+                ReconnectAttempts: 2,
+                LastConnectedAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+                LastDisconnectedAt: DateTimeOffset.UtcNow.AddSeconds(-30),
+                LastHeartbeatReceivedAt: DateTimeOffset.UtcNow.AddSeconds(-20),
+                LastMessageReceivedAt: DateTimeOffset.UtcNow.AddSeconds(-25),
+                LastReconnectAttemptAt: DateTimeOffset.UtcNow.AddSeconds(-10),
+                LastError: "raw provider error with token=raw-error-secret accountNumber=ACCT-654321",
+                LastFailureKind: ProviderFailureKind.TransientNetworkFailure,
+                ConnectionAge: null,
+                IdleDuration: TimeSpan.FromSeconds(25))));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(registry);
+        });
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.DiagnosticsMetrics);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadAsStringAsync();
+        payload.Should().Contain("providerConnections");
+        payload.Should().Contain("[REDACTED]");
+        payload.Should().Contain("TransientNetworkFailure");
+        payload.Should().NotContain("provider-secret");
+        payload.Should().NotContain("raw-error-secret");
+        payload.Should().NotContain("ACCT-123456");
+        payload.Should().NotContain("ACCT-654321");
+
+        using var document = JsonDocument.Parse(payload);
+        var providerConnections = document.RootElement.GetProperty("providerConnections");
+        providerConnections.GetProperty("available").GetBoolean().Should().BeTrue();
+        providerConnections.GetProperty("count").GetInt32().Should().Be(1);
+        var provider = providerConnections.GetProperty("providers").EnumerateArray().Single();
+        provider.GetProperty("lifecycleState").GetString().Should().Be("Reconnecting");
+        provider.GetProperty("webSocketState").GetString().Should().Be("Aborted");
+        provider.GetProperty("isReconnecting").GetBoolean().Should().BeTrue();
+        provider.GetProperty("reconnectAttempts").GetInt32().Should().Be(2);
+    }
+
+    [Fact]
     public async Task DiagnosticsConfigEndpoints_RedactSensitivePaths()
     {
         Directory.CreateDirectory(_tempRoot);
@@ -460,6 +515,35 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default) => ValueTask.CompletedTask;
         public Task FlushAsync(CancellationToken ct = default) => Task.CompletedTask;
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class DiagnosticProvider : IProviderMetadata, IProviderConnectionDiagnosticsSource
+    {
+        private readonly WebSocketConnectionDiagnostics _diagnostics;
+
+        public DiagnosticProvider(
+            string providerId,
+            string displayName,
+            WebSocketConnectionDiagnostics diagnostics)
+        {
+            ProviderId = providerId;
+            ProviderDisplayName = displayName;
+            _diagnostics = diagnostics;
+        }
+
+        public string ProviderId { get; }
+        public string ProviderDisplayName { get; }
+        public string ProviderDescription => "Diagnostics endpoint test provider.";
+        public int ProviderPriority => 10;
+        public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming();
+
+        public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() => _diagnostics;
     }
 
     private sealed class DiagnosticsJsonlStoragePolicy : Meridian.Storage.Interfaces.IStoragePolicy

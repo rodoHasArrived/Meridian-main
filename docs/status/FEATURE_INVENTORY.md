@@ -4,7 +4,7 @@
 **Date:** 2026-05-21
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
-Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
+Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) (consolidated non-assembly execution backlog).
 
 ---
 
@@ -291,7 +291,7 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
 | Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, strategy, trading, portfolio, data, accounting, reporting, settings, and retained legacy paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, bootstrap-failure status panels, and query-string route-focus keys for subject/symbol handoffs. Canonical seven-workspace navigation is present, the command palette now consumes shared workflow library/preset payloads, renders grouped command sections, and treats hash-targeted setup routes such as `/settings#alpaca-provider-setup` distinctly from the Settings root, global workstation refreshes suppress stale bootstrap responses, Overview manual refreshes suppress stale or unmounted status responses and now projects portfolio at-a-glance, Today panel day P&L/movers/orders/fills, and status-banner/refresh-command presentation from the view model, Portfolio position and run-evidence lists now use shared dense selectable rows with accessible expanded detail-panel state, sidebar sub-items and richer mega-menu/command grouping are present, menu-linked screenshot-route coverage exists, Data includes live quotes/order book with selectable recent-trade detail inspection, local Price Alerts with UTC trigger/poll labels, single/bulk watchlist management with view-model-owned no-quote/empty-value/busy labels, stale-safe backfill preview/run controls with shared dense-table queue selection and keyboard expanded detail, provider-setup success actions that route to live quotes/backfill/readiness/Security Master validation, live bid/ask/last quote snapshots, click-to-trade order-ticket staging with accepted/rejected Trading readiness handoffs, transient refresh-failure alerts that preserve the last good market snapshot, and intraday/historical price charts backed by shared `/api/data/*` and `/api/historical` routes, Trading includes selectable Recent Fills dense rows with a linked detail panel, Strategy includes a gated Quant Lab browser surface backed by `/api/quant/run`, `/api/quant/parameters`, and `/api/quant/templates` with plot geometry/accessibility state split into a reusable view model, Quant Notebook cell execution and historical-data fetch helpers, a visual Strategy Designer at `/strategy/designer`, Covered Call chain-preview and saved-run-history support at `/strategy/covered-call`, plus run-library selected run and promotion-history detail state, Reporting includes report-pack profile preview/export-analysis actions and the `/reporting/evidence` Evidence Workbench for packet completeness, lineage, validation, and manifest export, browser Security Master lots use selectable dense rows with detail state, command-palette/mega-menu/Portfolio filter focus management has been hardened, the Meridian Design System reference workbench and tokenized-color support are available, and placeholder routes are being replaced by dedicated task panels, while full cockpit/governance acceptance remains open |
-| Operator Readiness Console | ⚠️ | Browser-first read-only console at `/trading/readiness` aggregates latest runs, active paper session, DK1/provider trust, reconciliation breaks, promotion blockers, governance report-pack readiness, full-console checkpoint gates, and operator-inbox work items from `/api/workstation/*` payloads; current Data live quote/order-book/watchlist/Price Alerts routes, recent-trade detail inspectors, click-to-trade staging, and historical charts add market-context support, but this is still the first API-first web readiness surface, not a WPF replacement or full manager command center |
+| Operator Readiness Console | ⚠️ | Browser-first read-only console at `/trading/readiness` aggregates latest runs, active paper session, DK1/provider trust, reconciliation breaks, promotion blockers, governance report-pack readiness, full-console checkpoint gates, and operator-inbox work items from `/api/workstation/*` payloads; evidence completeness diagnostics now include warning vs blocking issue counts and orphan-evidence IDs with retained-artifact canonical-subject enforcement across run/account/fund/strategy/instrument/reconciliation/report/approval scopes; current Data live quote/order-book/watchlist/Price Alerts routes, recent-trade detail inspectors, click-to-trade staging, and historical charts add market-context support, but this is still the first API-first web readiness surface, not a WPF replacement or full manager command center |
 | Browser Portfolio brokerage support | ⚠️ | Portfolio screen/view-model support now projects brokerage connection state, household account rows, account-kind filters, brokerage positions, selected-run evidence, shared dense-table position/run selection with expanded detail-panel semantics, backend links from shared API payloads, and next actions for provider setup repair, Trading readiness review, and Trading cockpit review. It is read-only portfolio/accounting continuity evidence, not live trading readiness |
 | Browser Reporting task panel | ⚠️ | Reporting screen/view-model support now exposes report-pack workflow task state, approval-profile selection, target readiness, selected-profile preview/export-analysis actions, backend endpoint links that mark concrete GET routes as browser-navigable and POST/template routes as reference-only, abort-backed export commands, and stale export-response suppression when the selected approval profile changes or the same profile is restarted mid-run. Governed report-pack generation, approval, restatement, and publication lifecycle remain open |
 | Browser Settings capability coverage | ⚠️ | Settings screen/view-model support now shows backend capability coverage for canonical routes/endpoints, can verify or clear Alpaca paper API keys through shared brokerage connection endpoints, and refreshes provider-routing connections, bindings, and trust snapshots after provider setup plus during lightweight live refresh. TradeDesk role sessions can perform this paper brokerage credential setup without broader configuration or user-management rights. Broader credential policy, evidence-path governance, and live-account readiness remain open |
@@ -345,6 +345,7 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 - `NotificationCenterPage` now behaves more like an operator inbox baseline, with search, unread-only filtering, severity filters, per-item read state, and richer empty/history states.
 - The WPF main shell now consumes `/api/workstation/operator/inbox` through `WorkstationOperatorInboxApiClient`, shows a queue button with review counts and severity tone, and routes the primary work item to its target page; this is initial shell consumption, while end-to-end queue workflow acceptance remains open.
 - `MessagingHubPage` now projects message-flow posture, subscriber readiness, retained activity scope, refresh recency, and clear-activity command state through `MessagingHubViewModel` instead of code-behind handlers.
+- `GovernanceWorkspaceShellPage` now routes command-bar wiring, lane summary shaping, queue composition, hero-state decisions, and dock-action mapping through `GovernanceWorkspacePresentationService`, keeping page code-behind focused on lifecycle/event wiring and visual updates.
 - `PositionBlotterPage` now includes a selected-position review rail with long/short/gross/net quantity, eligibility counts, and preview rows for batch-action review.
 - `BatchBacktestPage` and `BatchBacktestViewModel` now run real request-level parameter sweeps through `IBatchBacktestService` with validation, progress, cancellation, result metrics, and focused ViewModel tests; strategy selection and persisted sweep grouping remain open Research work.
 - Dock-hosted workspace pages are wrapped in `Frame` containers so WPF page content can be embedded safely inside the workstation docking surface.
@@ -420,6 +421,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 - Governance fund operations now exposes explicit fund cash-flow projection ladders/events and account-linked multi-ledger views across consolidated, entity, sleeve, and vehicle dimensions.
 - **Allowed sync data-flow path:** brokerage/provider sync ingestion must flow through fund-account scope first (`/api/fund-accounts/*` + `WorkstationBrokerageSyncStatusDto`), then shared run/portfolio/ledger/reconciliation services, and finally continuity/governance workstation DTOs (`/api/workstation/trading/readiness`, `/api/workstation/operator/inbox`, and reconciliation queue projections). Avoid introducing standalone sync projection endpoint contracts that bypass fund-account and shared services.
 - Current account-sync support now includes explicit brokerage account kinds, fund-account brokerage links, positions/activity reads, cash-adjusted performance, cash-flow summaries, household portfolio rollups, Alpaca paper connection verification/revocation, and a read-only Robinhood aggregation adapter that consumes configured normalized endpoints without storing Robinhood passwords.
+- Options chain routing now uses deterministic `IEnumerable<IOptionsChainProvider>` priority ordering, provider-health gating, and failover provenance/metrics in `OptionsChainService`; remaining extensions are richer user-surface provenance payloads and policy-tunable partial-response thresholds.
 - The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, deeper per-entity/per-sleeve/per-vehicle posting fidelity, richer reconciliation UX, and more complete cockpit-style workflow integration.
 
 ### Known WPF limitations
@@ -520,9 +522,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 | Project | Status | Notes |
 | --------- | -------- | ------- |
-| `Meridian.McpServer` | ✅ | Market-data–focused MCP server: `BackfillTools`, `ProviderTools`, `StorageTools`, `SymbolTools`; `MarketDataPrompts`, `MarketDataResources` |
 | `Meridian.Mcp` | ✅ | Repo-tooling MCP server: `AdrTools`, `AuditTools`, `ConventionTools`, `KnownErrorTools`, `ProviderTools`; ADR/convention/template resources and code-review/test-writer prompts |
-| MCP tests | ✅ | `tests/Meridian.McpServer.Tests/` — backfill tools and storage tools coverage |
 
 ---
 
@@ -568,9 +568,8 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | `Meridian.Backtesting.Tests` | 19 | ~243 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 5 | ~29 | Direct lending services, workflows, PostgreSQL integration |
 | `Meridian.FundStructure.Tests` | 3 | ~24 | Governance shared-data access and in-memory fund-structure services |
-| `Meridian.McpServer.Tests` | 3 | ~15 | MCP server tools (backfill, storage) |
 | `Meridian.QuantScript.Tests` | 8 | ~93 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
-| **Total** | **518** | **~6,440** | |
+| **Total** | **515** | **~6,425** | |
 
 ### Key test infrastructure
 
@@ -675,7 +674,7 @@ These areas are part of the documented implementation scope even though they are
 | L3 reconstruction timeline | ðŸ“ | Planned deterministic replay + merged timeline for queue inference |
 | L3 inference model | ðŸ“ | Planned probabilistic queue-ahead inference with confidence scoring |
 | Queue-aware execution simulator | ðŸ“ | Planned market/limit simulation with partial fills, latency, and exported artifacts |
-| Simulation CLI workflow | ðŸ“ | `--simulate-execution` / calibration commands are documented but not yet implemented |
+| Simulation CLI workflow | ✅ | `--simulate-execution` now dispatches through dedicated `SimulationCommands`, supports dry-run/date/time-window/output options, and emits deterministic artifacts (`fill-tape.jsonl`, `order-lifecycle.jsonl`, `summary.json`, `queue-diagnostics.jsonl`). |
 | Simulation WPF explorer | ðŸ“ | Dedicated simulation page and progress/results UX remain planned |
 
 ### Remaining work
@@ -736,5 +735,4 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-05-21_
-
+_Last Updated: 2026-05-27_

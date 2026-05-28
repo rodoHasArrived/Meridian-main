@@ -150,7 +150,22 @@ public sealed class ShellNavigationCatalogTests
             .SelectMany(static module => module.DescribePages())
             .Select(static page => page.PageTag)
             .Should()
-            .Contain(["TradingShell", "DataShell", "SettingsShell"]);
+            .Contain(["TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell", "StrategyShell", "DataShell", "SettingsShell"]);
+    }
+
+    [Fact]
+    public void FeatureModules_ShouldOwnAllSevenCanonicalWorkspaces()
+    {
+        DesktopFeatureModuleRegistry.GetModules()
+            .Select(static module => module.DescribeWorkspace()?.Workspace.Id)
+            .Where(static workspaceId => !string.IsNullOrWhiteSpace(workspaceId))
+            .Select(static workspaceId => workspaceId!)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+
+        ShellNavigationCatalog.BuildFallbackWorkspaceCapabilities(["trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings"])
+            .Should()
+            .BeEmpty();
     }
 
     [Fact]
@@ -205,6 +220,30 @@ public sealed class ShellNavigationCatalogTests
 
         relatedPages.Should().ContainInOrder("LiveData", "OrderBook", "PositionBlotter", "RunRisk");
         relatedPages.Should().Contain("PortfolioShell");
+    }
+
+    [Fact]
+    public void BacktestLeanLiveDataAndPortfolioImport_ShouldCrossLinkForWorkflowHandoffs()
+    {
+        ShellNavigationCatalog.GetRelatedPages("Backtest")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["LeanIntegration", "LiveData", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("LeanIntegration")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LiveData", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("LiveData")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LeanIntegration", "PortfolioImport"]);
+
+        ShellNavigationCatalog.GetRelatedPages("PortfolioImport")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain(["Backtest", "LeanIntegration", "LiveData"]);
     }
 
     [Fact]

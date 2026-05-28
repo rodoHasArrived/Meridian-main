@@ -11,7 +11,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Governance Workspace"
+      AutomationProperties.Name="Accounting Workspace"
       AutomationProperties.AutomationId="GovernanceWorkspaceShellPage">
 
     <Page.Resources>

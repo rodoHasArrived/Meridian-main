@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring.DataQuality;
+using FsCheck.Xunit;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services.DataQuality;
@@ -115,6 +116,49 @@ public sealed class CompletenessScoreCalculatorTests : IDisposable
         lowScore.Should().NotBeNull();
         highScore.Should().NotBeNull();
         highScore!.Score.Should().BeGreaterThanOrEqualTo(lowScore!.Score);
+    }
+
+    #endregion
+
+    #region Property invariants
+
+    [Property(MaxTest = 200)]
+    public void Scenario_DataCompleteness_GeneratedTradingDayScoresStayBounded(int eventCountSeed, int intervalSeed)
+    {
+        using var sut = CreatePropertyCalculator();
+        var eventCount = Bound(eventCountSeed, minInclusive: 1, maxInclusive: 900);
+        var minuteInterval = Bound(intervalSeed, minInclusive: 1, maxInclusive: 17);
+
+        RecordGeneratedTradingDayEvents(sut, "SPY", eventCount, minuteInterval);
+
+        var score = sut.GetScore("SPY", PropertyDate);
+
+        score.Should().NotBeNull();
+        score!.Score.Should().BeInRange(0.0, 1.0);
+        score.CoveragePercent.Should().BeInRange(0.0, 100.0);
+        score.MissingEvents.Should().BeGreaterThanOrEqualTo(0);
+        score.ActualEvents.Should().Be(eventCount);
+    }
+
+    [Property(MaxTest = 200)]
+    public void Scenario_DataCompleteness_GeneratedAdditionalEventsNeverLowerScore(int baseCountSeed, int extraCountSeed, int intervalSeed)
+    {
+        using var baseline = CreatePropertyCalculator();
+        using var expanded = CreatePropertyCalculator();
+        var baseCount = Bound(baseCountSeed, minInclusive: 1, maxInclusive: 450);
+        var extraCount = Bound(extraCountSeed, minInclusive: 0, maxInclusive: 450);
+        var minuteInterval = Bound(intervalSeed, minInclusive: 1, maxInclusive: 17);
+
+        RecordGeneratedTradingDayEvents(baseline, "SPY", baseCount, minuteInterval);
+        RecordGeneratedTradingDayEvents(expanded, "SPY", baseCount + extraCount, minuteInterval);
+
+        var baselineScore = baseline.GetScore("SPY", PropertyDate);
+        var expandedScore = expanded.GetScore("SPY", PropertyDate);
+
+        baselineScore.Should().NotBeNull();
+        expandedScore.Should().NotBeNull();
+        expandedScore!.Score.Should().BeGreaterThanOrEqualTo(baselineScore!.Score);
+        expandedScore.MissingEvents.Should().BeLessThanOrEqualTo(baselineScore.MissingEvents);
     }
 
     #endregion
@@ -402,4 +446,41 @@ public sealed class CompletenessScoreCalculatorTests : IDisposable
     }
 
     #endregion
+
+    private static readonly DateOnly PropertyDate = new(2026, 2, 11);
+    private static readonly DateTimeOffset PropertyTradingStart = new(2026, 2, 11, 13, 30, 0, TimeSpan.Zero);
+
+    private static CompletenessScoreCalculator CreatePropertyCalculator()
+    {
+        return new CompletenessScoreCalculator(new CompletenessConfig
+        {
+            ExpectedEventsPerHour = 100,
+            TradingStartHour = 13,
+            TradingStartMinute = 30,
+            TradingEndHour = 20,
+            TradingEndMinute = 0,
+            EnableAutoCalibration = false
+        });
+    }
+
+    private static void RecordGeneratedTradingDayEvents(
+        CompletenessScoreCalculator calculator,
+        string symbol,
+        int eventCount,
+        int minuteInterval)
+    {
+        const int tradingMinutes = 390;
+        for (var i = 0; i < eventCount; i++)
+        {
+            var minuteOffset = i * minuteInterval % tradingMinutes;
+            var timestamp = PropertyTradingStart.AddMinutes(minuteOffset).AddSeconds(i % 60);
+            calculator.RecordEvent(symbol, timestamp, "trade");
+        }
+    }
+
+    private static int Bound(int seed, int minInclusive, int maxInclusive)
+    {
+        var width = (long)maxInclusive - minInclusive + 1L;
+        return minInclusive + (int)(Math.Abs((long)seed) % width);
+    }
 }

@@ -1,7 +1,8 @@
 # Meridian - Production Status
 
+<!-- auto-sync:tests -->
 **Version:** 1.7.9
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-27
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Strategy Engine pre-run definitions/validation, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, WPF Data shell module deltas, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls are support evidence, not readiness exits
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -53,12 +54,19 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | Wave | Owner | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners | Status | Target Date | Evidence Link |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
-| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
+| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
 | W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
 | W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
 <!-- program-state:end -->
+
+<!-- test-evidence:W2 -->
+<!-- Scenario test: OperatorApprovalFlowScenarioTests — exercises the full operator path from empty readiness to ReadyForPaperOperation=true -->
+<!-- test-evidence:W3 -->
+<!-- Scenario test: FundOpsCloseLaneScenarioTests — exercises period open → ledger postings → reconciliation → approval → close with audit trail -->
+<!-- test-evidence:W4 -->
+<!-- Scenario test: PromotionDecisionChainScenarioTests — exercises session → order → fill → promotion → traceable audit chain -->
 
 ---
 
@@ -150,7 +158,7 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 | Session persistence + replay verification | The same continuity scenario asserts `/api/execution/sessions/{sessionId}/replay` returns `ReplaySource=DurableFillLog`, `IsConsistent=true`, empty mismatches, and deterministic replayed cash after persisted fills. | Replay endpoint unavailable, inconsistent replay state, mismatch reasons present for the deterministic baseline, or missing durable-fill-log provenance fields. |
 | Promotion decision visibility + audit rationale | `Scenario_RiskTriggeredPromotionRejection_DecisionRemainsVisibleWithBlockingRationale` verifies blocked promotion evaluations expose policy reasons (`BlockingReasons`) and rejected decisions keep explicit operator rationale in the decision payload. | Evaluation omits blocking rationale for an ineligible run, or rejection response does not carry an explicit reason suitable for operator audit/review. |
 
-Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
+Operator-readiness language for Wave 2 should defer to the canonical `Done` state in `PROGRAM_STATE.md`; future cockpit hardening belongs to W4+ readiness evidence, not a reopened W2 status label.
 
 ### Wave 2 operator sign-off sequence (canonical readiness flow)
 

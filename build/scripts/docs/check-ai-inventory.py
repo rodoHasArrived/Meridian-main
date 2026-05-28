@@ -27,6 +27,8 @@ AGENTS_README = "docs/ai/agents/README.md"
 SKILLS_README = "docs/ai/skills/README.md"
 PROMPTS_README = "docs/ai/prompts/README.md"
 INSTRUCTIONS_README = "docs/ai/instructions/README.md"
+PROMPT_DOCS_README = "docs/prompts/README.md"
+CODEX_GUIDE = "docs/ai/codex/README.md"
 CODEX_SKILLS_README = ".codex/skills/README.md"
 GITHUB_PROMPTS_README = ".github/prompts/README.md"
 COPILOT_GUIDE = "docs/ai/copilot/instructions.md"
@@ -47,6 +49,14 @@ UI_PLATFORM_POLICY_MARKERS = (
         "do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, "
         "MAUI clients, React Native clients, Flutter clients, or mobile-first workflows"
     ),
+)
+ACTIVE_OPERATOR_SURFACE_EXTRA_FILES = (
+    ".codex/environments/README.md",
+)
+STALE_OPERATOR_SURFACE_LANGUAGE = (
+    re.compile(r"\bretained\s+WPF\b", re.IGNORECASE),
+    re.compile(r"\bretained\s+desktop\s+(?:support|tests?)\b", re.IGNORECASE),
+    re.compile(r"`src/Meridian\.Wpf/`\s+as\s+retained\s+support", re.IGNORECASE),
 )
 CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
 LEGACY_CANONICAL_LINK_PREFIXES = (
@@ -102,7 +112,15 @@ SYSTEM_CHECKS = (
         "codex",
         (".codex/config.toml", ".codex/skills"),
         AI_CONTRACT,
-        ("Codex", ".codex/skills", "OpenAI/Codex"),
+        (
+            "Codex",
+            ".codex/agents/",
+            ".codex/AGENTS.md",
+            ".codex/skills",
+            ".codex/prompts/",
+            ".codex/checklists/",
+            "OpenAI/Codex",
+        ),
     ),
     (
         "agent-skills-compatible-hosts",
@@ -124,9 +142,9 @@ SYSTEM_CHECKS = (
     ),
     (
         "mcp",
-        ("src/Meridian.Mcp", "src/Meridian.McpServer"),
+        ("src/Meridian.Mcp",),
         AI_CONTRACT,
-        ("MCP-compatible clients", "src/Meridian.Mcp", "src/Meridian.McpServer"),
+        ("MCP-compatible clients", "src/Meridian.Mcp"),
     ),
     (
         "ai-automation-workflows",
@@ -136,15 +154,21 @@ SYSTEM_CHECKS = (
     ),
     (
         "reusable-prompts",
-        (".github/prompts",),
+        (".github/prompts", "docs/prompts"),
         AI_CONTRACT,
-        ("Reusable prompt templates", ".github/prompts/", "docs/ai/prompts/README.md"),
+        ("Reusable prompt templates", ".github/prompts/", "docs/prompts/", "docs/ai/prompts/README.md"),
     ),
     (
         "shared-ai-docs",
         ("docs/ai",),
         AI_CONTRACT,
         ("Shared AI documentation", "docs/ai/", ".codex/skills/_shared/project-context.md"),
+    ),
+    (
+        "local-ai-maintenance-tools",
+        ("scripts/ai", "tools/codex"),
+        AI_CONTRACT,
+        ("Local AI maintenance tooling", "scripts/ai/", "tools/codex/"),
     ),
 )
 
@@ -246,6 +270,31 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 )
             )
 
+    for path in sorted_files(root, ".codex/agents/*.toml"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="agent-profile",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE, AGENTS_README),
+                alternate_markers=(".codex/agents/",),
+            )
+        )
+
+    for rel_path in (".codex/AGENTS.md",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="codex",
+                    kind="instruction-entrypoint",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                )
+            )
+
     for path in sorted_files(root, ".codex/environments/*.toml"):
         items.append(
             InventoryItem(
@@ -255,6 +304,42 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 path=repo_relative(root, path),
                 expected_docs=(AI_CONTRACT,),
                 alternate_markers=(".codex/environments/",),
+            )
+        )
+
+    for path in sorted_files(root, ".codex/prompts/*.md"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="prompt-template",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                alternate_markers=(".codex/prompts/",),
+            )
+        )
+
+    for path in sorted_files(root, ".codex/checklists/*.md"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="validation-checklist",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                alternate_markers=(".codex/checklists/",),
+            )
+        )
+
+    for path in sorted_files(root, "tools/codex/*.ps1"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="codex-tool",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                alternate_markers=("tools/codex/",),
             )
         )
 
@@ -385,6 +470,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
             )
         )
 
+    for path in sorted_files(root, "docs/prompts/*.md"):
+        if path.name == "README.md":
+            continue
+        items.append(
+            InventoryItem(
+                surface="reusable-prompts",
+                kind="prompt-documentation",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, PROMPTS_README, PROMPT_DOCS_README),
+            )
+        )
+
     for path in sorted_files(root, ".github/instructions/*.instructions.md"):
         items.append(
             InventoryItem(
@@ -393,6 +491,18 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 name=path.name,
                 path=repo_relative(root, path),
                 expected_docs=(INSTRUCTIONS_README,),
+            )
+        )
+
+    for path in sorted_files(root, "scripts/ai/*.sh"):
+        items.append(
+            InventoryItem(
+                surface="local-ai-maintenance-tools",
+                kind="maintenance-script",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(DOC_AI_README, AI_CONTRACT),
+                alternate_markers=("scripts/ai/",),
             )
         )
 
@@ -421,7 +531,7 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
             )
         )
 
-    for project in ("src/Meridian.Mcp", "src/Meridian.McpServer"):
+    for project in ("src/Meridian.Mcp",):
         for folder, kind in (("Prompts", "mcp-prompt"), ("Resources", "mcp-resource"), ("Tools", "mcp-tool")):
             for path in sorted_files(root, f"{project}/{folder}/*.cs"):
                 items.append(InventoryItem(surface="mcp", kind=kind, name=path.name, path=repo_relative(root, path)))
@@ -506,6 +616,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_legacy_canonical_links(root, inventory))
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_ui_platform_policy(root))
+    findings.extend(check_stale_operator_surface_language(root, inventory))
     findings.extend(check_missing_workflow_references(root))
 
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
@@ -533,6 +644,56 @@ def check_ui_platform_policy(root: Path) -> list[Finding]:
                 path=doc_path,
                 expected_doc=AI_CONTRACT,
                 message=f"{doc_path} is missing UI platform policy markers: {', '.join(missing_markers)}",
+            )
+        )
+
+    return findings
+
+
+def check_stale_operator_surface_language(root: Path, inventory: Sequence[InventoryItem]) -> list[Finding]:
+    findings: list[Finding] = []
+    scanned_paths = {
+        item.path
+        for item in inventory
+        if item.surface in {
+            "agent-skills-compatible-hosts",
+            "claude",
+            "codex",
+            "docs-ai",
+            "github-copilot",
+            "root-assistant-compatibility",
+        }
+    }
+    scanned_paths.update(UI_PLATFORM_POLICY_FILES)
+    scanned_paths.update(ACTIVE_OPERATOR_SURFACE_EXTRA_FILES)
+
+    for rel_path in sorted(scanned_paths):
+        path = root / rel_path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace")
+        matched_phrase = None
+        for pattern in STALE_OPERATOR_SURFACE_LANGUAGE:
+            match = pattern.search(text)
+            if match:
+                matched_phrase = match.group(0)
+                break
+        if not matched_phrase:
+            continue
+
+        findings.append(
+            Finding(
+                severity="drift",
+                surface="shared-ai-docs",
+                kind="stale-operator-surface-language",
+                name=Path(rel_path).name,
+                path=rel_path,
+                expected_doc=AI_CONTRACT,
+                message=(
+                    f"{rel_path} still uses stale operator-surface wording ({matched_phrase}); "
+                    "describe both browser workstation and WPF desktop as active surfaces backed by shared contracts."
+                ),
             )
         )
 

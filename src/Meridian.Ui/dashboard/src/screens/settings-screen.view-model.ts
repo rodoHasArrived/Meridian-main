@@ -24,6 +24,7 @@ import type {
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
+  FeatureCapabilitySettingsResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -787,9 +788,12 @@ export interface SettingsProviderConnectionRow {
   rowAnchorId: string;
   displayName: string;
   capabilityLabel: string;
+  capabilityGroup: "brokerage" | "data";
   credentialLabel: string;
   credentialTone: "default" | "success" | "warning" | "danger" | "muted";
+  credentialStatus: "present" | "missing" | "not-required";
   verificationLabel: string;
+  verificationStatus: "verified" | "pending" | "failed";
   healthLabel: string;
   healthTone: "default" | "success" | "warning" | "danger" | "muted";
   sourceLabel: string;
@@ -797,6 +801,7 @@ export interface SettingsProviderConnectionRow {
   maskedKeyPreviewLabel: string;
   lastHeartbeatLabel: string;
   fallbackLabel: string;
+  fallbackStatus: "active" | "available" | "missing";
   routingBindingsLabel: string;
   trustScoreLabel: string;
   productionStateLabel: string;
@@ -846,6 +851,30 @@ export interface SettingsHeaderChip {
   value: string;
 }
 
+export interface SettingsRuntimeCapabilityToggle {
+  capabilityKey: string;
+  displayName: string;
+  description: string;
+  isEnabled: boolean;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  defaultLabel: string;
+  overrideLabel: string;
+  canToggle: boolean;
+  disabledReason: string | null;
+  ariaLabel: string;
+}
+
+export interface SettingsRuntimeCapabilitySection {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  summary: string;
+  listLabel: string;
+  toggles: SettingsRuntimeCapabilityToggle[];
+}
+
 export interface SettingsScreenViewModel {
   headerChips: SettingsHeaderChip[];
   sessionTitle: string;
@@ -871,6 +900,7 @@ export interface SettingsScreenViewModel {
   backendCapabilityListLabel: string;
   backendCapabilityStatusLabel: string;
   backendCapabilityStatusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  runtimeCapabilitySection: SettingsRuntimeCapabilitySection;
 }
 
 export interface SettingsScreenPayload {
@@ -887,6 +917,7 @@ export interface SettingsScreenPayload {
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  featureCapabilities?: FeatureCapabilitySettingsResponse | null;
   providerRoutingRefreshing?: boolean;
   loading?: boolean;
   error?: string | null;
@@ -1712,8 +1743,8 @@ function buildProviderConnectionCenter(
         buildProviderRoutingRowContext(connection, bindingRows, trustRows)
       ))
   ];
-  const brokerageRows = rows.filter((row) => row.capabilityLabel.includes("Brokerage"));
-  const dataRows = rows.filter((row) => !row.capabilityLabel.includes("Brokerage"));
+  const brokerageRows = rows.filter((row) => row.capabilityGroup === "brokerage");
+  const dataRows = rows.filter((row) => row.capabilityGroup === "data");
   const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
   const warningCount = rows.filter((row) => row.healthTone === "warning").length;
   const verifiedCount = rows.filter((row) => row.credentialLabel === "Verified" || row.credentialLabel === "Not required").length;
@@ -1782,9 +1813,20 @@ function buildProviderConnectionRow(
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
     displayName: row.displayName,
     capabilityLabel: providerCapabilityLabel(row.capability),
+    capabilityGroup: row.capability === "Brokerage" || row.capability === "DataAndBrokerage" ? "brokerage" : "data",
     credentialLabel: providerCredentialLabel(row.credentialState),
     credentialTone,
+    credentialStatus: row.credentialState === "NotRequired"
+      ? "not-required"
+      : row.credentialState === "Missing" || row.credentialState === "Partial" || row.credentialState === "Invalid"
+        ? "missing"
+        : "present",
     verificationLabel: providerVerificationLabel(row.verificationState),
+    verificationStatus: row.verificationState === "Failed"
+      ? "failed"
+      : row.verificationState === "Verified" || row.verificationState === "NotRequired"
+        ? "verified"
+        : "pending",
     healthLabel: providerHealthLabel(row.health),
     healthTone,
     sourceLabel: providerCredentialSourceLabel(row.credentialSource),
@@ -1792,6 +1834,7 @@ function buildProviderConnectionRow(
     maskedKeyPreviewLabel: row.maskedKeyPreview ?? "Masked after save",
     lastHeartbeatLabel: formatSettingsUtcMinute(row.lastSuccessfulAt ?? row.lastVerifiedAt),
     fallbackLabel: row.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(routingContext.bindings),
+    fallbackStatus: row.fallbackActive ? "active" : routingContext.bindings.length > 0 ? "available" : "missing",
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
     productionStateLabel: providerRoutingProductionStateLabel(routingContext.connection),
@@ -1821,9 +1864,14 @@ function buildProviderRoutingConnectionRow(
     rowAnchorId: `provider-${connection.connectionId}-connection`,
     displayName: connection.displayName,
     capabilityLabel: providerRoutingCapabilityLabel(routingContext.bindings, connection),
+    capabilityGroup: routingContext.bindings.some((binding) => providerRoutingCapabilityGroup(binding.capability) === "brokerage")
+      ? "brokerage"
+      : "data",
     credentialLabel: credentialConfigured ? "Configured" : "Not required",
     credentialTone,
+    credentialStatus: credentialConfigured ? "present" : "not-required",
     verificationLabel: connection.productionReady ? "Certified" : "Certification pending",
+    verificationStatus: connection.productionReady ? "verified" : "pending",
     healthLabel: providerRoutingHealthLabel(connection, routingContext.trustSnapshot),
     healthTone,
     sourceLabel: credentialConfigured ? "Vault reference" : "Not required",
@@ -1831,6 +1879,11 @@ function buildProviderRoutingConnectionRow(
     maskedKeyPreviewLabel: "Hidden by routing API",
     lastHeartbeatLabel: "Live routing snapshot",
     fallbackLabel: providerRoutingFallbackLabel(routingContext.bindings),
+    fallbackStatus: routingContext.bindings.length === 0
+      ? "missing"
+      : routingContext.bindings.some((binding) => binding.failoverConnectionIds.length > 0)
+        ? "active"
+        : "available",
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
     productionStateLabel: providerRoutingProductionStateLabel(connection),
@@ -2178,6 +2231,7 @@ export function buildSettingsScreenViewModel(
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
+  const runtimeCapabilitySection = buildRuntimeCapabilitySection(payload.featureCapabilities ?? null);
   const providerConnectionCenter = buildProviderConnectionCenter(
     payload.providerConnections ?? null,
     payload.providerRoutingConnections ?? null,
@@ -2205,6 +2259,7 @@ export function buildSettingsScreenViewModel(
     recentEventsSection: buildRecentEventsSection(overview),
     providerConnectionCenter,
     alpacaConnectionPanel,
+    runtimeCapabilitySection,
     ...diagnosticSection,
     ...backendCapabilitySection
   };
@@ -2253,6 +2308,50 @@ function buildSettingsHeaderChips(
     { label: "Diagnostics", value: diagnosticStatusLabel },
     { label: "Heartbeat", value: overview ? formatSettingsUtcMinute(overview.lastHeartbeatUtc) : "—" }
   ];
+}
+
+function buildRuntimeCapabilitySection(
+  capabilities: FeatureCapabilitySettingsResponse | null
+): SettingsRuntimeCapabilitySection {
+  if (!capabilities) {
+    return {
+      title: "Runtime feature capabilities",
+      description: "Toggle module-declared workstation feature gates without editing configuration by hand.",
+      statusLabel: "Checking",
+      statusVariant: "warning",
+      summary: "Capability settings are still loading from the local host.",
+      listLabel: "Runtime feature capability toggles",
+      toggles: []
+    };
+  }
+
+  const toggles = capabilities.capabilities.map((capability): SettingsRuntimeCapabilityToggle => ({
+    capabilityKey: capability.capabilityKey,
+    displayName: capability.displayName,
+    description: capability.description,
+    isEnabled: capability.isEnabled,
+    statusLabel: capability.isEnabled ? "Enabled" : "Disabled",
+    statusVariant: capability.isEnabled ? "success" : "warning",
+    defaultLabel: capability.defaultEnabled ? "Default on" : "Default off",
+    overrideLabel: capability.isOverridden ? "Configured override" : "Using default",
+    canToggle: capability.canToggle,
+    disabledReason: capability.disabledReason,
+    ariaLabel: `${capability.isEnabled ? "Disable" : "Enable"} ${capability.displayName}`
+  }));
+  const disabled = toggles.filter((toggle) => !toggle.isEnabled).length;
+  const permanent = toggles.filter((toggle) => !toggle.canToggle).length;
+
+  return {
+    title: "Runtime feature capabilities",
+    description: "Toggle module-declared workstation feature gates without editing configuration by hand.",
+    statusLabel: disabled > 0 ? `${disabled} disabled` : "All enabled",
+    statusVariant: disabled > 0 ? "warning" : "success",
+    summary: disabled > 0
+      ? `${disabled} optional capability ${disabled === 1 ? "is" : "are"} disabled; ${permanent} required ${permanent === 1 ? "capability stays" : "capabilities stay"} locked on.`
+      : `${toggles.length} declared capability ${toggles.length === 1 ? "is" : "are"} enabled; ${permanent} required ${permanent === 1 ? "capability is" : "capabilities are"} locked on.`,
+    listLabel: "Runtime feature capability toggles",
+    toggles
+  };
 }
 
 function buildBackendCapabilitySection(payload: SettingsScreenPayload): Pick<

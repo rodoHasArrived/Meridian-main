@@ -6,6 +6,8 @@
 
 Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active native Windows desktop operator surface for the platform alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
+For Wave 2-4 workflow work, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) before accepting a WPF slice as progress. Desktop changes must map to a real operator scenario in Lane A trading cockpit reliability, Lane B run -> portfolio -> ledger continuity, or Lane C reconciliation/governance close flow, and must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
+
 ## Architecture
 
 ### Stack
@@ -70,6 +72,7 @@ Content Frame
 **Main shell context strip** — `MainPage` renders the shared context strip for workflow pages and suppresses it on workspace landing pages where the compact next-action row already carries the first operator handoff. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable. `WorkstationOperatingContextService.LoadAsync()` reserves its in-flight load task before raising catalog refresh events, which keeps shell-context subscribers from recursively starting another initial load while the catalog is being built.
 
 **Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, includes the selected account operating context as `fundAccountId` when one is active, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `AccountPortfolio` for brokerage-sync blockers instead of stopping on a workspace landing page. Queue attention text includes review count, severity, owner/source, and the concrete target page so the context-strip warning is actionable. The Trading shell uses the same account context when it requests shared operator readiness, so brokerage-sync blockers and account-scoped readiness stay aligned between the queue and the cockpit. Its desk briefing hero also resolves readiness work-item routes to concrete workbenches before broad shell tags when a warning or critical item blocks a ready active-run state. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
+The shell applies the shared inbox payload as soon as the endpoint returns, before slower workflow-summary refresh work completes, so blocked or warning queue state is not hidden behind unrelated summary latency.
 
 **Page header visibility refinement** — `MainPage` now keeps the current page title visible in the primary shell header instead of leaving the bound title/subtitle collapsed. Standard density shows both title and subtitle, while compact density keeps the title visible and collapses the subtitle so the context switcher and next-action strip stay above the fold.
 
@@ -86,6 +89,10 @@ Content Frame
 **QuantScript run-history handoff** — `QuantScriptPage` now renders the execution-history state already maintained by `QuantScriptViewModel` as a dedicated `Run History` tab. The tab shows recorded executions, selected-run evidence, console preview, and existing Strategy Runs handoff commands without adding a new history read, timer, or execution-path side effect.
 
 **Run Cash Flow empty-state guidance** — `RunCashFlowPage` now hides blank ladder and event grids when no retained cash-flow rows are available. `CashFlowViewModel` projects selected-run, missing-run, no-event, and loaded states from the already-loaded run cash-flow summary so the drill-in gives operators clear next steps without adding another run-store read.
+
+**Run Cash Flow shared continuity posture** — `RunCashFlowPage` now shows a bound continuity posture strip for the selected retained run. `CashFlowViewModel` consumes the registered `StrategyRunContinuityService` when available and projects the shared portfolio, ledger, cash-flow, reconciliation, and warning state beside the cash-flow ladder, so W3 blocker paths such as missing portfolio or reconciliation evidence are visible without WPF inventing a desktop-only readiness rule. Use the focused `CashFlowViewModelTests` filter when changing this surface.
+
+**Run Cash Flow blocked-continuity guard** — `CashFlowViewModelTests` now includes a retained-run scenario where cash-flow entries load successfully while shared continuity reports an open reconciliation blocker. The expected desktop presentation remains `Continuity blocked` with the shared `open-reconciliation-breaks` warning visible, which prevents the WPF cash-flow ladder from looking acceptance-ready just because rows are present.
 
 **Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
 
@@ -122,6 +129,10 @@ Content Frame
 **Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 
 **Fund Ledger reconciliation calibration posture** — `FundReconciliationWorkbenchService` now loads `GET /api/workstation/reconciliation/calibration-summary` through `IWorkstationReconciliationApiClient` while it loads the break queue. `FundLedgerViewModel` projects the returned status, pending sign-off count, missing metadata count, and tolerance-profile rollups into `FundLedgerPage` so governance operators can see calibration blockers before resolving or signing off reconciliation work. Use the focused `FundLedgerViewModelTests` and `FundReconciliationWorkbenchServiceTests` filters when changing this surface.
+
+**Fund Ledger reconciliation lifecycle and sign-off posture** — `FundLedgerViewModel` now projects selected break lifecycle copy and required sign-off posture from the already-loaded shared reconciliation queue row. `FundLedgerPage` binds that state inside the reconciliation detail panel so operators can trace detection -> review -> decision -> audit posture and required governance role without WPF inventing a separate case-status rule. Use the focused `FundLedgerViewModelTests` and `FundReconciliationWorkbenchServiceTests` filters when changing this surface.
+
+**Fund Ledger reconciliation decision recovery** — resolving or dismissing a selected break refreshes the queue from the shared workstation reconciliation endpoint and keeps the closed break selected under the `All` filter. The detail panel now calls out that a captured decision still blocks close approval while required sign-off remains pending, and the audit tab retains the decision note returned from the shared queue path.
 
 **Trading desk briefing hero** — `TradingWorkspaceShellViewModel` now owns the Trading shell presentation state, with `TradingWorkspaceShellPresentationService` composing active-run, workflow-summary, fund/account context, capital, and shared operator-readiness inputs into bound UI state. `TradingWorkspaceShellPage` is limited to WPF lifecycle, tone resources, dock hosting, and navigation forwarding. The hero and validation card still cover context-required, replay-mismatch, controls-blocked, paper-review, live-oversight, DK1 sign-off, and account-scoped brokerage-sync states without adding backend behavior or changing route tags.
 
@@ -556,6 +567,7 @@ make desktop-test
 
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
+- [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-4 desktop acceptance lanes, shared-contract checks, and evidence rules
 - [`docs/evaluations/desktop-platform-improvements-implementation-guide.md`](../evaluations/desktop-platform-improvements-implementation-guide.md) — Platform improvement roadmap and implementation reference
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
 - [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap

@@ -6,6 +6,7 @@ using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -281,7 +282,6 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
-#pragma warning disable CS0618 // Compatibility routes retain legacy brokerage projection payloads; readiness uses status DTOs.
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
@@ -295,7 +295,7 @@ public static class FundAccountEndpoints
             return Results.Json(positions, jsonOptions);
         })
         .WithName("GetAccountBrokerageSyncPositions")
-        .Produces<IReadOnlyList<WorkstationBrokeragePositionDto>>(StatusCodes.Status200OK)
+        .Produces<IReadOnlyList<FundAccountBrokeragePositionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
         group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
@@ -313,10 +313,49 @@ public static class FundAccountEndpoints
                 : Results.Json(view, jsonOptions);
         })
         .WithName("GetAccountBrokerageSyncActivity")
-        .Produces<WorkstationBrokerageSyncViewDto>(StatusCodes.Status200OK)
+        .Produces<FundAccountBrokerageSyncActivityDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
-#pragma warning restore CS0618
+
+        group.MapPost("/{accountId:guid}/brokerage-sync/reconcile-ledger", async (Guid accountId, HttpContext context) =>
+        {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+
+            var reconciliation = ResolveProviderLedgerReconciliationService(context);
+            if (reconciliation is null)
+                return ProviderLedgerReconciliationUnavailable();
+
+            var request = await ReadProviderLedgerReconciliationRequestAsync(context, jsonOptions).ConfigureAwait(false)
+                ?? new ProviderLedgerReconciliationRequestDto();
+            var detail = await reconciliation.RunAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("RunProviderLedgerReconciliation")
+        .Accepts<ProviderLedgerReconciliationRequestDto>("application/json")
+        .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapGet("/{accountId:guid}/brokerage-sync/reconciliation/latest", async (Guid accountId, HttpContext context) =>
+        {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+
+            var reconciliation = ResolveProviderLedgerReconciliationService(context);
+            if (reconciliation is null)
+                return ProviderLedgerReconciliationUnavailable();
+
+            var detail = await reconciliation.GetLatestAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetLatestProviderLedgerReconciliation")
+        .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
 
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {
@@ -552,6 +591,37 @@ public static class FundAccountEndpoints
         .WithName("GetAccountReconciliationRuns")
         .Produces<IReadOnlyList<AccountReconciliationRunDto>>(StatusCodes.Status200OK);
 
+
+        group.MapGet("/{accountId:guid}/reconciliation-queue-status", async (Guid accountId, HttpContext context) =>
+        {
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
+                return ServiceUnavailable();
+
+            var runs = await queryService.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var latestRun = runs.OrderByDescending(run => run.AsOfDate).FirstOrDefault();
+            var unresolvedBreaks = latestRun is null
+                ? 0
+                : (await queryService.GetReconciliationResultsAsync(latestRun.ReconciliationRunId, context.RequestAborted).ConfigureAwait(false))
+                    .Count(result => !string.Equals(result.Status, "Matched", StringComparison.OrdinalIgnoreCase));
+
+            var payload = new ReconciliationQueueAccountStatusDto(
+                AccountId: accountId,
+                AccountCode: latestRun?.AccountId.ToString("D") ?? "unknown",
+                QueueState: unresolvedBreaks == 0 ? "Ready" : "Blocked",
+                UnresolvedBreakCount: unresolvedBreaks,
+                SignOffReady: unresolvedBreaks == 0 && latestRun is not null,
+                NextBestAction: unresolvedBreaks == 0 ? "Proceed with operator sign-off." : "Resolve unresolved breaks before sign-off.",
+                BlockerReason: unresolvedBreaks == 0 ? "None" : "One or more unresolved reconciliation breaks remain.",
+                EvidenceLinks: latestRun is null
+                    ? Array.Empty<string>()
+                    : [ $"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results" ]);
+
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetAccountReconciliationQueueStatus")
+        .Produces<ReconciliationQueueAccountStatusDto>(StatusCodes.Status200OK);
+
         group.MapGet("/reconciliation-runs/{runId:guid}/results", async (Guid runId, HttpContext context) =>
         {
             var queryService = ResolveQueryService(context);
@@ -585,6 +655,9 @@ public static class FundAccountEndpoints
     private static BrokeragePortfolioSyncService? ResolveBrokerageSyncService(HttpContext context) =>
         context.RequestServices.GetService<BrokeragePortfolioSyncService>();
 
+    private static ProviderLedgerReconciliationService? ResolveProviderLedgerReconciliationService(HttpContext context) =>
+        context.RequestServices.GetService<ProviderLedgerReconciliationService>();
+
     private static Guid? TryParseGuidFilter(string? raw)
     {
         return Guid.TryParse(raw, out var parsed) ? parsed : null;
@@ -613,6 +686,9 @@ public static class FundAccountEndpoints
 
     private static IResult BrokerageSyncUnavailable() =>
         Results.Problem("Brokerage sync service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static IResult ProviderLedgerReconciliationUnavailable() =>
+        Results.Problem("Provider-ledger reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasBrokerageSyncAccess(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);
@@ -655,6 +731,22 @@ public static class FundAccountEndpoints
         }
 
         return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncRunRequestDto>(
+                context.Request.Body,
+                jsonOptions,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task<ProviderLedgerReconciliationRequestDto?> ReadProviderLedgerReconciliationRequestAsync(
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (context.Request.ContentLength is null or 0)
+        {
+            return null;
+        }
+
+        return await JsonSerializer.DeserializeAsync<ProviderLedgerReconciliationRequestDto>(
                 context.Request.Body,
                 jsonOptions,
                 context.RequestAborted)

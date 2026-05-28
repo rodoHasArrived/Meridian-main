@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -10,72 +11,27 @@ public sealed partial class FundLedgerViewModel
 {
     private const string DefaultReconciliationOperator = "desktop-user";
 
-    private readonly ObservableCollection<FundReconciliationBreakQueueRow> _reconciliationBreakQueueItems = [];
-    private readonly ObservableCollection<FundReconciliationRunRow> _reconciliationRunItems = [];
-    private readonly ObservableCollection<FundReconciliationCheckDetailRow> _reconciliationExceptionRows = [];
-    private readonly ObservableCollection<FundReconciliationCheckDetailRow> _reconciliationAllCheckRows = [];
-    private readonly ObservableCollection<FundReconciliationSecurityCoverageRow> _reconciliationSecurityCoverageRows = [];
-    private readonly ObservableCollection<FundReconciliationAuditTrailRow> _reconciliationAuditRows = [];
-    private readonly ObservableCollection<FundReconciliationCalibrationProfileRow> _reconciliationCalibrationProfiles = [];
-
-    private IReadOnlyList<FundReconciliationBreakQueueRow> _allReconciliationBreakQueueItems = [];
-    private IReadOnlyList<FundReconciliationRunRow> _allReconciliationRunItems = [];
     private FundReconciliationDetailModel? _currentReconciliationDetail;
     private CancellationTokenSource? _reconciliationDetailCts;
 
-    private FundReconciliationQueueView _selectedReconciliationQueueView = FundReconciliationQueueView.BreakQueue;
-    private FundReconciliationBreakQueueFilter _selectedReconciliationBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
-    private FundReconciliationScopeFilter _selectedReconciliationScopeFilter = FundReconciliationScopeFilter.All;
     private bool _isApplyingReconciliationSelection;
     private bool _isReconciliationRefreshInFlight;
     private bool _isReconciliationDetailLoading;
     private bool _isReconciliationActionInFlight;
-    private int _selectedReconciliationDetailTabIndex;
-    private string _reconciliationSearchText = string.Empty;
-    private string _reconciliationLegalEntityText = "-";
-    private string _reconciliationBaseCurrencyText = "-";
-    private string _reconciliationScopeText = "-";
-    private string _reconciliationWorkspaceAsOfText = "-";
-    private string _reconciliationLastRefreshText = "-";
-    private string _inReviewBreaksText = "0";
-    private string _reconciliationSecurityCoverageIssuesText = "0";
-    private string _reconciliationCalibrationStatusText = "Not loaded";
-    private string _reconciliationCalibrationSummaryText = "Calibration posture appears after the reconciliation workbench loads.";
-    private string _reconciliationCalibrationProfilesText = "0";
-    private string _reconciliationCalibrationPendingSignoffText = "0";
-    private string _reconciliationCalibrationMissingMetadataText = "0";
-    private string _reconciliationActionFeedbackText = string.Empty;
-    private string _reconciliationOperatorText = DefaultReconciliationOperator;
-    private string _reconciliationNoteText = string.Empty;
-    private string _reconciliationDetailTitle = "Select a break or run";
-    private string _reconciliationDetailSubtitle = "Choose a break queue item or reconciliation run to load exception detail.";
-    private string _reconciliationDetailStatusText = "Awaiting selection";
-    private string _reconciliationDetailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
-    private string _reconciliationDetailLastUpdatedText = "-";
-    private string _reconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
-    private string _reconciliationDetailTotalChecksText = "0";
-    private string _reconciliationDetailMatchedText = "0";
-    private string _reconciliationDetailBreaksText = "0";
-    private string _reconciliationDetailBreakAmountText = "-";
-    private string _reconciliationDetailSecurityIssuesText = "0";
-    private string _reconciliationBreakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
-    private string _reconciliationRunsEmptyStateText = "No reconciliation runs are available for this fund.";
-    private FundReconciliationBreakQueueRow? _selectedBreakQueueItem;
-    private FundReconciliationRunRow? _selectedReconciliationRun;
 
-    public ObservableCollection<FundReconciliationBreakQueueRow> ReconciliationBreakQueueItems => _reconciliationBreakQueueItems;
+    public ObservableCollection<FundReconciliationBreakQueueRow> ReconciliationBreakQueueItems => ReconciliationSection.BreakQueueItems;
 
-    public ObservableCollection<FundReconciliationRunRow> ReconciliationRunItems => _reconciliationRunItems;
+    public ObservableCollection<FundReconciliationRunRow> ReconciliationRunItems => ReconciliationSection.RunItems;
 
-    public ObservableCollection<FundReconciliationCheckDetailRow> ReconciliationExceptionRows => _reconciliationExceptionRows;
+    public ObservableCollection<FundReconciliationCheckDetailRow> ReconciliationExceptionRows => ReconciliationSection.ExceptionRows;
 
-    public ObservableCollection<FundReconciliationCheckDetailRow> ReconciliationAllCheckRows => _reconciliationAllCheckRows;
+    public ObservableCollection<FundReconciliationCheckDetailRow> ReconciliationAllCheckRows => ReconciliationSection.AllCheckRows;
 
-    public ObservableCollection<FundReconciliationSecurityCoverageRow> ReconciliationSecurityCoverageRows => _reconciliationSecurityCoverageRows;
+    public ObservableCollection<FundReconciliationSecurityCoverageRow> ReconciliationSecurityCoverageRows => ReconciliationSection.SecurityCoverageRows;
 
-    public ObservableCollection<FundReconciliationAuditTrailRow> ReconciliationAuditRows => _reconciliationAuditRows;
+    public ObservableCollection<FundReconciliationAuditTrailRow> ReconciliationAuditRows => ReconciliationSection.AuditRows;
 
-    public ObservableCollection<FundReconciliationCalibrationProfileRow> ReconciliationCalibrationProfiles => _reconciliationCalibrationProfiles;
+    public ObservableCollection<FundReconciliationCalibrationProfileRow> ReconciliationCalibrationProfiles => ReconciliationSection.CalibrationProfiles;
 
     public IRelayCommand OpenSelectedReconciliationAccountWorkflowCommand { get; private set; } = null!;
 
@@ -83,20 +39,20 @@ public sealed partial class FundLedgerViewModel
 
     public int SelectedReconciliationQueueIndex
     {
-        get => (int)_selectedReconciliationQueueView;
+        get => (int)ReconciliationSection.SelectedQueueView;
         set
         {
             var normalized = value <= 0
                 ? FundReconciliationQueueView.BreakQueue
                 : FundReconciliationQueueView.Runs;
 
-            if (_selectedReconciliationQueueView == normalized)
+            if (ReconciliationSection.SelectedQueueView == normalized)
             {
                 return;
             }
 
             var previousActiveKey = GetActiveReconciliationSelectionKey();
-            _selectedReconciliationQueueView = normalized;
+            ReconciliationSection.SelectedQueueView = normalized;
             RaisePropertyChanged();
             ApplyReconciliationFiltersAndSelection(previousActiveKey, forceReload: true);
         }
@@ -104,7 +60,7 @@ public sealed partial class FundLedgerViewModel
 
     public int SelectedReconciliationScopeFilterIndex
     {
-        get => (int)_selectedReconciliationScopeFilter;
+        get => (int)ReconciliationSection.SelectedScopeFilter;
         set
         {
             var normalized = value switch
@@ -114,13 +70,13 @@ public sealed partial class FundLedgerViewModel
                 _ => FundReconciliationScopeFilter.All
             };
 
-            if (_selectedReconciliationScopeFilter == normalized)
+            if (ReconciliationSection.SelectedScopeFilter == normalized)
             {
                 return;
             }
 
             var previousActiveKey = GetActiveReconciliationSelectionKey();
-            _selectedReconciliationScopeFilter = normalized;
+            ReconciliationSection.SelectedScopeFilter = normalized;
             RaisePropertyChanged();
             ApplyReconciliationFiltersAndSelection(previousActiveKey);
             NotifyReconciliationFilterStateChanged();
@@ -129,22 +85,34 @@ public sealed partial class FundLedgerViewModel
 
     public int SelectedReconciliationDetailTabIndex
     {
-        get => _selectedReconciliationDetailTabIndex;
-        set => SetProperty(ref _selectedReconciliationDetailTabIndex, value);
-    }
-
-    public FundReconciliationBreakQueueRow? SelectedBreakQueueItem
-    {
-        get => _selectedBreakQueueItem;
+        get => ReconciliationSection.SelectedDetailTabIndex;
         set
         {
-            if (!SetProperty(ref _selectedBreakQueueItem, value))
+            if (ReconciliationSection.SelectedDetailTabIndex == value)
             {
                 return;
             }
 
+            ReconciliationSection.SelectedDetailTabIndex = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public FundReconciliationBreakQueueRow? SelectedBreakQueueItem
+    {
+        get => ReconciliationSection.SelectedBreakQueueItem;
+        set
+        {
+            if (ReferenceEquals(ReconciliationSection.SelectedBreakQueueItem, value))
+            {
+                return;
+            }
+
+            ReconciliationSection.SelectedBreakQueueItem = value;
+            RaisePropertyChanged();
             NotifyReconciliationDerivedStateChanged();
-            if (!_isApplyingReconciliationSelection && _selectedReconciliationQueueView == FundReconciliationQueueView.BreakQueue)
+            UpdateReconciliationOperatorGuidance();
+            if (!_isApplyingReconciliationSelection && ReconciliationSection.SelectedQueueView == FundReconciliationQueueView.BreakQueue)
             {
                 _ = LoadSelectedReconciliationDetailAsync();
             }
@@ -153,16 +121,18 @@ public sealed partial class FundLedgerViewModel
 
     public FundReconciliationRunRow? SelectedReconciliationRun
     {
-        get => _selectedReconciliationRun;
+        get => ReconciliationSection.SelectedRun;
         set
         {
-            if (!SetProperty(ref _selectedReconciliationRun, value))
+            if (ReferenceEquals(ReconciliationSection.SelectedRun, value))
             {
                 return;
             }
 
+            ReconciliationSection.SelectedRun = value;
+            RaisePropertyChanged();
             NotifyReconciliationDerivedStateChanged();
-            if (!_isApplyingReconciliationSelection && _selectedReconciliationQueueView == FundReconciliationQueueView.Runs)
+            if (!_isApplyingReconciliationSelection && ReconciliationSection.SelectedQueueView == FundReconciliationQueueView.Runs)
             {
                 _ = LoadSelectedReconciliationDetailAsync();
             }
@@ -171,14 +141,16 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationSearchText
     {
-        get => _reconciliationSearchText;
+        get => ReconciliationSection.SearchText;
         set
         {
-            if (!SetProperty(ref _reconciliationSearchText, value))
+            if (string.Equals(ReconciliationSection.SearchText, value, StringComparison.Ordinal))
             {
                 return;
             }
 
+            ReconciliationSection.SearchText = value;
+            RaisePropertyChanged();
             var previousActiveKey = GetActiveReconciliationSelectionKey();
             ApplyReconciliationFiltersAndSelection(previousActiveKey);
             NotifyReconciliationFilterStateChanged();
@@ -187,34 +159,34 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationLegalEntityText
     {
-        get => _reconciliationLegalEntityText;
-        private set => SetProperty(ref _reconciliationLegalEntityText, value);
+        get => ReconciliationSection.LegalEntityText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.LegalEntityText, text => ReconciliationSection.LegalEntityText = text, value);
     }
 
     public string ReconciliationBaseCurrencyText
     {
-        get => _reconciliationBaseCurrencyText;
-        private set => SetProperty(ref _reconciliationBaseCurrencyText, value);
+        get => ReconciliationSection.BaseCurrencyText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.BaseCurrencyText, text => ReconciliationSection.BaseCurrencyText = text, value);
     }
 
     public string ReconciliationScopeText
     {
-        get => _reconciliationScopeText;
-        private set => SetProperty(ref _reconciliationScopeText, value);
+        get => ReconciliationSection.ScopeText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.ScopeText, text => ReconciliationSection.ScopeText = text, value);
     }
 
     public string ReconciliationWorkspaceAsOfText
     {
-        get => _reconciliationWorkspaceAsOfText;
-        private set => SetProperty(ref _reconciliationWorkspaceAsOfText, value);
+        get => ReconciliationSection.WorkspaceAsOfText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.WorkspaceAsOfText, text => ReconciliationSection.WorkspaceAsOfText = text, value);
     }
 
     public string ReconciliationLastRefreshText
     {
-        get => _reconciliationLastRefreshText;
+        get => ReconciliationSection.LastRefreshText;
         private set
         {
-            if (SetProperty(ref _reconciliationLastRefreshText, value))
+            if (SetReconciliationSectionProperty(ReconciliationSection.LastRefreshText, text => ReconciliationSection.LastRefreshText = text, value))
             {
                 UpdateReconciliationWorkbenchPresentation();
             }
@@ -223,58 +195,58 @@ public sealed partial class FundLedgerViewModel
 
     public string InReviewBreaksText
     {
-        get => _inReviewBreaksText;
-        private set => SetProperty(ref _inReviewBreaksText, value);
+        get => ReconciliationSection.InReviewBreaksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.InReviewBreaksText, text => ReconciliationSection.InReviewBreaksText = text, value);
     }
 
     public string ReconciliationSecurityCoverageIssuesText
     {
-        get => _reconciliationSecurityCoverageIssuesText;
-        private set => SetProperty(ref _reconciliationSecurityCoverageIssuesText, value);
+        get => ReconciliationSection.SecurityCoverageIssuesText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.SecurityCoverageIssuesText, text => ReconciliationSection.SecurityCoverageIssuesText = text, value);
     }
 
     public string ReconciliationCalibrationStatusText
     {
-        get => _reconciliationCalibrationStatusText;
-        private set => SetProperty(ref _reconciliationCalibrationStatusText, value);
+        get => ReconciliationSection.CalibrationStatusText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationStatusText, text => ReconciliationSection.CalibrationStatusText = text, value);
     }
 
     public string ReconciliationCalibrationSummaryText
     {
-        get => _reconciliationCalibrationSummaryText;
-        private set => SetProperty(ref _reconciliationCalibrationSummaryText, value);
+        get => ReconciliationSection.CalibrationSummaryText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationSummaryText, text => ReconciliationSection.CalibrationSummaryText = text, value);
     }
 
     public string ReconciliationCalibrationProfilesText
     {
-        get => _reconciliationCalibrationProfilesText;
-        private set => SetProperty(ref _reconciliationCalibrationProfilesText, value);
+        get => ReconciliationSection.CalibrationProfilesText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationProfilesText, text => ReconciliationSection.CalibrationProfilesText = text, value);
     }
 
     public string ReconciliationCalibrationPendingSignoffText
     {
-        get => _reconciliationCalibrationPendingSignoffText;
-        private set => SetProperty(ref _reconciliationCalibrationPendingSignoffText, value);
+        get => ReconciliationSection.CalibrationPendingSignoffText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationPendingSignoffText, text => ReconciliationSection.CalibrationPendingSignoffText = text, value);
     }
 
     public string ReconciliationCalibrationMissingMetadataText
     {
-        get => _reconciliationCalibrationMissingMetadataText;
-        private set => SetProperty(ref _reconciliationCalibrationMissingMetadataText, value);
+        get => ReconciliationSection.CalibrationMissingMetadataText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationMissingMetadataText, text => ReconciliationSection.CalibrationMissingMetadataText = text, value);
     }
 
     public string ReconciliationActionFeedbackText
     {
-        get => _reconciliationActionFeedbackText;
-        private set => SetProperty(ref _reconciliationActionFeedbackText, value);
+        get => ReconciliationSection.ActionFeedbackText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.ActionFeedbackText, text => ReconciliationSection.ActionFeedbackText = text, value);
     }
 
     public string ReconciliationOperatorText
     {
-        get => _reconciliationOperatorText;
+        get => ReconciliationSection.OperatorText;
         set
         {
-            if (SetProperty(ref _reconciliationOperatorText, value))
+            if (SetReconciliationSectionProperty(ReconciliationSection.OperatorText, text => ReconciliationSection.OperatorText = text, value))
             {
                 NotifyReconciliationDerivedStateChanged();
                 UpdateReconciliationWorkbenchPresentation();
@@ -285,10 +257,10 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationNoteText
     {
-        get => _reconciliationNoteText;
+        get => ReconciliationSection.NoteText;
         set
         {
-            if (SetProperty(ref _reconciliationNoteText, value))
+            if (SetReconciliationSectionProperty(ReconciliationSection.NoteText, text => ReconciliationSection.NoteText = text, value))
             {
                 NotifyReconciliationDerivedStateChanged();
             }
@@ -297,90 +269,121 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationDetailTitle
     {
-        get => _reconciliationDetailTitle;
-        private set => SetProperty(ref _reconciliationDetailTitle, value);
+        get => ReconciliationSection.DetailTitle;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailTitle, text => ReconciliationSection.DetailTitle = text, value);
     }
 
     public string ReconciliationDetailSubtitle
     {
-        get => _reconciliationDetailSubtitle;
-        private set => SetProperty(ref _reconciliationDetailSubtitle, value);
+        get => ReconciliationSection.DetailSubtitle;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSubtitle, text => ReconciliationSection.DetailSubtitle = text, value);
     }
 
     public string ReconciliationDetailStatusText
     {
-        get => _reconciliationDetailStatusText;
-        private set => SetProperty(ref _reconciliationDetailStatusText, value);
+        get => ReconciliationSection.DetailStatusText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailStatusText, text => ReconciliationSection.DetailStatusText = text, value);
     }
 
     public string ReconciliationDetailCoverageText
     {
-        get => _reconciliationDetailCoverageText;
-        private set => SetProperty(ref _reconciliationDetailCoverageText, value);
+        get => ReconciliationSection.DetailCoverageText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailCoverageText, text => ReconciliationSection.DetailCoverageText = text, value);
+    }
+
+    public string ReconciliationDetailLifecycleText
+    {
+        get => ReconciliationSection.DetailLifecycleText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailLifecycleText, text => ReconciliationSection.DetailLifecycleText = text, value);
+    }
+
+    public string ReconciliationDetailSignoffText
+    {
+        get => ReconciliationSection.DetailSignoffText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSignoffText, text => ReconciliationSection.DetailSignoffText = text, value);
     }
 
     public string ReconciliationDetailLastUpdatedText
     {
-        get => _reconciliationDetailLastUpdatedText;
-        private set => SetProperty(ref _reconciliationDetailLastUpdatedText, value);
+        get => ReconciliationSection.DetailLastUpdatedText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailLastUpdatedText, text => ReconciliationSection.DetailLastUpdatedText = text, value);
     }
 
     public string ReconciliationDetailGuidanceText
     {
-        get => _reconciliationDetailGuidanceText;
-        private set => SetProperty(ref _reconciliationDetailGuidanceText, value);
+        get => ReconciliationSection.DetailGuidanceText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailGuidanceText, text => ReconciliationSection.DetailGuidanceText = text, value);
     }
 
     public string ReconciliationDetailTotalChecksText
     {
-        get => _reconciliationDetailTotalChecksText;
-        private set => SetProperty(ref _reconciliationDetailTotalChecksText, value);
+        get => ReconciliationSection.DetailTotalChecksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailTotalChecksText, text => ReconciliationSection.DetailTotalChecksText = text, value);
     }
 
     public string ReconciliationDetailMatchedText
     {
-        get => _reconciliationDetailMatchedText;
-        private set => SetProperty(ref _reconciliationDetailMatchedText, value);
+        get => ReconciliationSection.DetailMatchedText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailMatchedText, text => ReconciliationSection.DetailMatchedText = text, value);
     }
 
     public string ReconciliationDetailBreaksText
     {
-        get => _reconciliationDetailBreaksText;
-        private set => SetProperty(ref _reconciliationDetailBreaksText, value);
+        get => ReconciliationSection.DetailBreaksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailBreaksText, text => ReconciliationSection.DetailBreaksText = text, value);
     }
 
     public string ReconciliationDetailBreakAmountText
     {
-        get => _reconciliationDetailBreakAmountText;
-        private set => SetProperty(ref _reconciliationDetailBreakAmountText, value);
+        get => ReconciliationSection.DetailBreakAmountText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailBreakAmountText, text => ReconciliationSection.DetailBreakAmountText = text, value);
     }
 
     public string ReconciliationDetailSecurityIssuesText
     {
-        get => _reconciliationDetailSecurityIssuesText;
-        private set => SetProperty(ref _reconciliationDetailSecurityIssuesText, value);
+        get => ReconciliationSection.DetailSecurityIssuesText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSecurityIssuesText, text => ReconciliationSection.DetailSecurityIssuesText = text, value);
     }
 
     public string ReconciliationBreakQueueEmptyStateText
     {
-        get => _reconciliationBreakQueueEmptyStateText;
-        private set => SetProperty(ref _reconciliationBreakQueueEmptyStateText, value);
+        get => ReconciliationSection.BreakQueueEmptyStateText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.BreakQueueEmptyStateText, text => ReconciliationSection.BreakQueueEmptyStateText = text, value);
+    }
+
+
+    public string ReconciliationNextBestActionText
+    {
+        get => ReconciliationSection.NextBestActionText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.NextBestActionText, text => ReconciliationSection.NextBestActionText = text, value);
+    }
+
+    public string ReconciliationBlockerReasonText
+    {
+        get => ReconciliationSection.BlockerReasonText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.BlockerReasonText, text => ReconciliationSection.BlockerReasonText = text, value);
+    }
+
+    public string ReconciliationEvidenceLinksText
+    {
+        get => ReconciliationSection.EvidenceLinksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.EvidenceLinksText, text => ReconciliationSection.EvidenceLinksText = text, value);
     }
 
     public string ReconciliationRunsEmptyStateText
     {
-        get => _reconciliationRunsEmptyStateText;
-        private set => SetProperty(ref _reconciliationRunsEmptyStateText, value);
+        get => ReconciliationSection.RunsEmptyStateText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.RunsEmptyStateText, text => ReconciliationSection.RunsEmptyStateText = text, value);
     }
 
     public bool HasActiveReconciliationFilters =>
-        _selectedReconciliationBreakQueueFilter != FundReconciliationBreakQueueFilter.Open ||
-        _selectedReconciliationScopeFilter != FundReconciliationScopeFilter.All ||
+        ReconciliationSection.SelectedBreakQueueFilter != FundReconciliationBreakQueueFilter.Open ||
+        ReconciliationSection.SelectedScopeFilter != FundReconciliationScopeFilter.All ||
         !string.IsNullOrWhiteSpace(ReconciliationSearchText);
 
     public bool IsOpenBreakQueueFilterSelected
     {
-        get => _selectedReconciliationBreakQueueFilter == FundReconciliationBreakQueueFilter.Open;
+        get => ReconciliationSection.SelectedBreakQueueFilter == FundReconciliationBreakQueueFilter.Open;
         set
         {
             if (value)
@@ -392,7 +395,7 @@ public sealed partial class FundLedgerViewModel
 
     public bool IsInReviewBreakQueueFilterSelected
     {
-        get => _selectedReconciliationBreakQueueFilter == FundReconciliationBreakQueueFilter.InReview;
+        get => ReconciliationSection.SelectedBreakQueueFilter == FundReconciliationBreakQueueFilter.InReview;
         set
         {
             if (value)
@@ -404,7 +407,7 @@ public sealed partial class FundLedgerViewModel
 
     public bool IsAllBreakQueueFilterSelected
     {
-        get => _selectedReconciliationBreakQueueFilter == FundReconciliationBreakQueueFilter.All;
+        get => ReconciliationSection.SelectedBreakQueueFilter == FundReconciliationBreakQueueFilter.All;
         set
         {
             if (value)
@@ -417,7 +420,7 @@ public sealed partial class FundLedgerViewModel
     public bool SupportsSelectedBreakActions =>
         _currentReconciliationDetail?.SupportsBreakActions == true &&
         SelectedBreakQueueItem is not null &&
-        _selectedReconciliationQueueView == FundReconciliationQueueView.BreakQueue;
+        ReconciliationSection.SelectedQueueView == FundReconciliationQueueView.BreakQueue;
 
     public bool CanStartReviewSelectedBreak =>
         SupportsSelectedBreakActions &&
@@ -463,8 +466,8 @@ public sealed partial class FundLedgerViewModel
         FundReconciliationWorkbenchSnapshot snapshot,
         CancellationToken ct)
     {
-        _allReconciliationBreakQueueItems = snapshot.BreakQueueItems;
-        _allReconciliationRunItems = snapshot.RunRows;
+        ReconciliationSection.AllBreakQueueItems = snapshot.BreakQueueItems;
+        ReconciliationSection.AllRunItems = snapshot.RunRows;
 
         ApplyReconciliation(snapshot.Summary);
 
@@ -606,9 +609,9 @@ public sealed partial class FundLedgerViewModel
                 return;
             }
 
-            if (result.Item is not null && !MatchesBreakQueueFilter(result.Item.Status, _selectedReconciliationBreakQueueFilter))
+            if (result.Item is not null && !MatchesBreakQueueFilter(result.Item.Status, ReconciliationSection.SelectedBreakQueueFilter))
             {
-                _selectedReconciliationBreakQueueFilter = FundReconciliationBreakQueueFilter.All;
+                ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.All;
                 RaisePropertyChanged(nameof(IsOpenBreakQueueFilterSelected));
                 RaisePropertyChanged(nameof(IsInReviewBreakQueueFilterSelected));
                 RaisePropertyChanged(nameof(IsAllBreakQueueFilterSelected));
@@ -628,23 +631,25 @@ public sealed partial class FundLedgerViewModel
         bool forceReload = false,
         CancellationToken cancellationToken = default)
     {
-        var filteredBreaks = FilterBreakQueueItems(_allReconciliationBreakQueueItems).ToArray();
-        var filteredRuns = FilterRunItems(_allReconciliationRunItems).ToArray();
+        var filteredBreaks = FilterBreakQueueItems(ReconciliationSection.AllBreakQueueItems).ToArray();
+        var filteredRuns = FilterRunItems(ReconciliationSection.AllRunItems).ToArray();
         var preferredBreakId = SelectedBreakQueueItem?.BreakId;
         var preferredRunKey = SelectedReconciliationRun?.RowKey;
 
         _isApplyingReconciliationSelection = true;
         try
         {
-            SynchronizeCollection(_reconciliationBreakQueueItems, filteredBreaks);
-            SynchronizeCollection(_reconciliationRunItems, filteredRuns);
+            SynchronizeCollection(ReconciliationSection.BreakQueueItems, filteredBreaks);
+            SynchronizeCollection(ReconciliationSection.RunItems, filteredRuns);
 
-            SetProperty(
-                ref _selectedBreakQueueItem,
+            SetReconciliationSectionProperty(
+                ReconciliationSection.SelectedBreakQueueItem,
+                item => ReconciliationSection.SelectedBreakQueueItem = item,
                 ResolveSelection(filteredBreaks, preferredBreakId, static item => item.BreakId),
                 nameof(SelectedBreakQueueItem));
-            SetProperty(
-                ref _selectedReconciliationRun,
+            SetReconciliationSectionProperty(
+                ReconciliationSection.SelectedRun,
+                run => ReconciliationSection.SelectedRun = run,
                 ResolveSelection(filteredRuns, preferredRunKey, static item => item.RowKey),
                 nameof(SelectedReconciliationRun));
         }
@@ -669,14 +674,14 @@ public sealed partial class FundLedgerViewModel
 
     private IEnumerable<FundReconciliationBreakQueueRow> FilterBreakQueueItems(IEnumerable<FundReconciliationBreakQueueRow> rows)
     {
-        if (_selectedReconciliationScopeFilter == FundReconciliationScopeFilter.Account)
+        if (ReconciliationSection.SelectedScopeFilter == FundReconciliationScopeFilter.Account)
         {
             return [];
         }
 
         var query = ReconciliationSearchText.Trim();
         return rows.Where(item =>
-            MatchesBreakQueueFilter(item.Status, _selectedReconciliationBreakQueueFilter) &&
+            MatchesBreakQueueFilter(item.Status, ReconciliationSection.SelectedBreakQueueFilter) &&
             (string.IsNullOrWhiteSpace(query) ||
              ContainsIgnoreCase(item.DisplayLabel, query) ||
              ContainsIgnoreCase(item.CategoryLabel, query) ||
@@ -688,7 +693,7 @@ public sealed partial class FundLedgerViewModel
     {
         var query = ReconciliationSearchText.Trim();
         return rows.Where(item =>
-            MatchesScopeFilter(item.SourceType, _selectedReconciliationScopeFilter) &&
+            MatchesScopeFilter(item.SourceType, ReconciliationSection.SelectedScopeFilter) &&
             (string.IsNullOrWhiteSpace(query) ||
              ContainsIgnoreCase(item.PrimaryLabel, query) ||
              ContainsIgnoreCase(item.SecondaryLabel, query) ||
@@ -706,10 +711,10 @@ public sealed partial class FundLedgerViewModel
             return;
         }
 
-        var selectedBreak = _selectedReconciliationQueueView == FundReconciliationQueueView.BreakQueue
+        var selectedBreak = ReconciliationSection.SelectedQueueView == FundReconciliationQueueView.BreakQueue
             ? SelectedBreakQueueItem
             : null;
-        var selectedRun = _selectedReconciliationQueueView == FundReconciliationQueueView.Runs
+        var selectedRun = ReconciliationSection.SelectedQueueView == FundReconciliationQueueView.Runs
             ? SelectedReconciliationRun
             : null;
 
@@ -766,6 +771,8 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailSubtitle = detail.Subtitle;
         ReconciliationDetailStatusText = detail.StatusLabel;
         ReconciliationDetailCoverageText = detail.CoverageSummary;
+        ReconciliationDetailLifecycleText = BuildReconciliationDetailLifecycleText(detail, SelectedBreakQueueItem);
+        ReconciliationDetailSignoffText = BuildReconciliationDetailSignoffText(detail, SelectedBreakQueueItem);
         ReconciliationDetailLastUpdatedText = detail.LastUpdatedText;
         ReconciliationDetailGuidanceText = detail.SourceType == FundReconciliationSourceType.AccountRun
             ? "Account-level reconciliation is read-only in Governance. Open the account workflow to rerun or resolve it."
@@ -778,11 +785,12 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailBreakAmountText = FormatCurrency(detail.BreakAmountTotal, baseCurrency);
         ReconciliationDetailSecurityIssuesText = detail.SecurityIssueCount.ToString("N0");
 
-        SynchronizeCollection(_reconciliationExceptionRows, detail.ExceptionRows);
-        SynchronizeCollection(_reconciliationAllCheckRows, detail.AllCheckRows);
-        SynchronizeCollection(_reconciliationSecurityCoverageRows, detail.SecurityCoverageRows);
-        SynchronizeCollection(_reconciliationAuditRows, detail.AuditRows);
+        SynchronizeCollection(ReconciliationSection.ExceptionRows, detail.ExceptionRows);
+        SynchronizeCollection(ReconciliationSection.AllCheckRows, detail.AllCheckRows);
+        SynchronizeCollection(ReconciliationSection.SecurityCoverageRows, detail.SecurityCoverageRows);
+        SynchronizeCollection(ReconciliationSection.AuditRows, detail.AuditRows);
 
+        UpdateReconciliationOperatorGuidance();
         NotifyReconciliationDerivedStateChanged();
     }
 
@@ -793,6 +801,8 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailSubtitle = "Choose a break queue item or reconciliation run to inspect exceptions, coverage, and audit history.";
         ReconciliationDetailStatusText = "Awaiting selection";
         ReconciliationDetailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
+        ReconciliationDetailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";
+        ReconciliationDetailSignoffText = "Sign-off posture appears here when a reconciliation break is selected.";
         ReconciliationDetailLastUpdatedText = "-";
         ReconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
         ReconciliationDetailTotalChecksText = "0";
@@ -800,39 +810,39 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailBreaksText = "0";
         ReconciliationDetailBreakAmountText = "-";
         ReconciliationDetailSecurityIssuesText = "0";
-        _reconciliationExceptionRows.Clear();
-        _reconciliationAllCheckRows.Clear();
-        _reconciliationSecurityCoverageRows.Clear();
-        _reconciliationAuditRows.Clear();
+        ReconciliationSection.ExceptionRows.Clear();
+        ReconciliationSection.AllCheckRows.Clear();
+        ReconciliationSection.SecurityCoverageRows.Clear();
+        ReconciliationSection.AuditRows.Clear();
         NotifyReconciliationDerivedStateChanged();
     }
 
     private void ResetReconciliationWorkbenchState()
     {
         CancelReconciliationDetailLoad();
-        _allReconciliationBreakQueueItems = [];
-        _allReconciliationRunItems = [];
+        ReconciliationSection.AllBreakQueueItems = [];
+        ReconciliationSection.AllRunItems = [];
 
         _isApplyingReconciliationSelection = true;
         try
         {
-            _selectedReconciliationQueueView = FundReconciliationQueueView.BreakQueue;
-            _selectedReconciliationBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
-            _selectedReconciliationScopeFilter = FundReconciliationScopeFilter.All;
-            _selectedReconciliationDetailTabIndex = 0;
-            _reconciliationSearchText = string.Empty;
-            _selectedBreakQueueItem = null;
-            _selectedReconciliationRun = null;
-            _reconciliationOperatorText = DefaultReconciliationOperator;
-            _reconciliationNoteText = string.Empty;
-            _reconciliationActionFeedbackText = string.Empty;
-            _reconciliationBreakQueueItems.Clear();
-            _reconciliationRunItems.Clear();
-            _reconciliationExceptionRows.Clear();
-            _reconciliationAllCheckRows.Clear();
-            _reconciliationSecurityCoverageRows.Clear();
-            _reconciliationAuditRows.Clear();
-            _reconciliationCalibrationProfiles.Clear();
+            ReconciliationSection.SelectedQueueView = FundReconciliationQueueView.BreakQueue;
+            ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+            ReconciliationSection.SelectedScopeFilter = FundReconciliationScopeFilter.All;
+            ReconciliationSection.SelectedDetailTabIndex = 0;
+            ReconciliationSection.SearchText = string.Empty;
+            ReconciliationSection.SelectedBreakQueueItem = null;
+            ReconciliationSection.SelectedRun = null;
+            ReconciliationSection.OperatorText = DefaultReconciliationOperator;
+            ReconciliationSection.NoteText = string.Empty;
+            ReconciliationSection.ActionFeedbackText = string.Empty;
+            ReconciliationSection.BreakQueueItems.Clear();
+            ReconciliationSection.RunItems.Clear();
+            ReconciliationSection.ExceptionRows.Clear();
+            ReconciliationSection.AllCheckRows.Clear();
+            ReconciliationSection.SecurityCoverageRows.Clear();
+            ReconciliationSection.AuditRows.Clear();
+            ReconciliationSection.CalibrationProfiles.Clear();
         }
         finally
         {
@@ -906,7 +916,7 @@ public sealed partial class FundLedgerViewModel
 
     private void ApplyReconciliationCalibration(FundReconciliationWorkbenchSnapshot snapshot)
     {
-        SynchronizeCollection(_reconciliationCalibrationProfiles, snapshot.CalibrationProfiles);
+        SynchronizeCollection(ReconciliationSection.CalibrationProfiles, snapshot.CalibrationProfiles);
 
         var summary = snapshot.CalibrationSummary;
         if (summary is null)
@@ -930,13 +940,13 @@ public sealed partial class FundLedgerViewModel
 
     private void SetBreakQueueFilter(FundReconciliationBreakQueueFilter filter)
     {
-        if (_selectedReconciliationBreakQueueFilter == filter)
+        if (ReconciliationSection.SelectedBreakQueueFilter == filter)
         {
             return;
         }
 
         var previousActiveKey = GetActiveReconciliationSelectionKey();
-        _selectedReconciliationBreakQueueFilter = filter;
+        ReconciliationSection.SelectedBreakQueueFilter = filter;
         RaisePropertyChanged(nameof(IsOpenBreakQueueFilterSelected));
         RaisePropertyChanged(nameof(IsInReviewBreakQueueFilterSelected));
         RaisePropertyChanged(nameof(IsAllBreakQueueFilterSelected));
@@ -952,9 +962,9 @@ public sealed partial class FundLedgerViewModel
         }
 
         var previousActiveKey = GetActiveReconciliationSelectionKey();
-        _selectedReconciliationBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
-        _selectedReconciliationScopeFilter = FundReconciliationScopeFilter.All;
-        _reconciliationSearchText = string.Empty;
+        ReconciliationSection.SelectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+        ReconciliationSection.SelectedScopeFilter = FundReconciliationScopeFilter.All;
+        ReconciliationSection.SearchText = string.Empty;
 
         RaisePropertyChanged(nameof(IsOpenBreakQueueFilterSelected));
         RaisePropertyChanged(nameof(IsInReviewBreakQueueFilterSelected));
@@ -1010,15 +1020,15 @@ public sealed partial class FundLedgerViewModel
     {
         ReconciliationBreakQueueEmptyStateText = filteredBreakCount > 0
             ? string.Empty
-            : _selectedReconciliationScopeFilter == FundReconciliationScopeFilter.Account
+            : ReconciliationSection.SelectedScopeFilter == FundReconciliationScopeFilter.Account
                 ? "Break Queue is strategy-scoped only. Reset filters or switch scope back to Strategy or All to review queue items."
-                : _allReconciliationBreakQueueItems.Count == 0
+                : ReconciliationSection.AllBreakQueueItems.Count == 0
                     ? "No strategy-run breaks are queued for this fund."
                     : "No break queue items match the current filter. Reset filters to return to the open queue.";
 
         ReconciliationRunsEmptyStateText = filteredRunCount > 0
             ? string.Empty
-            : _allReconciliationRunItems.Count == 0
+            : ReconciliationSection.AllRunItems.Count == 0
                 ? "No reconciliation runs are available for this fund."
                 : "No runs match the current scope or search filter. Reset filters to return to the full run list.";
     }
@@ -1030,7 +1040,7 @@ public sealed partial class FundLedgerViewModel
     }
 
     private string? GetActiveReconciliationSelectionKey()
-        => _selectedReconciliationQueueView switch
+        => ReconciliationSection.SelectedQueueView switch
         {
             FundReconciliationQueueView.BreakQueue => SelectedBreakQueueItem?.BreakId,
             FundReconciliationQueueView.Runs => SelectedReconciliationRun?.RowKey,
@@ -1060,6 +1070,70 @@ public sealed partial class FundLedgerViewModel
     private static bool ContainsIgnoreCase(string? value, string query)
         => !string.IsNullOrWhiteSpace(value) &&
            value.Contains(query, StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildReconciliationDetailLifecycleText(
+        FundReconciliationDetailModel detail,
+        FundReconciliationBreakQueueRow? selectedBreak)
+    {
+        if (detail.SourceType == FundReconciliationSourceType.AccountRun)
+        {
+            return "Account reconciliation is read-only here; open the account workflow to rerun source checks before close sign-off.";
+        }
+
+        if (selectedBreak is null || !string.Equals(detail.FocusBreakId, selectedBreak.BreakId, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Select a break queue item to see detection, review, decision, and audit posture.";
+        }
+
+        if (selectedBreak.ResolvedAt is not null)
+        {
+            return $"Detected {selectedBreak.DetectedAtText}; reviewed by {FormatOperatorLabel(selectedBreak.ReviewedBy, selectedBreak.AssignedToLabel)}; closed by {FormatOperatorLabel(selectedBreak.ResolvedBy, selectedBreak.AssignedToLabel)}. Review the audit tab for the decision note.";
+        }
+
+        if (selectedBreak.ReviewedAt is not null)
+        {
+            return $"Detected {selectedBreak.DetectedAtText}; active review is assigned to {selectedBreak.AssignedToLabel}. Capture the operator decision note before resolving or dismissing.";
+        }
+
+        return $"Detected {selectedBreak.DetectedAtText}; not yet in review. Start Review records ownership before a resolve or dismiss decision.";
+    }
+
+    private static string BuildReconciliationDetailSignoffText(
+        FundReconciliationDetailModel detail,
+        FundReconciliationBreakQueueRow? selectedBreak)
+    {
+        if (detail.SourceType == FundReconciliationSourceType.AccountRun)
+        {
+            return "Account workflow sign-off is owned by the account reconciliation route, not the strategy break queue.";
+        }
+
+        if (selectedBreak is null || !string.Equals(detail.FocusBreakId, selectedBreak.BreakId, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Select a break queue item to inspect required sign-off before close approval.";
+        }
+
+        var role = selectedBreak.RequiredSignoffRoleLabel;
+        var status = selectedBreak.SignoffStatusLabel;
+        if (string.Equals(role, "Not configured", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Sign-off: {status}. Required role is not configured; keep the break out of close approval until governance ownership is assigned.";
+        }
+
+        if (selectedBreak.ResolvedAt is not null && !status.Contains("signed", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Decision captured; sign-off: {status} by {role}. Keep close approval blocked until governance sign-off is recorded.";
+        }
+
+        if (status.Contains("signed", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Sign-off: {status} for {role}. Confirm close-pack evidence before final reporting.";
+        }
+
+        return $"Sign-off: {status} by {role}. Keep the break in the governance queue until review, decision, and audit evidence align.";
+    }
+
+    private static string FormatOperatorLabel(string? actor, string fallback)
+        => string.IsNullOrWhiteSpace(actor) ? fallback : actor;
 
     private static string FormatCalibrationStatus(ReconciliationCalibrationStatusDto status)
         => status switch
@@ -1097,6 +1171,105 @@ public sealed partial class FundLedgerViewModel
         {
             target.Add(item);
         }
+    }
+
+    private void UpdateReconciliationOperatorGuidance()
+    {
+        if (SelectedBreakQueueItem is null)
+        {
+            ReconciliationNextBestActionText = "Select a break to view the recommended next action.";
+            ReconciliationBlockerReasonText = "No blocker is selected.";
+            ReconciliationEvidenceLinksText = "Evidence links appear after selecting a break.";
+            ReconciliationSection.GovernanceSignifierState = WorkstationStateModel.Empty(
+                "Select reconciliation evidence",
+                "Choose a break queue item or reconciliation run to see lifecycle, sign-off, evidence, and recovery posture.",
+                "Select a break",
+                "Fund Reconciliation");
+            return;
+        }
+
+        ReconciliationNextBestActionText = SelectedBreakQueueItem.Status is ReconciliationBreakQueueStatus.Open
+            ? "Review evidence, assign owner, and move the break to InReview."
+            : "Capture operator decision and finalize resolution notes.";
+        ReconciliationBlockerReasonText = string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Reason)
+            ? "Awaiting break summary from workstation host."
+            : SelectedBreakQueueItem.Reason;
+        ReconciliationEvidenceLinksText = $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}";
+        ReconciliationSection.GovernanceSignifierState = BuildSelectedBreakSignifierState(SelectedBreakQueueItem);
+    }
+
+    private WorkstationStateModel BuildSelectedBreakSignifierState(FundReconciliationBreakQueueRow breakRow)
+    {
+        var actionLabel = breakRow.Status switch
+        {
+            ReconciliationBreakQueueStatus.Open => "Start Review",
+            ReconciliationBreakQueueStatus.InReview => "Resolve or Dismiss",
+            _ => "Audit Decision"
+        };
+        var target = $"/api/workstation/reconciliation/break-queue/{breakRow.BreakId}";
+        var reason = string.IsNullOrWhiteSpace(breakRow.Reason)
+            ? "Awaiting break summary from workstation host."
+            : breakRow.Reason;
+        var owner = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
+                    string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
+            ? "Owner not confirmed"
+            : $"Owner {ReconciliationOperatorText}";
+        var status = breakRow.Status.ToString();
+        var actionPosture = new WorkstationActionPostureModel(
+            actionLabel,
+            reason,
+            target,
+            owner,
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed
+                ? WorkstationReadinessTone.EvidenceLinked
+                : WorkstationReadinessTone.Blocked,
+            breakRow.Status is ReconciliationBreakQueueStatus.Open
+                ? WorkspaceTone.Danger
+                : WorkspaceTone.Warning);
+        var signoffStatus = string.IsNullOrWhiteSpace(breakRow.SignoffStatusLabel)
+            ? "Pending"
+            : breakRow.SignoffStatusLabel;
+        var signoffRole = string.IsNullOrWhiteSpace(breakRow.RequiredSignoffRoleLabel)
+            ? "Fund operations reviewer"
+            : breakRow.RequiredSignoffRoleLabel;
+
+        return new WorkstationStateModel(
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed
+                ? WorkstationStateKind.Ready
+                : WorkstationStateKind.Blocked,
+            $"{status} reconciliation break",
+            ReconciliationDetailLifecycleText,
+            actionPosture.Label,
+            actionPosture.Target,
+            ReconciliationEvidenceLinksText,
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed ? "\uE73E" : "\uE783",
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed ? WorkspaceTone.Success : WorkspaceTone.Danger,
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.Blocked,
+            actionPosture,
+            EvidenceLinks:
+            [
+                new WorkstationEvidenceLinkModel(
+                    "Break queue evidence",
+                    target,
+                    "shared workstation endpoint",
+                    ReconciliationDetailLastUpdatedText),
+                new WorkstationEvidenceLinkModel(
+                    "Audit trail",
+                    "FundAuditTrail",
+                    "reconciliation audit",
+                    ReconciliationDetailSignoffText)
+            ],
+            RecoveryActions:
+            [
+                new WorkstationRecoveryActionModel(
+                    actionLabel,
+                    ReconciliationNextBestActionText,
+                    target)
+            ],
+            SignoffRequirement: new WorkstationSignoffRequirementModel(
+                signoffRole,
+                signoffStatus,
+                ReconciliationDetailSignoffText));
     }
 
     private static string HumanizeLedgerScope(FundLedgerScope scope)

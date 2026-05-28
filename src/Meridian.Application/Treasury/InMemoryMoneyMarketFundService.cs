@@ -1,4 +1,5 @@
 using Meridian.Contracts.Treasury;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.Treasury;
 
@@ -8,7 +9,7 @@ namespace Meridian.Application.Treasury;
 /// Fund records are registered directly via <see cref="RegisterAsync"/>.
 /// Liquidity state is computed from WAM bands unless overridden per-fund.
 /// </summary>
-public sealed class InMemoryMoneyMarketFundService : IMoneyMarketFundService, IMmfLiquidityService
+public sealed class InMemoryMoneyMarketFundService : INonProductionOnlyService, IMoneyMarketFundService, IMmfLiquidityService
 {
     // WAM threshold (days) below which a fund is considered Liquid (standard MMF limit).
     private const int LiquidWamThresholdDays = 60;

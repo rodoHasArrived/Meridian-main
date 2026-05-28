@@ -339,13 +339,64 @@ public sealed record LedgerGroupSummaryDto(
     IReadOnlyList<Guid> VehicleIds,
     FundStructureSharedDataAccessDto? SharedDataAccess = null);
 
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerMappingSourceDto>))]
+public enum LedgerMappingSourceDto
+{
+    AccountAssignment,
+    InvestmentPortfolioAssignment,
+    SleeveAssignment,
+    VehicleAssignment,
+    FundAssignment,
+    EntityAssignment,
+    AccountLedgerReference,
+    Unassigned
+}
+
+public sealed record LedgerMappingResolutionDto(
+    LedgerGroupId LedgerGroupId,
+    LedgerMappingSourceDto Source,
+    Guid? SourceNodeId,
+    FundStructureNodeKindDto? SourceNodeKind,
+    string? SourceReference,
+    bool RequiresUserMapping,
+    IReadOnlyList<string> IssueCodes);
+
+public sealed record LedgerMappingAccountDto(
+    Guid AccountId,
+    string AccountCode,
+    string DisplayName,
+    AccountTypeDto AccountType,
+    AccountOperationalStatusDto OperationalStatus,
+    string BaseCurrency,
+    string? Institution,
+    Guid? FundId,
+    Guid? SleeveId,
+    Guid? VehicleId,
+    Guid? EntityId,
+    string? PortfolioId,
+    string? LedgerReference,
+    LedgerMappingResolutionDto Mapping,
+    string RecommendedAction);
+
+public sealed record LedgerMappingWorkbenchDto(
+    DateTimeOffset AsOf,
+    OrganizationSummaryDto? Organization,
+    BusinessSummaryDto? Business,
+    int AccountCount,
+    int MappedAccountCount,
+    int UnmappedAccountCount,
+    IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups,
+    IReadOnlyList<LedgerMappingAccountDto> Accounts,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
 public sealed record AccountingStructureViewDto(
     OrganizationSummaryDto? Organization,
     BusinessSummaryDto? Business,
     IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
     IReadOnlyList<AccountSummaryDto> Accounts,
     IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups,
-    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+    FundStructureSharedDataAccessDto? SharedDataAccess = null,
+    IReadOnlyList<FundStructureAssignmentDto>? Assignments = null);
 
 public sealed record FundStructureGraphDto(
     IReadOnlyList<FundStructureNodeDto> Nodes,

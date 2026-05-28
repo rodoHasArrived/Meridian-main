@@ -21,7 +21,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Holds all state, HTTP polling, symbol loading, and connection-status tracking so that
 /// the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class OrderBookViewModel : BindableBase, IDisposable
+public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, IDisposable
 {
     private static readonly Random _random = new();
     private static readonly SolidColorBrush BidBrush = ToBrush(Palette.ChartPositive);
@@ -45,8 +45,11 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     private readonly WpfServices.LoggingService _loggingService;
 
     private readonly DispatcherTimer _refreshTimer;
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _cts;
     private readonly string _baseUrl;
+    private bool _isActive;
+    private bool _isDisposed;
 
     // ── Heatmap ───────────────────────────────────────────────────────────────────
 
@@ -176,21 +179,48 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         _refreshTimer.Tick += async (_, _) => await RefreshOrderBookAsync();
     }
 
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
     /// <summary>Subscribes to events, loads symbols, and starts the refresh timer.</summary>
-    public async Task StartAsync(CancellationToken ct = default)
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (_isActive)
+        {
+            return;
+        }
+
+        _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _connectionService.StateChanged += OnConnectionStateChanged;
         UpdateConnectionStatus();
-        await LoadSymbolsAsync();
+        await LoadSymbolsAsync(ActivationToken);
         _refreshTimer.Start();
     }
 
     /// <summary>Stops the timer and unsubscribes from events.</summary>
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
+        _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _refreshTimer.Stop();
-        _cts?.Cancel();
+        CancelAndDispose(Interlocked.Exchange(ref _cts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     public void SetSymbol(string? symbol)
@@ -250,10 +280,11 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     {
         try
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
+            var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var previousCts = Interlocked.Exchange(ref _cts, refreshCts);
+            CancelAndDispose(previousCts);
 
-            var status = await _statusService.GetStatusAsync(_cts.Token);
+            var status = await _statusService.GetStatusAsync(refreshCts.Token);
             if (status != null)
             {
                 AvailableSymbols.Clear();
@@ -279,21 +310,25 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     private async Task RefreshOrderBookAsync(CancellationToken ct = default)
     {
+        if (!_isActive)
+            return;
+
         if (string.IsNullOrEmpty(_selectedSymbol))
             return;
 
         try
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
+            var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct);
+            var previousCts = Interlocked.Exchange(ref _cts, refreshCts);
+            CancelAndDispose(previousCts);
 
             var response = await _httpClient.GetAsync(
                 $"{_baseUrl}/api/orderbook/{Uri.EscapeDataString(_selectedSymbol)}?levels={_depthLevels}",
-                _cts.Token);
+                refreshCts.Token);
 
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync(_cts.Token);
+                var json = await response.Content.ReadAsStringAsync(refreshCts.Token);
                 var data = JsonSerializer.Deserialize<JsonElement>(json);
                 ProcessOrderBookData(data);
                 NoDataVisible = false;
@@ -303,7 +338,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                 LoadDemoOrderBook();
             }
 
-            await RefreshRecentTradesAsync();
+            await RefreshRecentTradesAsync(refreshCts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -710,9 +745,32 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
-        Stop();
-        _cts?.Dispose();
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        Deactivate();
         _httpClient.Dispose();
+    }
+
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
     }
 }
 

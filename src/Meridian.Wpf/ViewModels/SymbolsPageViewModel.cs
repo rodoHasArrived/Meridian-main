@@ -8,7 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using WpfServices = Meridian.Wpf.Services;
@@ -22,7 +24,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Includes bridge to Security Master workstation for symbol enrichment.
 /// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
+public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.ConfigService _configService;
     private readonly WpfServices.WatchlistService _watchlistService;
@@ -32,10 +34,16 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     private readonly SymbolManagementService _symbolManagementService;
     private readonly CommandPaletteService _commandPaletteService;
     private readonly HttpClient _httpClient = new();
+    private readonly Func<CancellationToken, Task<SymbolConfigDto[]>> _getConfiguredSymbolsAsync;
+    private readonly Func<SymbolConfigDto[], CancellationToken, Task> _saveSymbolsAsync;
+    private readonly Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>> _getAllWatchlistsAsync;
 
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _loadCts;
+    private bool _isActive;
     private bool _isStopped = true;
     private bool _suppressFilterApply;
+    private readonly SymbolsPageSectionViewModel _symbolsSection = new();
 
     public static readonly IReadOnlyDictionary<string, string[]> SymbolTemplates =
         new Dictionary<string, string[]>
@@ -47,10 +55,12 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             ["Financials"] = new[] { "JPM", "BAC", "WFC", "GS", "MS", "C" }
         };
 
+    public SymbolsPageSectionViewModel SymbolsSection => _symbolsSection;
+
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SymbolViewModel> Symbols { get; } = new();
-    public ObservableCollection<SymbolViewModel> FilteredSymbols { get; } = new();
-    public ObservableCollection<WatchlistInfo> Watchlists { get; } = new();
+    public ObservableCollection<SymbolViewModel> Symbols => SymbolsSection.Symbols;
+    public ObservableCollection<SymbolViewModel> FilteredSymbols => SymbolsSection.FilteredSymbols;
+    public ObservableCollection<WatchlistInfo> Watchlists => SymbolsSection.Watchlists;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     private string _symbolCountText = "0 symbols";
@@ -74,82 +84,159 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         private set => SetProperty(ref _canBulkAction, value);
     }
 
-    private string _searchText = string.Empty;
     public string SearchText
     {
-        get => _searchText;
+        get => SymbolsSection.SearchText;
         set
         {
-            if (SetProperty(ref _searchText, value ?? string.Empty) && !_suppressFilterApply)
-                ApplyFilters();
+            var next = value ?? string.Empty;
+            if (!string.Equals(SymbolsSection.SearchText, next, StringComparison.Ordinal))
+            {
+                SymbolsSection.SearchText = next;
+                RaisePropertyChanged();
+                if (!_suppressFilterApply)
+                {
+                    ApplyFilters();
+                }
+            }
         }
     }
 
-    private string _selectedSubscriptionFilter = "All";
     public string SelectedSubscriptionFilter
     {
-        get => _selectedSubscriptionFilter;
+        get => SymbolsSection.SelectedSubscriptionFilter;
         set
         {
             var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
-            if (SetProperty(ref _selectedSubscriptionFilter, next) && !_suppressFilterApply)
-                ApplyFilters();
+            if (!string.Equals(SymbolsSection.SelectedSubscriptionFilter, next, StringComparison.Ordinal))
+            {
+                SymbolsSection.SelectedSubscriptionFilter = next;
+                RaisePropertyChanged();
+                if (!_suppressFilterApply)
+                {
+                    ApplyFilters();
+                }
+            }
         }
     }
 
-    private string _selectedExchangeFilter = "All";
     public string SelectedExchangeFilter
     {
-        get => _selectedExchangeFilter;
+        get => SymbolsSection.SelectedExchangeFilter;
         set
         {
             var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
-            if (SetProperty(ref _selectedExchangeFilter, next) && !_suppressFilterApply)
-                ApplyFilters();
+            if (!string.Equals(SymbolsSection.SelectedExchangeFilter, next, StringComparison.Ordinal))
+            {
+                SymbolsSection.SelectedExchangeFilter = next;
+                RaisePropertyChanged();
+                if (!_suppressFilterApply)
+                {
+                    ApplyFilters();
+                }
+            }
         }
     }
 
-    private string _visibleSymbolScopeText = "No configured symbols";
     public string VisibleSymbolScopeText
     {
-        get => _visibleSymbolScopeText;
-        private set => SetProperty(ref _visibleSymbolScopeText, value);
+        get => SymbolsSection.VisibleSymbolScopeText;
+        private set
+        {
+            if (!string.Equals(SymbolsSection.VisibleSymbolScopeText, value, StringComparison.Ordinal))
+            {
+                SymbolsSection.VisibleSymbolScopeText = value;
+                RaisePropertyChanged();
+            }
+        }
     }
 
-    private bool _hasActiveFilters;
     public bool HasActiveFilters
     {
-        get => _hasActiveFilters;
-        private set => SetProperty(ref _hasActiveFilters, value);
+        get => SymbolsSection.HasActiveFilters;
+        private set
+        {
+            if (SymbolsSection.HasActiveFilters != value)
+            {
+                SymbolsSection.HasActiveFilters = value;
+                RaisePropertyChanged();
+            }
+        }
     }
 
-    private bool _hasVisibleSymbols;
     public bool HasVisibleSymbols
     {
-        get => _hasVisibleSymbols;
-        private set => SetProperty(ref _hasVisibleSymbols, value);
+        get => SymbolsSection.HasVisibleSymbols;
+        private set
+        {
+            if (SymbolsSection.HasVisibleSymbols != value)
+            {
+                SymbolsSection.HasVisibleSymbols = value;
+                RaisePropertyChanged();
+            }
+        }
     }
 
-    private bool _isSymbolsEmptyStateVisible = true;
     public bool IsSymbolsEmptyStateVisible
     {
-        get => _isSymbolsEmptyStateVisible;
-        private set => SetProperty(ref _isSymbolsEmptyStateVisible, value);
+        get => SymbolsSection.IsSymbolsEmptyStateVisible;
+        private set
+        {
+            if (SymbolsSection.IsSymbolsEmptyStateVisible != value)
+            {
+                SymbolsSection.IsSymbolsEmptyStateVisible = value;
+                RaisePropertyChanged();
+            }
+        }
     }
 
-    private string _symbolsEmptyStateTitle = "No symbols configured yet";
     public string SymbolsEmptyStateTitle
     {
-        get => _symbolsEmptyStateTitle;
-        private set => SetProperty(ref _symbolsEmptyStateTitle, value);
+        get => SymbolsSection.SymbolsEmptyStateTitle;
+        private set
+        {
+            if (!string.Equals(SymbolsSection.SymbolsEmptyStateTitle, value, StringComparison.Ordinal))
+            {
+                SymbolsSection.SymbolsEmptyStateTitle = value;
+                RaisePropertyChanged();
+            }
+        }
     }
 
-    private string _symbolsEmptyStateDetail = "Add a symbol, load a watchlist, or apply a template to start collecting market data.";
     public string SymbolsEmptyStateDetail
     {
-        get => _symbolsEmptyStateDetail;
-        private set => SetProperty(ref _symbolsEmptyStateDetail, value);
+        get => SymbolsSection.SymbolsEmptyStateDetail;
+        private set
+        {
+            if (!string.Equals(SymbolsSection.SymbolsEmptyStateDetail, value, StringComparison.Ordinal))
+            {
+                SymbolsSection.SymbolsEmptyStateDetail = value;
+                RaisePropertyChanged();
+            }
+        }
     }
+
+    public SymbolViewModel? SelectedItem
+    {
+        get => SymbolsSection.SelectedItem;
+        set
+        {
+            if (SymbolsSection.SelectedItem != value)
+            {
+                SymbolsSection.SelectedItem = value;
+                RaisePropertyChanged();
+                SelectedSymbolTicker = value?.Symbol ?? string.Empty;
+                RaisePropertyChanged(nameof(HasSelectedSymbol));
+                NavigateToLiveDataCommand?.NotifyCanExecuteChanged();
+                NavigateToOrderBookCommand?.NotifyCanExecuteChanged();
+                StartBackfillCommand?.NotifyCanExecuteChanged();
+                NavigateToChartCommand?.NotifyCanExecuteChanged();
+                ExportSymbolDataCommand?.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasSelectedSymbol => SelectedItem != null;
 
     // ── Security Master bridge properties ───────────────────────────────────
     private string _selectedSymbolTicker = string.Empty;
@@ -186,27 +273,6 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         private set => SetProperty(ref _selectedSymbolSecurityId, value);
     }
 
-    private SymbolViewModel? _selectedItem;
-    public SymbolViewModel? SelectedItem
-    {
-        get => _selectedItem;
-        set
-        {
-            if (SetProperty(ref _selectedItem, value))
-            {
-                SelectedSymbolTicker = value?.Symbol ?? string.Empty;
-                RaisePropertyChanged(nameof(HasSelectedSymbol));
-                NavigateToLiveDataCommand?.NotifyCanExecuteChanged();
-                NavigateToOrderBookCommand?.NotifyCanExecuteChanged();
-                StartBackfillCommand?.NotifyCanExecuteChanged();
-                NavigateToChartCommand?.NotifyCanExecuteChanged();
-                ExportSymbolDataCommand?.NotifyCanExecuteChanged();
-            }
-        }
-    }
-
-    public bool HasSelectedSymbol => _selectedItem != null;
-
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Symbols";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
@@ -231,6 +297,31 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         WpfServices.NavigationService navigationService,
         SymbolManagementService symbolManagementService,
         CommandPaletteService commandPaletteService)
+        : this(
+            configService,
+            watchlistService,
+            loggingService,
+            notificationService,
+            navigationService,
+            symbolManagementService,
+            commandPaletteService,
+            null,
+            null,
+            null)
+    {
+    }
+
+    internal SymbolsPageViewModel(
+        WpfServices.ConfigService configService,
+        WpfServices.WatchlistService watchlistService,
+        WpfServices.LoggingService loggingService,
+        WpfServices.NotificationService notificationService,
+        WpfServices.NavigationService navigationService,
+        SymbolManagementService symbolManagementService,
+        CommandPaletteService commandPaletteService,
+        Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync,
+        Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync,
+        Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>>? getAllWatchlistsAsync)
     {
         _configService = configService;
         _watchlistService = watchlistService;
@@ -239,6 +330,9 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         _navigationService = navigationService;
         _symbolManagementService = symbolManagementService;
         _commandPaletteService = commandPaletteService;
+        _getConfiguredSymbolsAsync = getConfiguredSymbolsAsync ?? configService.GetConfiguredSymbolsAsync;
+        _saveSymbolsAsync = saveSymbolsAsync ?? configService.SaveSymbolsAsync;
+        _getAllWatchlistsAsync = getAllWatchlistsAsync ?? watchlistService.GetAllWatchlistsAsync;
 
         // Initialize Security Master commands
         AddToSecurityMasterCommand = new RelayCommand(
@@ -278,9 +372,23 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
+        if (_isActive)
+            return;
+
+        var activationCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, activationCts));
+
         _isStopped = false;
+        _isActive = true;
+        _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
         _watchlistService.WatchlistsChanged += OnWatchlistsChanged;
 
         // Populate action bar.
@@ -289,28 +397,28 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         Actions.Add(new ActionEntry("Import", new RelayCommand(() => _notificationService.NotifyInfo("Import", "Symbol import started")), "\uE8B5", "Import symbols"));
         Actions.Add(new ActionEntry("Export", ExportSymbolDataCommand, "\uEDE1", "Export symbols"));
 
-        await LoadSymbolsFromConfigAsync();
-        await LoadWatchlistsAsync();
-    }
-
-    public void Stop()
-    {
-        _isStopped = true;
-        _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
-
-        var loadCts = Interlocked.Exchange(ref _loadCts, null);
-        if (loadCts is null)
-            return;
-
         try
         {
-            loadCts.Cancel();
+            await LoadSymbolsFromConfigAsync(activationCts.Token);
+            await LoadWatchlistsAsync(activationCts.Token);
         }
-        catch (ObjectDisposedException)
+        catch (OperationCanceledException) when (activationCts.IsCancellationRequested || ct.IsCancellationRequested)
         {
+            if (!_isStopped)
+                Deactivate();
         }
+    }
 
-        loadCts.Dispose();
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
+    {
+        _isStopped = true;
+        _isActive = false;
+        _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
+
+        CancelAndDispose(Interlocked.Exchange(ref _loadCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     private void OnWatchlistsChanged(object? sender, WpfServices.WatchlistsChangedEventArgs e)
@@ -324,28 +432,36 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     // ── Data loading ────────────────────────────────────────────────────────
     public async Task LoadSymbolsFromConfigAsync(CancellationToken ct = default)
     {
-        Symbols.Clear();
         try
         {
-            var configuredSymbols = await _configService.GetConfiguredSymbolsAsync();
-            foreach (var cfg in configuredSymbols)
+            var configuredSymbols = await _getConfiguredSymbolsAsync(ct);
+            ct.ThrowIfCancellationRequested();
+
+            var nextSymbols = configuredSymbols.Select(cfg => new SymbolViewModel
             {
-                Symbols.Add(new SymbolViewModel
-                {
-                    Symbol = cfg.Symbol,
-                    SubscribeTrades = cfg.SubscribeTrades,
-                    SubscribeDepth = cfg.SubscribeDepth,
-                    DepthLevels = cfg.DepthLevels,
-                    Exchange = cfg.Exchange,
-                    LocalSymbol = cfg.LocalSymbol,
-                    SecurityType = cfg.SecurityType,
-                    Strike = cfg.Strike,
-                    Right = cfg.Right,
-                    LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth,
-                    OptionStyle = cfg.OptionStyle,
-                    Multiplier = cfg.Multiplier
-                });
+                Symbol = cfg.Symbol,
+                SubscribeTrades = cfg.SubscribeTrades,
+                SubscribeDepth = cfg.SubscribeDepth,
+                DepthLevels = cfg.DepthLevels,
+                Exchange = cfg.Exchange,
+                LocalSymbol = cfg.LocalSymbol,
+                SecurityType = cfg.SecurityType,
+                Strike = cfg.Strike,
+                Right = cfg.Right,
+                LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth,
+                OptionStyle = cfg.OptionStyle,
+                Multiplier = cfg.Multiplier
+            }).ToArray();
+
+            Symbols.Clear();
+            foreach (var symbol in nextSymbols)
+            {
+                Symbols.Add(symbol);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -361,7 +477,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         if (_isStopped)
             return;
 
-        var nextLoadCts = new CancellationTokenSource();
+        var nextLoadCts = CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct);
         var previousLoadCts = Interlocked.Exchange(ref _loadCts, nextLoadCts);
 
         if (previousLoadCts is not null)
@@ -379,7 +495,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
         try
         {
-            var watchlists = await _watchlistService.GetAllWatchlistsAsync(nextLoadCts.Token);
+            var watchlists = await _getAllWatchlistsAsync(nextLoadCts.Token);
 
             if (_isStopped || !ReferenceEquals(_loadCts, nextLoadCts))
                 return;
@@ -643,6 +759,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
                 NotificationType.Success);
             return true;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load watchlist", ex);
@@ -682,6 +802,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             }
 
             await LoadWatchlistsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -793,11 +917,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     // ── Action Strip Commands ───────────────────────────────────────────────
     private void NavigateToLiveData()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("LiveData", _selectedItem.Symbol);
+            _navigationService.NavigateTo("LiveData", SelectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -811,11 +939,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void NavigateToOrderBook()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("OrderBook", _selectedItem.Symbol);
+            _navigationService.NavigateTo("OrderBook", SelectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -829,11 +961,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void StartBackfill()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("Backfill", _selectedItem.Symbol);
+            _navigationService.NavigateTo("Backfill", SelectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -847,11 +983,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void NavigateToChart()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("Charts", _selectedItem.Symbol);
+            _navigationService.NavigateTo("Charts", SelectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -865,11 +1005,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void ExportSymbolData()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("DataExport", _selectedItem.Symbol);
+            _navigationService.NavigateTo("DataExport", SelectedItem.Symbol);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -903,7 +1047,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
                     Multiplier = s.Multiplier
                 }).ToArray();
 
-            await _configService.SaveSymbolsAsync(symbolDtos);
+            await _saveSymbolsAsync(symbolDtos, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -919,6 +1067,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             await _symbolManagementService.AddSymbolAsync(
                 symbol, subscribeTrades, subscribeDepth, depthLevels, exchange);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError($"Backend sync failed for add symbol: {symbol}", ex);
@@ -931,13 +1083,33 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             await _symbolManagementService.RemoveSymbolAsync(symbol);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError($"Backend sync failed for remove symbol: {symbol}", ex);
         }
     }
 
-    public void Dispose() => Stop();
+    public void Dispose() => Deactivate();
+
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+            return;
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
+    }
 
     // ── Security Master integration ──────────────────────────────────────────
     /// <summary>
@@ -1055,6 +1227,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             _navigationService.NavigateTo("SecurityMaster", SelectedSymbolTicker);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to navigate to Security Master for adding symbol", ex);
@@ -1082,6 +1258,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         try
         {
             _navigationService.NavigateTo("SecurityMaster", SelectedSymbolSecurityId);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -1116,12 +1296,12 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             var removeCommand = new RelayCommand(async () =>
             {
-                if (_selectedItem != null)
-                    await DeleteSymbolAsync(_selectedItem);
+                if (SelectedItem != null)
+                    await DeleteSymbolAsync(SelectedItem);
             });
             commands.Add(new CommandEntry(
                 "Remove Selected",
-                $"Remove {_selectedItem?.Symbol} from the list",
+                $"Remove {SelectedItem?.Symbol} from the list",
                 "Symbols",
                 removeCommand,
                 "Delete"));
@@ -1133,7 +1313,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             var liveDataCommand = new RelayCommand(NavigateToLiveData);
             commands.Add(new CommandEntry(
                 "View in Live Data",
-                $"Open {_selectedItem?.Symbol} in the Live Data viewer",
+                $"Open {SelectedItem?.Symbol} in the Live Data viewer",
                 "Symbols",
                 liveDataCommand));
         }

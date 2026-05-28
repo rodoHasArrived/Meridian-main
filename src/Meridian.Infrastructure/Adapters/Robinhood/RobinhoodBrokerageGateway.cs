@@ -152,6 +152,26 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                 return rejectReport;
             }
 
+            using var optionClient = CreateHttpClient();
+            var optionInstrument = await ResolveOptionInstrumentAsync(optionInstrumentUrl, optionClient, ct).ConfigureAwait(false);
+            if (optionInstrument is null)
+            {
+                var rejectReport = BuildRejectedReport(
+                    request,
+                    "Robinhood option orders require a trusted option_instrument_url that can be resolved.");
+                await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+                return rejectReport;
+            }
+
+            if (!string.Equals(optionInstrument.ChainSymbol, request.Symbol, StringComparison.OrdinalIgnoreCase))
+            {
+                var rejectReport = BuildRejectedReport(
+                    request,
+                    $"Robinhood option instrument chain symbol '{optionInstrument.ChainSymbol}' does not match order symbol '{request.Symbol}'.");
+                await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+                return rejectReport;
+            }
+
             return await SubmitOptionOrderAsync(
                 request,
                 accountUrl,

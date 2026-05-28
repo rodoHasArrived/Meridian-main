@@ -27,7 +27,7 @@ messages:
       - Queue depth, peak depth, consumer lag, dropped/rejected event counts, and backpressure events.
       - Provider health monitoring, heartbeat age, reconnect attempts, auth failures, rate-limit state, data gaps, and recovery action.
       - Crash diagnostics, sanitized support bundles, fatal startup/shutdown paths, and post-crash recovery evidence.
-      - UI responsiveness telemetry for browser workstation and retained desktop support surfaces.
+      - UI responsiveness telemetry for browser workstation and WPF desktop operator surfaces.
       - Memory pressure tracking, allocation hot spots, GC pause visibility, and diagnostic sampling.
       - Deadlock, stuck-task, and blocked-dispatch detection.
       - Runtime health dashboard or endpoint surfacing the same safe state operators need to triage.

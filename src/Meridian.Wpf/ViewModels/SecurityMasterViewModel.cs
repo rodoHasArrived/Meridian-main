@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,32 +48,38 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private CancellationTokenSource? _workflowCts;
     private Task? _workflowPollingTask;
 
+    private readonly SecurityMasterSearchSectionViewModel _searchSection = new(AllAssetClassesFilterLabel, AllProvidersFilterLabel);
+    private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
+    private readonly SecurityMasterScheduleAndOpenLotSectionViewModel _scheduleSection = new();
+    private readonly SecurityMasterPrintSectionViewModel _printSection = new();
+    private readonly SecurityMasterWorkflowSectionViewModel _workflowSection = new();
+
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
-    public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults { get; } = new();
-    public ObservableCollection<string> AssetClassFilterOptions { get; } = new();
-    public ObservableCollection<string> ProviderFilterOptions { get; } = new();
-    public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
-    public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
-    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups { get; } = new();
-    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates { get; } = new();
-    public ObservableCollection<SecurityMasterConflict> FilteredConflicts { get; } = new();
-    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions { get; } = new();
-    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields { get; } = new();
-    public ObservableCollection<SecurityValidationIssueDto> ValidationIssues { get; } = new();
-    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields { get; } = new();
-    public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents { get; } = new();
-    public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory { get; } = new();
-    public ObservableCollection<SecurityMasterScheduleProvenanceDto> ScheduleBookProvenanceHistory { get; } = new();
-    public ObservableCollection<SecurityMasterPresentationField> OpenLotReadModelFields { get; } = new();
-    public ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows { get; } = new();
-    public ObservableCollection<SecurityMasterOpenLotProvenanceDto> OpenLotProvenanceHistory { get; } = new();
-    public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections { get; } = new();
-    public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems { get; } = new();
-    public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems { get; } = new();
+    public ObservableCollection<SecurityMasterWorkstationDto> Results => _searchSection.Results;
+    public ObservableCollection<SecurityMasterWorkstationDto> FilteredResults => _searchSection.FilteredResults;
+    public ObservableCollection<string> AssetClassFilterOptions => _searchSection.AssetClassFilterOptions;
+    public ObservableCollection<string> ProviderFilterOptions => _searchSection.ProviderFilterOptions;
+    public ObservableCollection<CorporateActionDto> CorporateActions => _printSection.CorporateActions;
+    public ObservableCollection<SecurityMasterConflict> OpenConflicts => _conflictSection.OpenConflicts;
+    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups => _conflictSection.ConflictGroups;
+    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates => _conflictSection.ProvenanceCandidates;
+    public ObservableCollection<SecurityMasterConflict> FilteredConflicts => _conflictSection.FilteredConflicts;
+    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions => _conflictSection.RecommendedActions;
+    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks => _conflictSection.DownstreamImpactLinks;
+    public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields => _printSection.CompanyProfileFields;
+    public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields => _printSection.CompanyCoverageFields;
+    public ObservableCollection<SecurityValidationIssueDto> ValidationIssues => _scheduleSection.ValidationIssues;
+    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems => _scheduleSection.ChangeHistoryItems;
+    public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields => _scheduleSection.ScheduleBookFields;
+    public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents => _scheduleSection.ScheduleBookEvents;
+    public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory => _scheduleSection.ScheduleBookFactorHistory;
+    public ObservableCollection<SecurityMasterScheduleProvenanceDto> ScheduleBookProvenanceHistory => _scheduleSection.ScheduleBookProvenanceHistory;
+    public ObservableCollection<SecurityMasterPresentationField> OpenLotReadModelFields => _scheduleSection.OpenLotReadModelFields;
+    public ObservableCollection<SecurityMasterOpenLotDto> OpenLotRows => _scheduleSection.OpenLotRows;
+    public ObservableCollection<SecurityMasterOpenLotProvenanceDto> OpenLotProvenanceHistory => _scheduleSection.OpenLotProvenanceHistory;
+    public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections => _printSection.PrintSections;
+    public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems => _printSection.PrintChecklistItems;
+    public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems => _printSection.PrintEvidenceItems;
 
     /// <summary>
     /// Static list of corporate action types available for recording.
@@ -80,89 +87,82 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IReadOnlyList<string> CorpActTypes => new[] { "Dividend", "StockSplit" };
 
     // ── Bindable properties ─────────────────────────────────────────────────
-    private string _searchQuery = string.Empty;
     public string SearchQuery
     {
-        get => _searchQuery;
+        get => _searchSection.SearchQuery;
         set
         {
-            if (SetProperty(ref _searchQuery, value))
+            if (SetSectionProperty(_searchSection.SearchQuery, value, next => _searchSection.SearchQuery = next))
             {
                 RaiseSearchDerivedStateChanged();
             }
         }
     }
 
-    private bool _activeOnly = true;
     public bool ActiveOnly
     {
-        get => _activeOnly;
+        get => _searchSection.ActiveOnly;
         set
         {
-            if (SetProperty(ref _activeOnly, value))
+            if (SetSectionProperty(_searchSection.ActiveOnly, value, next => _searchSection.ActiveOnly = next))
             {
                 RaiseSearchDerivedStateChanged();
             }
         }
     }
 
-    private string _selectedAssetClassFilter = AllAssetClassesFilterLabel;
     public string SelectedAssetClassFilter
     {
-        get => _selectedAssetClassFilter;
+        get => _searchSection.SelectedAssetClassFilter;
         set
         {
-            if (SetProperty(ref _selectedAssetClassFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            if (SetSectionProperty(_searchSection.SelectedAssetClassFilter, value, next => _searchSection.SelectedAssetClassFilter = next) && !_isRefreshingSearchWorkspaceFilters)
             {
                 ApplySearchWorkspaceFilters();
             }
         }
     }
 
-    private string _selectedProviderFilter = AllProvidersFilterLabel;
     public string SelectedProviderFilter
     {
-        get => _selectedProviderFilter;
+        get => _searchSection.SelectedProviderFilter;
         set
         {
-            if (SetProperty(ref _selectedProviderFilter, value) && !_isRefreshingSearchWorkspaceFilters)
+            if (SetSectionProperty(_searchSection.SelectedProviderFilter, value, next => _searchSection.SelectedProviderFilter = next) && !_isRefreshingSearchWorkspaceFilters)
             {
                 ApplySearchWorkspaceFilters();
             }
         }
     }
 
-    private bool _showMappingGapsOnly;
     public bool ShowMappingGapsOnly
     {
-        get => _showMappingGapsOnly;
+        get => _searchSection.ShowMappingGapsOnly;
         set
         {
-            if (SetProperty(ref _showMappingGapsOnly, value) && !_isRefreshingSearchWorkspaceFilters)
+            if (SetSectionProperty(_searchSection.ShowMappingGapsOnly, value, next => _searchSection.ShowMappingGapsOnly = next) && !_isRefreshingSearchWorkspaceFilters)
             {
                 ApplySearchWorkspaceFilters();
             }
         }
     }
 
-    private bool _isLoading;
     public bool IsLoading
     {
-        get => _isLoading;
+        get => _searchSection.IsLoading;
         private set
         {
-            if (SetProperty(ref _isLoading, value))
+            if (SetSectionProperty(_searchSection.IsLoading, value, next => _searchSection.IsLoading = next))
             {
                 RaiseSearchDerivedStateChanged();
             }
         }
     }
 
-    private string _statusText = "Enter a query and press Search.";
     public string StatusText
     {
-        get => _statusText;
-        private set => SetProperty(ref _statusText, value);
+        get => _searchSection.StatusText;
+        private set => SetSectionProperty(_searchSection.StatusText, value, next => _searchSection.StatusText = next);
     }
 
     private SecurityMasterWorkstationDto? _selectedSecurity;
@@ -300,13 +300,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     }
 
     // ── Import properties ───────────────────────────────────────────────────────
-    private int _importTotal;
     public int ImportTotal
     {
-        get => _importTotal;
+        get => _workflowSection.ImportTotal;
         private set
         {
-            if (SetProperty(ref _importTotal, value))
+            if (SetSectionProperty(_workflowSection.ImportTotal, value, next => _workflowSection.ImportTotal = next))
             {
                 RaisePropertyChanged(nameof(ImportStatus));
                 RaisePropertyChanged(nameof(ImportSessionText));
@@ -314,13 +313,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private int _importProcessed;
     public int ImportProcessed
     {
-        get => _importProcessed;
+        get => _workflowSection.ImportProcessed;
         private set
         {
-            if (SetProperty(ref _importProcessed, value))
+            if (SetSectionProperty(_workflowSection.ImportProcessed, value, next => _workflowSection.ImportProcessed = next))
             {
                 RaisePropertyChanged(nameof(ImportStatus));
                 RaisePropertyChanged(nameof(ImportSessionText));
@@ -328,39 +326,36 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private int _importImported;
     public int ImportImported
     {
-        get => _importImported;
+        get => _workflowSection.ImportImported;
         private set
         {
-            if (SetProperty(ref _importImported, value))
+            if (SetSectionProperty(_workflowSection.ImportImported, value, next => _workflowSection.ImportImported = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private int _importFailed;
     public int ImportFailed
     {
-        get => _importFailed;
+        get => _workflowSection.ImportFailed;
         private set
         {
-            if (SetProperty(ref _importFailed, value))
+            if (SetSectionProperty(_workflowSection.ImportFailed, value, next => _workflowSection.ImportFailed = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private bool _isImporting;
     public bool IsImporting
     {
-        get => _isImporting;
+        get => _workflowSection.IsImporting;
         private set
         {
-            if (SetProperty(ref _isImporting, value))
+            if (SetSectionProperty(_workflowSection.IsImporting, value, next => _workflowSection.IsImporting = next))
             {
                 ImportFromFileCommand.NotifyCanExecuteChanged();
                 RaisePropertyChanged(nameof(ImportSessionText));
@@ -378,63 +373,58 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private bool _isImportResultVisible;
     public bool IsImportResultVisible
     {
-        get => _isImportResultVisible;
+        get => _workflowSection.IsImportResultVisible;
         private set
         {
-            if (SetProperty(ref _isImportResultVisible, value))
+            if (SetSectionProperty(_workflowSection.IsImportResultVisible, value, next => _workflowSection.IsImportResultVisible = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private string _importResultSummary = string.Empty;
     public string ImportResultSummary
     {
-        get => _importResultSummary;
+        get => _workflowSection.ImportResultSummary;
         private set
         {
-            if (SetProperty(ref _importResultSummary, value))
+            if (SetSectionProperty(_workflowSection.ImportResultSummary, value, next => _workflowSection.ImportResultSummary = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private string _importSessionSummary = "No import activity recorded by the workstation service.";
     public string ImportSessionSummary
     {
-        get => _importSessionSummary;
+        get => _workflowSection.ImportSessionSummary;
         private set
         {
-            if (SetProperty(ref _importSessionSummary, value))
+            if (SetSectionProperty(_workflowSection.ImportSessionSummary, value, next => _workflowSection.ImportSessionSummary = next))
             {
                 RaisePropertyChanged(nameof(ImportSessionText));
             }
         }
     }
 
-    private string _workflowStatusText = "Polling Security Master ingest and conflict posture.";
     public string WorkflowStatusText
     {
-        get => _workflowStatusText;
+        get => _workflowSection.WorkflowStatusText;
         private set
         {
-            if (SetProperty(ref _workflowStatusText, value))
+            if (SetSectionProperty(_workflowSection.WorkflowStatusText, value, next => _workflowSection.WorkflowStatusText = next))
             {
                 RaisePropertyChanged(nameof(RuntimeStatusDetail));
             }
         }
     }
 
-    private string _workflowRetrievedAtText = "-";
     public string WorkflowRetrievedAtText
     {
-        get => _workflowRetrievedAtText;
-        private set => SetProperty(ref _workflowRetrievedAtText, value);
+        get => _workflowSection.WorkflowRetrievedAtText;
+        private set => SetSectionProperty(_workflowSection.WorkflowRetrievedAtText, value, next => _workflowSection.WorkflowRetrievedAtText = next);
     }
 
     private string _conflictOperatorText = "desktop-user";
@@ -527,7 +517,6 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private SecurityMasterEventEnvelope? _latestHistoryEvent;
     private readonly Dictionary<Guid, SecurityConflictSecurityContext> _conflictSecurityContextCache = new();
     private readonly Dictionary<Guid, SecurityMasterConflictAssessmentDto> _conflictAssessmentById = new();
-    private bool _hasSearchAttempted;
     private bool _suppressConflictLaneSelectionSync;
     private bool _suppressConflictDrivenSelectionLoad;
 
@@ -737,7 +726,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         !string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal) ||
         ShowMappingGapsOnly;
 
-    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && ResultCount == 0;
+    public bool IsSearchRecoveryVisible => !IsLoading && _searchSection.HasSearchAttempted && ResultCount == 0;
 
     public string SearchRecoveryTitle
     {
@@ -787,7 +776,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SearchResultCountLabel => ResultCount switch
     {
-        0 => _hasSearchAttempted
+        0 => _searchSection.HasSearchAttempted
             ? HasLoadedResults && HasActiveSearchWorkspaceFilters
                 ? $"0 of {LoadedResultCount} matches shown"
                 : "No matches loaded"
@@ -804,7 +793,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
-            if (!_hasSearchAttempted)
+            if (!_searchSection.HasSearchAttempted)
             {
                 return "Search issuers, identifiers, venues, and provider-linked aliases from one desktop command deck.";
             }
@@ -921,9 +910,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
             var economic = SelectedTrustSnapshot?.EconomicDefinition;
             var identity = SelectedTrustSnapshot?.Identity;
-            var assetFamily = FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
-            var issuerType = FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
-            var country = FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
+            var assetFamily = SecurityMasterTextHelpers.FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
+            var issuerType = SecurityMasterTextHelpers.FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
+            var country = SecurityMasterTextHelpers.FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
             return $"{assetFamily} • {issuerType} • {country}";
         }
     }
@@ -1420,14 +1409,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IRelayCommand CopySelectedIdentifierCommand { get; }
 
     // ── Conflict badge ───────────────────────────────────────────────────────
-    private int _openConflictCount;
     /// <summary>Number of open identifier conflicts detected in Security Master. Drives the badge.</summary>
     public int OpenConflictCount
     {
-        get => _openConflictCount;
+        get => _workflowSection.OpenConflictCount;
         private set
         {
-            if (SetProperty(ref _openConflictCount, value))
+            if (SetSectionProperty(_workflowSection.OpenConflictCount, value, next => _workflowSection.OpenConflictCount = next))
             {
                 RaisePropertyChanged(nameof(HasOpenConflicts));
                 RaiseConflictDerivedStateChanged();
@@ -1436,11 +1424,27 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     }
 
     /// <summary>True when at least one open conflict exists. Drives badge visibility.</summary>
-    public bool HasOpenConflicts => _openConflictCount > 0;
+    public bool HasOpenConflicts => OpenConflictCount > 0;
 
     public bool CanResolveSelectedConflict =>
         SelectedConflict is not null &&
         !string.IsNullOrWhiteSpace(ConflictOperatorText);
+
+    private bool SetSectionProperty<T>(
+        T currentValue,
+        T newValue,
+        Action<T> assign,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
+        {
+            return false;
+        }
+
+        assign(newValue);
+        RaisePropertyChanged(propertyName);
+        return true;
+    }
 
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterViewModel(
@@ -1575,6 +1579,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 });
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError($"Failed to load security {id} for edit", ex);
@@ -1631,13 +1639,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         => HasSearchQuery && !IsLoading;
 
     private bool CanClearSearch()
-        => HasSearchQuery || HasSearchResults || HasSelectedSecurity || _hasSearchAttempted;
+        => HasSearchQuery || HasSearchResults || HasSelectedSecurity || _searchSection.HasSearchAttempted;
 
     private void OnClearSearch()
     {
         _cts?.Cancel();
         _cts = null;
-        _hasSearchAttempted = false;
+        _searchSection.HasSearchAttempted = false;
 
         ResetSearchWorkspaceFilters();
         SearchQuery = string.Empty;
@@ -1785,22 +1793,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var assetClassOptions = Results
-                .Select(result => result.Classification.AssetClass)
-                .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            assetClassOptions.Insert(0, AllAssetClassesFilterLabel);
+            var assetClassOptions = SecurityMasterSearchWorkspaceService.BuildAssetClassOptions(Results, AllAssetClassesFilterLabel);
             ReplaceCollection(AssetClassFilterOptions, assetClassOptions);
 
-            var providerOptions = Results
-                .Select(GetMatchedProvider)
-                .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            providerOptions.Insert(0, AllProvidersFilterLabel);
+            var providerOptions = SecurityMasterSearchWorkspaceService.BuildProviderOptions(
+                Results,
+                AllProvidersFilterLabel,
+                GetMatchedProvider);
             ReplaceCollection(ProviderFilterOptions, providerOptions);
 
             if (!assetClassOptions.Contains(SelectedAssetClassFilter, StringComparer.OrdinalIgnoreCase))
@@ -1821,25 +1820,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ApplySearchWorkspaceFilters()
     {
-        IEnumerable<SecurityMasterWorkstationDto> filteredResults = Results;
-
-        if (!string.Equals(SelectedAssetClassFilter, AllAssetClassesFilterLabel, StringComparison.Ordinal))
-        {
-            filteredResults = filteredResults.Where(result =>
-                string.Equals(result.Classification.AssetClass, SelectedAssetClassFilter, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!string.Equals(SelectedProviderFilter, AllProvidersFilterLabel, StringComparison.Ordinal))
-        {
-            filteredResults = filteredResults.Where(result =>
-                string.Equals(GetMatchedProvider(result), SelectedProviderFilter, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (ShowMappingGapsOnly)
-        {
-            filteredResults = filteredResults.Where(result => !HasProviderMapping(result));
-        }
-
+        var filteredResults = SecurityMasterSearchWorkspaceService.ApplyFilters(
+            Results,
+            SelectedAssetClassFilter,
+            SelectedProviderFilter,
+            ShowMappingGapsOnly,
+            AllAssetClassesFilterLabel,
+            AllProvidersFilterLabel,
+            GetMatchedProvider,
+            HasProviderMapping);
         ReplaceCollection(FilteredResults, filteredResults);
 
         if (SelectedSecurity is not null &&
@@ -2076,6 +2065,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _notificationService.ShowNotification("Security Master",
                 "Trading parameters backfilled successfully.", NotificationType.Success);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Trading parameters backfill failed", ex);
@@ -2108,13 +2101,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         var query = SearchQuery.Trim();
         if (string.IsNullOrEmpty(query))
         {
-            _hasSearchAttempted = false;
+            _searchSection.HasSearchAttempted = false;
             RaiseSearchDerivedStateChanged();
             StatusText = "Enter a query and press Search.";
             return;
         }
 
-        _hasSearchAttempted = true;
+        _searchSection.HasSearchAttempted = true;
         RaiseSearchDerivedStateChanged();
 
         if (!_securityMasterRuntimeStatus.IsAvailable)
@@ -2598,6 +2591,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             Clipboard.SetText(SelectedIdentifier);
             _notificationService.ShowNotification("Security Master", "Selected identifier copied to clipboard.", NotificationType.Success);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to copy selected identifier", ex);
@@ -2664,12 +2661,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         ReplaceCollection(CompanyProfileFields,
         [
-            new SecurityMasterPresentationField("Legal name", FirstNonEmpty(identity.IssuerName, snapshot.Security.DisplayName, "Unavailable")),
-            new SecurityMasterPresentationField("Primary listing", FirstNonEmpty(identity.PrimaryListingMic, "Not supplied")),
-            new SecurityMasterPresentationField("Country of risk", FirstNonEmpty(identity.CountryOfRisk, economic.RiskCountry, snapshot.Security.Classification.RiskCountry, "Not supplied")),
+            new SecurityMasterPresentationField("Legal name", SecurityMasterTextHelpers.FirstNonEmpty(identity.IssuerName, snapshot.Security.DisplayName, "Unavailable")),
+            new SecurityMasterPresentationField("Primary listing", SecurityMasterTextHelpers.FirstNonEmpty(identity.PrimaryListingMic, "Not supplied")),
+            new SecurityMasterPresentationField("Country of risk", SecurityMasterTextHelpers.FirstNonEmpty(identity.CountryOfRisk, economic.RiskCountry, snapshot.Security.Classification.RiskCountry, "Not supplied")),
             new SecurityMasterPresentationField("Settlement cycle", identity.SettlementCycleDays is int days ? $"T+{days}" : "Not supplied"),
-            new SecurityMasterPresentationField("Asset family", FirstNonEmpty(economic.AssetFamily, economic.AssetClass, "Not supplied")),
-            new SecurityMasterPresentationField("Issuer type", FirstNonEmpty(economic.IssuerType, snapshot.Security.Classification.IssuerType, "Not supplied"))
+            new SecurityMasterPresentationField("Asset family", SecurityMasterTextHelpers.FirstNonEmpty(economic.AssetFamily, economic.AssetClass, "Not supplied")),
+            new SecurityMasterPresentationField("Issuer type", SecurityMasterTextHelpers.FirstNonEmpty(economic.IssuerType, snapshot.Security.Classification.IssuerType, "Not supplied"))
         ]);
 
         ReplaceCollection(CompanyCoverageFields,
@@ -2737,7 +2734,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Cash-flow schedule", scheduleBook.SupportsCashflowSchedule ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Factor history", scheduleBook.SupportsFactorHistory ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
-            new SecurityMasterPresentationField("Source", FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
+            new SecurityMasterPresentationField("Source", SecurityMasterTextHelpers.FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
         ]);
 
         ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
@@ -2779,34 +2776,30 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void PopulatePrintPresentation(SecurityMasterTrustSnapshotDto snapshot)
     {
-        ReplaceCollection(PrintSections,
-        [
-            new SecurityMasterPrintSectionItem("Overview deck", "Search outcome, trust posture, and downstream scope stay on the first page.", "01"),
-            new SecurityMasterPrintSectionItem("Company context", "Issuer profile, country risk, listing, and settlement cues support review.", "02"),
-            new SecurityMasterPrintSectionItem("Corporate actions", "Upcoming events and readiness notes follow the company brief.", "03"),
-            new SecurityMasterPrintSectionItem("Evidence trail", "Winning source, audit history, and delivery routing close the packet.", "04")
-        ]);
+        var projection = SecurityMasterPrintProjectionService.BuildProjection(
+            snapshot,
+            GoldenCopySourceText,
+            LatestHistoryEventText,
+            PrintDistributionText);
+        ReplaceCollection(PrintSections, projection.Sections);
+        ReplaceCollection(PrintChecklistItems, projection.ChecklistItems);
+        ReplaceCollection(PrintEvidenceItems, projection.EvidenceItems);
+    }
 
-        ReplaceCollection(PrintChecklistItems,
-        [
-            new SecurityMasterChecklistItem("Canonical identifiers attested", "Data operations", snapshot.TrustPosture.HasOpenConflicts ? "Review" : "Ready"),
-            new SecurityMasterChecklistItem("Validation blockers cleared", "Security master", snapshot.ValidationReport?.HasBlockingIssues == true ? "Review" : "Ready"),
-            new SecurityMasterChecklistItem("Trading parameters complete", "Trading operations", snapshot.TrustPosture.TradingParametersComplete ? "Ready" : "Review"),
-            new SecurityMasterChecklistItem("Corporate actions reviewed", "Fund operations", snapshot.TrustPosture.CorporateActionsTrusted ? "Ready" : "Review"),
-            new SecurityMasterChecklistItem("Distribution lane confirmed", "Reporting", snapshot.DownstreamImpact.Severity is SecurityMasterImpactSeverity.None or SecurityMasterImpactSeverity.Low ? "Ready" : "Draft")
-        ]);
+    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
+        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
+           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
 
-        ReplaceCollection(PrintEvidenceItems,
-        [
-            new SecurityMasterEvidenceItem("Winning source", GoldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
-            new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
-            new SecurityMasterEvidenceItem("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot), "Identifier resolution"),
-            new SecurityMasterEvidenceItem("Schedule model", BuildScheduleSummaryText(snapshot), FormatScheduleSourceLabel(snapshot)),
-            new SecurityMasterEvidenceItem("Lot model", BuildLotModelSummaryText(snapshot), "Lot/open-position guidance"),
-            new SecurityMasterEvidenceItem("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot), "Snapshot projection"),
-            new SecurityMasterEvidenceItem("Latest audit event", LatestHistoryEventText, "History stream"),
-            new SecurityMasterEvidenceItem("Downstream scope", snapshot.DownstreamImpact.Summary, PrintDistributionText)
-        ]);
+    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
+        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
+
+    private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
+    {
+        collection.Clear();
+        foreach (var value in values)
+        {
+            collection.Add(value);
+        }
     }
 
     private static string BuildValidationSummaryText(SecurityMasterTrustSnapshotDto snapshot)
@@ -2843,33 +2836,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.OpenLotReadModel?.Summary ?? snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
 
-    private static string FormatScheduleSourceLabel(SecurityMasterTrustSnapshotDto snapshot)
-        => string.IsNullOrWhiteSpace(snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary)
-            ? "Schedule source"
-            : $"Schedule source: {snapshot.ScheduleBook?.SourceSummary ?? snapshot.ScheduleSummary?.SourceSummary}";
-
     private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
         => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
-
-    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
-        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
-           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
-
-    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
-        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
-
-    private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
-    {
-        collection.Clear();
-        foreach (var value in values)
-        {
-            collection.Add(value);
-        }
-    }
-
-    private static string FirstNonEmpty(params string?[] values)
-        => values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim()
-           ?? string.Empty;
 
     private static string FormatNullableDate(DateOnly? value)
         => value?.ToString("yyyy-MM-dd") ?? "Unavailable";
@@ -3005,6 +2973,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 // Load the specific security detail
                 await LoadDetailAsync(securityId);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -3796,6 +3768,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     ? "Conflict dismissed."
                     : "Conflict marked resolved.",
                 NotificationType.Success);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

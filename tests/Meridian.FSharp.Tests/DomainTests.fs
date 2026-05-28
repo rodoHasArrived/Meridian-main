@@ -546,7 +546,8 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         Seniority = Some "Senior Unsecured"
         Subclass = BondSubclass.FloatingRate
     }
-    let command = createValidCommand () |> mapKind (fun _ -> SecurityKind.Bond bondTerms)
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
 
     let record =
         match SecurityMaster.create command with

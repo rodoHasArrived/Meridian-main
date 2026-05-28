@@ -68,6 +68,7 @@ Before editing, answer these internally:
 Run focused scripts from the repository root:
 
 ```powershell
+pwsh ./tools/codex/run-codex-quality-suite.ps1 -Fast -MarkdownPath artifacts/codex/codex-quality-suite.fast.md
 pwsh ./tools/codex/run-codex-quality-suite.ps1 -MarkdownPath artifacts/codex/codex-quality-suite.md
 pwsh ./tools/codex/architecture-scan.ps1 -MarkdownPath artifacts/codex/architecture-scan.md
 pwsh ./tools/codex/mvvm-compliance-check.ps1

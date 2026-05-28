@@ -28,6 +28,7 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.Ledger;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -41,15 +42,83 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 
 namespace Meridian.Tests.Ui;
 
-public sealed class WorkstationEndpointsTests
+public sealed partial class WorkstationEndpointsTests
 {
-    // Must match the JsonSerializerOptions used in CreateAppAsync so that enum fields
-    // serialized as strings by the server (via JsonStringEnumConverter) can be round-tripped.
-    private static readonly JsonSerializerOptions ServerJsonOptions = new()
+    [Fact]
+    public async Task MapWorkstationEndpoints_FeatureCapabilities_ShouldExposeSharedDescriptorOverridesAndPersistToggle()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter() }
-    };
+        var configPath = Path.Combine(Path.GetTempPath(), "meridian-feature-capability-api-" + Guid.NewGuid().ToString("N"), "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(configPath, """
+            {
+              "FeatureCapabilities": {
+                "Overrides": {
+                  " desktop.data.security-master ": false,
+                  "DESKTOP.DATA.SECURITY-MASTER": true
+                }
+              }
+            }
+            """);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<FeatureCapabilitySettingsService>();
+        });
+        var client = app.GetTestClient();
+
+        var initial = await client.GetFromJsonAsync<FeatureCapabilitySettingsResponse>(
+            "/api/workstation/settings/feature-capabilities",
+            ServerJsonOptions);
+
+        initial.Should().NotBeNull();
+        initial!.Capabilities.Should().Contain(item => item.CapabilityKey == "desktop.settings.capabilities" && item.IsPermanent);
+        initial.Capabilities.Should().Contain(item =>
+            item.CapabilityKey == "desktop.data.security-master" &&
+            item.IsEnabled == false &&
+            item.IsOverridden);
+
+        var response = await client.PutAsJsonAsync(
+            "/api/workstation/settings/feature-capabilities/desktop.data.security-master",
+            new FeatureCapabilityToggleRequest(true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<FeatureCapabilitySettingsResponse>(ServerJsonOptions);
+        updated.Should().NotBeNull();
+        updated!.Capabilities.Should().Contain(item =>
+            item.CapabilityKey == "desktop.data.security-master" &&
+            item.IsEnabled &&
+            item.IsOverridden);
+
+        var persisted = Meridian.Application.UI.ConfigStore.LoadConfig(configPath);
+        persisted.FeatureCapabilities.Should().NotBeNull();
+        persisted.FeatureCapabilities!.Overrides.Should()
+            .ContainKey("desktop.data.security-master")
+            .WhoseValue.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FeatureCapabilityToggle_ShouldRequireMutationPermission()
+    {
+        var configPath = Path.Combine(Path.GetTempPath(), "meridian-feature-capability-permission-" + Guid.NewGuid().ToString("N"), "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+        await File.WriteAllTextAsync(configPath, "{}");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<FeatureCapabilitySettingsService>();
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        var response = await client.PutAsJsonAsync(
+            UiApiRoutes.WorkstationFeatureCapabilityByKey.Replace("{capabilityKey}", "desktop.data.security-master"),
+            new FeatureCapabilityToggleRequest(true),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
@@ -250,7 +319,7 @@ public sealed class WorkstationEndpointsTests
                 "period-close",
                 true,
                 EvidenceLinks: [evidence],
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: [], EvidenceLinks: [evidence]));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
@@ -428,20 +497,93 @@ public sealed class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
-            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "reviewer", "Submit evidence", "report-pack-1"));
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "spoofed-user",
+                "ops-user",
+                "Submit evidence",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
-            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "reviewer", "Approve close", "report-pack-1"));
+            new OperationsApprovalDecisionRequestDto(
+                submitted.Workflow!.Version,
+                "spoofed-user",
+                "spoofed-reviewer",
+                "Approve close",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
         var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
-            new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user", "Close period", "report-pack-1"));
+            new OperationsCloseWorkflowRequestDto(
+                approved.Workflow!.Version,
+                "spoofed-user",
+                "Close period",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
 
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
+        closed.Workflow.Approvals.Should().Contain(approval =>
+            approval.Status == OperationsApprovalStateDto.Approved &&
+            approval.Operator == "ops-user" &&
+            approval.Reviewer == "ops-user");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityApprovalSubmit_ShouldPreserveAssignedReviewerFromRequest()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
+        var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+
+        const string assignedReviewer = "independent-reviewer";
+        var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "spoofed-user",
+                assignedReviewer,
+                "Submit evidence",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+
+        submitted.Workflow!.Approvals.Should().Contain(approval =>
+            approval.Status == OperationsApprovalStateDto.Submitted &&
+            approval.Operator == "ops-user" &&
+            approval.Reviewer == assignedReviewer);
     }
 
     [Fact]
@@ -482,7 +624,7 @@ public sealed class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
 
         var bridged = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(
@@ -1175,6 +1317,7 @@ public sealed class WorkstationEndpointsTests
                     OpenReconciliationBreakCount: 0,
                     SecurityResolvedCount: 1,
                     SecurityMissingCount: 0,
+                    LineagePointers: [],
                     SourceSnapshotHash: new string('a', 64)),
                 Artifacts: [],
                 Warnings: [])
@@ -1252,7 +1395,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.EvidenceDocuments.Should().ContainSingle(document =>
             document.Gate == "explainability" &&
             document.Status == "validated" &&
-            document.Path == "docs/status/dk1-trust-rationale-mapping.md");
+            document.Path == "docs/status/evidence/dk1-trust-rationale-mapping.md");
         readiness.TrustGate.TrustRationaleContract.Should().NotBeNull();
         readiness.TrustGate.TrustRationaleContract!.Status.Should().Be("validated");
         readiness.TrustGate.TrustRationaleContract.RequiredReasonCodes.Should().Contain("PROVIDER_STREAM_DEGRADED");
@@ -2713,7 +2856,8 @@ public sealed class WorkstationEndpointsTests
         inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
         inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
         inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
-        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().OnlyContain(item => item.PriorityScore > 0 && !string.IsNullOrWhiteSpace(item.PriorityExplanation));
+        inbox.Items.Should().BeInDescendingOrder(item => item.PriorityScore);
     }
 
     [Fact]
@@ -2746,7 +2890,8 @@ public sealed class WorkstationEndpointsTests
         inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
         inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
         inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
-        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().BeInDescendingOrder(item => item.PriorityScore);
+        inbox.Items.Should().OnlyContain(item => item.PriorityScore > 0 && !string.IsNullOrWhiteSpace(item.PriorityExplanation));
     }
 
     [Fact]
@@ -2770,7 +2915,8 @@ public sealed class WorkstationEndpointsTests
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
         inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
-        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().BeInDescendingOrder(item => item.PriorityScore);
+        inbox.Items.Should().OnlyContain(item => item.PriorityScore > 0 && !string.IsNullOrWhiteSpace(item.PriorityExplanation));
         inbox.Items.Should().OnlyContain(item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
             !string.IsNullOrWhiteSpace(item.Detail) &&
@@ -3000,6 +3146,49 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task Dk1TrustGateReadinessService_WithValidatedContractMissingRequiredFields_ShouldBlockReview()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-malformed-contract-packet",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(
+            automationRoot,
+            """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "signed",
+              "requiredBeforeDk1Exit": true,
+              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "missingOwners": []
+            }
+            """,
+            includeContractReview: false);
+
+        var packetPath = Path.Combine(automationRoot, "unit-ready", "dk1-pilot-parity-packet.json");
+        var malformedPacket = File.ReadAllText(packetPath).Replace(
+            "\"operatorSignoff\":",
+            """
+            "trustRationaleContract": { "status": "validated" },
+            "baselineThresholdContract": { "status": "validated" },
+            "operatorSignoff":
+            """);
+        File.WriteAllText(packetPath, malformedPacket);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.ReadyForOperatorReview.Should().BeTrue();
+        readiness.OperatorSignoffStatus.Should().Be("signed");
+        readiness.Blockers.Should().Contain("DK1 explainability contract is validated but missing required contract fields.");
+        readiness.Blockers.Should().Contain("DK1 calibration contract is validated but missing required contract fields.");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WithSecurityLookup_ShouldExposeSecurityCoverageInBootstrapPayloads()
     {
         await using var app = await CreateAppAsync(services =>
@@ -3113,6 +3302,18 @@ public sealed class WorkstationEndpointsTests
             .Select(profile => profile.GetString())
             .Should()
             .Contain("excel");
+        var controlCenter = governance.RootElement.GetProperty("controlCenter");
+        controlCenter.GetProperty("closeReadiness").GetString().Should().NotBeNullOrWhiteSpace();
+        controlCenter.GetProperty("blockerSeverityDistribution").GetArrayLength().Should().BeGreaterThan(0);
+        controlCenter.GetProperty("agingCurves").GetArrayLength().Should().Be(3);
+        controlCenter.GetProperty("ownerWorkload").GetArrayLength().Should().BeGreaterThan(0);
+        controlCenter.GetProperty("slaBreachCount").GetInt32().Should().BeGreaterThanOrEqualTo(0);
+        controlCenter.GetProperty("trendSnapshots").GetArrayLength().Should().BeGreaterThan(0);
+        controlCenter.GetProperty("drillLinks").EnumerateArray()
+            .Select(link => link.GetProperty("href").GetString())
+            .Should()
+            .Contain(new[] { "/trading/readiness", "/accounting/reconciliation", "/reporting/report-packs", "/reporting/evidence" });
+        controlCenter.GetProperty("alerts").GetArrayLength().Should().BeGreaterThan(0);
 
         governance.RootElement.GetProperty("metrics").EnumerateArray()
             .Should()
@@ -3141,6 +3342,121 @@ public sealed class WorkstationEndpointsTests
         balancedRun.GetProperty("securityCoverage").GetProperty("missingReferences").EnumerateArray()
             .Should()
             .Contain(item => item.GetProperty("symbol").GetString() == "TSLA");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationStatementRoutes_ShouldUseCanonicalSharedRoutes()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+        });
+
+        var client = app.GetTestClient();
+
+        var runs = await client.GetFromJsonAsync<List<StatementRunSummaryDto>>(
+            UiApiRoutes.ReconciliationStatementRuns,
+            ServerJsonOptions);
+        runs.Should().ContainSingle(run => run.RunId == "statement-run-1");
+
+        var run = await client.GetFromJsonAsync<StatementRunDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunById, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.OpenExceptionCount.Should().Be(1);
+        run.EvidenceLinks.Should().ContainSingle(link =>
+            link.RunId == "statement-run-1"
+            && link.SourceFileHash == "HASH-1"
+            && link.BrokerCustodian == "custodian"
+            && link.Account == "external-account-1"
+            && link.BreakIds.Contains("break-1")
+            && link.CaseIds.Contains("case-1"));
+        run!.RunId.Should().Be("statement-run-1");
+
+        var validation = await client.GetFromJsonAsync<StatementRunValidationDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunValidation, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        validation.Should().NotBeNull();
+        validation!.IsBlocked.Should().BeFalse();
+
+        var breaks = await client.GetFromJsonAsync<List<StatementRunBreakDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunBreaks, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        breaks.Should().ContainSingle(item => item.RunId == "statement-run-1");
+
+        var reconcileResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunReconcile, "runId", "statement-run-1"),
+            new StatementRunReconcileRequestDto(Actor: "ops-user"),
+            ServerJsonOptions);
+        reconcileResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reconciled = await reconcileResponse.Content.ReadFromJsonAsync<StatementRunDto>(ServerJsonOptions);
+        reconciled.Should().NotBeNull();
+        reconciled!.RunId.Should().Be("statement-run-1");
+
+        var createdResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "samplebroker",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: "fund-1",
+                ExternalAccountId: "ext-1",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 27),
+                SourcePath: "/tmp/statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "ops-user",
+                SourceFileHash: "ABC123"),
+            ServerJsonOptions);
+        createdResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        service.CreatedRequests.Should().ContainSingle(request => request.FundAccountId == "fund-1");
+
+        var exceptions = await client.GetFromJsonAsync<List<StatementRunExceptionDto>>(
+            UiApiRoutes.ReconciliationStatementExceptions,
+            ServerJsonOptions);
+        exceptions.Should().ContainSingle(item => item.RunId == "statement-run-1");
+    }
+
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunMutations_ShouldRequireReconciliationPermission()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var client = app.GetTestClient();
+
+        var createResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "samplebroker",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: "fund-1",
+                ExternalAccountId: "ext-1",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 27),
+                SourcePath: "/tmp/statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "ops-user",
+                SourceFileHash: "ABC123"),
+            ServerJsonOptions);
+
+        var reconcileResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunReconcile, "runId", "statement-run-1"),
+            new StatementRunReconcileRequestDto(Actor: "ops-user"),
+            ServerJsonOptions);
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reconcileResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.CreatedRequests.Should().BeEmpty();
+        service.ReconciledRunIds.Should().BeEmpty();
     }
 
     [Fact]
@@ -3194,21 +3510,42 @@ public sealed class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         }, currentUserPermissions: UserPermission.ViewStrategies);
 
-        var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon-permission"));
+        var repository = app.Services.GetRequiredService<IReconciliationRunRepository>();
+        await repository.SaveAsync(BuildReconciliationDetail(
+            reconciliationRunId: "recon-permission",
+            runId: "run-recon-permission",
+            createdAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            matchCount: 1,
+            breakCount: 0));
 
         var client = app.GetTestClient();
-        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("run-recon-permission"));
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var created = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
-        created.Should().NotBeNull();
-
         var byIdResponse = await client.GetAsync(
             UiApiRoutes.ReconciliationRunById.Replace(
                 "{reconciliationRunId}",
-                created!.Summary.ReconciliationRunId));
+                "recon-permission"));
         byIdResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCreateRun_ShouldRequireMutationPermission()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon-create-permission"));
+
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationRuns,
+            new ReconciliationRunRequest("run-recon-create-permission"));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -3366,7 +3703,50 @@ public sealed class WorkstationEndpointsTests
             !string.IsNullOrWhiteSpace(item.ExceptionRoute) &&
             !string.IsNullOrWhiteSpace(item.ToleranceProfileId) &&
             !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) &&
-            !string.IsNullOrWhiteSpace(item.SignoffStatus));
+            !string.IsNullOrWhiteSpace(item.SignoffStatus) &&
+            item.SourceType == "provider-ledger" &&
+            item.SourceFingerprint != null);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldSeedStatementBreaksOnceWithSourceMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(new StubReconciliationApiService());
+        });
+
+        var client = app.GetTestClient();
+        var first = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        second!.Should().ContainSingle(item =>
+            item.SourceType == "statement" &&
+            item.SourceSystem == "statement-reconciliation" &&
+            item.SourceImportId == "import-1" &&
+            item.SourceBreakId == "break-1" &&
+            item.SourceReference == "import-1:row-42" &&
+            item.BreakId.StartsWith("statement:", StringComparison.OrdinalIgnoreCase) &&
+            item.AssignedTo == "statement-owner" &&
+            item.Severity == ReconciliationBreakSeverity.High &&
+            item.ToleranceBand == 1m &&
+            item.RequiredSignoffRole == "Fund operations lead" &&
+            item.SignoffStatus == "pending-signoff" &&
+            item.ResolutionNote is null);
+        first!.Count(item => item.SourceType == "statement").Should().Be(1);
+        second.Count(item => item.SourceType == "statement").Should().Be(1);
+
+        var statementBreak = second.Single(item => item.SourceType == "statement");
+        var audit = await client.GetFromJsonAsync<List<ReconciliationBreakQueueAuditEvent>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAudit, "breakId", statementBreak.BreakId),
+            ServerJsonOptions);
+        audit.Should().ContainSingle(e => e.EventType == "CaseCreated" && e.Source == "statement");
     }
 
     [Fact]
@@ -3572,9 +3952,9 @@ public sealed class WorkstationEndpointsTests
 
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
         resolved.Should().NotBeNull();
-        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         resolved.ResolvedBy.Should().Be("ops-user");
-        resolved.SignoffStatus.Should().Be("signed-off");
+        resolved.SignoffStatus.Should().Be("awaiting-approval");
     }
 
     [Fact]
@@ -3889,6 +4269,25 @@ public sealed class WorkstationEndpointsTests
         var client = app.GetTestClient();
         var response = await client.GetAsync($"/api/workstation/security-master/securities/{Guid.NewGuid()}/history");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnForbiddenWithoutViewSecurityMasterPermission()
+    {
+        var securityId = Guid.Parse("60606060-6060-6060-6060-606060606060");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Locked Security", "LOCK"),
+            CreateSecurityDetail(securityId, "Locked Security", "LOCK"));
+
+        await using var app = await CreateAppAsync(
+            services => RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([])),
+            currentUserPermissions: UserPermission.ViewStrategies);
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -4728,6 +5127,8 @@ public sealed class WorkstationEndpointsTests
         rows.Should().HaveCount(2);
         rows.Select(r => r.GetProperty("runId").GetString()).Should().Contain("cmp-1").And.Contain("cmp-2");
         rows.Select(r => r.GetProperty("strategyName").GetString()).Should().Contain("Alpha Strategy").And.Contain("Beta Strategy");
+        rows.Should().OnlyContain(row => row.GetProperty("artifactCompleteness").ValueKind == JsonValueKind.Object);
+        rows.Should().OnlyContain(row => row.GetProperty("compatibilityWarnings").ValueKind == JsonValueKind.Array);
     }
 
     [Fact]
@@ -4927,6 +5328,9 @@ public sealed class WorkstationEndpointsTests
         doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
         doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
         doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.TryGetProperty("baseArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("targetArtifactCompleteness", out _).Should().BeTrue();
+        doc.RootElement.TryGetProperty("compatibilityWarnings", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -5264,170 +5668,6 @@ public sealed class WorkstationEndpointsTests
         public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions { get; }
     }
 
-    private static async Task<WebApplication> CreateAppAsync(
-        Action<IServiceCollection>? configureServices = null,
-        bool mapExecutionApi = false,
-        bool mapPromotionApi = false,
-        UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster)
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        configureServices?.Invoke(builder.Services);
-        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
-            await next();
-        });
-
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        if (mapExecutionApi)
-        {
-            app.MapExecutionEndpoints(jsonOptions);
-        }
-
-        if (mapPromotionApi)
-        {
-            app.MapPromotionEndpoints(jsonOptions);
-        }
-
-        app.MapWorkstationEndpoints(jsonOptions);
-
-        await app.StartAsync();
-        return app;
-    }
-
-    private static void RegisterRunReadServices(IServiceCollection services)
-    {
-        var store = new StrategyRunStore();
-        services.AddSingleton<IStrategyRepository>(store);
-        services.AddSingleton<PortfolioReadService>();
-        services.AddSingleton<LedgerReadService>();
-        services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        services.AddSingleton<ReconciliationProjectionService>();
-        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        services.AddSingleton<CashFlowProjectionService>();
-        services.AddSingleton<StrategyRunContinuityService>();
-        services.AddSingleton<StrategyRunReviewPacketService>();
-        services.AddSingleton<WorkstationWorkflowSummaryService>();
-    }
-
-    private static void RegisterOperationsContinuityServices(IServiceCollection services)
-    {
-        services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
-        services.AddSingleton<IOperationsContinuityRepository, InMemoryOperationsContinuityRepository>();
-        services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
-        services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
-        services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
-        services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
-            new OperationsContinuityReconciliationBridge(
-                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
-    }
-
-    private static void RegisterConfigStores(IServiceCollection services, string configPath)
-    {
-        services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
-        services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-    }
-
-    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
-        new(
-            JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
-            PeriodId: Guid.NewGuid(),
-            Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
-            Description: "Operations continuity endpoint posting",
-            Lines:
-            [
-                new OperationsLedgerJournalLineDto(
-                    EntryId: null,
-                    AccountName: "Cash",
-                    AccountType: nameof(LedgerAccountType.Asset),
-                    Debit: 100m,
-                    Credit: 0m),
-                new OperationsLedgerJournalLineDto(
-                    EntryId: null,
-                    AccountName: "Interest income",
-                    AccountType: nameof(LedgerAccountType.Revenue),
-                    Debit: 0m,
-                    Credit: 100m)
-            ],
-            AccountingBasis: AccountingBasisKindDto.Primary,
-            AccountingPolicyId: "legacy-v1",
-            AccountingPolicyVersion: "legacy-v1",
-            PostingKind: LedgerPostingKindDto.Originating,
-            Metadata: new OperationsJournalEntryMetadataDto(ActivityType: "operations-continuity"));
-
-    private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
-    {
-        services.AddSingleton<BacktestToLivePromoter>();
-        services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
-            promotionRoot,
-            NullLogger<JsonlPromotionRecordStore>.Instance));
-        services.AddSingleton<PromotionService>(sp => new PromotionService(
-            sp.GetRequiredService<IStrategyRepository>(),
-            sp.GetRequiredService<BacktestToLivePromoter>(),
-            sp.GetRequiredService<IPromotionRecordStore>(),
-            NullLogger<PromotionService>.Instance));
-    }
-
-    private static BrokeragePortfolioSyncService CreateFailedBrokerageSyncService(string root)
-        => new(
-            new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
-            catalogs: [],
-            portfolioAdapters: [new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing.")],
-            activityAdapters: [new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing.")],
-            services: new ServiceCollection().BuildServiceProvider(),
-            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
-
-    private sealed class ThrowingPortfolioAdapter(string providerId, string message) : IBrokeragePortfolioSync
-    {
-        public string ProviderId { get; } = providerId;
-
-        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    private sealed class ThrowingActivityAdapter(string providerId, string message) : IBrokerageActivitySync
-    {
-        public string ProviderId { get; } = providerId;
-
-        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
-            string externalAccountId,
-            DateTimeOffset? since = null,
-            CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    private static string NormalizePathForAssertion(string path) =>
-        path.Replace(Path.DirectorySeparatorChar, '/');
-
     private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
     {
         public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
@@ -5550,9 +5790,9 @@ public sealed class WorkstationEndpointsTests
                 ]
               },
               "evidenceDocuments": [
-                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
-                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/evidence/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/evidence/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/evidence/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
                 { "name": "Provider validation matrix", "gate": "parity", "path": "docs/status/provider-validation-matrix.md", "exists": true, "status": "validated", "missingRequirements": [] }
               ],
               __CONTRACT_REVIEW__
@@ -5564,7 +5804,7 @@ public sealed class WorkstationEndpointsTests
             .Replace("__CONTRACT_REVIEW__", includeContractReview
                 ? """
                   "trustRationaleContract": {
-                    "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+                    "documentPath": "docs/status/evidence/dk1-trust-rationale-mapping.md",
                     "requiredPayloadFields": [ "signalSource", "reasonCode", "recommendedAction" ],
                     "requiredReasonCodes": [
                       "HEALTHY_BASELINE",
@@ -5580,7 +5820,7 @@ public sealed class WorkstationEndpointsTests
                     "missingRequirements": []
                   },
                   "baselineThresholdContract": {
-                    "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+                    "documentPath": "docs/status/evidence/dk1-baseline-trust-thresholds.md",
                     "requiredMetrics": [
                       "Composite trust score",
                       "Connection stability score",
@@ -5958,6 +6198,16 @@ public sealed class WorkstationEndpointsTests
         result.Workflow.Should().NotBeNull();
         return result;
     }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals() =>
+    [
+        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
+    ];
 
     private static async Task<T> ReadAsync<T>(HttpResponseMessage response)
     {
@@ -6654,7 +6904,6 @@ public sealed class WorkstationEndpointsTests
                     Severity: ReconciliationBreakSeverity.High,
                     EvidenceLink: "/workstation/data/security-master")
             ],
-            BankTransactions: [],
             SecurityMasterAccountingIssues:
             [
                 new SecurityMasterAccountingIssueDto(
@@ -7304,6 +7553,203 @@ public sealed class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(book);
+        }
+    }
+
+    private sealed class StubReconciliationApiService : IReconciliationApiService
+    {
+        private static readonly StatementRunSummaryDto StatementRun = new(
+            RunId: "statement-run-1",
+            ImportId: "import-1",
+            Status: StatementRunStatus.ReviewRequired,
+            StartedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 0, 0, TimeSpan.Zero),
+            CompletedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 1, 0, TimeSpan.Zero),
+            PositionMatches: 3,
+            CashMatches: 2,
+            TransactionMatches: 1,
+            OpenExceptionCount: 1,
+            EvidenceLinks:
+            [
+                new StatementRunEvidenceLinkDto(
+                    EvidenceId: "statement-run:statement-run-1",
+                    EvidenceRoute: "/api/workstation/evidence/statement-run/statement-run-1",
+                    RunId: "statement-run-1",
+                    SourceFileHash: "HASH-1",
+                    BrokerCustodian: "custodian",
+                    Account: "external-account-1",
+                    StatementPeriodStart: "2026-05-01",
+                    StatementPeriodEnd: "2026-05-27",
+                    MappingProfileId: "mapping-v1",
+                    MappingProfileVersion: 1,
+                    ToleranceProfileId: "tolerance-v1",
+                    ToleranceProfileVersion: 2,
+                    ValidationSummary: "Passed: 0 issue(s), 0 error(s), 0 warning(s).",
+                    MatchSummary: "6/7 item(s) matched; 1 break(s); 1 case(s).",
+                    BreakIds: ["break-1"],
+                    CaseIds: ["case-1"],
+                    ImportedBy: "ops@example.test",
+                    ImportedAtUtc: "2026-05-27T12:00:00Z",
+                    ReconciledBy: "ops@example.test",
+                    ReconciledAtUtc: "2026-05-27T12:01:00Z")
+            ]);
+
+        public List<StatementRunCreateDto> CreatedRequests { get; } = [];
+        public List<string> ReconciledRunIds { get; } = [];
+
+        public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementImportSummaryDto>>(
+            [
+                new(
+                    ImportId: "import-1",
+                    Broker: "custodian",
+                    StatementDate: "2026-05-27",
+                    ImportedAtUtc: "2026-05-27T12:00:00Z",
+                    RawRowCount: 8,
+                    NormalizedRowCount: 6)
+            ]);
+        }
+
+        public Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([StatementRun]);
+        }
+
+        public Task<StatementRunDto?> CreateStatementRunAsync(StatementRunCreateDto request, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            CreatedRequests.Add(request);
+            return Task.FromResult<StatementRunDto?>(BuildRunDto("created-statement-run", StatementRunStatus.Completed));
+        }
+
+        public Task<StatementRunDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? BuildRunDto(StatementRun.RunId, StatementRun.Status)
+                    : null);
+        }
+
+        public Task<StatementRunValidationDto?> GetStatementRunValidationAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<StatementRunValidationDto?>(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? new StatementRunValidationDto(runId, [], IsBlocked: false)
+                    : null);
+        }
+
+        public Task<IReadOnlyList<StatementRunBreakDto>?> ListStatementRunBreaksAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunBreakDto>?>(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? [BuildBreakDto()]
+                    : null);
+        }
+
+        public Task<StatementRunDto?> ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ReconciledRunIds.Add(runId);
+            return Task.FromResult<StatementRunDto?>(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? BuildRunDto(runId, StatementRunStatus.ReviewRequired)
+                    : null);
+        }
+
+        public Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunExceptionDto>>(
+            [
+                new(
+                    BreakId: "break-1",
+                    RunId: StatementRun.RunId,
+                    ImportId: StatementRun.ImportId,
+                    SourceReference: "row-42",
+                    BreakCode: "cash-delta",
+                    Category: "Cash",
+                    Delta: 10m,
+                    Tolerance: 1m,
+                    ToleranceBreached: true,
+                    CreatedAtUtc: "2026-05-27T12:02:00Z",
+                    Status: "Open")
+            ]);
+        }
+
+
+        private static StatementRunDto BuildRunDto(string runId, StatementRunStatus status) => new(
+            RunId: runId,
+            Status: status,
+            Source: new StatementSourceDto(
+                SourceId: "import-1",
+                SourceKind: "custodian",
+                SourceSystem: "Sample Custodian",
+                AccountId: "fund-1",
+                AccountName: "External Account",
+                Currency: "USD",
+                PeriodStart: new DateOnly(2026, 5, 1),
+                PeriodEnd: new DateOnly(2026, 5, 27)),
+            StartedAtUtc: StatementRun.StartedAtUtc,
+            CompletedAtUtc: StatementRun.CompletedAtUtc,
+            SourceFileName: "statement.csv",
+            SourceFileHash: "ABC123",
+            MappingProfileId: "mapping-v1",
+            MappingProfileVersion: 1,
+            ToleranceProfileId: "tolerance-v1",
+            ToleranceProfileVersion: 1,
+            ImportedBy: "ops-user",
+            ImportedAtUtc: StatementRun.StartedAtUtc,
+            ValidationIssues: [],
+            Positions: [],
+            CashBalances: [],
+            Transactions: [],
+            MatchSummary: new StatementMatchSummaryDto(6, 5, 5, 0, 1, 1, 0, 1, 0),
+            Breaks: [new StatementBreakDto(
+                BreakId: "break-1",
+                BreakType: StatementBreakType.CashBalanceMismatch,
+                Severity: StatementValidationSeverity.Error,
+                MatchTier: StatementMatchTier.Unmatched,
+                StatementReference: "row-42",
+                Description: "Cash delta",
+                StatementAmount: 10m,
+                BookAmount: 0m,
+                Delta: 10m,
+                Tolerance: 1m,
+                Currency: "USD",
+                CreatedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 2, 0, TimeSpan.Zero),
+                Status: "Open")],
+            Cases: [],
+            ImportId: "import-1",
+            FundProfileId: "fund-1");
+
+        private static StatementRunBreakDto BuildBreakDto() => new(
+            BreakId: "break-1",
+            RunId: StatementRun.RunId,
+            ImportId: StatementRun.ImportId,
+            SourceReference: "row-42",
+            BreakType: StatementBreakType.CashBalanceMismatch,
+            Category: "Cash",
+            Delta: 10m,
+            Tolerance: 1m,
+            ToleranceBreached: true,
+            CreatedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 2, 0, TimeSpan.Zero),
+            Status: "Open");
+
+        public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ReconciliationCaseSummaryDto>>([]);
+        }
+
+        public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
         }
     }
 

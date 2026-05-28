@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-Meridian is a self-hosted .NET 10 fund-management and trading-operations platform. It ingests market data, runs backfill/research workflows, stores JSONL/Parquet data, serves a browser workstation and retained WPF workstation, and exposes MCP tooling for AI-assisted workflows. Active domains include execution (paper/live-gated), security master, ledger, reconciliation, direct lending, ETL, and packaging.
+Meridian is a self-hosted .NET 10 fund-management and trading-operations platform. It ingests market data, runs backfill/research workflows, stores JSONL/Parquet data, serves a browser workstation and WPF desktop workstation, and exposes MCP tooling for AI-assisted workflows. Active domains include execution (paper/live-gated), security master, ledger, reconciliation, direct lending, ETL, and packaging.
 
 Primary assets include provider/broker credentials, order-entry controls, operator sessions, historical market data, portfolio/ledger/security-master records, local files under `DataRoot`, PostgreSQL-backed state, audit trails, and generated reports/packages.
 

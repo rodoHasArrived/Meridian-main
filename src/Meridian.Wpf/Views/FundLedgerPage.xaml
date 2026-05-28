@@ -1,6 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.FundLedgerPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:workstationControls="clr-namespace:Meridian.Wpf.Workstation.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
@@ -93,7 +94,7 @@
                             </StackPanel>
                         </Border>
                         <WrapPanel Grid.Row="2" Margin="0,16,0,0">
-                            <Button Content="Governance Home" Command="{Binding OpenGovernanceCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Accounting Home" Command="{Binding OpenGovernanceCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Accounts" Command="{Binding OpenAccountsCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Banking" Command="{Binding OpenBankingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Cash &amp; Financing" Command="{Binding OpenCashFinancingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
@@ -965,6 +966,115 @@
                                     </Grid>
                                 </Border>
 
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" AutomationProperties.AutomationId="StatementReconciliationWorkbench">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="260" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.45*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="1*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Row="0" Grid.ColumnSpan="3">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="Statement Run Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                                    <TextBlock Text="{Binding StatementStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="Refresh Statements"
+                                                        Command="{Binding RefreshStatementReconciliationCommand}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        AutomationProperties.AutomationId="StatementReconciliationRefreshButton" />
+                                            </Grid>
+                                            <UniformGrid Columns="4" Margin="0,12,0,12">
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Statement Runs" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding StatementRunsText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Validation Issues" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding StatementValidationIssuesText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Unresolved Breaks" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding StatementUnresolvedBreaksText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Case Actions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding StatementCasesText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </UniformGrid>
+                                        </StackPanel>
+
+                                        <TabControl Grid.Row="2" Grid.Column="0" TabIndex="8">
+                                            <TabItem Header="Statement Runs">
+                                                <DataGrid ItemsSource="{Binding StatementRuns}" SelectedItem="{Binding SelectedStatementRun, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" BorderThickness="0" Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn Header="Run" Binding="{Binding RunId}" Width="140" />
+                                                        <DataGridTextColumn Header="Import" Binding="{Binding ImportId}" Width="140" />
+                                                        <DataGridTextColumn Header="Completed" Binding="{Binding CompletedAtText}" Width="130" />
+                                                        <DataGridTextColumn Header="Exceptions" Binding="{Binding OpenExceptionCount}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                        <DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="*" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </TabItem>
+                                            <TabItem Header="Validation Issues">
+                                                <DataGrid ItemsSource="{Binding StatementValidationIssues}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" BorderThickness="0" Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn Header="Issue" Binding="{Binding IssueId}" Width="150" />
+                                                        <DataGridTextColumn Header="Severity" Binding="{Binding SeverityLabel}" Width="80" />
+                                                        <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="110" />
+                                                        <DataGridTextColumn Header="Delta" Binding="{Binding DeltaText}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                        <DataGridTextColumn Header="Action" Binding="{Binding RecommendedAction}" Width="*" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </TabItem>
+                                            <TabItem Header="Unresolved Breaks">
+                                                <DataGrid ItemsSource="{Binding StatementUnresolvedBreaks}" SelectedItem="{Binding SelectedStatementBreak, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" BorderThickness="0" Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn Header="Break" Binding="{Binding BreakId}" Width="150" />
+                                                        <DataGridTextColumn Header="Type" Binding="{Binding BreakTypeLabel}" Width="150" />
+                                                        <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="110" />
+                                                        <DataGridTextColumn Header="Delta" Binding="{Binding DeltaText}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                        <DataGridTextColumn Header="Recommended Action" Binding="{Binding RecommendedAction}" Width="*" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </TabItem>
+                                        </TabControl>
+
+                                        <StackPanel Grid.Row="2" Grid.Column="2">
+                                            <TextBlock Text="{Binding StatementDetailTitle}" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding StatementDetailSubtitle}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,8" TextWrapping="Wrap" />
+                                            <workstationControls:WorkstationStatePanelControl State="{Binding ReconciliationSection.StatementSignifierState}" Margin="0,0,0,8" />
+                                            <TextBlock Text="{Binding StatementDisabledReasonText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                            <DataGrid ItemsSource="{Binding StatementCaseActions}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" BorderThickness="0" Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Action" Binding="{Binding Label}" Width="130" />
+                                                    <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="95" />
+                                                    <DataGridTextColumn Header="Disabled Reason" Binding="{Binding DisabledReason}" Width="*" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -1066,8 +1176,16 @@
                                                     </DataGridTemplateColumn>
                                                     <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="130" />
                                                     <DataGridTextColumn Header="Variance" Binding="{Binding VarianceText}" Width="100" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                                    <DataGridTextColumn Header="Assigned" Binding="{Binding AssignedToLabel}" Width="120" />
-                                                    <DataGridTextColumn Header="Detected" Binding="{Binding DetectedAtText}" Width="140" />
+                                                    <DataGridTextColumn Header="Owner" Binding="{Binding AssignedToLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Priority" Binding="{Binding PriorityLabel}" Width="90" />
+                                                    <DataGridTextColumn Header="SLA" Binding="{Binding SlaBadge}" Width="160" />
+                                                    <DataGridTextColumn Header="Age" Binding="{Binding AgeBandLabel}" Width="80" />
+                                                    <DataGridTextColumn Header="Breach" Binding="{Binding BreachStateLabel}" Width="100" />
+                                                    <DataGridTextColumn Header="Root cause" Binding="{Binding RootCauseCodeLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Resolution" Binding="{Binding ResolutionCodeLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Comments" Binding="{Binding CommentCount}" Width="80" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceCount}" Width="80" />
+                                                    <DataGridTextColumn Header="Last activity" Binding="{Binding LastActivityText}" Width="140" />
                                                     <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*" />
                                                 </DataGrid.Columns>
                                             </DataGrid>
@@ -1162,6 +1280,12 @@
                                             <TextBlock Text="{Binding ReconciliationDetailSubtitle}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding ReconciliationDetailStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
                                             <TextBlock Text="{Binding ReconciliationDetailCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ReconciliationDetailLifecycleText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ReconciliationDetailSignoffText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <workstationControls:WorkstationStatePanelControl
+                                                State="{Binding ReconciliationSection.GovernanceSignifierState}"
+                                                Margin="0,14,0,0"
+                                                AutomationProperties.AutomationId="FundReconciliationGovernanceSignifier" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                             <TextBlock Text="Last Updated" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
@@ -1456,6 +1580,10 @@
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
                                     <TextBlock Text="Handoff Readiness" Style="{StaticResource CardHeaderStyle}" />
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding ReportPackReadinessState}"
+                                        Margin="0,14,0,14"
+                                        AutomationProperties.AutomationId="FundReportPackReadinessSignifier" />
                                     <UniformGrid Columns="2" Margin="0,16,0,0">
                                         <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
                                             <StackPanel>

@@ -6,14 +6,14 @@ module_id: SRC-FSHARP-LEDGER
 path: src/Meridian.FSharp.Ledger
 status: active
 owner_lane: Governance and Ledger
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.FSharp.Ledger
 
 ## Purpose
 
-FSharp Ledger contains functional ledger models and accounting calculations.
+FSharp Ledger contains deterministic ledger models, accounting calculations, reconciliation matching, and reconciliation-case workflow rules.
 
 ## Layer responsibility
 
@@ -22,11 +22,17 @@ This layer should express ledger calculations in functional form while keeping p
 ## Key folders and files
 
 - `Meridian.FSharp.Ledger.fsproj` - F# ledger project boundary.
+- `ReconciliationCaseWorkflow.fs` - pure transition legality and provider-ledger tolerance checks for reconciliation cases.
 - Ledger calculation modules and functional domain types.
 
 ## Important workflows
 
-Use this module for ledger calculations that support reconciliation and governed reporting.
+Use this module for ledger calculations and deterministic reconciliation rules that support reconciliation and governed reporting. Keep repositories, hash persistence, provider clients, endpoint handlers, and UI composition in C# layers.
+
+## API contract notes
+
+- `LedgerInterop.ClassifyBreakFacts` trims string fields before mapping DTOs into `RawBreakFacts`, so classification is stable for equivalent break facts that differ only by surrounding whitespace.
+- `ReconciliationCaseWorkflowInterop` exposes C#-friendly transition and provider-ledger checks while keeping the lifecycle rule table pure. The shared Accounting casework lifecycle maps legacy review flows onto `Investigating`, `Resolved`, `SignedOff`, and privileged `Reopened` states so browser, WPF, and repository wrappers use one deterministic transition table.
 
 ## Diagrams
 

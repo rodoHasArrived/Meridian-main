@@ -3,7 +3,7 @@ using System.Linq;
 namespace Meridian.Wpf.Models;
 
 /// <summary>
-/// Static registry of workspace definitions for the 4-workspace navigation shell.
+/// Static registry of compatibility workspace definitions for saved desktop templates.
 /// Each workspace maps to a set of related pages from Pages.cs.
 /// Page names must match the tags registered in NavigationService.RegisterAllPages().
 ///
@@ -15,18 +15,18 @@ namespace Meridian.Wpf.Models;
 public static class WorkspaceRegistry
 {
     /// <summary>
-    /// All workspace definitions, in order (Research, Trading, Data Ops, Governance).
+    /// All compatibility workspace definitions, in legacy persisted order.
     /// </summary>
     public static readonly IReadOnlyList<WorkspaceDefinition> All = new[]
     {
-        // ── Research Workspace ──────────────────────────────────────────────────
+        // ── Strategy compatibility workspace ────────────────────────────────────
         new WorkspaceDefinition(
             Id: "research",
-            Label: "Research",
+            Label: "Strategy",
             Icon: "\uEC35",   // TestBeaker  — SVG: Assets/Icons/research.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("ResearchShell", "Research Workspace", "\uEC35"),
+                new("ResearchShell", "Strategy Workspace", "\uEC35"),
                 new("LiveData",     "Live Data",    "\uE9D2"),  // LineChart
                 new("OrderBook",    "Order Book",   "\uE8FD"),  // List
                 new("Charts",       "Charting",     "\uE9D9"),  // Chart
@@ -51,10 +51,10 @@ public static class WorkspaceRegistry
                 new("TradingHours",   "Trading Hours",   "\uE823"), // Clock
             }),
 
-        // ── Data Ops Workspace ──────────────────────────────────────────────────
+        // ── Data compatibility workspace ────────────────────────────────────────
         new WorkspaceDefinition(
             Id: "data-operations",
-            Label: "Data Operations",
+            Label: "Data",
             Icon: "\uEE94",   // Database    — SVG: Assets/Icons/data-operations.svg
             Pages: new WorkspacePageEntry[]
             {
@@ -76,10 +76,10 @@ public static class WorkspaceRegistry
                 new("CollectionSessions", "Collection Sessions",  "\uE8EF"), // VideoCapture
             }),
 
-        // ── Governance Workspace ────────────────────────────────────────────────
+        // ── Accounting compatibility workspace ──────────────────────────────────
         new WorkspaceDefinition(
             Id: "governance",
-            Label: "Governance",
+            Label: "Accounting",
             Icon: "\uE8D7",   // Permissions — SVG: Assets/Icons/governance.svg
             Pages: new WorkspacePageEntry[]
             {
@@ -105,7 +105,7 @@ public static class WorkspaceRegistry
     }
 
     /// <summary>
-    /// Gets the first workspace (Research by default).
+    /// Gets the first compatibility workspace.
     /// </summary>
     public static WorkspaceDefinition GetDefaultWorkspace()
     {

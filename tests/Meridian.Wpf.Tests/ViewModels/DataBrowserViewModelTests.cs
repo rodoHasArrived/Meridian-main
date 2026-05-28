@@ -121,6 +121,63 @@ public sealed class DataBrowserViewModelTests
     }
 
     [Fact]
+    public void SelectedRecord_ProjectsDetailStateAndCopiesJsonPayload()
+    {
+        WpfTestThread.Run(() =>
+        {
+            string? copiedJson = null;
+            var viewModel = new DataBrowserViewModel(json => copiedJson = json);
+
+            viewModel.RefreshResults();
+            viewModel.CopySelectedRecordJsonCommand.CanExecute(null).Should().BeFalse();
+
+            var selected = viewModel.PagedRecords[0];
+            viewModel.SelectedRecord = selected;
+
+            viewModel.HasSelectedRecord.Should().BeTrue();
+            viewModel.CanCopySelectedRecord.Should().BeTrue();
+            viewModel.CopySelectedRecordJsonCommand.CanExecute(null).Should().BeTrue();
+            viewModel.SelectedRecordSymbol.Should().Be(selected.Symbol);
+            viewModel.SelectedRecordVenue.Should().Be(selected.Venue);
+            viewModel.SelectedRecordDataType.Should().Be(selected.DataType);
+            viewModel.SelectedRecordTimestampText.Should().Be(selected.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            viewModel.SelectedRecordPriceText.Should().Be(selected.Price.ToString("N2"));
+            viewModel.SelectedRecordSizeText.Should().Be(selected.Size.ToString("N0"));
+            viewModel.SelectedRecordAutomationName.Should().Contain(selected.Symbol);
+
+            var json = viewModel.BuildSelectedRecordJson();
+            json.Should().Contain($"\"Symbol\": \"{selected.Symbol}\"");
+            json.Should().Contain($"\"Timestamp\": \"{selected.Timestamp:O}\"");
+
+            viewModel.CopySelectedRecordJsonCommand.Execute(null);
+
+            copiedJson.Should().Be(json);
+        });
+    }
+
+    [Fact]
+    public void RefreshResults_WhenSelectedRecordLeavesPage_ClearsDetailPanelState()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = new DataBrowserViewModel(_ => { });
+
+            viewModel.RefreshResults();
+            viewModel.SelectedRecord = viewModel.PagedRecords[0];
+            viewModel.HasSelectedRecord.Should().BeTrue();
+
+            viewModel.SymbolFilter = "NOT_A_SYMBOL";
+
+            viewModel.PagedRecords.Should().BeEmpty();
+            viewModel.SelectedRecord.Should().BeNull();
+            viewModel.HasSelectedRecord.Should().BeFalse();
+            viewModel.CanCopySelectedRecord.Should().BeFalse();
+            viewModel.CopySelectedRecordJsonCommand.CanExecute(null).Should().BeFalse();
+            viewModel.SelectedRecordSymbol.Should().Be("--");
+        });
+    }
+
+    [Fact]
     public void DataBrowserPageSource_BindsRecoveryStateAndResetCommand()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\DataBrowserPage.xaml"));
@@ -136,6 +193,13 @@ public sealed class DataBrowserViewModelTests
         xaml.Should().Contain("{Binding TimePeriodScopeText, Mode=OneWay}");
         xaml.Should().Contain("DataBrowserEmptyStatePanel");
         xaml.Should().Contain("DataBrowserResetFiltersButton");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedRecord, Mode=TwoWay}\"");
+        xaml.Should().Contain("DataBrowserDetailPanel");
+        xaml.Should().Contain("{Binding HasSelectedRecord, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding SelectedRecordSymbol}");
+        xaml.Should().Contain("{Binding SelectedRecordTimestampText}");
+        xaml.Should().Contain("{Binding CopySelectedRecordJsonCommand}");
+        xaml.Should().Contain("DataBrowserCopySelectedRecordJsonButton");
         xaml.Should().Contain("{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding EmptyStateTitle}");
         xaml.Should().Contain("{Binding EmptyStateDetail}");
@@ -143,8 +207,13 @@ public sealed class DataBrowserViewModelTests
         xaml.Should().Contain("{Binding HasFilterRecoveryAction");
         xaml.Should().NotContain("Click=\"ResetFilters_Click\"");
         xaml.Should().NotContain("TimePeriodCombo_SelectionChanged");
+        xaml.Should().NotContain("SelectionChanged=\"ResultsGrid_SelectionChanged\"");
+        xaml.Should().NotContain("Click=\"CopyJson_Click\"");
         codeBehind.Should().Contain("SelectedTimePeriodKey");
         codeBehind.Should().NotContain("ResetFilters_Click");
+        codeBehind.Should().NotContain("DetailPanel.Visibility");
+        codeBehind.Should().NotContain("DetailSymbol.Text");
+        codeBehind.Should().NotContain("JsonSerializer.Serialize");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

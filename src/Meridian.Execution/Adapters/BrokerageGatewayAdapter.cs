@@ -21,12 +21,17 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
 {
     private readonly IBrokerageGateway _inner;
     private readonly ILogger<BrokerageGatewayAdapter> _logger;
+    private readonly BrokerageConfiguration _configuration;
     private bool _disposed;
 
-    public BrokerageGatewayAdapter(IBrokerageGateway inner, ILogger<BrokerageGatewayAdapter> logger)
+    public BrokerageGatewayAdapter(
+        IBrokerageGateway inner,
+        ILogger<BrokerageGatewayAdapter> logger,
+        BrokerageConfiguration? configuration = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _configuration = configuration ?? new BrokerageConfiguration();
     }
 
     /// <inheritdoc />
@@ -57,34 +62,60 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
     }
 
     /// <inheritdoc />
-    public Task<OrderValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    public async Task<OrderValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var caps = _inner.BrokerageCapabilities;
 
         if (!caps.SupportedOrderTypes.Contains(request.Type))
-            return Task.FromResult(new OrderValidationResult(false, $"Order type '{request.Type}' not supported by {BrokerName}."));
+            return new OrderValidationResult(false, $"Order type '{request.Type}' not supported by {BrokerName}.");
 
         if (!caps.SupportedTimeInForce.Contains(request.TimeInForce))
-            return Task.FromResult(new OrderValidationResult(false, $"Time in force '{request.TimeInForce}' not supported by {BrokerName}."));
+            return new OrderValidationResult(false, $"Time in force '{request.TimeInForce}' not supported by {BrokerName}.");
 
         if (request.Quantity <= 0)
-            return Task.FromResult(new OrderValidationResult(false, "Order quantity must be positive."));
+            return new OrderValidationResult(false, "Order quantity must be positive.");
 
         if (request.Type is SdkOrderType.Limit or SdkOrderType.StopLimit or SdkOrderType.LimitOnOpen or SdkOrderType.LimitOnClose &&
             (!request.LimitPrice.HasValue || request.LimitPrice <= 0))
-            return Task.FromResult(new OrderValidationResult(false, "Limit-style orders require a positive limit price."));
+            return new OrderValidationResult(false, "Limit-style orders require a positive limit price.");
 
         if (request.Type is SdkOrderType.StopMarket or SdkOrderType.StopLimit &&
             (!request.StopPrice.HasValue || request.StopPrice <= 0))
-            return Task.FromResult(new OrderValidationResult(false, "Stop/stop-limit orders require a positive stop price."));
+            return new OrderValidationResult(false, "Stop/stop-limit orders require a positive stop price.");
 
         if (request.Type is SdkOrderType.TrailingStop &&
             (!HasExactlyOnePositiveTrail(request.TrailPrice, request.TrailPercent)))
-            return Task.FromResult(new OrderValidationResult(false, "Trailing stop orders require exactly one positive trail price or trail percent."));
+            return new OrderValidationResult(false, "Trailing stop orders require exactly one positive trail price or trail percent.");
 
-        return Task.FromResult(new OrderValidationResult(true));
+        if (_configuration.MaxOrderNotional > 0m)
+        {
+            var effectivePrice = ResolveEffectivePrice(request);
+            if (!effectivePrice.HasValue)
+                return new OrderValidationResult(false, "Unable to evaluate order notional for this order type without a price input.");
+
+            if ((request.Quantity * effectivePrice.Value) > _configuration.MaxOrderNotional)
+                return new OrderValidationResult(false, $"Order notional exceeds configured maximum of {_configuration.MaxOrderNotional}.");
+        }
+
+        if (_configuration.MaxOpenOrders > 0)
+        {
+            var openOrders = await _inner.GetOpenOrdersAsync(ct).ConfigureAwait(false);
+            if (openOrders.Count >= _configuration.MaxOpenOrders)
+                return new OrderValidationResult(false, $"Open order count exceeds configured maximum of {_configuration.MaxOpenOrders}.");
+        }
+
+        if (_configuration.MaxPositionSize > 0m)
+        {
+            var positions = await _inner.GetPositionsAsync(ct).ConfigureAwait(false);
+            var aggregatePositionSize = positions.Sum(p => Math.Abs(p.Quantity));
+            var projectedPositionSize = aggregatePositionSize + Math.Abs(request.Quantity);
+            if (projectedPositionSize > _configuration.MaxPositionSize)
+                return new OrderValidationResult(false, $"Projected position size exceeds configured maximum of {_configuration.MaxPositionSize}.");
+        }
+
+        return new OrderValidationResult(true);
     }
 
     /// <inheritdoc />
@@ -175,4 +206,11 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
         var hasTrailPercent = trailPercent.HasValue && trailPercent.Value > 0m;
         return hasTrailPrice ^ hasTrailPercent;
     }
+
+    private static decimal? ResolveEffectivePrice(OrderRequest request) => request.Type switch
+    {
+        SdkOrderType.Limit or SdkOrderType.StopLimit or SdkOrderType.LimitOnOpen or SdkOrderType.LimitOnClose => request.LimitPrice,
+        SdkOrderType.StopMarket => request.StopPrice,
+        _ => request.LimitPrice ?? request.StopPrice
+    };
 }

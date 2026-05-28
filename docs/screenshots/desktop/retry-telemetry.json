@@ -1,6 +1,143 @@
 {
-  "generatedAt": "2026-05-22T19:03:58.8132910+00:00",
+  "generatedAt": "2026-05-26T23:42:48.2125099+00:00",
   "outputDirectory": "docs/screenshots/desktop",
   "telemetry": [],
+  "screenDiagnostics": [
+    {
+      "slug": "dashboard",
+      "screen": "System Overview",
+      "status": "success",
+      "category": "capture_success",
+      "navigationMethod": "none",
+      "path": "docs\\screenshots\\desktop\\wpf-dashboard.png",
+      "message": "Saved: docs\\screenshots\\desktop\\wpf-dashboard.png"
+    },
+    {
+      "slug": "providers",
+      "screen": "Providers",
+      "status": "warning",
+      "category": "navigation_failure",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Providers' because navigation failed."
+    },
+    {
+      "slug": "provider-health",
+      "screen": "Provider Health",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Provider Health' because the main window reference was lost."
+    },
+    {
+      "slug": "backfill",
+      "screen": "Backfill",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Backfill' because the main window reference was lost."
+    },
+    {
+      "slug": "symbols",
+      "screen": "Symbols",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Symbols' because the main window reference was lost."
+    },
+    {
+      "slug": "live-data",
+      "screen": "Live Data",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Live Data' because the main window reference was lost."
+    },
+    {
+      "slug": "storage",
+      "screen": "Storage",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Storage' because the main window reference was lost."
+    },
+    {
+      "slug": "data-quality",
+      "screen": "Data Quality",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Data Quality' because the main window reference was lost."
+    },
+    {
+      "slug": "data-browser",
+      "screen": "Data Browser",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Data Browser' because the main window reference was lost."
+    },
+    {
+      "slug": "strategy-runs",
+      "screen": "Strategy Runs",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Strategy Runs' because the main window reference was lost."
+    },
+    {
+      "slug": "backtest",
+      "screen": "Backtest",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Backtest' because the main window reference was lost."
+    },
+    {
+      "slug": "quant-script",
+      "screen": "Quant Script",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Quant Script' because the main window reference was lost."
+    },
+    {
+      "slug": "security-master",
+      "screen": "Security Master",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Security Master' because the main window reference was lost."
+    },
+    {
+      "slug": "diagnostics",
+      "screen": "Diagnostics",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Diagnostics' because the main window reference was lost."
+    },
+    {
+      "slug": "settings",
+      "screen": "Settings",
+      "status": "warning",
+      "category": "window_missing",
+      "navigationMethod": "none",
+      "path": null,
+      "message": "Skipping 'Settings' because the main window reference was lost."
+    }
+  ],
   "failureRanking": []
 }

@@ -168,7 +168,7 @@ Generates a documentation health score and metrics dashboard.
 
 ```bash
 python3 build/scripts/docs/generate-health-dashboard.py \
-  --output docs/status/health-dashboard.md \
+  --output docs/status/doc-health-dashboard.md \
   --json-output docs-health.json
 ```
 
@@ -432,8 +432,8 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/status/TODO.md` | scan-todos.py | TODO tracking |
 | `docs/status/todo-scan-results.json` | scan-todos.py | Machine-readable TODO scan results used for auto issue creation |
 | `docs/status/todo-issue-creation-summary.json` | create-todo-issues.py | Machine-readable issue creation summary with status counts and issue numbers |
-| `docs/status/health-dashboard.md` | generate-health-dashboard.py | Health metrics rendered from canonical JSON |
-| `docs/status/health-dashboard.json` | generate-health-dashboard.py | Canonical health dashboard payload |
+| `docs/status/doc-health-dashboard.md` | generate-health-dashboard.py | Health metrics rendered from canonical JSON |
+| `docs/status/doc-health-dashboard.json` | generate-health-dashboard.py | Canonical health dashboard payload |
 | `docs/status/link-repair-report.md` | repair-links.py | Broken link report |
 | `docs/status/example-validation.md` | validate-examples.py | Code example validation |
 | `docs/status/metrics-dashboard.md` | generate-metrics-dashboard.py | Build/test metrics rendered from canonical JSON |

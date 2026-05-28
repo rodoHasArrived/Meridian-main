@@ -1,10 +1,10 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-23
 
 ## Current Execution TODOs
 
-- [ ] Keep the DK1 packet, provider-validation matrix, kernel-readiness dashboard, and contract-compatibility matrix synchronized after any provider evidence change.
+- [ ] Keep the DK1 packet, provider-validation matrix, delivery-readiness dash, and contract-compatibility matrix synchronized after any provider evidence change.
 - [ ] Drive W2 cockpit acceptance through replay freshness, operator-inbox routing, promotion controls, and browser Trading scenario evidence.
 - [ ] Convert shared run, portfolio, ledger, brokerage/account, and reconciliation support into W3 continuity evidence across the seven-workspace path.
 - [ ] Prove W4 casework, approvals, report-pack lifecycle, provenance, and close/reopen controls with durable evidence before marking governance readiness complete.
@@ -104,8 +104,7 @@ This plan starts from the current repo state:
   such as `Research`, `Trading`, `Data Operations`, and `Governance`; the visible product shell is
   now the seven-workspace browser model (`Data`, `Strategy`, `Trading`, `Portfolio`,
   `Accounting`, `Reporting`, `Settings`), with legacy aliases retained for compatibility; WPF
-  remains useful support evidence for active desktop workflows and shared workstation contracts
-  rather than the default lane for new operator features
+  remains the active desktop shell for operator workflows and shared workstation contracts
 - the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest results empty-state guidance, Position Blotter, Notification Center history recovery, Trading Hours session and holiday-calendar guidance, Welcome, Storage archive posture, System Health triage, Activity Log triage/export/clear state, Watchlist posture plus pinned-first display, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation and comparison guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing states, workspace queue tone styles, the workspace shell context strip, route-aware operator queue button state with shell-context attention cues, the Trading desk briefing hero's stale-replay count detail, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the feature-owned Data shell's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
 - the latest shell-support evidence adds Welcome readiness progress for connection/symbol/storage posture, Storage archive posture for daily growth/capacity/last-scan handoffs, Storage preview scope/guidance for archive-path decisions, OrderBook order-flow posture for depth/tape/spread monitoring, compact shared deep-page command chrome that preserves related-workflow and trust-state context, actionable shell-context attention details, a provider-degradation next action that opens `ProviderHealth`, brokerage-sync queue routing into `AccountPortfolio`, bounded run review-packet queue items, and Trading hero attention states for warning or critical shared work items; treat these as validation support for operator orientation and routing, not as separate readiness exits
 - fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores shared project assets without pinning the WPF target framework before building the desktop shell with the pinned WPF framework and confirming page tags, so test evidence should distinguish demo-state validation from operational readiness

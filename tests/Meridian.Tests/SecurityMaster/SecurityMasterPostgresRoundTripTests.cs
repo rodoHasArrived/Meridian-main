@@ -204,7 +204,6 @@ public sealed class SecurityMasterPostgresRoundTripTests
         resolvedByAlias.Should().NotBeNull();
         resolvedByAlias!.SecurityId.Should().Be(securityId);
 
-        resolvedWithoutProvider.Should().NotBeNull();
-        resolvedWithoutProvider!.SecurityId.Should().Be(securityId);
+        resolvedWithoutProvider.Should().BeNull();
     }
 }

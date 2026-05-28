@@ -1,6 +1,6 @@
 // Runtime Hosts and Startup Modes Diagram
-// Meridian v1.8.x
-// Last Updated: 2026-04-09
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the repo's runnable hosts and how src/Meridian selects
 // startup modes through SharedStartupBootstrapper and StartupOrchestrator.
@@ -12,7 +12,7 @@ digraph RuntimeHosts {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Runtime Hosts and Startup Modes\nEntry points, host surfaces, and shared startup orchestration | v1.8.x";
+  label="Meridian - Runtime Hosts and Startup Modes\nEntry points, host surfaces, and shared startup orchestration";
 
   subgraph cluster_clients {
     label="Clients";
@@ -39,9 +39,7 @@ digraph RuntimeHosts {
     WPF_APP [fillcolor="#805ad5", fontcolor="white",
              label="src/Meridian.Wpf\nWindows workstation shell\nApp.xaml.cs DI composition"];
     MCP_REPO [fillcolor="#2c7a7b", fontcolor="white",
-              label="src/Meridian.Mcp\nRepo-navigation MCP server\nstdio transport"];
-    MCP_MARKET [fillcolor="#2c7a7b", fontcolor="white",
-                label="src/Meridian.McpServer\nMarket-data MCP server\nstdio transport"];
+              label="src/Meridian.Mcp\nDeveloper co-pilot MCP host\nstdio transport"];
   }
 
   subgraph cluster_startup {
@@ -90,8 +88,7 @@ digraph RuntimeHosts {
   OPERATOR -> MAIN_APP [label="CLI / make targets"];
   OPERATOR -> WPF_APP [label="Windows desktop app"];
   LOCAL_CLIENT -> DASHBOARD_BRIDGE [label="localhost API / Swagger"];
-  MCP_HOST -> MCP_REPO [label="repo tools"];
-  MCP_HOST -> MCP_MARKET [label="provider tools"];
+  MCP_HOST -> MCP_REPO [label="tools, resources, prompts"];
 
   MAIN_APP -> BOOTSTRAPPER;
   BOOTSTRAPPER -> ORCHESTRATOR;
@@ -116,10 +113,8 @@ digraph RuntimeHosts {
   STATUS_WRITER -> STORAGE [label="write status"];
   BACKFILL_SERVICES -> STORAGE [label="checkpoints / results"];
 
-  MCP_MARKET -> BACKFILL_SERVICES [style=dashed, color="#2c7a7b",
-                                   label="tool/resource access"];
-  MCP_MARKET -> STORAGE [style=dashed, color="#2c7a7b",
-                         label="catalog / inventory"];
+  MCP_REPO -> HOST_FACTORY [style=dashed, color="#2c7a7b",
+                            label="repo guidance / conventions"];
 
   subgraph cluster_legend {
     label="Legend";

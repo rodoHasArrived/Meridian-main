@@ -70,7 +70,7 @@ dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
-npm ci --prefix src/Meridian.Ui/dashboard
+npm install --prefix src/Meridian.Ui/dashboard --include=optional
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
@@ -162,4 +162,32 @@ make ai-docs-archive-execute
 ```bash
 python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
 python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
+```
+
+## Production DI policy: non-production service bindings
+
+Meridian now enforces a startup policy that blocks in-memory service implementations in production profiles.
+
+**Production detection sources (any one):**
+- `ASPNETCORE_ENVIRONMENT=Production`
+- `DOTNET_ENVIRONMENT=Production`
+- `MERIDIAN_ENVIRONMENT=Production`
+- `MERIDIAN_DEPLOYMENT_ENVIRONMENT=Production`
+- `MERIDIAN_MODE=Production` (or `Live`)
+
+### Allowed implementation matrix
+
+| Environment | In-memory implementations (for example `InMemory*Service`) | Implementations marked `[NonProductionOnlyImplementation]` or `INonProductionOnlyService` | Durable/persistent implementations |
+| --- | --- | --- | --- |
+| Test | Allowed | Allowed | Allowed |
+| Development | Allowed | Allowed | Allowed |
+| Staging | Allowed for controlled validation only | Allowed for controlled validation only | Preferred |
+| Production | **Prohibited (startup fails)** | **Prohibited (startup fails)** | **Required** |
+
+### CI/static validation lanes
+
+Use the targeted policy checks when changing DI composition:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProductionServiceRegistrationPolicyTests|FullyQualifiedName~ProductionStartupPolicySmokeTests" --logger "console;verbosity=normal"
 ```

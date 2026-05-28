@@ -1,6 +1,6 @@
 // Data Flow Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-24
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the end-to-end data flow through the system,
 // from ingestion to storage and export.
@@ -16,7 +16,7 @@ digraph DataFlow {
 
   // Title
   labelloc="t";
-  label="Meridian - Data Flow Diagram\nEnd-to-End Event Processing | v1.7.x";
+  label="Meridian - Data Flow Diagram\nEnd-to-End Event Processing";
 
   // Onboarding Flow (First-Time Setup)
   subgraph cluster_onboarding {

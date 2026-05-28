@@ -447,14 +447,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// Attempts to publish an event to the pipeline without blocking.
     /// Returns false if the queue is full (event will be dropped based on FullMode).
     /// </summary>
-    /// <remarks>
-    /// WAL writes are deferred to the consumer task to preserve the non-blocking contract of
-    /// this method. Events enqueued via this path carry <c>WalSequence == 0</c>; the consumer
-    /// detects this and appends the event to the WAL before forwarding it to the storage sink,
-    /// maintaining the same durability guarantee as <see cref="PublishAsync"/> at the cost of a
-    /// slightly larger crash-recovery window. Callers that require the event to be WAL-persisted
-    /// before this call returns should use <see cref="PublishAsync"/> instead.
-    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
     {
@@ -471,11 +463,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             return false;
         }
 
-        // Capture trace context synchronously — WAL write is deferred to the consumer.
-        // The consumer checks WalSequence == 0 and appends to the WAL before sink persistence.
-        var tracedEvent = CaptureTraceContext(evt);
-
-        var written = _channel.Writer.TryWrite(tracedEvent);
+        var written = _channel.Writer.TryWrite(CaptureTraceContext(evt));
 
         if (written)
         {

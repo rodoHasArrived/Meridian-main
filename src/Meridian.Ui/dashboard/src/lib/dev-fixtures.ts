@@ -1859,6 +1859,25 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
     blockingReason: "Close workflow has unresolved ledger blockers.",
     evidenceLinks: []
   },
+  closeChecklist: [
+    {
+      taskId: "close-gate-brokeringest",
+      gate: "BrokerIngest",
+      label: "Broker intake close gate",
+      owner: "ops-user",
+      dueDate: "2026-05-10",
+      requiredApprovalCount: 1,
+      expiresOn: "2026-05-15",
+      status: "Done",
+      blockingReason: null,
+      evidencePointer: "ev-broker-ingest",
+      remediationRoute: null,
+      canAcknowledge: true,
+      acknowledgedAtUtc: "2026-05-08T14:20:00Z",
+      acknowledgedBy: "ops-user"
+    }
+  ],
+  closeReadiness: null,
   evidenceLinks: [],
   blockers: [
     {

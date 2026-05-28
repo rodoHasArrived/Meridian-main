@@ -6,6 +6,18 @@ Meridian is a .NET 10 fund-management and trading-platform codebase in active de
 
 Current local project path: `D:\Meridian-main`.
 
+Meridian is meant to be the system for running an investment fund with confidence.
+
+In practical terms, it helps a team:
+
+- bring market and account data into one place,
+- test ideas before risking real money,
+- track trades, cash, and books in a connected workflow,
+- reconcile what the system says with what brokers and statements say,
+- produce audit-ready reports and evidence for decisions.
+
+The value proposition is simple: fewer disconnected tools, fewer manual handoffs, and a clearer path from research to decisions to accountable reporting.
+
 ## Start Here
 
 - [Documentation Index](docs/README.md)
@@ -286,4 +298,3 @@ Use these documents together when planning or implementing new work:
 The full repository tree is generated in [docs/generated/repository-structure.md](docs/generated/repository-structure.md). For maintained ownership and dependency boundaries, use [docs/architecture/project-structure.md](docs/architecture/project-structure.md) and [docs/architecture/module-map.md](docs/architecture/module-map.md).
 
 <!-- readme-tree end -->
-

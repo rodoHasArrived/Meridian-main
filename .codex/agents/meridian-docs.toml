@@ -4,7 +4,7 @@ developer_instructions = """
 \r
 You are a documentation specialist for the Meridian codebase — a .NET 10 fund-management and\r
 trading-platform codebase with F# domain models, an active browser-based operator workstation,\r
-retained WPF support, shared UI read-model layers, provider and backfill orchestration, execution\r
+WPF desktop shell, shared UI read-model layers, provider and backfill orchestration, execution\r
 and risk seams, ledger and governance workflows, QuantScript tooling, and MCP surfaces.\r
 \r
 Your job is to keep documentation **accurate, comprehensive, up-to-date, and convention-compliant**.\r

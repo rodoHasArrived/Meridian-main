@@ -1,0 +1,272 @@
+{
+  "schemaVersion": "providerGoldenPathScenario/v1",
+  "metadata": {
+    "provider": "interactive-brokers",
+    "scenarioName": "AAPL SMART order creates ledger-backed reconciliation break",
+    "generatedAtUtc": "2026-05-28T00:00:00Z",
+    "noLiveNetwork": true,
+    "sourceDocs": [
+      "https://www.interactivebrokers.com/campus/ibkr-api-page/contracts/",
+      "https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-doc/",
+      "https://www.interactivebrokers.com/campus/ibkr-api-page/market-data-subscriptions/"
+    ]
+  },
+  "providerMessages": {
+    "contract": {
+      "messageId": "ibkr.contract.aapl.smart.001",
+      "symbol": "AAPL",
+      "secType": "STK",
+      "exchange": "SMART",
+      "currency": "USD"
+    },
+    "marketDataReadiness": {
+      "messageId": "ibkr.marketdata.readiness.001",
+      "requiresSubscription": true,
+      "mode": "offline-fixture",
+      "symbol": "AAPL",
+      "secType": "STK",
+      "exchange": "SMART",
+      "currency": "USD"
+    },
+    "orderCallbacks": [
+      {
+        "messageId": "ibkr.nextValidId.001",
+        "callback": "nextValidId",
+        "orderId": 7200001,
+        "eventSequence": 1
+      },
+      {
+        "messageId": "ibkr.placeOrder.001",
+        "method": "EClient.placeOrder",
+        "orderId": 7200001,
+        "eventSequence": 2,
+        "contract": {
+          "symbol": "AAPL",
+          "secType": "STK",
+          "exchange": "SMART",
+          "currency": "USD"
+        },
+        "order": {
+          "action": "BUY",
+          "orderType": "LMT",
+          "totalQuantity": 100,
+          "lmtPrice": 190.50,
+          "tif": "DAY"
+        }
+      },
+      {
+        "messageId": "ibkr.openOrder.001",
+        "callback": "openOrder",
+        "orderId": 7200001,
+        "eventSequence": 3,
+        "status": "Submitted"
+      },
+      {
+        "messageId": "ibkr.orderStatus.partial.001",
+        "callback": "orderStatus",
+        "orderId": 7200001,
+        "eventSequence": 4,
+        "status": "PartiallyFilled",
+        "filled": 40,
+        "remaining": 60,
+        "avgFillPrice": 190.00
+      },
+      {
+        "messageId": "ibkr.execDetails.001",
+        "callback": "execDetails",
+        "orderId": 7200001,
+        "eventSequence": 5,
+        "execId": "ibkr-exec-fixture-001",
+        "shares": 40,
+        "price": 190.00,
+        "time": "2026-04-11T14:30:02.000000000Z"
+      },
+      {
+        "messageId": "ibkr.orderStatus.filled.001",
+        "callback": "orderStatus",
+        "orderId": 7200001,
+        "eventSequence": 6,
+        "status": "Filled",
+        "filled": 100,
+        "remaining": 0,
+        "avgFillPrice": 190.20
+      },
+      {
+        "messageId": "ibkr.execDetails.002",
+        "callback": "execDetails",
+        "orderId": 7200001,
+        "eventSequence": 7,
+        "execId": "ibkr-exec-fixture-002",
+        "shares": 60,
+        "price": 190.3333333333,
+        "time": "2026-04-11T14:30:03.000000000Z"
+      },
+      {
+        "messageId": "ibkr.commissionReport.001",
+        "callback": "commissionReport",
+        "eventSequence": 8,
+        "execId": "ibkr-exec-fixture-002",
+        "commission": 1.25,
+        "currency": "USD"
+      }
+    ]
+  },
+  "expectedCanonicalEvents": {
+    "contract": {
+      "kind": "contract",
+      "provider": "interactive-brokers",
+      "sourceMessageId": "ibkr.contract.aapl.smart.001",
+      "symbol": "AAPL",
+      "securityType": "STK",
+      "venue": "SMART",
+      "currency": "USD"
+    },
+    "fill": {
+      "kind": "executionFill",
+      "provider": "interactive-brokers",
+      "orderId": "7200001",
+      "symbol": "AAPL",
+      "side": "buy",
+      "quantity": 100,
+      "averagePrice": 190.20,
+      "commission": 1.25,
+      "timestamp": "2026-04-11T14:30:03.000000000Z"
+    }
+  },
+  "executionLifecycle": {
+    "orderId": "7200001",
+    "symbol": "AAPL",
+    "side": "buy",
+    "submittedQuantity": 100,
+    "finalQuantity": 100,
+    "averagePrice": 190.20,
+    "commission": 1.25,
+    "states": [
+      {
+        "state": "submitted",
+        "timestamp": "2026-04-11T14:30:01.000000000Z",
+        "filledQuantity": 0
+      },
+      {
+        "state": "accepted_open",
+        "timestamp": "2026-04-11T14:30:01.500000000Z",
+        "filledQuantity": 0
+      },
+      {
+        "state": "partial_fill",
+        "timestamp": "2026-04-11T14:30:02.000000000Z",
+        "filledQuantity": 40
+      },
+      {
+        "state": "fill",
+        "timestamp": "2026-04-11T14:30:03.000000000Z",
+        "filledQuantity": 100
+      }
+    ],
+    "fills": [
+      {
+        "fillId": "ibkr-exec-fixture-001",
+        "sourceMessageId": "ibkr.execDetails.001",
+        "quantity": 40,
+        "price": 190.00,
+        "commission": 0.00,
+        "timestamp": "2026-04-11T14:30:02.000000000Z"
+      },
+      {
+        "fillId": "ibkr-exec-fixture-002",
+        "sourceMessageId": "ibkr.execDetails.002",
+        "quantity": 60,
+        "price": 190.3333333333,
+        "commission": 1.25,
+        "timestamp": "2026-04-11T14:30:03.000000000Z"
+      }
+    ]
+  },
+  "expectedLedger": {
+    "ledgerId": "ledger-fixture-ibkr-aapl",
+    "timestamp": "2026-04-11T14:30:03.000000000Z",
+    "description": "Buy 100 AAPL through IBKR SMART fixture",
+    "lines": [
+      {
+        "lineId": "ledger.ibkr.aapl.security",
+        "account": "Securities",
+        "accountType": "Asset",
+        "symbol": "AAPL",
+        "debit": 19020.00,
+        "credit": 0.00,
+        "evidenceId": "ibkr-exec-fixture-002"
+      },
+      {
+        "lineId": "ledger.ibkr.commission",
+        "account": "Commissions",
+        "accountType": "Expense",
+        "symbol": "AAPL",
+        "debit": 1.25,
+        "credit": 0.00,
+        "evidenceId": "ibkr.commissionReport.001"
+      },
+      {
+        "lineId": "ledger.ibkr.cash",
+        "account": "Cash",
+        "accountType": "Asset",
+        "symbol": null,
+        "debit": 0.00,
+        "credit": 19021.25,
+        "evidenceId": "ibkr.commissionReport.001"
+      }
+    ],
+    "debitTotal": 19021.25,
+    "creditTotal": 19021.25,
+    "portfolio": {
+      "portfolioId": "portfolio-fixture-ibkr-aapl",
+      "symbol": "AAPL",
+      "quantity": 100,
+      "cashImpact": -19021.25
+    }
+  },
+  "statementRows": [
+    {
+      "rowId": "statement.ibkr.position.aapl",
+      "rowType": "position",
+      "provider": "interactive-brokers",
+      "symbol": "AAPL",
+      "quantity": 99,
+      "marketValue": 18829.80,
+      "asOf": "2026-04-11T21:00:00.000000000Z"
+    },
+    {
+      "rowId": "statement.ibkr.cash.usd",
+      "rowType": "cash",
+      "provider": "interactive-brokers",
+      "currency": "USD",
+      "amount": -19021.25,
+      "asOf": "2026-04-11T21:00:00.000000000Z"
+    }
+  ],
+  "expectedBreaks": [
+    {
+      "breakId": "break.ibkr.aapl.position.quantity",
+      "category": "PositionQuantityMismatch",
+      "severity": "High",
+      "materiality": 1,
+      "symbol": "AAPL",
+      "expectedQuantity": 100,
+      "actualQuantity": 99,
+      "evidenceIds": [
+        "ibkr.contract.aapl.smart.001",
+        "ibkr.execDetails.002",
+        "ledger.ibkr.aapl.security",
+        "statement.ibkr.position.aapl"
+      ]
+    }
+  ],
+  "expectedEvidence": {
+    "provider": "evidence.provider.ibkr",
+    "dataset": "evidence.dataset.ibkr.aapl.2026-04-11",
+    "paperSession": "evidence.paper-session.ibkr.aapl.partial-fill",
+    "portfolio": "portfolio-fixture-ibkr-aapl",
+    "ledger": "ledger-fixture-ibkr-aapl",
+    "reconciliation": "break.ibkr.aapl.position.quantity",
+    "reportPack": "evidence.report-pack.ibkr.aapl.partial-fill"
+  }
+}

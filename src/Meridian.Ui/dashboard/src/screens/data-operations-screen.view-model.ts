@@ -3,6 +3,7 @@ import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
+  BackfillPreviewResult,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -117,7 +118,7 @@ export interface BackfillResultCardState {
 }
 
 export interface BackfillTriggerServices {
-  preview: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
+  preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   getProgress: () => Promise<BackfillProgressResponse>;
 }
@@ -726,7 +727,7 @@ export function useDataOperationsViewModel(
   const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
-  const [preview, setPreview] = useState<BackfillTriggerResult | null>(null);
+  const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
@@ -2476,7 +2477,7 @@ export function buildBackfillTriggerState({
   busy: boolean;
   phase: BackfillPhase;
   error: ApiErrorDisplay | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillTriggerState {
@@ -2530,7 +2531,7 @@ export function buildBackfillDialogState({
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
@@ -2729,7 +2730,7 @@ export function resolveBackfillRunDisabledReason({
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
 }): string | null {
   if (phase === "running") {
     return "Backfill is already running.";
@@ -2761,7 +2762,7 @@ export function buildBackfillFormStatusLabel({
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   error: ApiErrorDisplay | null;
   result: BackfillTriggerResult | null;
 }): string {
@@ -2810,7 +2811,7 @@ function resolveBackfillFormStatusTone({
   phase: BackfillPhase;
   validationError: string | null;
   error: ApiErrorDisplay | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
 }): BackfillDialogState["formStatusTone"] {
   if (error || (result && !result.success)) {
@@ -2829,19 +2830,26 @@ function resolveBackfillFormStatusTone({
 }
 
 export function buildBackfillResultCardState(
-  result: BackfillTriggerResult,
+  result: BackfillTriggerResult | BackfillPreviewResult,
   kind: "preview" | "result"
 ): BackfillResultCardState {
   const providerText = formatBackfillValue(result.provider, "Provider not reported");
-  const symbolsText = result.symbols.length > 0 ? result.symbols.join(", ") : "No symbols reported";
-  const barsText = result.barsWritten.toLocaleString();
+  const isPreview = kind === "preview";
+  const symbolsText = isPreview
+    ? ((result as BackfillPreviewResult).symbols.map((entry) => entry.symbol).join(", ") || "No symbols reported")
+    : ((result as BackfillTriggerResult).symbols.join(", ") || "No symbols reported");
+  const barsText = isPreview
+    ? (result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0).toLocaleString()
+    : (result as BackfillTriggerResult).barsWritten.toLocaleString();
   const rangeText = formatBackfillRange(result.from, result.to);
-  const timingText = formatBackfillTiming(result.startedUtc, result.completedUtc);
-  const tone = resolveBackfillResultTone(result, kind);
-  const statusLabel = resolveBackfillResultStatusLabel(result, kind);
+  const timingText = isPreview
+    ? `${(result as BackfillPreviewResult).estimatedDurationSeconds.toLocaleString()} sec est.`
+    : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
+  const tone = isPreview ? "warning" : resolveBackfillResultTone(result as BackfillTriggerResult, kind);
+  const statusLabel = isPreview ? "Preview only" : resolveBackfillResultStatusLabel(result as BackfillTriggerResult, kind);
   const title = kind === "preview"
     ? `Preview ready — ${providerText}`
-    : result.success
+    : (result as BackfillTriggerResult).success
       ? `Backfill complete — ${providerText}`
       : `Backfill failed — ${providerText}`;
   const rows = [
@@ -2857,7 +2865,7 @@ export function buildBackfillResultCardState(
     statusLabel,
     tone,
     rows,
-    errorText: result.error,
+    errorText: isPreview ? null : (result as BackfillTriggerResult).error,
     ariaLabel: [
       title,
       `Status ${statusLabel}`,
@@ -2865,7 +2873,7 @@ export function buildBackfillResultCardState(
       `Bars ${barsText}`,
       `Range ${rangeText}`,
       `Timing ${timingText}`,
-      result.error ? `Error ${result.error}` : null
+      !isPreview && (result as BackfillTriggerResult).error ? `Error ${(result as BackfillTriggerResult).error}` : null
     ].filter(Boolean).join(". ")
   };
 }
@@ -3069,7 +3077,7 @@ function buildBackfillStatusAnnouncement({
 }: {
   phase: BackfillPhase;
   error: ApiErrorDisplay | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
 }): string {
   if (phase === "previewing") {
@@ -3089,7 +3097,7 @@ function buildBackfillStatusAnnouncement({
   }
 
   if (preview) {
-    return `Backfill preview ready for ${preview.symbols.join(", ")}.`;
+    return `Backfill preview ready for ${preview.symbols.map((entry) => entry.symbol).join(", ")}.`;
   }
 
   return "";

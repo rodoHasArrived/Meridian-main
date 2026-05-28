@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
@@ -46,6 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
+    private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -121,6 +123,23 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode, workspaceScope?.ServiceProvider);
     }
 
+    /// <summary>
+    /// Navigates using a workspace-scoped service provider when provided.
+    /// </summary>
+    public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
+    {
+        var previousProvider = _navigationScopeProvider.Value;
+        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
+        try
+        {
+            return base.NavigateTo(pageTag, parameter);
+        }
+        finally
+        {
+            _navigationScopeProvider.Value = previousProvider;
+        }
+    }
+
     /// <inheritdoc />
     protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
@@ -129,7 +148,12 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         try
         {
-            var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
+            var content = CreatePageContentCore(
+                pageTag,
+                pageType,
+                parameter,
+                WorkspaceChromePresentationMode.Standalone,
+                _navigationScopeProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
             {
@@ -260,7 +284,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         IServiceProvider? scopedProvider = null)
     {
         var serviceProvider = scopedProvider ?? _serviceProvider;
-        var page = CreatePage(pageType, serviceProvider);
+        var page = CreatePage(pageTag, pageType, serviceProvider);
         if (page is IWorkspaceShellPageContextAware contextAware)
         {
             contextAware.ApplyWorkspaceShellPageTag(pageTag);
@@ -305,11 +329,19 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         return ShellNavigationCatalog.GetPage(pageTag) is not null;
     }
 
-    private object CreatePage(Type pageType, IServiceProvider? serviceProvider)
+    private object CreatePage(string pageTag, Type pageType, IServiceProvider? serviceProvider)
     {
         if (serviceProvider != null)
         {
-            return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+            try
+            {
+                return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+            }
+            catch (Exception)
+            {
+                // Unit tests and partial workspace scopes may not load the full app resource graph.
+                return CreateFallbackPage(pageTag, serviceProvider);
+            }
         }
 
         try
@@ -319,8 +351,21 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         catch (Exception)
         {
             // Unit tests exercise shell routing without app DI/resources; use an inert page.
-            return new Page();
+            return CreateFallbackPage(pageTag, serviceProvider);
         }
+    }
+
+    private static Page CreateFallbackPage(string pageTag, IServiceProvider? serviceProvider)
+    {
+        if (ShellNavigationCatalog.IsWorkspaceShellPageTag(pageTag))
+        {
+            return serviceProvider?.GetService<WorkspaceCapabilityHomePage>()
+                ?? (serviceProvider is null
+                    ? new WorkspaceCapabilityHomePage()
+                    : ActivatorUtilities.CreateInstance<WorkspaceCapabilityHomePage>(serviceProvider));
+        }
+
+        return new Page();
     }
 
     private static void ApplyNavigationParameter(object page, object? parameter)

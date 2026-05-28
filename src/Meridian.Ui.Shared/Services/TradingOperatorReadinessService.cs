@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
+using Meridian.FSharp.Operations;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
@@ -84,7 +85,8 @@ public sealed class TradingOperatorReadinessService
             brokerageStatus,
             riskRuleStatuses,
             auditEntries);
-        var overallStatus = EvaluateOverallPosture(acceptanceGates, latestRun is null);
+        var overallStatus = EvaluateOverallPosture(acceptanceGates);
+        var portfolioLedgerWorkflowStatus = PortfolioLedgerWorkflowStatusService.Compute(acceptanceGates, workItems);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
         var snapshotVersion = BuildSnapshotVersion(
@@ -124,7 +126,8 @@ public sealed class TradingOperatorReadinessService
             ReportPack = reportPack,
             SnapshotMaterializedAt = asOf,
             SnapshotVersion = snapshotVersion,
-            ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf)
+            ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf),
+            PortfolioLedgerWorkflowStatus = portfolioLedgerWorkflowStatus
         };
 
         ValidateRequiredReadinessFields(readiness);
@@ -193,6 +196,24 @@ public sealed class TradingOperatorReadinessService
             .ToArray();
         var activeSession = SelectActiveSession(sessions, latestRun);
         var replay = BuildReplay(activeSession?.SessionId, auditEntries);
+        if (activeSession is not null && replay is not null)
+        {
+            var drift = ReplayDriftDetector.Assess(
+                activeSession.SessionId,
+                activeSession.FillCount,
+                activeSession.OrderCount,
+                activeSession.LedgerEntryCount,
+                replay.SessionId,
+                replay.ComparedFillCount,
+                replay.ComparedOrderCount,
+                replay.ComparedLedgerEntryCount);
+            replay = replay with
+            {
+                DriftStatus = drift.Status.ToString(),
+                RequiredNextAction = drift.RequiredNextAction
+            };
+        }
+
 
         if (activeSession is null)
         {
@@ -218,7 +239,8 @@ public sealed class TradingOperatorReadinessService
                 $"Run replay verification for paper session {activeSession.SessionId}.",
                 OperatorWorkItemToneDto.Warning,
                 activeSession.SessionId,
-                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId),
+                scope: activeSession.SessionId);
         }
         else if (!replay.IsConsistent)
         {
@@ -231,20 +253,26 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemToneDto.Critical,
                 replay.SessionId,
                 auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId));
+                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId),
+                scope: replay.SessionId);
         }
-        else if (IsReplayCoverageStale(activeSession, replay))
+        else
         {
-            PrometheusMetrics.RecordRunContinuityStaleProjection("api", "replay-stale");
-            AddWorkItem(
-                workItems,
-                OperatorWorkItemKindDto.PaperReplay,
-                "Paper replay verification stale",
-                BuildReplayCoverageDetail(activeSession, replay),
-                OperatorWorkItemToneDto.Warning,
-                replay.SessionId,
-                auditReference: replay.VerificationAuditId,
-                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId));
+            var replayFreshness = EvaluateReplayFreshness(activeSession, replay);
+            if (replayFreshness.IsStale)
+            {
+                PrometheusMetrics.RecordRunContinuityStaleProjection("api", "replay-stale");
+                AddWorkItem(
+                    workItems,
+                    OperatorWorkItemKindDto.PaperReplay,
+                    "Paper replay verification stale",
+                    replayFreshness.Detail,
+                    OperatorWorkItemToneDto.Critical,
+                    replay.SessionId,
+                    auditReference: replay.VerificationAuditId,
+                    workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),
+                    scope: replay.SessionId);
+            }
         }
 
         return new PaperSessionReadiness(sessions, activeSession, replay);
@@ -604,12 +632,25 @@ public sealed class TradingOperatorReadinessService
             return null;
         }
 
-        var status = snapshot.Warnings.Count == 0 && snapshot.Artifacts.Count > 0
-            ? TradingAcceptanceGateStatusDto.Ready
-            : TradingAcceptanceGateStatusDto.ReviewRequired;
-        var detail = status == TradingAcceptanceGateStatusDto.Ready
-            ? $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s) and links to run {matchedRunId}."
-            : $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but {snapshot.Warnings.Count} warning(s) require review.";
+        var warningIssueCount = snapshot.ValidationIssues.Count(issue => issue.Severity == GovernanceReportValidationSeverityDto.Warning);
+        var criticalIssueCount = snapshot.ValidationIssues.Count(issue => issue.Severity == GovernanceReportValidationSeverityDto.Critical);
+        var hasArtifacts = snapshot.Artifacts.Count > 0;
+        var status = !hasArtifacts
+            ? TradingAcceptanceGateStatusDto.ReviewRequired
+            : criticalIssueCount > 0
+                ? TradingAcceptanceGateStatusDto.Blocked
+                : snapshot.Status != GovernanceReportPackStatusDto.Validated || warningIssueCount > 0 || snapshot.Warnings.Count > 0
+                    ? TradingAcceptanceGateStatusDto.ReviewRequired
+                    : TradingAcceptanceGateStatusDto.Ready;
+        var detail = status switch
+        {
+            TradingAcceptanceGateStatusDto.Ready =>
+                $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s), is {snapshot.Status}, and links to run {matchedRunId}.",
+            TradingAcceptanceGateStatusDto.Blocked =>
+                $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but {criticalIssueCount} critical validation issue(s) block readiness.",
+            _ =>
+                $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but status {snapshot.Status} with {warningIssueCount} warning validation issue(s) and {snapshot.Warnings.Count} legacy warning(s) requires review."
+        };
 
         return new TradingReportPackReadinessDto(
             Status: status,
@@ -643,18 +684,25 @@ public sealed class TradingOperatorReadinessService
         var isConsistent = ParseBoolMetadata(replayAudit, "isConsistent")
             ?? (mismatchCount == 0 && !string.Equals(replayAudit.Outcome, "AttentionRequired", StringComparison.OrdinalIgnoreCase));
 
+        var replaySessionId = GetMetadata(replayAudit, "sessionId") ?? sessionId ?? replayAudit.CorrelationId ?? string.Empty;
+        var comparedFillCount = ParseIntMetadata(replayAudit, "comparedFillCount") ?? 0;
+        var comparedOrderCount = ParseIntMetadata(replayAudit, "comparedOrderCount") ?? 0;
+        var comparedLedgerEntryCount = ParseIntMetadata(replayAudit, "comparedLedgerEntryCount") ?? 0;
+
         return new TradingReplayReadinessDto(
-            SessionId: GetMetadata(replayAudit, "sessionId") ?? sessionId ?? replayAudit.CorrelationId ?? string.Empty,
+            SessionId: replaySessionId,
             ReplaySource: GetMetadata(replayAudit, "replaySource") ?? "ExecutionAudit",
             IsConsistent: isConsistent,
-            ComparedFillCount: ParseIntMetadata(replayAudit, "comparedFillCount") ?? 0,
-            ComparedOrderCount: ParseIntMetadata(replayAudit, "comparedOrderCount") ?? 0,
-            ComparedLedgerEntryCount: ParseIntMetadata(replayAudit, "comparedLedgerEntryCount") ?? 0,
+            ComparedFillCount: comparedFillCount,
+            ComparedOrderCount: comparedOrderCount,
+            ComparedLedgerEntryCount: comparedLedgerEntryCount,
             VerifiedAt: replayAudit.OccurredAt,
             LastPersistedFillAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedFillAt"),
             LastPersistedOrderUpdateAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedOrderUpdateAt"),
             VerificationAuditId: replayAudit.AuditId,
-            MismatchReasons: BuildReplayMismatchReasons(isConsistent, replayAudit));
+            MismatchReasons: BuildReplayMismatchReasons(isConsistent, replayAudit),
+            DriftStatus: ReplayDriftStatus.Unknown.ToString(),
+            RequiredNextAction: "Run replay verification.");
     }
 
     private static IReadOnlyList<string> BuildReplayMismatchReasons(
@@ -1181,15 +1229,18 @@ public sealed class TradingOperatorReadinessService
                 AuditReference: replay.VerificationAuditId);
         }
 
-        if (IsReplayCoverageStale(activeSession, replay))
+        var replayFreshness = EvaluateReplayFreshness(activeSession, replay);
+        if (replayFreshness.IsStale)
         {
             return new TradingAcceptanceGateDto(
                 GateId: "replay",
                 Label: "Replay verified",
                 Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-                Detail: BuildReplayCoverageDetail(activeSession, replay),
+                Detail: replayFreshness.Detail,
                 SessionId: replay.SessionId,
-                AuditReference: replay.VerificationAuditId);
+                AuditReference: replay.VerificationAuditId,
+                Reason: "REPLAY_FRESHNESS_STALE",
+                RequiredNextAction: replayFreshness.RequiredNextAction);
         }
 
         return new TradingAcceptanceGateDto(
@@ -1201,43 +1252,23 @@ public sealed class TradingOperatorReadinessService
             AuditReference: replay.VerificationAuditId);
     }
 
-    private static bool IsReplayCoverageStale(
-        TradingPaperSessionReadinessDto activeSession,
-        TradingReplayReadinessDto replay)
-        => !string.Equals(activeSession.SessionId, replay.SessionId, StringComparison.OrdinalIgnoreCase) ||
-           activeSession.FillCount != replay.ComparedFillCount ||
-           activeSession.OrderCount != replay.ComparedOrderCount ||
-           activeSession.LedgerEntryCount != replay.ComparedLedgerEntryCount;
-
-    private static string BuildReplayCoverageDetail(
+    private static ReplayFreshnessEvaluation EvaluateReplayFreshness(
         TradingPaperSessionReadinessDto activeSession,
         TradingReplayReadinessDto replay)
     {
-        if (!string.Equals(activeSession.SessionId, replay.SessionId, StringComparison.OrdinalIgnoreCase))
-        {
-            return $"Replay verification covers session {replay.SessionId}, but the active paper session is {activeSession.SessionId}.";
-        }
-
-        var differences = new List<string>(capacity: 3);
-        if (activeSession.FillCount != replay.ComparedFillCount)
-        {
-            differences.Add($"fills active={activeSession.FillCount}, verified={replay.ComparedFillCount}");
-        }
-
-        if (activeSession.OrderCount != replay.ComparedOrderCount)
-        {
-            differences.Add($"orders active={activeSession.OrderCount}, verified={replay.ComparedOrderCount}");
-        }
-
-        if (activeSession.LedgerEntryCount != replay.ComparedLedgerEntryCount)
-        {
-            differences.Add($"ledger active={activeSession.LedgerEntryCount}, verified={replay.ComparedLedgerEntryCount}");
-        }
-
-        return differences.Count == 0
-            ? $"Replay verification for paper session {activeSession.SessionId} is no longer aligned with the active session."
-            : $"Replay verification for paper session {activeSession.SessionId} is stale ({string.Join("; ", differences)}). Run replay verification again before accepting cockpit readiness.";
+        var drift = ReplayDriftDetector.Assess(
+            activeSession.SessionId,
+            activeSession.FillCount,
+            activeSession.OrderCount,
+            activeSession.LedgerEntryCount,
+            replay.SessionId,
+            replay.ComparedFillCount,
+            replay.ComparedOrderCount,
+            replay.ComparedLedgerEntryCount);
+        return new ReplayFreshnessEvaluation(drift.IsDrifted, drift.Detail, drift.RequiredNextAction);
     }
+
+    private sealed record ReplayFreshnessEvaluation(bool IsStale, string Detail, string RequiredNextAction);
 
     private static TradingAcceptanceGateDto BuildAuditControlGate(
         TradingControlReadinessDto controls,
@@ -1418,7 +1449,7 @@ public sealed class TradingOperatorReadinessService
             return null;
         }
 
-        return await governance.EvaluateGateAsync(latestRun.Summary.RunId, new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, ct).ConfigureAwait(false);
+        return await governance.EvaluateGateAsync(latestRun.Summary.RunId, new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, ct, writeAudit: false).ConfigureAwait(false);
     }
 
     private static TradingAcceptanceGateDto BuildReconciliationGate(ReconciliationGateEvaluation? evaluation)
@@ -1551,55 +1582,11 @@ public sealed class TradingOperatorReadinessService
     /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
     /// </summary>
     private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(
-        IReadOnlyList<TradingAcceptanceGateDto> gates,
-        bool activeSessionOnly)
+        IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
-        var canonicalGateOrder = new[]
-        {
-            "replay",
-            "reconciliation",
-            "audit-controls",
-            "risk-rules",
-            "promotion",
-            "dk1-trust",
-            "report-pack",
-            "session",
-            "brokerage-sync"
-        };
-
-        var ordered = canonicalGateOrder
-            .Select(gateId => gates.FirstOrDefault(gate => string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase)))
-            .Where(static gate => gate is not null)
-            .Cast<TradingAcceptanceGateDto>()
-            .ToArray();
-
-        if (ordered.Length == 0)
-        {
-            return TradingAcceptanceGateStatusDto.Unknown;
-        }
-
-        if (ordered.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
-        {
-            return TradingAcceptanceGateStatusDto.Blocked;
-        }
-
-        if (activeSessionOnly &&
-            IsGateReady(ordered, "session") &&
-            IsGateReady(ordered, "replay") &&
-            IsGateReady(ordered, "audit-controls"))
-        {
-            return TradingAcceptanceGateStatusDto.Ready;
-        }
-
-        return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
-            ? TradingAcceptanceGateStatusDto.Ready
-            : TradingAcceptanceGateStatusDto.ReviewRequired;
+        var status = TradingReadinessInterop.EvaluateOverallPosture(ToGateFacts(gates));
+        return Enum.Parse<TradingAcceptanceGateStatusDto>(status);
     }
-
-    private static bool IsGateReady(IEnumerable<TradingAcceptanceGateDto> gates, string gateId)
-        => gates.Any(gate =>
-            string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase) &&
-            gate.Status == TradingAcceptanceGateStatusDto.Ready);
 
     private static void AddTrustGateWorkItem(
         ICollection<OperatorWorkItemDto> workItems,
@@ -1672,40 +1659,43 @@ public sealed class TradingOperatorReadinessService
         IReadOnlyList<TradingAcceptanceGateDto> gates,
         IReadOnlyList<OperatorWorkItemDto> workItems)
     {
-        var readyGateCount = gates.Count(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready);
-        var totalGateCount = gates.Count;
-        var scorePercent = totalGateCount == 0
-            ? 0
-            : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
-        var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
-        var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var status = EvaluateOverallPosture(gates, activeSessionOnly: false);
+        var summary = TradingReadinessInterop.SummarizeEvidence(
+            ToGateFacts(gates),
+            workItems
+                .Select(static item => new TradingWorkItemEvidenceFactDto
+                {
+                    Tone = item.Tone.ToString(),
+                    EvidenceId = item.AuditReference ?? item.RunId ?? item.WorkItemId
+                })
+                .ToArray());
+        var status = Enum.Parse<TradingAcceptanceGateStatusDto>(summary.Status);
 
         return new EvidenceCompletenessSummaryDto(
             Status: status,
-            ReadyGateCount: readyGateCount,
-            TotalGateCount: totalGateCount,
-            CriticalWorkItemCount: criticalCount,
-            WarningWorkItemCount: warningCount,
-            ScorePercent: scorePercent,
-            BlockingGateIds: gates
-                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked)
-                .Select(static gate => gate.GateId)
-                .ToArray(),
-            ReviewGateIds: gates
-                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired)
-                .Select(static gate => gate.GateId)
-                .ToArray(),
-            MissingEvidenceIds: workItems
-                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
-                .Select(static item => item.AuditReference ?? item.RunId ?? item.WorkItemId)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
-            ReadyGateIds: gates
-                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
-                .Select(static gate => gate.GateId)
-                .ToArray());
+            ReadyGateCount: summary.ReadyGateCount,
+            TotalGateCount: summary.TotalGateCount,
+            CriticalWorkItemCount: summary.CriticalWorkItemCount,
+            WarningWorkItemCount: summary.WarningWorkItemCount,
+            ScorePercent: summary.ScorePercent,
+            BlockingGateIds: summary.BlockingGateIds,
+            ReviewGateIds: summary.ReviewGateIds,
+            MissingEvidenceIds: summary.MissingEvidenceIds,
+            ReadyGateIds: summary.ReadyGateIds)
+        {
+            BlockingIssueCount = summary.CriticalWorkItemCount,
+            WarningIssueCount = summary.WarningWorkItemCount,
+            OrphanEvidenceIds = []
+        };
     }
+
+    private static TradingAcceptanceGateFactDto[] ToGateFacts(IReadOnlyList<TradingAcceptanceGateDto> gates)
+        => gates
+            .Select(static gate => new TradingAcceptanceGateFactDto
+            {
+                GateId = gate.GateId,
+                Status = gate.Status.ToString()
+            })
+            .ToArray();
 
     private static bool IsOperatorSignoffComplete(string status) =>
         string.Equals(status, "signed", StringComparison.OrdinalIgnoreCase) ||

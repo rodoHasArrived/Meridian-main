@@ -305,6 +305,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
         services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
+        services.AddSingleton<WpfServices.IStatementReconciliationWorkbenchService, WpfServices.StatementReconciliationWorkbenchService>();
 
         // ── AI Agent service (local Ollama) ──────────────────────────────────
         services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();
@@ -353,6 +354,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Ui.Services.CollectionSessionService>(_ => Meridian.Ui.Services.CollectionSessionService.Instance);
         services.AddSingleton<Meridian.Ui.Services.ScheduleManagerService>(_ => Meridian.Ui.Services.ScheduleManagerService.Instance);
         services.AddSingleton<WpfServices.StorageService>(_ => WpfServices.StorageService.Instance);
+        services.AddSingleton<WpfServices.WorkspaceStateTokenStore>();
         services.AddSingleton<BatchExportSchedulerService>();
         services.AddSingleton<Meridian.Ui.Services.ActivityFeedService>(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
         services.AddSingleton<Meridian.Ui.Services.CommandPaletteService>(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
@@ -973,6 +975,11 @@ public partial class App : System.Windows.Application
     {
         try
         {
+            var provisioningResult = await WpfServices.FirstRunService.Instance.EnsureConfigurationExistsAsync();
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Configuration presence verification finished before validation",
+                ("Outcome", provisioningResult.ToString()));
+
             // Initialize the config service
             await WpfServices.ConfigService.Instance.InitializeAsync();
 

@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-27
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **waves 2 4 operator readiness addendum** and document explicit in-scope vs out-of-scope items.
@@ -24,6 +24,9 @@ the consolidated current-direction entry point in
 ## Summary
 
 This addendum sharpens Meridian's active Waves 2-4 path without changing the canonical roadmap shape in [`../status/ROADMAP.md`](../status/ROADMAP.md).
+Desktop implementation is now explicitly acceptance-matrix-driven: each retained desktop slice must
+name lane (W2/W3/W4), scenario (happy/blocker/recovery), shared-contract/read-model check, focused
+test evidence, and browser-parity posture before it can be counted as progress.
 
 The repo already has the right platform baseline and many of the right read-side seams:
 
@@ -142,6 +145,9 @@ It should be read with:
 10. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
 11. This addendum is a technical dependency plan, not an owner-sprint assignment artifact; scheduling can vary by lane while dependency and gate constraints remain fixed.
 12. Detailed W3/W4 pre-work definition is mandatory even during Wave 2/DK2 execution windows so downstream work can start without contract drift.
+13. Desktop/WPF delivery is measured by [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md); support evidence is not an exit claim unless the row's happy/blocker/recovery evidence is complete.
+14. For desktop work, prioritize high-traffic page-body workflow outcomes before additional shell chrome or framing polish.
+15. Do not widen live-readiness language while Wave 2 cockpit reliability remains non-green in Lane A acceptance and pilot-readiness stage posture.
 
 ---
 
@@ -150,6 +156,7 @@ It should be read with:
 ### Objective
 
 Turn the current paper-trading cockpit from "visible" into "dependable" by making session continuity, replay proof, promotion review, and operator triage durable and explainable.
+Wave 2 closure remains the first desktop-forward gate; W3 and W4 scope should not dilute cockpit reliability completion.
 
 ### W2-A: Paper Cockpit Reliability Gate
 
@@ -377,14 +384,14 @@ Finish governance and fund-operations productization by making casework, report 
 - **Deliverables:**
   - named scenario suites for `Backtest -> Paper`, paper-session restore, promotion review, run continuity, brokerage divergence, reconciliation break review, and report publish
   - command matrix that maps each scenario to the narrowest useful validation command
-  - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md))
+  - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/evidence/wave4-evidence-template.md`](../status/evidence/wave4-evidence-template.md))
 - **Exit criteria:**
   - each active wave has at least one repo-backed scenario suite tied to its own exit criteria
   - regression checks describe operator behavior, not only isolated method coverage
 
 ### Wave 4 Evidence Template Baseline (Applied)
 
-The Wave 4 evidence template is now active in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md) and is seeded with the first three deterministic governance scenarios:
+The Wave 4 evidence template is now active in [`../status/evidence/wave4-evidence-template.md`](../status/evidence/wave4-evidence-template.md) and is seeded with the first three deterministic governance scenarios:
 
 1. `wave4-governance-identifier-conflict-resolution-v1`
 2. `wave4-governance-corporate-action-propagation-impact-v1`

@@ -33,12 +33,12 @@ public partial class OrderBookPage : Page
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _viewModel.StartAsync();
+        await _viewModel.ActivateAsync();
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        _viewModel.Dispose();
+        _viewModel.Deactivate();
         Unloaded -= OnPageUnloaded;
     }
 

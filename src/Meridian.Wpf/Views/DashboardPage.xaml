@@ -9,7 +9,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Research Operations Dashboard">
+      AutomationProperties.Name="Strategy Operations Dashboard">
 
     <Page.Resources>
         <Style x:Key="DashboardMetricItemBorderStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
@@ -50,7 +50,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Research Operations" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Strategy Operations" Style="{StaticResource PageTitleStyle}" />
                             <TextBlock Text="Holdings oversight, valuation readiness, and data-quality controls."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="0,6,0,0" />
@@ -319,15 +319,15 @@
 
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal">
-                                <Ellipse Width="9" Height="9" Fill="{StaticResource SuccessColorBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="Holdings and data-quality controls current"
+                                <Ellipse Width="9" Height="9" Fill="{Binding DataHealthForeground}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DataHealthText}"
                                            Style="{StaticResource BodyStrongTextBlockStyle}"
                                            Margin="8,0,0,0" />
                             </StackPanel>
-                            <TextBlock Text="Pricing coverage current · Security master checks clear · Ledger export ready · Reference data synchronized"
+                            <TextBlock Text="{Binding LastUpdateText}"
                                        FontFamily="{StaticResource MeridianDataFontFamily}"
                                        FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       Foreground="{Binding LastUpdateForeground}"
                                        Margin="17,6,0,0" />
                         </StackPanel>
 

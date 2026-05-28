@@ -1,6 +1,6 @@
 // Symbol Search & Resolution Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-24
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the symbol search and resolution flow:
 // search query → 5 search providers → result aggregation → OpenFIGI canonical
@@ -17,7 +17,7 @@ digraph SymbolSearchResolution {
 
   // Title
   labelloc="t";
-  label="Meridian - Symbol Search & Resolution\nSearch → OpenFIGI Canonical ID → Provider-Specific Formats | v1.7.x";
+  label="Meridian - Symbol Search & Resolution\nSearch → OpenFIGI Canonical ID → Provider-Specific Formats";
 
   // 1. Search Entry
   subgraph cluster_entry {

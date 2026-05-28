@@ -6,7 +6,7 @@ operator UI direction, retained browser workstation support, fund-management/tra
 scope, and no-mobile development policy.
 
 Last verified against `README.md`, `docs/status/ROADMAP.md`, and
-`docs/ai/assistant-workflow-contract.md`: 2026-05-21.
+`docs/ai/assistant-workflow-contract.md`: 2026-05-23.
 
 ## Current Skills
 
@@ -15,6 +15,7 @@ Last verified against `README.md`, `docs/status/ROADMAP.md`, and
 | `meridian-archive-organizer` | [`SKILL.md`](meridian-archive-organizer/SKILL.md) | Archive stale code/docs and keep the repo structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](meridian-blueprint/SKILL.md) | Create implementation-ready Meridian technical blueprints |
 | `meridian-brainstorm` | [`SKILL.md`](meridian-brainstorm/SKILL.md) | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation` | [`SKILL.md`](meridian-browser-workstation/SKILL.md) | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | [`SKILL.md`](meridian-cleanup/SKILL.md) | Clean up code and docs without behavior changes |
 | `meridian-code-review` | [`SKILL.md`](meridian-code-review/SKILL.md) | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs` | [`SKILL.md`](meridian-docs/SKILL.md) | Maintain Meridian documentation with repo-grounded evidence |
@@ -48,6 +49,7 @@ different work:
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence and docs sync. |
 | Review | `meridian-code-review` | Findings first; no implementation unless asked. |
 | Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |
+| Browser workstation | `meridian-browser-workstation` | Implement or review TypeScript/React dashboard changes in `src/Meridian.Ui/dashboard/`. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the right project. |
 | Provider | `meridian-provider-builder` | Build provider adapters, then use assurance for rollout proof. |
 | Archive | `meridian-archive-organizer` | Classify stale material and preserve useful history. |
@@ -72,6 +74,10 @@ different work:
 - [`_shared/codex-execution-contract.md`](_shared/codex-execution-contract.md) — Codex-only
   execution gates for safe concurrency, narrow validation, cosmetic-churn avoidance, docs sync,
   AI tooling gates, and final response shape
+- [`docs/ai/codex/quickstart.md`](../../docs/ai/codex/quickstart.md) — first-10-minutes Codex task
+  routing, proof matrix, read budget, and dirty-worktree protocol
+- [`docs/ai/codex/route-cards.md`](../../docs/ai/codex/route-cards.md) — compact subsystem cards
+  for owner projects, first docs, entrypoints, and validation lanes
 - [`docs/ai/codex/README.md`](../../docs/ai/codex/README.md) — Codex-specific AI docs index,
   skill validation commands, and required/advisory/maintenance tooling split
 - [`../AGENTS.md`](../AGENTS.md) — Codex-specific desktop workstation implementation rules

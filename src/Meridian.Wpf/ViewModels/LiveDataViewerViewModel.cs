@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -20,7 +21,7 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the Live Data Viewer page.
 /// Owns all state, timers, HTTP loading, and session statistics.
 /// </summary>
-public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
+public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifetime, IDisposable
 {
     // P1: Static cached brushes — avoids allocating a new SolidColorBrush per market event.
     private static readonly SolidColorBrush BrushTrade = new(Color.FromRgb(63, 185, 80));
@@ -47,12 +48,15 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     //     cannot inadvertently cancel each other.
     private CancellationTokenSource? _loadSymbolsCts;
     private CancellationTokenSource? _liveDataCts;
+    private CancellationTokenSource? _activationCts;
     // P2: Persistent set of already-seen event IDs — updated incrementally instead of
     //     rebuilding a HashSet on every 500 ms timer tick.
     private readonly HashSet<string> _seenEventIds = new();
     private string _baseUrl;
     private string _selectedSymbol = string.Empty;
     private bool _isPaused;
+    private bool _isActive;
+    private bool _isDisposed;
     private int _eventsThisSecond;
     private int _totalEvents;
     private DateTime _lastStatsUpdate = DateTime.UtcNow;
@@ -170,26 +174,53 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         TearOffCommand = new RelayCommand(TearOffCurrentSymbol);
     }
 
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (_isActive)
+        {
+            return;
+        }
+
+        _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _connectionService.StateChanged += OnConnectionStateChanged;
         UpdateConnectionStatus();
-        await LoadSymbolsAsync();
-        _refreshTimer.Start();
-        _statsTimer.Start();
+        await LoadSymbolsAsync(ActivationToken);
+
+        if (_isActive)
+        {
+            _refreshTimer.Start();
+            _statsTimer.Start();
+        }
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
+        _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _refreshTimer.Stop();
         _statsTimer.Stop();
-        _loadSymbolsCts?.Cancel();
-        _loadSymbolsCts?.Dispose();
-        _loadSymbolsCts = null;
-        _liveDataCts?.Cancel();
-        _liveDataCts?.Dispose();
-        _liveDataCts = null;
+        CancelAndDispose(Interlocked.Exchange(ref _loadSymbolsCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _liveDataCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     public void PauseResume()
@@ -260,12 +291,12 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     {
         try
         {
-            _loadSymbolsCts?.Cancel();
-            _loadSymbolsCts?.Dispose();
-            _loadSymbolsCts = new CancellationTokenSource();
+            var loadSymbolsCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var previousCts = Interlocked.Exchange(ref _loadSymbolsCts, loadSymbolsCts);
+            CancelAndDispose(previousCts);
 
             var symbolService = _symbolManagementService;
-            var result = await symbolService.GetAllSymbolsAsync(_loadSymbolsCts.Token);
+            var result = await symbolService.GetAllSymbolsAsync(loadSymbolsCts.Token);
             AvailableSymbols.Clear();
 
             if (result.Success && result.Symbols.Count > 0)
@@ -274,7 +305,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
             }
             else
             {
-                var configSymbols = await _configService.GetConfiguredSymbolsAsync(_loadSymbolsCts.Token);
+                var configSymbols = await _configService.GetConfiguredSymbolsAsync(loadSymbolsCts.Token);
                 if (configSymbols.Length > 0)
                     AvailableSymbols.AddRange(configSymbols.Select(s => s.Symbol));
             }
@@ -290,22 +321,25 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
     // P2: Uses the persistent _seenEventIds set — avoids rebuilding a HashSet on every 500 ms tick.
     private async Task RefreshLiveDataAsync(CancellationToken ct = default)
     {
+        if (!_isActive)
+            return;
+
         if (_isPaused || string.IsNullOrEmpty(_selectedSymbol))
             return;
 
         try
         {
-            _liveDataCts?.Cancel();
-            _liveDataCts?.Dispose();
-            _liveDataCts = new CancellationTokenSource();
+            var liveDataCts = CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct);
+            var previousCts = Interlocked.Exchange(ref _liveDataCts, liveDataCts);
+            CancelAndDispose(previousCts);
 
             var response = await _httpClient.GetAsync(
                 $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/recent?limit=50",
-                _liveDataCts.Token);
+                liveDataCts.Token);
 
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync(_liveDataCts.Token);
+                var json = await response.Content.ReadAsStringAsync(liveDataCts.Token);
                 var data = JsonSerializer.Deserialize<JsonElement>(json);
 
                 if (data.ValueKind == JsonValueKind.Array)
@@ -347,7 +381,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
                 }
             }
 
-            await RefreshQuoteAsync();
+            await RefreshQuoteAsync(liveDataCts.Token);
         }
         catch (OperationCanceledException) { /* Cancellation is expected */ }
         catch (HttpRequestException ex)
@@ -366,11 +400,11 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         {
             var response = await _httpClient.GetAsync(
                 $"{_baseUrl}/api/live/{Uri.EscapeDataString(_selectedSymbol)}/quote",
-                _liveDataCts!.Token);
+                ct);
 
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync(_liveDataCts.Token);
+                var json = await response.Content.ReadAsStringAsync(ct);
                 var quote = JsonSerializer.Deserialize<JsonElement>(json);
 
                 if (quote.TryGetProperty("bid", out var b))
@@ -541,11 +575,39 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
         return num.ToString("N0");
     }
 
-    public void Dispose() => Stop();
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        Deactivate();
+        _httpClient.Dispose();
+    }
 
     private void TearOffCurrentSymbol()
     {
         if (!string.IsNullOrEmpty(_selectedSymbol))
             _tearOffPanelService.TearOff(_selectedSymbol);
+    }
+
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
     }
 }

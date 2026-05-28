@@ -1,6 +1,6 @@
 ---
 name: meridian-code-review
-description: Review Meridian code for bugs, regressions, architecture drift, missing tests, and project-rule violations. Use when the user asks for a review, audit, refactor assessment, compliance check, bug-risk scan, or improvement pass on Meridian C#, F#, TypeScript/React, XAML, provider, storage, pipeline, execution, ledger, browser dashboard, or retained WPF code.
+description: Review Meridian code for bugs, regressions, architecture drift, missing tests, and project-rule violations. Use when the user asks for a review, audit, refactor assessment, compliance check, bug-risk scan, or improvement pass on Meridian C#, F#, TypeScript/React, XAML, provider, storage, pipeline, execution, ledger, browser dashboard, or WPF desktop code.
 ---
 
 # Meridian Code Review

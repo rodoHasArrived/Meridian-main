@@ -21,19 +21,22 @@ public sealed class DiagnosticBundleService
     private readonly Func<AppConfig>? _configProvider;
     private readonly Func<ErrorQueryResult>? _recentErrorsProvider;
     private readonly Func<ShutdownSequenceDiagnosticSnapshot>? _shutdownDiagnosticsProvider;
+    private readonly Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? _providerConnectionDiagnosticsProvider;
 
     public DiagnosticBundleService(
         string dataRoot,
         Func<MetricsSnapshot>? metricsProvider = null,
         Func<AppConfig>? configProvider = null,
         Func<ErrorQueryResult>? recentErrorsProvider = null,
-        Func<ShutdownSequenceDiagnosticSnapshot>? shutdownDiagnosticsProvider = null)
+        Func<ShutdownSequenceDiagnosticSnapshot>? shutdownDiagnosticsProvider = null,
+        Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? providerConnectionDiagnosticsProvider = null)
     {
         _dataRoot = dataRoot;
         _metricsProvider = metricsProvider;
         _configProvider = configProvider;
         _recentErrorsProvider = recentErrorsProvider;
         _shutdownDiagnosticsProvider = shutdownDiagnosticsProvider;
+        _providerConnectionDiagnosticsProvider = providerConnectionDiagnosticsProvider;
     }
 
     /// <summary>
@@ -233,6 +236,7 @@ public sealed class DiagnosticBundleService
         var metrics = TryCollectMetricsSnapshot();
         var recentErrors = TryCollectRecentErrors();
         var shutdownDiagnostics = TryCollectShutdownDiagnostics();
+        var providerConnectionDiagnostics = TryCollectProviderConnectionDiagnostics();
         var metricsSummary = metrics is { } snapshot
             ? new
             {
@@ -335,6 +339,7 @@ public sealed class DiagnosticBundleService
             },
             metrics = metricsSummary,
             errors = errorsSummary,
+            providerConnections = SanitizeProviderConnectionDiagnostics(providerConnectionDiagnostics),
             shutdown = SanitizeShutdownDiagnostics(shutdownDiagnostics)
         };
 
@@ -782,6 +787,25 @@ public sealed class DiagnosticBundleService
         }
     }
 
+    private IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>? TryCollectProviderConnectionDiagnostics()
+    {
+        if (_providerConnectionDiagnosticsProvider is null)
+            return null;
+
+        try
+        {
+            return _providerConnectionDiagnosticsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect provider connection diagnostics for {OperationName}; continuing diagnostic bundle generation without provider connection status",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
     private static object? SanitizeTrackedError(TrackedError? error)
     {
         if (error is null)
@@ -835,6 +859,49 @@ public sealed class DiagnosticBundleService
         };
     }
 
+    private static object SanitizeProviderConnectionDiagnostics(IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>? snapshots)
+    {
+        if (snapshots is null)
+        {
+            return new
+            {
+                available = false,
+                count = 0,
+                providers = Array.Empty<object>()
+            };
+        }
+
+        return new
+        {
+            available = true,
+            count = snapshots.Count,
+            providers = snapshots
+                .OrderBy(static snapshot => snapshot.ProviderName, StringComparer.OrdinalIgnoreCase)
+                .Select(static snapshot => new
+                {
+                    providerName = RuntimeDiagnosticRedactor.SanitizeText(snapshot.ProviderName),
+                    lifecycleState = RuntimeDiagnosticRedactor.SanitizeText(snapshot.LifecycleState),
+                    webSocketState = RuntimeDiagnosticRedactor.SanitizeText(snapshot.WebSocketState),
+                    isConnected = snapshot.IsConnected,
+                    isReconnecting = snapshot.IsReconnecting,
+                    reconnectAttempts = snapshot.ReconnectAttempts,
+                    lastConnectedAt = snapshot.LastConnectedAt,
+                    lastDisconnectedAt = snapshot.LastDisconnectedAt,
+                    lastHeartbeatReceivedAt = snapshot.LastHeartbeatReceivedAt,
+                    lastMessageReceivedAt = snapshot.LastMessageReceivedAt,
+                    lastReconnectAttemptAt = snapshot.LastReconnectAttemptAt,
+                    lastFailureKind = RuntimeDiagnosticRedactor.SanitizeText(snapshot.LastFailureKind),
+                    connectionAge = snapshot.ConnectionAge,
+                    idleDuration = snapshot.IdleDuration,
+                    activeSubscriptions = snapshot.ActiveSubscriptions,
+                    failedSubscriptions = snapshot.FailedSubscriptions,
+                    recoveringSubscriptions = snapshot.RecoveringSubscriptions,
+                    lastSubscriptionMessageAt = snapshot.LastSubscriptionMessageAt
+                })
+                .ToArray()
+        };
+    }
+
     private static DateTimeOffset? TryGetProcessStartTimeUtc(Process process)
     {
         try
@@ -876,6 +943,26 @@ public sealed class DiagnosticBundleResult
     public List<string> FilesIncluded { get; set; } = [];
     public string? Message { get; set; }
 }
+
+public sealed record ProviderConnectionDiagnosticSnapshot(
+    string ProviderName,
+    string LifecycleState,
+    string WebSocketState,
+    bool IsConnected,
+    bool IsReconnecting,
+    int ReconnectAttempts,
+    DateTimeOffset? LastConnectedAt,
+    DateTimeOffset? LastDisconnectedAt,
+    DateTimeOffset? LastHeartbeatReceivedAt,
+    DateTimeOffset? LastMessageReceivedAt,
+    DateTimeOffset? LastReconnectAttemptAt,
+    string? LastFailureKind,
+    TimeSpan? ConnectionAge,
+    TimeSpan? IdleDuration,
+    int ActiveSubscriptions = 0,
+    int FailedSubscriptions = 0,
+    int RecoveringSubscriptions = 0,
+    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>
 /// Manifest included in diagnostic bundle.

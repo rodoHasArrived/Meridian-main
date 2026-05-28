@@ -195,6 +195,90 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task LedgerMappingWorkbench_Build_ReportsAssignedAndUnmappedAccounts()
+    {
+        var accountService = new InMemoryFundAccountService();
+        var structureService = CreateStructureService(accountService);
+        var asOf = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+
+        await structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId,
+            "ORG-LEDGER",
+            "Ledger Mapping Org",
+            "USD",
+            asOf,
+            "test"));
+        await structureService.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId,
+            organizationId,
+            BusinessKindDto.FundManager,
+            "FUND-OPS",
+            "Fund Operations",
+            "USD",
+            asOf,
+            "test"));
+        await structureService.CreateFundAsync(new CreateFundRequest(
+            fundId,
+            "FUND-001",
+            "Mapping Fund",
+            "USD",
+            asOf,
+            "test",
+            BusinessId: businessId));
+        var mappedAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Custody,
+            AccountCode: "FUND-MAPPED",
+            DisplayName: "Fund Mapped Account",
+            BaseCurrency: "USD",
+            EffectiveFrom: asOf,
+            CreatedBy: "test",
+            FundId: fundId,
+            LedgerReference: "FUND-TB"));
+
+        await structureService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            AssignmentId: Guid.NewGuid(),
+            NodeId: mappedAccount.AccountId,
+            AssignmentType: LedgerGroupingRules.LedgerGroupAssignmentType,
+            AssignmentReference: "FUND.OPS:PRIMARY",
+            EffectiveFrom: asOf,
+            CreatedBy: "test"));
+        var unassignedAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "FUND-UNMAPPED",
+            DisplayName: "Fund Unmapped Account",
+            BaseCurrency: "USD",
+            EffectiveFrom: asOf,
+            CreatedBy: "test",
+            FundId: fundId,
+            LedgerReference: "BAD/GROUP"));
+
+        var accountingView = await structureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(BusinessId: businessId, AsOf: asOf));
+        var workbench = LedgerMappingWorkbenchService.Build(accountingView, asOf);
+
+        Assert.NotNull(accountingView.Assignments);
+        Assert.Contains(accountingView.Assignments!, assignment => assignment.NodeId == mappedAccount.AccountId);
+        Assert.Equal(accountingView.Accounts.Count, workbench.AccountCount);
+        Assert.Equal(1, workbench.UnmappedAccountCount);
+
+        var assignedRow = Assert.Single(workbench.Accounts, account => account.AccountId == mappedAccount.AccountId);
+        Assert.Equal(LedgerGroupId.Create("FUND.OPS:PRIMARY"), assignedRow.Mapping.LedgerGroupId);
+        Assert.Equal(LedgerMappingSourceDto.AccountAssignment, assignedRow.Mapping.Source);
+        Assert.False(assignedRow.Mapping.RequiresUserMapping);
+
+        var unmappedRow = Assert.Single(workbench.Accounts, account => account.AccountId == unassignedAccount.AccountId);
+        Assert.Equal(LedgerGroupId.Unassigned, unmappedRow.Mapping.LedgerGroupId);
+        Assert.Equal(LedgerMappingSourceDto.Unassigned, unmappedRow.Mapping.Source);
+        Assert.True(unmappedRow.Mapping.RequiresUserMapping);
+        Assert.Contains("ledger-mapping.invalid-ledger-reference", unmappedRow.Mapping.IssueCodes);
+    }
+
+    [Fact]
     public async Task GetAccountingViewAsync_WithBusinessFilter_ExcludesOtherBusinessEntityScopedAccount()
     {
         var fixture = await CreateHybridFixtureAsync();

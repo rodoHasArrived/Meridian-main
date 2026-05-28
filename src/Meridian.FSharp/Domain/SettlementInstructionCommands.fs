@@ -46,6 +46,8 @@ module SettlementInstructionCommands =
     let validateAddInstruction (existing: SettlementInstruction list) (candidate: SettlementInstruction) =
         if not (effectiveWindowValid candidate) then
             err "SETTLEMENT_EFFECTIVE_WINDOW_INVALID" "EffectiveToUtc must be greater than EffectiveFromUtc when present."
+        elif String.IsNullOrWhiteSpace(candidate.Currency) then
+            err "SETTLEMENT_CURRENCY_REQUIRED" "Settlement instruction currency is required."
         elif candidate.IsClosed then
             err "SETTLEMENT_ACCOUNT_STATUS_CLOSED" "Cannot add settlement instruction for a closed account detail state."
         else
@@ -67,9 +69,14 @@ module SettlementInstructionCommands =
         if not candidate.IsDefault then
             Ok existing
         else
+            let currencyMatches x =
+                String.IsNullOrWhiteSpace(x.Currency)
+                || String.IsNullOrWhiteSpace(candidate.Currency)
+                || String.Equals(x.Currency, candidate.Currency, StringComparison.OrdinalIgnoreCase)
+
             let sameScope x =
                 x.AccountId = candidate.AccountId
-                && x.Currency.Equals(candidate.Currency, StringComparison.OrdinalIgnoreCase)
+                && currencyMatches x
                 && x.CounterpartyScope = candidate.CounterpartyScope
                 && not x.IsClosed
                 && overlaps x candidate

@@ -35,6 +35,27 @@ public enum TradingAcceptanceGateStatusDto
     Unknown = 99
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioLedgerWorkflowStatusDto>))]
+public enum PortfolioLedgerWorkflowStatusDto
+{
+    Ready = 0,
+    Partial = 1,
+    Blocked = 2,
+    DriftDetected = 3,
+    AwaitingReconciliation = 4
+}
+
+public sealed record PortfolioLedgerDriftDto(
+    string DriftType,
+    string Detail,
+    string RemediationHint);
+
+public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(
+    PortfolioLedgerWorkflowStatusDto PortfolioLedgerReview,
+    PortfolioLedgerWorkflowStatusDto Reconciliation,
+    IReadOnlyList<PortfolioLedgerDriftDto> Drifts,
+    string Summary);
+
 public sealed record OperatorWorkItemDto(
     string WorkItemId,
     OperatorWorkItemKindDto Kind,
@@ -58,6 +79,16 @@ public sealed record OperatorWorkItemDto(
 
     /// <summary>Alias for <see cref="Detail"/> to satisfy operator-triage surface naming.</summary>
     public string Description => Detail;
+
+    /// <summary>
+    /// Deterministic priority score used by workstation clients to sort actionable queue items.
+    /// </summary>
+    public int PriorityScore { get; init; }
+
+    /// <summary>
+    /// Human-readable breakdown of the priority score factors for triage explainability.
+    /// </summary>
+    public string? PriorityExplanation { get; init; }
 }
 
 public sealed record OperatorInboxDto(
@@ -94,7 +125,12 @@ public sealed record EvidenceCompletenessSummaryDto(
     IReadOnlyList<string> BlockingGateIds,
     IReadOnlyList<string> ReviewGateIds,
     IReadOnlyList<string> MissingEvidenceIds,
-    IReadOnlyList<string>? ReadyGateIds = null);
+    IReadOnlyList<string>? ReadyGateIds = null)
+{
+    public int BlockingIssueCount { get; init; }
+    public int WarningIssueCount { get; init; }
+    public IReadOnlyList<string> OrphanEvidenceIds { get; init; } = [];
+}
 
 public sealed record TradingPaperSessionReadinessDto(
     string SessionId,
@@ -129,7 +165,9 @@ public sealed record TradingReplayReadinessDto(
     DateTimeOffset? LastPersistedFillAt,
     DateTimeOffset? LastPersistedOrderUpdateAt,
     string? VerificationAuditId,
-    IReadOnlyList<string> MismatchReasons);
+    IReadOnlyList<string> MismatchReasons,
+    string DriftStatus,
+    string RequiredNextAction);
 
 public sealed record TradingControlEvidenceDto(
     string AuditId,
@@ -298,6 +336,8 @@ public sealed record TradingOperatorReadinessDto(
     public string SnapshotVersion { get; init; } = string.Empty;
 
     public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }
+
+    public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(

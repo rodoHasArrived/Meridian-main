@@ -37,7 +37,7 @@ CS_CONTRACT_TYPE_PATTERN = (
     r"(?:bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|object|"
     r"Guid|DateOnly|DateTime|DateTimeOffset|TimeSpan|CancellationToken|"
     r"IReadOnlyList<[^>]+>|IReadOnlyDictionary<[^>]+>|IEnumerable<[^>]+>|"
-    r"Dictionary<[^>]+>|List<[^>]+>|[A-Z][\w.<>?,\[\]]+)\??"
+    r"Dictionary<[^>]+>|List<[^>]+>|[A-Z][\w.<>?,\[\]]+)(?:\[\])?\??"
 )
 
 BREAKING_CONTRACT_SHAPE_PATTERNS = (

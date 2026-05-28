@@ -22,16 +22,17 @@ public partial class BacktestPage : Page
         DataContext = _viewModel;
     }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        _viewModel.EquityCurvePoints.CollectionChanged -= _equityCurvePointsChangedHandler;
         _viewModel.EquityCurvePoints.CollectionChanged += _equityCurvePointsChangedHandler;
-        Loaded -= OnPageLoaded;
+        await _viewModel.ActivateAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         _viewModel.EquityCurvePoints.CollectionChanged -= _equityCurvePointsChangedHandler;
-        _viewModel.Dispose();
+        _viewModel.Deactivate();
     }
 
     /// <summary>

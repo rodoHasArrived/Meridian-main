@@ -38,6 +38,17 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         @"(?<name>Default|Min|Max|Description)\s*=\s*(?<value>(""[^""]*""|[^,]+))",
         RegexOptions.Compiled);
 
+
+    private static readonly string[] UnsafeApiMarkers =
+    [
+        "System.IO.",
+        "System.Net.",
+        "System.Diagnostics.Process",
+        "System.Environment",
+        "System.Reflection",
+        "Microsoft.Win32"
+    ];
+
     private readonly ConcurrentDictionary<string, Script<object>> _cache = new();
     private readonly IOptions<QuantScriptOptions> _options;
     private readonly ILogger<RoslynScriptCompiler> _logger;
@@ -73,6 +84,17 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             return await Task.Run(() =>
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                if (!_options.Value.EnableUnsafeScripts && TryGetUnsafeMarker(source, out var marker))
+                {
+                    var diagnostic = new ScriptDiagnostic(
+                        "Error",
+                        $"Safe mode blocks use of '{marker}'. Set EnableUnsafeScripts=true to allow this script.",
+                        1,
+                        1);
+                    return new ScriptCompilationResult(false, sw.Elapsed, [diagnostic]);
+                }
+
                 var script = BuildScript(source);
                 var compilation = script.GetCompilation();
                 var diagnostics = compilation.GetDiagnostics(cts.Token);
@@ -188,6 +210,22 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         }
 
         public override string? ResolveReference(string path, string? baseFilePath) => null;
+    }
+
+
+    private static bool TryGetUnsafeMarker(string source, out string marker)
+    {
+        foreach (var candidate in UnsafeApiMarkers)
+        {
+            if (source.Contains(candidate, StringComparison.Ordinal))
+            {
+                marker = candidate;
+                return true;
+            }
+        }
+
+        marker = string.Empty;
+        return false;
     }
 
     /// <inheritdoc/>

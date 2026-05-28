@@ -1,6 +1,6 @@
 // Data Quality & Monitoring Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows data quality scoring, SLA enforcement, outlier detection,
 // retention compliance, and the observability/monitoring stack.
@@ -16,7 +16,7 @@ digraph DataQualityMonitoring {
 
   // Title
   labelloc="t";
-  label="Meridian - Data Quality & Monitoring\nQuality Scoring, SLA Enforcement & Observability | v1.7.x";
+  label="Meridian - Data Quality & Monitoring\nQuality Scoring, SLA Enforcement & Observability";
 
   // Data Quality Scoring
   subgraph cluster_quality {

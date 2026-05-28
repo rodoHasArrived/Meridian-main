@@ -67,7 +67,7 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
             try
             {
                 var json = JsonSerializer.Serialize(record, DroppedEventAuditTrailJsonContext.Default.DroppedEventRecord);
-                await AtomicFileWriter.AppendLinesAsync(GetAuditFilePath(), [json], ct).ConfigureAwait(false);
+                await AppendJsonLineAsync(GetAuditFilePath(), json, ct).ConfigureAwait(false);
             }
             finally
             {
@@ -97,6 +97,12 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
         return Path.Combine(_auditPath, "dropped_events.jsonl");
     }
 
+
+    private static Task AppendJsonLineAsync(string path, string json, CancellationToken ct)
+    {
+        return AtomicFileWriter.AppendLinesAsync(path, new[] { json }, ct);
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -107,7 +113,7 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            // No buffered writer state remains once AtomicFileWriter.AppendLinesAsync returns.
+            // No buffered writer state remains once append returns.
         }
         finally
         {

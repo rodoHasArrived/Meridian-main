@@ -21,6 +21,52 @@ public sealed class DataExportViewModelTests
     }
 
     [Fact]
+    public void NewViewModel_ExposesSelectorOptionsAndDefaultSelections()
+    {
+        var viewModel = new DataExportViewModel();
+
+        viewModel.ExportFormatOptions.Select(option => option.Key).Should().Contain(new[] { "csv", "parquet", "jsonl" });
+        viewModel.CompressionOptions.Select(option => option.Key).Should().Contain(new[] { "none", "gzip", "zstd" });
+        viewModel.DatabaseTypeOptions.Select(option => option.Key).Should().Contain(new[] { "postgresql", "clickhouse", "sqlite" });
+        viewModel.ScheduleFrequencyOptions.Select(option => option.Key).Should().Contain(new[] { "hourly", "daily", "weekly" });
+        viewModel.WebhookFormatOptions.Select(option => option.Key).Should().Contain(new[] { "json", "msgpack", "protobuf" });
+        viewModel.WebhookBatchOptions.Select(option => option.Key).Should().Contain(new[] { "realtime", "microbatch", "bulk" });
+        viewModel.LeanResolutionOptions.Select(option => option.Key).Should().Contain(new[] { "tick", "minute", "daily" });
+
+        viewModel.SelectedExportFormat.Should().Be("csv");
+        viewModel.SelectedCompression.Should().Be("gzip");
+        viewModel.SelectedDatabaseType.Should().Be("postgresql");
+        viewModel.SelectedScheduleFrequency.Should().Be("daily");
+        viewModel.SelectedWebhookFormat.Should().Be("json");
+        viewModel.SelectedWebhookBatch.Should().Be("microbatch");
+        viewModel.SelectedLeanResolution.Should().Be("minute");
+    }
+
+    [Fact]
+    public void SelectorChanges_UpdateReadinessAndDerivedDefaultsInViewModel()
+    {
+        var viewModel = new DataExportViewModel();
+
+        viewModel.SelectedExportFormat = "parquet";
+        viewModel.SelectedCompression = "zstd";
+        viewModel.SelectedDatabaseType = "clickhouse";
+        viewModel.SelectedScheduleFrequency = "weekly";
+
+        viewModel.ExportReadinessDetail.Should().Contain("Parquet export");
+        viewModel.ExportReadinessDetail.Should().Contain("Zstd compression");
+        viewModel.DatabasePort.Should().Be("8123");
+
+        viewModel.IsScheduleEnabled = true;
+        viewModel.ScheduleDestinationPath = "D:\\Exports";
+        viewModel.ScheduleReadinessDetail.Should().Contain("Weekly export");
+        viewModel.ScheduleScopeText.Should().Be("Weekly - 08:00 local");
+
+        viewModel.SelectedDatabaseType = "sqlite";
+
+        viewModel.DatabasePort.Should().Be("0");
+    }
+
+    [Fact]
     public void MissingSymbols_DisablesQuickExportAndExplainsRequiredSelection()
     {
         var viewModel = new DataExportViewModel();
@@ -170,12 +216,19 @@ public sealed class DataExportViewModelTests
         xaml.Should().Contain("{Binding ExportReadinessDetail}");
         xaml.Should().Contain("{Binding ExportScopeText}");
         xaml.Should().Contain("{Binding SelectedSymbolCountText}");
+        xaml.Should().Contain("ItemsSource=\"{Binding ExportFormatOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedExportFormat");
+        xaml.Should().Contain("ItemsSource=\"{Binding CompressionOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedCompression");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataExportRunButton\"");
         xaml.Should().Contain("Command=\"{Binding ExportDataCommand}\"");
         xaml.Should().Contain("Value=\"{Binding ExportProgressValue, Mode=OneWay}\"");
         xaml.Should().NotContain("Click=\"ExportData_Click\"");
+        xaml.Should().NotContain("ExportFormatCombo_SelectionChanged");
+        xaml.Should().NotContain("CompressionCombo_SelectionChanged");
 
         codeBehind.Should().NotContain("ExportData_Click");
+        codeBehind.Should().NotContain("GetComboTag");
     }
 
     [Fact]
@@ -190,10 +243,36 @@ public sealed class DataExportViewModelTests
         xaml.Should().Contain("{Binding ScheduleReadinessDetail}");
         xaml.Should().Contain("{Binding ScheduleScopeText}");
         xaml.Should().Contain("{Binding ScheduleDestinationPath, UpdateSourceTrigger=PropertyChanged}");
+        xaml.Should().Contain("ItemsSource=\"{Binding ScheduleFrequencyOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedScheduleFrequency");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataExportConfigureScheduleButton\"");
         xaml.Should().Contain("Command=\"{Binding ConfigureScheduledExportCommand}\"");
         xaml.Should().NotContain("EnableScheduledExportsToggle_Changed");
+        xaml.Should().NotContain("ScheduleFrequency_SelectionChanged");
 
         codeBehind.Should().NotContain("EnableScheduledExportsToggle_Changed");
+        codeBehind.Should().NotContain("ScheduleFrequency_SelectionChanged");
+    }
+
+    [Fact]
+    public void DataExportPageSource_BindsIntegrationSelectorsThroughViewModel()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataExportPage.xaml"));
+        var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataExportPage.xaml.cs"));
+
+        xaml.Should().Contain("ItemsSource=\"{Binding DatabaseTypeOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedDatabaseType");
+        xaml.Should().Contain("ItemsSource=\"{Binding WebhookFormatOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedWebhookFormat");
+        xaml.Should().Contain("ItemsSource=\"{Binding WebhookBatchOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedWebhookBatch");
+        xaml.Should().Contain("ItemsSource=\"{Binding LeanResolutionOptions}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedLeanResolution");
+        xaml.Should().NotContain("SelectionChanged=");
+        xaml.Should().NotContain("<ComboBoxItem");
+
+        codeBehind.Should().NotContain("SelectionChangedEventArgs");
+        codeBehind.Should().NotContain("SelectedIndex");
+        codeBehind.Should().NotContain("GetComboTag");
     }
 }

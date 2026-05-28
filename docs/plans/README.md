@@ -8,6 +8,7 @@
 - [ ] Convert the Strategy Engine pre-run foundation into accepted strategy-to-ledger lineage evidence before claiming W3 continuity progress.
 - [ ] Attach every non-`complete` provider capability-matrix row to an owner, target sprint, and adapter-readiness evidence packet.
 - [ ] Keep the active W2-W4 blocker list in [`wave-implementation-checklists.md`](wave-implementation-checklists.md) aligned with the latest pilot-readiness stage gates.
+- [ ] Use [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) before accepting WPF work as Wave 2, Wave 3, or Wave 4 workflow progress.
 - [ ] Prove the operations-continuity close lane through browser/operator acceptance with external statement or custodian inputs before describing close readiness as delivered.
 - [ ] Run stale-doc/hash validation after roadmap, source registry, or generated documentation changes and record failures as TODOs instead of prose caveats.
 
@@ -65,6 +66,7 @@ These are the active documents for Waves 2-4 and the current short-horizon execu
 | [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for Waves 2-4 and trust-gate maintenance |
 | [wave-implementation-checklists.md](wave-implementation-checklists.md) | Concrete W1 maintenance and W2-W4 readiness TODO checklist tied to stage-gate blockers |
+| [desktop-ui-workflow-acceptance-matrix.md](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF acceptance matrix that maps W2 cockpit, W3 continuity, and W4 governance scenarios to shared checks, focused WPF tests, browser parity checks, and release blockers |
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for Waves 2-4 |
 | [web-ui-development-pivot.md](web-ui-development-pivot.md) | Browser workstation foundation and desktop/browser coexistence history |
 | [meridian-pilot-workflow.md](meridian-pilot-workflow.md) | Golden-path pilot workflow and productization filter |

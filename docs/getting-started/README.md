@@ -90,9 +90,9 @@ Manual fallback:
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 
-The WPF shell is the Windows-only retained desktop workstation path. New operator-facing UI
-development targets the browser workstation in `src/Meridian.Ui/dashboard/`; use WPF for retained
-desktop compatibility, regression checks, and shared-contract support.
+The WPF shell is the active Windows desktop workstation. The browser workstation in
+`src/Meridian.Ui/dashboard/` is the parallel surface for new operator-facing UI
+development; both surfaces consume shared contracts and read models.
 
 ## Provider Setup
 

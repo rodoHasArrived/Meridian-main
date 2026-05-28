@@ -1,6 +1,6 @@
 // CLI Commands Reference Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-04-09
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows all available CLI commands and flags,
 // organized by category with usage examples.
@@ -16,11 +16,11 @@ digraph CLICommands {
 
   // Title
   labelloc="t";
-  label="Meridian - CLI Commands Reference\nAll Available Flags and Options | v1.6.1";
+  label="Meridian - CLI Commands Reference\nAll Available Flags and Options";
 
   // Entry Point
   Meridian [shape=box, fillcolor="#438dd5", fontcolor="white", width=3,
-       label="dotnet run --project src/Meridian\n\nMeridian CLI\n.NET 9.0 | Cross-Platform"];
+       label="dotnet run --project src/Meridian\n\nMeridian CLI\n.NET 10 | Cross-Platform"];
 
   // Setup Commands
   subgraph cluster_setup {

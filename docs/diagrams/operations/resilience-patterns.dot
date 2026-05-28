@@ -1,5 +1,5 @@
 // Resilience Patterns Diagram
-// Meridian v1.6.1
+// Meridian current project state
 // Last Updated: 2026-02-21
 //
 // This diagram shows the resilience patterns implemented in the system,
@@ -16,7 +16,7 @@ digraph ResiliencePatterns {
 
   // Title
   labelloc="t";
-  label="Meridian - Resilience Patterns\nFault Tolerance & Recovery Mechanisms | v1.6.1";
+  label="Meridian - Resilience Patterns\nFault Tolerance & Recovery Mechanisms";
 
   // Circuit Breaker Pattern
   subgraph cluster_circuit_breaker {

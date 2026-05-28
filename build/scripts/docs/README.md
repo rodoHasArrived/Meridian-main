@@ -188,7 +188,16 @@ Generates the AI repo-navigation dataset used by docs, MCP tools/resources, and 
 python3 generate-ai-navigation.py \
   --json-output docs/ai/generated/repo-navigation.json \
   --markdown-output docs/ai/generated/repo-navigation.md \
+  --recent-changes-output docs/ai/generated/recent-changes.md \
   --summary
+```
+
+### check-ai-navigation-freshness.py
+
+Fails when `docs/ai/generated/repo-navigation.json` gets older than the allowed threshold.
+
+```bash
+python3 check-ai-navigation-freshness.py --max-age-days 14
 ```
 
 ### update-claude-md.py
@@ -309,7 +318,7 @@ Generates documentation health metrics with scoring.
 
 ```bash
 python3 generate-health-dashboard.py \
-  --output docs/status/health-dashboard.md \
+  --output docs/status/doc-health-dashboard.md \
   --json-output health.json
 ```
 

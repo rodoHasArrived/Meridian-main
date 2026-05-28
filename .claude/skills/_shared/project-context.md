@@ -93,7 +93,7 @@ Prefer the narrowest validation command that matches the touched files.
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the retained WPF shell
+  services, workstation endpoints, and the WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: performance suites
 

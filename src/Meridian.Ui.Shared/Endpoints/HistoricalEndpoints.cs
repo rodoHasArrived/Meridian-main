@@ -116,6 +116,16 @@ public static class HistoricalEndpoints
                 return Results.BadRequest(new { error = "Symbol is required" });
             }
 
+            if (!from.HasValue || !to.HasValue)
+            {
+                return Results.BadRequest(new { error = "from and to date bounds are required" });
+            }
+
+            if (to.Value < from.Value)
+            {
+                return Results.BadRequest(new { error = "to must be on or after from" });
+            }
+
             var interval = intervalMinutes ?? 5;
             if (interval <= 0 || interval > 1440)
             {

@@ -174,21 +174,30 @@ def check_ran_score_eval(cmds: list[str]) -> bool:
     return any("score_eval" in cmd for cmd in cmds)
 
 
-def _contains_key(obj: Any, key: str) -> bool:
-    """Recursively check whether a nested dict/list contains the given key name."""
+def _contains_rubric_marker(obj: Any, marker: str) -> bool:
+    """Recursively check whether nested content contains a rubric marker.
+
+    Supports both structured JSON keys and string payloads (stdout/messages)
+    where rubric labels are commonly rendered as Markdown text.
+    """
+    marker_folded = marker.casefold()
+
     if isinstance(obj, dict):
-        if key in obj:
+        if any(k.casefold() == marker_folded for k in obj):
             return True
-        return any(_contains_key(v, key) for v in obj.values())
+        return any(_contains_rubric_marker(v, marker) for v in obj.values())
     if isinstance(obj, list):
-        return any(_contains_key(item, key) for item in obj)
+        return any(_contains_rubric_marker(item, marker) for item in obj)
+    if isinstance(obj, str):
+        return marker_folded in obj.casefold()
     return False
 
 
 def check_produced_rubric_output(events: list[dict]) -> bool:
     """Did the run produce a rubric score output (via score_eval.py or inline JSON)?"""
     return any(
-        _contains_key(e, "behavior_correctness") or _contains_key(e, "Behavior Correctness")
+        _contains_rubric_marker(e, "behavior_correctness")
+        or _contains_rubric_marker(e, "Behavior Correctness")
         for e in events
     )
 

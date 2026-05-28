@@ -71,7 +71,7 @@ internal sealed class TradingWorkspaceShellPresentationState
     public string TradingActiveRunText { get; init; } = "No active trading run";
 
     public string TradingActiveRunMetaText { get; init; } =
-        "Use Research to promote a run, or open a live/paper panel below.";
+        "Use Strategy to promote a run, or open a live/paper panel below.";
 
     public string WatchlistStatusText { get; init; } =
         "Watchlists and active strategies populate once paper or live runs are started.";

@@ -69,6 +69,7 @@ public sealed class OperationsContinuityDtoContractTests
                 [
                     new OperationsEvidenceLinkDto("ev-pack-1", "Draft report pack", "/evidence/report-pack", "reporting", DateTimeOffset.UtcNow)
                 ]),
+            CloseChecklist: [],
             EvidenceLinks:
             [
                 new OperationsEvidenceLinkDto("ev-close-1", "Close checklist", "/evidence/close-checklist", "ops-runbook", DateTimeOffset.UtcNow)
@@ -92,7 +93,42 @@ public sealed class OperationsContinuityDtoContractTests
                     Label: "Prepare Report Pack",
                     Route: "/wpf/fund-report-pack",
                     Gate: OperationsGateKeyDto.Approval)
-            ]);
+            ],
+            CloseReadiness: new OperationsCloseReadinessDto(
+                IsReadyToClose: false,
+                Severity: "Critical",
+                Score: 70,
+                Components:
+                [
+                    new OperationsCloseReadinessComponentDto(
+                        Key: "reconciliation",
+                        Label: "Reconciliation",
+                        Score: 0,
+                        Weight: 15,
+                        IsReady: false,
+                        Severity: "Critical",
+                        BlockingReason: "Unresolved reconciliation breaks still require disposition.",
+                        Gate: OperationsGateKeyDto.Reconciliation,
+                        RouteHint: "/workstation/accounting")
+                ],
+                Blockers:
+                [
+                    new OperationsCloseReadinessBlockerDto(
+                        Code: "RECONCILIATION_BREAKS_OPEN",
+                        Category: "Reconciliation",
+                        Severity: "Critical",
+                        Message: "Unresolved reconciliation breaks still require disposition.",
+                        Gate: OperationsGateKeyDto.Reconciliation,
+                        RouteHint: "/workstation/accounting")
+                ],
+                NextActions:
+                [
+                    new OperationsNextActionDto(
+                        Code: "RECONCILIATION_BREAKS_OPEN",
+                        Label: "Unresolved reconciliation breaks still require disposition.",
+                        Route: "/workstation/accounting",
+                        Gate: OperationsGateKeyDto.Reconciliation)
+                ]));
 
         var json = JsonSerializer.Serialize(dto, options);
         var actual = JsonSerializer.Deserialize<OperationsContinuityWorkflowDto>(json, options);
@@ -102,6 +138,9 @@ public sealed class OperationsContinuityDtoContractTests
         actual.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "ev-close-1");
         actual.ReportPackReadiness.IsReady.Should().BeFalse();
         actual.ReportPackReadiness.ReportPackId.Should().Be("report-pack-2026-05");
+        actual.CloseReadiness.Should().NotBeNull();
+        actual.CloseReadiness!.Score.Should().Be(70);
+        actual.CloseReadiness.Components.Should().ContainSingle(component => component.Key == "reconciliation");
         actual.Blockers.Should().ContainSingle(blocker => blocker.EvidenceLinks.Any(link => link.EvidenceId == "ev-pack-1"));
         actual.NextActions.Should().ContainSingle(action => action.Code == "prepare-report-pack");
     }

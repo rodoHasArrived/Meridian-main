@@ -74,11 +74,16 @@ public static partial class AtomicFileWriter
         }
 
         var tempPath = GetTempPath(destinationPath);
+        var destinationExists = File.Exists(destinationPath);
 
         try
         {
             // Write to temp file
             await File.WriteAllTextAsync(tempPath, content, Encoding.UTF8, ct);
+            if (destinationExists)
+            {
+                CopySecurityMetadata(destinationPath, tempPath);
+            }
 
             // Sync the temp file to disk
             await SyncFileAsync(tempPath, ct);
@@ -115,11 +120,16 @@ public static partial class AtomicFileWriter
         }
 
         var tempPath = GetTempPath(destinationPath);
+        var destinationExists = File.Exists(destinationPath);
 
         try
         {
             // Write to temp file
             await File.WriteAllBytesAsync(tempPath, content, ct);
+            if (destinationExists)
+            {
+                CopySecurityMetadata(destinationPath, tempPath);
+            }
 
             // Sync the temp file to disk
             await SyncFileAsync(tempPath, ct);
@@ -154,6 +164,7 @@ public static partial class AtomicFileWriter
         }
 
         var tempPath = GetTempPath(destinationPath);
+        var destinationExists = File.Exists(destinationPath);
 
         try
         {
@@ -168,6 +179,10 @@ public static partial class AtomicFileWriter
             {
                 await writeAction(writer);
                 await writer.FlushAsync();
+            }
+            if (destinationExists)
+            {
+                CopySecurityMetadata(destinationPath, tempPath);
             }
 
             // Sync the temp file
@@ -436,6 +451,28 @@ public static partial class AtomicFileWriter
         var directory = Path.GetDirectoryName(destinationPath) ?? ".";
         var fileName = Path.GetFileName(destinationPath);
         return Path.Combine(directory, $".{fileName}.{Guid.NewGuid():N}.tmp");
+    }
+
+    private static void CopySecurityMetadata(string sourcePath, string targetPath)
+    {
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var sourceSecurity = new FileInfo(sourcePath).GetAccessControl();
+                new FileInfo(targetPath).SetAccessControl(sourceSecurity);
+                return;
+            }
+
+            var sourceMode = File.GetUnixFileMode(sourcePath);
+            File.SetUnixFileMode(targetPath, sourceMode);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex,
+                "Failed to preserve file security metadata while atomically writing {Path}",
+                sourcePath);
+        }
     }
 
     private static async Task SyncFileAsync(string path, CancellationToken ct)

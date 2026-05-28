@@ -9,6 +9,7 @@ using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -37,6 +38,7 @@ public sealed class AppServiceRegistrationTests
 
             serviceProvider.GetRequiredService<ConfigService>().Should().BeSameAs(ConfigService.Instance);
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
+            serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
@@ -47,6 +49,7 @@ public sealed class AppServiceRegistrationTests
             ResolveRequired<FundLedgerPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<OrderBookPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<RunRiskPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<RunCashFlowPage>(serviceProvider).DataContext.Should().BeOfType<CashFlowViewModel>();
             ResolveRequired<EnvironmentDesignerPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<ResearchWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<TradingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
@@ -115,6 +118,10 @@ public sealed class AppServiceRegistrationTests
                 .Lifetime.Should().Be(ServiceLifetime.Singleton);
             services.Single(descriptor => descriptor.ServiceType == typeof(FundContextService))
                 .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(WorkspaceStateTokenStore))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(IWorkspaceShellSlotContributionService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
 
             services.Single(descriptor => descriptor.ServiceType == typeof(TradingWorkspaceShellPresentationService))
                 .Lifetime.Should().Be(ServiceLifetime.Scoped);
@@ -148,6 +155,21 @@ public sealed class AppServiceRegistrationTests
                     $"catalog-backed page '{pageType.Name}' should resolve from DI");
             }
         });
+    }
+
+    [Fact]
+    public void RunCashFlowPageSource_ShouldResolveThroughConstructorInjection()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunCashFlowPage.xaml.cs"));
+
+        source.Should().Contain("public RunCashFlowPage(");
+        source.Should().Contain("StrategyRunWorkspaceService workspaceService");
+        source.Should().Contain("WpfNavigationService navigationService");
+        source.Should().Contain("StrategyRunContinuityService? continuityService = null");
+        source.Should().Contain("ResolveOptional<StrategyRunContinuityService>()");
+        source.Should().Contain("DataContext = new CashFlowViewModel(workspaceService, navigationService, continuityService)");
+        source.Should().NotContain("App.Services.GetRequiredService<StrategyRunWorkspaceService>()");
+        source.Should().NotContain("App.Services.GetRequiredService<NavigationService>()");
     }
 
     [Fact]

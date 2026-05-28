@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.CashFlowInterop;
-using Meridian.Storage.Archival;
 
 namespace Meridian.Application.FundStructure;
 
@@ -11,7 +11,7 @@ namespace Meridian.Application.FundStructure;
 /// Thread-safe governance structure service backed by an in-memory working set
 /// with optional durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundStructureService : IFundStructureService
+public sealed class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
 {
     private static readonly StringComparer AssignmentComparer = StringComparer.OrdinalIgnoreCase;
     private const string DefaultCashFlowCurrency = "USD";
@@ -29,7 +29,9 @@ public sealed class InMemoryFundStructureService : IFundStructureService
     private readonly IFundAccountService _fundAccountService;
     private readonly IGovernanceSharedDataAccessService? _sharedDataAccessService;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
-    private readonly string? _persistencePath;
+    private readonly IFundStructureStateStore _stateStore;
+    private readonly IFundStructurePolicyService _policyService;
+    private readonly bool _persistenceEnabled;
     private readonly SemaphoreSlim _persistGate = new(1, 1);
     private readonly Dictionary<Guid, OrganizationSummaryDto> _organizations = new();
     private readonly Dictionary<Guid, BusinessSummaryDto> _businesses = new();
@@ -72,11 +74,15 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _sharedDataAccessService = sharedDataAccessService;
         _securityMasterQueryService = securityMasterQueryService;
-        _persistencePath = string.IsNullOrWhiteSpace(persistencePath) ? null : persistencePath;
+        _persistenceEnabled = !string.IsNullOrWhiteSpace(persistencePath);
+        _stateStore = _persistenceEnabled
+            ? new JsonFileFundStructureStateStore(persistencePath!)
+            : new InMemoryFundStructureStateStore();
+        _policyService = new FundStructurePolicyService();
         LoadState();
     }
 
-    private sealed record PersistedState(
+    internal sealed record PersistedState(
         int Version,
         List<OrganizationSummaryDto> Organizations,
         List<BusinessSummaryDto> Businesses,
@@ -380,7 +386,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
-        EnsureSingleOperatingParent(request);
+        _policyService.EnsureSingleOperatingParent(request);
 
         var summary = new InvestmentPortfolioSummaryDto(
             request.InvestmentPortfolioId,
@@ -1080,7 +1086,8 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             portfolios,
             accounts,
             ledgerGroups,
-            sharedDataAccess);
+            sharedDataAccess,
+            scoped.Assignments);
     }
 
     public async Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(
@@ -1090,7 +1097,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        ValidateCashFlowQuery(query);
+        _policyService.ValidateCashFlowQuery(query);
 
         var snapshot = CreateSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
@@ -1119,10 +1126,11 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         }
 
         var currency = ResolveCashFlowCurrency(query.Currency, resolvedScope);
-        var accountWindows = resolvedScope.Accounts.Count == 0
-            ? Array.Empty<AccountCashFlowWindow>()
-            : await Task.WhenAll(resolvedScope.Accounts.Select(account =>
-                BuildAccountCashFlowWindowAsync(
+        var accountWindows = new List<AccountCashFlowWindow>(resolvedScope.Accounts.Count);
+        foreach (var account in resolvedScope.Accounts)
+        {
+            ct.ThrowIfCancellationRequested();
+            accountWindows.Add(await BuildAccountCashFlowWindowAsync(
                     account,
                     scoped,
                     currency,
@@ -1132,7 +1140,9 @@ public sealed class InMemoryFundStructureService : IFundStructureService
                     projectionWindowEnd,
                     forecastDays,
                     bucketDays,
-                    ct))).ConfigureAwait(false);
+                    ct)
+                .ConfigureAwait(false));
+        }
 
         var accountViews = accountWindows
             .Select(window => new GovernanceCashFlowAccountViewDto(
@@ -2835,7 +2845,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private (long Version, string Json)? CaptureSnapshotLocked()
     {
-        if (_persistencePath is null)
+        if (!_persistenceEnabled)
         {
             return null;
         }
@@ -2862,7 +2872,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private async Task PersistSnapshotAsync((long Version, string Json)? snapshot, CancellationToken ct)
     {
-        if (snapshot is null || _persistencePath is null)
+        if (snapshot is null || !_persistenceEnabled)
         {
             return;
         }
@@ -2875,7 +2885,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
                 return;
             }
 
-            await AtomicFileWriter.WriteAsync(_persistencePath, snapshot.Value.Json, ct).ConfigureAwait(false);
+            await _stateStore.SaveAsync(snapshot.Value.Json, ct).ConfigureAwait(false);
             _persistedVersion = snapshot.Value.Version;
         }
         finally
@@ -2886,14 +2896,14 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private void LoadState()
     {
-        if (_persistencePath is null || !File.Exists(_persistencePath))
-        {
-            return;
-        }
-
         try
         {
-            var json = File.ReadAllText(_persistencePath);
+            var json = _stateStore.Load();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return;
+            }
+
             var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
             if (state is null)
             {

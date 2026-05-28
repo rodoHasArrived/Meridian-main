@@ -34,5 +34,20 @@ public sealed record SessionStats(
     /// Percentage change from the session open to the most recent trade. Returns
     /// <c>null</c> when the open price is zero (cannot compute a percentage).
     /// </summary>
-    public decimal? ChangePercent => Open == 0m ? null : (Last - Open) / Open * 100m;
+    public decimal? ChangePercent => ComputeChangePercent(Open, Last);
+
+    private static decimal? ComputeChangePercent(decimal open, decimal last)
+    {
+        if (open == 0m)
+            return null;
+
+        try
+        {
+            return (last - open) / open * 100m;
+        }
+        catch (OverflowException)
+        {
+            return null;
+        }
+    }
 }

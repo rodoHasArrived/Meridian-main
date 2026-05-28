@@ -4,7 +4,8 @@ public enum DirectLendingErrorCode : byte
 {
     Validation = 0,
     NotFound = 1,
-    ConcurrencyConflict = 2
+    ConcurrencyConflict = 2,
+    Conflict = 3
 }
 
 public sealed record DirectLendingCommandError(

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -426,7 +426,7 @@ export interface TradingReadinessWorkItemRow {
   kind: string;
   label: string;
   detail: string;
-  tone: OperatorWorkItem["tone"];
+  tone: TradingDataTone;
   metadataText: string | null;
   action: TradingReadinessWorkItemAction | null;
   ariaLabel: string;
@@ -715,7 +715,7 @@ function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingRe
       kind: item.kind,
       label: item.label,
       detail: item.detail,
-      tone: item.tone,
+      tone: mapOperatorWorkItemTone(item.tone),
       metadataText: metadataText || null,
       action: buildTradingReadinessWorkItemAction(item),
       ariaLabel: [
@@ -729,11 +729,13 @@ function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingRe
 }
 
 function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingReadinessWorkItemAction | null {
+  const sharedTargetHref = resolveTradingReadinessSharedTargetHref(item);
+
   switch (item.kind) {
     case "BrokerageSync":
       return {
         label: "Fix provider setup",
-        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        href: resolveBrokerageSyncWorkItemHref(item, sharedTargetHref),
         ariaLabel: `Open provider setup for ${item.label}`,
         detail: "Review provider credentials and connection status in Settings."
       };
@@ -749,15 +751,13 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
     case "ExecutionControl":
       return {
         label: "Review risk controls",
-        href: WORKSTATION_ROUTE_CATALOG.tradingRisk,
+        href: sharedTargetHref ?? WORKSTATION_ROUTE_CATALOG.tradingRisk,
         ariaLabel: `Open risk controls for ${item.label}`,
         detail: "Review execution guardrails and circuit-breaker state in Trading."
       };
 
     case "PromotionReview": {
-      const href = item.runId
-        ? `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`
-        : `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
+      const href = sharedTargetHref ?? `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
       return {
         label: "Open promotion gate",
         href,
@@ -774,6 +774,14 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
         detail: "Review missing security coverage in Accounting."
       };
 
+    case "ProviderTrustGate":
+      return {
+        label: "Open provider readiness",
+        href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+        ariaLabel: `Open provider readiness for ${item.label}`,
+        detail: "Review provider trust evidence and operator sign-off in Data."
+      };
+
     case "ReconciliationBreak":
       return {
         label: "Open reconciliation",
@@ -785,6 +793,45 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
     default:
       return null;
   }
+}
+
+function resolveBrokerageSyncWorkItemHref(item: OperatorWorkItem, _sharedTargetHref: string | null): string {
+  const text = `${item.workItemId} ${item.label} ${item.detail}`.toLowerCase();
+  if (text.includes("credential") || text.includes("provider setup") || text.includes("failed")) {
+    return WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
+  }
+
+  const targetsAccount =
+    item.targetPageTag === "AccountPortfolio" &&
+    text.includes("incomplete") &&
+    /\/api\/fund-accounts\/[^/]+\/brokerage-sync/i.test(item.targetRoute ?? "");
+
+  return targetsAccount && item.fundAccountId
+    ? `/portfolio/accounts/${encodeURIComponent(item.fundAccountId)}`
+    : WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
+}
+
+function mapOperatorWorkItemTone(tone: OperatorWorkItem["tone"]): TradingDataTone {
+  switch (tone) {
+    case "Critical":
+      return "danger";
+    case "Warning":
+      return "warning";
+    case "Success":
+      return "success";
+    case "Info":
+    default:
+      return "default";
+  }
+}
+
+function resolveTradingReadinessSharedTargetHref(item: OperatorWorkItem): string | null {
+  if (item.kind === "PaperReplay") {
+    return null;
+  }
+
+  return normalizeLocalWorkstationRoute(item.targetRoute)
+    ?? (item.targetPageTag || item.workspace ? workflowTargetPath(item.targetPageTag, item.workspace) : null);
 }
 
 function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessWarningRow[] {

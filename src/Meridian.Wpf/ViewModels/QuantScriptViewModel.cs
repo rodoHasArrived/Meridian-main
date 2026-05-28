@@ -48,6 +48,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private readonly QuantScriptOptions _options;
     private readonly ILogger<QuantScriptViewModel> _logger;
     private readonly NotebookExecutionSession _session = new();
+    private readonly QuantScriptCollectionsSectionViewModel _collectionsSection = new();
+    private readonly QuantScriptSelectionSectionViewModel _selectionSection = new();
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
@@ -63,10 +65,6 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private DateTime _toDate = DateTime.Today;
     private string _selectedInterval = "Daily (Custom)";
     private string _scriptSource = string.Empty;
-    private ScriptDocumentEntry? _selectedDocument;
-    private NotebookCellViewModel? _selectedCell;
-    private QuantScriptTemplateDefinition? _selectedTemplate;
-    private QuantScriptExecutionRecord? _selectedExecutionRecord;
     private bool _isRunning;
     private bool _isDirty;
     private double _progressFraction;
@@ -74,6 +72,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private string _elapsedText = "--";
     private string _memoryText = "--";
     private int _activeResultsTab;
+
+    internal QuantScriptCollectionsSectionViewModel CollectionsSection => _collectionsSection;
+    internal QuantScriptSelectionSectionViewModel SelectionSection => _selectionSection;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -154,7 +155,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public bool HasChart => Charts.Count > 0;
     public bool HasNoChart => Charts.Count == 0;
     public bool HasLegend => LegendEntries.Count > 0;
-    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
+    public ObservableCollection<ChartLegendEntry> LegendEntries => _collectionsSection.LegendEntries;
 
     public string ScriptSource
     {
@@ -171,23 +172,28 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
     }
 
-    public ObservableCollection<ScriptDocumentEntry> Documents { get; } = [];
-    public ObservableCollection<QuantScriptTemplateDefinition> Templates { get; } = [];
-    public ObservableCollection<NotebookCellViewModel> NotebookCells { get; } = [];
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
-    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } = new(10_000);
-    public ObservableCollection<PlotViewModel> Charts { get; } = [];
-    public ObservableCollection<MetricEntry> Metrics { get; } = [];
-    public ObservableCollection<TradeEntry> Trades { get; } = [];
-    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
-    public ObservableCollection<QuantScriptExecutionRecord> RunHistory { get; } = [];
+    public ObservableCollection<ScriptDocumentEntry> Documents => _collectionsSection.Documents;
+    public ObservableCollection<QuantScriptTemplateDefinition> Templates => _collectionsSection.Templates;
+    public ObservableCollection<NotebookCellViewModel> NotebookCells => _collectionsSection.NotebookCells;
+    public ObservableCollection<ParameterViewModel> Parameters => _collectionsSection.Parameters;
+    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput => _collectionsSection.ConsoleOutput;
+    public ObservableCollection<PlotViewModel> Charts => _collectionsSection.Charts;
+    public ObservableCollection<MetricEntry> Metrics => _collectionsSection.Metrics;
+    public ObservableCollection<TradeEntry> Trades => _collectionsSection.Trades;
+    public ObservableCollection<DiagnosticEntry> Diagnostics => _collectionsSection.Diagnostics;
+    public ObservableCollection<QuantScriptExecutionRecord> RunHistory => _collectionsSection.RunHistory;
 
     public ScriptDocumentEntry? SelectedDocument
     {
-        get => _selectedDocument;
+        get => SelectionSection.SelectedDocument;
         set
         {
-            if (!SetProperty(ref _selectedDocument, value) || value is null)
+            if (SelectionSection.SelectedDocument == value)
+                return;
+
+            SelectionSection.SelectedDocument = value;
+            RaisePropertyChanged();
+            if (value is null)
                 return;
 
             LoadDocumentAsync(value);
@@ -196,10 +202,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public QuantScriptTemplateDefinition? SelectedTemplate
     {
-        get => _selectedTemplate;
+        get => SelectionSection.SelectedTemplate;
         set
         {
-            if (!SetProperty(ref _selectedTemplate, value) || value is null || _suppressTemplateSelection)
+            if (SelectionSection.SelectedTemplate == value)
+                return;
+
+            SelectionSection.SelectedTemplate = value;
+            RaisePropertyChanged();
+            if (value is null || _suppressTemplateSelection)
                 return;
 
             _ = ApplyTemplateAsync(value);
@@ -208,12 +219,14 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public NotebookCellViewModel? SelectedCell
     {
-        get => _selectedCell;
+        get => SelectionSection.SelectedCell;
         set
         {
-            if (!SetProperty(ref _selectedCell, value))
+            if (SelectionSection.SelectedCell == value)
                 return;
 
+            SelectionSection.SelectedCell = value;
+            RaisePropertyChanged();
             SyncScriptSourceFromCell();
             RaisePropertyChanged(nameof(CurrentCellTitle));
             RaisePropertyChanged(nameof(CurrentCellStatus));
@@ -225,12 +238,14 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public QuantScriptExecutionRecord? SelectedExecutionRecord
     {
-        get => _selectedExecutionRecord;
+        get => SelectionSection.SelectedExecutionRecord;
         set
         {
-            if (!SetProperty(ref _selectedExecutionRecord, value))
+            if (SelectionSection.SelectedExecutionRecord == value)
                 return;
 
+            SelectionSection.SelectedExecutionRecord = value;
+            RaisePropertyChanged();
             NotifyHistoryCommandStateChanged();
         }
     }
@@ -688,7 +703,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private void RefreshScripts()
     {
-        var preferredPath = !string.IsNullOrWhiteSpace(_currentDocumentPath) ? _currentDocumentPath : _selectedDocument?.FullPath;
+        var preferredPath = !string.IsNullOrWhiteSpace(_currentDocumentPath) ? _currentDocumentPath : SelectedDocument?.FullPath;
         var documents = _notebookStore.ListDocuments()
             .Select(static d => new ScriptDocumentEntry(d.Name, d.FullPath, d.Kind))
             .ToList();
@@ -697,7 +712,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         foreach (var document in documents)
             Documents.Add(document);
 
-        _selectedDocument = preferredPath is null
+        SelectionSection.SelectedDocument = preferredPath is null
             ? null
             : Documents.FirstOrDefault(document => string.Equals(document.FullPath, preferredPath, StringComparison.OrdinalIgnoreCase));
         RaisePropertyChanged(nameof(SelectedDocument));

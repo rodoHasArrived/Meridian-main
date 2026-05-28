@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meridian-runtime-observability
+  labels:
+    app: meridian
+data:
+  MERIDIAN_AUTOSCALE_SIGNALS: "queue_depth,processing_latency_p95,cpu_usage,memory_usage"
+  MERIDIAN_HEALTH_ENDPOINTS: "/healthz,/readyz,/livez,/metrics"
+  MERIDIAN_RESILIENCY_CONTROLS: "bounded_queues,retry_jitter,circuit_breaker,dead_letter"

@@ -1,6 +1,6 @@
 // Provider Architecture Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the provider abstraction layer and all implemented
 // data providers for streaming, historical backfill, and symbol search.
@@ -16,7 +16,7 @@ digraph ProviderArchitecture {
 
   // Title
   labelloc="t";
-  label="Meridian - Provider Architecture\nUnified Data Source Abstraction | v1.7.x";
+  label="Meridian - Provider Architecture\nUnified Data Source Abstraction";
 
   // Provider Interfaces
   subgraph cluster_interfaces {

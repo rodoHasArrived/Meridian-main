@@ -1,3 +1,4 @@
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -9,6 +10,53 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class SymbolsPageViewModelTests
 {
+    [Fact]
+    public void ActivationLifetime_DeactivateCancelsVisiblePageLifetimeWithoutClearingLoadedState()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.cs"));
+
+        viewModel.Should().Contain("IPageActivationLifetime");
+        viewModel.Should().Contain("public bool IsActive");
+        viewModel.Should().Contain("public CancellationToken ActivationToken");
+        viewModel.Should().Contain("public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct)");
+        viewModel.Should().Contain("public void Stop() => Deactivate()");
+        viewModel.Should().Contain("CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct)");
+        viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _loadCts, null))");
+        viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _activationCts, null))");
+    }
+
+    [Fact]
+    public async Task Deactivate_CancelsInFlightSymbolLoadWithoutClearingLoadedSymbols()
+    {
+        var loadStarted = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var loadCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var viewModel = CreateViewModel(
+            getConfiguredSymbolsAsync: async ct =>
+            {
+                loadStarted.SetResult(ct);
+                using var registration = ct.UnsafeRegister(_ => loadCanceled.TrySetResult(), null);
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                return Array.Empty<SymbolConfigDto>();
+            });
+        AddSymbol(viewModel, "SPY", exchange: "SMART", trades: true, depth: false);
+        viewModel.ApplyFilters();
+
+        var activationTask = viewModel.ActivateAsync();
+        var activeLoadToken = await loadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        viewModel.Deactivate();
+
+        await loadCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await activationTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        activeLoadToken.IsCancellationRequested.Should().BeTrue();
+        viewModel.IsActive.Should().BeFalse();
+        viewModel.Symbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
+        viewModel.FilteredSymbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
+        viewModel.VisibleSymbolScopeText.Should().Be("1 configured symbols");
+    }
+
     [Fact]
     public void ApplyFilters_WithNoConfiguredSymbols_ShowsSetupGuidance()
     {
@@ -100,6 +148,7 @@ public sealed class SymbolsPageViewModelTests
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolsPage.xaml"));
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolsPage.xaml.cs"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.cs"));
 
         xaml.Should().Contain("AutomationProperties.AutomationId=\"SymbolsSearchBox\"");
         xaml.Should().Contain("Text=\"{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"");
@@ -122,12 +171,45 @@ public sealed class SymbolsPageViewModelTests
         codeBehind.Should().NotContain("Filter_Changed");
         codeBehind.Should().NotContain("ClearFilters_Click");
         codeBehind.Should().NotContain("CallApplyFilters");
+        codeBehind.Should().Contain("await _vm.ActivateAsync()");
+        codeBehind.Should().Contain("_vm.Deactivate()");
+        codeBehind.Should().NotContain("_vm.StartAsync()");
+        codeBehind.Should().NotContain("_vm.Stop()");
         codeBehind.Should().Contain("_vm.SearchText");
         codeBehind.Should().Contain("_vm.SelectedSubscriptionFilter");
         codeBehind.Should().Contain("_vm.SelectedExchangeFilter");
+
+        viewModel.Should().Contain("IPageActivationLifetime");
+        viewModel.Should().Contain("public bool IsActive");
+        viewModel.Should().Contain("public CancellationToken ActivationToken");
     }
 
-    private static SymbolsPageViewModel CreateViewModel() =>
+    [Fact]
+    public void SymbolsPageSection_ShouldOwnCollectionsFiltersAndSelectionWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<SymbolViewModel> Symbols");
+        sectionSource.Should().Contain("public ObservableCollection<SymbolViewModel> FilteredSymbols");
+        sectionSource.Should().Contain("public ObservableCollection<WatchlistInfo> Watchlists");
+        sectionSource.Should().Contain("public string SearchText");
+        sectionSource.Should().Contain("public string SelectedSubscriptionFilter");
+        sectionSource.Should().Contain("public SymbolViewModel? SelectedItem");
+        viewModelSource.Should().Contain("public SymbolsPageSectionViewModel SymbolsSection");
+        viewModelSource.Should().Contain("public ObservableCollection<SymbolViewModel> Symbols => SymbolsSection.Symbols");
+        viewModelSource.Should().Contain("get => SymbolsSection.SearchText");
+        viewModelSource.Should().Contain("get => SymbolsSection.SelectedItem");
+        viewModelSource.Should().NotContain("_searchText");
+        viewModelSource.Should().NotContain("_selectedSubscriptionFilter");
+        viewModelSource.Should().NotContain("_selectedExchangeFilter");
+        viewModelSource.Should().NotContain("_selectedItem");
+    }
+
+    private static SymbolsPageViewModel CreateViewModel(
+        Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync = null,
+        Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync = null,
+        Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>>? getAllWatchlistsAsync = null) =>
         new(
             WpfServices.ConfigService.Instance,
             WpfServices.WatchlistService.Instance,
@@ -135,7 +217,10 @@ public sealed class SymbolsPageViewModelTests
             WpfServices.NotificationService.Instance,
             WpfServices.NavigationService.Instance,
             SymbolManagementService.Instance,
-            CommandPaletteService.Instance);
+            CommandPaletteService.Instance,
+            getConfiguredSymbolsAsync,
+            saveSymbolsAsync,
+            getAllWatchlistsAsync);
 
     private static void AddSymbol(
         SymbolsPageViewModel viewModel,

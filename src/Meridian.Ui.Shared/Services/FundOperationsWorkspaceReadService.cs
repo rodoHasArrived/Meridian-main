@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -64,6 +65,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly IGovernanceReportPackRepository? _reportPackRepository;
     private readonly ReportPackValidationService _reportPackValidationService;
     private readonly ISecurityValidationGateService? _securityValidationGate;
+    private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -76,7 +78,8 @@ public sealed class FundOperationsWorkspaceReadService
         IReconciliationBreakQueueRepository? breakQueueRepository = null,
         IGovernanceReportPackRepository? reportPackRepository = null,
         ReportPackValidationService? reportPackValidationService = null,
-        ISecurityValidationGateService? securityValidationGate = null)
+        ISecurityValidationGateService? securityValidationGate = null,
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -89,6 +92,7 @@ public sealed class FundOperationsWorkspaceReadService
         _reportPackRepository = reportPackRepository;
         _reportPackValidationService = reportPackValidationService ?? new ReportPackValidationService();
         _securityValidationGate = securityValidationGate;
+        _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -141,6 +145,7 @@ public sealed class FundOperationsWorkspaceReadService
             runs,
             ct);
         var reconciliationTask = BuildReconciliationSummaryAsync(
+            normalizedFundProfileId,
             accountSummaries,
             runs,
             ct);
@@ -157,6 +162,11 @@ public sealed class FundOperationsWorkspaceReadService
         var reconciliation = await reconciliationTask.ConfigureAwait(false);
         var nav = await navTask.ConfigureAwait(false);
         var reporting = BuildReportingSummary();
+        var governance = await BuildGovernanceLifecycleProjectionAsync(
+            normalizedFundProfileId,
+            accountSummaries,
+            reconciliation,
+            ct).ConfigureAwait(false);
         var workspace = BuildWorkspaceSummary(
             normalizedFundProfileId,
             displayName,
@@ -182,7 +192,8 @@ public sealed class FundOperationsWorkspaceReadService
             CashFinancing: cashFinancing,
             Reconciliation: reconciliation,
             Nav: nav,
-            Reporting: reporting);
+            Reporting: reporting,
+            Governance: governance);
     }
 
     public async Task<FundReportPackPreviewDto> PreviewReportPackAsync(
@@ -262,7 +273,11 @@ public sealed class FundOperationsWorkspaceReadService
             asOf,
             ledgerBook,
             ct);
-        var reconciliationTask = BuildReconciliationSummaryAsync(accountSummaries, runs, ct);
+        var reconciliationTask = BuildReconciliationSummaryAsync(
+            normalizedFundProfileId,
+            accountSummaries,
+            runs,
+            ct);
         var navTask = BuildNavSummaryAsync(normalizedFundProfileId, currency, ledgerBook, asOf, ct);
 
         await Task.WhenAll(reportTask, ledgerTask, reconciliationTask, navTask).ConfigureAwait(false);
@@ -293,6 +308,9 @@ public sealed class FundOperationsWorkspaceReadService
             RunCount: runs.Count,
             SecurityMissingCount: securityMissingCount,
             Formats: formats,
+            StaleReplayCount: 0,
+            UnresolvedSecurityMasterConflictCount: securityValidationResults.Count(result =>
+                result.Report.Issues.Any(issue => issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error)),
             SecurityValidationResults: securityValidationResults));
         var status = _reportPackValidationService.ResolveStatus(validationIssues);
         var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
@@ -309,6 +327,7 @@ public sealed class FundOperationsWorkspaceReadService
             OpenReconciliationBreakCount: reconciliation.OpenBreakCount,
             SecurityResolvedCount: securityResolvedCount,
             SecurityMissingCount: securityMissingCount,
+            LineagePointers: BuildLineagePointers(report, runs, reconciliation),
             SourceSnapshotHash: ComputeSourceSnapshotHash(
                 normalizedFundProfileId,
                 asOf,
@@ -598,6 +617,7 @@ public sealed class FundOperationsWorkspaceReadService
     }
 
     private async Task<ReconciliationSummary> BuildReconciliationSummaryAsync(
+        string fundProfileId,
         IReadOnlyList<FundAccountSummary> accounts,
         IReadOnlyList<StrategyRunEntry> runs,
         CancellationToken ct)
@@ -706,19 +726,30 @@ public sealed class FundOperationsWorkspaceReadService
             BreakAmountTotal: breakAmountTotal,
             RecentRuns: ordered,
             SecurityCoverageIssueCount: securityCoverageIssues,
-            BreakQueue: await BuildBreakQueueProjectionAsync(ct).ConfigureAwait(false),
+            BreakQueue: await BuildBreakQueueProjectionAsync(fundProfileId, runs, ct).ConfigureAwait(false),
             LedgerImpactPreview: BuildLedgerImpactPreview(ordered),
-            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(ct).ConfigureAwait(false));
+            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(fundProfileId, runs, ct).ConfigureAwait(false));
     }
 
-    private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(CancellationToken ct)
+    private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(
+        string fundProfileId,
+        IReadOnlyList<StrategyRunEntry> runs,
+        CancellationToken ct)
     {
         if (_breakQueueRepository is null)
         {
             return null;
         }
 
-        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var scopedRunIds = runs
+            .Select(static run => run.RunId)
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var items = (await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false))
+            .Where(item =>
+                string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                scopedRunIds.Contains(item.RunId))
+            .ToArray();
         var projected = items
             .OrderByDescending(static item => item.LastUpdatedAt)
             .Select(static item => new ReconciliationBreakQueueProjectionItemDto(
@@ -732,7 +763,15 @@ public sealed class FundOperationsWorkspaceReadService
                 RoutingTarget: item.RoutingTarget,
                 RoutingDetail: item.RoutingDetail,
                 EvidenceReference: item.UpstreamSyncCursor ?? item.ExternalAccountId,
-                LastUpdatedAt: item.LastUpdatedAt))
+                LastUpdatedAt: item.LastUpdatedAt,
+                Priority: item.Priority,
+                SlaState: item.SlaState,
+                AgeBand: item.AgeBand,
+                RootCauseCode: item.RootCauseCode,
+                ResolutionCode: item.ResolutionCode,
+                CommentCount: item.CommentCount,
+                EvidenceCount: item.EvidenceCount,
+                LastActivityAt: item.LastActivityAt))
             .ToArray();
 
         return new ReconciliationBreakQueueProjectionDto(
@@ -742,7 +781,10 @@ public sealed class FundOperationsWorkspaceReadService
             ResolvedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
             DismissedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
             CriticalOpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open && item.Severity == ReconciliationBreakSeverity.Critical),
-            Items: projected);
+            Items: projected,
+            BreachedCount: projected.Count(static item => item.SlaState == ReconciliationCaseSlaState.Breached),
+            AwaitingEvidenceCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview && string.Equals(item.SignoffStatus, "awaiting-evidence", StringComparison.OrdinalIgnoreCase)),
+            SignedOffEvidenceCount: projected.Where(static item => item.Status == ReconciliationBreakQueueStatus.SignedOff).Sum(static item => item.EvidenceCount));
     }
 
     private static LedgerImpactPreviewDto BuildLedgerImpactPreview(IReadOnlyList<FundReconciliationItem> items)
@@ -770,15 +812,25 @@ public sealed class FundOperationsWorkspaceReadService
             ValidationFlags: flags);
     }
 
-    private async Task<bool> HasCriticalBreakOpenAsync(CancellationToken ct)
+    private async Task<bool> HasCriticalBreakOpenAsync(
+        string fundProfileId,
+        IReadOnlyList<StrategyRunEntry> runs,
+        CancellationToken ct)
     {
         if (_breakQueueRepository is null)
         {
             return false;
         }
 
+        var scopedRunIds = runs
+            .Select(static run => run.RunId)
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var items = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
-        return items.Any(static item => item.Severity == ReconciliationBreakSeverity.Critical);
+        return items.Any(item =>
+            item.Severity == ReconciliationBreakSeverity.Critical &&
+            string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+            scopedRunIds.Contains(item.RunId));
     }
 
     private async Task<FundNavAttributionSummaryDto> BuildNavSummaryAsync(
@@ -1270,6 +1322,37 @@ public sealed class FundOperationsWorkspaceReadService
         return Convert.ToHexString(SHA256.HashData(json)).ToLowerInvariant();
     }
 
+    private static IReadOnlyList<FundReportPackLineagePointerDto> BuildLineagePointers(
+        ReportPack report,
+        IReadOnlyList<StrategyRunEntry> runs,
+        ReconciliationSummary reconciliation)
+    {
+        var pointers = new List<FundReportPackLineagePointerDto>();
+        foreach (var run in runs)
+        {
+            pointers.Add(new FundReportPackLineagePointerDto("report", "summary", "run", run.RunId));
+        }
+
+        foreach (var line in report.TrialBalance)
+        {
+            var lineKey = string.IsNullOrWhiteSpace(line.Symbol)
+                ? line.AccountName
+                : $"{line.AccountName}:{line.Symbol}";
+            pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "ledger-account", line.AccountName));
+            if (!string.IsNullOrWhiteSpace(line.Symbol))
+            {
+                pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "security", line.Symbol));
+            }
+        }
+
+        if (reconciliation.RunCount > 0)
+        {
+            pointers.Add(new FundReportPackLineagePointerDto("section", "reconciliation", "reconciliation-summary", $"runs:{reconciliation.RunCount};open-breaks:{reconciliation.OpenBreakCount}"));
+        }
+
+        return pointers;
+    }
+
     private static decimal SumBalance(IEnumerable<FundTrialBalanceLine> lines, LedgerAccountType accountType)
         => lines
             .Where(line => string.Equals(line.AccountType, accountType.ToString(), StringComparison.Ordinal))
@@ -1323,6 +1406,144 @@ public sealed class FundOperationsWorkspaceReadService
             SecurityResolvedCount: securityResolvedCount,
             SecurityMissingCount: securityMissingCount,
             SecurityCoverageIssues: reconciliation.SecurityCoverageIssueCount);
+    }
+
+    private async Task<GovernanceLifecycleProjectionDto> BuildGovernanceLifecycleProjectionAsync(
+        string fundProfileId,
+        IReadOnlyList<FundAccountSummary> accounts,
+        ReconciliationSummary reconciliation,
+        CancellationToken ct)
+    {
+        OperationsContinuityWorkflowSummaryDto? activeWorkflowSummary = null;
+        OperationsContinuityWorkflowDto? activeWorkflow = null;
+        IReadOnlyList<OperationsTimelineEntryDto> timeline = [];
+        if (_operationsContinuityWorkflowService is not null)
+        {
+            var summaries = await _operationsContinuityWorkflowService
+                .ListAsync(ct: ct)
+                .ConfigureAwait(false);
+            var accountIds = accounts
+                .Select(static account => account.AccountId)
+                .ToHashSet();
+            var scopedSummaries = summaries
+                .Where(summary => accountIds.Contains(summary.FundAccountId))
+                .ToArray();
+
+            activeWorkflowSummary = scopedSummaries
+                .OrderByDescending(static item => item.UpdatedAtUtc)
+                .FirstOrDefault();
+
+            if (activeWorkflowSummary is not null)
+            {
+                activeWorkflow = await _operationsContinuityWorkflowService
+                    .GetAsync(activeWorkflowSummary.WorkflowId, ct)
+                    .ConfigureAwait(false);
+
+                timeline = await _operationsContinuityWorkflowService
+                    .GetTimelineAsync(activeWorkflowSummary.WorkflowId, ct)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        FundReportPackHistoryItemDto? latestReportPack = null;
+        if (_reportPackRepository is not null)
+        {
+            var history = await _reportPackRepository
+                .GetHistoryAsync(fundProfileId, limit: 1, ct)
+                .ConfigureAwait(false);
+            latestReportPack = history.FirstOrDefault();
+        }
+
+        var evidenceReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var traceReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var evidence in activeWorkflow?.EvidenceLinks ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(evidence.EvidenceId))
+            {
+                evidenceReferences.Add(evidence.EvidenceId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(evidence.Route))
+            {
+                traceReferences.Add(evidence.Route);
+            }
+        }
+
+        foreach (var entry in timeline)
+        {
+            traceReferences.Add(entry.AuditId.ToString("N"));
+            traceReferences.Add(entry.CurrentHash);
+            foreach (var reference in entry.References)
+            {
+                if (!string.IsNullOrWhiteSpace(reference.EvidenceId))
+                {
+                    evidenceReferences.Add(reference.EvidenceId);
+                }
+            }
+        }
+
+        foreach (var queueItem in reconciliation.BreakQueue?.Items ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(queueItem.EvidenceReference))
+            {
+                evidenceReferences.Add(queueItem.EvidenceReference);
+            }
+
+            if (!string.IsNullOrWhiteSpace(queueItem.WorkflowId))
+            {
+                traceReferences.Add(queueItem.WorkflowId);
+            }
+        }
+
+        var decisionPosture = activeWorkflow?.ReconciliationState switch
+        {
+            OperationsReconciliationStateDto.ExceptionsOpen or OperationsReconciliationStateDto.InReview
+                => "Reconciliation decisions are still open in the shared workflow queue.",
+            OperationsReconciliationStateDto.Cleared or OperationsReconciliationStateDto.Complete
+                => "Reconciliation decisions are cleared in shared lifecycle state.",
+            _ when reconciliation.OpenBreakCount > 0
+                => $"{reconciliation.OpenBreakCount} reconciliation break(s) still need shared decision records.",
+            _ => "Reconciliation decision posture is aligned with shared governance state."
+        };
+
+        var signoffPosture = activeWorkflow?.ApprovalState switch
+        {
+            OperationsApprovalStateDto.Approved => "Sign-off is approved in shared continuity lifecycle.",
+            OperationsApprovalStateDto.Rejected => "Sign-off is rejected; approval lifecycle requires remediation.",
+            OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned
+                => "Sign-off is submitted and awaiting reviewer decision in shared lifecycle.",
+            _ => "Sign-off is pending shared approval evidence."
+        };
+
+        var reportPackReady =
+            activeWorkflow?.ReportPackReadiness.IsReady == true ||
+            latestReportPack?.Status is GovernanceReportPackStatusDto.Approved
+                or GovernanceReportPackStatusDto.Exported
+                or GovernanceReportPackStatusDto.Retained;
+        var closeReadyByLifecycle = activeWorkflow?.Status is OperationsWorkflowStatusDto.ReadyForClose or OperationsWorkflowStatusDto.Closed;
+        var closeReadyByBreaks = reconciliation.OpenBreakCount == 0 && !reconciliation.HasCriticalBreakOpen;
+        var closeReadiness = closeReadyByLifecycle && reportPackReady && closeReadyByBreaks
+            ? "Close readiness is satisfied by shared lifecycle, reconciliation, and report-pack evidence."
+            : "Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.";
+
+        var auditTraceability = timeline.Count > 0 || evidenceReferences.Count > 0
+            ? $"Traceability is backed by {timeline.Count} lifecycle event(s) and {evidenceReferences.Count} evidence reference(s)."
+            : "Traceability references are pending shared timeline and evidence responses.";
+
+        return new GovernanceLifecycleProjectionDto(
+            DecisionPosture: decisionPosture,
+            SignoffPosture: signoffPosture,
+            CloseReadiness: closeReadiness,
+            AuditTraceability: auditTraceability,
+            ActiveWorkflowId: activeWorkflowSummary?.WorkflowId.ToString(),
+            WorkflowStatus: activeWorkflow?.Status ?? activeWorkflowSummary?.Status,
+            ApprovalState: activeWorkflow?.ApprovalState,
+            WorkflowUpdatedAtUtc: activeWorkflow?.UpdatedAtUtc ?? activeWorkflowSummary?.UpdatedAtUtc,
+            TimelineEventCount: timeline.Count,
+            EvidenceReferenceCount: evidenceReferences.Count,
+            EvidenceReferences: evidenceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray(),
+            AuditReferences: traceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray());
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecurityReferencesAsync(

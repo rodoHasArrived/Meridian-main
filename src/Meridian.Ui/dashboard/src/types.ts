@@ -17,6 +17,26 @@ export interface SessionInfo {
   commandCount: number;
 }
 
+export interface FeatureCapabilitySettingsResponse {
+  capabilities: FeatureCapabilityToggle[];
+}
+
+export interface FeatureCapabilityToggle {
+  capabilityKey: string;
+  displayName: string;
+  description: string;
+  isEnabled: boolean;
+  defaultEnabled: boolean;
+  isPermanent: boolean;
+  isOverridden: boolean;
+  canToggle: boolean;
+  disabledReason: string | null;
+}
+
+export interface FeatureCapabilityToggleRequest {
+  isEnabled: boolean;
+}
+
 export interface WorkspaceSummary {
   key: WorkspaceKey;
   label: string;
@@ -32,6 +52,28 @@ export interface MetricSnapshot {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+
+
+export interface StrategyRunSummaryApiRecord {
+  runId: string;
+  strategyId: string;
+  strategyName: string;
+  mode: number;
+  engine: number;
+  status: number;
+  startedAt: string;
+  completedAt: string | null;
+  datasetReference: string | null;
+  feedReference: string | null;
+  portfolioId: string | null;
+  ledgerReference: string | null;
+  netPnl: number | null;
+  totalReturn: number | null;
+  finalEquity: number | null;
+  fillCount: number;
+  lastUpdatedAt: string;
+  auditReference?: string | null;
+}
 export interface ResearchRunRecord {
   id: string;
   strategyName: string;
@@ -251,7 +293,7 @@ export type OperatorWorkItemKind =
   | "LedgerPeriodClose";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
-export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
+export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unknown";
 
 export interface OperatorWorkItem {
   workItemId: string;
@@ -489,8 +531,43 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   ledgerPreview: OperationsLedgerPreview | null;
   approvals: OperationsApproval[];
   reportPackReadiness: OperationsReportPackReadiness;
+  closeChecklist: OperationsCloseChecklistTask[];
+  closeReadiness: OperationsCloseReadiness | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
+}
+
+export interface OperationsCloseChecklistTask {
+  taskId: string;
+  gate: OperationsGateKey;
+  label: string;
+  owner: string;
+  dueDate: string | null;
+  requiredApprovalCount: number;
+  expiresOn: string | null;
+  status: string;
+  blockingReason: string | null;
+  evidencePointer: string | null;
+  remediationRoute: string | null;
+  canAcknowledge: boolean;
+  acknowledgedAtUtc: string | null;
+  acknowledgedBy: string | null;
+}
+
+export interface OperationsCloseReadiness {
+  isReadyToClose: boolean;
+  severity: string;
+  blockers: OperationsCloseReadinessBlocker[];
+  nextActions: OperationsNextAction[];
+}
+
+export interface OperationsCloseReadinessBlocker {
+  code: string;
+  category: string;
+  severity: string;
+  message: string;
+  gate: OperationsGateKey | null;
+  routeHint: string | null;
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
@@ -596,6 +673,127 @@ export interface EvidencePacketExportResponse {
   evidenceCount: number;
   warningCount: number;
   retained: boolean;
+}
+
+export type ChiefOfStaffIntentKind =
+  | "Unknown"
+  | "AccountingReconciliationReview"
+  | "TradingReadinessReview"
+  | "ReportPackApproval"
+  | "GovernanceAuditTrailReview"
+  | "GeneralOperatorAssistance";
+
+export type ChiefOfStaffSessionStatus =
+  | "Created"
+  | "ReviewRequired"
+  | "Blocked"
+  | "AwaitingOperatorDecision"
+  | "Approved"
+  | "Rejected"
+  | "Deferred";
+
+export type ChiefOfStaffDecisionKind = "Approve" | "Reject" | "Defer";
+
+export type ChiefOfStaffRuntimeHealthStatus = "Healthy" | "Degraded" | "Unavailable";
+
+export interface ChiefOfStaffActionCandidate {
+  actionId: string;
+  label: string;
+  targetWorkflow: string;
+  targetRoute: string | null;
+  targetPageTag: string | null;
+  requiredSignoffRole: string | null;
+  approvalRequired: boolean;
+  impactSummary: string;
+  evidencePrerequisites: string[];
+}
+
+export interface ChiefOfStaffRecommendation {
+  recommendationId: string;
+  title: string;
+  detail: string;
+  tone: OperatorWorkItemTone;
+  actions: ChiefOfStaffActionCandidate[];
+}
+
+export interface ChiefOfStaffTraceSummary {
+  traceId: string;
+  runtimeName: string;
+  runtimeVersion: string | null;
+  capturedAt: string;
+  warningCodes: string[];
+}
+
+export interface ChiefOfStaffEvidenceBundle {
+  subjects: EvidenceSubject[];
+  packets: EvidencePacket[];
+  workItems: OperatorWorkItem[];
+  relatedReconciliationRunIds: string[];
+  relatedWorkflowIds: string[];
+  traceArtifacts: EvidenceArtifactRef[];
+  completenessStatus: EvidenceStatus;
+  warnings: string[];
+}
+
+export interface ChiefOfStaffSession {
+  sessionId: string;
+  intentKind: ChiefOfStaffIntentKind;
+  operatorRequest: string;
+  markdownSummary: string;
+  structuredPayload: unknown;
+  evidenceBundle: ChiefOfStaffEvidenceBundle;
+  recommendations: ChiefOfStaffRecommendation[];
+  actions: ChiefOfStaffActionCandidate[];
+  traceSummary: ChiefOfStaffTraceSummary;
+  freshnessAsOf: string;
+  status: ChiefOfStaffSessionStatus;
+  pendingApproval: boolean;
+  routedWorkflowReferences: string[];
+  warnings: string[];
+}
+
+export interface ChiefOfStaffSessionSummary {
+  sessionId: string;
+  intentKind: ChiefOfStaffIntentKind;
+  operatorRequest: string;
+  status: ChiefOfStaffSessionStatus;
+  freshnessAsOf: string;
+  pendingApproval: boolean;
+  warnings: string[];
+}
+
+export interface ChiefOfStaffSessionQuery {
+  workspace?: string;
+  fundProfileId?: string;
+  fundAccountId?: string;
+  status?: ChiefOfStaffSessionStatus;
+  limit?: number;
+}
+
+export interface ChiefOfStaffDecisionRequest {
+  decision: ChiefOfStaffDecisionKind;
+  actor: string;
+  selectedActionId?: string | null;
+  rationale?: string | null;
+  correlationId?: string | null;
+}
+
+export interface ChiefOfStaffRuntimeHealth {
+  status: ChiefOfStaffRuntimeHealthStatus;
+  detail: string;
+  checkedAt: string;
+}
+
+export interface ChiefOfStaffTraceExportRequest {
+  requestedBy: string;
+  reason?: string | null;
+  includeWarnings?: boolean;
+}
+
+export interface ChiefOfStaffEvidenceExport {
+  sessionId: string;
+  manifest: EvidencePacketExportResponse;
+  traceSummary: ChiefOfStaffTraceSummary;
 }
 
 export interface TradingAcceptanceGate {
@@ -1112,6 +1310,41 @@ export interface PortfolioWorkspaceResponse {
   cashFlow: GovernanceCashFlowSummary | null;
 }
 
+
+export interface StatementRunSummary {
+  runId: string;
+  importId: string;
+  startedAtUtc: string;
+  completedAtUtc: string;
+  positionMatches: number;
+  cashMatches: number;
+  transactionMatches: number;
+  openExceptionCount: number;
+  brokerCustodian?: string | null;
+  account?: string | null;
+  period?: string | null;
+  status?: string | null;
+  validationIssueCount?: number | null;
+  matchCount?: number | null;
+  breakCount?: number | null;
+  caseCount?: number | null;
+  importedAtUtc?: string | null;
+}
+
+export interface StatementRunException {
+  breakId: string;
+  runId: string;
+  importId: string;
+  sourceReference: string;
+  breakCode: string;
+  category: string;
+  delta: number;
+  tolerance: number;
+  toleranceBreached: boolean;
+  createdAtUtc: string;
+  status: string;
+}
+
 export interface GovernanceReconciliationRecord {
   runId: string;
   strategyName: string;
@@ -1158,6 +1391,18 @@ export interface GovernanceWorkspaceResponse {
   breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
+  controlCenter?: {
+    closeReadiness: string;
+    portfolioFilterOptions: string[];
+    accountFilterOptions: string[];
+    blockerSeverityDistribution: { severity: string; count: number }[];
+    agingCurves: { bucket: string; count: number }[];
+    ownerWorkload: { owner: string; openCount: number }[];
+    slaBreachCount: number;
+    trendSnapshots: { metric: string; value: number; trend: string }[];
+    drillLinks: { label: string; href: string }[];
+    alerts: { tone: "danger" | "warning" | "info"; message: string }[];
+  };
 }
 
 export interface ExportAnalysisResult {
@@ -1185,7 +1430,38 @@ export interface ExportAnalysisFile {
   recordCount: number;
 }
 
-export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
+
+export interface StatementRunSummary {
+  runId: string;
+  importId: string;
+  startedAtUtc: string;
+  completedAtUtc: string;
+  positionMatches: number;
+  cashMatches: number;
+  transactionMatches: number;
+  openExceptionCount: number;
+}
+
+export interface StatementRunException {
+  breakId: string;
+  runId: string;
+  importId: string;
+  sourceReference: string;
+  breakCode: string;
+  category: string;
+  delta: number;
+  tolerance: number;
+  toleranceBreached: boolean;
+  createdAtUtc: string;
+  status: string;
+}
+
+export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed" | "SignedOff";
+export type ReconciliationCaseLifecycleState = "Open" | "Investigating" | "InReview" | "AwaitingEvidence" | "Resolved" | "SignedOff" | "Reopened";
+export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
+export type ReconciliationCaseSlaState = "NotStarted" | "OnTrack" | "Warning" | "Breached" | "Paused" | "Stopped";
+export type ReconciliationCaseCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
+export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve";
 
 export interface ReconciliationBreakQueueItem {
   breakId: string;
@@ -1203,11 +1479,112 @@ export interface ReconciliationBreakQueueItem {
   resolvedBy: string | null;
   resolvedAt: string | null;
   resolutionNote: string | null;
+  exceptionRoute?: string | null;
+  toleranceProfileId?: string | null;
+  toleranceBand?: number | null;
+  requiredSignoffRole?: string | null;
+  signoffStatus?: string | null;
   fundAccountId?: string | null;
   explainabilitySummary?: string | null;
   routingTarget?: string | null;
   routingDetail?: string | null;
   recommendedAction?: string | null;
+  assigneeId?: string | null;
+  assigneeDisplayName?: string | null;
+  priority?: ReconciliationCasePriority;
+  slaPolicyId?: string | null;
+  slaDueAt?: string | null;
+  slaWarningAt?: string | null;
+  slaBreachedAt?: string | null;
+  slaState?: ReconciliationCaseSlaState;
+  ageBand?: string | null;
+  businessAgeHours?: number;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  signedOffBy?: string | null;
+  signedOffAt?: string | null;
+  signOffNote?: string | null;
+  reopenedBy?: string | null;
+  reopenedAt?: string | null;
+  reopenReason?: string | null;
+  version?: number;
+  comments?: ReconciliationCaseComment[] | null;
+  evidenceLinks?: string[] | null;
+  commentCount?: number;
+  evidenceCount?: number;
+  lastActivityAt?: string | null;
+  sourceType?: string | null;
+  sourceSystem?: string | null;
+  sourceReference?: string | null;
+  sourceImportId?: string | null;
+  sourceBreakId?: string | null;
+  sourceFingerprint?: string | null;
+}
+
+export interface ReconciliationCaseComment {
+  commentId: string;
+  parentCommentId?: string | null;
+  authorId: string;
+  authorDisplayName: string;
+  visibility: ReconciliationCaseCommentVisibility;
+  body: string;
+  evidenceLinks: string[];
+  createdAt: string;
+  editedAt?: string | null;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
+}
+
+export interface ReconciliationCaseworkCommand {
+  breakId: string;
+  action: ReconciliationCaseworkAction;
+  actor: string;
+  commandId: string;
+  correlationId: string;
+  source: string;
+  expectedVersion: number;
+  reason?: string | null;
+  assignee?: string | null;
+  priority?: ReconciliationCasePriority | null;
+  status?: ReconciliationCaseLifecycleState | null;
+  note?: string | null;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  commentId?: string | null;
+  parentCommentId?: string | null;
+  visibility?: ReconciliationCaseCommentVisibility;
+  evidenceLinks?: string[] | null;
+  privileged?: boolean;
+}
+
+export interface ReconciliationBulkCaseworkRequest {
+  breakIds: string[];
+  action: ReconciliationCaseworkAction;
+  actor: string;
+  commandId: string;
+  correlationId: string;
+  source: string;
+  idempotencyKey: string;
+  dryRun: boolean;
+  allowPartialSuccess: boolean;
+  reason?: string | null;
+  assignee?: string | null;
+  priority?: ReconciliationCasePriority | null;
+  status?: ReconciliationCaseLifecycleState | null;
+  note?: string | null;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  maxCaseCount?: number;
+}
+
+export interface ReconciliationBulkCaseworkResult {
+  bulkActionId: string;
+  idempotencyKey: string;
+  dryRun: boolean;
+  requestedCount: number;
+  succeededCount: number;
+  failedCount: number;
+  results: Array<{ breakId: string; succeeded: boolean; wouldSucceed: boolean; error?: string | null; item?: ReconciliationBreakQueueItem | null }>;
 }
 
 export interface ReviewReconciliationBreakRequest {
@@ -1457,7 +1834,13 @@ export interface RunAttributionSummary {
 
 export type StrategyRunMode = "Backtest" | "Paper" | "Live";
 export type StrategyRunEngine = "Internal" | "QuantConnect" | "External";
-export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled";
+export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled" | "Stopped";
+export type StrategyRunPromotionState =
+  | "None"
+  | "RequiresCompletion"
+  | "CandidateForPaper"
+  | "CandidateForLive"
+  | "LiveManaged";
 
 export interface StrategyRunSummary {
   runId: string;
@@ -1478,6 +1861,110 @@ export interface StrategyRunSummary {
   fillCount: number;
   lastUpdatedAt: string;
   auditReference: string | null;
+}
+
+export interface StrategyRunDetail {
+  summary: StrategyRunSummary;
+  parameters: Record<string, string>;
+  portfolio: PortfolioSummary | null;
+  ledger: LedgerSummary | null;
+  execution?: unknown | null;
+  promotion?: unknown | null;
+  governance?: unknown | null;
+  governanceHooks?: unknown[] | null;
+}
+
+export interface StrategyRunContinuityLink {
+  runId: string;
+  strategyId: string;
+  strategyName: string;
+  mode: StrategyRunMode;
+  status: StrategyRunStatus;
+  startedAt: string;
+  completedAt: string | null;
+  promotionState: StrategyRunPromotionState;
+  fundProfileId?: string | null;
+  fundDisplayName?: string | null;
+}
+
+export interface StrategyRunContinuityLineage {
+  parentRunId: string | null;
+  parentRun: StrategyRunContinuityLink | null;
+  childRuns: StrategyRunContinuityLink[];
+}
+
+export interface StrategyRunCashFlowDigest {
+  asOf: string;
+  currency: string;
+  totalEntries: number;
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  projectedNetPosition: number;
+  bucketCount: number;
+  nextBucketStart: string | null;
+  nextBucketEnd: string | null;
+  nextBucketNetFlow: number | null;
+}
+
+export interface ReconciliationRunSummary {
+  reconciliationRunId: string;
+  runId: string;
+  createdAt: string;
+  portfolioAsOf: string | null;
+  ledgerAsOf: string | null;
+  matchCount: number;
+  breakCount: number;
+  openBreakCount: number;
+  hasTimingDrift: boolean;
+  amountTolerance: number;
+  maxAsOfDriftMinutes: number;
+  securityIssueCount: number;
+  hasSecurityCoverageIssues: boolean;
+  bankTransactionCount: number;
+  bankBreakCount: number;
+  expectedAccountingEventCount: number;
+  expectedJournalPreviewCount: number;
+  securityMasterAccountingIssueCount: number;
+  hasSecurityMasterAccountingIssues: boolean;
+}
+
+export type StrategyRunContinuityWarningSeverity = "Info" | "Warning" | "Critical";
+export type StrategyRunContinuitySeamHealthStatus = "Healthy" | "Missing" | "Stale";
+
+export interface StrategyRunContinuityWarning {
+  code: string;
+  severity: StrategyRunContinuityWarningSeverity;
+  message: string;
+  sourceSeam: string;
+}
+
+export interface StrategyRunContinuityStatus {
+  hasRun: boolean;
+  runHealth: StrategyRunContinuitySeamHealthStatus;
+  hasFills: boolean;
+  fillsHealth: StrategyRunContinuitySeamHealthStatus;
+  hasPortfolio: boolean;
+  portfolioHealth: StrategyRunContinuitySeamHealthStatus;
+  hasLedger: boolean;
+  ledgerHealth: StrategyRunContinuitySeamHealthStatus;
+  hasCashFlow: boolean;
+  cashFlowHealth: StrategyRunContinuitySeamHealthStatus;
+  hasReconciliation: boolean;
+  reconciliationHealth: StrategyRunContinuitySeamHealthStatus;
+  asOfDriftMinutes: number;
+  openReconciliationBreaks: number;
+  securityCoverageIssueCount: number;
+  hasWarnings: boolean;
+  warnings: StrategyRunContinuityWarning[];
+}
+
+export interface StrategyRunContinuityDto {
+  run: StrategyRunDetail;
+  lineage: StrategyRunContinuityLineage;
+  cashFlow: StrategyRunCashFlowDigest | null;
+  reconciliation: ReconciliationRunSummary | null;
+  continuityStatus: StrategyRunContinuityStatus;
 }
 
 // --- Security Master workstation types ---
@@ -1894,6 +2381,25 @@ export interface BackfillTriggerResult {
   error: string | null;
 }
 
+export interface BackfillPreviewSymbol {
+  symbol: string;
+  estimatedBars: number;
+  hasMarketHoursData: boolean;
+  notes: string[];
+}
+
+export interface BackfillPreviewResult {
+  provider: string;
+  providerDisplayName: string;
+  from: string;
+  to: string;
+  totalDays: number;
+  estimatedTradingDays: number;
+  symbols: BackfillPreviewSymbol[];
+  estimatedDurationSeconds: number;
+  notes: string[];
+}
+
 export interface BackfillProgressEntry {
   symbol: string;
   barsWritten: number;
@@ -1901,10 +2407,13 @@ export interface BackfillProgressEntry {
 }
 
 export interface BackfillProgressResponse {
-  active: boolean;
-  provider: string | null;
-  symbols: BackfillProgressEntry[];
-  message: string | null;
+  active?: boolean;
+  provider?: string | null;
+  symbols?: BackfillProgressEntry[];
+  message?: string | null;
+  lastRun?: BackfillTriggerResult | null;
+  isActive?: boolean;
+  timestamp?: string;
 }
 
 // --- System Overview types ---

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -195,16 +196,14 @@ public sealed record BrokerageHouseholdPortfolioDto(
     IReadOnlyList<BrokerageHouseholdPositionDto> Positions,
     IReadOnlyList<string> Warnings);
 
-[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
-public sealed record WorkstationBrokerageBalanceSnapshotDto(
+public sealed record FundAccountBrokerageBalanceSnapshotDto(
     decimal Cash,
     decimal Equity,
     decimal BuyingPower,
     string Currency,
     decimal MarginBalance);
 
-[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
-public sealed record WorkstationBrokeragePositionDto(
+public sealed record FundAccountBrokeragePositionDto(
     string Symbol,
     decimal Quantity,
     decimal AverageEntryPrice,
@@ -217,8 +216,7 @@ public sealed record WorkstationBrokeragePositionDto(
     string? PositionId = null,
     string? Currency = null);
 
-[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
-public sealed record WorkstationBrokerageOrderDto(
+public sealed record FundAccountBrokerageOrderDto(
     string OrderId,
     string? ClientOrderId,
     string Symbol,
@@ -232,8 +230,7 @@ public sealed record WorkstationBrokerageOrderDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt = null);
 
-[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
-public sealed record WorkstationBrokerageFillDto(
+public sealed record FundAccountBrokerageFillDto(
     string FillId,
     string? OrderId,
     string Symbol,
@@ -244,8 +241,7 @@ public sealed record WorkstationBrokerageFillDto(
     string? Venue = null,
     decimal? Commission = null);
 
-[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
-public sealed record WorkstationBrokerageCashTransactionDto(
+public sealed record FundAccountBrokerageCashTransactionDto(
     string TransactionId,
     string TransactionType,
     decimal Amount,
@@ -254,16 +250,143 @@ public sealed record WorkstationBrokerageCashTransactionDto(
     string? Symbol = null,
     string? Description = null);
 
-[Obsolete("Use WorkstationBrokerageSyncStatusDto via fund-account scoped readiness/work-item/governance flows. This standalone sync projection DTO is deprecated.")]
-public sealed record WorkstationBrokerageSyncViewDto(
+public sealed record FundAccountBrokerageSyncActivityDto(
     Guid FundAccountId,
     WorkstationBrokerageAccountLinkDto Link,
     WorkstationBrokerageSyncStatusDto Status,
-    WorkstationBrokerageBalanceSnapshotDto? Balance,
-    IReadOnlyList<WorkstationBrokeragePositionDto> Positions,
-    IReadOnlyList<WorkstationBrokerageOrderDto> Orders,
-    IReadOnlyList<WorkstationBrokerageFillDto> Fills,
-    IReadOnlyList<WorkstationBrokerageCashTransactionDto> CashTransactions,
+    FundAccountBrokerageBalanceSnapshotDto? Balance,
+    IReadOnlyList<FundAccountBrokeragePositionDto> Positions,
+    IReadOnlyList<FundAccountBrokerageOrderDto> Orders,
+    IReadOnlyList<FundAccountBrokerageFillDto> Fills,
+    IReadOnlyList<FundAccountBrokerageCashTransactionDto> CashTransactions,
     DateTimeOffset SyncedAt,
     string RawSnapshotPath,
     string ProjectionPath);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationStatusDto>))]
+public enum ProviderLedgerReconciliationStatusDto
+{
+    Matched = 0,
+    Breaks = 1,
+    Blocked = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationCheckStatusDto>))]
+public enum ProviderLedgerReconciliationCheckStatusDto
+{
+    Matched = 0,
+    Break = 1,
+    Blocked = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationBreakSignOffStateDto>))]
+public enum ProviderLedgerReconciliationBreakSignOffStateDto
+{
+    Open = 0,
+    Assigned = 1,
+    SignedOff = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderSecurityMasterPassportStatusDto>))]
+public enum ProviderSecurityMasterPassportStatusDto
+{
+    Resolved = 0,
+    Inferred = 1,
+    Unresolved = 2,
+    Blocked = 3
+}
+
+public sealed record ProviderLedgerReconciliationRequestDto(
+    decimal AmountTolerance = 0.01m,
+    int ProviderStaleAfterMinutes = 30,
+    string? RequestedBy = null,
+    string? DefaultBreakOwner = null,
+    IReadOnlyList<string>? SignedOffBreakKeys = null,
+    string? SignedOffBy = null);
+
+public sealed record ProviderLedgerReconciliationCheckDto(
+    string CheckId,
+    string Label,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    ReconciliationBreakCategory Category,
+    string ExpectedSource,
+    string ActualSource,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? Variance,
+    ReconciliationBreakSeverity Severity,
+    string Reason);
+
+public sealed record ProviderLedgerReconciliationBreakDto(
+    string BreakId,
+    string CheckId,
+    string Code,
+    ReconciliationBreakCategory Category,
+    ReconciliationBreakSeverity Severity,
+    string ExpectedSource,
+    string ActualSource,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? Variance,
+    string Reason,
+    string? Symbol = null,
+    string? EvidenceLink = null,
+    string? BreakKey = null,
+    string? Owner = null,
+    decimal? Tolerance = null,
+    DateTimeOffset? FirstObservedAt = null,
+    DateTimeOffset? LastObservedAt = null,
+    int AgeMinutes = 0,
+    ProviderLedgerReconciliationBreakSignOffStateDto SignOffState = ProviderLedgerReconciliationBreakSignOffStateDto.Open,
+    string? SignedOffBy = null,
+    DateTimeOffset? SignedOffAt = null);
+
+public sealed record ProviderLedgerReconciliationSummaryDto(
+    Guid ReconciliationRunId,
+    Guid AccountId,
+    DateTimeOffset CreatedAt,
+    ProviderLedgerReconciliationStatusDto Status,
+    int TotalChecks,
+    int MatchedChecks,
+    int BreakCount,
+    int SecurityIssueCount,
+    decimal AmountTolerance,
+    int ProviderStaleAfterMinutes,
+    string? ProviderId,
+    string? ExternalAccountId,
+    DateTimeOffset? ProviderSyncedAt,
+    DateOnly? InternalAsOfDate,
+    string? DetailPath = null,
+    int OpenBreakCount = 0,
+    int SignedOffBreakCount = 0,
+    int OldestBreakAgeMinutes = 0);
+
+public sealed record ProviderSecurityMasterPassportDto(
+    string Symbol,
+    string ProviderId,
+    string ExternalAccountId,
+    DateTimeOffset ProviderSyncedAt,
+    bool ProviderIsStale,
+    string AssetClass,
+    string? Currency,
+    string? PositionId,
+    Guid? SecurityId,
+    string? SecurityDisplayName,
+    SecurityStatusDto? SecurityStatus,
+    ProviderSecurityMasterPassportStatusDto Status,
+    decimal ConfidenceScore,
+    string ResolutionSource,
+    IReadOnlyList<string> IdentifierConflicts,
+    IReadOnlyList<string> ValidationIssueCodes,
+    IReadOnlyList<string> OverrideHistory,
+    DateTimeOffset ObservedAt,
+    int FreshnessMinutes,
+    string Reason);
+
+public sealed record ProviderLedgerReconciliationDetailDto(
+    ProviderLedgerReconciliationSummaryDto Summary,
+    IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks,
+    IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null);

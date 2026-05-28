@@ -52,7 +52,7 @@ Non-trigger examples:
 - Keep the answer orientation-first, not implementation-first.
 
 ### `task-router`
-- Translate natural-language requests like browser workstation issue, provider bug, retained WPF issue, storage regression, or MCP tool work into the right route from the generated repo map.
+- Translate natural-language requests like browser workstation issue, provider bug, WPF desktop issue, storage regression, or MCP tool work into the right route from the generated repo map.
 - Recommend the next specialist skill or agent once the subsystem is identified.
 
 ### `execution-tracer`
@@ -85,7 +85,7 @@ Non-trigger examples:
 ## Meridian Rules
 
 - Start with the generated repo map before broad recursive searching.
-- Route new operator-facing UI requests to `src/Meridian.Ui/dashboard/` and `/workstation/` first unless the user explicitly asks for retained WPF.
+- Route new browser-surface UI requests to `src/Meridian.Ui/dashboard/` and `/workstation/`; route WPF desktop requests to `src/Meridian.Wpf/`.
 - Prefer subsystem-level routing over file-by-file wandering.
 - Use the shared project context to keep terminology and commands consistent.
 - If multiple subsystems are involved, name the primary owner first and the cross-project edges second.

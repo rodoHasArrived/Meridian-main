@@ -108,11 +108,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
         var securityCoverageIssues = await BuildSecurityCoverageIssuesAsync(runDetail, request.RunId, ct).ConfigureAwait(false);
         var bankBreakCount = breaks.Count(b => bankCheckIds.Contains(b.CheckId));
-
-        var bankTransactions = normalizedInputs.InternalCashMovements
-            .Select(static movement => movement.BankTransaction)
-            .OfType<BankTransactionDto>()
-            .ToArray();
+        var bankTransactionCount = normalizedInputs.InternalCashMovements.Count + normalizedInputs.ExternalStatementRows.Count;
 
         // Build Security Master classification map from already-resolved security references
         // in the portfolio and ledger read models (populated by PortfolioReadService /
@@ -135,7 +131,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             request.MaxAsOfDriftMinutes,
             securityCoverageIssues.Count,
             securityCoverageIssues.Count > 0,
-            bankTransactions.Length,
+            bankTransactionCount,
             bankBreakCount,
             securityMasterAccountingResult?.ExpectedEvents.Count ?? 0,
             securityMasterAccountingResult?.JournalPreviews.Count ?? 0,
@@ -143,7 +139,6 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             securityMasterAccountingResult?.Issues.Count > 0);
 
         var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues,
-            bankTransactions.Length > 0 ? bankTransactions : null,
             securityClassifications.Count > 0 ? securityClassifications : null,
             securityMasterAccountingResult?.ExpectedEvents.Count > 0 ? securityMasterAccountingResult.ExpectedEvents : null,
             securityMasterAccountingResult?.AccrualCalculations.Count > 0 ? securityMasterAccountingResult.AccrualCalculations : null,

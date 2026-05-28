@@ -33,7 +33,9 @@ public sealed record EvidenceArtifactRefDto(
     string? Route,
     DateTimeOffset GeneratedAt,
     string? Hash,
-    bool Retained);
+    bool Retained,
+    string? CanonicalSubjectKind = null,
+    string? CanonicalSubjectId = null);
 
 public sealed record EvidenceNodeDto(
     string EvidenceId,
@@ -69,6 +71,39 @@ public sealed record EvidenceValidationIssueDto(
     string? SourceSystem = null,
     string? RelatedWorkItemId = null);
 
+public sealed record EvidenceSlaPolicyDto(
+    string PolicyId,
+    string EvidenceKind,
+    string WorkflowKind,
+    int FreshnessMinutes,
+    EvidenceValidationSeverityDto BreachSeverity,
+    bool RequiredForAssurance,
+    string Description);
+
+public sealed record EvidenceSlaAssessmentDto(
+    string PolicyId,
+    string EvidenceId,
+    string EvidenceKind,
+    string SourceSystem,
+    int? AgeMinutes,
+    int FreshnessMinutes,
+    bool IsBreached,
+    EvidenceValidationSeverityDto Severity,
+    string Message);
+
+public sealed record EvidenceAssuranceComponentDto(
+    string ComponentId,
+    string Label,
+    int Score,
+    EvidenceStatusDto Status,
+    string Detail);
+
+public sealed record MeridianAssuranceScoreDto(
+    int Score,
+    EvidenceStatusDto Status,
+    IReadOnlyList<EvidenceAssuranceComponentDto> Components,
+    IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments);
+
 public sealed record EvidenceVaultIdentityDto(
     string VaultId,
     string SubjectKind,
@@ -79,6 +114,26 @@ public sealed record EvidenceVaultIdentityDto(
     string ContentHashSha256,
     int SchemaVersion,
     string StorageKind);
+
+public sealed record EvidenceLifecycleMetadataDto(
+    DateTimeOffset? RetainUntil,
+    bool LegalHold,
+    DateTimeOffset? ExpiresAt,
+    IReadOnlyList<string> AccessPolicyTags);
+
+public sealed record EvidenceSubjectLinkageDto(
+    string? EvidenceSubject,
+    string? RunId,
+    string? PeriodId,
+    string? ReportPackId,
+    string? ReconciliationCaseId);
+
+public sealed record EvidenceVaultLookupRequestDto(
+    string? EvidenceSubject,
+    string? RunId,
+    string? PeriodId,
+    string? ReportPackId,
+    string? ReconciliationCaseId);
 
 public sealed record EvidenceEndpointErrorDto(
     string Code,
@@ -98,6 +153,16 @@ public sealed record EvidenceCompletenessDto(
     IReadOnlyList<string> BlockingWorkItemIds)
 {
     public IReadOnlyList<EvidenceValidationIssueDto> ValidationIssues { get; init; } = [];
+    public int BlockingIssueCount { get; init; }
+    public int WarningIssueCount { get; init; }
+    public IReadOnlyList<string> OrphanEvidenceIds { get; init; } = [];
+    public IReadOnlyList<EvidenceSlaPolicyDto> SlaPolicies { get; init; } = [];
+    public IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments { get; init; } = [];
+    public MeridianAssuranceScoreDto AssuranceScore { get; init; } = new(
+        Score: 0,
+        Status: EvidenceStatusDto.Unknown,
+        Components: [],
+        SlaAssessments: []);
 }
 
 public sealed record EvidencePacketDto(
@@ -131,7 +196,11 @@ public sealed record EvidenceTemplateDto(
 public sealed record EvidencePacketExportRequest(
     string? RequestedBy,
     string? Reason,
-    bool IncludeWarnings = true);
+    bool IncludeWarnings = true)
+{
+    public EvidenceLifecycleMetadataDto? Lifecycle { get; init; }
+    public EvidenceSubjectLinkageDto? Linkage { get; init; }
+}
 
 public sealed record EvidencePacketExportResponse(
     string SubjectKind,

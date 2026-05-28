@@ -131,10 +131,10 @@
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="Category" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
                             <ComboBox SelectedIndex="{Binding NewCategoryIndex}" Width="150">
-                                <ComboBoxItem Content="Research" />
+                                <ComboBoxItem Content="Strategy" />
                                 <ComboBoxItem Content="Trading" />
-                                <ComboBoxItem Content="Data Operations" />
-                                <ComboBoxItem Content="Governance" />
+                                <ComboBoxItem Content="Data" />
+                                <ComboBoxItem Content="Accounting" />
                                 <ComboBoxItem Content="Custom" />
                             </ComboBox>
                         </StackPanel>

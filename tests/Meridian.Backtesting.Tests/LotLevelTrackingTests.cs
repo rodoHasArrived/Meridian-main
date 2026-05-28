@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FsCheck.Xunit;
 using Meridian.Backtesting.Portfolio;
 
 namespace Meridian.Backtesting.Tests;
@@ -183,6 +184,47 @@ public sealed class LotLevelTrackingTests
         portfolio.GetClosedLots("NVDA")[0].EntryPrice.Should().Be(100m);
     }
 
+    [Property(MaxTest = 200)]
+    public void Scenario_TaxLotRelief_GeneratedLongLotReliefNeverExceedsAvailable(
+        int lotMethodSeed,
+        int lotCountSeed,
+        int quantitySeed,
+        int priceSeed,
+        int targetLotSeed)
+    {
+        var lotMethod = ToGeneratedLotSelectionMethod(lotMethodSeed);
+        var portfolio = MakePortfolio(cash: 10_000_000m, lotMethod: lotMethod);
+        var symbol = "GENLOT";
+        var lotCount = (int)BoundedLong(lotCountSeed, 1, 12);
+        var openedAt = DateTimeOffset.UnixEpoch;
+
+        for (var index = 0; index < lotCount; index++)
+        {
+            var quantity = BoundedLong(HashCode.Combine(quantitySeed, index), 1, 100);
+            var price = BoundedLong(HashCode.Combine(priceSeed, index), 100, 100_000) / 100m;
+            portfolio.ProcessFill(Buy(symbol, quantity, price, openedAt.AddDays(index)));
+        }
+
+        var originalLots = portfolio.GetOpenLots(symbol);
+        var originalQuantity = originalLots.Sum(static lot => lot.Quantity);
+        var reliefQuantity = BoundedLong(quantitySeed, 1, originalQuantity);
+        var targetLotId = lotMethod == LotSelectionMethod.SpecificId
+            ? originalLots[(int)BoundedLong(targetLotSeed, 0, originalLots.Count - 1)].LotId
+            : (Guid?)null;
+
+        portfolio.ProcessFill(Sell(symbol, reliefQuantity, 1_250m, openedAt.AddDays(lotCount + 1), targetLotId));
+
+        var remainingQuantity = portfolio.GetOpenLots(symbol).Sum(static lot => lot.Quantity);
+        var relievedQuantity = portfolio.GetClosedLots(symbol).Sum(static lot => lot.Quantity);
+
+        relievedQuantity.Should().Be(reliefQuantity);
+        relievedQuantity.Should().BeLessThanOrEqualTo(originalQuantity);
+        remainingQuantity.Should().Be(originalQuantity - reliefQuantity);
+        (relievedQuantity + remainingQuantity).Should().Be(originalQuantity);
+        portfolio.GetOpenLots(symbol).Should().OnlyContain(static lot => lot.Quantity > 0);
+        portfolio.GetClosedLots(symbol).Should().OnlyContain(static lot => lot.Quantity > 0);
+    }
+
     // ── ClosedLot record ──────────────────────────────────────────────────────
 
     [Fact]
@@ -290,5 +332,23 @@ public sealed class LotLevelTrackingTests
     public void DefaultLotSelectionMethod_IsFifo()
     {
         new FinancialAccountRules().LotSelection.Should().Be(LotSelectionMethod.Fifo);
+    }
+
+    private static LotSelectionMethod ToGeneratedLotSelectionMethod(int seed)
+    {
+        var index = (int)BoundedLong(seed, 0, 3);
+        return index switch
+        {
+            0 => LotSelectionMethod.Fifo,
+            1 => LotSelectionMethod.Lifo,
+            2 => LotSelectionMethod.Hifo,
+            _ => LotSelectionMethod.SpecificId,
+        };
+    }
+
+    private static long BoundedLong(int seed, long min, long max)
+    {
+        var range = (ulong)(max - min + 1);
+        return min + (long)((uint)seed % range);
     }
 }

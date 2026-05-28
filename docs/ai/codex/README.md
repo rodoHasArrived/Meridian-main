@@ -9,6 +9,9 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | Surface | Purpose |
 | --- | --- |
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
+| [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
+| [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
+| [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
 | [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for concurrency, validation, docs sync, and response shape |
@@ -16,6 +19,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | [`.codex/AGENTS.md`](../../../.codex/AGENTS.md) | Codex-specific desktop workstation implementation rules |
 | [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
 | [`.codex/checklists/`](../../../.codex/checklists) | Modularity, MVVM, resource, definition-of-done, and safe-refactor checklists |
+| [`tools/codex/`](../../../tools/codex) | Codex-focused PowerShell quality scans, desktop workspace generators, resource reviews, and refactor-plan helpers |
 
 ## Current Codex Skills
 
@@ -24,6 +28,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 | `meridian-archive-organizer` | Archive stale code/docs and keep the repository structure tidy |
 | `meridian-blueprint` | Create implementation-ready Meridian technical blueprints |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup` | Clean up code and docs without behavior changes |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
@@ -74,6 +79,11 @@ route by task phase:
 | Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
 | Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
 
+For speed, start with [`quickstart.md`](quickstart.md) when the task shape is unclear, then use
+[`route-cards.md`](route-cards.md) after generated navigation identifies the subsystem. Keep broad
+command discovery in `docs/developer/build-test-run.md`, `docs/HELP.md`, and route-specific docs
+instead of copying long command catalogs into assistant shims.
+
 ## Required Gates For Codex AI/Tooling Changes
 
 Run or account for these gates when Codex skill, catalog, prompt, docs automation, or AI workflow
@@ -118,9 +128,17 @@ Maintenance/reporting:
 - `make ai-docs-archive`
 - `make ai-docs-archive-execute`
 
+Local helper surfaces:
+
+- `scripts/ai/` backs the make-based AI setup, cleanup, routing, and maintenance lanes.
+- `tools/codex/` holds Codex-focused PowerShell scanners and generators used for desktop quality
+  reports and reviewable implementation planning.
+
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
+- Keep root `AGENTS.md` compact. It should route to canonical docs, not duplicate command catalogs,
+  repo maps, or long validation tables.
 - Before editing `src/**`, read the nearest registered source README and identify the module in
   `docs/source/data/source-modules.yml`.
 - For meaningful source behavior, workflow, validation, diagram, ownership, or TODO changes, update
@@ -161,3 +179,8 @@ python3 build/scripts/docs/scan-source-todos.py --summary
 python3 build/scripts/docs/mark-stale-docs.py --write --summary
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```
+
+Use `python3 build/scripts/docs/check-ai-inventory.py --summary` after adding, renaming, or
+removing Codex agent profiles, prompts, validation checklists, `.codex/AGENTS.md`, environment
+configs, skills, OpenAI metadata, or `tools/codex/` quality tools so the shared AI contract and
+this index stay aligned.

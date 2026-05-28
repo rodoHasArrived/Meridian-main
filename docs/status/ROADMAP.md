@@ -1,17 +1,18 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-27
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, DK1 provider trust now has a signed 2026-04-27 pilot replay/sample-set parity packet, valid packet-bound operator sign-off, and cockpit readiness projection; Waves 2-4 remain the core operator-readiness path. Browser and WPF operator UI development are both active: the browser workstation lives in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`, and the Windows desktop workstation lives in `src/Meridian.Wpf/`. New product behavior should land behind shared contracts, local/web API endpoints, or shared read models before either client composes it. Current post-May-9 deltas add Security Master/UFL reference-data projection support, browser provider-setup validation handoffs, browser Data backfill queue dense-table selection, browser Trading loading-state panel and Recent Fills detail support, browser Live Quotes trade-detail selection plus quick-trade readiness handoffs, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, Quant Lab plot view-model extraction, Quant Notebook cell/data-fetch helpers, crash-safe shared UI persistence, WPF Data shell feature-module support, Overview Today panel support, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state at `/strategy/covered-call`, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, view-model-owned browser workflow polish for hash-aware command routing, query-string route focus for subject/symbol handoffs, Portfolio brokerage-sync next actions, Watchlist no-quote/empty-state copy, Overview status/refresh presentation, Reporting report-pack actions and endpoint-link safety, Security Master lot-detail/conflict refresh state, UTC Trading readiness labels, accessible disabled-reason support, session/role-aware API error summaries, web-workstation installer config repair, fail-closed brokerage order-placement gating, ledger/promotion endpoint authorization checks, execution metadata sanitization, expanded factor-based fixed-income accounting coverage for MBS/ABS/loan instruments, Strategy Engine definitions/validate-run support, additive workstation continuity payload guards, provider capability matrix ownership, and structured roadmap/source documentation controls; they are support evidence, not wave exits.
 **Repository Snapshot (2026-05-21 current repo):** solution/build/test project files: 40 | `src/` project files: 27 | test projects: 9 | workflow files: 10
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance in one shared-contract-first operator workflow across browser and desktop UI surfaces without letting the product split into parallel subsystems.
 
-The active roadmap therefore centers on four outcomes:
+The active roadmap therefore centers on five outcomes:
 
 - prove operator trust with evidence-backed provider, checkpoint, and replay validation
-- harden the paper-trading cockpit through the active web workstation dashboard
-- make shared run / portfolio / ledger continuity the default integration path across `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting`
-- productize governance and fund-operations on top of the delivered Security Master baseline
+- close Wave 2 cockpit reliability first, with desktop acceptance tracked through `docs/plans/desktop-ui-workflow-acceptance-matrix.md`
+- close Wave 3 continuity as one run -> portfolio -> ledger -> reconciliation workflow across high-traffic operator pages
+- close Wave 4 governance and close/report lifecycle through durable casework, sign-off, and reporting controls
+- keep browser and desktop parity locked to shared contracts, shared endpoints, and shared read-model behavior
 
 ## Commercial Positioning
 
@@ -41,7 +42,7 @@ Use this document with:
 
 - [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) - consolidated current direction, status, and plan-file roles
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) - current capability status
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) - normalized non-assembly backlog
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) - normalized non-assembly backlog
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) - completed improvement history
 - [`production-status.md`](production-status.md) - current readiness posture and provider-confidence gates
 - [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) - prioritized opportunity framing
@@ -54,6 +55,7 @@ Use this document with:
 - [`../plans/brokerage-portfolio-sync-blueprint.md`](../plans/brokerage-portfolio-sync-blueprint.md) - external brokerage and custodian account-sync design
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) - current short-horizon execution plan
 - [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - concrete owner-based workstreams, dependencies, and exit criteria for the active Waves 2-4 path
+- [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) - desktop/WPF acceptance filter for W2 cockpit, W3 continuity, and W4 governance workflow claims
 - [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md) - browser workstation foundation and desktop/browser coexistence history
 
 ---
@@ -141,14 +143,32 @@ portfolio/ledger review, reconciliation, and governed report pack, then writes
 `artifacts/pilot-acceptance/latest/pilot-readiness.md`. The `golden-path-validation.yml`
 workflow runs that harness, validates the pilot dashboard renderer, generates the markdown/JSON
 dashboard under `artifacts/pilot-acceptance/latest/`, and uploads `pilot-acceptance-evidence`.
-This is W2-W4 support evidence and a stronger acceleration mechanism; W2, W3, and W4 remain
-`In Progress` until operator/browser acceptance and governance sign-off criteria are met.
-Every W2/W3/W4 readiness claim must now be stage-gated: either it turns one of the
+This is W2-W4 support evidence and a stronger acceleration mechanism; W2 and W3 are now canonical
+`Done` in `PROGRAM_STATE.md`, while W4 remains `In Progress` until close/report governance sign-off
+criteria are met. Every W2/W3/W4 readiness claim must now be stage-gated: either it turns one of the
 `pilot-readiness.*` stage gates green, or the stage gate records the unresolved blocker in its
 `blockers` list. W2 claims map to `TrustedData`, `PaperPromotion`, and `PaperSession`; W3 claims map
 to `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and
 `Reconciliation`; W4 claims map to `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and
 `GovernedReportPack`.
+
+2026-05-27 desktop workflow follow-up: desktop/WPF claims now have a dedicated acceptance filter in
+[`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md).
+Use it before treating retained-WPF changes as Wave 2, Wave 3, or Wave 4 progress. The matrix maps
+Lane A W2 cockpit reliability, Lane B W3 run -> portfolio -> ledger continuity, and Lane C W4
+reconciliation/governance close flow to required operator scenarios, shared endpoint/read-model
+checks, focused WPF tests, browser parity checks, release blockers, and milestone evidence; support
+evidence remains separate from exit claims until the matching happy path, blocker path, and recovery
+path evidence is present.
+The same 2026-05-27 desktop pass added W4 support evidence in Fund Ledger: selected reconciliation
+breaks now show lifecycle and required sign-off posture from shared queue metadata in the retained
+WPF detail panel. Treat this as blocker-path support evidence, not durable close/casework
+acceptance, until operations-continuity and browser-parity gates are green.
+It also added W3 support evidence in Run Cash Flow: the retained WPF cash-flow drill-in now consumes
+`StrategyRunContinuityService` and shows shared portfolio, ledger, cash-flow, reconciliation, and
+warning posture for the selected run. Treat this as blocker-path support evidence, not Milestone 2
+completion, until the full run -> portfolio -> ledger -> reconciliation workflow and browser parity
+are proven.
 
 ---
 
@@ -160,8 +180,8 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | Wave | Owner | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners | Status | Target Date | Evidence Link |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
-| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
+| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
 | W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
 | W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
@@ -199,7 +219,7 @@ The shared-run support evidence now also includes `RunCashFlowPage` empty-state 
 
 The repo delta on 2026-04-28 is release-evidence hardening rather than a wave-exit change. `.github/workflows/refresh-screenshots.yml` now supports scheduled, push, and manual WPF screenshot capture with selectable catalog/manual workflow groups, least-privilege default permissions, per-workflow diagnostic artifacts, and a single downstream commit job so PNG updates are merged once after the matrix completes. The generated documentation dashboard also refreshed to an 89/100 health score and the generated coverage report shows 88.3% documented items; endpoint and configuration documentation gaps remain cleanup work, not operator-readiness blockers.
 
-The DK1 evidence posture also sharpened after the prior roadmap snapshot. [`provider-validation-matrix.md`](provider-validation-matrix.md), [`dk1-pilot-parity-runbook.md`](dk1-pilot-parity-runbook.md), and [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md) now point to a `pilotReplaySampleSet` contract emitted by `scripts/dev/run-wave1-provider-validation.ps1`; the current repo also wires that validation run into `scripts/dev/generate-dk1-pilot-parity-packet.ps1` so the automation emits `dk1-pilot-parity-packet.json` and `.md` beside the Wave 1 summary. The current 2026-04-27 evidence set is present under `artifacts/provider-validation/_automation/2026-04-27/`: the parity packet is `ready-for-operator-review`, all four pilot sample rows are ready, all four evidence documents are validated, the trust-rationale and baseline-threshold contracts are validated, and the packet-bound sign-off file is signed by the Data Operations, Provider Reliability, and Trading owners with `operatorSignoff.validForDk1Exit=true`. Future DK1 reviews still need fresh date-stamped packets and matching packet-bound sign-off files; copied or stale sign-off files remain invalid. Shared interop readiness is **Ready for cadence monitoring** after the baseline `artifacts/contract-review/2026-04-27/contract-review-packet.*` packet and Shared Platform Interop owner approval locked the weekly Wednesday review cadence. The cockpit projects that DK1 packet through `Dk1TrustGateReadinessService`, `TradingTrustGateReadinessDto`, structured `OperatorSignoff`, `SampleReviews`, `EvidenceDocuments`, `TrustRationaleContract`, `BaselineThresholdContract`, and a `ProviderTrustGate` work item if a future packet lacks valid sign-off, so the readiness lane no longer has to infer DK1 state from documents alone. The promotion handoff lane has started in a narrow cockpit audit-feedback slice, the export DK2 lane is **Early In Progress** through governed report-pack schema/version checks, and the reconciliation/governance DK2 lane is now **Early In Progress** through a file-backed reconciliation break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and `/api/workstation/reconciliation/calibration-summary` profile rollups for Ready/ReviewRequired/Blocked calibration posture. Durable generalized governance casework, operator-approved tolerance calibration, and Wave 2 cockpit handoff acceptance still remain open.
+The DK1 evidence posture also sharpened after the prior roadmap snapshot. [`provider-validation-matrix.md`](provider-validation-matrix.md), [`dk1-pilot-parity-runbook.md`](evidence/dk1-pilot-parity-runbook.md), and [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md) now point to a `pilotReplaySampleSet` contract emitted by `scripts/dev/run-wave1-provider-validation.ps1`; the current repo also wires that validation run into `scripts/dev/generate-dk1-pilot-parity-packet.ps1` so the automation emits `dk1-pilot-parity-packet.json` and `.md` beside the Wave 1 summary. The current 2026-04-27 evidence set is present under `artifacts/provider-validation/_automation/2026-04-27/`: the parity packet is `ready-for-operator-review`, all four pilot sample rows are ready, all four evidence documents are validated, the trust-rationale and baseline-threshold contracts are validated, and the packet-bound sign-off file is signed by the Data Operations, Provider Reliability, and Trading owners with `operatorSignoff.validForDk1Exit=true`. Future DK1 reviews still need fresh date-stamped packets and matching packet-bound sign-off files; copied or stale sign-off files remain invalid. Shared interop readiness is **Ready for cadence monitoring** after the baseline `artifacts/contract-review/2026-04-27/contract-review-packet.*` packet and Shared Platform Interop owner approval locked the weekly Wednesday review cadence. The cockpit projects that DK1 packet through `Dk1TrustGateReadinessService`, `TradingTrustGateReadinessDto`, structured `OperatorSignoff`, `SampleReviews`, `EvidenceDocuments`, `TrustRationaleContract`, `BaselineThresholdContract`, and a `ProviderTrustGate` work item if a future packet lacks valid sign-off, so the readiness lane no longer has to infer DK1 state from documents alone. The promotion handoff lane has started in a narrow cockpit audit-feedback slice, the export DK2 lane is **Early In Progress** through governed report-pack schema/version checks, and the reconciliation/governance DK2 lane is now **Early In Progress** through a file-backed reconciliation break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and `/api/workstation/reconciliation/calibration-summary` profile rollups for Ready/ReviewRequired/Blocked calibration posture. Durable generalized governance casework, operator-approved tolerance calibration, and Wave 2 cockpit handoff acceptance still remain open.
 
 ---
 
@@ -210,7 +230,7 @@ Wave-by-wave status labels are tracked in the canonical table in [`PROGRAM_STATE
 For implementation detail and evidence, use:
 
 - [`production-status.md`](production-status.md) for readiness posture and provider evidence
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) for active execution tracks
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) for active execution tracks
 - [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md) for the shortest stakeholder summary
 
 ---
@@ -275,7 +295,7 @@ The product promise is continuity: one operator can move from data trust to rese
 
 ## Recommended Next Waves
 
-Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage, route/deep-link behavior, fixture/demo-mode cues, and architecture simplification reinforcing the same read-model and orchestration seams rather than becoming a parallel delivery program. Use WPF validation for active desktop workflows, desktop compatibility, and shared-contract regression coverage.
+Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage, route/deep-link behavior, fixture/demo-mode cues, and architecture simplification reinforcing the same read-model and orchestration seams rather than becoming a parallel delivery program. Use WPF validation for active desktop workflows and shared-contract coverage.
 
 ### Wave 1: Closed provider confidence and checkpoint evidence gate
 
@@ -546,7 +566,7 @@ Until then, Meridian is best described as feature-rich, structurally strong, and
 
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md)
 - [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md)
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md)
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md)
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md)
 - [`EVALUATIONS_AND_AUDITS.md`](EVALUATIONS_AND_AUDITS.md)
 - [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md)

@@ -76,6 +76,7 @@ desktop.ini
 
 *.nupkg
 packages/
+D:/packages/nuget/
 !.nuget/packages
 
 # ============================================
@@ -237,6 +238,7 @@ docs/docfx/api/*.yml
 node_modules/
 /package-lock.json
 /src/Meridian.Ui/dashboard/node_modules/
+/src/Meridian.Ui/dashboard/package-lock.json
 /src/Meridian.Ui/dashboard/dist/
 /src/Meridian.Ui/dashboard/coverage/
 /artifacts/publish/
@@ -280,3 +282,5 @@ __pycache__/
 /src/Meridian.Adapters.SQLite/**/*.sqlite3-*
 /src/Meridian.Adapters.SQLite/**/*.db
 /src/Meridian.Adapters.SQLite/**/*.db-*
+/.nuget
+/.nuget

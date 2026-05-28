@@ -159,7 +159,8 @@ public static class EvidenceEndpoints
         .WithName("ExportWorkstationEvidenceManifest")
         .Produces<EvidencePacketExportResponse>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/templates", (HttpContext context) =>
         {
@@ -169,8 +170,32 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidenceTemplates")
         .Produces<IReadOnlyList<EvidenceTemplateDto>>(200);
 
+        group.MapPost("/vault/search", async (EvidenceVaultLookupRequestDto request, HttpContext context) =>
+        {
+            if (!HasLookupCriteria(request))
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-lookup",
+                    "Evidence vault search requires at least one lookup field."));
+            }
+
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var result = await store.FindByLinkageAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("SearchWorkstationEvidenceVault")
+        .Produces<IReadOnlyList<EvidenceVaultIdentityDto>>(200)
+        .Produces<EvidenceEndpointErrorDto>(400);
+
         return app;
     }
+
+    private static bool HasLookupCriteria(EvidenceVaultLookupRequestDto request)
+        => !string.IsNullOrWhiteSpace(request.EvidenceSubject)
+           || !string.IsNullOrWhiteSpace(request.RunId)
+           || !string.IsNullOrWhiteSpace(request.PeriodId)
+           || !string.IsNullOrWhiteSpace(request.ReportPackId)
+           || !string.IsNullOrWhiteSpace(request.ReconciliationCaseId);
 
     private static async Task<IResult> ResolvePacketAsync(
         string subjectKind,

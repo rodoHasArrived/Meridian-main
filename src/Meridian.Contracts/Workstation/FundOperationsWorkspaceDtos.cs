@@ -134,7 +134,8 @@ public sealed record FundOperationsWorkspaceDto(
     CashFinancingSummary CashFinancing,
     ReconciliationSummary Reconciliation,
     FundNavAttributionSummaryDto Nav,
-    FundReportingSummaryDto Reporting);
+    FundReportingSummaryDto Reporting,
+    GovernanceLifecycleProjectionDto? Governance = null);
 
 /// <summary>
 /// Request to build a preview of a governance report pack for one fund profile.
@@ -205,8 +206,15 @@ public sealed record FundReportPackProvenanceDto(
     int OpenReconciliationBreakCount,
     int SecurityResolvedCount,
     int SecurityMissingCount,
+    IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers,
     string SourceSnapshotHash,
     int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+
+public sealed record FundReportPackLineagePointerDto(
+    string ScopeType,
+    string ScopeKey,
+    string EvidenceType,
+    string EvidenceId);
 
 /// <summary>
 /// Structured readiness issue captured when a governed report pack is generated.
@@ -288,3 +296,68 @@ public sealed record FundReportPackHistoryItemDto(
 
     public int LifecycleEventCount { get; init; }
 }
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportPackWorkflowStateDto>))]
+public enum ReportPackWorkflowStateDto
+{
+    Draft = 0,
+    Validated = 1,
+    PendingApproval = 2,
+    Approved = 3,
+    Published = 4,
+    Restated = 5,
+    Archived = 6
+}
+
+public sealed record VersionedReportTemplateIdDto(string Name, int Version);
+public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
+public sealed record ReportTemplateDefinitionDto(VersionedReportTemplateIdDto TemplateId, string DisplayName, IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters);
+public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters);
+public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
+
+public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
+public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+public sealed record ReportPackLineProvenanceDto(
+    string LineKey,
+    string SourceKind,
+    string SourceId,
+    string EvidenceId,
+    string? RunId = null,
+    string? LedgerEntryId = null,
+    string? ReconciliationCaseId = null);
+public sealed record ReportPackPublicationManifestDto(
+    string ManifestId,
+    string RetainedManifestPath,
+    string EvidenceHash,
+    string SignedOffBy,
+    DateTimeOffset SignedOffAt,
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+public sealed record ReportPackPublishRequestDto(
+    string SignedOffBy,
+    string EvidenceHash,
+    string ManifestId,
+    string RetainedManifestPath,
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
+    string? Note = null);
+public sealed record ReportPackRestatementMetadataDto(
+    string ReasonCode,
+    string Approver,
+    Guid PriorVersionReportId,
+    IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+public sealed record ReportPackWorkflowRecordDto(
+    Guid ReportId,
+    string FundProfileId,
+    string FundAccountId,
+    string Period,
+    VersionedReportTemplateIdDto TemplateId,
+    ReportPackWorkflowStateDto State,
+    int Version,
+    DateTimeOffset CreatedAt,
+    string CreatedBy,
+    DateTimeOffset UpdatedAt,
+    IReadOnlyList<ReportPackAuditEventDto> AuditTrail,
+    ReportPackRestatementMetadataDto? Restatement,
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
+    ReportPackPublicationManifestDto? Publication = null);

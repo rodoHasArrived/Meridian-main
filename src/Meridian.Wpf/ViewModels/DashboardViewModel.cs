@@ -175,7 +175,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private string _currentThroughputText = "--";
     public string CurrentThroughputText { get => _currentThroughputText; private set => SetProperty(ref _currentThroughputText, value); }
 
-    private string _dataHealthText = "--";
+    private string _dataHealthText = "Awaiting live status";
     public string DataHealthText { get => _dataHealthText; private set => SetProperty(ref _dataHealthText, value); }
 
     private Brush _dataHealthForeground;
@@ -319,7 +319,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     public IRelayCommand QuickAddSymbolCommand { get; }
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
-    public string PageTitle => "Research Operations";
+    public string PageTitle => "Strategy Operations";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -701,6 +701,11 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         else
         {
             DroppedRateText = "0.00%";
+            DataHealthText = "100.0%";
+            DataQualityText = "100.0%";
+            DataHealthForeground = _successBrush;
+            DataHealthIconGlyph = _iconSuccess;
+            DataHealthIconForeground = _successBrush;
         }
 
         IntegrityRateText = $"{status.Integrity} gaps";
@@ -752,8 +757,44 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
         LastUpdateText = $"Last update: {DateTime.Now:HH:mm:ss}";
         LastDataUpdateText = $"Last update: {DateTime.Now:HH:mm:ss}";
+
+        UpdateOperationalMetricsFromLiveStatus(status);
+        UpdatePortfolioServiceStatuses(status);
+
     }
 
+
+    private void UpdateOperationalMetricsFromLiveStatus(SimpleStatus status)
+    {
+        if (OperationsMetrics.Count < 8)
+        {
+            return;
+        }
+
+        OperationsMetrics[0].Value = PublishedCount;
+        OperationsMetrics[0].Detail = $"Provider: {SelectedDataSourceText}";
+        OperationsMetrics[1].Value = DroppedCount;
+        OperationsMetrics[1].Detail = $"Drop rate {DroppedRateText}";
+        OperationsMetrics[2].Value = IntegrityCount;
+        OperationsMetrics[2].Detail = IntegrityRateText;
+        OperationsMetrics[3].Value = DateTime.Now.ToString("HH:mm:ss");
+        OperationsMetrics[3].Detail = LastUpdateText.Replace("Last update: ", string.Empty, StringComparison.Ordinal);
+    }
+
+    private void UpdatePortfolioServiceStatuses(SimpleStatus status)
+    {
+        var connected = status.Provider?.IsConnected == true;
+        var state = connected ? "connected" : "disconnected";
+        var stateBrush = connected ? _successBrush : _errorBrush;
+        for (var i = 0; i < PortfolioDataServiceStatuses.Count; i++)
+        {
+            if (PortfolioDataServiceStatuses[i].ServiceName.Contains("Pricing", StringComparison.OrdinalIgnoreCase))
+            {
+                PortfolioDataServiceStatuses[i].State = state;
+                PortfolioDataServiceStatuses[i].StatusBrush = stateBrush;
+            }
+        }
+    }
     private void UpdateStaleIndicator(bool isStale)
     {
         if (_statusService.SecondsSinceLastUpdate is { } seconds)
@@ -1025,9 +1066,9 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         // Refresh Status command
         var refreshCommand = RefreshStatusCommand;
         commands.Add(new CommandEntry(
-            "Refresh Research Operations",
+            "Refresh Strategy Operations",
             "Refresh holdings, data-quality, and service status",
-            "Research Operations",
+            "Strategy Operations",
             refreshCommand,
             "F5"));
 
@@ -1038,7 +1079,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
             commands.Add(new CommandEntry(
                 "Start Data Collection",
                 "Start provider collection for holdings and quality checks",
-                "Research Operations",
+                "Strategy Operations",
                 startCommand));
         }
         else
@@ -1047,7 +1088,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
             commands.Add(new CommandEntry(
                 "Stop Data Collection",
                 "Stop provider collection",
-                "Research Operations",
+                "Strategy Operations",
                 stopCommand));
         }
 
@@ -1057,7 +1098,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Provider Health",
             "Open provider coverage and health checks",
-            "Research Operations",
+            "Strategy Operations",
             healthCommand));
 
         // View Data Quality command
@@ -1066,7 +1107,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Data Quality",
             "Open data-quality worklist",
-            "Research Operations",
+            "Strategy Operations",
             qualityCommand));
 
         // View Activity Log command
@@ -1074,7 +1115,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Activity Log",
             "View recent activity and events",
-            "Research Operations",
+            "Strategy Operations",
             logCommand));
 
         // Run Backfill command
@@ -1082,7 +1123,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "Run Backfill",
             "Queue backfill for missing holdings data",
-            "Research Operations",
+            "Strategy Operations",
             backfillCommand));
 
         return commands.AsReadOnly();

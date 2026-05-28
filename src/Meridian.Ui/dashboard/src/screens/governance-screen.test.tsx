@@ -28,6 +28,8 @@ vi.mock("@/lib/api", async () => {
     patchOperatorOverrides: vi.fn(),
     getSecurityConflicts: vi.fn().mockResolvedValue([]),
     getReconciliationBreakQueue: vi.fn().mockResolvedValue([]),
+    getReconciliationStatementRuns: vi.fn().mockResolvedValue([]),
+    getReconciliationStatementRun: vi.fn(),
     getReconciliationCalibrationSummary: vi.fn().mockResolvedValue({
       asOf: "2026-01-01T00:00:00Z",
       status: "Ready",
@@ -513,13 +515,48 @@ describe("GovernanceScreen", () => {
     expect(screen.getByRole("button", { name: "Refresh calibration summary" })).toBeEnabled();
   });
 
+  it("renders Accounting statement runs with endpoint counts and detail tabs", async () => {
+    vi.mocked(api.getReconciliationStatementRuns).mockResolvedValueOnce([
+      {
+        runId: "run-42",
+        importId: "import-42",
+        startedAtUtc: "2026-05-01T00:00:00Z",
+        completedAtUtc: "2026-05-01T00:03:00Z",
+        positionMatches: 8,
+        cashMatches: 3,
+        transactionMatches: 13,
+        openExceptionCount: 2,
+        brokerCustodian: "Northern Trust",
+        account: "Fund A - Prime",
+        period: "2026-04",
+        status: "ReviewRequired",
+        validationIssueCount: 4,
+        breakCount: 2,
+        caseCount: 1,
+        importedAtUtc: "2026-05-01T00:04:00Z"
+      }
+    ]);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    const table = await screen.findByRole("table", { name: "Accounting statement runs" });
+    expect(table).toHaveTextContent("Northern Trust");
+    expect(table).toHaveTextContent("Fund A - Prime");
+    expect(table).toHaveTextContent("2026-04");
+    expect(table).toHaveTextContent("ReviewRequired");
+    expect(table).toHaveTextContent("24");
+    expect(screen.getByRole("tab", { name: /Overview tab for statement run run-42/ })).toBeEnabled();
+    expect(screen.getByRole("tab", { name: /Breaks & Cases tab for statement run run-42/ })).toHaveTextContent("2");
+    expect(screen.getByText(/Matching, tolerance, validation, and case-state decisions remain in the shared reconciliation services/)).toBeInTheDocument();
+  });
+
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting");
+    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting/ledger");
     expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
@@ -1194,7 +1231,12 @@ describe("GovernanceScreen", () => {
       status: "Resolved" as const,
       resolvedBy: "ops.gov",
       resolvedAt: "2026-01-01T00:10:00Z",
-      resolutionNote: "Matched ledger adjustment."
+      resolutionNote: "Matched ledger adjustment.",
+      exceptionRoute: "fund-ops-review",
+      toleranceProfileId: "cash-variance-ops",
+      toleranceBand: 250,
+      requiredSignoffRole: "Fund operations lead",
+      signoffStatus: "Pending Signoff"
     };
     const dismissedBreak = {
       ...data.breakQueue[0],
@@ -1219,6 +1261,11 @@ describe("GovernanceScreen", () => {
       .toHaveAttribute("title", "This break is already resolved.");
     expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
       .toHaveAttribute("title", "This break is already dismissed.");
+
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
+    const resolvedDetail = screen.getByRole("region", { name: "Reconciliation break detail for run-42:resolved" });
+    expect(resolvedDetail).toHaveTextContent("Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked.");
+    expect(resolvedDetail).toHaveTextContent("Matched ledger adjustment.");
 
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
 

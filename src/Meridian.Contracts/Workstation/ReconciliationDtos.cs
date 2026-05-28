@@ -129,7 +129,8 @@ public sealed record ReconciliationBreakDto(
     ReconciliationBreakSeverity Severity,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -262,7 +263,6 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationMatchDto> Matches,
     IReadOnlyList<ReconciliationBreakDto> Breaks,
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
-    IReadOnlyList<BankTransactionDto>? BankTransactions = null,
     /// <summary>
     /// Security Master classification keyed by ticker symbol, populated for every
     /// symbol resolved at reconciliation time from the shared workstation instrument layer.
@@ -282,19 +282,69 @@ public enum ReconciliationBreakQueueStatus : byte
     Open = 0,
     InReview = 1,
     Resolved = 2,
-    Dismissed = 3
+    Dismissed = 3,
+    SignedOff = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
-    Opened = 0,
-    Triaged = 1,
-    Calibrated = 2,
+    Open = 0,
+    InReview = 1,
+    AwaitingApproval = 2,
     Approved = 3,
-    Escalated = 4,
-    Closed = 5,
-    Superseded = 6
+    Posted = 4,
+    Reopened = 5,
+    Superseded = 6,
+    Investigating = 7,
+    AwaitingEvidence = 8,
+    Resolved = 9,
+    SignedOff = 10
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCasePriority>))]
+public enum ReconciliationCasePriority : byte
+{
+    Low = 0,
+    Normal = 1,
+    High = 2,
+    Critical = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseSlaState>))]
+public enum ReconciliationCaseSlaState : byte
+{
+    NotStarted = 0,
+    OnTrack = 1,
+    Warning = 2,
+    Breached = 3,
+    Paused = 4,
+    Stopped = 5
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseCommentVisibility>))]
+public enum ReconciliationCaseCommentVisibility : byte
+{
+    Internal = 0,
+    CloseEvidence = 1,
+    ExternalSummary = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseworkAction>))]
+public enum ReconciliationCaseworkAction : byte
+{
+    Assign = 0,
+    ChangePriority = 1,
+    TransitionStatus = 2,
+    AddComment = 3,
+    EditComment = 4,
+    DeleteComment = 5,
+    SetRootCause = 6,
+    SetResolution = 7,
+    LinkEvidence = 8,
+    SignOff = 9,
+    Reopen = 10,
+    Resolve = 11
 }
 
 /// <summary>
@@ -338,14 +388,143 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Opened,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Open,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
     string? UpstreamSyncCursor = null,
     DateTimeOffset? LastUpstreamSyncAt = null,
     IReadOnlyList<ReconciliationCaseSignoffRecord>? SignoffHistory = null,
-    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null);
+    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null,
+    string? Team = null,
+    string? Counterparty = null,
+    ReconciliationBreakScore? Score = null,
+    DateTimeOffset? SlaDueAt = null,
+    bool SlaBreached = false,
+    string? AssigneeId = null,
+    string? AssigneeDisplayName = null,
+    ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal,
+    string? SlaPolicyId = null,
+    DateTimeOffset? SlaWarningAt = null,
+    DateTimeOffset? SlaBreachedAt = null,
+    ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack,
+    string? AgeBand = null,
+    double BusinessAgeHours = 0,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? SignedOffBy = null,
+    DateTimeOffset? SignedOffAt = null,
+    string? SignOffNote = null,
+    string? ReopenedBy = null,
+    DateTimeOffset? ReopenedAt = null,
+    string? ReopenReason = null,
+    long Version = 0,
+    IReadOnlyList<ReconciliationCaseComment>? Comments = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    DateTimeOffset? LastActivityAt = null,
+    string? SourceType = null,
+    string? SourceSystem = null,
+    string? SourceReference = null,
+    string? SourceImportId = null,
+    string? SourceBreakId = null,
+    string? SourceFingerprint = null);
+
+
+public sealed record ReconciliationCaseComment(
+    string CommentId,
+    string? ParentCommentId,
+    string AuthorId,
+    string AuthorDisplayName,
+    ReconciliationCaseCommentVisibility Visibility,
+    string Body,
+    IReadOnlyList<string> EvidenceLinks,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? EditedAt = null,
+    DateTimeOffset? DeletedAt = null,
+    string? DeletedBy = null);
+
+public sealed record ReconciliationSlaPolicy(
+    string PolicyId,
+    string? FundId,
+    string? AccountId,
+    string? BreakType,
+    ReconciliationBreakSeverity Severity,
+    ReconciliationCasePriority Priority,
+    string TimeZoneId,
+    TimeOnly BusinessDayStart,
+    TimeOnly BusinessDayEnd,
+    int DueBusinessHours,
+    int WarningBusinessHours,
+    bool StopOnResolved = true,
+    bool StopOnSignedOff = false,
+    bool PauseAwaitingEvidence = true);
+
+public sealed record ReconciliationSlaComputationResult(
+    string PolicyId,
+    DateTimeOffset DueAt,
+    DateTimeOffset WarningAt,
+    DateTimeOffset? BreachedAt,
+    ReconciliationCaseSlaState State,
+    string AgeBand,
+    double BusinessAgeHours);
+
+public sealed record ReconciliationCaseworkCommand(
+    string BreakId,
+    ReconciliationCaseworkAction Action,
+    string Actor,
+    string CommandId,
+    string CorrelationId,
+    string Source,
+    long ExpectedVersion,
+    string? Reason = null,
+    string? Assignee = null,
+    ReconciliationCasePriority? Priority = null,
+    ReconciliationCaseLifecycleState? Status = null,
+    string? Note = null,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? CommentId = null,
+    string? ParentCommentId = null,
+    ReconciliationCaseCommentVisibility Visibility = ReconciliationCaseCommentVisibility.Internal,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    bool Privileged = false);
+
+public sealed record ReconciliationBulkCaseworkRequest(
+    IReadOnlyList<string> BreakIds,
+    ReconciliationCaseworkAction Action,
+    string Actor,
+    string CommandId,
+    string CorrelationId,
+    string Source,
+    string IdempotencyKey,
+    bool DryRun,
+    bool AllowPartialSuccess,
+    string? Reason = null,
+    string? Assignee = null,
+    ReconciliationCasePriority? Priority = null,
+    ReconciliationCaseLifecycleState? Status = null,
+    string? Note = null,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    int MaxCaseCount = 100);
+
+public sealed record ReconciliationBulkCaseworkCaseResult(
+    string BreakId,
+    bool Succeeded,
+    bool WouldSucceed,
+    string? Error,
+    ReconciliationBreakQueueItem? Item);
+
+public sealed record ReconciliationBulkCaseworkResult(
+    string BulkActionId,
+    string IdempotencyKey,
+    bool DryRun,
+    int RequestedCount,
+    int SucceededCount,
+    int FailedCount,
+    IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,
@@ -356,13 +535,48 @@ public sealed record ReconciliationCaseSignoffRecord(
     string? InvalidatedBySyncCursor = null,
     DateTimeOffset? InvalidatedAt = null);
 
+
+
+public sealed record ReconciliationBreakScore(
+    int SeverityScore,
+    int PriorityScore,
+    decimal MaterialityComponent,
+    double AgeHours,
+    int CounterpartyCriticalityComponent,
+    int RecurringPatternComponent,
+    bool IsHighPriority,
+    DateTimeOffset? SlaDueAt = null,
+    DateTimeOffset? SlaBreachAt = null);
+
 public sealed record ReconciliationCaseStateTransition(
     string TransitionId,
     ReconciliationCaseLifecycleState From,
     ReconciliationCaseLifecycleState To,
     string Actor,
     string? Rationale,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? PreviousHash = null,
+    string? EntryHash = null);
+
+public enum ReconciliationCaseTransitionAction : byte
+{
+    StartReview = 0,
+    RequestApproval = 1,
+    Approve = 2,
+    Post = 3,
+    Reopen = 4,
+    Supersede = 5
+}
+
+public sealed record ReconciliationCaseTransitionCommand(
+    string BreakId,
+    ReconciliationCaseTransitionAction Action,
+    string Actor,
+    string Reason,
+    IReadOnlyList<string> EvidenceReferences,
+    string? Role = null,
+    string? SupersedingBreakId = null);
 
 /// <summary>
 /// Per-profile rollup for reconciliation tolerance calibration and exception routing.
@@ -407,7 +621,8 @@ public sealed record ReviewReconciliationBreakRequest(
     string BreakId,
     string AssignedTo,
     string ReviewedBy,
-    string? ReviewNote = null);
+    string? ReviewNote = null,
+    string? Team = null);
 
 /// <summary>
 /// Request to resolve or dismiss a break with audit metadata.
@@ -418,3 +633,73 @@ public sealed record ResolveReconciliationBreakRequest(
     string ResolvedBy,
     string ResolutionNote,
     string OperatorRationale);
+
+/// <summary>
+/// Canonical schema version metadata for reconciliation ingress/egress payloads.
+/// </summary>
+public sealed record ReconciliationSchemaVersion(
+    string ContractName,
+    int Major,
+    int Minor,
+    int Patch,
+    string ContentType = "application/vnd.meridian.reconciliation+json");
+
+/// <summary>
+/// Cross-workflow correlation metadata stamped on every reconciliation payload.
+/// </summary>
+public sealed record ReconciliationCorrelationContext(
+    string TraceId,
+    string SpanId,
+    string? ParentSpanId,
+    string WorkflowId,
+    string? JobId = null);
+
+/// <summary>
+/// Canonical envelope for inbound/outbound reconciliation payloads.
+/// </summary>
+public sealed record ReconciliationPayloadEnvelope<TPayload>(
+    string PayloadId,
+    ReconciliationSchemaVersion Schema,
+    ReconciliationCorrelationContext Correlation,
+    DateTimeOffset CreatedAt,
+    string Producer,
+    string Direction,
+    string? IdempotencyKey,
+    TPayload Payload);
+
+/// <summary>
+/// Queue orchestration controls and replay metadata for resilient reconciliation jobs.
+/// </summary>
+public sealed record ReconciliationJobControl(
+    string JobId,
+    string IdempotencyKey,
+    int Attempt,
+    int MaxAttempts,
+    bool DeadLettered,
+    string? DeadLetterReason,
+    DateTimeOffset EnqueuedAt,
+    DateTimeOffset? LastAttemptAt,
+    DateTimeOffset? NextAttemptAt,
+    string BackpressureBucket);
+
+/// <summary>
+/// Processing telemetry summary for SLA and throughput observability.
+/// </summary>
+public sealed record ReconciliationProcessingTelemetry(
+    double MatchRate,
+    double BreakRate,
+    int SlaMissCount,
+    double P50LatencyMs,
+    double P95LatencyMs,
+    double P99LatencyMs);
+
+/// <summary>
+/// Scoped rollout flags for phased reconciliation releases.
+/// </summary>
+public sealed record ReconciliationRolloutFlags(
+    bool Enabled,
+    IReadOnlyList<string> ClientIds,
+    IReadOnlyList<string> TeamIds,
+    IReadOnlyList<string> CounterpartyIds,
+    bool AllowReplay,
+    bool AllowBackfill);

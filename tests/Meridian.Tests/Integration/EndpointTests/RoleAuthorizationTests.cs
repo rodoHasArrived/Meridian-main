@@ -155,6 +155,46 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         RolePermissions.HasPermission(UserRole.ReadOnly, UserPermission.ManageUsers).Should().BeFalse();
     }
 
+    [Fact]
+    public void RolePermissions_GetCatalog_ReturnsBuiltInProfilesAndPermissionMetadata()
+    {
+        var catalog = RolePermissions.GetCatalog();
+
+        catalog.Roles.Should().Contain(role =>
+            role.Role == nameof(UserRole.Accounting) &&
+            role.IsBuiltIn &&
+            role.Permissions.Contains(nameof(UserPermission.ManageDirectLending)));
+        catalog.Permissions.Should().Contain(permission =>
+            permission.Name == nameof(UserPermission.ManageUsers) &&
+            permission.Group == "Administration");
+    }
+
+    [Fact]
+    public void UserProfileRegistry_MultiUser_CustomPermissionsOverrideBuiltInRolePermissions()
+    {
+        const string usersJson = """
+            [{"username":"ledger-admin","password":"pw","role":"Accounting","roleProfileName":"Ledger Admin","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
+            """;
+        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+
+        try
+        {
+            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+
+            var profile = registry.Authenticate("ledger-admin", "pw");
+
+            profile.Should().NotBeNull();
+            profile!.Role.Should().Be(UserRole.Accounting);
+            profile.RoleProfileName.Should().Be("Ledger Admin");
+            profile.Permissions.Should().HaveFlag(UserPermission.ModifyConfig);
+            profile.Permissions.Should().NotHaveFlag(UserPermission.ManageDirectLending);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
     // ── UserProfileRegistry tests ────────────────────────────────────────────
 
     [Fact]
@@ -347,4 +387,61 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             Environment.SetEnvironmentVariable("MDC_USERS", null);
         }
     }
+
+    [Fact]
+    public async Task AuthMe_WithCustomAdminPermissionOverride_DoesNotRegainBuiltInAdminPermissions()
+    {
+        const string usersJson = """[{"username":"limited-admin","password":"pw","role":"Admin","roleProfileName":"Limited Admin","permissions":["ViewMarketData"]}]""";
+        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        try
+        {
+            using var loginContent = new StringContent(
+                JsonSerializer.Serialize(new { Username = "limited-admin", Password = "pw" }),
+                Encoding.UTF8,
+                "application/json");
+
+            using var cookieClient = Fixture.CreateNoRedirectClient();
+            var loginResp = await cookieClient.PostAsync("/api/auth/login", loginContent);
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var loginBody = await loginResp.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
+            GetPermissionNames(loginBody).Should().BeEquivalentTo([nameof(UserPermission.ViewMarketData)]);
+
+            var sessionCookie = loginResp.Headers
+                .Where(h => h.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(h => h.Value)
+                .FirstOrDefault(v => v.Contains("mdc-session"));
+
+            sessionCookie.Should().NotBeNullOrWhiteSpace("a session cookie must be set after login");
+
+            using var meRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/me");
+            meRequest.Headers.Add("Cookie", sessionCookie);
+            var meResp = await cookieClient.SendAsync(meRequest);
+
+            meResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var meBody = await meResp.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
+            meBody.TryGetProperty("role", out var role).Should().BeTrue();
+            role.GetString().Should().Be(nameof(UserRole.Admin));
+            meBody.TryGetProperty("roleProfileName", out var roleProfileName).Should().BeTrue();
+            roleProfileName.GetString().Should().Be("Limited Admin");
+            var mePermissionNames = GetPermissionNames(meBody);
+            mePermissionNames.Should().BeEquivalentTo([nameof(UserPermission.ViewMarketData)]);
+            mePermissionNames.Should().NotContain(nameof(UserPermission.ManageCredentials));
+            mePermissionNames.Should().NotContain(nameof(UserPermission.ExecuteTrades));
+            mePermissionNames.Should().NotContain(nameof(UserPermission.ManageUsers));
+            mePermissionNames.Should().NotContain(nameof(UserPermission.AdminMaintenance));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    private static string[] GetPermissionNames(JsonElement? body)
+    {
+        body.Should().NotBeNull();
+        body!.Value.TryGetProperty("permissionNames", out var permissionNames).Should().BeTrue();
+        return permissionNames.EnumerateArray().Select(permission => permission.GetString()!).ToArray();
+    }
+
 }

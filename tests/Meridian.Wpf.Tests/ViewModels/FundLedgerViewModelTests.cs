@@ -21,6 +21,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 using AppSecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -183,12 +184,143 @@ public sealed class FundLedgerViewModelTests
                     profile.ExceptionRoute == "fund-ops-review" &&
                     profile.PendingSignoffCount == 1);
                 viewModel.ReconciliationDetailTitle.Should().Be("Reconciliation Strategy");
+                viewModel.ReconciliationSection.DetailTitle.Should().Be(viewModel.ReconciliationDetailTitle);
+                viewModel.ReconciliationSection.CalibrationStatusText.Should().Be(viewModel.ReconciliationCalibrationStatusText);
+                viewModel.ReconciliationDetailLifecycleText.Should().Contain("Start Review");
+                viewModel.ReconciliationDetailLifecycleText.Should().Contain("records ownership");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Pending Signoff");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Fund operations lead");
+                viewModel.ReconciliationSection.GovernanceSignifierState.Kind.Should().Be(WorkstationStateKind.Blocked);
+                viewModel.ReconciliationSection.GovernanceSignifierState.ActionPosture!.Label.Should().Be("Start Review");
+                viewModel.ReconciliationSection.GovernanceSignifierState.SignoffRequirement!.Role.Should().Be("Fund operations lead");
+                viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
+                    .Should()
+                    .Contain(link => link.Target.Contains("/api/workstation/reconciliation/break-queue/", StringComparison.Ordinal));
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
                 viewModel.CanResolveSelectedBreak.Should().BeFalse();
                 viewModel.ReconciliationNoteText = "Investigating ledger drift";
+                viewModel.ReconciliationSection.NoteText.Should().Be("Investigating ledger drift");
                 viewModel.CanResolveSelectedBreak.Should().BeTrue();
                 viewModel.OverviewStatusText.Should().Contain("unresolved security mapping");
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void ResolveSelectedBreakAsync_RefreshesQueueAndKeepsDecisionAuditVisible()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-fund-ops"));
+
+                var portfolioReadService = new PortfolioReadService();
+                var ledgerReadService = new LedgerReadService();
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient(
+                [
+                    BuildBreakQueueItem("run-fund-ops")
+                ],
+                [
+                    BuildStrategyDetail("run-fund-ops")
+                ]);
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    fundAccountService,
+                    fundAccountReadService,
+                    workspaceService,
+                    strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    fakeApiClient);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                await viewModel.LoadAsync();
+                await WaitForConditionAsync(() => viewModel.SupportsSelectedBreakActions);
+
+                viewModel.ReconciliationNoteText = "Reviewed custodian statement and matched ledger adjustment.";
+                await viewModel.StartReviewSelectedBreakAsync();
+                await WaitForConditionAsync(() =>
+                    viewModel.SelectedBreakQueueItem?.Status == ReconciliationBreakQueueStatus.InReview &&
+                    viewModel.ReconciliationDetailLifecycleText.Contains("active review", StringComparison.OrdinalIgnoreCase));
+
+                await viewModel.ResolveSelectedBreakAsync();
+                await WaitForConditionAsync(() =>
+                    viewModel.SelectedBreakQueueItem?.Status == ReconciliationBreakQueueStatus.Resolved &&
+                    viewModel.ReconciliationDetailLifecycleText.Contains("closed by", StringComparison.OrdinalIgnoreCase) &&
+                    viewModel.ReconciliationAuditRows.Any(row => row.Title == "Break closed"));
+
+                viewModel.IsAllBreakQueueFilterSelected.Should().BeTrue();
+                viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
+                    item.BreakId == "run-fund-ops:price-gap" &&
+                    item.Status == ReconciliationBreakQueueStatus.Resolved &&
+                    item.ResolutionNote == "Reviewed custodian statement and matched ledger adjustment.");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Decision captured");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("close approval blocked");
+                viewModel.ReconciliationAuditRows.Should().Contain(row =>
+                    row.Title == "Break closed" &&
+                    row.Description == "Reviewed custodian statement and matched ledger adjustment.");
+                viewModel.ReconciliationActionFeedbackText.Should().Be("Break resolved and audit note captured.");
             }
             finally
             {
@@ -482,6 +614,77 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("ReconciliationResetFiltersButton");
         xaml.Should().Contain("Command=\"{Binding ResetReconciliationFiltersCommand}\"");
         xaml.Should().Contain("ReconciliationRefreshQueueButton");
+        xaml.Should().Contain("ReconciliationDetailLifecycleText");
+        xaml.Should().Contain("ReconciliationDetailSignoffText");
+        xaml.Should().Contain("FundReconciliationGovernanceSignifier");
+        xaml.Should().Contain("ReconciliationSection.GovernanceSignifierState");
+        xaml.Should().Contain("FundReportPackReadinessSignifier");
+        xaml.Should().Contain("ReportPackReadinessState");
+    }
+
+    [Fact]
+    public void FundLedgerReconciliationSection_ShouldOwnQueueAndDetailCollectionsWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
+        var reconciliationSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Reconciliation.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<FundReconciliationBreakQueueRow> BreakQueueItems");
+        sectionSource.Should().Contain("public ObservableCollection<FundReconciliationCheckDetailRow> ExceptionRows");
+        sectionSource.Should().Contain("public IReadOnlyList<FundReconciliationBreakQueueRow> AllBreakQueueItems");
+        sectionSource.Should().Contain("public FundReconciliationQueueView SelectedQueueView");
+        sectionSource.Should().Contain("public FundReconciliationBreakQueueFilter SelectedBreakQueueFilter");
+        sectionSource.Should().Contain("public FundReconciliationBreakQueueRow? SelectedBreakQueueItem");
+        reconciliationSource.Should().Contain("public ObservableCollection<FundReconciliationBreakQueueRow> ReconciliationBreakQueueItems => ReconciliationSection.BreakQueueItems");
+        reconciliationSource.Should().Contain("get => (int)ReconciliationSection.SelectedQueueView");
+        reconciliationSource.Should().Contain("ReconciliationSection.SelectedBreakQueueFilter = filter");
+        reconciliationSource.Should().Contain("SynchronizeCollection(ReconciliationSection.BreakQueueItems");
+        reconciliationSource.Should().NotContain("_reconciliationBreakQueueItems");
+        reconciliationSource.Should().NotContain("_allReconciliationBreakQueueItems");
+        reconciliationSource.Should().NotContain("_selectedReconciliationQueueView");
+        reconciliationSource.Should().NotContain("_selectedReconciliationBreakQueueFilter");
+        reconciliationSource.Should().NotContain("_selectedBreakQueueItem");
+    }
+
+
+    [Fact]
+    public void FundLedgerPage_StatementReconciliationPanel_BindsListDetailAndSharedAffordances()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml"));
+
+        xaml.Should().Contain("StatementReconciliationWorkbench");
+        xaml.Should().Contain("StatementRuns");
+        xaml.Should().Contain("StatementValidationIssues");
+        xaml.Should().Contain("StatementUnresolvedBreaks");
+        xaml.Should().Contain("StatementCaseActions");
+        xaml.Should().Contain("SelectedStatementRun");
+        xaml.Should().Contain("SelectedStatementBreak");
+        xaml.Should().Contain("StatementDisabledReasonText");
+        xaml.Should().Contain("ReconciliationSection.StatementSignifierState");
+        xaml.Should().Contain("RefreshStatementReconciliationCommand");
+    }
+
+    [Fact]
+    public void FundLedgerStatementReconciliationSection_ShouldUseSharedEndpointReadModelsAndVmOwnedState()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.StatementReconciliation.cs"));
+        var serviceSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Services\StatementReconciliationWorkbenchService.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<StatementRunWorkbenchRow> StatementRuns");
+        sectionSource.Should().Contain("public ObservableCollection<StatementValidationIssueRow> StatementValidationIssues");
+        sectionSource.Should().Contain("public ObservableCollection<StatementUnresolvedBreakRow> StatementUnresolvedBreaks");
+        sectionSource.Should().Contain("public ObservableCollection<StatementCaseActionRow> StatementCaseActions");
+        sectionSource.Should().Contain("public StatementRunWorkbenchRow? SelectedStatementRun");
+        sectionSource.Should().Contain("public StatementUnresolvedBreakRow? SelectedStatementBreak");
+        sectionSource.Should().Contain("public string StatementDisabledReasonText");
+        viewModelSource.Should().Contain("RefreshStatementReconciliationCommand");
+        viewModelSource.Should().Contain("BuildCaseActionRows");
+        viewModelSource.Should().Contain("BuildStatementBreakSignifier");
+        serviceSource.Should().Contain("GetStatementRunsAsync");
+        serviceSource.Should().Contain("GetStatementExceptionsAsync");
+        serviceSource.Should().Contain("GetOpenStatementBreaksAsync");
+        serviceSource.Should().Contain("GetOpenReconciliationCasesAsync");
+        serviceSource.Should().Contain("GetReconciliationQueueStatusAsync");
     }
 
     [Fact]
@@ -600,6 +803,11 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackAssetSections.Should().NotBeEmpty();
                 viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
                 viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
+                viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+                viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
+                viewModel.ReportPackReadinessState.ActionPosture!.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Report-pack preview");
+                viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
             }
             finally
             {

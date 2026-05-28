@@ -5,6 +5,12 @@
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/current-direction-and-status.md](../plans/current-direction-and-status.md) for the consolidated planning interpretation and [../plans/README.md](../plans/README.md) for the detailed active blueprint set.
 
+## Status marker legend
+
+- `active`: hand-authored current-truth guidance.
+- `generated`: automation-owned output; regenerate instead of manual edits.
+- `historical`: archived snapshot; reference only.
+
 ## What Lives Here
 
 This folder mixes two kinds of documents:
@@ -16,49 +22,70 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 
 ## Hand-Authored Source Of Truth
 
-| Document | Description |
-| --- | --- |
-| [PROGRAM_STATE.md](PROGRAM_STATE.md) | Canonical wave status labels, ownership/escalation metadata (primary owner, backup owner, SLA, dependency owners), target dates, and evidence links reused by status docs |
-| [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) | Short stakeholder-facing snapshot that combines roadmap, opportunities, and target-state direction |
-| [ROADMAP.md](ROADMAP.md) | Primary wave-structured delivery roadmap |
-| [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md) | Prioritized repo-grounded opportunities that sit alongside the roadmap |
-| [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md) | Concise description of Meridian's intended finished product |
-| [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | Current-vs-target capability inventory across platform and product areas |
-| [provider-validation-matrix.md](provider-validation-matrix.md) | Evidence-backed provider readiness matrix used by readiness docs |
-| [provider-capability-matrix.md](provider-capability-matrix.md) | Canonical adapter capability/readiness matrix for provider follow-up ownership |
-| [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | Compatibility, deprecation, and migration policy for workstation/strategy/ledger contracts |
-| [production-status.md](production-status.md) | Current production and pilot-readiness caveats |
-| [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
-| [IMPROVEMENTS.md](IMPROVEMENTS.md) | Tracked implementation themes and recommended focus areas |
-| [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md) | Normalized broader implementation backlog |
-| [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
-| [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
+| Document | Status | Description |
+| --- | --- | --- |
+| [PROGRAM_STATE.md](PROGRAM_STATE.md) | `active` | Canonical wave status labels, ownership/escalation metadata (primary owner, backup owner, SLA, dependency owners), target dates, and evidence links reused by status docs |
+| [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) | `active` | Short stakeholder-facing snapshot that combines roadmap, opportunities, and target-state direction |
+| [ROADMAP.md](ROADMAP.md) | `active` | Primary wave-structured delivery roadmap |
+| [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md) | `active` | Prioritized repo-grounded opportunities that sit alongside the roadmap |
+| [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md) | `active` | Concise description of Meridian's intended finished product |
+| [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | `active` | Current-vs-target capability inventory across platform and product areas |
+| [provider-validation-matrix.md](provider-validation-matrix.md) | `active` | Evidence-backed provider readiness matrix used by readiness docs |
+| [provider-capability-matrix.md](provider-capability-matrix.md) | `active` | Canonical adapter capability/readiness matrix for provider follow-up ownership |
+| [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | `active` | Compatibility, deprecation, and migration policy for workstation/strategy/ledger contracts |
+| [production-status.md](production-status.md) | `active` | Current production and pilot-readiness caveats |
+| [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | `active` | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
+| [IMPROVEMENTS.md](IMPROVEMENTS.md) | `active` | Tracked implementation themes and recommended focus areas |
+| [FULL_IMPLEMENTATION_TODO.md](FULL_IMPLEMENTATION_TODO.md) | `active` | Normalized broader implementation backlog |
+| [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | `active` | Consolidated index of evaluations and audits |
+| [evidence/](evidence/) | `active` | DK1/Wave evidence runbooks, thresholds, rationale maps, and evidence packet/templates |
+
+Backlog split: [`IMPROVEMENTS.md`](IMPROVEMENTS.md) tracks prioritized themes and focus areas, while [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) tracks the normalized flat execution backlog.
 
 ## Generated Status Reports
 
-| Document | Description |
-| --- | --- |
-| [CHANGELOG.md](CHANGELOG.md) | Generated repository/doc snapshot summary |
-| [TODO.md](TODO.md) | Informational TODO/FIXME aggregation from source comments |
-| [health-dashboard.md](health-dashboard.md) | Documentation health report |
-| [coverage-report.md](coverage-report.md) | Documentation coverage summary |
-| [metrics-dashboard.md](metrics-dashboard.md) | Documentation metrics dashboard |
-| [docs-automation-summary.md](docs-automation-summary.md) | Latest docs automation run summary |
-| [program-state-summary.md](program-state-summary.md) | Generated wave escalation summary used by roadmap/readiness reporting |
-| [api-docs-report.md](api-docs-report.md) | API docs validation summary |
-| [example-validation.md](example-validation.md) | Code-block validation output |
-| [link-repair-report.md](link-repair-report.md) | Internal link audit output |
-| [rules-report.md](rules-report.md) | Documentation rules-engine output |
-| [badge-sync-report.md](badge-sync-report.md) | README badge synchronization report |
+| Document | Status | Description |
+| --- | --- | --- |
+| [CHANGELOG.md](CHANGELOG.md) | `generated` | Generated repository/doc snapshot summary |
+| [TODO.md](TODO.md) | `generated` | Informational TODO/FIXME aggregation from source comments |
+| [doc-health-dashboard.md](doc-health-dashboard.md) | `generated` | Documentation health report |
+| [ROADMAP_SUMMARY.md](ROADMAP_SUMMARY.md) | `generated` | Generated roadmap summary (from `build/scripts/docs/render-roadmap-docs.py`) |
+| [coverage-report.md](coverage-report.md) | `generated` | Documentation coverage summary |
+| [metrics-dashboard.md](metrics-dashboard.md) | `generated` | Documentation metrics dashboard |
+| [docs-automation-summary.md](docs-automation-summary.md) | `generated` | Latest docs automation run summary |
+| [program-state-summary.md](program-state-summary.md) | `generated` | Generated wave escalation summary used by roadmap/readiness reporting |
+| [api-docs-report.md](api-docs-report.md) | `generated` | API docs validation summary |
+| [example-validation.md](example-validation.md) | `generated` | Code-block validation output |
+| [link-repair-report.md](link-repair-report.md) | `generated` | Internal link audit output |
+| [rules-report.md](rules-report.md) | `generated` | Documentation rules-engine output |
+| [badge-sync-report.md](badge-sync-report.md) | `generated` | README badge synchronization report |
+| [workflow-drift-report.md](workflow-drift-report.md) | `generated` | Workflow command/artifact drift and governance report |
 
 Machine-readable sidecars that remain active in this folder:
 
 - `docs-automation-summary.json` - automation run summary consumed by docs tooling
 - `program-state-summary.json` - generated wave ownership/escalation metadata consumed by roadmap/readiness reporting
+- `workflow-validation-summary.json` - workflow command + artifact governance validation summary consumed by CI/doc tooling
+- `workflow-manifest.json` - canonical workflow ownership/refresh-policy manifest used to generate workflow docs and drift checks
+
+Artifact ownership and refresh policy routing lives in [`../generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), generated from `workflow-manifest.json`. Each workflow entry now declares owner lane, refresh trigger, retention policy, and canonical output roots used by drift checks.
+
+## Canonical topic map
+
+| Topic | Canonical current-truth doc (`active`) | Supporting docs and status |
+| --- | --- | --- |
+| Roadmap direction | [ROADMAP.md](ROADMAP.md) | [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) (`active` stakeholder snapshot), [ROADMAP_SUMMARY.md](ROADMAP_SUMMARY.md) (`generated`) |
+| Program state | [PROGRAM_STATE.md](PROGRAM_STATE.md) | [program-state-summary.md](program-state-summary.md) (`generated`) |
+| Provider status/readiness | [provider-validation-matrix.md](provider-validation-matrix.md) | [provider-capability-matrix.md](provider-capability-matrix.md) (`active` capability follow-up) |
+| Readiness and production posture | [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | [production-status.md](production-status.md) (`active` caveat posture), generated dashboards in `docs/status/*dashboard*.md` (`generated`) |
+
+Historical snapshots stay under `archive/docs/` and are linked from this index as `historical` references.
 
 ## Dashboard Evidence Reference
 
 For dashboard purpose, required evidence inputs, `.md` + `.json` output paths, blocker triage, and stale-evidence handling guidance, see [Documentation Automation - Status Dashboard Evidence Surfaces](../development/documentation-automation.md#status-dashboard-evidence-surfaces).
+
+For orphan-doc cleanup driven by the health dashboard output, use [Orphaned Doc Triage Index](../operations/orphaned-doc-triage-index.md) as the current link-recovery intake list.
 
 The golden-path pilot dashboard is generated as validation evidence, not hand-authored status
 prose. Run `PilotAcceptanceHarnessTests`, then
@@ -81,6 +108,8 @@ These dated snapshots remain useful for history, but they no longer act as activ
 - [Provider failover hardening notes](../../archive/docs/summaries/provider-failover-hardening.md)
 - [Provider test gap baseline](../../archive/docs/summaries/provider-test-gap-baseline.md)
 - [Provider test minimums](../../archive/docs/summaries/provider-test-minimums.md)
+- [Health dashboard snapshot (2026-05-04)](../../archive/docs/summaries/health-dashboard-2026-05-04.md)
+- [Kernel parity placeholder snapshot (2026-04-20)](../../archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md)
 
 ## Recommended Reading Order
 

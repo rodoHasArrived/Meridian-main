@@ -1,5 +1,5 @@
-using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Wpf.Services;
 
@@ -13,6 +13,18 @@ public interface IWorkstationReconciliationApiClient
     Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default);
 
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default);
+
+    Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default);
 
     Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default);
 
@@ -39,44 +51,54 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
     }
 
     public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct);
+        => _apiClient.UiApi.GetReconciliationCalibrationSummaryAsync(ct);
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<ReconciliationBreakQueueItem>>("/api/workstation/reconciliation/break-queue", ct).ConfigureAwait(false)
+        => await _apiClient.UiApi.GetReconciliationBreakQueueAsync(ct).ConfigureAwait(false)
         ?? [];
 
+    public async Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<StatementRunSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRuns, ct).ConfigureAwait(false) ?? [];
+
+    public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        => _apiClient.GetAsync<StatementRunSummaryDto>(
+            Meridian.Contracts.Api.UiApiRoutes.WithParam(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRunById, "runId", runId),
+            ct);
+
+    public async Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<StatementRunExceptionDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementExceptions, ct).ConfigureAwait(false) ?? [];
+
+    public async Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<StatementBreakDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementBreaks, ct).ConfigureAwait(false) ?? [];
+
+    public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<ReconciliationCaseSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationOpenCases, ct).ConfigureAwait(false) ?? [];
+
+    public async Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default)
+        => await _apiClient.GetAsync<List<ReconciliationQueueAccountStatusDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationQueueStatus, ct).ConfigureAwait(false) ?? [];
+
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationRunDetail>($"/api/workstation/runs/{Uri.EscapeDataString(runId)}/reconciliation", ct);
+        => _apiClient.UiApi.GetLatestRunReconciliationAsync(runId, ct);
 
     public Task<ReconciliationRunDetail?> GetRunDetailAsync(string reconciliationRunId, CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationRunDetail>($"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", ct);
+        => _apiClient.UiApi.GetReconciliationRunAsync(reconciliationRunId, ct);
 
     public Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
         string breakId,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => PostActionAsync(
-            $"/api/workstation/reconciliation/break-queue/{Uri.EscapeDataString(breakId)}/review",
-            request,
-            ct);
+        => ToActionResultAsync(_apiClient.UiApi.ReviewReconciliationBreakAsync(breakId, request, ct));
 
     public Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
         string breakId,
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => PostActionAsync(
-            $"/api/workstation/reconciliation/break-queue/{Uri.EscapeDataString(breakId)}/resolve",
-            request,
-            ct);
+        => ToActionResultAsync(_apiClient.UiApi.ResolveReconciliationBreakAsync(breakId, request, ct));
 
-    private async Task<WorkstationReconciliationActionResult> PostActionAsync(
-        string endpoint,
-        object request,
-        CancellationToken ct)
+    private static async Task<WorkstationReconciliationActionResult> ToActionResultAsync(
+        Task<Meridian.Contracts.Api.ApiResponse<ReconciliationBreakQueueItem>> responseTask)
     {
-        var response = await _apiClient
-            .PostWithResponseAsync<ReconciliationBreakQueueItem>(endpoint, request, ct)
-            .ConfigureAwait(false);
+        var response = await responseTask.ConfigureAwait(false);
 
         return response.Success
             ? new WorkstationReconciliationActionResult(true, null, response.Data)

@@ -64,18 +64,34 @@ function Get-ActiveRepoDotnetProcess {
         return @()
     }
 
-    $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'dotnet.exe' OR Name = 'MSBuild.exe' OR Name = 'testhost.exe'" -ErrorAction SilentlyContinue)
+    $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'dotnet.exe' OR Name = 'MSBuild.exe' OR Name = 'testhost.exe' OR Name = 'csc.exe' OR Name = 'VBCSCompiler.exe'" -ErrorAction SilentlyContinue)
     if ($processes.Count -eq 0) {
         return @()
     }
 
-    return @(
+    $repoBuildProcessIds = @(
         $processes | Where-Object {
             $_.ProcessId -ne $PID -and
             $_.CommandLine -and
             (
                 $_.CommandLine.IndexOf($repoRoot, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 -or
                 $_.CommandLine.IndexOf("Meridian", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+            ) -and
+            (
+                $_.Name -eq "MSBuild.exe" -or
+                $_.Name -eq "testhost.exe" -or
+                $_.CommandLine -match '(?i)\bdotnet(\.exe)?"?\s+(build|test|restore|msbuild)\b' -or
+                $_.CommandLine.IndexOf("MSBuild.dll", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+            )
+        } | Select-Object -ExpandProperty ProcessId
+    )
+
+    return @(
+        $processes | Where-Object {
+            $_.ProcessId -ne $PID -and
+            (
+                $repoBuildProcessIds -contains $_.ProcessId -or
+                (($_.Name -eq "csc.exe" -or $_.Name -eq "VBCSCompiler.exe") -and $repoBuildProcessIds -contains $_.ParentProcessId)
             )
         }
     )
@@ -87,7 +103,7 @@ $blockedByConcurrentDotnet = $activeRepoDotnetProcesses.Count -gt 0 -and -not $A
 if ($blockedByConcurrentDotnet) {
     $concurrencyLogPath = Join-Path $summaryDir "active-dotnet-processes.log"
     $processLines = @(
-        "Active repo-owned dotnet/MSBuild/testhost processes were detected before WPF development validation.",
+        "Active repo-owned build/test/restore/MSBuild or compiler processes were detected before WPF development validation.",
         "Rerun after they exit, or pass -AllowConcurrentDotnet when you intentionally want overlapping builds.",
         ""
     )
@@ -97,7 +113,7 @@ if ($blockedByConcurrentDotnet) {
     }
 
     $processLines | Set-Content -Path $concurrencyLogPath
-    Write-Warning "Active repo-owned dotnet/MSBuild/testhost processes are already running; skipping WPF validation to avoid shared-output contention."
+    Write-Warning "Active repo-owned build/test/restore/MSBuild or compiler processes are already running; skipping WPF validation to avoid shared-output contention."
     foreach ($process in $activeRepoDotnetProcesses) {
         Write-Warning ("PID {0} {1}: {2}" -f $process.ProcessId, $process.Name, $process.CommandLine)
     }
@@ -147,6 +163,19 @@ if (-not $blockedByConcurrentDotnet) {
         "--verbosity", "minimal"
     ) + $serializedBuildArgs
 
+    if ([string]::IsNullOrWhiteSpace($buildIsolationKey)) {
+        $buildWpfCommand = @(
+            "dotnet",
+            "build",
+            $wpfProject,
+            "-c", $Configuration,
+            "--no-restore",
+            "--no-dependencies",
+            "--nologo",
+            "--verbosity", "minimal"
+        ) + $serializedBuildArgs
+    }
+
     $buildWpfStep = Invoke-MeridianStepWithTestHostRetry `
         -Name "Build WPF desktop shell" `
         -Command $buildWpfCommand `
@@ -166,6 +195,19 @@ if (-not $blockedByConcurrentDotnet) {
             "--nologo",
             "--verbosity", "minimal"
         ) + $serializedBuildArgs
+
+        if ([string]::IsNullOrWhiteSpace($buildIsolationKey)) {
+            $buildTestsCommand = @(
+                "dotnet",
+                "build",
+                $wpfTestsProject,
+                "-c", $Configuration,
+                "--no-restore",
+                "--no-dependencies",
+                "--nologo",
+                "--verbosity", "minimal"
+            ) + $serializedBuildArgs
+        }
 
         $buildTestsStep = Invoke-MeridianStepWithTestHostRetry `
             -Name "Build WPF desktop tests" `

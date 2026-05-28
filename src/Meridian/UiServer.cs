@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Application.Compliance;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
@@ -10,6 +11,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
 using Meridian.Execution.Interfaces;
@@ -126,6 +128,9 @@ public sealed class UiServer : IAsyncDisposable
                 sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
+        builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
+        builder.Services.AddSingleton<Meridian.Application.Compliance.ImmutableAuditLogService>();
+        builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
         builder.Services.AddSingleton<IOrderGateway>(sp =>
@@ -150,7 +155,8 @@ public sealed class UiServer : IAsyncDisposable
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>()));
+                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
+                sp.GetService<ISecurityMasterQueryService>()));
 
         // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
         // engine compiles and executes arbitrary C# in-process; enable only on a trusted host.
@@ -249,6 +255,10 @@ public sealed class UiServer : IAsyncDisposable
         LedgerStartup.EnsureDatabaseReady(_app.Services, _logger);
         SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
         DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
+        FundAccountsStartup.EnsureDatabaseReady(_app.Services, _logger);
+        FundStructureStartup.EnsureDatabaseReady(_app.Services, _logger);
+        BankingStartup.EnsureDatabaseReady(_app.Services, _logger);
+        MoneyMarketStartup.EnsureDatabaseReady(_app.Services, _logger);
         readinessStopwatch.Stop();
         _logger.LogInformation("UiServer readiness checks completed in {ElapsedMs} ms", readinessStopwatch.ElapsedMilliseconds);
 

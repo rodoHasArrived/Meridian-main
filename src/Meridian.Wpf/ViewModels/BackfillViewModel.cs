@@ -9,7 +9,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using UiBackfillCompletedEventArgs = Meridian.Ui.Services.BackfillCompletedEventArgs;
@@ -19,13 +21,19 @@ using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+public readonly record struct BackfillStatsPresentation(
+    string TotalBarsText,
+    string SymbolsProcessedText,
+    string RunWindowText,
+    string LastSuccessfulRunText);
+
 /// <summary>
 /// ViewModel for the Backfill page.
 /// All state, collections, timer management, and backfill orchestration live here;
 /// the code-behind is thinned to lifecycle wiring and form-input delegation.
 /// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
+public sealed partial class BackfillViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
@@ -39,38 +47,38 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly CommandPaletteService _commandPaletteService;
 
     private readonly DispatcherTimer _progressPollTimer;
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _backfillCts;
+    private bool _isActive;
+    private bool _isDisposed;
 
     // Last known symbol counts — used to restore taskbar progress after a resume.
     private ulong _lastCompletedSymbols;
     private ulong _lastTotalSymbols;
 
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SymbolProgressInfo> SymbolProgress { get; } = new();
-    public ObservableCollection<ScheduledJobInfo> ScheduledJobs { get; } = new();
-    public ObservableCollection<ResumableJobInfo> ResumableJobs { get; } = new();
-    public ObservableCollection<GapAnalysisItem> GapItems { get; } = new();
+    public ObservableCollection<SymbolProgressInfo> SymbolProgress => WorkbenchSection.SymbolProgress;
+    public ObservableCollection<ScheduledJobInfo> ScheduledJobs => WorkbenchSection.ScheduledJobs;
+    public ObservableCollection<ResumableJobInfo> ResumableJobs => WorkbenchSection.ResumableJobs;
+    public ObservableCollection<GapAnalysisItem> GapItems => WorkbenchSection.GapItems;
 
     // ── Bindable properties ─────────────────────────────────────────────────
-    private string _backfillStatusText = string.Empty;
     public string BackfillStatusText
     {
-        get => _backfillStatusText;
-        private set => SetProperty(ref _backfillStatusText, value);
+        get => WorkbenchSection.BackfillStatusText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.BackfillStatusText, text => WorkbenchSection.BackfillStatusText = text, value);
     }
 
-    private string _overallProgressText = string.Empty;
     public string OverallProgressText
     {
-        get => _overallProgressText;
-        private set => SetProperty(ref _overallProgressText, value);
+        get => WorkbenchSection.OverallProgressText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.OverallProgressText, text => WorkbenchSection.OverallProgressText = text, value);
     }
 
-    private string _pauseButtonContent = "Pause";
     public string PauseButtonContent
     {
-        get => _pauseButtonContent;
-        private set => SetProperty(ref _pauseButtonContent, value);
+        get => WorkbenchSection.PauseButtonContent;
+        private set => SetBackfillSectionProperty(WorkbenchSection.PauseButtonContent, text => WorkbenchSection.PauseButtonContent = text, value);
     }
 
     private bool _isBackfillActive;
@@ -85,25 +93,22 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         }
     }
 
-    private bool _isProgressVisible;
     public bool IsProgressVisible
     {
-        get => _isProgressVisible;
-        private set => SetProperty(ref _isProgressVisible, value);
+        get => WorkbenchSection.IsProgressVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsProgressVisible, visible => WorkbenchSection.IsProgressVisible = visible, value);
     }
 
-    private bool _hasNoScheduledJobs = true;
     public bool HasNoScheduledJobs
     {
-        get => _hasNoScheduledJobs;
-        private set => SetProperty(ref _hasNoScheduledJobs, value);
+        get => WorkbenchSection.HasNoScheduledJobs;
+        private set => SetBackfillSectionProperty(WorkbenchSection.HasNoScheduledJobs, empty => WorkbenchSection.HasNoScheduledJobs = empty, value);
     }
 
-    private bool _hasNoResumableJobs = true;
     public bool HasNoResumableJobs
     {
-        get => _hasNoResumableJobs;
-        private set => SetProperty(ref _hasNoResumableJobs, value);
+        get => WorkbenchSection.HasNoResumableJobs;
+        private set => SetBackfillSectionProperty(WorkbenchSection.HasNoResumableJobs, empty => WorkbenchSection.HasNoResumableJobs = empty, value);
     }
 
     private string _providerPrioritySummaryText = "Priority: No providers selected";
@@ -120,39 +125,34 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         private set => SetProperty(ref _granularityHintText, value);
     }
 
-    private string _gapAnalysisSummaryText = string.Empty;
     public string GapAnalysisSummaryText
     {
-        get => _gapAnalysisSummaryText;
-        private set => SetProperty(ref _gapAnalysisSummaryText, value);
+        get => WorkbenchSection.GapAnalysisSummaryText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.GapAnalysisSummaryText, text => WorkbenchSection.GapAnalysisSummaryText = text, value);
     }
 
-    private string _gapActionHintText = string.Empty;
     public string GapActionHintText
     {
-        get => _gapActionHintText;
-        private set => SetProperty(ref _gapActionHintText, value);
+        get => WorkbenchSection.GapActionHintText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.GapActionHintText, text => WorkbenchSection.GapActionHintText = text, value);
     }
 
-    private bool _isGapAnalysisCardVisible;
     public bool IsGapAnalysisCardVisible
     {
-        get => _isGapAnalysisCardVisible;
-        private set => SetProperty(ref _isGapAnalysisCardVisible, value);
+        get => WorkbenchSection.IsGapAnalysisCardVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsGapAnalysisCardVisible, visible => WorkbenchSection.IsGapAnalysisCardVisible = visible, value);
     }
 
-    private bool _isGapListVisible;
     public bool IsGapListVisible
     {
-        get => _isGapListVisible;
-        private set => SetProperty(ref _isGapListVisible, value);
+        get => WorkbenchSection.IsGapListVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsGapListVisible, visible => WorkbenchSection.IsGapListVisible = visible, value);
     }
 
-    private bool _isGapActionPanelVisible;
     public bool IsGapActionPanelVisible
     {
-        get => _isGapActionPanelVisible;
-        private set => SetProperty(ref _isGapActionPanelVisible, value);
+        get => WorkbenchSection.IsGapActionPanelVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsGapActionPanelVisible, visible => WorkbenchSection.IsGapActionPanelVisible = visible, value);
     }
 
     private string _nasdaqKeyStatusText = "No API key stored";
@@ -258,6 +258,34 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     {
         get => _lastRunCompletedText;
         private set => SetProperty(ref _lastRunCompletedText, value);
+    }
+
+    private string _backfillStatsTotalBarsText = "--";
+    public string BackfillStatsTotalBarsText
+    {
+        get => _backfillStatsTotalBarsText;
+        private set => SetProperty(ref _backfillStatsTotalBarsText, value);
+    }
+
+    private string _backfillStatsSymbolsProcessedText = "--";
+    public string BackfillStatsSymbolsProcessedText
+    {
+        get => _backfillStatsSymbolsProcessedText;
+        private set => SetProperty(ref _backfillStatsSymbolsProcessedText, value);
+    }
+
+    private string _backfillStatsRunWindowText = "No run loaded";
+    public string BackfillStatsRunWindowText
+    {
+        get => _backfillStatsRunWindowText;
+        private set => SetProperty(ref _backfillStatsRunWindowText, value);
+    }
+
+    private string _backfillStatsLastSuccessfulRunText = "No successful run loaded";
+    public string BackfillStatsLastSuccessfulRunText
+    {
+        get => _backfillStatsLastSuccessfulRunText;
+        private set => SetProperty(ref _backfillStatsLastSuccessfulRunText, value);
     }
 
     private string _startReadinessTitle = "Backfill setup incomplete";
@@ -461,8 +489,26 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (_isActive)
+        {
+            return;
+        }
+
+        _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _backfillService.ProgressUpdated += OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted += OnBackfillCompleted;
 
@@ -471,17 +517,26 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "\uE768", "Start a new backfill", IsPrimary: true));
         Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "\uE9D9", "View backfill status"));
 
-        await LoadScheduledJobsAsync();
-        await LoadResumableJobsAsync();
-        await RefreshStatusFromApiAsync();
+        await LoadScheduledJobsAsync(ActivationToken);
+        await LoadResumableJobsAsync(ActivationToken);
+        await RefreshStatusFromApiAsync(ActivationToken);
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
+        _isActive = false;
         _progressPollTimer.Stop();
-        _backfillCts?.Cancel();
         _backfillService.ProgressUpdated -= OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted -= OnBackfillCompleted;
+        CancelAndDispose(Interlocked.Exchange(ref _backfillCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     // ── Data loading ────────────────────────────────────────────────────────
@@ -559,7 +614,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     // ── Backfill control ────────────────────────────────────────────────────
-    private void UpdateLastApiStatus(Meridian.Contracts.Api.BackfillResultDto status)
+    private void UpdateLastApiStatus(BackfillResultDto status)
     {
         LastApiStatus = status;
         HasApiStatus = true;
@@ -576,6 +631,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
         LastRunStartedText = status.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
         LastRunCompletedText = status.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
+        ApplyBackfillStats(BuildBackfillStats(status));
     }
 
     private void ClearLastApiStatus()
@@ -591,6 +647,61 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         LastRunBarsWrittenText = "0";
         LastRunStartedText = "Unknown";
         LastRunCompletedText = "N/A";
+        ApplyBackfillStats(BuildBackfillStats(null));
+    }
+
+    public static BackfillStatsPresentation BuildBackfillStats(BackfillResultDto? status)
+    {
+        if (status is null)
+        {
+            return new BackfillStatsPresentation(
+                "--",
+                "--",
+                "No run loaded",
+                "No successful run loaded");
+        }
+
+        var symbolCount = CountDistinctSymbols(status);
+        var symbolsText = symbolCount == 0
+            ? "No symbols reported"
+            : $"{symbolCount:N0} symbol{(symbolCount == 1 ? string.Empty : "s")}";
+
+        var runWindowText = (status.StartedUtc, status.CompletedUtc) switch
+        {
+            ({ } started, { } completed) => $"{started.LocalDateTime:g} to {completed.LocalDateTime:g}",
+            ({ } started, null) => $"Started {started.LocalDateTime:g}",
+            _ => "Window unavailable"
+        };
+
+        var lastSuccessfulRunText = status.Success
+            ? status.CompletedUtc?.LocalDateTime.ToString("g") ?? "Completed; timestamp unavailable"
+            : "Latest run failed";
+
+        return new BackfillStatsPresentation(
+            status.BarsWritten.ToString("N0"),
+            symbolsText,
+            runWindowText,
+            lastSuccessfulRunText);
+    }
+
+    private void ApplyBackfillStats(BackfillStatsPresentation stats)
+    {
+        BackfillStatsTotalBarsText = stats.TotalBarsText;
+        BackfillStatsSymbolsProcessedText = stats.SymbolsProcessedText;
+        BackfillStatsRunWindowText = stats.RunWindowText;
+        BackfillStatsLastSuccessfulRunText = stats.LastSuccessfulRunText;
+    }
+
+    private static int CountDistinctSymbols(BackfillResultDto status)
+    {
+        var symbols = status.Symbols is { Length: > 0 }
+            ? status.Symbols
+            : status.SymbolResults?.Select(result => result.Symbol).ToArray();
+
+        return symbols?
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count() ?? 0;
     }
 
     public async Task StartBackfillAsync(
@@ -1210,6 +1321,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void ClearNasdaqApiKey()
     {
+        Environment.SetEnvironmentVariable("NASDAQDATALINK__APIKEY", null, EnvironmentVariableTarget.User);
         NasdaqKeyStatusText = "No API key stored";
         IsNasdaqKeyClearVisible = false;
     }
@@ -1224,6 +1336,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
 
     public void ClearOpenFigiApiKey()
     {
+        Environment.SetEnvironmentVariable("OPENFIGI__APIKEY", null, EnvironmentVariableTarget.User);
         OpenFigiKeyStatusText = "No API key stored (optional)";
         IsOpenFigiKeyClearVisible = false;
     }
@@ -1314,7 +1427,34 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         paletteService.UnregisterContextualProvider(ContextKey);
     }
 
-    public void Dispose() => Stop();
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        Deactivate();
+    }
+
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
+    }
 
     public readonly record struct BackfillStartRequest(
         string[] Symbols,

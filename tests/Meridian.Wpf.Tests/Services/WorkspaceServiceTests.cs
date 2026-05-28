@@ -373,6 +373,33 @@ public sealed class WorkspaceServiceTests : IDisposable
         svc.ActiveWorkspaceScope.Should().BeSameAs(scopeFactory.CreatedScopes[2]);
     }
 
+    [Fact]
+    public void GetOrCreateWorkspaceScope_ShouldCreateScopeWithoutActivatingWorkspace()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        var scope = svc.GetOrCreateWorkspaceScope("portfolio");
+
+        scope.Should().BeSameAs(scopeFactory.CreatedScopes.Single());
+        svc.GetWorkspaceScope("portfolio").Should().BeSameAs(scope);
+    }
+
+    [Fact]
+    public void GetOrCreateWorkspaceScope_ShouldNormalizeLegacyWorkspaceIds()
+    {
+        var svc = CreateService();
+        var scopeFactory = new RecordingScopeFactory();
+        svc.SetServiceScopeFactory(scopeFactory);
+
+        var scope = svc.GetOrCreateWorkspaceScope("governance");
+
+        scope.Should().BeSameAs(scopeFactory.CreatedScopes.Single());
+        svc.GetWorkspaceScope("accounting").Should().BeSameAs(scope);
+        svc.GetWorkspaceScope("governance").Should().BeSameAs(scope);
+    }
+
     // ── UpdateWorkspaceAsync ─────────────────────────────────────────
 
     [Fact]

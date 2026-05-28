@@ -12,203 +12,440 @@
       "name": "web-overview-workspace",
       "path": "/",
       "docLabel": "Overview",
-      "waitForText": "Operator Workstation"
+      "waitForText": "Operator Workstation",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status"
+      ],
+      "waitForTexts": [
+        "Providers Online",
+        "Ops Desk"
+      ]
     },
     {
       "id": "W01",
       "name": "web-trading-workspace",
       "path": "/trading",
-      "docLabel": "Trading — Orders blotter",
-      "waitForText": "Trading lane"
+      "docLabel": "Trading \u2014 Orders blotter",
+      "waitForText": "Trading lane",
+      "requiredApiRoutes": [
+        "/api/workstation/trading"
+      ],
+      "waitForTexts": [
+        "Net P&L",
+        "AAPL"
+      ]
     },
     {
       "id": "W01A",
       "name": "web-trading-orders",
       "path": "/trading/orders",
-      "docLabel": "Trading — Orders",
-      "waitForText": "Trading lane"
+      "docLabel": "Trading \u2014 Orders",
+      "waitForText": "Trading lane",
+      "requiredApiRoutes": [
+        "/api/workstation/trading"
+      ],
+      "waitForTexts": [
+        "Net P&L",
+        "AAPL"
+      ]
     },
     {
       "id": "W01B",
       "name": "web-trading-positions",
       "path": "/trading/positions",
-      "docLabel": "Trading — Position book",
-      "waitForText": "Trading lane"
+      "docLabel": "Trading \u2014 Position book",
+      "waitForText": "Trading lane",
+      "requiredApiRoutes": [
+        "/api/workstation/trading"
+      ],
+      "waitForTexts": [
+        "Net P&L",
+        "AAPL"
+      ]
     },
     {
       "id": "W01C",
       "name": "web-trading-risk",
       "path": "/trading/risk",
-      "docLabel": "Trading — Risk guardrails",
-      "waitForText": "Trading lane"
+      "docLabel": "Trading \u2014 Risk guardrails",
+      "waitForText": "Trading lane",
+      "requiredApiRoutes": [
+        "/api/workstation/trading"
+      ],
+      "waitForTexts": [
+        "Net P&L",
+        "AAPL"
+      ]
     },
     {
       "id": "W01D",
       "name": "web-operator-readiness-console",
       "path": "/trading/readiness",
       "docLabel": "Operator Readiness Console",
-      "waitForText": "Operator Readiness Console"
+      "waitForText": "Operator Readiness Console",
+      "requiredApiRoutes": [
+        "/api/workstation/trading/readiness",
+        "/api/workstation/operator/inbox"
+      ],
+      "waitForTexts": [
+        "ReviewRequired",
+        "Promotion checklist review pending"
+      ]
     },
     {
       "id": "W02",
       "name": "web-portfolio-workspace",
       "path": "/portfolio",
       "docLabel": "Portfolio",
-      "waitForText": "Portfolio lane"
+      "waitForText": "Portfolio lane",
+      "requiredApiRoutes": [
+        "/api/workstation/portfolio"
+      ],
+      "waitForTexts": [
+        "Total Equity",
+        "VTI"
+      ]
     },
     {
       "id": "W02A",
       "name": "web-portfolio-attribution",
       "path": "/portfolio/attribution",
-      "docLabel": "Portfolio — Attribution",
-      "waitForText": "Portfolio lane"
+      "docLabel": "Portfolio \u2014 Attribution",
+      "waitForText": "Portfolio lane",
+      "requiredApiRoutes": [
+        "/api/workstation/portfolio"
+      ],
+      "waitForTexts": [
+        "Total Equity",
+        "VTI"
+      ]
     },
     {
       "id": "W02B",
       "name": "web-portfolio-brokerage-sync",
       "path": "/portfolio/brokerage-sync",
-      "docLabel": "Portfolio — Brokerage Sync",
-      "waitForText": "Portfolio lane"
+      "docLabel": "Portfolio \u2014 Brokerage Sync",
+      "waitForText": "Portfolio lane",
+      "requiredApiRoutes": [
+        "/api/workstation/portfolio",
+        "/api/portfolio/household",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForTexts": [
+        "Total Equity",
+        "Alpaca Roth IRA"
+      ]
     },
     {
       "id": "W03",
       "name": "web-accounting-workspace",
       "path": "/accounting",
-      "docLabel": "Accounting — Ledger",
-      "waitForText": "Accounting lane"
+      "docLabel": "Accounting \u2014 Ledger",
+      "waitForText": "Accounting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Open Breaks",
+        "Intraday Vol Carry"
+      ]
     },
     {
       "id": "W03A",
       "name": "web-accounting-reconciliation",
       "path": "/accounting/reconciliation",
-      "docLabel": "Accounting — Reconciliation",
-      "waitForText": "Accounting lane"
+      "docLabel": "Accounting \u2014 Reconciliation",
+      "waitForText": "Accounting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Open Breaks",
+        "Intraday Vol Carry"
+      ]
     },
     {
       "id": "W03B",
       "name": "web-accounting-security-master",
       "path": "/accounting/security-master",
-      "docLabel": "Accounting — Security Master",
-      "waitForText": "Accounting lane"
+      "docLabel": "Accounting \u2014 Security Master",
+      "waitForText": "Accounting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Open Breaks",
+        "Intraday Vol Carry"
+      ]
     },
     {
       "id": "W03C",
       "name": "web-accounting-approvals",
       "path": "/accounting/approvals",
-      "docLabel": "Accounting — Approvals",
-      "waitForText": "Accounting lane"
+      "docLabel": "Accounting \u2014 Approvals",
+      "waitForText": "Accounting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Open Breaks",
+        "Intraday Vol Carry"
+      ]
     },
     {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting lane"
+      "waitForText": "Reporting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Report Packs",
+        "Board-ready workbook export."
+      ]
     },
     {
       "id": "W04A",
       "name": "web-reporting-report-packs",
       "path": "/reporting/report-packs",
-      "docLabel": "Reporting — Report Packs",
-      "waitForText": "Reporting lane"
+      "docLabel": "Reporting \u2014 Report Packs",
+      "waitForText": "Reporting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Report Packs",
+        "Board-ready workbook export."
+      ]
     },
     {
       "id": "W04B",
       "name": "web-reporting-evidence-workbench",
       "path": "/reporting/evidence",
-      "docLabel": "Reporting — Evidence Workbench",
-      "waitForText": "Evidence workbench"
+      "docLabel": "Reporting \u2014 Evidence Workbench",
+      "waitForText": "Evidence workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Report Packs",
+        "Board-ready workbook export."
+      ]
     },
     {
       "id": "W04C",
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
-      "docLabel": "Reporting — Exports",
-      "waitForText": "Reporting lane"
+      "docLabel": "Reporting \u2014 Exports",
+      "waitForText": "Reporting lane",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Report Packs",
+        "Board-ready workbook export."
+      ]
     },
     {
       "id": "W05",
       "name": "web-strategy-workspace",
       "path": "/strategy",
       "docLabel": "Strategy",
-      "waitForText": "Strategy Lane"
+      "waitForText": "Strategy Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy"
+      ],
+      "waitForTexts": [
+        "Mean Reversion FX",
+        "Promotions"
+      ]
     },
     {
       "id": "W05A",
       "name": "web-strategy-promotions",
       "path": "/strategy/promotions",
-      "docLabel": "Strategy — Promotions",
-      "waitForText": "Strategy Lane"
+      "docLabel": "Strategy \u2014 Promotions",
+      "waitForText": "Strategy Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy"
+      ],
+      "waitForTexts": [
+        "Mean Reversion FX",
+        "Promotions"
+      ]
     },
     {
       "id": "W05B",
       "name": "web-strategy-research",
       "path": "/strategy/research",
-      "docLabel": "Strategy — Research",
-      "waitForText": "Strategy Lane"
+      "docLabel": "Strategy \u2014 Research",
+      "waitForText": "Strategy Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy"
+      ],
+      "waitForTexts": [
+        "Mean Reversion FX",
+        "Promotions"
+      ]
     },
     {
       "id": "W05C",
       "name": "web-strategy-quant-lab",
       "path": "/strategy/quant-lab",
-      "docLabel": "Strategy — Quant Lab",
-      "waitForText": "Strategy Lane"
+      "docLabel": "Strategy \u2014 Quant Lab",
+      "waitForText": "Strategy Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy"
+      ],
+      "waitForTexts": [
+        "Mean Reversion FX",
+        "Promotions"
+      ]
     },
     {
       "id": "W05D",
       "name": "web-strategy-designer",
       "path": "/strategy/designer",
-      "docLabel": "Strategy — Designer",
-      "waitForText": "Strategy Builder Workbench"
+      "docLabel": "Strategy \u2014 Designer",
+      "waitForText": "Strategy Builder Workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy",
+        "/api/workstation/strategy/designer/templates",
+        "/api/workstation/strategy/designer/field-catalog",
+        "/api/workstation/strategy/designer/drafts"
+      ],
+      "waitForTexts": [
+        "Strategy Builder Workbench",
+        "Mean Reversion FX"
+      ]
     },
     {
       "id": "W06",
       "name": "web-data-workspace",
       "path": "/data",
       "docLabel": "Data",
-      "waitForText": "Data Lane"
+      "waitForText": "Data Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Providers Healthy",
+        "Polygon"
+      ]
     },
     {
       "id": "W06A",
       "name": "web-data-watchlist",
       "path": "/data/watchlist",
-      "docLabel": "Data — Watchlist",
-      "waitForText": "Data Lane"
+      "docLabel": "Data \u2014 Watchlist",
+      "waitForText": "Data Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Providers Healthy",
+        "Polygon"
+      ]
     },
     {
       "id": "W06B",
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
-      "docLabel": "Data — Live Quotes",
-      "waitForText": "Data Lane"
+      "docLabel": "Data \u2014 Live Quotes",
+      "waitForText": "Data Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Providers Healthy",
+        "Polygon"
+      ]
     },
     {
       "id": "W06C",
       "name": "web-data-backfills",
       "path": "/data/backfills",
-      "docLabel": "Data — Backfills",
-      "waitForText": "Data Lane"
+      "docLabel": "Data \u2014 Backfills",
+      "waitForText": "Data Lane",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Providers Healthy",
+        "Polygon"
+      ]
     },
     {
       "id": "W07",
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "Settings lane"
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForTexts": [
+        "Paper Trading Readiness",
+        "Daily paper readiness"
+      ]
     },
     {
       "id": "W07A",
       "name": "web-settings-preferences",
       "path": "/settings/preferences",
-      "docLabel": "Settings — Preferences",
-      "waitForText": "Settings lane"
+      "docLabel": "Settings \u2014 Preferences",
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForTexts": [
+        "Paper Trading Readiness",
+        "Daily paper readiness"
+      ]
     },
     {
       "id": "W07B",
       "name": "web-settings-integrations",
       "path": "/settings/integrations",
-      "docLabel": "Settings — Integrations",
-      "waitForText": "Settings lane"
+      "docLabel": "Settings \u2014 Integrations",
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForTexts": [
+        "Paper Trading Readiness",
+        "Daily paper readiness"
+      ]
     }
   ]
 }

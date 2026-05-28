@@ -80,6 +80,14 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "stale-required-evidence" &&
             issue.EvidenceId == "stale");
+        packet.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "replay-check-freshness" &&
+            assessment.EvidenceId == "stale" &&
+            assessment.IsBreached);
+        packet.Completeness.AssuranceScore.Status.Should().Be(EvidenceStatusDto.Blocked);
+        packet.Completeness.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "stale" &&
+            component.Status == EvidenceStatusDto.Stale);
         packet.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "review-required-evidence" &&
             issue.EvidenceId == "review" &&
@@ -139,6 +147,52 @@ public sealed class EvidenceWorkflowFabricTests
         reviewResult.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "review-required-evidence" &&
             issue.RelatedWorkItemId == "report-pack-lineage:current");
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringAssuranceReview_AppliesEvidenceSlaFreshnessPolicies()
+    {
+        var subject = Subject(EvidenceSubjectResolver.PaperReadinessKind, "current");
+        var provider = Node(subject, "provider", "provider-trust", EvidenceStatusDto.Ready);
+        var replay = Node(subject, "replay", "paper-replay", EvidenceStatusDto.Ready);
+        var reconciliation = Node(subject, "reconciliation", "reconciliation-run", EvidenceStatusDto.Ready);
+        var approval = Node(subject, "approval", "approval", EvidenceStatusDto.Ready);
+        var report = Node(subject, "report", "report-pack", EvidenceStatusDto.Ready) with
+        {
+            Freshness = new EvidenceFreshnessDto(
+                DateTimeOffset.UtcNow.AddDays(-3),
+                IsStale: true,
+                Reason: "Report package is outside the governed publication freshness window.")
+        };
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [provider, replay, reconciliation, approval, report],
+            [],
+            new HashSet<string>(["provider", "replay", "reconciliation", "approval", "report"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        var policyIds = result.Completeness.SlaPolicies.Select(policy => policy.PolicyId);
+        policyIds.Should().Contain("provider-validation-freshness");
+        policyIds.Should().Contain("replay-check-freshness");
+        policyIds.Should().Contain("reconciliation-freshness");
+        policyIds.Should().Contain("approval-freshness");
+        policyIds.Should().Contain("report-pack-freshness");
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "report-pack-freshness" &&
+            assessment.EvidenceId == "report" &&
+            assessment.IsBreached &&
+            assessment.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "evidence-sla-breached" &&
+            issue.EvidenceId == "report" &&
+            issue.EvidenceKind == "report-pack");
+        result.Completeness.AssuranceScore.Status.Should().Be(EvidenceStatusDto.Stale);
+        result.Completeness.AssuranceScore.Score.Should().BeLessThan(100);
+        result.Completeness.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "report" &&
+            component.Status == EvidenceStatusDto.Stale &&
+            component.Score == 60);
     }
 
     [Fact]
@@ -227,6 +281,53 @@ public sealed class EvidenceWorkflowFabricTests
             issue.Severity == EvidenceValidationSeverityDto.Warning);
         result.Completeness.ValidationIssues.Should().NotContain(issue =>
             issue.Severity == EvidenceValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DetectsOrphansAndCanonicalSubjectLinkageWithoutFalsePositives()
+    {
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-orphan-check");
+        var linkedA = Node(subject, "linked-a", "run-ledger", EvidenceStatusDto.Ready);
+        var linkedB = Node(subject, "linked-b", "report-pack", EvidenceStatusDto.Ready);
+        var orphan = Node(subject, "orphan", "approval", EvidenceStatusDto.Ready);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [linkedA, linkedB, orphan],
+            [new EvidenceEdgeDto("linked-a", "linked-b", "supports", "linked evidence")],
+            new HashSet<string>(["linked-a", "linked-b"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: true);
+
+        result.Completeness.OrphanEvidenceIds.Should().Contain("orphan");
+        result.Completeness.OrphanEvidenceIds.Should().NotContain("linked-a");
+        result.Completeness.WarningIssueCount.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DoesNotBlockWhenRetainedArtifactsOmitCanonicalSubject()
+    {
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
+        var node = Node(
+            subject,
+            "report",
+            "report-pack",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto("a1", "report-pack", "/tmp/a1.json", null, DateTimeOffset.UtcNow, null, true)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [node],
+            [],
+            new HashSet<string>(["report"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        result.Completeness.BlockingIssueCount.Should().Be(0);
+        result.Completeness.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "retained-artifact-missing-canonical-subject");
     }
 
     [Fact]
@@ -481,6 +582,45 @@ public sealed class EvidenceWorkflowFabricTests
             IsRouteOnlyArtifact(artifact, "ledger-journal", "/api/workstation/runs/run-ledger-proof/ledger/journal"));
         artifactRefs.Should().Contain(artifact =>
             IsRouteOnlyArtifact(artifact, "ledger-trial-balance", "/api/workstation/runs/run-ledger-proof/ledger/trial-balance"));
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultSearch_RejectsEmptyLookup()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-empty-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(null, null, null, null, null));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultSearch_FindsBundlesByRunReportPackAndReconciliationCase()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new EvidencePacketExportRequest("operator", "seed")
+            {
+                Linkage = new EvidenceSubjectLinkageDto("report-pack/current", "run-123", "period-2026-05", "rp-55", "case-77")
+            });
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(null, "run-123", null, "rp-55", "case-77"));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var matches = await response.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        matches.Should().NotBeNull();
+        matches!.Should().ContainSingle();
+        matches[0].SubjectKind.Should().Be("report-pack");
+        matches[0].SubjectId.Should().Be("current");
     }
 
     private static EvidenceGraphService CreateGraphService(IReadOnlyList<IEvidenceContributor> contributors)

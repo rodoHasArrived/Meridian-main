@@ -21,6 +21,7 @@
     <Compile Include="ReconciliationClassification.fs" />
     <!-- Configurable matching rules — depends on ReconciliationTypes.fs -->
     <Compile Include="ReconciliationRules.fs" />
+    <Compile Include="ReconciliationCaseWorkflow.fs" />
     <Compile Include="LedgerReadModels.fs" />
     <Compile Include="PeriodManagement.fs" />
     <Compile Include="Interop.fs" />

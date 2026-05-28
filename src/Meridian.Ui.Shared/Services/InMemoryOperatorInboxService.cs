@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.Workstation;
+using Meridian.Application.Composition;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed class InMemoryOperatorInboxService : IOperatorInboxService
+public sealed class InMemoryOperatorInboxService : INonProductionOnlyService, IOperatorInboxService
 {
     private readonly ConcurrentDictionary<string, OperatorWorkItemDto> _items =
         new(StringComparer.OrdinalIgnoreCase);

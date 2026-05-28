@@ -30,6 +30,6 @@ retained desktop compatibility work.
   styling only when the intended shared pattern is already clear.
 - Keep responsive browser validation in scope for the browser workstation; do
   not create mobile-specific product surfaces.
-- Archive older one-off design notes under `docs/archive/` after their useful
+- Archive older one-off design notes under `archive/docs/` after their useful
   guidance has been folded into this page, the design-system assets, or the
   relevant workflow documentation.

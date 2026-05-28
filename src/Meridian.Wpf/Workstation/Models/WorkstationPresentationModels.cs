@@ -15,6 +15,44 @@ public enum WorkstationStateKind
     Blocked
 }
 
+public enum WorkstationReadinessTone
+{
+    Neutral,
+    Ready,
+    Warning,
+    Blocked,
+    Stale,
+    Recovery,
+    SignoffRequired,
+    EvidenceLinked
+}
+
+public sealed record WorkstationEvidenceLinkModel(
+    string Label,
+    string Target,
+    string Source = "",
+    string Detail = "");
+
+public sealed record WorkstationRecoveryActionModel(
+    string Label,
+    string Detail,
+    string Target = "",
+    string Tone = WorkspaceTone.Info);
+
+public sealed record WorkstationSignoffRequirementModel(
+    string Role,
+    string Status,
+    string Detail = "",
+    string Tone = WorkspaceTone.Warning);
+
+public sealed record WorkstationActionPostureModel(
+    string Label,
+    string Detail,
+    string Target = "",
+    string Owner = "",
+    WorkstationReadinessTone ReadinessTone = WorkstationReadinessTone.Neutral,
+    string Tone = WorkspaceTone.Neutral);
+
 public sealed record WorkstationStateModel(
     WorkstationStateKind Kind,
     string Title,
@@ -23,8 +61,21 @@ public sealed record WorkstationStateModel(
     string TargetText = "",
     string EvidenceText = "",
     string Glyph = "",
-    string Tone = WorkspaceTone.Neutral)
+    string Tone = WorkspaceTone.Neutral,
+    WorkstationReadinessTone ReadinessTone = WorkstationReadinessTone.Neutral,
+    WorkstationActionPostureModel? ActionPosture = null,
+    IReadOnlyList<WorkstationEvidenceLinkModel>? EvidenceLinks = null,
+    IReadOnlyList<WorkstationRecoveryActionModel>? RecoveryActions = null,
+    WorkstationSignoffRequirementModel? SignoffRequirement = null)
 {
+    public IReadOnlyList<WorkstationEvidenceLinkModel> VisibleEvidenceLinks => EvidenceLinks ?? Array.Empty<WorkstationEvidenceLinkModel>();
+
+    public IReadOnlyList<WorkstationRecoveryActionModel> VisibleRecoveryActions => RecoveryActions ?? Array.Empty<WorkstationRecoveryActionModel>();
+
+    public bool HasActionPosture => ActionPosture is not null || !string.IsNullOrWhiteSpace(ActionText) || !string.IsNullOrWhiteSpace(TargetText);
+
+    public bool HasSignoffRequirement => SignoffRequirement is not null;
+
     public static WorkstationStateModel Ready(
         string title,
         string detail,
@@ -33,10 +84,10 @@ public sealed record WorkstationStateModel(
         string evidenceText = "",
         string glyph = "\uE73E",
         string tone = WorkspaceTone.Success)
-        => new(WorkstationStateKind.Ready, title, detail, actionText, targetText, evidenceText, glyph, tone);
+        => new(WorkstationStateKind.Ready, title, detail, actionText, targetText, evidenceText, glyph, tone, WorkstationReadinessTone.Ready);
 
     public static WorkstationStateModel Loading(string title, string detail, string glyph = "\uE72C")
-        => new(WorkstationStateKind.Loading, title, detail, Glyph: glyph, Tone: WorkspaceTone.Info);
+        => new(WorkstationStateKind.Loading, title, detail, Glyph: glyph, Tone: WorkspaceTone.Info, ReadinessTone: WorkstationReadinessTone.Neutral);
 
     public static WorkstationStateModel Empty(
         string title,
@@ -44,7 +95,7 @@ public sealed record WorkstationStateModel(
         string actionText = "",
         string targetText = "",
         string glyph = "\uE946")
-        => new(WorkstationStateKind.Empty, title, detail, actionText, targetText, Glyph: glyph, Tone: WorkspaceTone.Neutral);
+        => new(WorkstationStateKind.Empty, title, detail, actionText, targetText, Glyph: glyph, Tone: WorkspaceTone.Neutral, ReadinessTone: WorkstationReadinessTone.Neutral);
 
     public static WorkstationStateModel Error(
         string title,
@@ -53,7 +104,55 @@ public sealed record WorkstationStateModel(
         string targetText = "",
         string evidenceText = "",
         string glyph = "\uE783")
-        => new(WorkstationStateKind.Error, title, detail, actionText, targetText, evidenceText, glyph, WorkspaceTone.Danger);
+        => new(WorkstationStateKind.Error, title, detail, actionText, targetText, evidenceText, glyph, WorkspaceTone.Danger, WorkstationReadinessTone.Blocked);
+
+    public static WorkstationStateModel Blocked(
+        string title,
+        string detail,
+        WorkstationActionPostureModel actionPosture,
+        IReadOnlyList<WorkstationEvidenceLinkModel>? evidenceLinks = null,
+        IReadOnlyList<WorkstationRecoveryActionModel>? recoveryActions = null,
+        WorkstationSignoffRequirementModel? signoffRequirement = null,
+        string evidenceText = "",
+        string glyph = "\uE783")
+        => new(
+            WorkstationStateKind.Blocked,
+            title,
+            detail,
+            actionPosture.Label,
+            actionPosture.Target,
+            evidenceText,
+            glyph,
+            WorkspaceTone.Danger,
+            WorkstationReadinessTone.Blocked,
+            actionPosture,
+            evidenceLinks,
+            recoveryActions,
+            signoffRequirement);
+
+    public static WorkstationStateModel Recovery(
+        string title,
+        string detail,
+        WorkstationActionPostureModel actionPosture,
+        IReadOnlyList<WorkstationEvidenceLinkModel>? evidenceLinks = null,
+        IReadOnlyList<WorkstationRecoveryActionModel>? recoveryActions = null,
+        WorkstationSignoffRequirementModel? signoffRequirement = null,
+        string evidenceText = "",
+        string glyph = "\uE930")
+        => new(
+            WorkstationStateKind.Stale,
+            title,
+            detail,
+            actionPosture.Label,
+            actionPosture.Target,
+            evidenceText,
+            glyph,
+            WorkspaceTone.Warning,
+            WorkstationReadinessTone.Recovery,
+            actionPosture,
+            evidenceLinks,
+            recoveryActions,
+            signoffRequirement);
 }
 
 public sealed record WorkstationCommandModel(
@@ -66,7 +165,11 @@ public sealed record WorkstationCommandModel(
     string DisabledReason = "",
     bool IsBusy = false,
     string ConfirmationText = "",
-    string ShortcutHint = "");
+    string ShortcutHint = "",
+    WorkstationActionPostureModel? Posture = null,
+    string EvidenceSourceText = "",
+    string TargetText = "",
+    string GroupLabel = "");
 
 public sealed class WorkstationCommandGroupModel
 {

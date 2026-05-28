@@ -479,6 +479,7 @@ public static class UiApiRoutes
     public const string AuthApiLogin = "/api/auth/login";
     public const string AuthApiLogout = "/api/auth/logout";
     public const string AuthApiMe = "/api/auth/me";
+    public const string AuthApiRoles = "/api/auth/roles";
 
     // Execution / Paper Trading Cockpit endpoints
     public const string ExecutionAccount = "/api/execution/account";
@@ -526,6 +527,8 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
+    public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
@@ -539,6 +542,8 @@ public static class UiApiRoutes
     public const string OperationsContinuityTimeline = "/api/workstation/operations/continuity/{workflowId:guid}/timeline";
     public const string OperationsContinuityBreaks = "/api/workstation/operations/continuity/{workflowId:guid}/breaks";
     public const string OperationsContinuityLedgerPreview = "/api/workstation/operations/continuity/{workflowId:guid}/ledger-preview";
+    public const string OperationsContinuityChecklist = "/api/workstation/operations/continuity/{workflowId:guid}/checklist";
+    public const string OperationsContinuityChecklistAcknowledge = "/api/workstation/operations/continuity/{workflowId:guid}/checklist/{taskId}/acknowledge";
     public const string OperationsContinuityBrokerImport = "/api/workstation/operations/continuity/{workflowId:guid}/broker/import";
     public const string OperationsContinuityBrokerNormalize = "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize";
     public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
@@ -549,6 +554,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";
     public const string OperationsContinuityReconciliationRun = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/run";
     public const string OperationsContinuityReconciliationBreakResolve = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/breaks/{breakId}/resolve";
+    public const string OperationsContinuityApprovalPolicyMatrix = "/api/workstation/operations/continuity/approval-policy-matrix";
     public const string OperationsContinuityApprovalSubmit = "/api/workstation/operations/continuity/{workflowId:guid}/approval/submit";
     public const string OperationsContinuityApprovalApprove = "/api/workstation/operations/continuity/{workflowId:guid}/approval/approve";
     public const string OperationsContinuityApprovalReject = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reject";
@@ -561,6 +567,15 @@ public static class UiApiRoutes
     public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
     public const string ReconciliationRuns = "/api/workstation/reconciliation/runs";
     public const string ReconciliationRunById = "/api/workstation/reconciliation/runs/{reconciliationRunId}";
+    public const string ReconciliationStatementRuns = "/api/workstation/reconciliation/statement-runs";
+    public const string ReconciliationStatementRunById = "/api/workstation/reconciliation/statement-runs/{runId}";
+    public const string ReconciliationStatementRunValidation = "/api/workstation/reconciliation/statement-runs/{runId}/validation";
+    public const string ReconciliationStatementRunBreaks = "/api/workstation/reconciliation/statement-runs/{runId}/breaks";
+    public const string ReconciliationStatementRunReconcile = "/api/workstation/reconciliation/statement-runs/{runId}/reconcile";
+    public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
+    public const string ReconciliationStatementBreaks = "/api/workstation/reconciliation/statement-breaks";
+    public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string ReconciliationQueueStatus = "/api/workstation/reconciliation/queue-status";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
@@ -584,9 +599,22 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
     public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
+    public const string ReconciliationBreakQueueById = "/api/workstation/reconciliation/break-queue/{breakId}";
     public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
+    public const string ReconciliationBreakAssign = "/api/workstation/reconciliation/break-queue/{breakId}/assign";
+    public const string ReconciliationBreakTransition = "/api/workstation/reconciliation/break-queue/{breakId}/transition";
+    public const string ReconciliationBreakComments = "/api/workstation/reconciliation/break-queue/{breakId}/comments";
+    public const string ReconciliationBreakComment = "/api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}";
+    public const string ReconciliationBreakRootCause = "/api/workstation/reconciliation/break-queue/{breakId}/root-cause";
+    public const string ReconciliationBreakResolution = "/api/workstation/reconciliation/break-queue/{breakId}/resolution";
+    public const string ReconciliationBreakSignOff = "/api/workstation/reconciliation/break-queue/{breakId}/sign-off";
+    public const string ReconciliationBreakReopen = "/api/workstation/reconciliation/break-queue/{breakId}/reopen";
+    public const string ReconciliationBreakBulkDryRun = "/api/workstation/reconciliation/break-queue/bulk/dry-run";
+    public const string ReconciliationBreakBulkExecute = "/api/workstation/reconciliation/break-queue/bulk/execute";
+    public const string ReconciliationBreakBulkStatus = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}";
+    public const string ReconciliationBreakBulkResult = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result";
     public const string FundReportPacks = "/api/fund-structure/report-packs";
     public const string FundReportPackById = "/api/fund-structure/report-packs/{reportId}";
 
@@ -596,6 +624,8 @@ public static class UiApiRoutes
     public const string FundAccountBrokerageSyncRun = "/api/fund-accounts/{accountId}/brokerage-sync/run";
     public const string FundAccountBrokerageSyncPositions = "/api/fund-accounts/{accountId}/brokerage-sync/positions";
     public const string FundAccountBrokerageSyncActivity = "/api/fund-accounts/{accountId}/brokerage-sync/activity";
+    public const string FundAccountBrokerageSyncReconcileLedger = "/api/fund-accounts/{accountId}/brokerage-sync/reconcile-ledger";
+    public const string FundAccountBrokerageSyncReconciliationLatest = "/api/fund-accounts/{accountId}/brokerage-sync/reconciliation/latest";
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";

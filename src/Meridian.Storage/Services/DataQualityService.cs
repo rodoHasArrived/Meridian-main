@@ -70,7 +70,6 @@ public sealed class DataQualityService : IDataQualityService
         );
 
         _scoreCache[path] = score;
-        await PersistTrendPointAsync(path, score, ct);
         return score;
     }
 
@@ -332,19 +331,6 @@ public sealed class DataQualityService : IDataQualityService
 
         _trendCache[cacheKey] = trend;
         return trend;
-    }
-
-    private async Task PersistTrendPointAsync(string path, DataQualityScore score, CancellationToken ct)
-    {
-        var point = new QualityTrendPoint(
-            Symbol: ExtractSymbol(path),
-            Date: DateOnly.FromDateTime(score.EvaluatedAt.UtcDateTime.Date),
-            Provider: ExtractProvider(path),
-            ScoredAt: score.EvaluatedAt,
-            OverallScore: score.OverallScore,
-            DimensionScores: score.Dimensions.ToDictionary(d => d.Name, d => d.Score, StringComparer.OrdinalIgnoreCase));
-
-        await _trendStore.AppendAsync(point, ct);
     }
 
     private static Dictionary<string, double> AverageDimensions(IEnumerable<QualityTrendPoint> points)

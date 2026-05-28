@@ -22,6 +22,7 @@
     </PackageReference>
     <PackageReference Include="Bogus" />
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FsCheck.Xunit" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="NSubstitute" />

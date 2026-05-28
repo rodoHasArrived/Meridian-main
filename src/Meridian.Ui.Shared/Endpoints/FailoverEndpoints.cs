@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -223,6 +224,38 @@ public static class FailoverEndpoints
         // Get provider health — returns live data from StreamingFailoverService when available
         group.MapGet(UiApiRoutes.FailoverHealth, (ConfigStore store, [FromServices] StreamingFailoverRegistry? registry, [FromServices] ProviderDegradationScorer? scorer) =>
         {
+
+        var dataRoot = AppContext.BaseDirectory;
+        var calibrationDir = Path.Combine(dataRoot, "data", "calibration", "provider-degradation");
+        ProviderKernelCalibrationSnapshot? snapshot = null;
+        KernelPromotionDecision? promotion = null;
+        try
+        {
+            var snapshotStore = new ProviderKernelCalibrationSnapshotStore(Path.Combine(dataRoot, "data"));
+            snapshot = snapshotStore.GetLatestAsync().GetAwaiter().GetResult();
+            var governancePath = Path.Combine(calibrationDir, "latest-governance-decision.json");
+            if (File.Exists(governancePath))
+            {
+                promotion = JsonSerializer.Deserialize<KernelPromotionDecision>(File.ReadAllText(governancePath));
+            }
+        }
+        catch
+        {
+            // best effort; health endpoint remains available without calibration artifacts
+        }
+
+        ProviderKernelProvenanceResponse? provenance = snapshot is null ? null : new ProviderKernelProvenanceResponse(
+            snapshot.KernelLineage.BaselineKernelVersion,
+            snapshot.KernelLineage.CandidateKernelVersion,
+            snapshot.KernelLineage.DatasetId,
+            snapshot.KernelLineage.CalibratedAt,
+            snapshot.KernelLineage.CalibratedBy);
+        KernelPromotionRecommendationResponse? recommendation = promotion is null ? null : new KernelPromotionRecommendationResponse(
+            promotion.Approved,
+            promotion.CalibrationPass,
+            promotion.FreshnessPass,
+            promotion.BlockingReasons.ToArray());
+
             if (registry?.Service is { } svc)
             {
                 var healthSnapshots = svc.GetProviderHealthSnapshots();
@@ -245,7 +278,9 @@ public static class FailoverEndpoints
                         RecentIssues: h.RecentIssues.Select(issue => new HealthIssueResponse(
                             Type: "provider_health_issue",
                             Message: issue,
-                            Timestamp: DateTimeOffset.UtcNow)).ToArray());
+                            Timestamp: DateTimeOffset.UtcNow)).ToArray(),
+                        KernelProvenance: provenance,
+                        PromotionRecommendation: recommendation);
                 }).ToArray();
 
                 return Results.Json(health, jsonOptions);
@@ -275,7 +310,9 @@ public static class FailoverEndpoints
                     LastSuccessTime: hasRealData ? realMetrics!.Timestamp : null,
                     DegradationScore: score,
                     Reasons: reasons,
-                    RecentIssues: Array.Empty<HealthIssueResponse>());
+                    RecentIssues: Array.Empty<HealthIssueResponse>(),
+                    KernelProvenance: provenance,
+                    PromotionRecommendation: recommendation);
             }).ToArray();
 
             return Results.Json(fallbackHealth, jsonOptions);

@@ -6,13 +6,16 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingReadiness: "/api/workstation/trading/readiness",
   operatorInbox: "/api/workstation/operator/inbox",
   portfolio: "/api/workstation/portfolio",
+  portfolioSummary: "/api/workstation/portfolio/summary",
   data: "/api/workstation/data",
   accounting: "/api/workstation/accounting",
   reporting: "/api/workstation/reporting",
   workflowSummary: "/api/workstation/workflow-summary",
+  featureCapabilities: "/api/workstation/settings/feature-capabilities",
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
   operationsContinuity: "/api/workstation/operations/continuity",
+  chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
@@ -97,6 +100,8 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
 
 export const RECONCILIATION_API_ENDPOINTS = {
   runs: "/api/workstation/reconciliation/runs",
+  statementRuns: "/api/workstation/reconciliation/statement-runs",
+  statementExceptions: "/api/workstation/reconciliation/statement-exceptions",
   breakQueue: "/api/workstation/reconciliation/break-queue",
   calibrationSummary: "/api/workstation/reconciliation/calibration-summary"
 } as const;
@@ -255,6 +260,32 @@ export function workstationOperationsContinuityBreaksEndpoint(workflowId: string
 
 export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
   return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
+}
+
+export function workstationChiefOfStaffSessionsEndpoint(options: {
+  workspace?: string;
+  fundProfileId?: string;
+  fundAccountId?: string;
+  status?: string;
+  limit?: number;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions${queryString(options)}`;
+}
+
+export function workstationChiefOfStaffSessionEndpoint(sessionId: string): string {
+  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions/${pathSegment(sessionId, "sessionId")}`;
+}
+
+export function workstationChiefOfStaffDecisionEndpoint(sessionId: string): string {
+  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/decisions`;
+}
+
+export function workstationChiefOfStaffTraceExportEndpoint(sessionId: string): string {
+  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/export-trace`;
+}
+
+export function workstationChiefOfStaffHealthEndpoint(): string {
+  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/health`;
 }
 
 export function workstationRunLedgerEndpoint(runId: string): string {
@@ -496,6 +527,18 @@ export function reconciliationRunEndpoint(reconciliationRunId: string): string {
   return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
 }
 
+export function reconciliationStatementRunsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementRuns;
+}
+
+export function reconciliationStatementRunEndpoint(runId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(runId, "runId")}`;
+}
+
+export function reconciliationStatementExceptionsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementExceptions;
+}
+
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {
   return `${RECONCILIATION_API_ENDPOINTS.breakQueue}${queryString(options)}`;
 }
@@ -514,6 +557,54 @@ export function reconciliationBreakReviewEndpoint(breakId: string): string {
 
 export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return `${reconciliationBreakEndpoint(breakId)}/resolve`;
+}
+
+export function reconciliationBreakAssignEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/assign`;
+}
+
+export function reconciliationBreakTransitionEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/transition`;
+}
+
+export function reconciliationBreakCommentsEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/comments`;
+}
+
+export function reconciliationBreakCommentEndpoint(breakId: string, commentId: string): string {
+  return `${reconciliationBreakCommentsEndpoint(breakId)}/${pathSegment(commentId, "commentId")}`;
+}
+
+export function reconciliationBreakRootCauseEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/root-cause`;
+}
+
+export function reconciliationBreakResolutionEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/resolution`;
+}
+
+export function reconciliationBreakSignOffEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/sign-off`;
+}
+
+export function reconciliationBreakReopenEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/reopen`;
+}
+
+export function reconciliationBreakBulkDryRunEndpoint(): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/dry-run`;
+}
+
+export function reconciliationBreakBulkExecuteEndpoint(): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/execute`;
+}
+
+export function reconciliationBreakBulkStatusEndpoint(bulkActionId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/${pathSegment(bulkActionId, "bulkActionId")}`;
+}
+
+export function reconciliationBreakBulkResultEndpoint(bulkActionId: string): string {
+  return `${reconciliationBreakBulkStatusEndpoint(bulkActionId)}/result`;
 }
 
 export function backfillCheckpointEndpoint(jobId: string): string {

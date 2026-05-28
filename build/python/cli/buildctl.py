@@ -1077,6 +1077,39 @@ def cmd_fingerprint(args: argparse.Namespace) -> int:
     return 0
 
 
+
+
+def _is_sensitive_env_var(name: str) -> bool:
+    lowered = name.lower()
+    sensitive_markers = (
+        "key",
+        "secret",
+        "token",
+        "password",
+        "connection_string",
+        "connectionstring",
+        "connstr",
+        "sas",
+        "private",
+        "credential",
+    )
+    return any(marker in lowered for marker in sensitive_markers)
+
+
+def _mask_env_value(value: str) -> str:
+    if not value:
+        return ""
+    if len(value) <= 4:
+        return "****"
+    return f"{value[:2]}***{value[-1]}"
+
+
+def _safe_env_snapshot() -> dict[str, str]:
+    return {
+        key: ("<redacted>" if _is_sensitive_env_var(key) else value)
+        for key, value in os.environ.items()
+    }
+
 # ---------------------------------------------------------------------------
 # env-capture command
 # ---------------------------------------------------------------------------
@@ -1092,7 +1125,7 @@ def cmd_env_capture(args: argparse.Namespace) -> int:
         "timestamp": _utc_now(),
         "platform": platform.platform(),
         "python": platform.python_version(),
-        "env": {k: v for k, v in os.environ.items() if not k.lower().endswith(("key", "secret", "token", "password"))},
+        "env": _safe_env_snapshot(),
     }
 
     result = _run(["dotnet", "--version"])
@@ -1147,8 +1180,10 @@ def cmd_env_diff(args: argparse.Namespace) -> int:
         v2 = flat2.get(key, "<missing>")
         if v1 != v2:
             print(f"  {key}:")
-            print(f"    {env1}: {v1}")
-            print(f"    {env2}: {v2}")
+            display_v1 = "<redacted>" if _is_sensitive_env_var(key) else _mask_env_value(v1)
+            display_v2 = "<redacted>" if _is_sensitive_env_var(key) else _mask_env_value(v2)
+            print(f"    {env1}: {display_v1}")
+            print(f"    {env2}: {display_v2}")
             diffs += 1
 
     if diffs == 0:

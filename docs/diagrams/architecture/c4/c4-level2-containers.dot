@@ -1,6 +1,6 @@
 // C4 Level 2: Container Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-04-09
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the major deployable units within the system.
 // It answers: "What are the major technology choices?"
@@ -16,7 +16,7 @@ digraph C4_Containers {
 
   // Title
   labelloc="t";
-  label="Meridian - Container Diagram (C4 Level 2)\nv1.6.1";
+  label="Meridian - Container Diagram (C4 Level 2)";
 
   // External Actors
   Operator [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white",
@@ -42,7 +42,7 @@ digraph C4_Containers {
     SS [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
         label="StockSharp\n[External]\n\nMulti-Exchange"];
     HIST_PROVIDERS [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-                    label="Historical APIs\n[External]\n\nYahoo, Tiingo, Finnhub\nPolygon, Stooq, IB, etc.\n(10 providers)"];
+                    label="Historical APIs\n[External]\n\nYahoo, Tiingo, Finnhub\nPolygon, Stooq, IB, etc.\n(15 provider classes)"];
   }
 
   // System Boundary
@@ -60,7 +60,7 @@ digraph C4_Containers {
       bgcolor="#faf5ff";
 
       WPF [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-           label="WPF Desktop App\n[.NET 9 / WPF]\n\n40+ pages: Dashboard, Config,\nBackfill, Export, Monitoring\nNative Windows experience"];
+           label="WPF Desktop App\n[.NET 10 / WPF]\n\n67 pages, 94 ViewModel files\nActive operator workstation shell\nNative Windows experience"];
 
       WEB_UI [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
               label="Desktop-local API host\n[ASP.NET Core / Minimal APIs]\n\nlocalhost workstation API\nSwagger + health endpoints\nused by desktop and tooling"];
@@ -91,7 +91,7 @@ digraph C4_Containers {
 
     // Core Collector Service
     CORE [shape=box, style="rounded,filled", fillcolor="#438dd5", fontcolor="white", width=3.5,
-          label="Meridian Core\n[.NET 9 Console App | C# 13]\n\nEvent pipeline with 100K bounded channel\nCollectors: Trade, Quote, OrderBook\nStreaming + Historical data processing\nPrometheus metrics, health endpoints"];
+          label="Meridian Core\n[.NET 10 Console App | C# 13]\n\nEvent pipeline with bounded channel policy\nCollectors: Trade, Quote, OrderBook\nStreaming + Historical data processing\nPrometheus metrics, health endpoints"];
 
     // F# Domain Library
     FSHARP [shape=box, style="rounded,filled", fillcolor="#2c7a7b", fontcolor="white",

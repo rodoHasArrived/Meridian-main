@@ -3,10 +3,11 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLendingInterop;
+using Meridian.Application.Composition;
 
 namespace Meridian.Application.DirectLending;
 
-public sealed partial class InMemoryDirectLendingService : IDirectLendingService
+public sealed partial class InMemoryDirectLendingService : INonProductionOnlyService, IDirectLendingService
 {
     private static readonly JsonSerializerOptions HashJsonOptions = new()
     {
@@ -488,6 +489,11 @@ public sealed partial class InMemoryDirectLendingService : IDirectLendingService
         if (terms.RateTypeKind == RateTypeKind.Floating && string.IsNullOrWhiteSpace(terms.InterestIndexName))
         {
             throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Floating-rate terms require an interest index name."));
+        }
+
+        if (terms.EffectiveRateFloor is { } floor && terms.EffectiveRateCap is { } cap && cap < floor)
+        {
+            throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor."));
         }
     }
 

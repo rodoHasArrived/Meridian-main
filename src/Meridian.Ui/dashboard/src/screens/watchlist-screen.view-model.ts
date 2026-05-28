@@ -90,6 +90,10 @@ export interface WatchlistRowViewModel {
   inspectAriaLabel: string;
   removeLabel: string;
   removeAriaLabel: string;
+  removeButtonVariant: "outline" | "destructive";
+  removeStatusId: string | null;
+  removeStatusLabel: string | null;
+  removeStatusTone: "warning" | "danger";
   removeDisabledReason: string | null;
   rowSelectAriaLabel: string;
   ariaLabel: string;
@@ -718,6 +722,9 @@ export function buildWatchlistRows(
     .map((record) => {
       const isRemoving = removing[record.symbol] === true;
       const removeConfirmationPending = pendingRemoveKey === normalizeSymbol(record.symbol);
+      const removeStatusId = (isRemoving || removeConfirmationPending)
+        ? `watchlist-remove-${stableSymbolId(record.symbol)}-status`
+        : null;
       const providerLabel = record.provider ?? "No provider";
       const lastEventLabel = formatRelative(record.lastEventAt);
       const eventCountLabel = formatCount(record.eventCount);
@@ -760,6 +767,10 @@ export function buildWatchlistRows(
         inspectLabel: "Inspect",
         inspectAriaLabel: `Inspect ${record.symbol} watchlist detail`,
         removeLabel: isRemoving ? "Removing…" : removeConfirmationPending ? "Confirm remove" : "Remove",
+        removeButtonVariant: removeConfirmationPending ? "destructive" : "outline",
+        removeStatusId,
+        removeStatusLabel: isRemoving ? "Removing" : removeConfirmationPending ? "Pending confirmation" : null,
+        removeStatusTone: isRemoving ? "danger" : "warning",
         removeAriaLabel: isRemoving
           ? `Removing ${record.symbol} from watchlist`
           : removeConfirmationPending
@@ -1336,6 +1347,11 @@ function statusVariant(status: SymbolRecord["status"]): WatchlistBadgeVariant {
 
 function normalizeSymbol(value: string): string {
   return value.trim().toUpperCase();
+}
+
+function stableSymbolId(value: string): string {
+  const stable = normalizeSymbol(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return stable || "symbol";
 }
 
 function formatCount(value: number): string {

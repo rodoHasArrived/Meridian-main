@@ -118,7 +118,8 @@ public sealed class AuditChainService : IAuditChainService
 
         var entry = new
         {
-            path = Path.GetFileName(filePath),
+            path = filePath,
+            fileHash,
             hash = entryHash,
             prev = previousHash,
             ts = DateTimeOffset.UtcNow.ToString("O")
@@ -156,7 +157,9 @@ public sealed class AuditChainService : IAuditChainService
 
         if (!File.Exists(chainLogPath))
         {
-            _log.Information("Chain log not found at {ChainLogPath}, marking as valid (empty chain)", chainLogPath);
+            _log.Warning("Chain log not found at {ChainLogPath}; unable to verify integrity", chainLogPath);
+            result.IsValid = false;
+            result.FirstTamperPath = chainLogPath;
             return result;
         }
 
@@ -186,6 +189,9 @@ public sealed class AuditChainService : IAuditChainService
                     var path = root.TryGetProperty("path"u8, out var pathElement)
                         ? pathElement.GetString() ?? ""
                         : "";
+                    var fileHash = root.TryGetProperty("fileHash"u8, out var fileHashElement)
+                        ? fileHashElement.GetString() ?? ""
+                        : "";
                     var currentHash = root.TryGetProperty("hash"u8, out var hashElement)
                         ? hashElement.GetString() ?? ""
                         : "";
@@ -195,6 +201,66 @@ public sealed class AuditChainService : IAuditChainService
                     var timestamp = root.TryGetProperty("ts"u8, out var tsElement)
                         ? tsElement.GetString() ?? ""
                         : "";
+
+                    if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(fileHash))
+                    {
+                        _log.Error("Audit chain entry at line {LineNumber} is missing required fields", lineNumber);
+                        result.IsValid = false;
+                        result.FirstTamperPath = path;
+                        if (DateTimeOffset.TryParse(timestamp, out var ts))
+                        {
+                            result.TamperedAt = ts;
+                        }
+
+                        break;
+                    }
+
+                    if (!File.Exists(path))
+                    {
+                        _log.Error("Audit chain file not found during verification: {Path}", path);
+                        result.IsValid = false;
+                        result.FirstTamperPath = path;
+                        if (DateTimeOffset.TryParse(timestamp, out var ts))
+                        {
+                            result.TamperedAt = ts;
+                        }
+
+                        break;
+                    }
+
+                    await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    var currentFileHashBytes = await SHA256.HashDataAsync(fileStream, ct).ConfigureAwait(false);
+                    var currentFileHash = Convert.ToHexString(currentFileHashBytes).ToLowerInvariant();
+
+                    if (!string.Equals(currentFileHash, fileHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _log.Error("Audit chain file hash mismatch at line {LineNumber} for {Path}", lineNumber, path);
+                        result.IsValid = false;
+                        result.FirstTamperPath = path;
+                        if (DateTimeOffset.TryParse(timestamp, out var ts))
+                        {
+                            result.TamperedAt = ts;
+                        }
+
+                        break;
+                    }
+
+                    var expectedEntryData = $"{path}{fileHash}{recordedPreviousHash}";
+                    var expectedEntryHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(expectedEntryData));
+                    var expectedEntryHash = Convert.ToHexString(expectedEntryHashBytes).ToLowerInvariant();
+
+                    if (!string.Equals(expectedEntryHash, currentHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _log.Error("Audit chain entry hash mismatch at line {LineNumber} for {Path}", lineNumber, path);
+                        result.IsValid = false;
+                        result.FirstTamperPath = path;
+                        if (DateTimeOffset.TryParse(timestamp, out var ts))
+                        {
+                            result.TamperedAt = ts;
+                        }
+
+                        break;
+                    }
 
                     // Verify chain linkage: recorded previous hash should match actual previous hash
                     if (recordedPreviousHash != (previousHash ?? ""))

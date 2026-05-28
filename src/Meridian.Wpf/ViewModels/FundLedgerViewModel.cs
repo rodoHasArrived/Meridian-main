@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -17,6 +18,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly IFundReconciliationWorkbenchService _fundReconciliationWorkbenchService;
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
+    private readonly IStatementReconciliationWorkbenchService _statementReconciliationWorkbenchService;
+    private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
 
     private string _title = "Fund Operations";
     private string _statusText = "Select a fund profile to inspect fund operations.";
@@ -71,6 +74,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
     private string _reportPackOwnershipText = "Governance operator sign-off is pending.";
     private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
+    private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
+        "Report pack waiting for fund context",
+        "Select a fund profile and refresh the preview before distributing reporting artifacts.",
+        "Refresh Preview",
+        "Report Pack");
     private bool _isReportPackLoading;
     private GovernanceReportKindDto _selectedReportKind = GovernanceReportKindDto.TrialBalance;
     private int _selectedTabIndex;
@@ -88,6 +96,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _selectedLedgerAssetBalanceText = "-";
     private string _selectedLedgerEquityBalanceText = "-";
     private FundReportPackPreviewDto? _reportPackPreview;
+    private GovernanceLifecycleProjectionDto? _governanceLifecycle;
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -97,7 +106,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFinancingReadService cashFinancingReadService,
         IFundReconciliationWorkbenchService fundReconciliationWorkbenchService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
-        StrategyRunWorkspaceService runWorkspaceService)
+        StrategyRunWorkspaceService runWorkspaceService,
+        IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -107,21 +117,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _fundReconciliationWorkbenchService = fundReconciliationWorkbenchService ?? throw new ArgumentNullException(nameof(fundReconciliationWorkbenchService));
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService ?? throw new ArgumentNullException(nameof(fundOperationsWorkspaceReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
-
-        TrialBalance = [];
-        Journal = [];
-        Accounts = [];
-        BankSnapshots = [];
-        PortfolioPositions = [];
-        CashFlowEntries = [];
-        CashFlowBuckets = [];
-        VisibleTrialBalance = [];
-        VisibleJournal = [];
-        LedgerDimensions = [];
-        ReconciliationRuns = [];
-        CashFinancingHighlights = [];
-        AuditTrail = [];
-        ReportPackAssetSections = [];
+        _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
 
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo("GovernanceShell"));
@@ -139,6 +135,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         OpenSelectedAccountPortfolioCommand = new RelayCommand(OpenSelectedAccountPortfolio, () => SelectedAccount is not null);
         OpenSelectedPortfolioSecurityCommand = new RelayCommand(OpenSelectedPortfolioSecurity, () => SelectedPortfolioPosition is not null);
         OpenSelectedCashFlowSecurityCommand = new RelayCommand(OpenSelectedCashFlowSecurity, () => !string.IsNullOrWhiteSpace(SelectedCashFlowEntry?.Symbol));
+        RefreshStatementReconciliationCommand = new AsyncRelayCommand(RefreshStatementReconciliationAsync);
 
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         InitializeReconciliationWorkbench();
@@ -159,33 +156,35 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         }
     }
 
-    public ObservableCollection<FundTrialBalanceLine> TrialBalance { get; }
+    public ObservableCollection<FundTrialBalanceLine> TrialBalance => _collectionsSection.TrialBalance;
 
-    public ObservableCollection<FundJournalLine> Journal { get; }
+    public ObservableCollection<FundJournalLine> Journal => _collectionsSection.Journal;
 
-    public ObservableCollection<FundAccountSummary> Accounts { get; }
+    public ObservableCollection<FundAccountSummary> Accounts => _collectionsSection.Accounts;
 
-    public ObservableCollection<BankAccountSnapshot> BankSnapshots { get; }
+    public ObservableCollection<BankAccountSnapshot> BankSnapshots => _collectionsSection.BankSnapshots;
 
-    public ObservableCollection<FundPortfolioPosition> PortfolioPositions { get; }
+    public ObservableCollection<FundPortfolioPosition> PortfolioPositions => _collectionsSection.PortfolioPositions;
 
-    public ObservableCollection<CashFlowEntryDto> CashFlowEntries { get; }
+    public ObservableCollection<CashFlowEntryDto> CashFlowEntries => _collectionsSection.CashFlowEntries;
 
-    public ObservableCollection<CashLadderBucketDto> CashFlowBuckets { get; }
+    public ObservableCollection<CashLadderBucketDto> CashFlowBuckets => _collectionsSection.CashFlowBuckets;
 
-    public ObservableCollection<FundTrialBalanceLine> VisibleTrialBalance { get; }
+    public ObservableCollection<FundTrialBalanceLine> VisibleTrialBalance => _collectionsSection.VisibleTrialBalance;
 
-    public ObservableCollection<FundJournalLine> VisibleJournal { get; }
+    public ObservableCollection<FundJournalLine> VisibleJournal => _collectionsSection.VisibleJournal;
 
-    public ObservableCollection<FundLedgerDimensionView> LedgerDimensions { get; }
+    public ObservableCollection<FundLedgerDimensionView> LedgerDimensions => _collectionsSection.LedgerDimensions;
 
-    public ObservableCollection<FundReconciliationItem> ReconciliationRuns { get; }
+    public ObservableCollection<FundReconciliationItem> ReconciliationRuns => _collectionsSection.ReconciliationRuns;
 
-    public ObservableCollection<string> CashFinancingHighlights { get; }
+    public ObservableCollection<string> CashFinancingHighlights => _collectionsSection.CashFinancingHighlights;
 
-    public ObservableCollection<FundAuditEntry> AuditTrail { get; }
+    public ObservableCollection<FundAuditEntry> AuditTrail => _collectionsSection.AuditTrail;
 
-    public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; }
+    public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
+
+    internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
@@ -543,6 +542,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _reportPackSnapshotWarningText, value);
     }
 
+    public WorkstationStateModel ReportPackReadinessState
+    {
+        get => _reportPackReadinessState;
+        private set => SetProperty(ref _reportPackReadinessState, value);
+    }
+
     public bool IsReportPackLoading
     {
         get => _isReportPackLoading;
@@ -698,8 +703,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var cashTask = _cashFinancingReadService.GetAsync(activeFund.FundProfileId, activeFund.BaseCurrency, ct);
         var reconciliationTask = _fundReconciliationWorkbenchService.GetSnapshotAsync(activeFund.FundProfileId, ct);
         var portfolioTask = BuildFundPortfolioAsync(activeFund.FundProfileId, ct);
+        var governanceWorkspaceTask = _fundOperationsWorkspaceReadService.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: activeFund.FundProfileId,
+            Currency: activeFund.BaseCurrency), ct);
 
-        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask);
+        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, governanceWorkspaceTask);
 
         var ledger = await ledgerTask;
         var accounts = await accountsTask;
@@ -707,6 +715,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var cashSummary = await cashTask;
         var reconciliationSnapshot = await reconciliationTask;
         var portfolioPositions = await portfolioTask;
+        var governanceWorkspace = await governanceWorkspaceTask;
+        _governanceLifecycle = governanceWorkspace.Governance;
 
         Title = $"Fund Operations · {activeFund.DisplayName}";
         StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
@@ -720,6 +730,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ApplyCashSummary(cashSummary);
         ApplyPortfolio(portfolioPositions);
         await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
+        await LoadStatementReconciliationAsync(ct);
         BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
         BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
         await RefreshReportPackPreviewAsync(ct);
@@ -809,7 +820,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         AuditTrail.Clear();
         ReportPackAssetSections.Clear();
         _reportPackPreview = null;
+        _governanceLifecycle = null;
         ReportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
+        ReportPackReadinessState = WorkstationStateModel.Empty(
+            "Report pack waiting for fund context",
+            "Select a fund profile and refresh the preview before distributing reporting artifacts.",
+            "Refresh Preview",
+            "Report Pack");
         ReportPackKindText = GovernanceReportKindDto.TrialBalance.ToString();
         ReportPackAsOfText = "-";
         ReportPackNetAssetsText = "-";
@@ -817,6 +834,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReportPackAssetSectionsText = "0";
         ReportPackGeneratedAtText = "-";
         ResetReconciliationWorkbenchState();
+        ResetStatementReconciliationState();
         UpdateWorkbenchIdentity();
         UpdateRouteBannerPresentation();
         UpdateReconciliationWorkbenchPresentation();
@@ -1235,6 +1253,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         AuditTrail.Clear();
 
+        if (_governanceLifecycle is { WorkflowUpdatedAtUtc: { } workflowUpdatedAt } governance)
+        {
+            AuditTrail.Add(new FundAuditEntry(
+                Timestamp: workflowUpdatedAt,
+                Category: "Governance lifecycle",
+                Description: governance.AuditTraceability,
+                Reference: governance.ActiveWorkflowId ?? "shared-governance"));
+        }
+
         if (ledger is not null)
         {
             foreach (var line in ledger.Journal.Take(10))
@@ -1515,8 +1542,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                             string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
             ? "Owner not confirmed"
             : $"Owner {ReconciliationOperatorText}";
-
-        ReconciliationOwnershipText = $"{operatorLabel}. Reconciliation sign-off should happen only after queue review, stale-snapshot confirmation, and security coverage checks are complete.";
+        var signoffPosture = _governanceLifecycle?.SignoffPosture;
+        var closeReadiness = _governanceLifecycle?.CloseReadiness;
+        ReconciliationOwnershipText = string.IsNullOrWhiteSpace(signoffPosture)
+            ? $"{operatorLabel}. Reconciliation sign-off should happen only after queue review, stale-snapshot confirmation, and security coverage checks are complete."
+            : $"{operatorLabel}. {signoffPosture} {closeReadiness}".Trim();
         ReconciliationSnapshotWarningText = BuildSnapshotWarningText(
             ReconciliationLastRefreshText,
             "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.");
@@ -1528,11 +1558,99 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                           string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
             ? "Governance operator"
             : ReconciliationOperatorText;
-
-        ReportPackOwnershipText = $"{reportOwner} owns final report-pack sign-off once accounting, reconciliation, and audit evidence align.";
+        var readiness = _governanceLifecycle?.CloseReadiness;
+        var traceability = _governanceLifecycle?.AuditTraceability;
+        ReportPackOwnershipText = string.IsNullOrWhiteSpace(readiness)
+            ? $"{reportOwner} owns final report-pack sign-off once accounting, reconciliation, and audit evidence align."
+            : $"{reportOwner} owns final report-pack sign-off. {readiness}";
         ReportPackSnapshotWarningText = BuildSnapshotWarningText(
             ReportPackGeneratedAtText,
-            "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.");
+            string.IsNullOrWhiteSpace(traceability)
+                ? "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts."
+                : $"{traceability} Refresh the preview before distributing reporting artifacts.");
+        ReportPackReadinessState = BuildReportPackReadinessState(reportOwner, readiness, traceability);
+    }
+
+    private WorkstationStateModel BuildReportPackReadinessState(
+        string reportOwner,
+        string? readiness,
+        string? traceability)
+    {
+        if (_reportPackPreview is null)
+        {
+            var action = new WorkstationActionPostureModel(
+                "Refresh Preview",
+                "Build the report-pack preview from the current fund, reconciliation, and ledger state.",
+                "FundReportPack",
+                reportOwner,
+                WorkstationReadinessTone.Recovery,
+                WorkspaceTone.Warning);
+
+            return WorkstationStateModel.Recovery(
+                "Report pack preview needed",
+                ReportPackStatusText,
+                action,
+                recoveryActions:
+                [
+                    new WorkstationRecoveryActionModel(
+                        "Refresh report pack",
+                        "Refresh preview after accounting, reconciliation, and audit evidence is loaded.",
+                        "FundReportPack")
+                ],
+                signoffRequirement: new WorkstationSignoffRequirementModel(
+                    reportOwner,
+                    "Pending preview",
+                    "Final sign-off is blocked until a current preview is available."));
+        }
+
+        var evidenceLinks = new[]
+        {
+            new WorkstationEvidenceLinkModel(
+                "Report-pack preview",
+                "FundReportPack",
+                _reportPackPreview.ReportKind.ToString(),
+                $"Generated {ReportPackGeneratedAtText}"),
+            new WorkstationEvidenceLinkModel(
+                "Audit traceability",
+                "FundAuditTrail",
+                "governance lifecycle",
+                string.IsNullOrWhiteSpace(traceability) ? "Traceability not reported by the shared lifecycle." : traceability)
+        };
+
+        var detail = string.IsNullOrWhiteSpace(readiness)
+            ? ReportPackStatusText
+            : $"{ReportPackStatusText} {readiness}";
+        var actionPosture = new WorkstationActionPostureModel(
+            "Review handoff",
+            "Confirm preview freshness, ledger evidence, reconciliation state, and report owner before distribution.",
+            "FundReportPack",
+            reportOwner,
+            WorkstationReadinessTone.EvidenceLinked,
+            WorkspaceTone.Info);
+
+        return new WorkstationStateModel(
+            WorkstationStateKind.Ready,
+            "Report pack evidence linked",
+            detail,
+            actionPosture.Label,
+            actionPosture.Target,
+            $"Generated {ReportPackGeneratedAtText}",
+            "\uE8A5",
+            WorkspaceTone.Success,
+            WorkstationReadinessTone.EvidenceLinked,
+            actionPosture,
+            evidenceLinks,
+            RecoveryActions:
+            [
+                new WorkstationRecoveryActionModel(
+                    "Refresh before distribution",
+                    "Refresh the preview after any ledger, reconciliation, or approval change.",
+                    "FundReportPack")
+            ],
+            SignoffRequirement: new WorkstationSignoffRequirementModel(
+                reportOwner,
+                string.IsNullOrWhiteSpace(readiness) ? "Pending operator sign-off" : readiness,
+                "Sign-off should reference the current preview and audit traceability."));
     }
 
     private static (string Mode, string Title, string Subtitle) DescribeWorkbench(FundOperationsTab tab) => tab switch

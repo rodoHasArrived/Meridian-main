@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Auth;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -324,25 +325,64 @@ public static class FundStructureEndpoints
         .WithName("GetAccountingStructureView")
         .Produces<AccountingStructureViewDto>(StatusCodes.Status200OK);
 
-        group.MapGet("/cash-flow-view", async (HttpContext context) =>
+        group.MapGet("/ledger-mapping-view", async (HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
+            var asOf = ParseDateTimeOffset(q["asOf"]) ?? DateTimeOffset.UtcNow;
+            var query = new AccountingStructureQuery(
+                OrganizationId: ParseGuid(q["organizationId"]),
+                BusinessId: ParseGuid(q["businessId"]),
+                ClientId: ParseGuid(q["clientId"]),
+                FundId: ParseGuid(q["fundId"]),
+                SleeveId: ParseGuid(q["sleeveId"]),
+                VehicleId: ParseGuid(q["vehicleId"]),
+                InvestmentPortfolioId: ParseGuid(q["investmentPortfolioId"]),
+                LedgerReference: q["ledgerReference"].FirstOrDefault(),
+                ActiveOnly: ParseActiveOnly(q["activeOnly"]),
+                AsOf: asOf);
+
+            var accountingView = await service.GetAccountingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var result = LedgerMappingWorkbenchService.Build(accountingView, asOf);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetLedgerMappingWorkbench")
+        .Produces<LedgerMappingWorkbenchDto>(StatusCodes.Status200OK);
+
+        group.MapGet("/cash-flow-view", async (HttpContext context) =>
+        {
+            var q = context.Request.Query;
             var scopeKind = ParseCashFlowScopeKind(q["scopeKind"]);
             if (scopeKind is null)
             {
-                return Results.Problem(
-                    "scopeKind is required and must be a valid governance cash-flow scope.",
+                return Results.Json(
+                    new { error = "scopeKind is required and must be a valid governance cash-flow scope." },
+                    jsonOptions,
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
             var ledgerGroupId = ParseLedgerGroupId(q["ledgerGroupId"], out var ledgerGroupParseError);
             if (ledgerGroupParseError is not null)
             {
-                return Results.Problem(ledgerGroupParseError, statusCode: StatusCodes.Status400BadRequest);
+                return Results.Json(
+                    new { error = ledgerGroupParseError },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (TryCreateEmptyUnassignedLedgerGroupCashFlowView(scopeKind.Value, ledgerGroupId, q)
+                is { } emptyUnassignedLedgerGroupView)
+            {
+                return Results.Json(emptyUnassignedLedgerGroupView, jsonOptions);
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
             }
 
             var query = new GovernanceCashFlowQuery(
@@ -492,6 +532,136 @@ public static class FundStructureEndpoints
         .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
+
+        group.MapPost("/reporting/templates", (ReportTemplateDefinitionDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
+            return registry is null ? WorkspaceServiceUnavailable() : Results.Json(registry.Register(request), jsonOptions, statusCode: StatusCodes.Status201Created);
+        });
+
+        group.MapPost("/reporting/templates/render", (RenderReportTemplateRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
+            if (registry is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(registry.Render(request), jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        });
+
+        group.MapPost("/reporting/packs/create", (string fundProfileId, string fundAccountId, string period, VersionedReportTemplateIdDto templateId, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.Create(fundProfileId, fundAccountId, period, templateId, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
+        });
+
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.PendingApproval));
+        group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved));
+        group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, ReportPackPublishRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(
+                    svc.Publish(
+                        reportId,
+                        actor,
+                        role,
+                        request.SignedOffBy,
+                        request.EvidenceHash,
+                        request.ManifestId,
+                        request.RetainedManifestPath,
+                        request.EvidenceLinks,
+                        request.Note),
+                    jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        });
+
+        group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string reasonCode, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.Restate(reportId, actor, role, reasonCode, actor, priorVersionReportId, changedLines), jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        });
+
+        group.MapGet("/reporting/packs/history", (string period, string fundAccountId, HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.GetHistory(period, fundAccountId), jsonOptions);
+        });
         group.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
         {
             var service = ResolveWorkspaceService(context);
@@ -508,11 +678,63 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status404NotFound);
     }
 
+
+    private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target)
+    {
+        if (!HasReportingWorkflowPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+        {
+            return Results.Unauthorized();
+        }
+
+        var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+        if (svc is null)
+        {
+            return WorkspaceServiceUnavailable();
+        }
+
+        try
+        {
+            return Results.Json(svc.Transition(reportId, target, actor, role), statusCode: StatusCodes.Status200OK);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
     private static IFundStructureService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundStructureService>();
 
     private static FundOperationsWorkspaceReadService? ResolveWorkspaceService(HttpContext context) =>
         context.RequestServices.GetService<FundOperationsWorkspaceReadService>();
+
+    private static bool HasReportingWorkflowPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+
+    private static bool HasReportingReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewAnalytics, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+
+    private static bool TryResolveAuthorizedActorAndRole(HttpContext context, out string actor, out string role)
+    {
+        if (!EndpointAuthorization.TryResolveActor(context, out actor))
+        {
+            role = string.Empty;
+            return false;
+        }
+
+        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var rawRole) || rawRole is not UserRole currentRole)
+        {
+            role = string.Empty;
+            return false;
+        }
+
+        role = currentRole.ToString();
+        return true;
+    }
 
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund structure service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -555,6 +777,126 @@ public static class FundStructureEndpoints
 
         return parsed;
     }
+
+    private static bool HasExplicitCashFlowScope(IQueryCollection query) =>
+        HasAnyQueryValue(
+            query,
+            "organizationId",
+            "businessId",
+            "clientId",
+            "fundId",
+            "sleeveId",
+            "vehicleId",
+            "investmentPortfolioId",
+            "accountId");
+
+    private static bool HasAnyQueryValue(IQueryCollection query, params string[] keys) =>
+        keys.Any(key => query.TryGetValue(key, out var values) && values.Any(static value => !string.IsNullOrWhiteSpace(value)));
+
+    private static GovernanceCashFlowViewDto? TryCreateEmptyUnassignedLedgerGroupCashFlowView(
+        GovernanceCashFlowScopeKindDto scopeKind,
+        LedgerGroupId? ledgerGroupId,
+        IQueryCollection query)
+    {
+        if (scopeKind != GovernanceCashFlowScopeKindDto.LedgerGroup
+            || ledgerGroupId != LedgerGroupId.Unassigned
+            || HasExplicitCashFlowScope(query))
+        {
+            return null;
+        }
+
+        return CreateEmptyUnassignedLedgerGroupCashFlowView(query);
+    }
+
+    private static GovernanceCashFlowViewDto CreateEmptyUnassignedLedgerGroupCashFlowView(IQueryCollection query)
+    {
+        var asOf = ParseDateTimeOffset(query["asOf"]) ?? DateTimeOffset.UtcNow;
+        var historicalDays = Math.Max(1, ParseInt(query["historicalDays"], 7));
+        var forecastDays = Math.Max(1, ParseInt(query["forecastDays"], 7));
+        var bucketDays = Math.Max(1, ParseInt(query["bucketDays"], 7));
+        var currency = string.IsNullOrWhiteSpace(query["currency"].FirstOrDefault())
+            ? "USD"
+            : query["currency"].FirstOrDefault()!;
+        var windowAnchor = StartOfDayUtc(asOf);
+        var historicalWindowStart = windowAnchor.AddDays(-(historicalDays - 1));
+        var projectionWindowStart = windowAnchor.AddDays(1);
+        var projectionWindowEnd = projectionWindowStart.AddDays(forecastDays);
+        var scope = new GovernanceCashFlowScopeDto(
+            GovernanceCashFlowScopeKindDto.LedgerGroup,
+            LedgerGroupId.Unassigned.Value,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            LedgerGroupId.Unassigned,
+            Array.Empty<Guid>(),
+            Array.Empty<Guid>());
+
+        return new GovernanceCashFlowViewDto(
+            scope,
+            asOf,
+            historicalWindowStart,
+            projectionWindowEnd,
+            currency,
+            historicalDays,
+            forecastDays,
+            bucketDays,
+            0,
+            0m,
+            0m,
+            Array.Empty<GovernanceCashFlowAccountViewDto>(),
+            Array.Empty<GovernanceCashFlowEntryDto>(),
+            Array.Empty<GovernanceCashFlowEntryDto>(),
+            CreateEmptyCashFlowLadder(historicalWindowStart, historicalDays, currency, bucketDays),
+            CreateEmptyCashFlowLadder(projectionWindowStart, forecastDays, currency, bucketDays),
+            new GovernanceCashFlowVarianceSummaryDto(0m, 0m, 0m, 0m, 0m, 0m, 0m, "No accounts in scope."),
+            Array.Empty<GovernanceCashFlowVarianceBucketDto>());
+    }
+
+    private static GovernanceCashFlowLadderDto CreateEmptyCashFlowLadder(
+        DateTimeOffset anchor,
+        int windowDays,
+        string currency,
+        int bucketDays)
+    {
+        var effectiveBucketDays = Math.Max(1, bucketDays);
+        var effectiveWindowDays = Math.Max(1, windowDays);
+        var windowEnd = anchor.AddDays(effectiveWindowDays);
+        var bucketCount = Math.Max(1, (int)Math.Ceiling(effectiveWindowDays / (double)effectiveBucketDays));
+        var buckets = new List<GovernanceCashFlowBucketDto>(bucketCount);
+
+        for (var bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++)
+        {
+            var bucketStart = anchor.AddDays(bucketIndex * effectiveBucketDays);
+            var bucketEnd = bucketStart.AddDays(Math.Min(effectiveBucketDays, effectiveWindowDays - (bucketIndex * effectiveBucketDays)));
+            buckets.Add(new GovernanceCashFlowBucketDto(
+                bucketIndex,
+                bucketStart,
+                bucketEnd,
+                0m,
+                0m,
+                0m,
+                currency,
+                0));
+        }
+
+        return new GovernanceCashFlowLadderDto(
+            anchor,
+            windowEnd,
+            currency,
+            effectiveBucketDays,
+            0m,
+            0m,
+            0m,
+            buckets);
+    }
+
+    private static DateTimeOffset StartOfDayUtc(DateTimeOffset value) =>
+        new(value.UtcDateTime.Date, TimeSpan.Zero);
 
     private static IReadOnlyList<string>? ParseSelectedLedgerIds(params StringValues[] valueSets)
     {

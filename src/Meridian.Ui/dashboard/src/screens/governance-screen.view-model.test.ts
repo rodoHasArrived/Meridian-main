@@ -18,6 +18,7 @@ import {
   buildReconciliationBreakRows,
   buildReconciliationDetailActions,
   buildReconciliationQueuePanelViewState,
+  buildReconciliationStatementRunsViewState,
   buildReconciliationDetailViewState,
   buildReconciliationNarrative,
   buildReconciliationResolveDialogState,
@@ -484,6 +485,11 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     resolvedBy: "ops.gov",
     resolvedAt: "2026-01-02T00:10:00Z",
     resolutionNote: "Reviewed in governance panel.",
+    exceptionRoute: "fund-ops-review",
+    toleranceProfileId: "fee-variance-ops",
+    toleranceBand: 100,
+    requiredSignoffRole: "Fund operations lead",
+    signoffStatus: "Pending Signoff",
     routingTarget: "FundTrialBalance",
     routingDetail: "Open the accounting trial balance for evidence review.",
     recommendedAction: "Review matched fee entries before closing."
@@ -516,6 +522,7 @@ describe("governance-screen view model", () => {
     expect(resolveGovernanceWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveGovernanceWorkstream("/accounting/reconciliation")).toBe("reconciliation");
     expect(resolveGovernanceWorkstream("/accounting")).toBe("ledger");
+    expect(resolveGovernanceWorkstream("/accounting/ledger")).toBe("ledger");
     expect(resolveGovernanceWorkstream("/reporting")).toBe("reporting");
     expect(resolveGovernanceWorkstream("/governance/security-master")).toBe("security-master");
     expect(resolveGovernanceWorkstream("/governance/reconciliation")).toBe("reconciliation");
@@ -524,6 +531,65 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("derives statement run rows and detail tabs from endpoint supplied counts", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2,
+          brokerCustodian: "Northern Trust",
+          account: "Fund A - Prime",
+          period: "2026-04",
+          status: "ReviewRequired",
+          validationIssueCount: 4,
+          breakCount: 2,
+          caseCount: 1,
+          importedAtUtc: "2026-05-01T00:04:00Z"
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: "statement-run-1",
+      loading: false,
+      error: null
+    });
+
+    expect(state).toMatchObject({
+      title: "Statement runs",
+      tableLabel: "Accounting statement runs",
+      hasRows: true,
+      loadingText: null,
+      errorText: null
+    });
+    expect(state.rows[0]).toMatchObject({
+      brokerCustodianLabel: "Northern Trust",
+      accountLabel: "Fund A - Prime",
+      periodLabel: "2026-04",
+      statusLabel: "ReviewRequired",
+      validationIssueCountLabel: "4",
+      matchCountLabel: "24",
+      breakCountLabel: "2",
+      caseCountLabel: "1",
+      importedAtLabel: "2026-05-01T00:04:00Z",
+      unavailableReason: null
+    });
+    expect(state.tabs.map((tab) => tab.label)).toEqual([
+      "Overview",
+      "Validation",
+      "Positions",
+      "Cash",
+      "Transactions",
+      "Breaks & Cases",
+      "Evidence"
+    ]);
+    expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
   });
 
   it("derives reconciliation detail queue row state and empty inspector copy", () => {
@@ -842,7 +908,9 @@ describe("governance-screen view model", () => {
       getTrialBalance: vi.fn().mockResolvedValue([]),
       getCalibrationSummary: vi.fn()
         .mockReturnValueOnce(firstLoad)
-        .mockResolvedValueOnce(retrySummary)
+        .mockResolvedValueOnce(retrySummary),
+      getStatementRuns: vi.fn().mockResolvedValue([]),
+      getStatementRun: vi.fn()
     };
     const bootstrapData = {
       metrics: [],
@@ -1751,12 +1819,20 @@ describe("governance-screen view model", () => {
       statusBadgeVariant: "success",
       recommendedActionText: "Review matched fee entries before closing.",
       routingActionLabel: "Open routing target",
-      routingActionHref: "/accounting",
+      routingActionHref: "/accounting/ledger",
       routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Detected", value: "Jan 2, 00:00 UTC" },
-      { label: "Updated", value: "Jan 2, 00:00 UTC" }
+      { label: "Updated", value: "Jan 2, 00:00 UTC" },
+      { label: "Exception route", value: "fund-ops-review" },
+      { label: "Tolerance profile", value: "fee-variance-ops" },
+      { label: "Tolerance band", value: "$100" },
+      {
+        label: "Required sign-off",
+        value: "Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked."
+      },
+      { label: "Decision note", value: "Reviewed in governance panel." }
     ]));
     expect(state.rows[1]).toMatchObject({
       isSelected: true,

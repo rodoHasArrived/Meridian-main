@@ -1,6 +1,6 @@
 // Backtesting Engine Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the backtesting engine architecture: universe discovery,
 // chronological tick replay, fill models, portfolio simulation, and metrics.
@@ -16,7 +16,7 @@ digraph BacktestingEngine {
 
   // Title
   labelloc="t";
-  label="Meridian - Backtesting Engine\nTick-Level Strategy Replay | v1.7.x";
+  label="Meridian - Backtesting Engine\nTick-Level Strategy Replay";
 
   // Input
   subgraph cluster_input {

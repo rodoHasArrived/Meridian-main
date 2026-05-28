@@ -5,7 +5,9 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
+using FsCheck.Xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -23,17 +25,22 @@ public sealed class OptionsChainServiceTests
     private readonly OptionDataCollector _collector;
     private readonly Mock<IOptionsChainProvider> _providerMock;
     private readonly ILogger<OptionsChainService> _logger;
+    private readonly Mock<IProviderConnectionHealthSource> _healthSourceMock;
 
     public OptionsChainServiceTests()
     {
         _collector = new OptionDataCollector(_publisher);
         _providerMock = new Mock<IOptionsChainProvider>();
         _logger = NullLogger<OptionsChainService>.Instance;
+        _healthSourceMock = new Mock<IProviderConnectionHealthSource>();
+        _healthSourceMock.Setup(h => h.GetHealthAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string connectionId, string providerId, CancellationToken _) =>
+                new ProviderConnectionHealthSnapshot(connectionId, providerId, IsHealthy: true, Status: "healthy"));
     }
 
     private OptionsChainService CreateService(IOptionsChainProvider? provider = null)
     {
-        return new OptionsChainService(_collector, _logger, provider);
+        return new OptionsChainService(_collector, _logger, _healthSourceMock.Object, provider is null ? Array.Empty<IOptionsChainProvider>() : new[] { provider });
     }
 
     #region Constructor Tests
@@ -228,7 +235,7 @@ public sealed class OptionsChainServiceTests
             priority: 200,
             expirations: fallbackExpirations);
 
-        var sut = new OptionsChainService(_collector, _logger, new IOptionsChainProvider[] { fallback, primary });
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { fallback, primary });
 
         var result = await sut.GetExpirationsAsync("AAPL");
 
@@ -323,7 +330,7 @@ public sealed class OptionsChainServiceTests
             priority: 200,
             chain: fallbackChain);
 
-        var sut = new OptionsChainService(_collector, _logger, new IOptionsChainProvider[] { fallback, primary });
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { fallback, primary });
 
         var result = await sut.FetchChainSnapshotAsync("AAPL", expiry);
 
@@ -332,6 +339,61 @@ public sealed class OptionsChainServiceTests
     }
 
     #endregion
+
+
+    [Fact]
+    public async Task FetchChainSnapshotAsync_WhenPrimaryUnhealthy_SkipsToSecondary()
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        var fallbackChain = CreateChainSnapshot("AAPL", expiry);
+        var primary = new StubOptionsChainProvider("alpaca-options", "Alpaca Options", priority: 1, chain: CreateChainSnapshot("AAPL", expiry));
+        var fallback = new StubOptionsChainProvider("synthetic", "Synthetic Options", priority: 200, chain: fallbackChain);
+        _healthSourceMock
+            .Setup(h => h.GetHealthAsync("alpaca-options", "alpaca-options", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProviderConnectionHealthSnapshot("alpaca-options", "alpaca-options", IsHealthy: false, Status: "degraded"));
+
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { primary, fallback });
+        var result = await sut.FetchChainSnapshotAsync("AAPL", expiry);
+        result.Should().BeSameAs(fallbackChain);
+    }
+
+    [Property(MaxTest = 200)]
+    public void Scenario_ProviderFailover_GeneratedProviderIdVariantsUseCanonicalHealthLookup(int primaryVariantSeed, int fallbackVariantSeed)
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        var primaryProviderId = BuildProviderIdVariant("alpaca-options", primaryVariantSeed);
+        var fallbackProviderId = BuildProviderIdVariant("synthetic", fallbackVariantSeed);
+        var primaryChain = CreateChainSnapshot("AAPL", expiry);
+        var fallbackChain = CreateChainSnapshot("AAPL", expiry);
+        var primary = new StubOptionsChainProvider(primaryProviderId, "Alpaca Options", priority: 1, chain: primaryChain);
+        var fallback = new StubOptionsChainProvider(fallbackProviderId, "Synthetic Options", priority: 200, chain: fallbackChain);
+
+        _healthSourceMock
+            .Setup(h => h.GetHealthAsync("alpaca-options", "alpaca-options", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProviderConnectionHealthSnapshot("alpaca-options", "alpaca-options", IsHealthy: false, Status: "degraded"));
+
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { primary, fallback });
+        var result = sut.FetchChainSnapshotAsync("AAPL", expiry).GetAwaiter().GetResult();
+
+        result.Should().BeSameAs(fallbackChain);
+        _healthSourceMock.Verify(
+            h => h.GetHealthAsync("alpaca-options", "alpaca-options", It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+        _healthSourceMock.Verify(
+            h => h.GetHealthAsync("synthetic", "synthetic", It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task FetchChainSnapshotAsync_WhenAllProvidersFail_ReturnsNull()
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        var primary = new StubOptionsChainProvider("alpaca-options", "Alpaca Options", priority: 1, chainException: new TimeoutException("timeout"));
+        var secondary = new StubOptionsChainProvider("polygon-options", "Polygon Options", priority: 2, chainException: new HttpRequestException("bad gateway"));
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { primary, secondary });
+        var result = await sut.FetchChainSnapshotAsync("AAPL", expiry);
+        result.Should().BeNull();
+    }
 
     #region FetchOptionQuoteAsync Tests
 
@@ -380,7 +442,7 @@ public sealed class OptionsChainServiceTests
             priority: 200,
             quote: fallbackQuote);
 
-        var sut = new OptionsChainService(_collector, _logger, new IOptionsChainProvider[] { fallback, primary });
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { fallback, primary });
 
         var result = await sut.FetchOptionQuoteAsync(contract);
 
@@ -570,6 +632,20 @@ public sealed class OptionsChainServiceTests
         }).ToList();
 
         return new OptionChainSnapshot(DateTimeOffset.UtcNow, underlying, 155m, expiry, strikes, calls, puts);
+    }
+
+    private static string BuildProviderIdVariant(string providerId, int variantSeed)
+    {
+        var variant = (int)(Math.Abs((long)variantSeed) % 6);
+        return variant switch
+        {
+            0 => providerId,
+            1 => providerId.ToUpperInvariant(),
+            2 => $" {providerId}\t",
+            3 => $"\r\n{providerId.ToUpperInvariant()} ",
+            4 => $"  {providerId.ToLowerInvariant()}  ",
+            _ => $"\t{providerId.ToUpperInvariant()}\r\n",
+        };
     }
 
     #endregion

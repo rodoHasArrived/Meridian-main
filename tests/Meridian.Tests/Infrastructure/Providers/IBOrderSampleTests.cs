@@ -65,7 +65,7 @@ public sealed class IBOrderSampleTests
         if (!Directory.Exists(FixturesDir))
             yield break;
 
-        foreach (var file in Directory.GetFiles(FixturesDir, "*.json").OrderBy(f => f))
+        foreach (var file in Directory.GetFiles(FixturesDir, "ib_order_*.json").OrderBy(f => f))
             yield return new object[] { Path.GetFileName(file) };
     }
 

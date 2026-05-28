@@ -92,49 +92,6 @@ function Get-ConfigBool {
     return $Fallback
 }
 
-function Resolve-DesktopExecutablePath {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$PreferredPath,
-        [Parameter(Mandatory = $true)]
-        [string]$ProjectPath,
-        [Parameter(Mandatory = $true)]
-        [string]$Configuration,
-        [Parameter(Mandatory = $true)]
-        [string]$ExeName
-    )
-
-    if (Test-Path -LiteralPath $PreferredPath -PathType Leaf) {
-        return [System.IO.Path]::GetFullPath($PreferredPath)
-    }
-
-    $projectDirectory = Split-Path -Parent $ProjectPath
-    $projectRoot = if ([System.IO.Path]::IsPathRooted($projectDirectory)) {
-        [System.IO.Path]::GetFullPath($projectDirectory)
-    }
-    else {
-        [System.IO.Path]::GetFullPath((Join-Path $repoRoot $projectDirectory))
-    }
-
-    $configurationRoot = Join-Path $projectRoot "bin/$Configuration"
-    if (-not (Test-Path -LiteralPath $configurationRoot -PathType Container)) {
-        return [System.IO.Path]::GetFullPath($PreferredPath)
-    }
-
-    $candidates = @(
-        Get-ChildItem -LiteralPath $configurationRoot -Filter $ExeName -Recurse -File -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTimeUtc -Descending
-    )
-
-    if ($candidates.Count -gt 0) {
-        $resolvedCandidate = [System.IO.Path]::GetFullPath($candidates[0].FullName)
-        Write-Warn "Expected desktop executable path '$PreferredPath' was not found; using discovered binary '$resolvedCandidate'."
-        return $resolvedCandidate
-    }
-
-    return [System.IO.Path]::GetFullPath($PreferredPath)
-}
-
 function Get-MeridianWindowFromProcess {
     param(
         [System.Diagnostics.Process]$Process
@@ -686,21 +643,52 @@ function Save-WindowCapture {
         throw "Window bounds are too small to capture ($($rect.Width)x$($rect.Height))."
     }
 
+    if (-not ('MeridianDesktopCaptureNative' -as [type])) {
+        Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class MeridianDesktopCaptureNative
+{
+    public const uint PW_RENDERFULLCONTENT = 0x00000002;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
+}
+"@
+    }
+
+    $nativeHandleValue = [int64]$Window.Current.NativeWindowHandle
+    if ($nativeHandleValue -le 0) {
+        throw 'Window did not expose a native handle for PrintWindow capture.'
+    }
+
+    $nativeHandle = [System.IntPtr]::new($nativeHandleValue)
     $bitmap = New-Object System.Drawing.Bitmap([int]$rect.Width, [int]$rect.Height)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+    $hdc = [System.IntPtr]::Zero
 
     try {
-        $graphics.CopyFromScreen(
-            [int]$rect.X,
-            [int]$rect.Y,
-            0,
-            0,
-            [System.Drawing.Size]::new([int]$rect.Width, [int]$rect.Height)
+        $hdc = $graphics.GetHdc()
+        $printSucceeded = [MeridianDesktopCaptureNative]::PrintWindow(
+            $nativeHandle,
+            $hdc,
+            [uint32][MeridianDesktopCaptureNative]::PW_RENDERFULLCONTENT
         )
+
+        if (-not $printSucceeded) {
+            $lastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
+            throw "PrintWindow failed while capturing desktop screenshot (Win32: $lastError)."
+        }
+
         $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
         return $Path
     }
     finally {
+        if ($hdc -ne [System.IntPtr]::Zero) {
+            $graphics.ReleaseHdc($hdc)
+        }
         $graphics.Dispose()
         $bitmap.Dispose()
     }
@@ -996,7 +984,6 @@ New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screens
 $stdoutPath = Join-Path $logDirectory 'stdout.log'
 $stderrPath = Join-Path $logDirectory 'stderr.log'
 $exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $resolvedConfiguration -Framework $resolvedFramework -BinaryName $resolvedExeName -IsolationKey $buildIsolationKey
-$exePath = Resolve-DesktopExecutablePath -PreferredPath $exePath -ProjectPath $resolvedProjectPath -Configuration $resolvedConfiguration -ExeName $resolvedExeName
 $manifest = [ordered]@{
     workflow = [ordered]@{
         name = $workflowDefinition.name
@@ -1579,9 +1566,10 @@ try {
             throw 'Capture stage failed: no screenshots were captured successfully.'
         }
         elseif ($captureFailed -gt 0) {
-            $captureStage.status = 'partial'
+            $captureStage.status = 'failed'
             $captureStage.errors = @("Failed steps: $captureFailed")
-            $stageStatuses['capture'] = 'partial'
+            $stageStatuses['capture'] = 'failed'
+            throw "Capture stage failed: $captureFailed step(s) failed."
         }
         else {
             $captureStage.status = 'succeeded'

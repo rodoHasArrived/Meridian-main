@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FsCheck.Xunit;
 using Meridian.Execution.Allocation;
 using Meridian.Ledger;
 
@@ -125,6 +126,61 @@ public sealed class AllocationEngineTests
         (max - min).Should().BeLessThanOrEqualTo(1);
     }
 
+    [Property(MaxTest = 200)]
+    public void Scenario_MultiAccountAllocation_GeneratedBlockTradesRemainFullyAllocated(
+        int quantitySeed,
+        int priceSeed,
+        int destinationSeed,
+        int weightSeed)
+    {
+        var totalQuantity = BoundedLong(quantitySeed, min: 1, max: 100_000);
+        var fillPrice = BoundedLong(priceSeed, min: 1, max: 1_000_000) / 100m;
+        var weights = BuildGeneratedWeights(destinationSeed, weightSeed);
+        var rule = AllocationRule.Create("Generated multi-account block", weights);
+
+        var result = _engine.Allocate("SPY", totalQuantity, fillPrice, rule, DateTimeOffset.UnixEpoch);
+
+        result.Slices.Should().HaveCount(weights.Count);
+        result.Slices.Select(slice => slice.DestinationId).Should().BeEquivalentTo(weights.Keys);
+        result.Slices.Should().OnlyContain(slice => slice.AllocatedQuantity >= 0);
+        result.Slices.Sum(slice => slice.AllocatedQuantity).Should().Be(totalQuantity);
+        result.Slices.Sum(slice => slice.ProRataValue).Should().Be(result.TotalGrossValue);
+        result.Slices.Should().OnlyContain(slice => slice.ProRataValue == slice.AllocatedQuantity * fillPrice);
+        result.IsBalanced.Should().BeTrue();
+    }
+
+    [Property(MaxTest = 200)]
+    public void Scenario_MultiAccountAllocation_GeneratedWeightOrderDoesNotChangeBlockTotals(
+        int quantitySeed,
+        int priceSeed,
+        int destinationSeed,
+        int weightSeed)
+    {
+        var totalQuantity = BoundedLong(quantitySeed, min: 1, max: 100_000);
+        var fillPrice = BoundedLong(priceSeed, min: 1, max: 1_000_000) / 100m;
+        var weights = BuildGeneratedWeights(destinationSeed, weightSeed);
+        var reversedWeights = weights.Reverse().ToDictionary(pair => pair.Key, pair => pair.Value);
+        var allocatedAt = DateTimeOffset.UnixEpoch.AddSeconds(BoundedLong(weightSeed, min: 0, max: 86_400));
+
+        var forward = _engine.Allocate(
+            "SPY",
+            totalQuantity,
+            fillPrice,
+            AllocationRule.Create("Forward generated block", weights),
+            allocatedAt);
+        var reversed = _engine.Allocate(
+            "SPY",
+            totalQuantity,
+            fillPrice,
+            AllocationRule.Create("Reversed generated block", reversedWeights),
+            allocatedAt);
+
+        forward.Slices.Sum(slice => slice.AllocatedQuantity).Should().Be(totalQuantity);
+        reversed.Slices.Sum(slice => slice.AllocatedQuantity).Should().Be(totalQuantity);
+        forward.Slices.Sum(slice => slice.ProRataValue).Should().Be(reversed.Slices.Sum(slice => slice.ProRataValue));
+        forward.Slices.Select(slice => slice.DestinationId).Should().BeEquivalentTo(reversed.Slices.Select(slice => slice.DestinationId));
+    }
+
     // -------------------------------------------------------------------------
     // BlockTradeAllocator + FundLedgerBook integration
     // -------------------------------------------------------------------------
@@ -161,5 +217,25 @@ public sealed class AllocationEngineTests
         sleeveA.GetBalance(LedgerAccounts.Cash).Should().Be(0m);
         // Securities debits == credits after buy+sell, net = 0
         sleeveA.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(0m);
+    }
+
+    private static Dictionary<string, decimal> BuildGeneratedWeights(int destinationSeed, int weightSeed)
+    {
+        var destinationCount = (int)BoundedLong(destinationSeed, min: 1, max: 12);
+        var weights = new Dictionary<string, decimal>(destinationCount);
+
+        for (var index = 0; index < destinationCount; index++)
+        {
+            var sliceSeed = HashCode.Combine(destinationSeed, weightSeed, index);
+            weights[$"SLEEVE-{index:00}"] = BoundedLong(sliceSeed, min: 1, max: 1_000);
+        }
+
+        return weights;
+    }
+
+    private static long BoundedLong(int seed, long min, long max)
+    {
+        var range = (ulong)(max - min + 1);
+        return min + (long)((uint)seed % range);
     }
 }

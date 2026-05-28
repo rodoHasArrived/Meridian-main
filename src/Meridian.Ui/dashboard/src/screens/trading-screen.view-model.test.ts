@@ -32,10 +32,12 @@ import {
   validatePromotionApproval,
   validatePromotionRejection,
   useOrderTicketViewModel,
+  usePaperSessionsViewModel,
   useTradingConfirmViewModel,
   useTradingReadinessViewModel,
   usePromotionGateViewModel,
   type OrderTicketServices,
+  type PaperSessionServices,
   type PromotionGateServices,
   type TradingConfirmServices,
   type TradingReadinessServices
@@ -626,6 +628,54 @@ describe("paper session view model", () => {
     expect(invalidState.initialCashField.disabled).toBe(false);
     expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
   });
+
+  it("verifies replay through the paper-session hook and requests readiness refresh", async () => {
+    const services: PaperSessionServices = {
+      getExecutionSessions: vi.fn<PaperSessionServices["getExecutionSessions"]>().mockResolvedValue([activePaperSession]),
+      createPaperSession: vi.fn<PaperSessionServices["createPaperSession"]>(),
+      closePaperSession: vi.fn<PaperSessionServices["closePaperSession"]>(),
+      getPaperSessionDetail: vi.fn<PaperSessionServices["getPaperSessionDetail"]>().mockResolvedValue(selectedPaperSessionDetail),
+      getPaperSessionReplayVerification: vi.fn<PaperSessionServices["getPaperSessionReplayVerification"]>()
+        .mockResolvedValue(consistentReplayVerification)
+    };
+    const onSessionEvidenceChanged = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const { result } = renderHook(() => usePaperSessionsViewModel({ services, onSessionEvidenceChanged }));
+
+    await waitFor(() => {
+      expect(result.current.rows).toHaveLength(1);
+      expect(result.current.isBusy).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.restoreSession("sess-1");
+    });
+
+    expect(services.getPaperSessionDetail).toHaveBeenCalledWith("sess-1");
+    expect(result.current.selectedSessionId).toBe("sess-1");
+    expect(result.current.selectedSessionDetail).toBe(selectedPaperSessionDetail);
+    expect(result.current.sessionReplayVerification).toBeNull();
+    expect(result.current.detail?.replay).toBeNull();
+    expect(result.current.statusAnnouncement).toBe("Paper session sess-1 restored.");
+    expect(onSessionEvidenceChanged).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.verifySessionReplay("sess-1");
+    });
+
+    expect(services.getPaperSessionDetail).toHaveBeenCalledTimes(2);
+    expect(services.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1");
+    expect(result.current.selectedSessionId).toBe("sess-1");
+    expect(result.current.selectedSessionDetail).toBe(selectedPaperSessionDetail);
+    expect(result.current.sessionReplayVerification).toBe(consistentReplayVerification);
+    expect(result.current.detail?.replay).toEqual(expect.objectContaining({
+      tone: "success",
+      statusLabel: "Matched current state",
+      ariaLabel: "Replay verification matched current state for sess-1"
+    }));
+    expect(result.current.detail?.replay?.rows).toContainEqual({ label: "Verification audit", value: "audit-verify-1" });
+    expect(result.current.statusAnnouncement).toBe("Replay verification matched current state for sess-1.");
+    expect(onSessionEvidenceChanged).toHaveBeenCalledOnce();
+  });
 });
 
 describe("session replay controls view model", () => {
@@ -763,6 +813,7 @@ describe("trading readiness view model", () => {
         workItemId: "brokerage-sync-failed-fund-1",
         kind: "BrokerageSync",
         label: "Brokerage sync failed",
+        tone: "danger",
         metadataText: "Trading · AccountPortfolio",
         action: {
           label: "Fix provider setup",
@@ -2087,6 +2138,23 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("replay");
   });
 
+  it("preserves the PaperReplay session-replay panel when shared metadata targets the Trading shell", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("PaperReplay", {
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Verify replay");
+    expect(action?.href).toBe("/trading#session-replay-panel");
+  });
+
   it("routes ExecutionControl work items to the trading risk route", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("ExecutionControl"), refreshing: false, errorText: null });
     const action = state.visibleWorkItems[0].action;
@@ -2097,6 +2165,23 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("guardrails");
   });
 
+  it("uses shared TradingShell metadata for ExecutionControl work items when present", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("ExecutionControl", {
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Review risk controls");
+    expect(action?.href).toBe("/trading");
+  });
+
   it("routes PromotionReview work items to the promotion gate panel", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("PromotionReview", { runId: "run-001" }), refreshing: false, errorText: null });
     const action = state.visibleWorkItems[0].action;
@@ -2104,6 +2189,24 @@ describe("trading readiness work-item action routing", () => {
     expect(action).not.toBeNull();
     expect(action?.label).toBe("Open promotion gate");
     expect(action?.href).toBe("/trading#promotion-gate-panel");
+  });
+
+  it("uses shared TradingShell metadata for PromotionReview work items when present", () => {
+    const state = buildTradingReadinessState({
+      readiness: workItemForKind("PromotionReview", {
+        runId: "run-001",
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }),
+      refreshing: false,
+      errorText: null
+    });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Open promotion gate");
+    expect(action?.href).toBe("/trading");
   });
 
   it("routes SecurityMasterCoverage work items to the security master route", () => {
@@ -2303,6 +2406,102 @@ describe("trading readiness fund account threading", () => {
   });
 });
 
+// ─── Lane A / W2 blocker-path recovery: browser parity ───────────────────────
+
+describe("trading readiness blocker recovery", () => {
+  it("drops blocked work items from view state when refresh returns an empty work-item list", () => {
+    // Step 1: build blocked state as seen before recovery
+    const blockedState = buildTradingReadinessState({
+      readiness: blockedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(blockedState.hasOperatorAttention).toBe(true);
+    expect(blockedState.visibleWorkItems).toHaveLength(1);
+    expect(blockedState.visibleWorkItems[0].tone).toBe("danger");
+
+    // Step 2: simulate the refresh returning a cleared readiness payload
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:30:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      brokerageSync: {
+        ...blockedReadiness.brokerageSync!,
+        health: "Healthy",
+        isStale: false,
+        lastError: null,
+        warnings: []
+      },
+      workItems: [],
+      warnings: []
+    };
+
+    const clearedState = buildTradingReadinessState({
+      readiness: clearedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(clearedState.hasOperatorAttention).toBe(false);
+    expect(clearedState.visibleWorkItems).toHaveLength(0);
+    expect(clearedState.workItemSummaryText).toBe("0 readiness items and 0 warnings.");
+  });
+
+  it("transitions status announcement from blocked to ready when blockers clear", () => {
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:35:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      workItems: [],
+      warnings: []
+    };
+
+    const state = buildTradingReadinessState({
+      readiness: clearedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.statusAnnouncement).toContain("ready");
+    expect(state.statusAnnouncement).not.toContain("blocked");
+  });
+
+  it("refresh via hook applies cleared readiness payload and drops blocked work items", async () => {
+    const blockerWorkItem = blockedReadiness.workItems[0];
+    expect(blockerWorkItem).toBeDefined();
+
+    const clearedReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:40:00Z",
+      overallStatus: "Ready",
+      readyForPaperOperation: true,
+      workItems: [],
+      warnings: []
+    };
+
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>()
+      .mockResolvedValueOnce(clearedReadiness);
+    const services: TradingReadinessServices = { getTradingReadiness };
+
+    const { result } = renderHook(() =>
+      useTradingReadinessViewModel({ initialReadiness: blockedReadiness, services })
+    );
+
+    expect(result.current.readiness?.workItems).toHaveLength(1);
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(result.current.readiness?.workItems).toHaveLength(0);
+    expect(result.current.readiness?.overallStatus).toBe("Ready");
+    expect(result.current.readiness?.readyForPaperOperation).toBe(true);
+  });
+});
+
 // ─── Milestone 7: Green cockpit proof ────────────────────────────────────────
 
 describe("green cockpit: ReadyForPaperOperation proof", () => {
@@ -2453,5 +2652,40 @@ describe("green cockpit: ReadyForPaperOperation proof", () => {
     expect(state.workItems).toHaveLength(1);
     expect(state.workItems[0].workItemId).toBe("dk1-operator-signoff-pending");
     expect(state.hasOperatorAttention).toBe(true);
+  });
+});
+
+describe("trading readiness blocker taxonomy parity", () => {
+  it("keeps blocker severity and repair routes aligned for core Wave 2 blockers", () => {
+    const readiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      overallStatus: "Blocked",
+      acceptanceGates: [
+        { gateId: "replay", label: "Replay", status: "ReviewRequired", detail: "Replay evidence is stale.", sessionId: "sess-1", runId: null, auditReference: "audit-replay" },
+        { gateId: "trust-gate", label: "Provider trust", status: "Blocked", detail: "Operator sign-off evidence is missing.", sessionId: null, runId: null, auditReference: "audit-trust" },
+        { gateId: "brokerage-sync", label: "Brokerage sync", status: "Blocked", detail: "Brokerage sync is incomplete.", sessionId: null, runId: null, auditReference: "audit-sync" }
+      ],
+      workItems: [
+        { workItemId: "replay-stale", kind: "PaperReplay", label: "Replay stale", detail: "Replay verification is stale.", tone: "Warning", createdAt: "2026-05-01T00:00:00Z", runId: "run-1", fundAccountId: null, auditReference: "audit-replay" },
+        { workItemId: "signoff-missing", kind: "ProviderTrustGate", label: "Sign-off missing", detail: "Missing operator sign-off evidence.", tone: "Critical", createdAt: "2026-05-01T00:00:01Z", runId: null, fundAccountId: null, auditReference: "audit-trust" },
+        { workItemId: "provider-trust-degraded", kind: "ProviderTrustGate", label: "Provider trust degraded", detail: "Provider trust gate is degraded.", tone: "Critical", createdAt: "2026-05-01T00:00:02Z", runId: null, fundAccountId: null, auditReference: "audit-trust-2" },
+        { workItemId: "brokerage-sync-incomplete", kind: "BrokerageSync", label: "Brokerage sync incomplete", detail: "Brokerage sync is incomplete.", tone: "Critical", createdAt: "2026-05-01T00:00:03Z", runId: null, fundAccountId: "fund-1", auditReference: "audit-sync", targetRoute: "/api/fund-accounts/fund-1/brokerage-sync", targetPageTag: "AccountPortfolio" }
+      ]
+    };
+
+    const state = buildTradingReadinessState({ readiness, refreshing: false, errorText: null });
+    const byId = new Map(state.visibleWorkItems.map((item) => [item.workItemId, item]));
+
+    expect(byId.get("replay-stale")?.tone).toBe("warning");
+    expect(byId.get("replay-stale")?.action?.href).toBe("/trading#session-replay-panel");
+
+    expect(byId.get("signoff-missing")?.tone).toBe("danger");
+    expect(byId.get("signoff-missing")?.action?.href).toBe("/data/providers");
+
+    expect(byId.get("provider-trust-degraded")?.tone).toBe("danger");
+    expect(byId.get("provider-trust-degraded")?.action?.href).toBe("/data/providers");
+
+    expect(byId.get("brokerage-sync-incomplete")?.tone).toBe("danger");
+    expect(byId.get("brokerage-sync-incomplete")?.action?.href).toBe("/portfolio/accounts/fund-1");
   });
 });

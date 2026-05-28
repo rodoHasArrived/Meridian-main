@@ -113,18 +113,29 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void CaptureDesktopScreenshotsScript_ShouldImportRetryHelperBeforeCapture()
+    public void CaptureDesktopScreenshotsScript_ShouldRouteThroughSharedWorkflowRunner()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\capture-desktop-screenshots.ps1"));
 
-        script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
-        script.Should().Contain("Invoke-MeridianRetry");
+        script.Should().Contain("$workflowRunner = Join-Path $PSScriptRoot 'run-desktop-workflow.ps1'");
+        script.Should().Contain("$workflowName = if ([string]::IsNullOrWhiteSpace($Profile)) { 'screenshot-catalog' } else { $Profile }");
+        script.Should().Contain("'-Workflow', $workflowName");
+        script.Should().Contain("'-Profile', $workflowName");
+        script.Should().Contain("'-OutputRoot', 'artifacts/desktop-workflows'");
+        script.Should().Contain("'-ScreenshotDirectory', $screenshotDirectory");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('ProjectPath'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('Configuration'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('Framework'))");
+        script.Should().Contain("if ($PSBoundParameters.ContainsKey('ExeName'))");
+        script.Should().Contain("if ($SkipBuild)");
+        script.Should().Contain("if ($KeepAppOpen)");
+        script.Should().Contain("& pwsh -NoProfile @runnerArgs");
+        script.Should().Contain("exit $LASTEXITCODE");
 
-        var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'shared/retry.ps1')", StringComparison.Ordinal);
-        var retryIndex = script.IndexOf("Invoke-MeridianRetry", StringComparison.Ordinal);
-
-        importIndex.Should().BeGreaterThan(0);
-        retryIndex.Should().BeGreaterThan(importIndex);
+        script.Should().NotContain("CommandPaletteInput");
+        script.Should().NotContain("function New-ScreenNavigationRegistry");
+        script.Should().NotContain("function Invoke-NavigateWithKeyboard");
+        script.Should().NotContain("function Invoke-NavigateWithMouse");
     }
 
     [Fact]
@@ -137,6 +148,16 @@ public sealed class DesktopWorkflowScriptTests
 
         activationIndex.Should().BeGreaterThan(0);
         captureIndex.Should().BeGreaterThan(activationIndex);
+    }
+
+    [Fact]
+    public void RunDesktopWorkflowScript_ShouldCaptureWindowUsingPrintWindow()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain("MeridianDesktopCaptureNative");
+        script.Should().Contain("[MeridianDesktopCaptureNative]::PrintWindow");
+        script.Should().NotContain("CopyFromScreen(");
     }
 
     [Fact]
@@ -242,6 +263,7 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\wpf-dev-validation.yml"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
         var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
 
@@ -252,6 +274,8 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("New-MeridianBuildIsolationKey -Prefix \"wpf-dev-test\"");
         script.Should().Contain("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot");
         script.Should().Contain("Get-ActiveRepoDotnetProcess");
+        script.Should().Contain("Name = 'dotnet.exe' OR Name = 'MSBuild.exe' OR Name = 'testhost.exe' OR Name = 'csc.exe' OR Name = 'VBCSCompiler.exe'");
+        script.Should().Contain("(build|test|restore|msbuild)");
         script.Should().Contain("active-dotnet-processes.log");
         script.Should().Contain("/m:1");
         script.Should().Contain("/nr:false");
@@ -264,6 +288,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("\"build\"");
         script.Should().Contain("$wpfProject");
         script.Should().Contain("$wpfTestsProject");
+        script.Should().Contain("\"--no-dependencies\"");
         script.Should().Contain("\"test\"");
         script.Should().Contain("--no-build");
         script.Should().Contain("wpf-dev-test-validation.json");
@@ -273,13 +298,16 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("Stop-MeridianRepoOwnedTestHostProcesses");
         sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
 
+        workflow.Should().Contain("$devArgs = @{");
+        workflow.Should().Contain("Restore = $true");
+
         makefile.Should().Contain("desktop-test-dev:");
         makefile.Should().Contain("scripts/dev/validate-wpf-dev.ps1");
 
         guide.Should().Contain("pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1");
         guide.Should().Contain("make desktop-test-dev");
         guide.Should().Contain("-AllowConcurrentDotnet");
-        guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
+        guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-dependencies /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
     }
 
     [Fact]
@@ -311,6 +339,14 @@ public sealed class DesktopWorkflowScriptTests
         launcher.Should().Contain("$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }");
         launcher.Should().Contain("function Wait-ForDesktopWindow");
         launcher.Should().Contain("function Stop-DesktopProcessAfterSmoke");
+        launcher.Should().Contain("function Stop-OwnedDesktopProcessSafely");
+        launcher.Should().Contain("$hostShutdownToken = [System.Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))");
+        launcher.Should().Contain("MDC_SHUTDOWN_TOKEN = $env:MDC_SHUTDOWN_TOKEN");
+        launcher.Should().Contain("$env:MDC_SHUTDOWN_TOKEN = $hostShutdownToken");
+        launcher.Should().Contain("http://localhost:$hostPort/api/system/shutdown");
+        launcher.Should().Contain("\"X-Meridian-Shutdown-Token\" = $hostShutdownToken");
+        launcher.Should().Contain("Local Meridian host stopped gracefully");
+        launcher.Should().Contain("Stop-OwnedDesktopProcessSafely");
         launcher.Should().Contain("Write-Step 'Startup smoke'");
         launcher.Should().Contain("Wait-ForDesktopWindow -Process $desktopProcess -TimeoutSec $StartupSmokeTimeoutSec");
         launcher.Should().Contain("Stop-DesktopProcessAfterSmoke -Process $desktopProcess");

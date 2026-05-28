@@ -4,6 +4,8 @@ import {
   getCorporateActions,
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
+  getReconciliationStatementRun,
+  getReconciliationStatementRuns,
   getRunReviewPacketPath,
   getRunTrialBalance,
   getSecurityConflicts,
@@ -46,6 +48,7 @@ import type {
   SecurityMasterOpenLot,
   SecurityMasterOpenLotReadModel,
   SecurityMasterTrustSnapshot,
+  StatementRunSummary,
   TradingParameters
 } from "@/types";
 
@@ -67,6 +70,8 @@ export interface GovernanceReconciliationServices {
   resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
   getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
   getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
+  getStatementRuns: () => Promise<StatementRunSummary[]>;
+  getStatementRun: (runId: string) => Promise<StatementRunSummary>;
 }
 
 export interface GovernanceReportingServices {
@@ -688,6 +693,55 @@ export interface ReconciliationQueuePanelViewState {
   rows: ReconciliationQueueRunRowViewModel[];
 }
 
+export type ReconciliationStatementRunLoadStatus = "idle" | "loading" | "ready" | "error";
+export type ReconciliationRunDetailTabId = "overview" | "validation" | "positions" | "cash" | "transactions" | "breaks-cases" | "evidence";
+
+export interface ReconciliationStatementRunRowViewModel {
+  runId: string;
+  brokerCustodianLabel: string;
+  accountLabel: string;
+  periodLabel: string;
+  statusLabel: string;
+  validationIssueCountLabel: string;
+  matchCountLabel: string;
+  breakCountLabel: string;
+  caseCountLabel: string;
+  importedAtLabel: string;
+  isSelected: boolean;
+  controlsId: string;
+  ariaLabel: string;
+  selectAriaLabel: string;
+  unavailableReason: string | null;
+}
+
+export interface ReconciliationRunDetailTabViewModel {
+  id: ReconciliationRunDetailTabId;
+  label: string;
+  badgeLabel: string | null;
+  description: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  ariaLabel: string;
+}
+
+export interface ReconciliationStatementRunsViewState {
+  title: string;
+  description: string;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  emptyText: string;
+  loadingText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  recoveryActionLabel: string;
+  recoveryActionAriaLabel: string;
+  statusAnnouncement: string;
+  hasRows: boolean;
+  rows: ReconciliationStatementRunRowViewModel[];
+  tabs: ReconciliationRunDetailTabViewModel[];
+}
+
 export interface GovernanceCashFlowRowViewModel {
   id: string;
   label: string;
@@ -911,7 +965,9 @@ const defaultGovernanceReconciliationServices: GovernanceReconciliationServices 
   reviewBreak: (request) => reviewReconciliationBreak(request),
   resolveBreak: (request) => resolveReconciliationBreak(request),
   getTrialBalance: (runId) => getRunTrialBalance(runId),
-  getCalibrationSummary: () => getReconciliationCalibrationSummary()
+  getCalibrationSummary: () => getReconciliationCalibrationSummary(),
+  getStatementRuns: () => getReconciliationStatementRuns(),
+  getStatementRun: (runId) => getReconciliationStatementRun(runId)
 };
 
 const defaultGovernanceReportingServices: GovernanceReportingServices = {
@@ -1686,6 +1742,9 @@ export function useGovernanceReconciliationViewModel(
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<ApiErrorDisplay | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
+  const [statementRuns, setStatementRuns] = useState<StatementRunSummary[]>([]);
+  const [statementRunsLoading, setStatementRunsLoading] = useState(false);
+  const [statementRunsError, setStatementRunsError] = useState<ApiErrorDisplay | null>(null);
   const [calibrationLoading, setCalibrationLoading] = useState(false);
   const [calibrationError, setCalibrationError] = useState<ApiErrorDisplay | null>(null);
   const [selectedCalibrationProfileId, setSelectedCalibrationProfileId] = useState<string | null>(null);
@@ -1698,15 +1757,17 @@ export function useGovernanceReconciliationViewModel(
   );
 
   useEffect(() => {
-    if (reconciliationQueue.length === 0) {
-      setSelectedRunId(null);
+    const hasSelectedRun = selectedRunId
+      ? reconciliationQueue.some((item) => item.runId === selectedRunId) || statementRuns.some((item) => item.runId === selectedRunId)
+      : false;
+
+    if (hasSelectedRun) {
       return;
     }
 
-    if (!selectedRunId || !reconciliationQueue.some((item) => item.runId === selectedRunId)) {
-      setSelectedRunId(reconciliationQueue[0].runId);
-    }
-  }, [reconciliationQueue, selectedRunId]);
+    const nextRunId = statementRuns[0]?.runId ?? reconciliationQueue[0]?.runId ?? null;
+    setSelectedRunId(nextRunId);
+  }, [reconciliationQueue, selectedRunId, statementRuns]);
 
   useEffect(() => {
     const nextBreakQueue = data?.breakQueue ?? [];
@@ -1784,6 +1845,55 @@ export function useGovernanceReconciliationViewModel(
       calibrationRequestRevisionRef.current += 1;
     };
   }, [refreshCalibrationSummary, workstream]);
+
+  const refreshStatementRuns = useCallback(() => {
+    setStatementRunsLoading(true);
+    setStatementRunsError(null);
+
+    services.getStatementRuns()
+      .then((runs) => {
+        setStatementRuns(runs);
+      })
+      .catch((err) => {
+        setStatementRuns([]);
+        setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
+      })
+      .finally(() => {
+        setStatementRunsLoading(false);
+      });
+  }, [services]);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") {
+      return;
+    }
+
+    let cancelled = false;
+    setStatementRunsLoading(true);
+    setStatementRunsError(null);
+
+    services.getStatementRuns()
+      .then((runs) => {
+        if (!cancelled) {
+          setStatementRuns(runs);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setStatementRuns([]);
+          setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setStatementRunsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [services, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {
@@ -1926,6 +2036,16 @@ export function useGovernanceReconciliationViewModel(
     () => buildReconciliationQueuePanelViewState(reconciliationQueue, selectedReconciliation?.runId ?? null),
     [reconciliationQueue, selectedReconciliation?.runId]
   );
+  const statementRunsView = useMemo(
+    () => buildReconciliationStatementRunsViewState({
+      statementRuns,
+      fallbackQueue: reconciliationQueue,
+      selectedRunId,
+      loading: statementRunsLoading,
+      error: statementRunsError
+    }),
+    [reconciliationQueue, selectedRunId, statementRuns, statementRunsError, statementRunsLoading]
+  );
 
   return {
     reconciliationQueue,
@@ -1935,6 +2055,8 @@ export function useGovernanceReconciliationViewModel(
     detailActions,
     detailView,
     queuePanelView,
+    statementRunsView,
+    refreshStatementRuns,
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError?.summary ?? null,
@@ -2035,7 +2157,11 @@ export function resolveSelectedReconciliation(
   queue: GovernanceWorkspaceResponse["reconciliationQueue"],
   selectedRunId: string | null
 ) {
-  return queue.find((item) => item.runId === selectedRunId) ?? queue[0] ?? null;
+  if (!selectedRunId) {
+    return queue[0] ?? null;
+  }
+
+  return queue.find((item) => item.runId === selectedRunId) ?? null;
 }
 
 export function buildReconciliationDetailActions(
@@ -2078,6 +2204,135 @@ export function buildReconciliationDetailViewState(
     narrativeLabel: `Reconciliation narrative for ${item.strategyName}`,
     fields
   };
+}
+
+interface ReconciliationStatementRunsBuildInput {
+  statementRuns: StatementRunSummary[];
+  fallbackQueue: GovernanceWorkspaceResponse["reconciliationQueue"];
+  selectedRunId: string | null;
+  loading: boolean;
+  error: ApiErrorDisplay | null;
+}
+
+export function buildReconciliationStatementRunsViewState({
+  statementRuns,
+  fallbackQueue,
+  selectedRunId,
+  loading,
+  error
+}: ReconciliationStatementRunsBuildInput): ReconciliationStatementRunsViewState {
+  const detailPanelId = "statement-run-detail-tabs";
+  const fallbackRows = statementRuns.length > 0
+    ? []
+    : fallbackQueue.map((item): StatementRunSummary => ({
+      runId: item.runId,
+      importId: item.runId,
+      startedAtUtc: item.lastUpdated,
+      completedAtUtc: item.lastUpdated,
+      positionMatches: 0,
+      cashMatches: 0,
+      transactionMatches: 0,
+      openExceptionCount: item.openBreakCount,
+      status: item.reconciliationStatus,
+      breakCount: item.breakCount,
+      caseCount: item.openBreakCount,
+      importedAtUtc: item.lastUpdated
+    }));
+  const sourceRows = statementRuns.length > 0 ? statementRuns : fallbackRows;
+  const effectiveSelectedRunId = selectedRunId ?? sourceRows[0]?.runId ?? null;
+  const rows = sourceRows.map((run) => buildStatementRunRow(run, effectiveSelectedRunId, detailPanelId));
+  const selected = sourceRows.find((run) => run.runId === effectiveSelectedRunId) ?? null;
+
+  return {
+    title: "Statement runs",
+    description: "Broker and custodian statement imports stay anchored to shared reconciliation endpoint data; React only presents counts supplied by the catalog/read-model seam.",
+    tableLabel: "Accounting statement runs",
+    tableCaption: "Statement run list with broker or custodian, account, period, status, validation issue count, match count, break count, case count, and imported timestamp.",
+    detailPanelId,
+    emptyText: "No broker or custodian statement runs are available for this accounting period.",
+    loadingText: loading ? "Loading statement runs from the reconciliation endpoint." : null,
+    errorText: error?.summary ?? null,
+    errorDetails: error?.details ?? [],
+    recoveryActionLabel: "Retry statement runs",
+    recoveryActionAriaLabel: "Retry loading Accounting statement runs",
+    statusAnnouncement: loading
+      ? "Statement runs loading."
+      : error
+        ? "Statement runs failed to load."
+        : `${rows.length} statement run${rows.length === 1 ? "" : "s"} available.`,
+    hasRows: rows.length > 0,
+    rows,
+    tabs: buildReconciliationRunDetailTabs(selected)
+  };
+}
+
+function buildStatementRunRow(
+  run: StatementRunSummary,
+  selectedRunId: string | null,
+  detailPanelId: string
+): ReconciliationStatementRunRowViewModel {
+  const matchCount = run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches;
+  const status = run.status ?? (run.openExceptionCount > 0 ? "ReviewRequired" : "Matched");
+  const missing: string[] = [];
+  const brokerCustodianLabel = valueOrMissing(run.brokerCustodian, "Broker/custodian", missing);
+  const accountLabel = valueOrMissing(run.account, "Account", missing);
+  const periodLabel = valueOrMissing(run.period, "Period", missing);
+  const validationIssueCount = run.validationIssueCount ?? run.openExceptionCount;
+  const breakCount = run.breakCount ?? run.openExceptionCount;
+  const caseCount = run.caseCount ?? run.openExceptionCount;
+  const importedAtLabel = run.importedAtUtc ?? run.completedAtUtc ?? run.startedAtUtc;
+
+  return {
+    runId: run.runId,
+    brokerCustodianLabel,
+    accountLabel,
+    periodLabel,
+    statusLabel: status,
+    validationIssueCountLabel: String(validationIssueCount),
+    matchCountLabel: String(matchCount),
+    breakCountLabel: String(breakCount),
+    caseCountLabel: String(caseCount),
+    importedAtLabel,
+    isSelected: run.runId === selectedRunId,
+    controlsId: detailPanelId,
+    ariaLabel: `Statement run ${run.runId}. ${status}. ${validationIssueCount} validation issues, ${matchCount} matches, ${breakCount} breaks, ${caseCount} cases. Imported ${importedAtLabel}.`,
+    selectAriaLabel: `Inspect statement run ${run.runId}`,
+    unavailableReason: missing.length > 0 ? `${missing.join(", ")} not provided by statement run payload.` : null
+  };
+}
+
+function valueOrMissing(value: string | null | undefined, label: string, missing: string[]): string {
+  const trimmed = value?.trim();
+  if (trimmed) {
+    return trimmed;
+  }
+
+  missing.push(label);
+  return "—";
+}
+
+function buildReconciliationRunDetailTabs(run: StatementRunSummary | null): ReconciliationRunDetailTabViewModel[] {
+  const disabledReason = run ? null : "Select a statement run before opening this detail tab.";
+  const matchCount = run ? run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches : 0;
+  const openExceptionCount = run?.openExceptionCount ?? 0;
+  const tabs: Array<{ id: ReconciliationRunDetailTabId; label: string; badgeLabel: string | null; description: string }> = [
+    { id: "overview", label: "Overview", badgeLabel: run?.status ?? null, description: "Statement source, account coverage, import timing, and endpoint-supplied reconciliation posture." },
+    { id: "validation", label: "Validation", badgeLabel: run ? String(run.validationIssueCount ?? openExceptionCount) : null, description: "Validation issues reported by the shared statement reconciliation run." },
+    { id: "positions", label: "Positions", badgeLabel: run ? String(run.positionMatches) : null, description: "Position match totals supplied by the reconciliation service." },
+    { id: "cash", label: "Cash", badgeLabel: run ? String(run.cashMatches) : null, description: "Cash match totals supplied by the reconciliation service." },
+    { id: "transactions", label: "Transactions", badgeLabel: run ? String(run.transactionMatches) : null, description: "Transaction match totals supplied by the reconciliation service." },
+    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework read models; no case-state logic runs in React." },
+    { id: "evidence", label: "Evidence", badgeLabel: run ? String(matchCount) : null, description: "Evidence packet and imported statement references available through shared endpoint clients." }
+  ];
+
+  return tabs.map((tab) => ({
+    ...tab,
+    disabled: !run,
+    disabledReason,
+    ariaLabel: run
+      ? `${tab.label} tab for statement run ${run.runId}. ${tab.description}`
+      : `${tab.label} tab unavailable. ${disabledReason}`
+  }));
 }
 
 export function buildReconciliationQueuePanelViewState(
@@ -2675,6 +2930,11 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Owner", value: row.ownerLabel },
       { label: "Detected", value: row.detectedAtLabel },
       { label: "Updated", value: row.lastUpdatedAtLabel },
+      { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
+      { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
+      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
+      { label: "Required sign-off", value: buildReconciliationBreakSignoffText(row) },
+      { label: "Decision note", value: formatReconciliationMetadata(row.resolutionNote, "No decision captured") },
       { label: "Routing", value: row.routingTarget ?? "No routing target" },
       { label: "Fund account", value: row.fundAccountId ?? "Not scoped" }
     ],
@@ -2706,6 +2966,26 @@ function reconciliationBreakStatusBadgeVariant(
   if (status === "InReview") return "warning";
   if (status === "Dismissed") return "outline";
   return "danger";
+}
+
+function buildReconciliationBreakSignoffText(row: Pick<ReconciliationBreakQueueItem, "requiredSignoffRole" | "signoffStatus" | "status" | "resolvedAt">): string {
+  const role = formatReconciliationMetadata(row.requiredSignoffRole, "Not configured");
+  const status = formatReconciliationMetadata(row.signoffStatus, "Pending");
+
+  if (role === "Not configured") {
+    return `Sign-off: ${status}. Required role is not configured.`;
+  }
+
+  if (row.resolvedAt && !status.toLowerCase().includes("signed")) {
+    return `Decision captured; sign-off: ${status} by ${role}. Close approval remains blocked.`;
+  }
+
+  return `Sign-off: ${status} by ${role}.`;
+}
+
+function formatReconciliationMetadata(value: string | null | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
 }
 
 function buildBreakActionDisabledReason({

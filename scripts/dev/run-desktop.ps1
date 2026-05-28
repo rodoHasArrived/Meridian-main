@@ -52,10 +52,12 @@ $hostProcess = $null
 $hostOwned = $false
 $desktopProcess = $null
 $desktopAlreadyRunning = $false
+$hostShutdownToken = [System.Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 $originalFixtureEnv = @{
     MDC_DATASOURCE = $env:MDC_DATASOURCE
     MDC_SYNTHETIC_MODE = $env:MDC_SYNTHETIC_MODE
     MDC_FIXTURE_MODE = $env:MDC_FIXTURE_MODE
+    MDC_SHUTDOWN_TOKEN = $env:MDC_SHUTDOWN_TOKEN
 }
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
@@ -119,6 +121,33 @@ function Stop-DesktopProcessAfterSmoke {
     }
     catch {
         Write-Warn "Failed to stop the smoke-test desktop shell cleanly: $($_.Exception.Message)"
+    }
+}
+
+function Stop-OwnedDesktopProcessSafely {
+    if ($null -eq $desktopProcess) {
+        return
+    }
+
+    try {
+        if ($desktopProcess.HasExited) {
+            return
+        }
+
+        $desktopProcess.Refresh()
+        if ($desktopProcess.MainWindowHandle -ne [System.IntPtr]::Zero -and $desktopProcess.CloseMainWindow()) {
+            if ($desktopProcess.WaitForExit(10000)) {
+                Write-Ok "Owned Meridian desktop process $($desktopProcess.Id) exited cleanly"
+                return
+            }
+        }
+
+        Write-Warn "Owned Meridian desktop process $($desktopProcess.Id) did not exit after close request; terminating it."
+        Stop-Process -Id $desktopProcess.Id -Force
+        $desktopProcess.WaitForExit()
+    }
+    catch {
+        Write-Warn "Failed to stop the owned Meridian desktop process cleanly: $($_.Exception.Message)"
     }
 }
 
@@ -212,9 +241,30 @@ function Stop-OwnedHost {
     try {
         if (-not $hostProcess.HasExited) {
             Write-Info "Stopping local Meridian host..."
+            $shutdownUri = "http://localhost:$hostPort/api/system/shutdown"
+            $gracefulRequested = $false
+            try {
+                Invoke-WebRequest `
+                    -Uri $shutdownUri `
+                    -Method Post `
+                    -UseBasicParsing `
+                    -TimeoutSec 5 `
+                    -Headers @{ "X-Meridian-Shutdown-Token" = $hostShutdownToken } | Out-Null
+                $gracefulRequested = $true
+            }
+            catch {
+                Write-Warn "Local Meridian host graceful shutdown request failed: $($_.Exception.Message)"
+            }
+
+            if ($gracefulRequested -and $hostProcess.WaitForExit(15000)) {
+                Write-Ok "Local Meridian host stopped gracefully"
+                return
+            }
+
+            Write-Warn "Local Meridian host did not exit after graceful shutdown; terminating owned process $($hostProcess.Id)."
             Stop-Process -Id $hostProcess.Id -Force
             $hostProcess.WaitForExit()
-            Write-Ok "Local Meridian host stopped"
+            Write-Ok "Local Meridian host terminated"
         }
     }
     catch {
@@ -362,6 +412,7 @@ try {
     }
     else {
         Write-Info "Starting local Meridian host on $hostBaseUrl..."
+        $env:MDC_SHUTDOWN_TOKEN = $hostShutdownToken
         $hostProcess = Start-Process -FilePath $hostExe `
             -ArgumentList @('--mode', $hostMode, '--http-port', "$hostPort") `
             -WorkingDirectory $repoRoot `
@@ -471,6 +522,7 @@ try {
     Write-Ok 'Meridian desktop exited cleanly'
 }
 finally {
+    Stop-OwnedDesktopProcessSafely
     Stop-OwnedHost
 
     foreach ($entry in $originalFixtureEnv.GetEnumerator()) {

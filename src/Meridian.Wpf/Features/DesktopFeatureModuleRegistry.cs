@@ -10,6 +10,10 @@ public static class DesktopFeatureModuleRegistry
     private static readonly IDesktopFeatureModule[] Modules =
     [
         new Trading.TradingFeatureModule(),
+        new Portfolio.PortfolioFeatureModule(),
+        new Accounting.AccountingFeatureModule(),
+        new Reporting.ReportingFeatureModule(),
+        new Strategy.StrategyFeatureModule(),
         new Data.DataFeatureModule(),
         new Settings.SettingsFeatureModule()
     ];

@@ -605,7 +605,7 @@ export function buildDevelopmentFixtureNoticeViewModel({
     role: "status",
     ariaLive: "polite",
     title: "Demo data",
-    detail: "Showing local fixture responses because the Meridian API host is unavailable.",
+    detail: "Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
     workflowLabel: "Evidence path",
     retryLabel: refreshing ? "Retrying live data" : "Retry live data",
     retryAriaLabel: refreshing
@@ -3102,7 +3102,7 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
   const allowedScopeKeys = operatingScopeKeysForRoute(route);
   return operatingScope.queryParams
     .filter((item) => allowedScopeKeys.has(item.scopeKey))
-    .reduce((current, item) => appendSearchValue(current, item.key, item.value), route);
+    .reduce((current, item) => appendSearchValue(current, item.key, item.value, true), route);
 }
 
 export function summarizeOperatingScopeForRoute(
@@ -3217,13 +3217,17 @@ function operatingScopeKeysForRoute(route: string): Set<AppShellOperatingScopeQu
   }
 }
 
-function appendSearchValue(route: string, key: string, value: string) {
+function appendSearchValue(route: string, key: string, value: string, preserveExisting = false) {
   const hashIndex = route.indexOf("#");
   const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
   const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
   const searchIndex = routeWithoutHash.indexOf("?");
   const pathname = searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash;
   const params = new URLSearchParams(searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "");
+  if (preserveExisting && params.has(key)) {
+    return route;
+  }
+
   params.set(key, value);
   const nextSearch = params.toString();
   return `${pathname}${nextSearch ? `?${nextSearch}` : ""}${hash}`;

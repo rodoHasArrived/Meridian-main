@@ -1,5 +1,6 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Backtesting;
+using Meridian.Application.Compliance;
 using Meridian.Application.FundStructure;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
@@ -20,6 +21,7 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Meridian.Ui.Shared.Workflows;
@@ -53,10 +55,15 @@ public static class WorkstationServiceCollectionExtensions
             return new BackfillCoordinator(configStore, registry, factory);
         });
 
+        services.AddHttpClient();
         services.AddMemoryCache();
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+        services.TryAddSingleton<FeatureCapabilitySettingsService>();
+        services.TryAddSingleton<SensitiveActionPolicyEngine>();
+        services.TryAddSingleton<ImmutableAuditLogService>();
+        services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
@@ -79,6 +86,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
+        services.TryAddSingleton<StrategyRunComparisonService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
@@ -89,10 +97,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton<ProviderLedgerReconciliationService>();
+
+        services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
 
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
@@ -101,6 +113,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<ReportPackValidationService>();
+        services.TryAddSingleton<ReportTemplateRegistryService>();
+        services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
@@ -128,6 +142,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>()));
+        services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -149,10 +164,13 @@ public static class WorkstationServiceCollectionExtensions
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReconciliationRunService>()));
+        services.TryAddSingleton<CollateralIngestionBuffer>();
+        services.TryAddSingleton<CollateralExposureService>();
 
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
+        services.TryAddSingleton<OmsIntegrationService>();
         services.AddCoveredCallBacktestServices();
 
         return services;

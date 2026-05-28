@@ -176,10 +176,12 @@ public static class OperationsWorkflowContractMatrix
         "APPROVAL_DECISION_REQUIRED",
         "APPROVAL_METADATA_REQUIRED",
         "APPROVAL_REQUIRED",
+        "APPROVAL_REVIEWER_MISMATCH",
         "APPROVAL_SUBMISSION_METADATA_REQUIRED",
         "APPROVAL_SUBMISSION_REQUIRED",
         "AUDIT_CHAIN_INVALID",
         "AUDIT_CHAIN_MISSING",
+        "BROKER_CASH_COVERAGE_INCOMPLETE",
         "BROKER_IMPORT_ALREADY_RECORDED",
         "BROKER_IMPORT_GATE_NOT_READY",
         "BROKER_IMPORT_REQUIRED",
@@ -194,6 +196,8 @@ public static class OperationsWorkflowContractMatrix
         "BROKER_STATEMENT_MISSING",
         "BROKER_SYNC_STALE",
         "BROKER_TRANSACTION_TYPE_UNKNOWN",
+        "CLOSE_CHECKLIST_CONTROL_APPROVALS_INCOMPLETE",
+        "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED",
         "FUND_ACCOUNT_REQUIRED",
         "LEDGER_ACCOUNT_MAPPING_MISSING",
         "LEDGER_BATCH_ID_REQUIRED",
@@ -210,6 +214,8 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_JOURNAL_DESCRIPTION_REQUIRED",
         "LEDGER_JOURNAL_LINES_REQUIRED",
         "LEDGER_JOURNAL_PERIOD_ID_REQUIRED",
+        "LEDGER_JOURNAL_PERIOD_ID_MISMATCH",
+        "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH",
         "LEDGER_JOURNAL_STORE_UNAVAILABLE",
         "LEDGER_JOURNAL_TIMESTAMP_REQUIRED",
         "LEDGER_PERIOD_CLOSED",
@@ -226,6 +232,8 @@ public static class OperationsWorkflowContractMatrix
         "OPERATIONS_GATES_NOT_PASSED",
         "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
         "PERIOD_REQUIRED",
+        "POSITION_COVERAGE_INCOMPLETE",
+        "PRICING_COVERAGE_INCOMPLETE",
         "RECONCILIATION_ACTUAL_FEED_ACTIVITY_MISSING_EXPECTED_EVENT",
         "RECONCILIATION_BREAK_NOT_FOUND",
         "RECONCILIATION_BREAK_RATIONALE_REQUIRED",
@@ -279,6 +287,7 @@ public static class OperationsWorkflowContractMatrix
         "SM_RATE_RESET_TERMS_MISSING",
         "SM_RATE_RESET_SCHEDULE_MISSING",
         "SM_INSTRUMENT_UNRESOLVED",
+        "SM_OVERRIDE_APPROVAL_EXPIRED",
         "SM_OVERRIDE_APPROVAL_METADATA_REQUIRED",
         "SM_OVERRIDE_APPROVAL_REQUIRED",
         "SM_OVERRIDE_ID_MISMATCH",
@@ -345,6 +354,27 @@ public static class OperationsWorkflowContractMatrix
         "RECONCILIATION_CRITICAL_BREAKS_OPEN",
         "REPORT_PACK_NOT_READY",
         "APPROVAL_REQUIRED"
+    };
+
+    public static IReadOnlySet<string> AuditEventTypes { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "workflow-started",
+        "broker-imported",
+        "broker-transactions-normalized",
+        "gate-posture-refreshed",
+        "security-master-resolved",
+        "security-master-override-approved",
+        "ledger-draft-built",
+        "ledger-draft-validated",
+        "ledger-posted",
+        "ledger-posting-blocked",
+        "reconciliation-run",
+        "reconciliation-break-resolved",
+        "approval-submitted",
+        "approval-approved",
+        "approval-rejected",
+        "workflow-closed",
+        "workflow-reopened"
     };
 }
 
@@ -480,7 +510,9 @@ public sealed record OperationsLedgerJournalCandidateDto(
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
-    OperationsJournalEntryMetadataDto? Metadata = null);
+    OperationsJournalEntryMetadataDto? Metadata = null,
+    string? IdempotencyKey = null,
+    string? SecurityMasterProvenance = null);
 
 public sealed record OperationsLedgerJournalLineDto(
     Guid? EntryId,
@@ -538,7 +570,8 @@ public sealed record OperationsSubmitApprovalRequestDto(
     string Rationale,
     string ReportPackId,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null);
 
 public sealed record OperationsApprovalDecisionRequestDto(
     long ExpectedVersion,
@@ -547,7 +580,8 @@ public sealed record OperationsApprovalDecisionRequestDto(
     string Rationale,
     string ReportPackId,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null);
 
 public sealed record OperationsRejectWorkflowRequestDto(
     long ExpectedVersion,
@@ -563,6 +597,7 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string Actor,
     string Rationale,
     string ReportPackId,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
@@ -572,8 +607,40 @@ public sealed record OperationsReopenWorkflowRequestDto(
     string Rationale,
     string IncidentId,
     bool IsGovernedAdmin,
+    string? Justification = null,
+    string? ApprovalReference = null,
+    string? ImpactSummary = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+
+public sealed record OperationsChecklistControlApprovalDto(
+    string TaskId,
+    string ApprovedBy,
+    DateTimeOffset ApprovedAtUtc);
+
+public sealed record OperationsApprovalPolicyMatrixDto(
+    string PolicyId,
+    string Version,
+    DateTimeOffset GeneratedAtUtc,
+    IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
+
+public sealed record OperationsApprovalPolicyMatrixRowDto(
+    string PolicyKey,
+    string WorkflowArea,
+    string Action,
+    OperationsGateKeyDto Gate,
+    string Trigger,
+    string RequiredPermission,
+    string SubmitterRole,
+    string ReviewerRole,
+    int RequiredDistinctApprovals,
+    bool RequiresIndependentReviewer,
+    bool RequiresReportPack,
+    bool RequiresChecklistControlApprovals,
+    string EvidenceRequirement,
+    string AuditEventType,
+    string Route,
+    string Severity);
 
 public sealed record OperationsTransitionResultDto(
     bool Success,
@@ -582,7 +649,8 @@ public sealed record OperationsTransitionResultDto(
     OperationsContinuityWorkflowDto? Workflow,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
     IReadOnlyList<OperationsNextActionDto> NextActions,
-    long? NewVersion = null);
+    long? NewVersion = null,
+    OperationsCloseReadinessDto? CloseReadiness = null);
 
 public sealed record OperationsContinuityWorkflowSummaryDto(
     Guid WorkflowId,
@@ -618,9 +686,34 @@ public sealed record OperationsContinuityWorkflowDto(
     OperationsLedgerPreviewDto? LedgerPreview,
     IReadOnlyList<OperationsApprovalDto> Approvals,
     OperationsReportPackReadinessDto ReportPackReadiness,
+    IReadOnlyList<OperationsCloseChecklistTaskDto> CloseChecklist,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    OperationsCloseReadinessDto? CloseReadiness = null);
+
+public sealed record OperationsCloseChecklistTaskDto(
+    string TaskId,
+    OperationsGateKeyDto Gate,
+    string Label,
+    string Owner,
+    string RequiredEvidence,
+    int RequiredApprovalCount,
+    DateOnly? ExpiresOn,
+    DateOnly? DueDate,
+    string Status,
+    string? BlockingReason,
+    string? EvidencePointer,
+    string? RemediationRoute,
+    bool CanAcknowledge,
+    DateTimeOffset? AcknowledgedAtUtc,
+    string? AcknowledgedBy);
+
+public sealed record OperationsChecklistAcknowledgeRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string Rationale,
+    string? CorrelationId = null);
 
 public sealed record OperationsGateDto(
     OperationsGateKeyDto GateKey,
@@ -648,6 +741,7 @@ public sealed record OperationsTimelineEntryDto(
     string Actor,
     string? Rationale,
     string? CorrelationId,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash);
@@ -667,6 +761,7 @@ public sealed record OperationsWorkflowAuditDto(
     string Actor,
     string? Rationale,
     string? CorrelationId,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash);
@@ -687,7 +782,16 @@ public sealed record OperationsBreakCaseDto(
     string? SecurityId,
     string? Symbol,
     string? SuggestedAction,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
+
+public sealed record OperationsContinuityCorrelationKeysDto(
+    string? RunId = null,
+    Guid? FundAccountId = null,
+    string? PortfolioSnapshotId = null,
+    string? LedgerBatchId = null,
+    string? LedgerPostingGroupId = null,
+    string? ReconciliationCaseId = null);
 
 public sealed record OperationsApprovalDto(
     string ApprovalId,
@@ -711,6 +815,34 @@ public sealed record OperationsReportPackReadinessDto(
     string? ReportPackId,
     string? BlockingReason,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+
+
+public sealed record OperationsCloseReadinessDto(
+    bool IsReadyToClose,
+    string Severity,
+    int Score,
+    IReadOnlyList<OperationsCloseReadinessComponentDto> Components,
+    IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers,
+    IReadOnlyList<OperationsNextActionDto> NextActions);
+
+public sealed record OperationsCloseReadinessComponentDto(
+    string Key,
+    string Label,
+    int Score,
+    int Weight,
+    bool IsReady,
+    string Severity,
+    string? BlockingReason,
+    OperationsGateKeyDto? Gate,
+    string? RouteHint);
+
+public sealed record OperationsCloseReadinessBlockerDto(
+    string Code,
+    string Category,
+    string Severity,
+    string Message,
+    OperationsGateKeyDto? Gate,
+    string? RouteHint);
 
 public sealed record OperationsWorkflowBlockerDto(
     string Code,

@@ -131,13 +131,13 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
         {
             // Start one long-running consumer per ring buffer.
             _tradeConsumer = Task.Factory.StartNew(
-                () => ConsumeTradesAsync(),
+                () => ConsumeTradesAsync(_cts.Token),
                 _cts.Token,
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default).Unwrap();
 
             _quoteConsumer = Task.Factory.StartNew(
-                () => ConsumeQuotesAsync(),
+                () => ConsumeQuotesAsync(_cts.Token),
                 _cts.Token,
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default).Unwrap();
@@ -296,25 +296,24 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryRouteTrade(in MarketEvent evt)
     {
-        if (evt.Payload is not Trade trade)
-            return _slowPath.TryPublish(in evt); // Unknown payload — fall back
-
-        var symbolId = _symbolTable.GetOrAdd(evt.EffectiveSymbol);
-        var raw = new RawTradeEvent(
-            timestampTicks: evt.Timestamp.UtcTicks,
-            symbolHash: symbolId,
-            price: trade.Price,
-            size: trade.Size,
-            aggressor: (byte)trade.Aggressor,
-            sequence: evt.Sequence);
-
-        if (_tradeBuffer.TryWrite(in raw))
+        if (evt.Payload is Trade trade)
         {
-            Interlocked.Increment(ref _hotTradePublished);
-            return true;
+            var symbolHash = _symbolTable.GetOrAdd(evt.Symbol);
+            var raw = new RawTradeEvent(
+                evt.Timestamp.UtcTicks,
+                symbolHash,
+                trade.Price,
+                trade.Size,
+                (byte)trade.Aggressor,
+                evt.Sequence);
+
+            if (_tradeBuffer.TryWrite(in raw))
+            {
+                Interlocked.Increment(ref _hotTradePublished);
+                return true;
+            }
         }
 
-        // Ring buffer full — fall back to slow path to avoid data loss.
         Interlocked.Increment(ref _hotTradeFallbacks);
         return _slowPath.TryPublish(in evt);
     }
@@ -322,29 +321,29 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryRouteQuote(in MarketEvent evt)
     {
-        if (evt.Payload is not BboQuotePayload quote)
-            return _slowPath.TryPublish(in evt); // Unknown payload — fall back
-
-        var symbolId = _symbolTable.GetOrAdd(evt.EffectiveSymbol);
-        var raw = new RawQuoteEvent(
-            timestampTicks: evt.Timestamp.UtcTicks,
-            symbolHash: symbolId,
-            bidPrice: quote.BidPrice,
-            bidSize: quote.BidSize,
-            askPrice: quote.AskPrice,
-            askSize: quote.AskSize,
-            sequence: evt.Sequence);
-
-        if (_quoteBuffer.TryWrite(in raw))
+        if (evt.Payload is BboQuotePayload quote)
         {
-            Interlocked.Increment(ref _hotQuotePublished);
-            return true;
+            var symbolHash = _symbolTable.GetOrAdd(evt.Symbol);
+            var raw = new RawQuoteEvent(
+                evt.Timestamp.UtcTicks,
+                symbolHash,
+                quote.BidPrice,
+                quote.BidSize,
+                quote.AskPrice,
+                quote.AskSize,
+                evt.Sequence);
+
+            if (_quoteBuffer.TryWrite(in raw))
+            {
+                Interlocked.Increment(ref _hotQuotePublished);
+                return true;
+            }
         }
 
-        // Ring buffer full — fall back to slow path to avoid data loss.
         Interlocked.Increment(ref _hotQuoteFallbacks);
         return _slowPath.TryPublish(in evt);
     }
+
 
     // -------------------------------------------------------------------------
     // Consumer loops

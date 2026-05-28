@@ -229,9 +229,9 @@ public sealed class HistoricalEndpointTests
     #region GET /api/historical/{symbol}/bars - Aggregated OHLCV
 
     [Fact]
-    public async Task GetSymbolBars_WithSymbol_ReturnsOk()
+    public async Task GetSymbolBars_WithSymbolAndDateRange_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=5");
+        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=5&from=2024-01-01&to=2024-01-02");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -248,21 +248,17 @@ public sealed class HistoricalEndpointTests
     }
 
     [Fact]
-    public async Task GetSymbolBars_DefaultIntervalIsFiveMinutes()
+    public async Task GetSymbolBars_WithoutDateBounds_ReturnsBadRequest()
     {
         var response = await _client.GetAsync("/api/historical/SPY/bars");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var content = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(content);
-        doc.RootElement.GetProperty("intervalMinutes").GetInt32().Should().Be(5);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task GetSymbolBars_WithInvalidInterval_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=0");
+        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=0&from=2024-01-01&to=2024-01-02");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -270,7 +266,17 @@ public sealed class HistoricalEndpointTests
     [Fact]
     public async Task GetSymbolBars_WithExcessiveInterval_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=99999");
+        var response = await _client.GetAsync("/api/historical/SPY/bars?intervalMinutes=99999&from=2024-01-01&to=2024-01-02");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+    [Fact]
+    public async Task GetSymbolBars_WithInvalidDateRange_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync(
+            "/api/historical/SPY/bars?intervalMinutes=5&from=2024-01-31&to=2024-01-01");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

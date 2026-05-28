@@ -100,21 +100,21 @@ module SecurityIdentifier =
                 |> Seq.toArray
             if charValues |> Array.exists Option.isNone then false
             else
-            let digits =
-                charValues
-                |> Array.choose id
-                |> Array.collect Array.ofList
-            let len = digits.Length
-            let mutable sum = 0
-            let mutable doubleIt = false          // check digit (rightmost) is never doubled in Luhn
-            for i = len - 1 downto 0 do
-                let mutable d = digits.[i]
-                if doubleIt then
-                    d <- d * 2
-                    if d > 9 then d <- d - 9
-                sum <- sum + d
-                doubleIt <- not doubleIt
-            sum % 10 = 0
+                let digits =
+                    charValues
+                    |> Array.choose id
+                    |> Array.collect Array.ofList
+                let len = digits.Length
+                let mutable sum = 0
+                let mutable doubleIt = false          // check digit (rightmost) is never doubled in Luhn
+                for i = len - 1 downto 0 do
+                    let mutable d = digits.[i]
+                    if doubleIt then
+                        d <- d * 2
+                        if d > 9 then d <- d - 9
+                    sum <- sum + d
+                    doubleIt <- not doubleIt
+                sum % 10 = 0
 
     /// Validates a CUSIP (Committee on Uniform Security Identification Procedures) check digit.
     /// Returns true when the check digit is valid.

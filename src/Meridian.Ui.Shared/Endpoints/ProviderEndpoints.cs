@@ -368,7 +368,7 @@ public static class ProviderEndpoints
                     IsConnected: diagnostics?.IsConnected ?? realMetrics?.IsConnected ?? s.Enabled,
                     IsEnabled: s.Enabled,
                     Priority: s.Priority,
-                    ActiveSubscriptions: (int)(realMetrics?.ActiveSubscriptions ?? 0),
+                    ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? (int)(realMetrics?.ActiveSubscriptions ?? 0),
                     LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt ?? realMetrics?.Timestamp ?? DateTimeOffset.UtcNow,
                     LifecycleState: diagnostics?.LifecycleState,
                     WebSocketState: diagnostics?.WebSocketState,
@@ -377,7 +377,10 @@ public static class ProviderEndpoints
                     LastMessageReceivedAt: diagnostics?.LastMessageReceivedAt,
                     LastReconnectAttemptAt: diagnostics?.LastReconnectAttemptAt,
                     ReconnectAttempts: diagnostics?.ReconnectAttempts,
-                    LastFailureKind: diagnostics?.LastFailureKind
+                    LastFailureKind: diagnostics?.LastFailureKind,
+                    FailedSubscriptions: diagnostics?.FailedSubscriptions,
+                    RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
+                    LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt
                 );
             }).ToList();
 
@@ -410,7 +413,7 @@ public static class ProviderEndpoints
                         IsConnected: diagnostics?.IsConnected ?? provider.IsEnabled,
                         IsEnabled: provider.IsEnabled,
                         Priority: provider.Priority,
-                        ActiveSubscriptions: 0,
+                        ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? 0,
                         LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt,
                         LifecycleState: diagnostics?.LifecycleState,
                         WebSocketState: diagnostics?.WebSocketState,
@@ -419,7 +422,10 @@ public static class ProviderEndpoints
                         LastMessageReceivedAt: diagnostics?.LastMessageReceivedAt,
                         LastReconnectAttemptAt: diagnostics?.LastReconnectAttemptAt,
                         ReconnectAttempts: diagnostics?.ReconnectAttempts,
-                        LastFailureKind: diagnostics?.LastFailureKind));
+                        LastFailureKind: diagnostics?.LastFailureKind,
+                        FailedSubscriptions: diagnostics?.FailedSubscriptions,
+                        RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
+                        LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt));
                 }
             }
 

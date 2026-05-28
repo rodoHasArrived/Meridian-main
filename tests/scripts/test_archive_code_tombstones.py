@@ -1,0 +1,62 @@
+from __future__ import annotations
+
+import unittest
+from pathlib import Path
+
+
+class ArchiveCodeTombstonesTests(unittest.TestCase):
+    # Archive/code currently retains .NET source tombstones only.
+    CODE_EXTENSIONS = (".cs", ".fs")
+    TOMBSTONE_MARKER = "ARCHIVE TOMBSTONE"
+    COMMENT_PREFIXES = ("//", "(*", "*)")
+
+    def setUp(self) -> None:
+        self.repo_root = Path(__file__).resolve().parents[2]
+        self.archive_code_root = self.repo_root / "archive" / "code" / "src"
+        self.normalized_archive_path = self.archive_code_root.relative_to(self.repo_root).as_posix().lower()
+
+    def test_archive_code_files_are_comment_only_tombstones(self) -> None:
+        files = sorted(
+            file_path
+            for file_path in self.archive_code_root.rglob("*")
+            if file_path.is_file() and file_path.suffix.lower() in self.CODE_EXTENSIONS
+        )
+        if not files:
+            self.skipTest("No archived source tombstones found under archive/code/src.")
+
+        for file_path in files:
+            relative = file_path.relative_to(self.repo_root).as_posix()
+            text = file_path.read_text(encoding="utf-8")
+
+            self.assertIn(self.TOMBSTONE_MARKER, text, f"{relative} must contain the tombstone marker.")
+
+            non_empty_lines = [line for line in text.splitlines() if line.strip()]
+            for line in non_empty_lines:
+                stripped = line.lstrip()
+                self.assertTrue(
+                    stripped.startswith(self.COMMENT_PREFIXES),
+                    f"{relative} must remain comment-only (found non-comment line: {line!r}).",
+                )
+
+    def test_archive_code_paths_are_not_included_in_build_graph(self) -> None:
+        candidate_files = [
+            *self.repo_root.rglob("*.sln"),
+            *self.repo_root.rglob("*.csproj"),
+            *self.repo_root.rglob("*.fsproj"),
+            *self.repo_root.rglob("Directory.Build.props"),
+            *self.repo_root.rglob("Directory.Build.targets"),
+        ]
+
+        for file_path in sorted(candidate_files):
+            text = file_path.read_text(encoding="utf-8")
+            normalized_text = text.replace("\\", "/").lower()
+            relative = file_path.relative_to(self.repo_root).as_posix()
+            self.assertNotIn(
+                self.normalized_archive_path,
+                normalized_text,
+                f"{relative} must not include archived code path {self.normalized_archive_path!r}.",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()

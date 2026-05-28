@@ -132,7 +132,10 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
                 SecurityId: null,
                 Symbol: null,
                 SuggestedAction: breakRow.Reason,
-                reconciliationEvidence));
+                reconciliationEvidence,
+                breakRow.CorrelationKeys ?? new OperationsContinuityCorrelationKeysDto(
+                    RunId: detail.Summary.RunId,
+                    ReconciliationCaseId: BuildBreakId(detail.Summary.ReconciliationRunId, breakRow.CheckId))));
 
         var securityCoverageBreaks = (detail.SecurityCoverageIssues ?? Array.Empty<ReconciliationSecurityCoverageIssueDto>())
             .Select(issue => new OperationsBreakCaseDto(
@@ -156,7 +159,10 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
                     issue.EvidenceLink,
                     "security-master-coverage",
                     "Security Master coverage evidence",
-                    detail.Summary.CreatedAt)));
+                    detail.Summary.CreatedAt),
+                new OperationsContinuityCorrelationKeysDto(
+                    RunId: detail.Summary.RunId,
+                    ReconciliationCaseId: BuildIssueBreakId(detail.Summary.ReconciliationRunId, "security-coverage", issue.Source, issue.Symbol, issue.Code))));
 
         var securityAccountingBreaks = (detail.SecurityMasterAccountingIssues ?? Array.Empty<SecurityMasterAccountingIssueDto>())
             .Select(issue => new OperationsBreakCaseDto(
@@ -182,7 +188,10 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
                     issue.EvidenceLink,
                     "security-master-accounting",
                     "Security Master accounting evidence",
-                    detail.Summary.CreatedAt)));
+                    detail.Summary.CreatedAt),
+                new OperationsContinuityCorrelationKeysDto(
+                    RunId: detail.Summary.RunId,
+                    ReconciliationCaseId: BuildIssueBreakId(detail.Summary.ReconciliationRunId, "security-accounting", issue.Source, issue.Symbol, issue.Code))));
 
         return reconciliationBreaks
             .Concat(securityCoverageBreaks)

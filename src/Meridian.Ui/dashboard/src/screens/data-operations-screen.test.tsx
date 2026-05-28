@@ -11,6 +11,7 @@ import {
 import { renderWithRouter } from "@/test/render";
 import type {
   BackfillProgressResponse,
+  BackfillPreviewResult,
   BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   ProviderConnectionRow,
@@ -504,16 +505,16 @@ describe("DataOperationsScreen", () => {
   it("calls previewBackfill and shows preview result", async () => {
     const user = userEvent.setup();
 
-    const mockPreview: BackfillTriggerResult = {
-      success: true,
+    const mockPreview: BackfillPreviewResult = {
       provider: "polygon",
-      symbols: ["AAPL"],
+      providerDisplayName: "Polygon",
+      symbols: [{ symbol: "AAPL", estimatedBars: 2100, hasMarketHoursData: true, notes: [] }],
       from: "2024-01-01",
       to: "2024-01-31",
-      barsWritten: 2100,
-      startedUtc: "2024-01-31T10:00:00Z",
-      completedUtc: "2024-01-31T10:00:05Z",
-      error: null
+      totalDays: 31,
+      estimatedTradingDays: 21,
+      estimatedDurationSeconds: 5,
+      notes: []
     };
 
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
@@ -537,20 +538,20 @@ describe("DataOperationsScreen", () => {
   it("locks backfill request fields while preview is pending", async () => {
     const user = userEvent.setup();
 
-    const mockPreview: BackfillTriggerResult = {
-      success: true,
+    const mockPreview: BackfillPreviewResult = {
       provider: "polygon",
-      symbols: ["AAPL"],
+      providerDisplayName: "Polygon",
+      symbols: [{ symbol: "AAPL", estimatedBars: 2100, hasMarketHoursData: true, notes: [] }],
       from: "2024-01-01",
       to: "2024-01-31",
-      barsWritten: 2100,
-      startedUtc: "2024-01-31T10:00:00Z",
-      completedUtc: "2024-01-31T10:00:05Z",
-      error: null
+      totalDays: 31,
+      estimatedTradingDays: 21,
+      estimatedDurationSeconds: 5,
+      notes: []
     };
-    let resolvePreview!: (value: BackfillTriggerResult) => void;
+    let resolvePreview!: (value: BackfillPreviewResult) => void;
 
-    vi.spyOn(api, "previewBackfill").mockReturnValueOnce(new Promise<BackfillTriggerResult>((resolve) => {
+    vi.spyOn(api, "previewBackfill").mockReturnValueOnce(new Promise<BackfillPreviewResult>((resolve) => {
       resolvePreview = resolve;
     }));
 
@@ -581,21 +582,28 @@ describe("DataOperationsScreen", () => {
   it("calls triggerBackfill after preview and shows success result", async () => {
     const user = userEvent.setup();
 
-    const mockPreview: BackfillTriggerResult = {
-      success: true,
+    const mockPreview: BackfillPreviewResult = {
       provider: "polygon",
-      symbols: ["MSFT"],
-      from: null,
-      to: null,
-      barsWritten: 500,
-      startedUtc: "2024-01-31T10:00:00Z",
-      completedUtc: "2024-01-31T10:00:05Z",
-      error: null
+      providerDisplayName: "Polygon",
+      symbols: [{ symbol: "MSFT", estimatedBars: 500, hasMarketHoursData: true, notes: [] }],
+      from: "2024-01-01",
+      to: "2024-01-31",
+      totalDays: 31,
+      estimatedTradingDays: 21,
+      estimatedDurationSeconds: 5,
+      notes: []
     };
 
     const mockResult: BackfillTriggerResult = {
-      ...mockPreview,
-      barsWritten: 512
+      success: true,
+      provider: "polygon",
+      symbols: ["MSFT"],
+      from: "2024-01-01",
+      to: "2024-01-31",
+      barsWritten: 512,
+      startedUtc: "2024-01-31T10:00:00Z",
+      completedUtc: "2024-01-31T10:00:05Z",
+      error: null
     };
 
     const mockProgress: BackfillProgressResponse = {

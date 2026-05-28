@@ -33,6 +33,15 @@ public static class WpfShellServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddWorkspaceShellSlotContributor<TContributor>(this IServiceCollection services)
+        where TContributor : class, IWorkspaceShellSlotContributor
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IWorkspaceShellSlotContributor, TContributor>();
+        return services;
+    }
+
     public static IServiceCollection AddMeridianWpfShell(this IServiceCollection services)
         => AddMeridianWpfShell(services, configuration: null);
 
@@ -44,6 +53,7 @@ public static class WpfShellServiceCollectionExtensions
         services.AddSingleton<ViewModelViewResolver>();
         services.AddSingleton<IViewModelViewResolver>(sp => sp.GetRequiredService<ViewModelViewResolver>());
         services.AddSingleton<IWindowStateStore, WindowStateStore>();
+        AddSingletonIfMissing<IWorkspaceShellSlotContributionService, WorkspaceShellSlotContributionService>(services);
         services.AddSingleton<DesktopShellSessionService>();
         services.AddSingleton<DesktopLaunchRouter>();
         services.AddSingleton<FileDropRouter>();
@@ -99,5 +109,17 @@ public static class WpfShellServiceCollectionExtensions
         }
 
         services.AddTransient(serviceType);
+    }
+
+    private static void AddSingletonIfMissing<TService, TImplementation>(IServiceCollection services)
+        where TService : class
+        where TImplementation : class, TService
+    {
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(TService)))
+        {
+            return;
+        }
+
+        services.AddSingleton<TService, TImplementation>();
     }
 }

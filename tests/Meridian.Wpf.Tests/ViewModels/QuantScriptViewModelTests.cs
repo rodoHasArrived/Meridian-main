@@ -449,6 +449,27 @@ public sealed class QuantScriptViewModelTests
         xaml.Should().Contain("{Binding SelectedHistoryConsolePreview}");
     }
 
+    [Fact]
+    public void QuantScriptSelectionSection_ShouldOwnSelectionStateWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\QuantScriptViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\QuantScriptViewModel.cs"));
+
+        sectionSource.Should().Contain("internal sealed class QuantScriptSelectionSectionViewModel");
+        sectionSource.Should().Contain("public ScriptDocumentEntry? SelectedDocument");
+        sectionSource.Should().Contain("public NotebookCellViewModel? SelectedCell");
+        sectionSource.Should().Contain("public QuantScriptTemplateDefinition? SelectedTemplate");
+        sectionSource.Should().Contain("public QuantScriptExecutionRecord? SelectedExecutionRecord");
+        viewModelSource.Should().Contain("internal QuantScriptSelectionSectionViewModel SelectionSection");
+        viewModelSource.Should().Contain("get => SelectionSection.SelectedDocument");
+        viewModelSource.Should().Contain("get => SelectionSection.SelectedCell");
+        viewModelSource.Should().Contain("get => SelectionSection.SelectedExecutionRecord");
+        viewModelSource.Should().NotContain("private ScriptDocumentEntry? _selectedDocument");
+        viewModelSource.Should().NotContain("private NotebookCellViewModel? _selectedCell");
+        viewModelSource.Should().NotContain("private QuantScriptTemplateDefinition? _selectedTemplate");
+        viewModelSource.Should().NotContain("private QuantScriptExecutionRecord? _selectedExecutionRecord");
+    }
+
     private static QuantScriptExecutionRecord MakeHistoryRecord(string? mirroredRunId, int? capturedBacktestCount = null)
         => new(
             ExecutionId: Guid.NewGuid().ToString("N"),

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -9,6 +11,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
 using Meridian.Wpf.Workstation.ViewModels;
@@ -21,7 +24,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable, IPageActionBarProvider
+public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider
 {
     private static readonly Brush ReadyPostureBrush = CreateFrozenBrush(63, 185, 80);
     private static readonly Brush WarningPostureBrush = CreateFrozenBrush(255, 193, 7);
@@ -36,68 +39,116 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly ProviderHealthCollectionsSectionViewModel _collectionsSection = new();
+    private readonly ProviderHealthPostureSectionViewModel _postureSection = new(NeutralPostureBrush, NeutralPostureBackgroundBrush);
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
     private PeriodicTimer? _sparklineTimer;
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _cts;
     private DateTime? _lastRefreshTime;
     private bool _isActive;
     private bool _isDisposed;
 
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<ProviderStatusModel> StreamingProviders { get; } = new();
-    public ObservableCollection<BackfillProviderModel> BackfillProviders { get; } = new();
-    public ObservableCollection<ConnectionEventModel> ConnectionHistory { get; } = new();
-    public ObservableCollection<ProviderManagementRowModel> ProviderManagementRows { get; } = new();
-    public ObservableCollection<ProviderManagementSummaryCardModel> ProviderManagementSummaryCards { get; } = new();
-    public ObservableCollection<WorkstationMetricModel> ProviderMetricTiles { get; } = new();
+    public ObservableCollection<ProviderStatusModel> StreamingProviders => _collectionsSection.StreamingProviders;
+    public ObservableCollection<BackfillProviderModel> BackfillProviders => _collectionsSection.BackfillProviders;
+    public ObservableCollection<ConnectionEventModel> ConnectionHistory => _collectionsSection.ConnectionHistory;
+    public ObservableCollection<ProviderManagementRowModel> ProviderManagementRows => _collectionsSection.ProviderManagementRows;
+    public ObservableCollection<ProviderManagementSummaryCardModel> ProviderManagementSummaryCards => _collectionsSection.ProviderManagementSummaryCards;
+    public ObservableCollection<WorkstationMetricModel> ProviderMetricTiles => _collectionsSection.ProviderMetricTiles;
 
     // ── Bindable properties ─────────────────────────────────────────────────
-    private string _connectedCount = "0";
-    public string ConnectedCount { get => _connectedCount; private set => SetProperty(ref _connectedCount, value); }
+    public string ConnectedCount
+    {
+        get => _postureSection.ConnectedCount;
+        private set => SetProviderHealthSectionProperty(_postureSection.ConnectedCount, value, next => _postureSection.ConnectedCount = next);
+    }
 
-    private string _disconnectedCount = "0";
-    public string DisconnectedCount { get => _disconnectedCount; private set => SetProperty(ref _disconnectedCount, value); }
+    public string DisconnectedCount
+    {
+        get => _postureSection.DisconnectedCount;
+        private set => SetProviderHealthSectionProperty(_postureSection.DisconnectedCount, value, next => _postureSection.DisconnectedCount = next);
+    }
 
-    private string _totalProviders = "0";
-    public string TotalProviders { get => _totalProviders; private set => SetProperty(ref _totalProviders, value); }
+    public string TotalProviders
+    {
+        get => _postureSection.TotalProviders;
+        private set => SetProviderHealthSectionProperty(_postureSection.TotalProviders, value, next => _postureSection.TotalProviders = next);
+    }
 
-    private string _avgLatency = "--";
-    public string AvgLatency { get => _avgLatency; private set => SetProperty(ref _avgLatency, value); }
+    public string AvgLatency
+    {
+        get => _postureSection.AvgLatency;
+        private set => SetProviderHealthSectionProperty(_postureSection.AvgLatency, value, next => _postureSection.AvgLatency = next);
+    }
 
-    private string _lastUpdateText = "Last updated: --";
-    public string LastUpdateText { get => _lastUpdateText; private set => SetProperty(ref _lastUpdateText, value); }
+    public string LastUpdateText
+    {
+        get => _postureSection.LastUpdateText;
+        private set => SetProviderHealthSectionProperty(_postureSection.LastUpdateText, value, next => _postureSection.LastUpdateText = next);
+    }
 
-    private bool _isLastUpdateStale;
-    public bool IsLastUpdateStale { get => _isLastUpdateStale; private set => SetProperty(ref _isLastUpdateStale, value); }
+    public bool IsLastUpdateStale
+    {
+        get => _postureSection.IsLastUpdateStale;
+        private set => SetProviderHealthSectionProperty(_postureSection.IsLastUpdateStale, value, next => _postureSection.IsLastUpdateStale = next);
+    }
 
-    private bool _hasNoHistory = true;
-    public bool HasNoHistory { get => _hasNoHistory; private set => SetProperty(ref _hasNoHistory, value); }
+    public bool HasNoHistory
+    {
+        get => _postureSection.HasNoHistory;
+        private set => SetProviderHealthSectionProperty(_postureSection.HasNoHistory, value, next => _postureSection.HasNoHistory = next);
+    }
 
-    private string _providerPostureTitle = "Provider posture loading";
-    public string ProviderPostureTitle { get => _providerPostureTitle; private set => SetProperty(ref _providerPostureTitle, value); }
+    public string ProviderPostureTitle
+    {
+        get => _postureSection.ProviderPostureTitle;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureTitle, value, next => _postureSection.ProviderPostureTitle = next);
+    }
 
-    private string _providerPostureDetail = "Refresh provider health to compute the active streaming and backfill posture.";
-    public string ProviderPostureDetail { get => _providerPostureDetail; private set => SetProperty(ref _providerPostureDetail, value); }
+    public string ProviderPostureDetail
+    {
+        get => _postureSection.ProviderPostureDetail;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureDetail, value, next => _postureSection.ProviderPostureDetail = next);
+    }
 
-    private string _providerPostureActionText = "Refresh provider data";
-    public string ProviderPostureActionText { get => _providerPostureActionText; private set => SetProperty(ref _providerPostureActionText, value); }
+    public string ProviderPostureActionText
+    {
+        get => _postureSection.ProviderPostureActionText;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureActionText, value, next => _postureSection.ProviderPostureActionText = next);
+    }
 
-    private string _providerPostureTargetText = "Provider health";
-    public string ProviderPostureTargetText { get => _providerPostureTargetText; private set => SetProperty(ref _providerPostureTargetText, value); }
+    public string ProviderPostureTargetText
+    {
+        get => _postureSection.ProviderPostureTargetText;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureTargetText, value, next => _postureSection.ProviderPostureTargetText = next);
+    }
 
-    private string _providerPostureEvidenceText = "Awaiting provider snapshot";
-    public string ProviderPostureEvidenceText { get => _providerPostureEvidenceText; private set => SetProperty(ref _providerPostureEvidenceText, value); }
+    public string ProviderPostureEvidenceText
+    {
+        get => _postureSection.ProviderPostureEvidenceText;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureEvidenceText, value, next => _postureSection.ProviderPostureEvidenceText = next);
+    }
 
-    private string _providerPostureIcon = "\uE946";
-    public string ProviderPostureIcon { get => _providerPostureIcon; private set => SetProperty(ref _providerPostureIcon, value); }
+    public string ProviderPostureIcon
+    {
+        get => _postureSection.ProviderPostureIcon;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureIcon, value, next => _postureSection.ProviderPostureIcon = next);
+    }
 
-    private Brush _providerPostureAccentBrush = NeutralPostureBrush;
-    public Brush ProviderPostureAccentBrush { get => _providerPostureAccentBrush; private set => SetProperty(ref _providerPostureAccentBrush, value); }
+    public Brush ProviderPostureAccentBrush
+    {
+        get => _postureSection.ProviderPostureAccentBrush;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureAccentBrush, value, next => _postureSection.ProviderPostureAccentBrush = next);
+    }
 
-    private Brush _providerPostureBackgroundBrush = NeutralPostureBackgroundBrush;
-    public Brush ProviderPostureBackgroundBrush { get => _providerPostureBackgroundBrush; private set => SetProperty(ref _providerPostureBackgroundBrush, value); }
+    public Brush ProviderPostureBackgroundBrush
+    {
+        get => _postureSection.ProviderPostureBackgroundBrush;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureBackgroundBrush, value, next => _postureSection.ProviderPostureBackgroundBrush = next);
+    }
 
     private ProviderManagementRowModel? _selectedProviderManagementRow;
     public ProviderManagementRowModel? SelectedProviderManagementRow
@@ -118,13 +169,17 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     private string _providerVerificationStatusText = "Credential verification can be run from Diagnostics.";
     public string ProviderVerificationStatusText { get => _providerVerificationStatusText; private set => SetProperty(ref _providerVerificationStatusText, value); }
 
-    private WorkstationStateModel _providerPostureState = WorkstationStateModel.Loading(
-        "Provider posture loading",
-        "Refresh provider health to compute the active streaming and backfill posture.");
-    public WorkstationStateModel ProviderPostureState { get => _providerPostureState; private set => SetProperty(ref _providerPostureState, value); }
+    public WorkstationStateModel ProviderPostureState
+    {
+        get => _postureSection.ProviderPostureState;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureState, value, next => _postureSection.ProviderPostureState = next);
+    }
 
-    private WorkstationBadgeModel _providerPostureBadge = new("Posture", "Loading", "\uE946", WorkspaceTone.Info);
-    public WorkstationBadgeModel ProviderPostureBadge { get => _providerPostureBadge; private set => SetProperty(ref _providerPostureBadge, value); }
+    public WorkstationBadgeModel ProviderPostureBadge
+    {
+        get => _postureSection.ProviderPostureBadge;
+        private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureBadge, value, next => _postureSection.ProviderPostureBadge = next);
+    }
 
     private WorkstationCommandGroupModel _providerManagementCommandGroup = new();
     public WorkstationCommandGroupModel ProviderManagementCommandGroup
@@ -170,7 +225,27 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Provider Health";
-    public ObservableCollection<ActionEntry> Actions { get; } = new();
+    public ObservableCollection<ActionEntry> Actions => _collectionsSection.Actions;
+
+    internal ProviderHealthCollectionsSectionViewModel CollectionsSection => _collectionsSection;
+
+    internal ProviderHealthPostureSectionViewModel PostureSection => _postureSection;
+
+    private bool SetProviderHealthSectionProperty<T>(
+        T currentValue,
+        T newValue,
+        Action<T> assign,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
+        {
+            return false;
+        }
+
+        assign(newValue);
+        RaisePropertyChanged(propertyName);
+        return true;
+    }
 
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,
@@ -195,7 +270,13 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         UpdateProviderMetricTiles();
     }
 
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
         if (_isActive)
@@ -204,6 +285,11 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         }
 
         _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _connectionService.StateChanged += OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated += OnConnectionHealthUpdated;
 
@@ -213,15 +299,22 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         Actions.Add(new ActionEntry("Run Diagnostics", new RelayCommand(RunSelectedProviderDiagnostics), "\uE9D9", "Run selected provider diagnostics"));
         Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "\uE71B", "Reconnect all providers"));
 
-        await RefreshDataAsync();
+        await RefreshDataAsync(ActivationToken);
 
         _refreshTimer.Start();
         _staleCheckTimer.Start();
         StartSparklineTimer();
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
         _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated -= OnConnectionHealthUpdated;
@@ -230,6 +323,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         StopSparklineTimer();
         var refreshCts = Interlocked.Exchange(ref _cts, null);
         CancelAndDispose(refreshCts);
+        var activationCts = Interlocked.Exchange(ref _activationCts, null);
+        CancelAndDispose(activationCts);
     }
 
     public async Task RefreshAsync(CancellationToken ct = default)
@@ -1404,14 +1499,17 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
 
     private void StartSparklineTimer()
     {
-        _sparklineTimer = new PeriodicTimer(TimeSpan.FromSeconds(2));
-        _ = RefreshSparklineDataAsync();
+        StopSparklineTimer();
+
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        _sparklineTimer = timer;
+        _ = RefreshSparklineDataAsync(timer, ActivationToken);
     }
 
     private void StopSparklineTimer()
     {
-        _sparklineTimer?.Dispose();
-        _sparklineTimer = null;
+        var timer = Interlocked.Exchange(ref _sparklineTimer, null);
+        timer?.Dispose();
     }
 
     private static void CancelAndDispose(CancellationTokenSource? cts, bool cancel = true)
@@ -1442,20 +1540,26 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         }
     }
 
-    private async Task RefreshSparklineDataAsync()
+    private async Task RefreshSparklineDataAsync(PeriodicTimer timer, CancellationToken ct)
     {
         try
         {
-            while (_sparklineTimer is not null)
+            while (ReferenceEquals(_sparklineTimer, timer) && !ct.IsCancellationRequested)
             {
-                await _sparklineTimer.WaitForNextTickAsync();
-                if (_sparklineTimer is null)
+                if (!await timer.WaitForNextTickAsync(ct))
+                {
                     break;
+                }
+
+                if (!ReferenceEquals(_sparklineTimer, timer) || _isDisposed || !_isActive)
+                {
+                    break;
+                }
 
                 _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(UpdateSparklineData);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Timer disposed — ignore
         }

@@ -18,6 +18,8 @@ public static class BackfillEndpoints
 {
     // Symbols should be 1-20 uppercase alphanumeric chars, dots, or hyphens
     private static readonly Regex SymbolPattern = new(@"^[A-Za-z0-9.\-]{1,20}$", RegexOptions.Compiled);
+    private const int MaxIntradaySpanDays = 31;
+    private const int MaxIntradaySymbolCount = 10;
 
     /// <summary>
     /// Maps all backfill API endpoints.
@@ -286,6 +288,29 @@ public static class BackfillEndpoints
 
         if (req.To.HasValue && req.To.Value > DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
             return Results.BadRequest(new { error = "To date cannot be in the future." });
+
+        if (request.Granularity.IsIntraday())
+        {
+            if (req.Symbols.Length > MaxIntradaySymbolCount)
+            {
+                return Results.BadRequest(new
+                {
+                    error = $"Intraday backfill supports at most {MaxIntradaySymbolCount} symbols per request."
+                });
+            }
+
+            if (req.From.HasValue && req.To.HasValue)
+            {
+                var spanDays = req.To.Value.DayNumber - req.From.Value.DayNumber + 1;
+                if (spanDays > MaxIntradaySpanDays)
+                {
+                    return Results.BadRequest(new
+                    {
+                        error = $"Intraday backfill date range cannot exceed {MaxIntradaySpanDays} days."
+                    });
+                }
+            }
+        }
 
         try
         {

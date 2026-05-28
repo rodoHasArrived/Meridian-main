@@ -450,6 +450,12 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest("Corporate action SecurityId must match route parameter");
             }
 
+            var validationError = ValidateCorporateAction(dto);
+            if (validationError is not null)
+            {
+                return Results.BadRequest(validationError);
+            }
+
             await eventStore.AppendCorporateActionAsync(dto, ct).ConfigureAwait(false);
             return Results.Ok();
         })
@@ -464,14 +470,27 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
+            HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ViewSecurityMaster) != UserPermission.ViewSecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
             return Results.Json(conflicts, jsonOptions);
         })
         .WithName("GetSecurityMasterConflicts")
-        .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/security-master/conflicts/{conflictId}/resolve
         group.MapPost(UiApiRoutes.SecurityMasterConflictResolve, async (
@@ -481,17 +500,32 @@ public static class SecurityMasterEndpoints
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             if (request.ConflictId != conflictId)
                 return Results.BadRequest(ErrorResponse.Validation(
                     "ConflictId in body must match the route parameter."));
 
-            var updated = await conflictService.ResolveAsync(request, ct).ConfigureAwait(false);
+            var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
+            var serverRequest = request with { ResolvedBy = resolvedBy };
+
+            var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
             return updated is null
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
         })
         .WithName("ResolveSecurityMasterConflict")
         .Produces<SecurityMasterConflict>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -506,6 +540,16 @@ public static class SecurityMasterEndpoints
             [FromServices] AppSecurityMaster.ISecurityMasterImportService importService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
@@ -663,6 +707,31 @@ public static class SecurityMasterEndpoints
         return (permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster
             ? Results.Forbid()
             : null;
+    }
+
+    private static string? ValidateCorporateAction(CorporateActionDto dto)
+    {
+        if (string.Equals(dto.EventType, "StockSplit", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!dto.SplitRatio.HasValue)
+            {
+                return "StockSplit corporate actions must include SplitRatio.";
+            }
+
+            if (dto.SplitRatio.Value <= 0m || dto.SplitRatio.Value > 1_000m)
+            {
+                return "StockSplit SplitRatio must be greater than 0 and less than or equal to 1000.";
+            }
+        }
+
+        if (string.Equals(dto.EventType, "Dividend", StringComparison.OrdinalIgnoreCase) &&
+            dto.DividendPerShare.HasValue &&
+            dto.DividendPerShare.Value < 0m)
+        {
+            return "DividendPerShare must be greater than or equal to 0.";
+        }
+
+        return null;
     }
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

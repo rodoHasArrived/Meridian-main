@@ -124,6 +124,8 @@ public static class ServiceCompositionRoot
 
         TryRegisterCppTraderIntegration(services, options.ConfigPath);
 
+        ProductionServiceRegistrationPolicy.Validate(services);
+
         // Backtesting services are registered by the host project (Meridian.Backtesting references
         // Meridian.Application, so registration here would create a circular dependency).
 
@@ -302,25 +304,6 @@ public sealed record CompositionOptions
         EnablePipelineServices = true,
         EnableCollectorServices = false,
         EnableHttpClientFactory = true
-    };
-
-    /// <summary>
-    /// Options for the MCP server host. Enables provider discovery and backfill services
-    /// without the streaming pipeline or collector, since the MCP server is query-oriented.
-    /// </summary>
-    public static CompositionOptions McpServer => new()
-    {
-        EnableSymbolManagement = false,
-        EnableBackfillServices = true,
-        EnableEtlServices = true,
-        EnableMaintenanceServices = false,
-        EnableDiagnosticServices = false,
-        EnableCredentialServices = true,
-        EnableProviderServices = true,
-        EnablePipelineServices = false,
-        EnableCollectorServices = false,
-        EnableHttpClientFactory = true,
-        EnableCanonicalizationServices = false
     };
 
     /// <summary>

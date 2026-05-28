@@ -19,19 +19,63 @@ public interface IReconciliationBreakQueueRepository
     Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default);
 
     Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default);
+
+    Task<ReconciliationBulkCaseworkResult?> GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default)
+        => Task.FromResult<ReconciliationBulkCaseworkResult?>(null);
+
+    Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default)
+        => Task.FromResult(new ReconciliationBreakQueueTransitionResult(
+            ReconciliationBreakQueueTransitionStatus.ValidationFailed,
+            Item: null,
+            Error: "Reconciliation casework commands are not supported by this repository."));
+
+    Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default)
+        => Task.FromResult(new ReconciliationBulkCaseworkResult(
+            BulkActionId: request.CommandId,
+            IdempotencyKey: request.IdempotencyKey,
+            DryRun: request.DryRun,
+            RequestedCount: request.BreakIds.Count,
+            SucceededCount: 0,
+            FailedCount: request.BreakIds.Count,
+            Results: request.BreakIds.Select(breakId => new ReconciliationBulkCaseworkCaseResult(
+                breakId,
+                Succeeded: false,
+                WouldSucceed: false,
+                Error: "Reconciliation casework commands are not supported by this repository.",
+                Item: null)).ToArray()));
 }
 
 public enum ReconciliationBreakQueueTransitionStatus : byte
 {
     Success = 0,
     NotFound = 1,
-    InvalidTransition = 2
+    InvalidTransition = 2,
+    ValidationFailed = 3,
+    Unauthorized = 4,
+    Conflict = 5
+}
+
+public enum ReconciliationBreakQueueTransitionErrorCode : byte
+{
+    None = 0,
+    MissingActor = 1,
+    MissingReason = 2,
+    MissingEvidence = 3,
+    IllegalTransition = 4,
+    DualReviewRequired = 5,
+    ReopenNotAllowed = 6,
+    MissingRootCause = 7,
+    MissingResolutionCode = 8,
+    ResolverSignerConflict = 9,
+    ConcurrencyConflict = 10,
+    InvalidTaxonomy = 11
 }
 
 public sealed record ReconciliationBreakQueueTransitionResult(
     ReconciliationBreakQueueTransitionStatus Status,
     ReconciliationBreakQueueItem? Item,
-    string? Error = null);
+    string? Error = null,
+    ReconciliationBreakQueueTransitionErrorCode ErrorCode = ReconciliationBreakQueueTransitionErrorCode.None);
 
 public sealed record ReconciliationBreakQueueAuditEvent(
     string EventId,
@@ -52,4 +96,12 @@ public sealed record ReconciliationBreakQueueAuditEvent(
     string? SignoffStatus = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
-    string? UpstreamSyncCursor = null);
+    string? UpstreamSyncCursor = null,
+    string? Actor = null,
+    string? BeforePayload = null,
+    string? AfterPayload = null,
+    string? CorrelationId = null,
+    string? CommandId = null,
+    string? Source = null,
+    string? Reason = null,
+    int SchemaVersion = 1);

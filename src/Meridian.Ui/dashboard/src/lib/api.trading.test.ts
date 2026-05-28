@@ -8,8 +8,12 @@ import {
   createExecutionManualOverride,
   deleteWorkflowPreset,
   evaluatePromotion,
+  exportChiefOfStaffTrace,
   getAlpacaConnectionStatus,
   getBrokerageHouseholdPortfolio,
+  getChiefOfStaffHealth,
+  getChiefOfStaffSession,
+  getChiefOfStaffSessions,
   getDataOperationsWorkspace,
   developmentFixtureHeader,
   getExecutionControls,
@@ -26,6 +30,9 @@ import {
   getReplayStatus,
   getReconciliationBreakAudit,
   getReconciliationRun,
+  getReconciliationStatementExceptions,
+  getReconciliationStatementRun,
+  getReconciliationStatementRuns,
   getRunContinuity,
   getRunHistory,
   getRunLedgerJournal,
@@ -62,6 +69,7 @@ import {
   setReplaySpeed,
   startReplay,
   stopReplay,
+  submitChiefOfStaffDecision,
   submitOrder,
   updateWorkflowPreset
 } from "@/lib/api";
@@ -492,6 +500,9 @@ describe("trading endpoint wiring", () => {
     await bulkResolveSecurityConflicts({ conflictIds: ["conflict-1"], resolvedBy: "ops" });
     await runReconciliation({ runId: "run-1" });
     await getReconciliationRun("recon-1");
+    await getReconciliationStatementRuns();
+    await getReconciliationStatementRun("statement-run-1");
+    await getReconciliationStatementExceptions();
     await getReconciliationBreakAudit("break-1");
     await getPortfolioAggregate();
     await getPortfolioExposure();
@@ -526,10 +537,60 @@ describe("trading endpoint wiring", () => {
       expect.objectContaining({ method: "POST" })
     );
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/runs/recon-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/statement-runs", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/statement-runs/statement-run-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/statement-exceptions", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/break-queue/break-1/audit", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/aggregate", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/exposure", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/symbols/AAPL/exposure", expect.anything());
+  });
+
+  it("wires Chief of Staff workstation API client calls", async () => {
+    await getChiefOfStaffSessions({ workspace: "Reporting", status: "AwaitingOperatorDecision", limit: 10 });
+    await getChiefOfStaffSession("session-1");
+    await getChiefOfStaffHealth();
+    await submitChiefOfStaffDecision("session-1", {
+      decision: "Approve",
+      actor: "operator",
+      selectedActionId: "action-1",
+      rationale: "Evidence reviewed."
+    });
+    await exportChiefOfStaffTrace("session-1", {
+      requestedBy: "operator",
+      reason: "audit trace",
+      includeWarnings: true
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/chief-of-staff/sessions?workspace=Reporting&status=AwaitingOperatorDecision&limit=10",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/chief-of-staff/sessions/session-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/chief-of-staff/health", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/chief-of-staff/sessions/session-1/decisions",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          decision: "Approve",
+          actor: "operator",
+          selectedActionId: "action-1",
+          rationale: "Evidence reviewed."
+        })
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/chief-of-staff/sessions/session-1/export-trace",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          requestedBy: "operator",
+          reason: "audit trace",
+          includeWarnings: true
+        })
+      })
+    );
   });
 
   it("wires provider-routing endpoint group", async () => {
