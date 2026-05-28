@@ -278,20 +278,26 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             {
                 return approval;
             }
-            var updated = approval.Item with
-            {
-                Status = request.Status,
-                ResolvedBy = request.ResolvedBy,
-                ResolvedAt = now,
-                ResolutionNote = request.ResolutionNote,
-                SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
-                    ? "signed-off"
-                    : "dismissed",
-                SignoffHistory = (item.SignoffHistory ?? []).Concat(
-                [
-                    new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
-                ]).ToArray()
-            };
+            var updated = request.Status == ReconciliationBreakQueueStatus.Dismissed
+                ? approval.Item with
+                {
+                    Status = request.Status,
+                    ResolvedBy = request.ResolvedBy,
+                    ResolvedAt = now,
+                    ResolutionNote = request.ResolutionNote,
+                    SignoffStatus = "dismissed",
+                    SignoffHistory = (item.SignoffHistory ?? []).Concat(
+                    [
+                        new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
+                    ]).ToArray()
+                }
+                : approval.Item with
+                {
+                    ResolvedBy = request.ResolvedBy,
+                    ResolvedAt = now,
+                    ResolutionNote = request.ResolutionNote,
+                    SignoffStatus = "awaiting-approval"
+                };
 
             _items[request.BreakId] = updated with { Score = ComputeScore(updated), SlaDueAt = ComputeSlaDueAt(updated), SlaBreached = IsSlaBreached(updated) };
             await PersistSnapshotAsync(ct).ConfigureAwait(false);

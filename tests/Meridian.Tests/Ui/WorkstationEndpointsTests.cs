@@ -3822,9 +3822,9 @@ public sealed partial class WorkstationEndpointsTests
 
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
         resolved.Should().NotBeNull();
-        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         resolved.ResolvedBy.Should().Be("ops-user");
-        resolved.SignoffStatus.Should().Be("signed-off");
+        resolved.SignoffStatus.Should().Be("awaiting-approval");
     }
 
     [Fact]
