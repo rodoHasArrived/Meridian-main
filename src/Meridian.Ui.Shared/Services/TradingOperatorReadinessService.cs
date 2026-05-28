@@ -631,12 +631,25 @@ public sealed class TradingOperatorReadinessService
             return null;
         }
 
-        var status = snapshot.Warnings.Count == 0 && snapshot.Artifacts.Count > 0
-            ? TradingAcceptanceGateStatusDto.Ready
-            : TradingAcceptanceGateStatusDto.ReviewRequired;
-        var detail = status == TradingAcceptanceGateStatusDto.Ready
-            ? $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s) and links to run {matchedRunId}."
-            : $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but {snapshot.Warnings.Count} warning(s) require review.";
+        var warningIssueCount = snapshot.ValidationIssues.Count(issue => issue.Severity == GovernanceReportValidationSeverityDto.Warning);
+        var criticalIssueCount = snapshot.ValidationIssues.Count(issue => issue.Severity == GovernanceReportValidationSeverityDto.Critical);
+        var hasArtifacts = snapshot.Artifacts.Count > 0;
+        var status = !hasArtifacts
+            ? TradingAcceptanceGateStatusDto.ReviewRequired
+            : criticalIssueCount > 0
+                ? TradingAcceptanceGateStatusDto.Blocked
+                : snapshot.Status != GovernanceReportPackStatusDto.Validated || warningIssueCount > 0 || snapshot.Warnings.Count > 0
+                    ? TradingAcceptanceGateStatusDto.ReviewRequired
+                    : TradingAcceptanceGateStatusDto.Ready;
+        var detail = status switch
+        {
+            TradingAcceptanceGateStatusDto.Ready =>
+                $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s), is {snapshot.Status}, and links to run {matchedRunId}.",
+            TradingAcceptanceGateStatusDto.Blocked =>
+                $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but {criticalIssueCount} critical validation issue(s) block readiness.",
+            _ =>
+                $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but status {snapshot.Status} with {warningIssueCount} warning validation issue(s) and {snapshot.Warnings.Count} legacy warning(s) requires review."
+        };
 
         return new TradingReportPackReadinessDto(
             Status: status,

@@ -447,6 +447,97 @@ public sealed class TradingOperatorReadinessServiceTests
             item.WorkItemId.StartsWith("paper-replay-mismatch", StringComparison.OrdinalIgnoreCase));
     }
 
+
+    [Fact]
+    public void BuildReportPackReadinessForRuns_WithCriticalValidationIssue_ShouldBlockReadiness()
+    {
+        var snapshot = CreateReportPackSnapshot(
+            status: GovernanceReportPackStatusDto.ReviewRequired,
+            warnings: [],
+            validationIssues:
+            [
+                new FundReportPackValidationIssueDto(
+                    Code: "report-pack.missing-ledger-postings",
+                    Severity: GovernanceReportValidationSeverityDto.Critical,
+                    Title: "Missing ledger postings",
+                    Message: "Missing ledger postings for as-of snapshot.")
+            ]);
+
+        var readiness = InvokeBuildReportPackReadinessForRuns(snapshot, ["run-1"]);
+
+        readiness.Should().NotBeNull();
+        readiness!.Status.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+        readiness.Detail.Should().Contain("critical validation issue", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BuildReportPackReadinessForRuns_WithValidatedStatusAndNoIssues_ShouldMarkReady()
+    {
+        var snapshot = CreateReportPackSnapshot(
+            status: GovernanceReportPackStatusDto.Validated,
+            warnings: [],
+            validationIssues: []);
+
+        var readiness = InvokeBuildReportPackReadinessForRuns(snapshot, ["run-1"]);
+
+        readiness.Should().NotBeNull();
+        readiness!.Status.Should().Be(TradingAcceptanceGateStatusDto.Ready);
+    }
+
+
+    private static TradingReportPackReadinessDto? InvokeBuildReportPackReadinessForRuns(
+        FundReportPackSnapshotDto snapshot,
+        IReadOnlyList<string> candidateRunIds)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "BuildReportPackReadinessForRuns",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (TradingReportPackReadinessDto?)method!.Invoke(null, [snapshot, candidateRunIds, null]);
+    }
+
+    private static FundReportPackSnapshotDto CreateReportPackSnapshot(
+        GovernanceReportPackStatusDto status,
+        IReadOnlyList<string> warnings,
+        IReadOnlyList<FundReportPackValidationIssueDto> validationIssues)
+        => new(
+            ReportId: Guid.NewGuid(),
+            FundProfileId: "fund-1",
+            DisplayName: "Fund 1",
+            ReportKind: GovernanceReportKindDto.TrialBalance,
+            Currency: "USD",
+            AsOf: new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            GeneratedAt: new DateTimeOffset(2026, 5, 1, 1, 0, 0, TimeSpan.Zero),
+            TotalNetAssets: 100m,
+            AuditActor: "ops",
+            CorrelationId: "corr-1",
+            DecisionRationale: null,
+            Provenance: new FundReportPackProvenanceDto(
+                RelatedRunIds: ["run-1"],
+                JournalEntryCount: 0,
+                LedgerEntryCount: 0,
+                TrialBalanceLineCount: 1,
+                ReconciliationRunCount: 0,
+                OpenReconciliationBreakCount: 0,
+                SecurityResolvedCount: 0,
+                SecurityMissingCount: 0,
+                LineagePointers: [],
+                SourceSnapshotHash: new string('a', 64)),
+            Artifacts:
+            [
+                new FundReportPackArtifactDto(
+                    ArtifactKind: "trial-balance",
+                    Format: GovernanceReportArtifactFormatDto.Json,
+                    RelativePath: "trial-balance.json",
+                    SizeBytes: 10,
+                    ChecksumSha256: new string('b', 64))
+            ],
+            Warnings: warnings)
+        {
+            Status = status,
+            ValidationIssues = validationIssues
+        };
+
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
     {
         var root = Path.Combine(
