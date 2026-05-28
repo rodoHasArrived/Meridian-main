@@ -5,16 +5,12 @@ namespace Meridian.Application.Reconciliation;
 
 public sealed class StatementReconciliationService
 {
-    private static readonly string[] CanonicalStatementColumns =
-    [
-        "account",
-        "symbol",
-        "quantity",
-        "price",
-        "cashAmount",
-        "activityType",
-        "tradeDate"
-    ];
+    private readonly StatementMappingProfileRegistry _mappingProfiles;
+
+    public StatementReconciliationService(StatementMappingProfileRegistry? mappingProfiles = null)
+    {
+        _mappingProfiles = mappingProfiles ?? StatementMappingProfileRegistry.Defaults;
+    }
 
     public Task<string> ValidateAsync(string sourceKind, string sourcePath, CancellationToken ct)
     {
@@ -22,7 +18,7 @@ public sealed class StatementReconciliationService
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         if (RequiresCanonicalStatementSchema(normalizedSourceKind))
         {
-            ValidateCanonicalStatementHeader(sourcePath);
+            ValidateStatementHeader(normalizedSourceKind, sourcePath);
         }
 
         return Task.FromResult($"Statement source '{normalizedSourceKind}:{sourcePath}' passed local file accessibility checks.");
@@ -79,8 +75,9 @@ public sealed class StatementReconciliationService
         var normalizedSourceKind = sourceKind.Trim().ToLowerInvariant();
         if (!string.Equals(normalizedSourceKind, "local", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "broker", StringComparison.Ordinal)
-            && !string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal))
-            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local', 'broker', or 'custodian'.");
+            && !string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal)
+            && !string.Equals(normalizedSourceKind, "sample-broker", StringComparison.Ordinal))
+            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local', 'broker', 'custodian', or 'sample-broker'.");
 
         if (!File.Exists(sourcePath))
             throw new FileNotFoundException($"Statement source file '{sourcePath}' was not found.", sourcePath);
@@ -90,9 +87,10 @@ public sealed class StatementReconciliationService
 
     private static bool RequiresCanonicalStatementSchema(string normalizedSourceKind) =>
         string.Equals(normalizedSourceKind, "broker", StringComparison.Ordinal)
-        || string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal);
+        || string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal)
+        || string.Equals(normalizedSourceKind, "sample-broker", StringComparison.Ordinal);
 
-    private ExternalStatementCaseIntakeResult CreateExternalStatementCases(string normalizedSourceKind, string sourcePath)
+    private ExternalStatementCaseIntakeResult CreateExternalStatementCases(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
         if (!RequiresCanonicalStatementSchema(normalizedSourceKind))
         {
@@ -101,10 +99,10 @@ public sealed class StatementReconciliationService
             return new ExternalStatementCaseIntakeResult(importId, normalizedSourceKind, sourcePath, 0, 0, []);
         }
 
-        var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath);
+        var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath, mappingProfileId);
         var (matches, cases) = MatchRows(rows);
         return new ExternalStatementCaseIntakeResult(
-            rows.Count == 0 ? DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}") : rows[0].RawSnapshot["importId"],
+            rows.Count == 0 ? DeterministicFingerprint.Compute($"{normalizedSourceKind}|{mappingProfileId}|{sourcePath}") : rows[0].RawSnapshot["importId"],
             normalizedSourceKind,
             sourcePath,
             rows.Count,
@@ -252,11 +250,13 @@ public sealed class StatementReconciliationService
 
     private static IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath)
     {
-        ValidateCanonicalStatementHeader(sourcePath);
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
+        ValidateStatementHeader(normalizedSourceKind, sourcePath, profile.ProfileId);
 
         var content = File.ReadAllText(sourcePath);
-        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
+        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var rows = new List<NormalizedStatementRow>();
+        var header = File.ReadLines(sourcePath).First().Split(',', StringSplitOptions.TrimEntries);
         var lines = File.ReadLines(sourcePath).Skip(1);
         var rowNumber = 1;
         foreach (var line in lines)
@@ -268,9 +268,9 @@ public sealed class StatementReconciliationService
             }
 
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length < CanonicalStatementColumns.Length)
+            if (parts.Length < header.Length)
             {
-                throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {CanonicalStatementColumns.Length}.");
+                throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
             }
 
             var account = parts[0];
@@ -281,6 +281,21 @@ public sealed class StatementReconciliationService
             var activityType = parts[5];
             var tradeDate = DateOnly.Parse(parts[6], CultureInfo.InvariantCulture);
             var rowFingerprint = DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}");
+            var rawSnapshot = mapped.ToCanonicalSnapshot();
+            rawSnapshot["importId"] = importId;
+            rawSnapshot["sourceKind"] = normalizedSourceKind;
+            rawSnapshot["sourcePath"] = sourcePath;
+            rawSnapshot["mappingProfileId"] = profile.ProfileId;
+            rawSnapshot["account"] = account;
+            rawSnapshot["symbol"] = symbol;
+            rawSnapshot["activityType"] = activityType;
+            rawSnapshot["tradeDate"] = tradeDate.ToString("O");
+            rawSnapshot["rowNumber"] = rowNumber.ToString();
+            if (!string.IsNullOrWhiteSpace(settlementDate)) rawSnapshot["settlementDate"] = settlementDate;
+            if (!string.IsNullOrWhiteSpace(currency)) rawSnapshot["currency"] = currency;
+            if (!string.IsNullOrWhiteSpace(feesCommission)) rawSnapshot["feesCommission"] = feesCommission;
+            if (!string.IsNullOrWhiteSpace(externalTransactionId)) rawSnapshot["externalTransactionId"] = externalTransactionId;
+
             rows.Add(new NormalizedStatementRow(
                 $"{importId}:{rowNumber}",
                 ToStatementRowKind(activityType),
@@ -305,8 +320,9 @@ public sealed class StatementReconciliationService
         return rows;
     }
 
-    private static void ValidateCanonicalStatementHeader(string sourcePath)
+    private void ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var header = File.ReadLines(sourcePath).FirstOrDefault();
         if (string.IsNullOrWhiteSpace(header))
         {
@@ -314,11 +330,44 @@ public sealed class StatementReconciliationService
         }
 
         var actual = header.Split(',', StringSplitOptions.TrimEntries);
-        if (actual.Length < CanonicalStatementColumns.Length
-            || !CanonicalStatementColumns.SequenceEqual(actual.Take(CanonicalStatementColumns.Length), StringComparer.OrdinalIgnoreCase))
+        if (profile.ProfileId.Equals(StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase)
+            && !CanonicalCsvHeaderPrefixMatches(actual))
         {
             throw new InvalidDataException("Statement source must use the canonical external statement header: account,symbol,quantity,price,cashAmount,activityType,tradeDate.");
         }
+
+        var actualColumns = actual.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missingColumns = profile.FieldMappings
+            .Where(mapping => mapping.Required && !actualColumns.Contains(mapping.SourceColumn))
+            .Select(mapping => mapping.SourceColumn)
+            .ToArray();
+        if (missingColumns.Length > 0)
+        {
+            throw new InvalidDataException($"Statement source is missing required columns for mapping profile '{profile.ProfileId}': {string.Join(", ", missingColumns)}.");
+        }
+    }
+
+    private static bool CanonicalCsvHeaderPrefixMatches(string[] actual)
+    {
+        var canonicalColumns = StatementMappingProfileRegistry.Defaults
+            .Resolve(StatementMappingProfileRegistry.CanonicalCsvV1ProfileId)
+            .FieldMappings
+            .Where(mapping => mapping.Required)
+            .Select(mapping => mapping.SourceColumn)
+            .ToArray();
+        return actual.Length >= canonicalColumns.Length
+            && canonicalColumns.SequenceEqual(actual.Take(canonicalColumns.Length), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildColumnMap(string[] header, string[] parts)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < header.Length; i++)
+        {
+            map[header[i]] = i < parts.Length ? parts[i] : string.Empty;
+        }
+
+        return map;
     }
 
     private static StatementSourceRowReference CreateSourceRowReference(

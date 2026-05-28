@@ -545,6 +545,50 @@ export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return `${reconciliationBreakEndpoint(breakId)}/resolve`;
 }
 
+export function reconciliationBreakAssignEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/assign`;
+}
+
+export function reconciliationBreakTransitionEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/transition`;
+}
+
+export function reconciliationBreakCommentsEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/comments`;
+}
+
+export function reconciliationBreakCommentEndpoint(breakId: string, commentId: string): string {
+  return `${reconciliationBreakCommentsEndpoint(breakId)}/${pathSegment(commentId, "commentId")}`;
+}
+
+export function reconciliationBreakRootCauseEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/root-cause`;
+}
+
+export function reconciliationBreakResolutionEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/resolution`;
+}
+
+export function reconciliationBreakSignOffEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/sign-off`;
+}
+
+export function reconciliationBreakReopenEndpoint(breakId: string): string {
+  return `${reconciliationBreakEndpoint(breakId)}/reopen`;
+}
+
+export function reconciliationBreakBulkDryRunEndpoint(): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/dry-run`;
+}
+
+export function reconciliationBreakBulkExecuteEndpoint(): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/execute`;
+}
+
+export function reconciliationBreakBulkStatusEndpoint(bulkActionId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/${pathSegment(bulkActionId, "bulkActionId")}`;
+}
+
 export function backfillCheckpointEndpoint(jobId: string): string {
   return `${BACKFILL_API_ENDPOINTS.checkpoints}/${pathSegment(jobId, "jobId")}`;
 }

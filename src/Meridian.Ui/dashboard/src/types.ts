@@ -1395,7 +1395,12 @@ export interface ExportAnalysisFile {
   recordCount: number;
 }
 
-export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
+export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed" | "SignedOff";
+export type ReconciliationCaseLifecycleState = "Open" | "Investigating" | "InReview" | "AwaitingEvidence" | "Resolved" | "SignedOff" | "Reopened";
+export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
+export type ReconciliationCaseSlaState = "NotStarted" | "OnTrack" | "Warning" | "Breached" | "Paused" | "Stopped";
+export type ReconciliationCaseCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
+export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve";
 
 export interface ReconciliationBreakQueueItem {
   breakId: string;
@@ -1423,6 +1428,96 @@ export interface ReconciliationBreakQueueItem {
   routingTarget?: string | null;
   routingDetail?: string | null;
   recommendedAction?: string | null;
+  assigneeId?: string | null;
+  assigneeDisplayName?: string | null;
+  priority?: ReconciliationCasePriority;
+  slaPolicyId?: string | null;
+  slaDueAt?: string | null;
+  slaWarningAt?: string | null;
+  slaBreachedAt?: string | null;
+  slaState?: ReconciliationCaseSlaState;
+  ageBand?: string | null;
+  businessAgeHours?: number;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  signedOffBy?: string | null;
+  signedOffAt?: string | null;
+  signOffNote?: string | null;
+  reopenedBy?: string | null;
+  reopenedAt?: string | null;
+  reopenReason?: string | null;
+  version?: number;
+  comments?: ReconciliationCaseComment[] | null;
+  evidenceLinks?: string[] | null;
+  commentCount?: number;
+  evidenceCount?: number;
+  lastActivityAt?: string | null;
+}
+
+export interface ReconciliationCaseComment {
+  commentId: string;
+  parentCommentId?: string | null;
+  authorId: string;
+  authorDisplayName: string;
+  visibility: ReconciliationCaseCommentVisibility;
+  body: string;
+  evidenceLinks: string[];
+  createdAt: string;
+  editedAt?: string | null;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
+}
+
+export interface ReconciliationCaseworkCommand {
+  breakId: string;
+  action: ReconciliationCaseworkAction;
+  actor: string;
+  commandId: string;
+  correlationId: string;
+  source: string;
+  expectedVersion: number;
+  reason?: string | null;
+  assignee?: string | null;
+  priority?: ReconciliationCasePriority | null;
+  status?: ReconciliationCaseLifecycleState | null;
+  note?: string | null;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  commentId?: string | null;
+  parentCommentId?: string | null;
+  visibility?: ReconciliationCaseCommentVisibility;
+  evidenceLinks?: string[] | null;
+  privileged?: boolean;
+}
+
+export interface ReconciliationBulkCaseworkRequest {
+  breakIds: string[];
+  action: ReconciliationCaseworkAction;
+  actor: string;
+  commandId: string;
+  correlationId: string;
+  source: string;
+  idempotencyKey: string;
+  dryRun: boolean;
+  allowPartialSuccess: boolean;
+  reason?: string | null;
+  assignee?: string | null;
+  priority?: ReconciliationCasePriority | null;
+  status?: ReconciliationCaseLifecycleState | null;
+  note?: string | null;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  maxCaseCount?: number;
+}
+
+export interface ReconciliationBulkCaseworkResult {
+  bulkActionId: string;
+  idempotencyKey: string;
+  dryRun: boolean;
+  requestedCount: number;
+  succeededCount: number;
+  failedCount: number;
+  results: Array<{ breakId: string; succeeded: boolean; wouldSucceed: boolean; error?: string | null; item?: ReconciliationBreakQueueItem | null }>;
 }
 
 export interface ReviewReconciliationBreakRequest {
