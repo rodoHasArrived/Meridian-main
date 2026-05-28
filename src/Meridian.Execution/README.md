@@ -29,6 +29,9 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+Ledger posting from trade-fill events is Security Master gated: postings require a configured
+validation gate, resolved Security Master identity, non-blocked validation, and journal metadata
+that preserves the Security Master ID, fill ID, symbol, and gate evidence for provenance.
 
 ## Diagrams
 

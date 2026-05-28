@@ -743,7 +743,7 @@ let private seedAt (seeds: int array) index =
 let private bounded modulus seed =
     int (abs (seed % int64 modulus))
 
-let private chooseFrom values seed =
+let private chooseFrom (values: string array) seed =
     values[bounded values.Length seed]
 
 let private maybeDecimal seed =

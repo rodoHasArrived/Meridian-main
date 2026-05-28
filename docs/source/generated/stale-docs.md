@@ -8,7 +8,7 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 20
+- Stale modules: 21
 - Removed module hash entries: 1
 
 | Module | Path | README | Reason |
@@ -21,6 +21,7 @@ This report marks registered source modules whose code or README hashes differ f
 | `SRC-DOMAIN` | `src/Meridian.Domain` | `src/Meridian.Domain/README.md` | `source_hash_drift` |
 | `SRC-EXECUTION` | `src/Meridian.Execution` | `src/Meridian.Execution/README.md` | `source_hash_drift` |
 | `SRC-FSHARP` | `src/Meridian.FSharp` | `src/Meridian.FSharp/README.md` | `source_hash_drift` |
+| `SRC-FSHARP-LEDGER` | `src/Meridian.FSharp.Ledger` | `src/Meridian.FSharp.Ledger/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-HOST` | `src/Meridian` | `src/Meridian/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-INFRASTRUCTURE` | `src/Meridian.Infrastructure` | `src/Meridian.Infrastructure/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-INFRASTRUCTURE-CPPTRADER` | `src/Meridian.Infrastructure.CppTrader` | `src/Meridian.Infrastructure.CppTrader/README.md` | `source_hash_drift` |

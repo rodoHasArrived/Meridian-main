@@ -790,6 +790,7 @@ public sealed partial class FundLedgerViewModel
         SynchronizeCollection(ReconciliationSection.SecurityCoverageRows, detail.SecurityCoverageRows);
         SynchronizeCollection(ReconciliationSection.AuditRows, detail.AuditRows);
 
+        UpdateReconciliationOperatorGuidance();
         NotifyReconciliationDerivedStateChanged();
     }
 

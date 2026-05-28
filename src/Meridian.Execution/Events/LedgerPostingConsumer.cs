@@ -25,6 +25,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     private readonly CancellationTokenSource _cts = new();
     private readonly ILogger<LedgerPostingConsumer> _logger;
     private readonly ISecurityValidationGateService? _securityValidationGate;
+    private readonly bool _requireSecurityMasterPostingGate;
 
     /// <summary>
     /// Initialises a new <see cref="LedgerPostingConsumer"/> bound to <paramref name="ledger"/>.
@@ -40,7 +41,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         Ledger.Ledger ledger,
         ILogger<LedgerPostingConsumer> logger,
         int channelCapacity = 10_000,
-        ISecurityValidationGateService? securityValidationGate = null)
+        ISecurityValidationGateService? securityValidationGate = null,
+        bool requireSecurityMasterPostingGate = true)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(logger);
@@ -50,6 +52,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         _ledger = ledger;
         _logger = logger;
         _securityValidationGate = securityValidationGate;
+        _requireSecurityMasterPostingGate = requireSecurityMasterPostingGate;
 
         var options = new BoundedChannelOptions(channelCapacity)
         {
@@ -125,42 +128,31 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
     private async Task PostEventAsync(TradeExecutedEvent evt, CancellationToken ct)
     {
-        if (_securityValidationGate is not null)
+        var securityGate = await EvaluateSecurityMasterPostingGateAsync(evt, ct).ConfigureAwait(false);
+        if (!securityGate.CanPost)
         {
-            var validation = await _securityValidationGate
-                .ValidateSymbolAsync(
-                    evt.Symbol,
-                    SecurityValidationWorkflowDto.LedgerPosting,
-                    workflowReference: evt.FillId.ToString("N"),
-                    actor: "ledger-posting-consumer",
-                    persistSnapshot: false,
-                    ct)
-                .ConfigureAwait(false);
-
-            if (validation.IsBlocked)
-            {
-                _logger.LogError(
-                    "Blocked ledger posting for fill {FillId} on {Symbol}: Security Master validation failed with {IssueCodes}",
-                    evt.FillId,
-                    evt.Symbol,
-                    string.Join(",", validation.Report.Issues.Select(static issue => issue.Code)));
-                return;
-            }
+            _logger.LogError(
+                "Blocked ledger posting for fill {FillId} on {Symbol}: {Reason}",
+                evt.FillId,
+                evt.Symbol,
+                securityGate.Reason);
+            return;
         }
 
         var accountId = evt.FinancialAccountId;
         var cashAccount = accountId is null
             ? LedgerAccounts.Cash
             : LedgerAccounts.CashAccount(accountId);
+        var metadata = BuildPostingMetadata(evt, securityGate);
 
         switch (evt.Side)
         {
             case Sdk.OrderSide.Buy:
-                PostBuy(evt, cashAccount, accountId);
+                PostBuy(evt, cashAccount, accountId, metadata);
                 break;
 
             case Sdk.OrderSide.Sell:
-                PostSell(evt, cashAccount, accountId);
+                PostSell(evt, cashAccount, accountId, metadata);
                 break;
 
             default:
@@ -170,7 +162,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
         if (evt.Commission > 0m)
         {
-            PostCommission(evt, cashAccount, accountId);
+            PostCommission(evt, cashAccount, accountId, metadata);
         }
 
         _logger.LogDebug(
@@ -178,7 +170,75 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             evt.FillId, evt.Side, evt.FilledQuantity, evt.Symbol, evt.FillPrice);
     }
 
-    private void PostBuy(TradeExecutedEvent evt, LedgerAccount cashAccount, string? accountId)
+    private async Task<LedgerPostingSecurityGateResult> EvaluateSecurityMasterPostingGateAsync(
+        TradeExecutedEvent evt,
+        CancellationToken ct)
+    {
+        if (_securityValidationGate is null)
+        {
+            return _requireSecurityMasterPostingGate
+                ? LedgerPostingSecurityGateResult.Blocked("Security Master validation gate is not configured.")
+                : LedgerPostingSecurityGateResult.Allowed(null, "not-configured", []);
+        }
+
+        var validation = await _securityValidationGate
+            .ValidateSymbolAsync(
+                evt.Symbol,
+                SecurityValidationWorkflowDto.LedgerPosting,
+                workflowReference: evt.FillId.ToString("N"),
+                actor: "ledger-posting-consumer",
+                persistSnapshot: false,
+                ct)
+            .ConfigureAwait(false);
+
+        var issueCodes = validation.Report.Issues.Select(static issue => issue.Code).ToArray();
+        if (!validation.IsResolved || validation.SecurityId is null)
+        {
+            return LedgerPostingSecurityGateResult.Blocked(
+                $"Security Master identity is unresolved for symbol '{evt.Symbol}'. Issues={string.Join(",", issueCodes)}");
+        }
+
+        if (validation.IsBlocked || validation.Report.HasBlockingIssues)
+        {
+            return LedgerPostingSecurityGateResult.Blocked(
+                $"Security Master validation blocked ledger posting. Issues={string.Join(",", issueCodes)}");
+        }
+
+        return LedgerPostingSecurityGateResult.Allowed(
+            validation.SecurityId,
+            validation.Report.Scope,
+            issueCodes);
+    }
+
+    private static JournalEntryMetadata BuildPostingMetadata(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate)
+    {
+        Guid? orderId = Guid.TryParse(evt.OrderId, out var parsedOrderId) ? parsedOrderId : null;
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["securityMaster.workflow"] = SecurityValidationWorkflowDto.LedgerPosting.ToString(),
+            ["securityMaster.scope"] = securityGate.ValidationScope,
+            ["securityMaster.gate"] = "resolved-approved-mapped",
+            ["securityMaster.issueCodes"] = string.Join(",", securityGate.IssueCodes),
+            ["source.orderId"] = evt.OrderId
+        };
+
+        return new JournalEntryMetadata(
+            ActivityType: "trade-fill",
+            Symbol: evt.Symbol,
+            SecurityId: securityGate.SecurityId,
+            OrderId: orderId,
+            FillId: evt.FillId,
+            FinancialAccountId: evt.FinancialAccountId,
+            Tags: tags);
+    }
+
+    private void PostBuy(
+        TradeExecutedEvent evt,
+        LedgerAccount cashAccount,
+        string? accountId,
+        JournalEntryMetadata metadata)
     {
         var securitiesAccount = LedgerAccounts.Securities(evt.Symbol, accountId);
         _ledger.PostLines(
@@ -187,10 +247,15 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             [
                 (securitiesAccount, evt.GrossValue, 0m),
                 (cashAccount, 0m, evt.GrossValue)
-            ]);
+            ],
+            metadata);
     }
 
-    private void PostSell(TradeExecutedEvent evt, LedgerAccount cashAccount, string? accountId)
+    private void PostSell(
+        TradeExecutedEvent evt,
+        LedgerAccount cashAccount,
+        string? accountId,
+        JournalEntryMetadata metadata)
     {
         var securitiesAccount = LedgerAccounts.Securities(evt.Symbol, accountId);
 
@@ -210,7 +275,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
                     (cashAccount, evt.GrossValue, 0m),
                     (securitiesAccount, 0m, costBasis),
                     (gainAccount, 0m, evt.RealizedPnl)
-                ]);
+                ],
+                metadata);
         }
         else if (evt.RealizedPnl < 0m)
         {
@@ -225,7 +291,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
                     (cashAccount, evt.GrossValue, 0m),
                     (lossAccount, -evt.RealizedPnl, 0m),
                     (securitiesAccount, 0m, costBasis)
-                ]);
+                ],
+                metadata);
         }
         else
         {
@@ -235,11 +302,16 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
                 [
                     (cashAccount, evt.GrossValue, 0m),
                     (securitiesAccount, 0m, evt.GrossValue)
-                ]);
+                ],
+                metadata);
         }
     }
 
-    private void PostCommission(TradeExecutedEvent evt, LedgerAccount cashAccount, string? accountId)
+    private void PostCommission(
+        TradeExecutedEvent evt,
+        LedgerAccount cashAccount,
+        string? accountId,
+        JournalEntryMetadata metadata)
     {
         var commissionAccount = accountId is null
             ? LedgerAccounts.CommissionExpense
@@ -251,6 +323,24 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             [
                 (commissionAccount, evt.Commission, 0m),
                 (cashAccount, 0m, evt.Commission)
-            ]);
+            ],
+            metadata with { ActivityType = "trade-commission" });
+    }
+
+    private sealed record LedgerPostingSecurityGateResult(
+        bool CanPost,
+        Guid? SecurityId,
+        string ValidationScope,
+        IReadOnlyList<string> IssueCodes,
+        string Reason)
+    {
+        public static LedgerPostingSecurityGateResult Allowed(
+            Guid? securityId,
+            string validationScope,
+            IReadOnlyList<string> issueCodes)
+            => new(true, securityId, validationScope, issueCodes, string.Empty);
+
+        public static LedgerPostingSecurityGateResult Blocked(string reason)
+            => new(false, null, "SecurityMasterResolution", [], reason);
     }
 }

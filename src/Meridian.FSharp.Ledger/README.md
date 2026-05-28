@@ -28,6 +28,10 @@ This layer should express ledger calculations in functional form while keeping p
 
 Use this module for ledger calculations that support reconciliation and governed reporting.
 
+## API contract notes
+
+- `LedgerInterop.ClassifyBreakFacts` trims string fields before mapping DTOs into `RawBreakFacts`, so classification is stable for equivalent break facts that differ only by surrounding whitespace.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
