@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -7,6 +6,7 @@ using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -154,28 +154,9 @@ public sealed class DeadLetterSink : IAsyncDisposable
     }
 
 
-    private static async Task AppendJsonLineAsync(string path, string json, CancellationToken ct)
+    private static Task AppendJsonLineAsync(string path, string json, CancellationToken ct)
     {
-        var directory = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        await using var stream = new FileStream(
-            path,
-            FileMode.Append,
-            FileAccess.Write,
-            FileShare.Read,
-            bufferSize: 65536,
-            FileOptions.Asynchronous);
-        await using var writer = new StreamWriter(
-            stream,
-            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-            bufferSize: 65536,
-            leaveOpen: false);
-        await writer.WriteLineAsync(json).ConfigureAwait(false);
-        await writer.FlushAsync().ConfigureAwait(false);
+        return AtomicFileWriter.AppendLinesAsync(path, new[] { json }, ct);
     }
 
     private static JsonSerializerOptions CreateJsonOptions()
