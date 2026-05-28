@@ -245,57 +245,53 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
 
-        if (!useInMemoryGovernanceServices)
+        if (useInMemoryGovernanceServices)
         {
-            throw new InvalidOperationException(
-                "Production-safe startup requires persistence-backed governance domain services. " +
-                "Set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+            // Local fixture/dev profile: keep in-memory working sets persisted to local snapshots.
+            services.TryAddSingleton<IFundAccountService>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
+                return new InMemoryFundAccountService(persistencePath);
+            });
+            services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
+            services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
+            services.TryAddSingleton<IGovernanceSharedDataAccessService>(sp =>
+                new GovernanceSharedDataAccessService(
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetService<HistoricalDataQueryService>(),
+                    sp.GetService<BackfillCoordinator>()));
+            services.TryAddSingleton<IFundStructureService>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var fundAccountService = sp.GetRequiredService<IFundAccountService>();
+                var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
+                var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
+                return new InMemoryFundStructureService(
+                    fundAccountService,
+                    sharedDataAccessService,
+                    securityMasterQueryService,
+                    persistencePath);
+            });
+            services.TryAddSingleton<EnvironmentDesignerService>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "environment-designer.json");
+                return new EnvironmentDesignerService(persistencePath);
+            });
+            services.TryAddSingleton<IEnvironmentDesignService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+            services.TryAddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+            services.TryAddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+            services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+
+            services.TryAddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
+            services.TryAddSingleton<IDirectLendingQueryService, InMemoryDirectLendingService>();
+            services.TryAddSingleton<IDirectLendingCommandService, InMemoryDirectLendingService>();
+            services.TryAddSingleton<IBankingService, InMemoryBankingService>();
+            services.TryAddSingleton<IMoneyMarketFundService, InMemoryMoneyMarketFundService>();
+            services.TryAddSingleton<IMmfLiquidityService>(sp => (IMmfLiquidityService)sp.GetRequiredService<IMoneyMarketFundService>());
         }
-
-        // Local fixture/dev profile: keep in-memory working sets persisted to local snapshots.
-        services.TryAddSingleton<IFundAccountService>(sp =>
-        {
-            var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
-            return new InMemoryFundAccountService(persistencePath);
-        });
-        services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
-        services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
-        services.TryAddSingleton<IGovernanceSharedDataAccessService>(sp =>
-            new GovernanceSharedDataAccessService(
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-                sp.GetService<HistoricalDataQueryService>(),
-                sp.GetService<BackfillCoordinator>()));
-        services.TryAddSingleton<IFundStructureService>(sp =>
-        {
-            var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var fundAccountService = sp.GetRequiredService<IFundAccountService>();
-            var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
-            var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
-            var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
-            return new InMemoryFundStructureService(
-                fundAccountService,
-                sharedDataAccessService,
-                securityMasterQueryService,
-                persistencePath);
-        });
-        services.TryAddSingleton<EnvironmentDesignerService>(sp =>
-        {
-            var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "environment-designer.json");
-            return new EnvironmentDesignerService(persistencePath);
-        });
-        services.TryAddSingleton<IEnvironmentDesignService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
-        services.TryAddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
-        services.TryAddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
-        services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
-
-        services.TryAddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
-        services.TryAddSingleton<IDirectLendingQueryService, InMemoryDirectLendingService>();
-        services.TryAddSingleton<IDirectLendingCommandService, InMemoryDirectLendingService>();
-        services.TryAddSingleton<IBankingService, InMemoryBankingService>();
-        services.TryAddSingleton<IMoneyMarketFundService, InMemoryMoneyMarketFundService>();
-        services.TryAddSingleton<IMmfLiquidityService>(sp => (IMmfLiquidityService)sp.GetRequiredService<IMoneyMarketFundService>());
 
         return services;
     }
