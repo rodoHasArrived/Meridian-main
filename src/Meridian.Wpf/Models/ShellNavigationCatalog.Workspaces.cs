@@ -165,7 +165,8 @@ public static partial class ShellNavigationCatalog
             DefaultPanes:
             [
                 Pane("FundReportPack", PaneDropAction.Replace),
-                Pane("Dashboard", PaneDropAction.SplitLeft),
+                Pane("ReportRunStatus", PaneDropAction.SplitLeft),
+                Pane("Dashboard", PaneDropAction.SplitBelow),
                 Pane("AnalysisExport", PaneDropAction.SplitRight),
                 Pane("ExportPresets", PaneDropAction.OpenTab)
             ],

@@ -41,6 +41,7 @@ and UI presentation concerns in their owning layers.
   orchestration. Statement validation returns structured issue DTOs so operator workflows can
   distinguish hard blockers from policy-controlled soft issues before import.
 - `Services/` - application use cases and orchestration services.
+- `Reporting/` - report job contracts, template metadata, deterministic output manifests, lineage capture, retry/audit orchestration, schedules, and approval gates for investor statements, SEC filing packets, and shadow NAV packs.
 - `Reconciliation/` - canonical reconciliation matching, statement tolerance profile models, and profile-provider seams that stamp tolerance profile/version/rule evidence on runs and match explanations.
 - `Composition/` - application feature registration and service wiring.
 - `Reconciliation/` - statement reconciliation workflows, external statement mapping profiles, case intake, and match orchestration.
@@ -54,6 +55,8 @@ evidence, reconciliation sign-off, approvals, and required evidence checks befor
 closed.
 
 ## API contract notes
+
+- Reporting orchestration creates deterministic manifests per job/as-of date, captures section-level dataset snapshot and reconciliation checkpoint lineage, audits retries/failures, and enforces the Draft -> InReview -> Approved -> Released gate by role. Scheduled runs are executed in due-time order and use the same contracts as ad-hoc runs.
 
 - Statement reconciliation tolerance profiles are versioned in `Reconciliation/`; match outputs that use a tolerance must carry the tolerance profile ID/version and the exact tolerance rule ID that allowed the match.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication,

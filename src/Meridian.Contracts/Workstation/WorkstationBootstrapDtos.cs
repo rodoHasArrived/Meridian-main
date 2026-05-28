@@ -250,6 +250,32 @@ public sealed record WorkstationGovernanceReportingProfilePayload(
     bool DataDictionary);
 
 /// <summary>
+/// Template metadata exposed to browser and desktop Reporting operator surfaces.
+/// </summary>
+public sealed record WorkstationReportingTemplatePayload(
+    string TemplateId,
+    string Family,
+    string Name,
+    string Version,
+    IReadOnlyList<string> Sections);
+
+/// <summary>
+/// Lightweight reporting run status with lineage and approval posture for operator surfaces.
+/// </summary>
+public sealed record WorkstationReportingRunPayload(
+    string RunId,
+    string TemplateId,
+    string Family,
+    string Status,
+    string Trigger,
+    int AttemptCount,
+    int SectionCount,
+    int LineageLinkedSections,
+    IReadOnlyList<string> Artifacts,
+    IReadOnlyList<string> AuditActions,
+    string? FailureReason);
+
+/// <summary>
 /// Typed reporting summary embedded inside <see cref="WorkstationGovernancePayload"/>.
 /// Replaces the anonymous-object placeholder introduced in the initial governance
 /// payload commit (PR-03 follow-on).
@@ -259,7 +285,9 @@ public sealed record WorkstationGovernanceReportingPayload(
     IReadOnlyList<string> RecommendedProfiles,
     IReadOnlyList<WorkstationGovernanceReportingProfilePayload> Profiles,
     IReadOnlyList<string> ReportPackTargets,
-    string Summary);
+    string Summary,
+    IReadOnlyList<WorkstationReportingTemplatePayload> Templates,
+    IReadOnlyList<WorkstationReportingRunPayload> RecentRuns);
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and

@@ -4,7 +4,7 @@ import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -106,6 +106,25 @@ export interface ReportingChipViewModel {
   value: string;
 }
 
+export interface ReportingTemplateRow {
+  id: string;
+  name: string;
+  family: string;
+  version: string;
+  sectionSummary: string;
+}
+
+export interface ReportingRunStatusRow {
+  id: string;
+  templateId: string;
+  family: string;
+  status: string;
+  trigger: string;
+  lineageSummary: string;
+  auditSummary: string;
+  failureReason: string | null;
+}
+
 export interface ReportingWorkbenchAction {
   id: "evidence";
   label: string;
@@ -200,6 +219,9 @@ export interface ReportingScreenViewModel {
   workbenchChips: ReportingChipViewModel[];
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
+  templateRows: ReportingTemplateRow[];
+  runStatusRows: ReportingRunStatusRow[];
+  hasRunStatusRows: boolean;
   detailId: string;
   statusTitle: string;
   statusDetail: string;
@@ -326,6 +348,9 @@ export function useReportingScreenViewModel(
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
+      templateRows: [],
+      runStatusRows: [],
+      hasRunStatusRows: false,
       detailId,
       statusTitle: "No profile selected",
       statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
@@ -427,6 +452,8 @@ export function useReportingScreenViewModel(
     selectedProfileActions: reportPackTaskActions,
     pathname
   });
+  const templateRows = buildTemplateRows(reporting.templates ?? []);
+  const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
 
   return {
     title: "Report packs",
@@ -444,6 +471,9 @@ export function useReportingScreenViewModel(
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
+    templateRows,
+    runStatusRows,
+    hasRunStatusRows: runStatusRows.length > 0,
     detailId,
     statusTitle,
     statusDetail: selectedProfileData
@@ -473,6 +503,29 @@ export function useReportingScreenViewModel(
     selectProfile,
     selectAdjacentReportPackProfile
   };
+}
+
+function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
+  return templates.map((template) => ({
+    id: template.templateId,
+    name: template.name,
+    family: template.family,
+    version: template.version,
+    sectionSummary: `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`
+  }));
+}
+
+function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
+  return runs.map((run) => ({
+    id: run.runId,
+    templateId: run.templateId,
+    family: run.family,
+    status: run.status,
+    trigger: run.trigger,
+    lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
+    auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
+    failureReason: run.failureReason
+  }));
 }
 
 function buildLoadingState(pathname: string): ReportingLoadingState {

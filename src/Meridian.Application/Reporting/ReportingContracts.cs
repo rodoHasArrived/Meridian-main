@@ -24,6 +24,13 @@ public enum ReportingTemplateFamily
     ShadowNavPack
 }
 
+public enum ReportingApprovalAction
+{
+    SubmitForReview,
+    Approve,
+    Release
+}
+
 public sealed record ReportingTemplateMetadata(
     string TemplateId,
     ReportingTemplateFamily Family,
@@ -32,19 +39,31 @@ public sealed record ReportingTemplateMetadata(
     ImmutableArray<string> Sections,
     ImmutableDictionary<string, string> Tags);
 
+public sealed record ReportingLineageReference(
+    string SectionId,
+    string DatasetSnapshotId,
+    string DatasetSnapshotHash,
+    string ReconciliationCheckpointId,
+    DateTimeOffset CapturedAtUtc);
+
 public sealed record ReportingOutputManifest(
     string RunId,
     string TemplateId,
     DateOnly AsOfDate,
     ReportingRunStatus Status,
     ImmutableArray<ReportingSectionManifest> Sections,
-    ImmutableArray<string> Artifacts);
+    ImmutableArray<string> Artifacts,
+    int AttemptCount,
+    ReportingRunTrigger Trigger,
+    string? ScheduleId = null,
+    string? FailureReason = null);
 
 public sealed record ReportingSectionManifest(
     string SectionId,
     string DatasetSnapshotId,
     string ReconciliationCheckpointId,
-    string Hash);
+    string Hash,
+    ReportingLineageReference Lineage);
 
 public sealed record ReportingJobContract(
     string JobId,
@@ -54,7 +73,17 @@ public sealed record ReportingJobContract(
     int MaxRetries,
     string RequestedBy,
     DateTimeOffset RequestedAtUtc,
-    string? CronExpression = null);
+    string? CronExpression = null,
+    string? ScheduleId = null);
+
+public sealed record ReportingScheduleContract(
+    string ScheduleId,
+    string TemplateId,
+    string CronExpression,
+    DateOnly NextAsOfDate,
+    DateTimeOffset DueAtUtc,
+    int MaxRetries,
+    string RequestedBy);
 
 public sealed record ReportingRunAuditEntry(
     string RunId,
@@ -62,3 +91,10 @@ public sealed record ReportingRunAuditEntry(
     string Action,
     string Actor,
     string Notes);
+
+public sealed record ReportingApprovalDecision(
+    ReportingApprovalAction Action,
+    string Actor,
+    string Role,
+    string Notes,
+    DateTimeOffset DecidedAtUtc);

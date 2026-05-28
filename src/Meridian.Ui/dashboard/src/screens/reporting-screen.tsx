@@ -156,6 +156,55 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         ))}
       </section>
 
+      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="eyebrow-label">Template families</div>
+            <CardTitle>Governed report templates</CardTitle>
+            <CardDescription>Investor statements, SEC packets, and shadow NAV packs share the same run contract.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {vm.templateRows.map((template) => (
+              <div key={template.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-foreground">{template.name}</span>
+                  <Badge variant="outline">{template.family}</Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {template.version} · {template.sectionSummary} · <span className="font-mono">{template.id}</span>
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="eyebrow-label">Run status</div>
+            <CardTitle>Report run audit and lineage</CardTitle>
+            <CardDescription>Recent manifests keep approval status, retry attempts, and dataset lineage visible.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {vm.hasRunStatusRows ? vm.runStatusRows.map((run) => (
+              <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-mono text-sm text-foreground">{run.id}</span>
+                  <Badge variant={run.status === "Failed" ? "warning" : "outline"}>{run.status}</Badge>
+                </div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
+                </p>
+                {run.failureReason ? <p className="mt-1 text-xs text-warning">{run.failureReason}</p> : null}
+              </div>
+            )) : (
+              <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                No report runs have been generated yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
       {vm.workflowTaskPanel ? (
         <section
           role="region"
