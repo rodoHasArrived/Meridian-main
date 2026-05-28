@@ -329,7 +329,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         command.CommandText =
             $"""
             select event_type,
-                   payload::text
+                   payload = cast(@payload as jsonb)
             from {Qualified("loan_event")}
             where loan_id = @loan_id
               and command_id = @command_id
@@ -337,6 +337,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             """;
         command.Parameters.AddWithValue("loan_id", loanId);
         command.Parameters.AddWithValue("command_id", commandId);
+        command.Parameters.AddWithValue("payload", payload.RootElement.GetRawText());
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -345,11 +346,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         }
 
         var existingEventType = reader.GetString(0);
-        var existingPayloadJson = reader.GetString(1);
-        var incomingPayloadJson = payload.RootElement.GetRawText();
+        var payloadMatches = reader.GetBoolean(1);
 
-        return string.Equals(existingEventType, eventType, StringComparison.Ordinal) &&
-               string.Equals(existingPayloadJson, incomingPayloadJson, StringComparison.Ordinal)
+        return string.Equals(existingEventType, eventType, StringComparison.Ordinal) && payloadMatches
             ? DuplicateCommandStatus.Matching
             : DuplicateCommandStatus.Mismatched;
     }
