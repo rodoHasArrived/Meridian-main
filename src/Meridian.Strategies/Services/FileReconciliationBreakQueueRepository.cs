@@ -20,6 +20,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
 
     private Dictionary<string, ReconciliationBreakQueueItem>? _items;
     private readonly Dictionary<string, ReconciliationBulkCaseworkResult> _bulkResults = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _bulkResultIdsByIdempotencyKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly IReconciliationCaseWorkflowService _workflowService = new ReconciliationCaseWorkflowService();
 
     public FileReconciliationBreakQueueRepository(string dataDirectory, ILogger<FileReconciliationBreakQueueRepository> logger)
@@ -38,11 +39,6 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (_bulkResults.TryGetValue(request.IdempotencyKey, out var cached))
-            {
-                return cached;
-            }
-
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
             IEnumerable<ReconciliationBreakQueueItem> items = _items!.Values;
             if (status.HasValue)
@@ -381,6 +377,23 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     public async Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+        {
+            return new ReconciliationBulkCaseworkResult(
+                BulkActionId: string.IsNullOrWhiteSpace(request.CommandId) ? Guid.NewGuid().ToString("N") : request.CommandId,
+                IdempotencyKey: request.IdempotencyKey,
+                DryRun: request.DryRun,
+                RequestedCount: request.BreakIds.Count,
+                SucceededCount: 0,
+                FailedCount: request.BreakIds.Count,
+                Results: request.BreakIds.Select(breakId => new ReconciliationBulkCaseworkCaseResult(
+                    breakId,
+                    Succeeded: false,
+                    WouldSucceed: false,
+                    Error: "Idempotency key is required.",
+                    Item: null)).ToArray());
+        }
+
         var distinctIds = request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase).Take(request.MaxCaseCount).ToArray();
         var results = new List<ReconciliationBulkCaseworkCaseResult>();
         var bulkActionId = string.IsNullOrWhiteSpace(request.CommandId) ? Guid.NewGuid().ToString("N") : request.CommandId;
@@ -388,7 +401,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (_bulkResults.TryGetValue(request.IdempotencyKey, out var cached))
+            if (_bulkResultIdsByIdempotencyKey.TryGetValue(request.IdempotencyKey, out var cachedBulkActionId) &&
+                _bulkResults.TryGetValue(cachedBulkActionId, out var cached))
             {
                 return cached;
             }
@@ -503,8 +517,41 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             results.Count(r => r.Succeeded || (request.DryRun && r.WouldSucceed)),
             results.Count(r => !r.WouldSucceed),
             results.ToArray());
-        _bulkResults[request.IdempotencyKey] = result;
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            _bulkResults[bulkActionId] = result;
+            _bulkResultIdsByIdempotencyKey[request.IdempotencyKey] = bulkActionId;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+
         return result;
+    }
+
+    public async Task<ReconciliationBulkCaseworkResult?> GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bulkActionIdOrIdempotencyKey);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_bulkResults.TryGetValue(bulkActionIdOrIdempotencyKey, out var byId))
+            {
+                return byId;
+            }
+
+            return _bulkResultIdsByIdempotencyKey.TryGetValue(bulkActionIdOrIdempotencyKey, out var bulkActionId) &&
+                _bulkResults.TryGetValue(bulkActionId, out var byIdempotencyKey)
+                    ? byIdempotencyKey
+                    : null;
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default)
@@ -608,12 +655,20 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
                 => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && !IsKnownRootCause(command.RootCauseCode ?? item.RootCauseCode)
+                => Invalid(item, "Root cause code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && !IsKnownResolution(command.ResolutionCode ?? item.ResolutionCode)
+                => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
             ReconciliationCaseworkAction.Resolve when item.LifecycleState is not (ReconciliationCaseLifecycleState.Investigating or ReconciliationCaseLifecycleState.AwaitingEvidence or ReconciliationCaseLifecycleState.Reopened)
                 => Invalid(item, $"Cannot resolve case from {item.LifecycleState}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.Resolve when string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
                 => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
             ReconciliationCaseworkAction.Resolve when string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
                 => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
+            ReconciliationCaseworkAction.Resolve when !IsKnownRootCause(command.RootCauseCode ?? item.RootCauseCode)
+                => Invalid(item, "Root cause code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
+            ReconciliationCaseworkAction.Resolve when !IsKnownResolution(command.ResolutionCode ?? item.ResolutionCode)
+                => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
             ReconciliationCaseworkAction.SignOff when item.LifecycleState != ReconciliationCaseLifecycleState.Resolved
                 => Invalid(item, "Only resolved cases can be signed off.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.SignOff when string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase)
@@ -628,6 +683,34 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
 
     private static ReconciliationBreakQueueTransitionResult Invalid(ReconciliationBreakQueueItem? item, string error, ReconciliationBreakQueueTransitionErrorCode code)
         => new(ReconciliationBreakQueueTransitionStatus.ValidationFailed, item, error, code);
+
+    private static bool IsKnownRootCause(string? code)
+        => !string.IsNullOrWhiteSpace(code) && RootCauseCodes.Contains(code);
+
+    private static bool IsKnownResolution(string? code)
+        => !string.IsNullOrWhiteSpace(code) && ResolutionCodes.Contains(code);
+
+    private static readonly HashSet<string> RootCauseCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "BrokerCashTiming",
+        "CustodianPositionLag",
+        "SecurityMasterMapping",
+        "LedgerClassification",
+        "AccrualTiming",
+        "CorporateActionTiming",
+        "DismissedFalsePositive"
+    };
+
+    private static readonly HashSet<string> ResolutionCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "LedgerAdjusted",
+        "BrokerStatementCorrected",
+        "SecurityMasterUpdated",
+        "AccrualAdjusted",
+        "EvidenceAccepted",
+        "DismissedFalsePositive",
+        "LegacyResolved"
+    };
 
     private static bool IsLegalLifecycleTransition(ReconciliationCaseLifecycleState current, ReconciliationCaseLifecycleState next)
         => current == next || (current, next) switch

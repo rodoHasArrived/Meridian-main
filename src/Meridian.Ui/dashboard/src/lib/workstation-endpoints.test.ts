@@ -50,6 +50,7 @@ import {
   reconciliationBreakAuditEndpoint,
   reconciliationBreakBulkDryRunEndpoint,
   reconciliationBreakBulkExecuteEndpoint,
+  reconciliationBreakBulkResultEndpoint,
   reconciliationBreakBulkStatusEndpoint,
   reconciliationBreakCommentEndpoint,
   reconciliationBreakCommentsEndpoint,
@@ -395,6 +396,9 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reconciliationBreakBulkStatusEndpoint("bulk / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/bulk/bulk%20%2F%201"
+    );
+    expect(reconciliationBreakBulkResultEndpoint("bulk / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/bulk/bulk%20%2F%201/result"
     );
   });
 
