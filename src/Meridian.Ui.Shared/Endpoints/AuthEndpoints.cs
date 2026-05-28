@@ -185,11 +185,7 @@ public static class AuthEndpoints
         if (ctxUser is null || ctxRole is null)
             return null;
 
-        return new UserProfile(ctxUser, ctxRole.Value)
-        {
-            // Permissions are already computed from Role, but we can cross-check with stored items
-            // if they differ due to future customisation; for now they match the role exactly.
-        };
+        return new UserProfile(ctxUser, ctxRole.Value, PermissionOverride: ctxPerms);
     }
 }
 
